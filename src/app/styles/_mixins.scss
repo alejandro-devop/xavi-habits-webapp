@@ -1,0 +1,7 @@
+@use 'variables' as *;
+
+@mixin card {
+  padding: $spacing-lg;
+  border-radius: $radius-md;
+  border: 1px solid rgba($color-text, 0.12);
+}

@@ -1,0 +1,29 @@
+@use '../../app/styles/variables' as *;
+@use '../../app/styles/mixins' as *;
+
+.page {
+  @include card;
+}
+
+.title {
+  font-size: 2.5rem;
+  line-height: 1.1;
+  margin: 0 0 $spacing-md;
+}
+
+.section {
+  margin-top: $spacing-lg;
+}
+
+.label {
+  display: block;
+  margin-bottom: $spacing-md;
+  color: rgba($color-text, 0.75);
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-md;
+  justify-content: center;
+  flex-wrap: wrap;
+}

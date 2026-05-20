@@ -1,0 +1,19 @@
+@use '../../styles/auth-form' as *;
+
+.form {
+  @include auth-form-shell;
+}
+
+.forgot {
+  margin: 0;
+  text-align: right;
+  font-size: 0.875rem;
+}
+
+.link {
+  @include auth-link;
+}
+
+.submit {
+  @include auth-button-primary;
+}

@@ -1,0 +1,78 @@
+@use '@/app/styles/variables' as *;
+
+.root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+  padding: $spacing-md $spacing-lg;
+  width: 100%;
+  border-bottom: 1px solid $color-border;
+}
+
+.brand {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-right: auto;
+}
+
+.nav {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.navLink {
+  padding: 0.35rem 0.75rem;
+  border-radius: $radius-md;
+  text-decoration: none;
+  color: $color-muted;
+  font-weight: 500;
+  font-size: 0.9rem;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.navLinkActive {
+  color: $color-primary;
+  background: rgba($color-primary, 0.1);
+}
+
+.userArea {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-left: auto;
+}
+
+.userEmail {
+  font-size: 0.85rem;
+  color: $color-muted;
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main {
+  flex: 1;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+  padding: $spacing-lg;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .userEmail {
+    display: none;
+  }
+}

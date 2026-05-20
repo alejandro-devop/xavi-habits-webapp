@@ -56,7 +56,7 @@ Checklist:
 ## React Query
 
 - **Queries/mutations:** `features/<name>/api/` o `features/<name>/hooks/`
-- **Query keys:** factory en `features/<name>/api/query-keys.ts` (cuando crezca)
+- **Query keys:** factory global en `shared/api/query-keys.ts` (auth, habits, activities, courses); keys específicas de feature pueden añadirse en `features/<name>/api/` cuando haga falta
 - **No** llamar `useQuery` directamente en `pages/` si la lógica es de dominio — encapsular en hook
 
 ## Componentes
@@ -115,6 +115,7 @@ import { PageLoader } from '@/shared/components/feedback'
 - Rutas en `app/router/routes.tsx`
 - Layout raíz: `layouts/RootLayout` con `<Outlet />`
 - 404: ruta `*` → `NotFoundPage`
+- Auth: rutas bajo `/auth/*` (guest) y `/app/*` (protegidas); ver `docs/auth-flow.md`
 - Lazy (futuro):
 
 ```tsx

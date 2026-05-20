@@ -1,0 +1,41 @@
+@use '@/app/styles/variables' as *;
+@use '../../styles/auth-form' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.inputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.cell {
+  @include auth-input;
+  width: 2.75rem;
+  height: 2.75rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0;
+}
+
+.error {
+  font-size: 0.8rem;
+  color: $color-error;
+  text-align: center;
+}

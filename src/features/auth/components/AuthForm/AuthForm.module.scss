@@ -1,0 +1,48 @@
+@use '@/app/styles/variables' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  width: 100%;
+}
+
+.header {
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 $spacing-sm;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0;
+  color: $color-muted;
+  font-size: 0.95rem;
+}
+
+.error {
+  margin: 0;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  background-color: rgba($color-error, 0.08);
+  color: $color-error;
+  font-size: 0.9rem;
+}
+
+.success {
+  margin: 0;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  background-color: rgba($color-success, 0.08);
+  color: $color-success;
+  font-size: 0.9rem;
+}
+
+.footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: $color-muted;
+}

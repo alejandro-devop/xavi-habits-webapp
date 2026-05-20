@@ -1,0 +1,13 @@
+@use '../../styles/auth-form' as *;
+
+.form {
+  @include auth-form-shell;
+}
+
+.link {
+  @include auth-link;
+}
+
+.submit {
+  @include auth-button-primary;
+}

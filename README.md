@@ -11,8 +11,11 @@ SPA con React, TypeScript, Vite, React Router, Zustand, TanStack Query y Sass Mo
 
 ```bash
 cp .env.example .env
+# opcional: cp .env.local.example .env
 pnpm install
 ```
+
+Variables requeridas: `VITE_APP_NAME`, `VITE_APP_VERSION`, `VITE_API_URL` (ver `.env.example`).
 
 ## Scripts
 
@@ -33,3 +36,11 @@ pnpm install
 ## Convenciones
 
 Ver [docs/project-conventions.md](./docs/project-conventions.md).
+
+## API Core (Fase 3)
+
+Ver [docs/api-core.md](./docs/api-core.md) — clientes REST/GraphQL, refresh token, errores y query keys.
+
+## Autenticación (Fase 4)
+
+Ver [docs/auth-flow.md](./docs/auth-flow.md) — rutas, guards, formularios y flujo de sesión.

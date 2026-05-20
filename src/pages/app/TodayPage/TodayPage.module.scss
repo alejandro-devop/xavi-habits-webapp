@@ -1,0 +1,21 @@
+@use '@/app/styles/variables' as *;
+
+.page {
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 $spacing-sm;
+  font-size: 1.75rem;
+}
+
+.lead {
+  margin: 0 0 $spacing-md;
+  color: $color-muted;
+  line-height: 1.6;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.9rem;
+}

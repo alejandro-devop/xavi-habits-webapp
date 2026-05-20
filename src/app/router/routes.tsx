@@ -1,24 +1,92 @@
 import type { RouteObject } from 'react-router'
-import { RootLayout } from '@/layouts/RootLayout/RootLayout'
-import { HomePage } from '@/pages/HomePage/HomePage'
+import { Navigate } from 'react-router'
+import { GuestRoute } from '@/features/auth/router/GuestRoute'
+import { ProtectedRoute } from '@/features/auth/router/ProtectedRoute'
+import { VerifyAccountGuard } from '@/features/auth/router/VerifyAccountGuard'
+import { authPaths } from '@/features/auth/router/auth-paths'
+import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout'
+import { AppLayout } from '@/layouts/AppLayout/AppLayout'
+import { PublicLayout } from '@/layouts/PublicLayout/PublicLayout'
+import { TodayPage } from '@/pages/app/TodayPage/TodayPage'
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage/ForgotPasswordPage'
+import { LoginPage } from '@/pages/auth/LoginPage/LoginPage'
+import { RegisterPage } from '@/pages/auth/RegisterPage/RegisterPage'
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage/ResetPasswordPage'
+import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage/VerifyEmailPage'
+import { HomePage } from '@/pages/public/HomePage/HomePage'
 import { NotFoundPage } from '@/pages/NotFoundPage/NotFoundPage'
-
-// Lazy loading (futuro):
-// const HomePage = lazy(() => import('@/pages/HomePage/HomePage'))
-// Usar <Suspense fallback={<SuspenseFallback />}> al envolver rutas lazy
 
 export const routes: RouteObject[] = [
   {
-    element: <RootLayout />,
+    element: <PublicLayout />,
     children: [
       {
         index: true,
         element: <HomePage />,
       },
+    ],
+  },
+  {
+    path: '/auth',
+    element: <GuestRoute />,
+    children: [
       {
-        path: '*',
-        element: <NotFoundPage />,
+        element: <AuthLayout />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to={authPaths.login} replace />,
+          },
+          {
+            path: 'login',
+            element: <LoginPage />,
+          },
+          {
+            path: 'register',
+            element: <RegisterPage />,
+          },
+          {
+            path: 'verify-email',
+            element: <VerifyEmailPage />,
+          },
+          {
+            path: 'forgot-password',
+            element: <ForgotPasswordPage />,
+          },
+          {
+            path: 'reset-password',
+            element: <ResetPasswordPage />,
+          },
+        ],
       },
     ],
+  },
+  {
+    path: '/app',
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to={authPaths.today} replace />,
+          },
+          {
+            element: <VerifyAccountGuard />,
+            children: [
+              {
+                path: 'today',
+                element: <TodayPage />,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
   },
 ]

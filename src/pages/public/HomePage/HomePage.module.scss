@@ -1,0 +1,74 @@
+@use '@/app/styles/variables' as *;
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $spacing-md;
+  padding: $spacing-lg 0;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $color-primary;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.5rem, 8vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.description {
+  margin: 0;
+  font-size: 1.1rem;
+  color: $color-muted;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  justify-content: center;
+  margin-top: $spacing-md;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: $radius-md;
+  font-weight: 600;
+  text-decoration: none;
+  min-width: 10rem;
+}
+
+.primary {
+  background-color: $color-primary;
+  color: #fff;
+
+  &:hover {
+    background-color: $color-primary-hover;
+  }
+}
+
+.secondary {
+  border: 1px solid $color-border;
+  color: $color-text;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}

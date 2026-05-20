@@ -1,0 +1,36 @@
+@use '@/app/styles/variables' as *;
+@use '@/app/styles/mixins' as *;
+
+.root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba($color-primary, 0.06) 0%, $color-bg 40%);
+}
+
+.header {
+  padding: $spacing-md $spacing-lg;
+  text-align: center;
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $color-text;
+  text-decoration: none;
+}
+
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md $spacing-lg $spacing-lg;
+}
+
+.card {
+  @include card;
+  width: 100%;
+  max-width: $auth-form-max-width;
+  background: $color-bg;
+}

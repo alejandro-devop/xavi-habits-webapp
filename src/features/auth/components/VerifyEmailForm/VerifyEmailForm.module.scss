@@ -1,0 +1,35 @@
+@use '@/app/styles/variables' as *;
+@use '../../styles/auth-form' as *;
+
+.form {
+  @include auth-form-shell;
+}
+
+.link {
+  @include auth-link;
+}
+
+.submit {
+  @include auth-button-primary;
+}
+
+.secondary {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  background: transparent;
+  color: $color-text;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

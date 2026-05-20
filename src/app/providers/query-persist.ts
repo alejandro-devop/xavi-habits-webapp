@@ -15,6 +15,6 @@ export const queryPersister = createAsyncStoragePersister({
   },
 })
 
-import { env } from '@/shared/lib/env'
+import { env } from '@/app/config/env'
 
 export const queryPersistBuster = env.appVersion

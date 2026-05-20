@@ -1,0 +1,32 @@
+@use '../../../app/styles/variables' as *;
+
+.fallback {
+  max-width: 32rem;
+  margin: $spacing-lg auto;
+  padding: $spacing-lg;
+  text-align: center;
+}
+
+.title {
+  margin: 0 0 $spacing-md;
+  font-size: 1.75rem;
+}
+
+.message {
+  margin: 0 0 $spacing-md;
+  color: rgba($color-text, 0.8);
+}
+
+.details {
+  margin: 0 0 $spacing-md;
+  padding: $spacing-md;
+  text-align: left;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  background: rgba($color-text, 0.06);
+  border-radius: $radius-md;
+}
+
+.button {
+  margin-top: $spacing-md;
+}

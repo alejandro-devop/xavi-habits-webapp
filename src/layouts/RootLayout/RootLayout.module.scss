@@ -1,0 +1,30 @@
+@use '../../app/styles/variables' as *;
+
+.root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  border-bottom: 1px solid rgba($color-text, 0.1);
+}
+
+.brand {
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.nav {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.main {
+  flex: 1;
+  padding: $spacing-lg;
+}

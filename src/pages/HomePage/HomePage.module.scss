@@ -3,6 +3,9 @@
 
 .page {
   @include card;
+  max-width: 40rem;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .title {
@@ -11,19 +14,13 @@
   margin: 0 0 $spacing-md;
 }
 
-.section {
-  margin-top: $spacing-lg;
+.description {
+  margin: 0 0 $spacing-md;
+  color: rgba($color-text, 0.8);
 }
 
-.label {
-  display: block;
-  margin-bottom: $spacing-md;
-  color: rgba($color-text, 0.75);
-}
-
-.actions {
-  display: flex;
-  gap: $spacing-md;
-  justify-content: center;
-  flex-wrap: wrap;
+.meta {
+  margin: 0;
+  font-size: 0.875rem;
+  color: rgba($color-text, 0.65);
 }

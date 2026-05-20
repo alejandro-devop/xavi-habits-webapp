@@ -1,0 +1,32 @@
+@use '../../app/styles/variables' as *;
+@use '../../app/styles/mixins' as *;
+
+.page {
+  @include card;
+  max-width: 28rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.code {
+  margin: 0;
+  font-size: 4rem;
+  line-height: 1;
+  color: $color-primary;
+}
+
+.message {
+  margin: $spacing-md 0 $spacing-lg;
+  color: rgba($color-text, 0.8);
+}
+
+.link {
+  color: $color-primary;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    color: $color-primary-hover;
+    text-decoration: underline;
+  }
+}

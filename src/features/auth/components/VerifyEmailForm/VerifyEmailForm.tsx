@@ -11,6 +11,7 @@ import { authPaths } from '@/features/auth/router/auth-paths'
 import { selectIsAuthenticated } from '@/features/auth/store/auth.selectors'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { getAuthErrorMessage } from '@/features/auth/utils/auth.errors'
+import { validateEmail } from '@/features/auth/utils/field.validation'
 import { getPendingEmail, setPendingEmail } from '@/features/auth/utils/pending-email'
 import { validateOtpCode } from '@/features/auth/utils/password.validation'
 import styles from './VerifyEmailForm.module.scss'
@@ -52,7 +53,7 @@ export function VerifyEmailForm() {
     event.preventDefault()
 
     const errors: Record<string, string | null> = {
-      email: isAuthenticated || email.trim() ? null : 'El correo es obligatorio.',
+      email: isAuthenticated ? null : validateEmail(email),
       code: validateOtpCode(code),
     }
 

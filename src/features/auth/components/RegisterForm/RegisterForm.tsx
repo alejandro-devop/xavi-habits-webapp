@@ -5,6 +5,7 @@ import { FormField } from '@/features/auth/components/FormField/FormField'
 import { useRegisterMutation } from '@/features/auth/hooks/useRegisterMutation'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { getAuthErrorMessage } from '@/features/auth/utils/auth.errors'
+import { validateEmail, validateName } from '@/features/auth/utils/field.validation'
 import {
   validatePassword,
   validatePasswordMatch,
@@ -24,8 +25,8 @@ export function RegisterForm() {
     event.preventDefault()
 
     const errors: Record<string, string | null> = {
-      name: name.trim() ? null : 'El nombre es obligatorio.',
-      email: email.trim() ? null : 'El correo es obligatorio.',
+      name: validateName(name),
+      email: validateEmail(email),
       password: validatePassword(password),
       confirmPassword: validatePasswordMatch(password, confirmPassword),
     }

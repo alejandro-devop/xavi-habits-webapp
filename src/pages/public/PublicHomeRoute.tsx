@@ -1,4 +1,4 @@
-import { Navigate, Outlet, useLocation } from 'react-router'
+import { Navigate } from 'react-router'
 import { useAuthBootstrap } from '@/features/auth/providers/useAuthBootstrap'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import {
@@ -7,16 +7,14 @@ import {
   selectIsAuthenticated,
 } from '@/features/auth/store/auth.selectors'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { HomePage } from '@/pages/public/HomePage/HomePage'
 import { PageLoader } from '@/shared/components/feedback'
 
-export function GuestRoute() {
+export function PublicHomeRoute() {
   const { status } = useAuthBootstrap()
-  const location = useLocation()
   const isAuthenticated = useAuthStore(selectIsAuthenticated)
   const isAccountVerified = useAuthStore(selectIsAccountVerified)
   const user = useAuthStore(selectAuthUser)
-
-  const isVerifyRoute = location.pathname === authPaths.verifyEmail
 
   if (status === 'loading') {
     return <PageLoader label="Cargando…" />
@@ -26,7 +24,7 @@ export function GuestRoute() {
     return <Navigate to={authPaths.today} replace />
   }
 
-  if (isAuthenticated && !isAccountVerified && !isVerifyRoute) {
+  if (isAuthenticated && !isAccountVerified) {
     return (
       <Navigate
         to={authPaths.verifyEmail}
@@ -36,5 +34,5 @@ export function GuestRoute() {
     )
   }
 
-  return <Outlet />
+  return <HomePage />
 }

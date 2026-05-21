@@ -8,6 +8,7 @@ import {
   FORGOT_PASSWORD_GENERIC_MESSAGE,
 } from '@/features/auth/router/auth-paths'
 import { getAuthErrorMessage } from '@/features/auth/utils/auth.errors'
+import { validateEmail } from '@/features/auth/utils/field.validation'
 import styles from './ForgotPasswordForm.module.scss'
 
 export function ForgotPasswordForm() {
@@ -20,8 +21,9 @@ export function ForgotPasswordForm() {
     event.preventDefault()
     setFieldError(null)
 
-    if (!email.trim()) {
-      setFieldError('Introduce tu correo electrónico.')
+    const emailError = validateEmail(email)
+    if (emailError) {
+      setFieldError(emailError)
       return
     }
 
@@ -86,6 +88,7 @@ export function ForgotPasswordForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={forgotMutation.isPending}
+          error={fieldError}
           required
         />
         <button className={styles.submit} type="submit" disabled={forgotMutation.isPending}>

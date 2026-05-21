@@ -34,7 +34,8 @@ describe('LoginForm', () => {
 
     await user.click(screen.getByRole('button', { name: 'Entrar' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Introduce tu correo y contraseña.')
+    expect(screen.getByText('El correo es obligatorio.')).toBeInTheDocument()
+    expect(screen.getByText('La contraseña es obligatoria.')).toBeInTheDocument()
     expect(mutate).not.toHaveBeenCalled()
   })
 

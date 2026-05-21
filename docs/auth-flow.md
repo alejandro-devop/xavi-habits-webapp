@@ -6,10 +6,10 @@ Fase 4: routing, UI mínima y sesión persistente sobre el [API core](./api-core
 
 | Ruta | Acceso | Layout |
 |------|--------|--------|
-| `/` | Público | `PublicLayout` |
+| `/` | Público; con sesión verificada → `/app/today` | `PublicLayout` + `PublicHomeRoute` |
 | `/auth/login` | Guest | `AuthLayout` |
 | `/auth/register` | Guest | `AuthLayout` |
-| `/auth/verify-email` | Guest (también con sesión no verificada) | `AuthLayout` |
+| `/auth/verify-email` | Guest tras registro (email pendiente) o sesión no verificada; sin contexto → login | `VerifyEmailRoute` + `AuthLayout` |
 | `/auth/forgot-password` | Guest | `AuthLayout` |
 | `/auth/reset-password` | Guest | `AuthLayout` |
 | `/app/today` | Protegido + cuenta verificada | `AppLayout` |
@@ -22,7 +22,9 @@ Redirects: `/auth` → login · `/app` → today.
 |-------|-----------|----------------|
 | `AuthBootstrapProvider` | App global | `loading` hasta hidratar Zustand y refrescar/perfil |
 | `ProtectedRoute` | `/app/*` | Sin sesión → `/auth/login` |
-| `GuestRoute` | `/auth/*` | Verificado → `/app/today`; no verificado con sesión → `/auth/verify-email` |
+| `GuestRoute` | `/auth/*` | Verificado → `/app/today`; no verificado → `/auth/verify-email` (excepto si ya estás en esa ruta) |
+| `VerifyEmailRoute` | `/auth/verify-email` | Sin sesión ni email pendiente → `/auth/login` |
+| `PublicHomeRoute` | `/` | Sesión verificada → `/app/today`; no verificada → verify-email |
 | `VerifyAccountGuard` | hijos `/app` | `!isAccountVerified` → `/auth/verify-email` |
 
 Los guards esperan `authStatus === 'ready'` y muestran `PageLoader` para evitar flicker.

@@ -6,6 +6,7 @@ import { OtpInput } from '@/features/auth/components/OtpInput/OtpInput'
 import { useResetPasswordMutation } from '@/features/auth/hooks/useResetPasswordMutation'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { getAuthErrorMessage } from '@/features/auth/utils/auth.errors'
+import { validateEmail } from '@/features/auth/utils/field.validation'
 import {
   validateOtpCode,
   validatePassword,
@@ -36,7 +37,7 @@ export function ResetPasswordForm() {
     event.preventDefault()
 
     const errors: Record<string, string | null> = {
-      email: email.trim() ? null : 'El correo es obligatorio.',
+      email: validateEmail(email),
       code: validateOtpCode(code),
       password: validatePassword(password),
       confirmPassword: validatePasswordMatch(password, confirmPassword),

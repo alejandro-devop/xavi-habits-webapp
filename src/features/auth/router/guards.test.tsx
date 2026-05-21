@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GuestRoute } from '@/features/auth/router/GuestRoute'
 import { ProtectedRoute } from '@/features/auth/router/ProtectedRoute'
+import { VerifyEmailRoute } from '@/features/auth/router/VerifyEmailRoute'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
@@ -18,9 +19,14 @@ function GuestTarget() {
   return <div>Guest content</div>
 }
 
+function VerifyTarget() {
+  return <div>Verify form content</div>
+}
+
 describe('auth guards', () => {
   beforeEach(() => {
     useAuthStore.getState().clearSession()
+    sessionStorage.clear()
   })
 
   it('ProtectedRoute redirects to login when unauthenticated', () => {
@@ -91,7 +97,7 @@ describe('auth guards', () => {
     expect(screen.getByText('Today page')).toBeInTheDocument()
   })
 
-  it('GuestRoute redirects unverified authenticated users to verify-email', () => {
+  it('GuestRoute redirects unverified users from login to verify-email', () => {
     useAuthStore.getState().setSession({
       accessToken: 'access',
       accessExpiresAt: Date.now() + 60_000,
@@ -107,7 +113,7 @@ describe('auth guards', () => {
     render(
       <MemoryRouter initialEntries={['/auth/login']}>
         <Routes>
-          <Route path={authPaths.verifyEmail} element={<div>Verify page</div>} />
+          <Route path={authPaths.verifyEmail} element={<VerifyTarget />} />
           <Route element={<GuestRoute />}>
             <Route path="/auth/login" element={<GuestTarget />} />
           </Route>
@@ -115,6 +121,45 @@ describe('auth guards', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Verify page')).toBeInTheDocument()
+    expect(screen.getByText('Verify form content')).toBeInTheDocument()
+  })
+
+  it('GuestRoute renders verify page when already on verify-email (unverified)', () => {
+    useAuthStore.getState().setSession({
+      accessToken: 'access',
+      accessExpiresAt: Date.now() + 60_000,
+      refreshToken: 'refresh',
+      user: {
+        id: 1,
+        email: 'user@example.com',
+        name: 'Jane',
+        isAccountVerified: false,
+      },
+    })
+
+    render(
+      <MemoryRouter initialEntries={[authPaths.verifyEmail]}>
+        <Routes>
+          <Route element={<GuestRoute />}>
+            <Route path="/auth/verify-email" element={<VerifyTarget />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('Verify form content')).toBeInTheDocument()
+  })
+
+  it('VerifyEmailRoute redirects to login without session or guest context', () => {
+    render(
+      <MemoryRouter initialEntries={[authPaths.verifyEmail]}>
+        <Routes>
+          <Route path={authPaths.login} element={<div>Login page</div>} />
+          <Route path={authPaths.verifyEmail} element={<VerifyEmailRoute />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByText('Login page')).toBeInTheDocument()
   })
 })

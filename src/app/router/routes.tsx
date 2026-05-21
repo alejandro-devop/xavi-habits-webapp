@@ -12,8 +12,8 @@ import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage/ForgotPasswo
 import { LoginPage } from '@/pages/auth/LoginPage/LoginPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage/RegisterPage'
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage/ResetPasswordPage'
-import { VerifyEmailPage } from '@/pages/auth/VerifyEmailPage/VerifyEmailPage'
-import { HomePage } from '@/pages/public/HomePage/HomePage'
+import { VerifyEmailRoute } from '@/features/auth/router/VerifyEmailRoute'
+import { PublicHomeRoute } from '@/pages/public/PublicHomeRoute'
 import { NotFoundPage } from '@/pages/NotFoundPage/NotFoundPage'
 
 export const routes: RouteObject[] = [
@@ -22,7 +22,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <PublicHomeRoute />,
       },
     ],
   },
@@ -47,7 +47,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: 'verify-email',
-            element: <VerifyEmailPage />,
+            element: <VerifyEmailRoute />,
           },
           {
             path: 'forgot-password',

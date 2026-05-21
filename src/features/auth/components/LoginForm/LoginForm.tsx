@@ -5,6 +5,7 @@ import { FormField } from '@/features/auth/components/FormField/FormField'
 import { useLoginMutation } from '@/features/auth/hooks/useLoginMutation'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { getAuthErrorMessage } from '@/features/auth/utils/auth.errors'
+import { validateEmail } from '@/features/auth/utils/field.validation'
 import styles from './LoginForm.module.scss'
 
 type LoginLocationState = {
@@ -18,14 +19,19 @@ export function LoginForm() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [fieldError, setFieldError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | null>>({})
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setFieldError(null)
 
-    if (!email.trim() || !password) {
-      setFieldError('Introduce tu correo y contraseña.')
+    const errors: Record<string, string | null> = {
+      email: validateEmail(email),
+      password: password ? null : 'La contraseña es obligatoria.',
+    }
+
+    setFieldErrors(errors)
+
+    if (Object.values(errors).some(Boolean)) {
       return
     }
 
@@ -33,7 +39,7 @@ export function LoginForm() {
       { email: email.trim(), password },
       {
         onError: (error) => {
-          setFieldError(getAuthErrorMessage(error, 'Credenciales no válidas.'))
+          setFieldErrors({ form: getAuthErrorMessage(error, 'Credenciales no válidas.') })
         },
       },
     )
@@ -47,7 +53,7 @@ export function LoginForm() {
     <AuthForm
       title="Iniciar sesión"
       subtitle="Accede a tu cuenta de Xavi"
-      error={fieldError ?? apiError}
+      error={fieldErrors.form ?? apiError}
       success={locationState.message ?? null}
       footer={
         <p>
@@ -68,6 +74,7 @@ export function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loginMutation.isPending}
+          error={fieldErrors.email}
           required
         />
         <FormField
@@ -79,6 +86,7 @@ export function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={loginMutation.isPending}
+          error={fieldErrors.password}
           required
         />
         <p className={styles.forgot}>

@@ -1,5 +1,8 @@
 # Design System — Xavi Habits Web
 
+> **Para agentes / Cursor:** usa primero `docs/design-system-agent-guide.md` y la regla `.cursor/rules/design-system.mdc`.  
+> Catálogo visual: `/app/testinghall`.
+
 ## Principios visuales
 
 - **Minimalista y limpio**, inspirado en la estética Apple: mucho espacio en blanco, tipografía clara, jerarquía sutil.
@@ -53,7 +56,9 @@ Las **variables CSS** se definen en `src/app/styles/_theme-variables.scss` y cam
 | `Input` | Campo base |
 | `FormField` | Label + Input + helper/error |
 | `Textarea` | Área de texto + contador opcional |
-| `Select` | `<select>` nativo estilizado |
+| `Select` | `<select>` nativo estilizado (listas cortas) |
+| `SearchSelect` | Combobox con búsqueda local (listas largas) |
+| `IconPicker` | Selector de icono vía modal |
 | `Checkbox` | Casillas de verificación |
 | `Switch` | Toggle on/off (`role="switch"`) |
 
@@ -73,7 +78,32 @@ Las **variables CSS** se definen en `src/app/styles/_theme-variables.scss` y cam
 | `Table` + subcomponentes | Tablas semánticas, scroll horizontal, empty/loading |
 | `Tabs` | Pestañas controladas + teclado ← → |
 | `Modal` | Diálogos (portal, ESC, focus trap básico) |
+| `Drawer` | Panel lateral/inferior (sheet) |
+| `Popover` | Contenido anclado a un trigger |
+| `Tooltip` | Ayuda contextual hover/focus |
+| `Toast` + `useToast` | Notificaciones globales (requiere `ToastProvider`) |
+| `ConfirmDialog` + `useConfirmDialog` | Confirmación destructiva (Promise) |
 | `Divider` | Separador horizontal/vertical con label opcional |
+
+### Iconos (`src/shared/icons/`)
+
+| Pieza | Uso |
+|-------|-----|
+| `app-icons.ts` | Catálogo cerrado de iconos permitidos |
+| `icon-utils.ts` | `normalizeIconName`, `getIconByName`, `toStoredIconName` |
+| `AppIcon` | Render por nombre almacenado |
+
+**Regla de persistencia:** guardar solo el nombre limpio (`bell`, `home`, `calendar`). Nunca `fa-bell` ni `faBell`.
+
+### Shell de aplicación
+
+| Componente | Uso |
+|------------|-----|
+| `Sidebar` | Navegación lateral (colapsable en desktop) |
+| `Topbar` | Barra superior con breadcrumbs/acciones |
+| `Breadcrumbs` | Migas de pan |
+| `AppNavLink` | Enlace de nav con icono y estado activo |
+| `CommandPalette` | Paleta Spotlight (`⌘K` / `Ctrl+K`) |
 
 ### Layout de página
 
@@ -84,7 +114,7 @@ Las **variables CSS** se definen en `src/app/styles/_theme-variables.scss` y cam
 | `ThemeToggle` | Tema light / dark / system |
 
 ```tsx
-import { Button, DataCard, Modal, Tabs } from '@/shared/ui'
+import { AppIcon, Button, DataCard, Modal, SearchSelect, useToast } from '@/shared/ui'
 ```
 
 ## Layout system (`src/shared/layout/`)
@@ -124,13 +154,16 @@ Secciones:
 1. Foundations — colores, tipografía, spacing, radius, shadows, blur  
 2. Buttons  
 3. Forms — Input, Textarea, Select, Checkbox, Switch, FormField  
-4. Feedback — Alert, Spinner, Skeleton, EmptyState  
-5. Surfaces — Card, GlassPanel, DataCard, StatCard  
-6. Data display — Table, Badge  
-7. Overlay — Modal  
-8. Navigation — Tabs  
-9. Layout — Container, Grid, Stack, Inline, Divider  
-10. Motion  
+4. Advanced Forms — SearchSelect, IconPicker, AppIcon  
+5. Icons — catálogo y normalización `faBell → bell`  
+6. Feedback — Alert, Toast, ConfirmDialog, Spinner, Skeleton, EmptyState  
+7. Surfaces — Card, GlassPanel, DataCard, StatCard  
+8. Data display — Table, Badge  
+9. Overlay — Modal, Drawer, Popover, Tooltip  
+10. Navigation — Sidebar, Topbar, Breadcrumbs, AppNavLink, Tabs  
+11. Layout — Container, Grid, Stack, Inline, Divider  
+12. Motion  
+13. Productivity — CommandPalette (`⌘K` / `Ctrl+K`)  
 
 Nav sticky con anclas `#foundations`, `#buttons`, etc.
 
@@ -142,11 +175,35 @@ Nav sticky con anclas `#foundations`, `#buttons`, etc.
 4. Ejemplo en Testing Hall
 5. Test mínimo si hay interacción o a11y crítica
 
+## Font Awesome (solo free solid)
+
+Dependencias: `@fortawesome/fontawesome-svg-core`, `@fortawesome/free-solid-svg-icons`, `@fortawesome/react-fontawesome`.
+
+- Importar iconos **solo** en `src/shared/icons/app-icons.ts` (uno a uno).
+- En UI usar `<AppIcon name="bell" />`, no `<FontAwesomeIcon>` directo en features.
+- Añadir icono nuevo: entrada en `appIcons` + keywords + demo en Testing Hall `#icons`.
+
+## Providers globales
+
+En `AppProviders`: `ToastProvider`, `ConfirmDialogProvider`.
+
+En `AppLayout`: `CommandPaletteProvider` con acciones de `app-nav.config.ts`.
+
+```tsx
+const toast = useToast()
+toast.success('Guardado')
+
+const { confirm } = useConfirmDialog()
+const ok = await confirm({ title: '¿Eliminar?', variant: 'danger', onConfirm: async () => { ... } })
+```
+
 ## Accesibilidad
 
 - Form controls: `aria-invalid`, `aria-describedby`, errores con `role="alert"`
 - `Switch`: `role="switch"`, `aria-checked`
-- `Modal`: `role="dialog"`, `aria-modal`, ESC, focus trap
+- `SearchSelect`: `combobox` + `listbox` + teclado ↑↓ Enter Esc
+- `Modal` / `Drawer`: `role="dialog"`, `aria-modal`, ESC, focus trap
+- `Toast`: `role="status"` o `role="alert"` según variante
 - `Tabs`: `role="tablist/tab/tabpanel"`, teclado flechas
 - `Table`: HTML semántico `<table>`, caption opcional
 - `prefers-reduced-motion` global + hook

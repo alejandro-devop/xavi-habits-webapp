@@ -3,6 +3,8 @@ import { render, type RenderOptions } from '@testing-library/react'
 import type { ReactElement, ReactNode } from 'react'
 import { MemoryRouter, type MemoryRouterProps } from 'react-router'
 import { ThemeProvider } from '@/features/theme'
+import { ConfirmDialogProvider } from '@/shared/ui/ConfirmDialog'
+import { ToastProvider } from '@/shared/ui/Toast'
 
 type ProvidersProps = {
   children: ReactNode
@@ -17,7 +19,11 @@ function AllProviders({ children, routerProps }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <MemoryRouter {...routerProps}>{children}</MemoryRouter>
+        <ToastProvider>
+          <ConfirmDialogProvider>
+            <MemoryRouter {...routerProps}>{children}</MemoryRouter>
+          </ConfirmDialogProvider>
+        </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   )

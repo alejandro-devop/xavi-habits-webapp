@@ -5,8 +5,13 @@ class IntersectionObserverMock implements IntersectionObserver {
   readonly root: Element | null = null
   readonly rootMargin = ''
   readonly thresholds: readonly number[] = []
+  readonly scrollMargin = ''
 
-  constructor(private callback: IntersectionObserverCallback) {}
+  private readonly callback: IntersectionObserverCallback
+
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback
+  }
 
   observe(target: Element) {
     this.callback(

@@ -71,10 +71,16 @@ button {
   }
 }
 
-img,
-svg {
+img {
   display: block;
   max-width: 100%;
+}
+
+/* Iconos Font Awesome — no aplicar max-width:100% (rompe tamaño en flex/grid) */
+svg.svg-inline--fa {
+  display: inline-block;
+  max-width: none;
+  overflow: visible;
 }
 
 h1,

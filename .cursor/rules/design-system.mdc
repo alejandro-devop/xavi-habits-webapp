@@ -23,7 +23,12 @@ Antes de escribir UI, **lee** `docs/design-system-agent-guide.md` y consulta eje
 | CTA / enlace | `Button` (`variant`, `to` para rutas) |
 | Campo texto | `FormField` o `Input` |
 | Texto largo | `Textarea` |
-| Lista opciones | `Select` |
+| Lista opciones corta | `Select` |
+| Lista con búsqueda | `SearchSelect` |
+| Icono en UI | `AppIcon` (`name="bell"`) |
+| Elegir icono (form) | `IconPicker` |
+| Toast global | `useToast()` |
+| Confirmar borrado | `useConfirmDialog()` |
 | On/off compacto | `Switch` (estilo iOS) |
 | Sí/no en formulario | `Checkbox` |
 | Bloque contenido | `Card` |
@@ -35,6 +40,10 @@ Antes de escribir UI, **lee** `docs/design-system-agent-guide.md` y consulta eje
 | Mensaje sistema | `Alert` |
 | Etiqueta estado | `Badge` |
 | Diálogo | `Modal` |
+| Panel lateral | `Drawer` |
+| Popover / tooltip | `Popover` / `Tooltip` |
+| Nav app | `Sidebar` + `Topbar` + `AppNavLink` |
+| Paleta comandos | `CommandPalette` (⌘K) |
 | Pestañas | `Tabs` |
 | Título página | `PageHeader` |
 | Grid responsive | `Grid` + `GridItem` |

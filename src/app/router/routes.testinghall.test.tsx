@@ -7,6 +7,9 @@ import { authPaths } from '@/features/auth/router/auth-paths'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { TestingHallPage } from '@/pages/app/TestingHallPage/TestingHallPage'
 import { ThemeProvider } from '@/features/theme'
+import { ConfirmDialogProvider } from '@/shared/ui/ConfirmDialog'
+import { CommandPaletteProvider } from '@/shared/ui/CommandPalette'
+import { ToastProvider } from '@/shared/ui/Toast'
 
 vi.mock('@/features/auth/providers/useAuthBootstrap', () => ({
   useAuthBootstrap: () => ({ status: 'ready' as const }),
@@ -49,15 +52,21 @@ describe('/app/testinghall route', () => {
 
     render(
       <ThemeProvider>
-        <MemoryRouter initialEntries={[authPaths.testingHall]}>
-          <Routes>
-            <Route element={<ProtectedRoute />}>
-              <Route element={<VerifyAccountGuard />}>
-                <Route path="/app/testinghall" element={<TestingHallPage />} />
-              </Route>
-            </Route>
-          </Routes>
-        </MemoryRouter>
+        <ToastProvider>
+          <ConfirmDialogProvider>
+            <CommandPaletteProvider actions={[]}>
+              <MemoryRouter initialEntries={[authPaths.testingHall]}>
+                <Routes>
+                  <Route element={<ProtectedRoute />}>
+                    <Route element={<VerifyAccountGuard />}>
+                      <Route path="/app/testinghall" element={<TestingHallPage />} />
+                    </Route>
+                  </Route>
+                </Routes>
+              </MemoryRouter>
+            </CommandPaletteProvider>
+          </ConfirmDialogProvider>
+        </ToastProvider>
       </ThemeProvider>,
     )
 

@@ -1,5 +1,19 @@
 # Convenciones del proyecto — Xavi Habits Web
 
+## Design System (UI)
+
+Al construir interfaces, **no inventar componentes** si ya existen en el DS:
+
+- Guía para agentes: `docs/design-system-agent-guide.md`
+- Referencia técnica: `docs/design-system.md`
+- Laboratorio: `/app/testinghall`
+- Regla Cursor: `.cursor/rules/design-system.mdc`
+
+```tsx
+import { Button, Card } from '@/shared/ui'
+import { Stack, Grid } from '@/shared/layout'
+```
+
 ## Filosofía
 
 - **Feature-first:** la lógica de dominio vive en `features/`.

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { ActivityPickerField } from '@/features/activities/components/ActivityPickerField'
 import type { Activity } from '@/features/activities/types/activity.types'
 import type { StartActivityFormValues } from '@/features/activities/types/activity-followup.types'
 import {
@@ -6,12 +7,10 @@ import {
   validateStartActivityForm,
 } from '@/features/activities/utils/activity-followup-form'
 import { getCurrentLocalTime } from '@/features/activities/utils/activity-time.utils'
-import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
 import { Modal } from '@/shared/ui/Modal'
-import { SearchSelect } from '@/shared/ui/SearchSelect'
 import { Textarea } from '@/shared/ui/Textarea'
 import styles from './StartActivityModal.module.scss'
 
@@ -43,25 +42,6 @@ export function StartActivityModal({
       setError(null)
     }
   }, [open])
-
-  const options = useMemo(
-    () =>
-      activities.map((activity) => ({
-        value: activity.id,
-        label: activity.title,
-        description: activity.category?.name ?? undefined,
-        icon: (
-          <span
-            className={styles.categoryIcon}
-            style={{ color: activity.category?.color ?? 'var(--color-text)' }}
-            aria-hidden
-          >
-            <AppIcon name={activity.category?.icon ?? 'list-check'} size="sm" decorative />
-          </span>
-        ),
-      })),
-    [activities],
-  )
 
   const handleSubmit = () => {
     const validationError = validateStartActivityForm(values, sessionDate)
@@ -99,11 +79,10 @@ export function StartActivityModal({
     >
       <div className={styles.form}>
         <FormField id="start-activity" label="Actividad" error={error && !values.activityId ? error : undefined}>
-          <SearchSelect
-            label="Actividad"
-            placeholder="Buscar actividad…"
+          <ActivityPickerField
+            idPrefix="start-activity"
             value={values.activityId}
-            options={options}
+            activities={activities}
             onChange={(activityId) => setValues((prev) => ({ ...prev, activityId }))}
             disabled={loading}
             error={error && !values.activityId ? error : undefined}

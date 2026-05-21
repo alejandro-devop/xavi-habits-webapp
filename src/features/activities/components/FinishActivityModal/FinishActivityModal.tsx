@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { ActivityPickerField } from '@/features/activities/components/ActivityPickerField'
 import type { Activity } from '@/features/activities/types/activity.types'
 import type { FinishActivityFormValues } from '@/features/activities/types/activity-followup.types'
 import {
@@ -7,12 +8,10 @@ import {
 } from '@/features/activities/utils/activity-followup-form'
 import { DurationHoursMinutesFields } from '@/features/activities/components/DurationHoursMinutesFields'
 import { calculateEndTime } from '@/features/activities/utils/activity-time.utils'
-import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
 import { Modal } from '@/shared/ui/Modal'
-import { SearchSelect } from '@/shared/ui/SearchSelect'
 import { Textarea } from '@/shared/ui/Textarea'
 import styles from './FinishActivityModal.module.scss'
 
@@ -42,25 +41,6 @@ export function FinishActivityModal({
       setError(null)
     }
   }, [open, initialValues])
-
-  const options = useMemo(
-    () =>
-      activities.map((activity) => ({
-        value: activity.id,
-        label: activity.title,
-        description: activity.category?.name ?? undefined,
-        icon: (
-          <span
-            className={styles.categoryIcon}
-            style={{ color: activity.category?.color ?? 'var(--color-text)' }}
-            aria-hidden
-          >
-            <AppIcon name={activity.category?.icon ?? 'list-check'} size="sm" decorative />
-          </span>
-        ),
-      })),
-    [activities],
-  )
 
   const endTime = calculateEndTime(values.date, values.startTime, values.durationMinutes)
 
@@ -93,12 +73,13 @@ export function FinishActivityModal({
     >
       <div className={styles.form}>
         <FormField id="finish-activity" label="Actividad" error={error && !values.activityId ? error : undefined}>
-          <SearchSelect
-            label="Actividad"
+          <ActivityPickerField
+            idPrefix="finish-activity"
             value={values.activityId}
-            options={options}
+            activities={activities}
             onChange={(activityId) => setValues((prev) => ({ ...prev, activityId }))}
             disabled={loading}
+            error={error && !values.activityId ? error : undefined}
           />
         </FormField>
 

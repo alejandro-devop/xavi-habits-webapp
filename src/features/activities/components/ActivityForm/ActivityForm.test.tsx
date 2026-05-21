@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ActivityForm } from '@/features/activities/components/ActivityForm/ActivityForm'
 import { emptyActivityFormValues } from '@/features/activities/utils/activity-form'
+import { renderWithProviders } from '@/test/render'
 
 const categories = [
   {
@@ -21,7 +22,7 @@ describe('ActivityForm', () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
 
-    render(
+    renderWithProviders(
       <ActivityForm
         values={emptyActivityFormValues()}
         categories={categories}
@@ -32,7 +33,7 @@ describe('ActivityForm', () => {
       />,
     )
 
-    await user.click(screen.getByRole('button', { name: /crear/i }))
+    await user.click(screen.getByRole('button', { name: /^Crear$/ }))
     expect(screen.getByText(/título es obligatorio/i)).toBeInTheDocument()
     expect(onSubmit).not.toHaveBeenCalled()
   })

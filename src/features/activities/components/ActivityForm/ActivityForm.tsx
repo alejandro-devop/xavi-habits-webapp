@@ -1,4 +1,5 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
+import { CategoryPickerField } from '@/features/activities/components/CategoryPickerField'
 import type { ActivityCategory } from '@/features/activities/types/activity-category.types'
 import type { ActivityFormValues } from '@/features/activities/types/activity.types'
 import {
@@ -6,11 +7,9 @@ import {
   activityStatusOptions,
 } from '@/features/activities/utils/activity-enums'
 import { validateActivityForm } from '@/features/activities/utils/activity-form'
-import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
-import { SearchSelect } from '@/shared/ui/SearchSelect'
 import { Select } from '@/shared/ui/Select'
 import { Textarea } from '@/shared/ui/Textarea'
 import styles from './ActivityForm.module.scss'
@@ -35,24 +34,6 @@ export function ActivityForm({
   loading = false,
 }: ActivityFormProps) {
   const [error, setError] = useState<string | null>(null)
-
-  const categoryOptions = useMemo(
-    () =>
-      categories.map((cat) => ({
-        value: cat.id,
-        label: cat.name,
-        icon: (
-          <span
-            className={styles.categoryIcon}
-            style={{ color: cat.color ?? 'var(--color-text)' }}
-            aria-hidden
-          >
-            <AppIcon name={cat.icon ?? 'list-check'} size="sm" decorative />
-          </span>
-        ),
-      })),
-    [categories],
-  )
 
   const patch = (partial: Partial<ActivityFormValues>) => {
     onChange({ ...values, ...partial })
@@ -112,13 +93,11 @@ export function ActivityForm({
         />
       </div>
 
-      <SearchSelect
-        label="Categoría"
-        placeholder="Sin categoría"
+      <CategoryPickerField
+        idPrefix="activity-category"
         value={values.categoryId}
-        options={categoryOptions}
+        categories={categories}
         onChange={(value) => patch({ categoryId: value })}
-        clearable
         disabled={loading}
       />
 

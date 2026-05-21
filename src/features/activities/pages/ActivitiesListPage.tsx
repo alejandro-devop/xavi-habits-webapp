@@ -147,14 +147,14 @@ export function ActivitiesListPage() {
         </>
       ) : null}
 
-      <Button
+      <button
         type="button"
         className={styles.fab}
         onClick={() => navigate(activitiesPaths.new)}
         aria-label="Nueva actividad"
       >
         <AppIcon name="plus" size="md" decorative />
-      </Button>
+      </button>
     </div>
   )
 }

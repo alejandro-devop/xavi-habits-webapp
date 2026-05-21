@@ -7,6 +7,34 @@ import { activitiesRoutes } from '@/features/activities/routes/activities.routes
 import { ConfirmDialogProvider } from '@/shared/ui/ConfirmDialog'
 import { ToastProvider } from '@/shared/ui/Toast'
 
+vi.mock('@/features/activities/hooks/useActivityCategories', () => ({
+  useActivityCategoriesQuery: () => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+  useCreateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false, variables: undefined }),
+}))
+
+vi.mock('@/features/activities/hooks/useActivities', () => ({
+  useActivitiesQuery: () => ({
+    data: { activities: [], page: 1, limit: 50, total: 0 },
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+  useActivityQuery: () => ({ data: null, isLoading: false, isError: true }),
+  useCreateActivityMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateActivityMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteActivityMutation: () => ({ mutate: vi.fn(), isPending: false, variables: undefined }),
+  useCompleteActivityMutation: () => ({ mutate: vi.fn(), isPending: false, variables: undefined }),
+}))
+
 function renderActivitiesRoute(initialEntry: string) {
   const router = createMemoryRouter([activitiesRoutes], { initialEntries: [initialEntry] })
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -24,26 +52,14 @@ function renderActivitiesRoute(initialEntry: string) {
   )
 }
 
-vi.mock('@/features/activities/hooks/useActivityCategories', () => ({
-  useActivityCategoriesQuery: () => ({
-    data: [],
-    isLoading: false,
-    isError: false,
-    error: null,
-    refetch: vi.fn(),
-  }),
-  useCreateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false }),
-  useUpdateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false }),
-  useDeleteActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false, variables: undefined }),
-}))
-
 describe('activitiesRoutes', () => {
-  it('renders overview at module root', () => {
+  it('renders activities list at module root', () => {
     renderActivitiesRoute('/activities')
-    expect(screen.getByText(/lista de actividades/i)).toBeInTheDocument()
+    expect(screen.getByText(/tus actividades/i)).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /nueva actividad/i }).length).toBeGreaterThanOrEqual(1)
   })
 
-  it('renders categories panel at internal categories route', () => {
+  it('renders categories panel at categories route', () => {
     renderActivitiesRoute('/activities/categories')
     expect(screen.getByRole('button', { name: /nueva categoría/i })).toBeInTheDocument()
   })

@@ -1,7 +1,10 @@
 import type { RouteObject } from 'react-router'
 import { ActivitiesModuleLayout } from '@/features/activities/components/ActivitiesModuleLayout'
 import { ActivityCategoriesPage } from '@/features/activities/pages/ActivityCategoriesPage'
-import { ActivitiesModulePage } from '@/features/activities/pages/ActivitiesModulePage'
+import { ActivityCreatePage } from '@/features/activities/pages/ActivityCreatePage'
+import { ActivityDetailPage } from '@/features/activities/pages/ActivityDetailPage'
+import { ActivityEditPage } from '@/features/activities/pages/ActivityEditPage'
+import { ActivitiesListPage } from '@/features/activities/pages/ActivitiesListPage'
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 
 export const activitiesRoutes: RouteObject = {
@@ -10,11 +13,23 @@ export const activitiesRoutes: RouteObject = {
   children: [
     {
       index: true,
-      element: <ActivitiesModulePage />,
+      element: <ActivitiesListPage />,
     },
     {
       path: 'categories',
       element: <ActivityCategoriesPage />,
+    },
+    {
+      path: 'new',
+      element: <ActivityCreatePage />,
+    },
+    {
+      path: ':id/edit',
+      element: <ActivityEditPage />,
+    },
+    {
+      path: ':id',
+      element: <ActivityDetailPage />,
     },
   ],
 }

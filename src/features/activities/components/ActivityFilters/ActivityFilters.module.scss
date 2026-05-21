@@ -1,0 +1,32 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+
+  @media (min-width: 48rem) {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+.rowSecondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+
+  > :first-child {
+    flex: 1;
+    min-width: 14rem;
+  }
+}
+
+.categoryIcon {
+  display: inline-flex;
+  align-items: center;
+}

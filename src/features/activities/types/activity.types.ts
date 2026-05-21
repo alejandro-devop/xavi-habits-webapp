@@ -2,7 +2,15 @@ export type ActivityStatus = 'pending' | 'in_progress' | 'completed' | 'cancelle
 
 export type ActivityPriority = 'low' | 'medium' | 'high' | 'urgent'
 
-/** Referencia para fases posteriores — sin CRUD en 6.1 */
+export interface ActivityCategoryRef {
+  id: string
+  name: string
+  icon: string | null
+  color: string | null
+  description?: string | null
+  orderIndex?: number
+}
+
 export interface Activity {
   id: string
   userId: number
@@ -14,4 +22,53 @@ export interface Activity {
   scheduledDate: string | null
   completedAt: string | null
   spentTimeMinutes: number
+  createdAt: string
+  updatedAt: string
+  category?: ActivityCategoryRef | null
+}
+
+export interface ActivityInput {
+  title: string
+  description?: string | null
+  status?: ActivityStatus
+  priority?: ActivityPriority
+  categoryId?: string | null
+  scheduledDate?: string | null
+}
+
+export interface ActivityEditInput {
+  id: string
+  title?: string
+  description?: string | null
+  status?: ActivityStatus
+  priority?: ActivityPriority
+  categoryId?: string | null
+  scheduledDate?: string | null
+}
+
+export interface ActivityFilters {
+  status?: ActivityStatus | null
+  priority?: ActivityPriority | null
+  categoryId?: string | null
+  startDate?: string | null
+  endDate?: string | null
+  page?: number
+  limit?: number
+  search?: string
+}
+
+export interface ActivitiesResponse {
+  activities: Activity[]
+  page: number
+  limit: number
+  total: number
+}
+
+export interface ActivityFormValues {
+  title: string
+  description: string
+  status: ActivityStatus
+  priority: ActivityPriority
+  categoryId: string | null
+  scheduledDate: string
 }

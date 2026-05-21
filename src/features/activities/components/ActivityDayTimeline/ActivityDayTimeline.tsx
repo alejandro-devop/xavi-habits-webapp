@@ -7,31 +7,43 @@ import type { TimelineFreeSlot } from '@/features/activities/types/activity-time
 import {
   buildTimelineItems,
   getFreeSlotsBetweenFollowUps,
+  getMostRecentFollowUp,
 } from '@/features/activities/utils/activity-time.utils'
 import styles from './ActivityDayTimeline.module.scss'
 
 type ActivityDayTimelineProps = {
   date: string
   followUps: ActivityFollowUp[]
+  freeSlots?: TimelineFreeSlot[]
   showCurrentTimeMarker?: boolean
+  continueAfterDisabled?: boolean
   onFollowUpClick: (followUp: ActivityFollowUp) => void
   onFreeSlotClick: (slot: TimelineFreeSlot) => void
+  onContinueAfterFollowUp?: (followUp: ActivityFollowUp) => void
 }
 
 export function ActivityDayTimeline({
   date,
   followUps,
+  freeSlots: freeSlotsProp,
   showCurrentTimeMarker = false,
+  continueAfterDisabled = false,
   onFollowUpClick,
   onFreeSlotClick,
+  onContinueAfterFollowUp,
 }: ActivityDayTimelineProps) {
+  const mostRecentFollowUpId = useMemo(
+    () => getMostRecentFollowUp(date, followUps)?.id ?? null,
+    [date, followUps],
+  )
+
   const items = useMemo(() => {
-    const freeSlots = getFreeSlotsBetweenFollowUps(date, followUps)
+    const freeSlots = freeSlotsProp ?? getFreeSlotsBetweenFollowUps(date, followUps)
     return buildTimelineItems(followUps, freeSlots, {
       showNow: showCurrentTimeMarker,
       date,
     })
-  }, [date, followUps, showCurrentTimeMarker])
+  }, [date, followUps, freeSlotsProp, showCurrentTimeMarker])
 
   if (items.length === 0) return null
 
@@ -60,7 +72,12 @@ export function ActivityDayTimeline({
             key={item.data.id}
             followUp={item.data}
             isLast={isLast}
+            showContinueButton={
+              Boolean(onContinueAfterFollowUp) && item.data.id === mostRecentFollowUpId
+            }
+            continueDisabled={continueAfterDisabled}
             onClick={onFollowUpClick}
+            onContinueAfter={onContinueAfterFollowUp}
           />
         )
       })}

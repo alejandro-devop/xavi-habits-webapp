@@ -144,12 +144,36 @@ Helpers en `activity-time.utils.ts`: `getFreeSlotsBetweenFollowUps`, `validateFo
 
 **Caso borde — medianoche:** si `endDate !== date` del día seleccionado, el intervalo se capa al fin del día (24:00) para visualización y gaps; no se modelan slots inter-día en 6.4.
 
+### Widgets de tiempo del día (Fase 6.5)
+
+En la parte superior de **Seguimiento** (`ActivityTrackingPage`), antes de la timeline:
+
+| Widget | Fuente de datos | Comportamiento |
+|--------|-----------------|----------------|
+| **DayRemainingWidget** | Hora local (`Date.now()`), sin GraphQL | Cuenta regresiva `HH:mm:ss` hasta fin de día. Día actual independiente del selector de semana. |
+| **DayUsageWidget** | `followUps` + `freeSlots` del día seleccionado | Muestra tiempo aprovechado vs libre detectado entre actividades. |
+
+**Fin de día (hardcoded):** `DAY_END_TIME = '23:00:00'` en `activity-day-metrics.utils.ts`. El contador restante usa `getRemainingDayMs(now, today, endTime)`; tras las 23:00 muestra `00:00:00`. Barra de progreso: % transcurrido de la ventana **00:00 → 23:00** del día actual.
+
+**Futuro:** mover `DAY_END_TIME` (y posible hora de inicio del día) a configuración de usuario; los widgets ya aceptan `endTime?` opcional.
+
+**Tiempo aprovechado:** suma de `durationMinutes` de todos los `activityFollowUps` del día seleccionado. No incluye la sesión en curso hasta guardarla con `activityFollowUpAdd`.
+
+**Tiempo libre (widget):** suma de `durationMinutes` de los free slots derivados (`getFreeSlotsBetweenFollowUps`). Es **libre detectado entre actividades**, no el tiempo libre total del día hasta las 23:00.
+
+**Desperdicio del día:** tiempo transcurrido en la ventana del día que no está aprovechado ni marcado como libre detectado. Ventana: desde las **23:00 del día anterior** (`getDayWindowStartDateTime`) hasta las **23:00 del día seleccionado** (o `now` si es hoy y aún no son las 23:00). Fórmula: `desperdicio = ventanaTranscurrida − aprovechado − libreDetectado` (mínimo 0). Incluye huecos antes del primer registro, después del último, y cualquier tramo no cubierto por free slots.
+
+Los porcentajes del widget se calculan sobre `totalWindowMinutes`, no solo sobre aprovechado + libre.
+
+Helpers: `src/features/activities/utils/activity-day-metrics.utils.ts`. Hook realtime: `useRemainingDayTimer` (intervalo 1s, cálculo siempre con `Date.now()`).
+
 ### Flujo UX
 
 1. **Iniciar nueva actividad** → modal (actividad + notas) → sesión local + timer.
 2. **Finalizar** → modal (rectificar fecha, inicio, duración, notas; hora fin calculada) → guardar.
 3. **Editar registro** en timeline → modal → update o delete.
 4. **Espacio libre** en timeline → modal restringido → `activityFollowUpAdd`.
+5. **Botón +** en la actividad **más reciente** del día (arriba en la lista) → abre *Registrar tiempo pasado* con hora de inicio = hora de fin de ese registro (`getFollowUpEndTimeForNextEntry`).
 
 ## Filtros del listado
 

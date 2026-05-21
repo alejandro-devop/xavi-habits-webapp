@@ -235,6 +235,25 @@ export function formatFollowUpTimeLabel(startTime: string, endTime: string): {
   }
 }
 
+/** Follow-up más reciente del día (mayor hora de inicio). */
+export function getMostRecentFollowUp(
+  date: string,
+  followUps: ActivityFollowUp[],
+): ActivityFollowUp | null {
+  const dayFollowUps = followUps.filter((f) => f.date === date)
+  if (dayFollowUps.length === 0) return null
+  return sortFollowUpsByStartTimeDesc(dayFollowUps)[0] ?? null
+}
+
+/** HH:mm para iniciar el siguiente registro justo al terminar este follow-up. */
+export function getFollowUpEndTimeForNextEntry(
+  followUp: ActivityFollowUp,
+  date: string,
+): string {
+  const { endMinutes } = getFollowUpInterval(followUp, date)
+  return minutesToTime(endMinutes)
+}
+
 export function getFollowUpInterval(followUp: ActivityFollowUp, date: string): TimelineInterval {
   const startMinutes = timeToMinutes(followUp.startTime)
   let endMinutes = startMinutes + Math.max(0, followUp.durationMinutes)

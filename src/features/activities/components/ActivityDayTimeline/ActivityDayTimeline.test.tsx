@@ -118,4 +118,43 @@ describe('ActivityDayTimeline', () => {
       }),
     )
   })
+
+  it('shows continue button only on most recent follow-up', async () => {
+    const user = userEvent.setup()
+    const onContinueAfterFollowUp = vi.fn()
+    const early: ActivityFollowUp = {
+      ...base,
+      id: 'early',
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      durationMinutes: 60,
+    }
+    const late: ActivityFollowUp = {
+      ...base,
+      id: 'late',
+      startTime: '11:00:00',
+      endTime: '11:30:00',
+      durationMinutes: 30,
+    }
+
+    render(
+      <ActivityDayTimeline
+        date="2026-05-20"
+        followUps={[late, early]}
+        onFollowUpClick={vi.fn()}
+        onFreeSlotClick={vi.fn()}
+        onContinueAfterFollowUp={onContinueAfterFollowUp}
+      />,
+    )
+
+    const continueButtons = screen.getAllByRole('button', {
+      name: /registrar actividad desde las/i,
+    })
+    expect(continueButtons).toHaveLength(1)
+
+    await user.click(continueButtons[0]!)
+    expect(onContinueAfterFollowUp).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'late' }),
+    )
+  })
 })

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { ActivityDayTimeline } from '@/features/activities/components/ActivityDayTimeline'
 import { ActivityWeekSelector } from '@/features/activities/components/ActivityWeekSelector'
+import { DayRemainingWidget } from '@/features/activities/components/DayRemainingWidget'
+import { DayUsageWidget } from '@/features/activities/components/DayUsageWidget'
 import { CreateFollowUpFromFreeSlotModal } from '@/features/activities/components/CreateFollowUpFromFreeSlotModal'
 import { EditFollowUpModal } from '@/features/activities/components/EditFollowUpModal'
 import { FinishActivityModal } from '@/features/activities/components/FinishActivityModal'
@@ -30,6 +32,8 @@ import {
 import {
   getCurrentLocalDate,
   getCurrentWeekRange,
+  getFollowUpEndTimeForNextEntry,
+  getFreeSlotsBetweenFollowUps,
   getWeekDaysForDate,
   isFutureDate,
   isToday,
@@ -56,6 +60,7 @@ export function ActivityTrackingPage() {
 
   const [startModalOpen, setStartModalOpen] = useState(false)
   const [logPastModalOpen, setLogPastModalOpen] = useState(false)
+  const [logPastInitialStartTime, setLogPastInitialStartTime] = useState<string | null>(null)
   const [finishModalOpen, setFinishModalOpen] = useState(false)
   const [finishFormValues, setFinishFormValues] = useState<FinishActivityFormValues | null>(null)
   const [editFollowUp, setEditFollowUp] = useState<ActivityFollowUp | null>(null)
@@ -70,6 +75,11 @@ export function ActivityTrackingPage() {
 
   const { data: followUps = [], isLoading, isError, error, refetch } =
     useActivityDayFollowUpsQuery(selectedDate)
+
+  const freeSlots = useMemo(
+    () => getFreeSlotsBetweenFollowUps(selectedDate, followUps),
+    [selectedDate, followUps],
+  )
 
   useActivityFollowUpsInDatesQuery(weekRange.from, weekRange.to)
 
@@ -101,8 +111,23 @@ export function ActivityTrackingPage() {
 
   const handleLogPastSave = (input: ActivityFollowUpInput) => {
     createMutation.mutate(input, {
-      onSuccess: () => setLogPastModalOpen(false),
+      onSuccess: () => {
+        setLogPastModalOpen(false)
+        setLogPastInitialStartTime(null)
+      },
     })
+  }
+
+  const handleOpenLogPast = () => {
+    if (session) return
+    setLogPastInitialStartTime(null)
+    setLogPastModalOpen(true)
+  }
+
+  const handleContinueAfterFollowUp = (followUp: ActivityFollowUp) => {
+    if (session) return
+    setLogPastInitialStartTime(getFollowUpEndTimeForNextEntry(followUp, selectedDate))
+    setLogPastModalOpen(true)
   }
 
   const handleOpenStart = () => {
@@ -173,6 +198,17 @@ export function ActivityTrackingPage() {
         />
       ) : null}
 
+      <div className={styles.widgetsRow}>
+        <DayRemainingWidget className={styles.widgetRemaining} />
+        <DayUsageWidget
+          className={styles.widgetUsage}
+          date={selectedDate}
+          followUps={followUps}
+          freeSlots={freeSlots}
+          isLoading={isLoading}
+        />
+      </div>
+
       <div className={styles.toolbar}>
         <Button
           variant="primary"
@@ -185,7 +221,7 @@ export function ActivityTrackingPage() {
         </Button>
         <Button
           variant="secondary"
-          onClick={() => setLogPastModalOpen(true)}
+          onClick={handleOpenLogPast}
           disabled={Boolean(session)}
           aria-label="Registrar tiempo pasado"
         >
@@ -221,9 +257,12 @@ export function ActivityTrackingPage() {
         <ActivityDayTimeline
           date={selectedDate}
           followUps={followUps}
+          freeSlots={freeSlots}
           showCurrentTimeMarker={isToday(selectedDate)}
+          continueAfterDisabled={Boolean(session)}
           onFollowUpClick={setEditFollowUp}
           onFreeSlotClick={setFreeSlotModal}
+          onContinueAfterFollowUp={handleContinueAfterFollowUp}
         />
       ) : null}
 
@@ -238,9 +277,13 @@ export function ActivityTrackingPage() {
       <LogPastActivityModal
         open={logPastModalOpen}
         defaultDate={selectedDate}
+        initialStartTime={logPastInitialStartTime}
         activities={activities}
         loading={createMutation.isPending}
-        onClose={() => setLogPastModalOpen(false)}
+        onClose={() => {
+          setLogPastModalOpen(false)
+          setLogPastInitialStartTime(null)
+        }}
         onSave={handleLogPastSave}
       />
 

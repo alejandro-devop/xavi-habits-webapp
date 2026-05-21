@@ -6,7 +6,9 @@ import {
   formatElapsedHHMMSS,
   formatFollowUpTimeLabel,
   getCurrentLocalTime,
+  getFollowUpEndTimeForNextEntry,
   getFreeSlotsBetweenFollowUps,
+  getMostRecentFollowUp,
   getMaxDurationForStartTime,
   getTimelineItemHeight,
   getWeekDaysForDate,
@@ -212,6 +214,43 @@ describe('activity-time.utils', () => {
   it('getTimelineItemHeight scales with duration', () => {
     expect(getTimelineItemHeight(5)).toBe(MIN_FOLLOW_UP_HEIGHT)
     expect(getTimelineItemHeight(120)).toBeGreaterThan(getTimelineItemHeight(5))
+  })
+
+  it('getMostRecentFollowUp returns latest start time for the day', () => {
+    const early: ActivityFollowUp = {
+      id: '1',
+      activityId: 'a',
+      date: '2026-05-20',
+      startTime: '09:00:00',
+      durationMinutes: 60,
+      endTime: '10:00:00',
+      endDate: '2026-05-20',
+      endDateTime: '',
+      notes: null,
+    }
+    const late: ActivityFollowUp = {
+      ...early,
+      id: '2',
+      startTime: '11:00:00',
+      durationMinutes: 30,
+      endTime: '11:30:00',
+    }
+    expect(getMostRecentFollowUp('2026-05-20', [early, late])?.id).toBe('2')
+  })
+
+  it('getFollowUpEndTimeForNextEntry returns end time for next activity', () => {
+    const followUp: ActivityFollowUp = {
+      id: '1',
+      activityId: 'a',
+      date: '2026-05-20',
+      startTime: '11:00:00',
+      durationMinutes: 30,
+      endTime: '11:30:00',
+      endDate: '2026-05-20',
+      endDateTime: '',
+      notes: null,
+    }
+    expect(getFollowUpEndTimeForNextEntry(followUp, '2026-05-20')).toBe('11:30')
   })
 })
 

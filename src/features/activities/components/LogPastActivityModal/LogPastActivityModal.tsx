@@ -24,6 +24,8 @@ import styles from './LogPastActivityModal.module.scss'
 type LogPastActivityModalProps = {
   open: boolean
   defaultDate: string
+  /** HH:mm al abrir desde “continuar” en timeline; si no se pasa, 09:00. */
+  initialStartTime?: string | null
   activities: Activity[]
   loading?: boolean
   onClose: () => void
@@ -33,6 +35,7 @@ type LogPastActivityModalProps = {
 export function LogPastActivityModal({
   open,
   defaultDate,
+  initialStartTime = null,
   activities,
   loading = false,
   onClose,
@@ -45,10 +48,15 @@ export function LogPastActivityModal({
 
   useEffect(() => {
     if (open) {
-      setValues(emptyLogPastActivityFormValues(defaultDate))
+      setValues(
+        emptyLogPastActivityFormValues(
+          defaultDate,
+          initialStartTime ?? undefined,
+        ),
+      )
       setError(null)
     }
-  }, [open, defaultDate])
+  }, [open, defaultDate, initialStartTime])
 
   const totalMinutes = logPastDurationTotal(values)
   const endTime = calculateEndTime(values.date, values.startTime, totalMinutes)

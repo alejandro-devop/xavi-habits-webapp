@@ -30,12 +30,13 @@ export function emptyStartActivityFormValues(
 
 export function emptyLogPastActivityFormValues(
   date: string = getCurrentLocalDate(),
+  startTime: string = '09:00',
 ): LogPastActivityFormValues {
   return {
     activityId: null,
     notes: '',
     date,
-    startTime: '09:00',
+    startTime: normalizeTimeForDisplay(startTime),
     durationHours: 0,
     durationMinutes: 30,
   }

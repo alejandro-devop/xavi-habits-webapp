@@ -16,6 +16,11 @@ export const activityKeys = {
   all: ['activities'] as const,
   list: (filters: ListFilters = {}) => [...activityKeys.all, 'list', filters] as const,
   detail: (id: string) => [...activityKeys.all, 'detail', id] as const,
+  categories: {
+    all: () => [...activityKeys.all, 'categories'] as const,
+    list: () => [...activityKeys.categories.all(), 'list'] as const,
+    detail: (id: string) => [...activityKeys.categories.all(), 'detail', id] as const,
+  },
 }
 
 export const courseKeys = {

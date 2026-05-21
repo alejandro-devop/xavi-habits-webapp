@@ -69,7 +69,7 @@ Ver Fase 6.1: `activityCategories`, `activityCategoryAdd/Edit/Remove`. No elimin
 | `activityFollowUpEdit(input)` | Editar desde modal |
 | `activityFollowUpRemove(id)` | Eliminar con confirmación |
 
-Input de add/edit: `activityId`, `date` (YYYY-MM-DD), `startTime` (HH:mm), `durationMinutes`, `notes`.
+Input de add/edit: `activityId`, `date` (YYYY-MM-DD), `startTime` (HH:mm:ss en API), `durationMinutes`, `notes`.
 
 ## Query keys
 
@@ -119,17 +119,37 @@ Helpers: `src/features/activities/utils/activity-time.utils.ts` (sin librerías 
 
 ### Timeline diaria (lista cronológica)
 
-- Registros en **orden ascendente** por hora de inicio (más temprano arriba).
+- Registros y **espacios libres** en **orden descendente** por hora (más reciente arriba).
 - Rail izquierdo: bullet + línea conectora + hora inicio / hora fin.
-- Card a la derecha con título, categoría, notas y duración.
+- Card a la derecha con título, categoría, notas y duración; altura proporcional a `durationMinutes`.
 - En el día **hoy**, se inserta un marcador **Ahora** en la posición cronológica correcta.
 - Click en card → `EditFollowUpModal` (editar / eliminar).
+- Click en **Espacio libre** → `CreateFollowUpFromFreeSlotModal` (crear follow-up acotado al hueco).
+
+### Free slots (Fase 6.4)
+
+Los espacios libres **no existen en backend**. Se derivan en frontend a partir de `activityDayFollowUps(date)`:
+
+1. Ordenar follow-ups del día por `startTime` ascendente (cálculo interno).
+2. Detectar gaps entre el `end` de un registro y el `start` del siguiente.
+3. Solo gaps **≥ 5 minutos** (`MIN_FREE_SLOT_MINUTES`).
+4. Requieren **≥ 2** follow-ups en el día (no se muestran huecos antes del primero ni después del último).
+5. Si hay **solapamiento**, se acumula el fin máximo y no se generan gaps negativos (`console.warn` en dev).
+
+Tipo `TimelineFreeSlot`: `id`, `date`, `startTime`, `endTime` (HH:mm:ss), `durationMinutes`.
+
+Helpers en `activity-time.utils.ts`: `getFreeSlotsBetweenFollowUps`, `validateFollowUpInsideSlot`, `getMaxDurationForStartTime`, `getTimelineItemHeight`.
+
+**Creación desde slot:** `startTime` y `durationMinutes` deben quedar dentro del intervalo `[slot.start, slot.end)`. Mutaciones envían `startTime` como `HH:mm:ss` (`normalizeTimeToSeconds`).
+
+**Caso borde — medianoche:** si `endDate !== date` del día seleccionado, el intervalo se capa al fin del día (24:00) para visualización y gaps; no se modelan slots inter-día en 6.4.
 
 ### Flujo UX
 
 1. **Iniciar nueva actividad** → modal (actividad + notas) → sesión local + timer.
 2. **Finalizar** → modal (rectificar fecha, inicio, duración, notas; hora fin calculada) → guardar.
 3. **Editar registro** en timeline → modal → update o delete.
+4. **Espacio libre** en timeline → modal restringido → `activityFollowUpAdd`.
 
 ## Filtros del listado
 
@@ -150,7 +170,8 @@ Tracking: timeline responsive; semana en grid 7 columnas.
 ## Formulario de actividad
 
 - `ActivityForm` compartido en create/edit.
-- Categorías vía `SearchSelect` con icono y color.
+- Categorías vía `CategoryPickerField` (creación rápida inline).
+- Tracking: `ActivityPickerField` en modales de follow-up.
 - Fecha: `input[type=datetime-local]` (no hay DatePicker en DS aún).
 
 ## Referencias

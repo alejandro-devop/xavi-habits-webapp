@@ -13,6 +13,13 @@ type DurationHoursMinutesFieldsProps = {
   onChange: (totalMinutes: number) => void
   disabled?: boolean
   error?: string
+  maxTotalMinutes?: number
+}
+
+function clampTotal(total: number, maxTotalMinutes?: number): number {
+  const safe = Math.max(1, Math.round(total))
+  if (maxTotalMinutes == null) return safe
+  return Math.max(1, Math.min(safe, maxTotalMinutes))
 }
 
 export function DurationHoursMinutesFields({
@@ -21,9 +28,13 @@ export function DurationHoursMinutesFields({
   onChange,
   disabled = false,
   error,
+  maxTotalMinutes,
 }: DurationHoursMinutesFieldsProps) {
-  const { hours, minutes } = minutesToHoursMinutes(totalMinutes)
-  const hint = formatDurationConversionHint(totalMinutes)
+  const clamped = clampTotal(totalMinutes, maxTotalMinutes)
+  const { hours, minutes } = minutesToHoursMinutes(clamped)
+  const hint = formatDurationConversionHint(clamped)
+
+  const emit = (next: number) => onChange(clampTotal(next, maxTotalMinutes))
 
   return (
     <div className={styles.root}>
@@ -35,7 +46,7 @@ export function DurationHoursMinutesFields({
             min={0}
             value={String(hours)}
             onChange={(e) =>
-              onChange(hoursMinutesToTotalMinutes(Number(e.target.value) || 0, minutes))
+              emit(hoursMinutesToTotalMinutes(Number(e.target.value) || 0, minutes))
             }
             disabled={disabled}
           />
@@ -45,10 +56,10 @@ export function DurationHoursMinutesFields({
             id={`${idPrefix}-minutes`}
             type="number"
             min={0}
-            max={59}
+            max={maxTotalMinutes != null ? Math.min(59, maxTotalMinutes) : 59}
             value={String(minutes)}
             onChange={(e) =>
-              onChange(hoursMinutesToTotalMinutes(hours, Number(e.target.value) || 0))
+              emit(hoursMinutesToTotalMinutes(hours, Number(e.target.value) || 0))
             }
             disabled={disabled}
           />

@@ -1,7 +1,19 @@
 import type { ActivityFollowUp, WeekDay } from '@/features/activities/types/activity-followup.types'
+import type {
+  TimelineFreeSlot,
+  TimelineInterval,
+  TimelineItem,
+  ValidationResult,
+} from '@/features/activities/types/activity-timeline.types'
 
 const MS_PER_MINUTE = 60_000
 const MS_PER_SECOND = 1_000
+const MINUTES_PER_DAY = 24 * 60
+
+export const HOUR_BLOCK_HEIGHT = 48
+export const MIN_FOLLOW_UP_HEIGHT = 56
+export const MIN_FREE_SLOT_MINUTES = 5
+export const COMPACT_TIMELINE_THRESHOLD_MINUTES = 10
 
 /** YYYY-MM-DD en zona local */
 export function getCurrentLocalDate(): string {
@@ -70,6 +82,24 @@ export function parseTimeToMinutes(time: string): number {
   const [h, m] = normalized.split(':').map(Number)
   if (Number.isNaN(h) || Number.isNaN(m)) return 0
   return h * 60 + m
+}
+
+/** Alias explícito para cálculos de timeline. */
+export function timeToMinutes(time: string): number {
+  return parseTimeToMinutes(time)
+}
+
+export function minutesToTime(minutes: number): string {
+  const safe = Math.max(0, Math.min(MINUTES_PER_DAY - 1, Math.floor(minutes)))
+  const h = Math.floor(safe / 60)
+  const m = safe % 60
+  return `${pad2(h)}:${pad2(m)}`
+}
+
+/** HH:mm o HH:mm:ss → HH:mm:ss para mutaciones de follow-up. */
+export function normalizeTimeToSeconds(time: string): string {
+  const display = normalizeTimeForDisplay(time)
+  return `${display}:00`
 }
 
 /** HH:mm para API / inputs */
@@ -203,4 +233,166 @@ export function formatFollowUpTimeLabel(startTime: string, endTime: string): {
     startLabel: normalizeTimeForDisplay(startTime),
     endLabel: normalizeTimeForDisplay(endTime),
   }
+}
+
+export function getFollowUpInterval(followUp: ActivityFollowUp, date: string): TimelineInterval {
+  const startMinutes = timeToMinutes(followUp.startTime)
+  let endMinutes = startMinutes + Math.max(0, followUp.durationMinutes)
+
+  if (followUp.endDate && followUp.endDate !== date) {
+    endMinutes = MINUTES_PER_DAY
+  } else if (followUp.endTime) {
+    endMinutes = Math.max(endMinutes, timeToMinutes(followUp.endTime))
+  }
+
+  endMinutes = Math.min(endMinutes, MINUTES_PER_DAY)
+  return { startMinutes, endMinutes: Math.max(startMinutes + 1, endMinutes) }
+}
+
+function buildFreeSlotId(date: string, startTime: string, endTime: string): string {
+  const startKey = normalizeTimeToSeconds(startTime).replace(/:/g, '')
+  const endKey = normalizeTimeToSeconds(endTime).replace(/:/g, '')
+  return `free-${date}-${startKey}-${endKey}`
+}
+
+export function getFreeSlotsBetweenFollowUps(
+  date: string,
+  followUps: ActivityFollowUp[],
+): TimelineFreeSlot[] {
+  const dayFollowUps = followUps.filter((f) => f.date === date)
+  if (dayFollowUps.length < 2) return []
+
+  const intervals = sortFollowUpsByStartTimeAsc(dayFollowUps).map((f) => ({
+    followUp: f,
+    interval: getFollowUpInterval(f, date),
+  }))
+
+  const slots: TimelineFreeSlot[] = []
+  let cursorEnd = intervals[0]!.interval.endMinutes
+
+  for (let i = 1; i < intervals.length; i++) {
+    const { followUp, interval } = intervals[i]!
+    if (interval.startMinutes < cursorEnd) {
+      if (import.meta.env.DEV) {
+        console.warn('[timeline] overlap between follow-ups', {
+          previousEnd: cursorEnd,
+          current: followUp.id,
+          start: interval.startMinutes,
+        })
+      }
+      cursorEnd = Math.max(cursorEnd, interval.endMinutes)
+      continue
+    }
+
+    const gapMinutes = interval.startMinutes - cursorEnd
+    if (gapMinutes >= MIN_FREE_SLOT_MINUTES) {
+      const startTime = normalizeTimeToSeconds(minutesToTime(cursorEnd))
+      const endTime = normalizeTimeToSeconds(minutesToTime(interval.startMinutes))
+      slots.push({
+        id: buildFreeSlotId(date, startTime, endTime),
+        date,
+        startTime,
+        endTime,
+        durationMinutes: gapMinutes,
+      })
+    }
+
+    cursorEnd = interval.endMinutes
+  }
+
+  return slots
+}
+
+export function getFreeSlotInterval(slot: TimelineFreeSlot): TimelineInterval {
+  return {
+    startMinutes: timeToMinutes(slot.startTime),
+    endMinutes: timeToMinutes(slot.endTime),
+  }
+}
+
+export function isStartTimeInsideSlot(startTime: string, slot: TimelineFreeSlot): boolean {
+  const { startMinutes, endMinutes } = getFreeSlotInterval(slot)
+  const start = timeToMinutes(startTime)
+  return start >= startMinutes && start < endMinutes
+}
+
+export function getMaxDurationForStartTime(startTime: string, slot: TimelineFreeSlot): number {
+  const { endMinutes } = getFreeSlotInterval(slot)
+  const start = timeToMinutes(startTime)
+  if (start >= endMinutes) return 1
+  return Math.max(1, endMinutes - start)
+}
+
+export function validateFollowUpInsideSlot(
+  input: { startTime: string; durationMinutes: number },
+  slot: TimelineFreeSlot,
+): ValidationResult {
+  if (!isStartTimeInsideSlot(input.startTime, slot)) {
+    return { valid: false, message: 'La hora debe estar dentro del espacio libre.' }
+  }
+  if (!Number.isFinite(input.durationMinutes) || input.durationMinutes < 1) {
+    return { valid: false, message: 'La duración debe ser al menos 1 minuto.' }
+  }
+  const max = getMaxDurationForStartTime(input.startTime, slot)
+  if (input.durationMinutes > max) {
+    return {
+      valid: false,
+      message: `La duración no puede superar ${max} minuto${max === 1 ? '' : 's'} en este espacio.`,
+    }
+  }
+  const { endMinutes } = getFreeSlotInterval(slot)
+  if (timeToMinutes(input.startTime) + input.durationMinutes > endMinutes) {
+    return { valid: false, message: 'El registro no puede salirse del espacio libre.' }
+  }
+  return { valid: true }
+}
+
+export function getTimelineItemHeight(durationMinutes: number): number {
+  const safe = Math.max(1, durationMinutes)
+  const proportional = Math.round((safe / 60) * HOUR_BLOCK_HEIGHT)
+  return Math.max(MIN_FOLLOW_UP_HEIGHT, proportional)
+}
+
+export function buildTimelineItems(
+  followUps: ActivityFollowUp[],
+  freeSlots: TimelineFreeSlot[],
+  options: { showNow?: boolean; date: string },
+): TimelineItem[] {
+  const { showNow = false, date } = options
+
+  const items: TimelineItem[] = [
+    ...followUps
+      .filter((f) => f.date === date)
+      .map((followUp) => {
+        const { startMinutes, endMinutes } = getFollowUpInterval(followUp, date)
+        return { type: 'follow-up' as const, startMinutes, endMinutes, data: followUp }
+      }),
+    ...freeSlots.map((slot) => {
+      const { startMinutes, endMinutes } = getFreeSlotInterval(slot)
+      return { type: 'free-slot' as const, startMinutes, endMinutes, data: slot }
+    }),
+  ]
+
+  items.sort((a, b) => {
+    const aStart = a.type === 'now' ? timeToMinutes(getCurrentLocalTime()) : a.startMinutes
+    const bStart = b.type === 'now' ? timeToMinutes(getCurrentLocalTime()) : b.startMinutes
+    return bStart - aStart
+  })
+
+  if (!showNow) return items
+
+  const nowMinutes = timeToMinutes(getCurrentLocalTime())
+  const insertIndex = items.findIndex((item) => {
+    if (item.type === 'now') return false
+    return item.startMinutes <= nowMinutes
+  })
+  const nowAt = insertIndex === -1 ? items.length : insertIndex
+
+  const withNow: TimelineItem[] = []
+  items.forEach((item, index) => {
+    if (index === nowAt) withNow.push({ type: 'now' })
+    withNow.push(item)
+  })
+  if (nowAt === items.length) withNow.push({ type: 'now' })
+  return withNow
 }

@@ -1,0 +1,1 @@
+export { CreateFollowUpFromFreeSlotModal } from './CreateFollowUpFromFreeSlotModal'

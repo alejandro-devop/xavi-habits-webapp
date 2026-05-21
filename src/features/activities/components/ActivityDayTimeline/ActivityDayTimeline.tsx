@@ -1,73 +1,64 @@
 import { useMemo } from 'react'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 import { ActivityFollowUpTimelineEntry } from '@/features/activities/components/ActivityFollowUpTimelineEntry'
+import { ActivityFreeSlotTimelineEntry } from '@/features/activities/components/ActivityFreeSlotTimelineEntry'
 import { ActivityTimelineNowEntry } from '@/features/activities/components/ActivityTimelineNowEntry'
+import type { TimelineFreeSlot } from '@/features/activities/types/activity-timeline.types'
 import {
-  getCurrentLocalTime,
-  parseTimeToMinutes,
-  sortFollowUpsByStartTimeAsc,
+  buildTimelineItems,
+  getFreeSlotsBetweenFollowUps,
 } from '@/features/activities/utils/activity-time.utils'
 import styles from './ActivityDayTimeline.module.scss'
 
 type ActivityDayTimelineProps = {
+  date: string
   followUps: ActivityFollowUp[]
   showCurrentTimeMarker?: boolean
   onFollowUpClick: (followUp: ActivityFollowUp) => void
-}
-
-type TimelineListItem =
-  | { kind: 'now' }
-  | { kind: 'follow-up'; followUp: ActivityFollowUp }
-
-function buildTimelineItems(
-  followUps: ActivityFollowUp[],
-  showNow: boolean,
-): TimelineListItem[] {
-  const sorted = sortFollowUpsByStartTimeAsc(followUps)
-  if (!showNow) {
-    return sorted.map((followUp) => ({ kind: 'follow-up', followUp }))
-  }
-
-  const nowMinutes = parseTimeToMinutes(getCurrentLocalTime())
-  const insertIndex = sorted.findIndex(
-    (followUp) => parseTimeToMinutes(followUp.startTime) > nowMinutes,
-  )
-  const nowAt = insertIndex === -1 ? sorted.length : insertIndex
-
-  const items: TimelineListItem[] = []
-  sorted.forEach((followUp, index) => {
-    if (index === nowAt) items.push({ kind: 'now' })
-    items.push({ kind: 'follow-up', followUp })
-  })
-  if (nowAt === sorted.length) items.push({ kind: 'now' })
-  return items
+  onFreeSlotClick: (slot: TimelineFreeSlot) => void
 }
 
 export function ActivityDayTimeline({
+  date,
   followUps,
   showCurrentTimeMarker = false,
   onFollowUpClick,
+  onFreeSlotClick,
 }: ActivityDayTimelineProps) {
-  const items = useMemo(
-    () => buildTimelineItems(followUps, showCurrentTimeMarker),
-    [followUps, showCurrentTimeMarker],
-  )
+  const items = useMemo(() => {
+    const freeSlots = getFreeSlotsBetweenFollowUps(date, followUps)
+    return buildTimelineItems(followUps, freeSlots, {
+      showNow: showCurrentTimeMarker,
+      date,
+    })
+  }, [date, followUps, showCurrentTimeMarker])
 
   if (items.length === 0) return null
 
   return (
-    <ol className={styles.root} aria-label="Registros del día en orden cronológico">
+    <ol className={styles.root} aria-label="Registros del día, más reciente arriba">
       {items.map((item, index) => {
         const isLast = index === items.length - 1
 
-        if (item.kind === 'now') {
+        if (item.type === 'now') {
           return <ActivityTimelineNowEntry key="now" enabled isLast={isLast} />
+        }
+
+        if (item.type === 'free-slot') {
+          return (
+            <ActivityFreeSlotTimelineEntry
+              key={item.data.id}
+              slot={item.data}
+              isLast={isLast}
+              onClick={onFreeSlotClick}
+            />
+          )
         }
 
         return (
           <ActivityFollowUpTimelineEntry
-            key={item.followUp.id}
-            followUp={item.followUp}
+            key={item.data.id}
+            followUp={item.data}
             isLast={isLast}
             onClick={onFollowUpClick}
           />

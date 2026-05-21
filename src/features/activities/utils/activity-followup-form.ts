@@ -18,8 +18,8 @@ import {
   isoToLocalDate,
   isoToLocalTime,
   localDateTimeToIso,
-  normalizeTimeForApi,
   normalizeTimeForDisplay,
+  normalizeTimeToSeconds,
 } from '@/features/activities/utils/activity-time.utils'
 
 export function emptyStartActivityFormValues(
@@ -80,7 +80,7 @@ export function logPastFormToInput(values: LogPastActivityFormValues) {
   return {
     activityId: values.activityId!,
     date: values.date,
-    startTime: normalizeTimeForApi(values.startTime),
+    startTime: normalizeTimeToSeconds(values.startTime),
     durationMinutes: logPastDurationTotal(values),
     notes: values.notes.trim() || null,
   }
@@ -135,7 +135,7 @@ export function finishFormToInput(values: FinishActivityFormValues) {
   return {
     activityId: values.activityId!,
     date: values.date,
-    startTime: normalizeTimeForApi(values.startTime),
+    startTime: normalizeTimeToSeconds(values.startTime),
     durationMinutes: Math.round(values.durationMinutes),
     notes: values.notes.trim() || null,
   }
@@ -164,7 +164,7 @@ export function editFormToInput(id: string, values: EditFollowUpFormValues) {
   return {
     id,
     date: values.date,
-    startTime: normalizeTimeForApi(values.startTime),
+    startTime: normalizeTimeToSeconds(values.startTime),
     durationMinutes: Math.round(values.durationMinutes),
     notes: values.notes.trim() || null,
   }

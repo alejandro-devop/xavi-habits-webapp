@@ -1,6 +1,9 @@
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 import { ActivityFollowUpCard } from '@/features/activities/components/ActivityFollowUpCard'
-import { formatFollowUpTimeLabel } from '@/features/activities/utils/activity-time.utils'
+import {
+  formatFollowUpTimeLabel,
+  getTimelineItemHeight,
+} from '@/features/activities/utils/activity-time.utils'
 import styles from './ActivityFollowUpTimelineEntry.module.scss'
 
 type ActivityFollowUpTimelineEntryProps = {
@@ -36,7 +39,10 @@ export function ActivityFollowUpTimelineEntry({
         </div>
       </div>
 
-      <div className={styles.cardWrap}>
+      <div
+        className={styles.cardWrap}
+        style={{ minHeight: getTimelineItemHeight(followUp.durationMinutes) }}
+      >
         <ActivityFollowUpCard followUp={followUp} onClick={onClick} variant="timeline" />
       </div>
     </li>

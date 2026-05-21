@@ -42,7 +42,7 @@ describe('activity-followup-form', () => {
     expect(input).toEqual({
       activityId: '7',
       date: '2026-05-20',
-      startTime: '09:30',
+      startTime: '09:30:00',
       durationMinutes: 90,
       notes: 'Deep work',
     })
@@ -68,7 +68,7 @@ describe('activity-followup-form', () => {
       durationMinutes: 15,
     })
     expect(input.durationMinutes).toBe(135)
-    expect(input.startTime).toBe('14:15')
+    expect(input.startTime).toBe('14:15:00')
   })
 
   it('validateLogPastActivityForm rejects zero duration', () => {

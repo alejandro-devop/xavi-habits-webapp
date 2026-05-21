@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ActivityDayTimeline } from '@/features/activities/components/ActivityDayTimeline'
 import { ActivityWeekSelector } from '@/features/activities/components/ActivityWeekSelector'
+import { CreateFollowUpFromFreeSlotModal } from '@/features/activities/components/CreateFollowUpFromFreeSlotModal'
 import { EditFollowUpModal } from '@/features/activities/components/EditFollowUpModal'
 import { FinishActivityModal } from '@/features/activities/components/FinishActivityModal'
 import { RunningActivityTimer } from '@/features/activities/components/RunningActivityTimer'
@@ -20,6 +21,7 @@ import type {
   FinishActivityFormValues,
   StartActivityFormValues,
 } from '@/features/activities/types/activity-followup.types'
+import type { TimelineFreeSlot } from '@/features/activities/types/activity-timeline.types'
 import {
   activityToRunningSession,
   finishFormFromSession,
@@ -57,6 +59,7 @@ export function ActivityTrackingPage() {
   const [finishModalOpen, setFinishModalOpen] = useState(false)
   const [finishFormValues, setFinishFormValues] = useState<FinishActivityFormValues | null>(null)
   const [editFollowUp, setEditFollowUp] = useState<ActivityFollowUp | null>(null)
+  const [freeSlotModal, setFreeSlotModal] = useState<TimelineFreeSlot | null>(null)
 
   const { confirm } = useConfirmDialog()
 
@@ -155,7 +158,7 @@ export function ActivityTrackingPage() {
       <header className={styles.header}>
         <div>
           <h2 className={styles.title}>Seguimiento de tiempo</h2>
-          <p className={styles.subtitle}>Semana actual · registros en orden cronológico</p>
+          <p className={styles.subtitle}>Semana actual · más reciente arriba</p>
         </div>
       </header>
 
@@ -216,9 +219,11 @@ export function ActivityTrackingPage() {
 
       {!isLoading && !isError ? (
         <ActivityDayTimeline
+          date={selectedDate}
           followUps={followUps}
           showCurrentTimeMarker={isToday(selectedDate)}
           onFollowUpClick={setEditFollowUp}
+          onFreeSlotClick={setFreeSlotModal}
         />
       ) : null}
 
@@ -249,6 +254,17 @@ export function ActivityTrackingPage() {
           onSave={handleFinishSave}
         />
       ) : null}
+
+      <CreateFollowUpFromFreeSlotModal
+        open={Boolean(freeSlotModal)}
+        slot={freeSlotModal}
+        activities={activities}
+        loading={createMutation.isPending}
+        onClose={() => setFreeSlotModal(null)}
+        onSave={(input) => {
+          createMutation.mutate(input, { onSuccess: () => setFreeSlotModal(null) })
+        }}
+      />
 
       <EditFollowUpModal
         open={Boolean(editFollowUp)}

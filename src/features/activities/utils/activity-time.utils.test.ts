@@ -6,11 +6,16 @@ import {
   formatElapsedHHMMSS,
   formatFollowUpTimeLabel,
   getCurrentLocalTime,
+  getFreeSlotsBetweenFollowUps,
+  getMaxDurationForStartTime,
+  getTimelineItemHeight,
   getWeekDaysForDate,
   hoursMinutesToTotalMinutes,
   isFutureDate,
+  MIN_FOLLOW_UP_HEIGHT,
   minutesToHoursMinutes,
   sortFollowUpsByStartTimeAsc,
+  validateFollowUpInsideSlot,
 } from '@/features/activities/utils/activity-time.utils'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 
@@ -95,4 +100,118 @@ describe('activity-time.utils', () => {
     vi.setSystemTime(new Date('2026-05-20T14:05:00'))
     expect(getCurrentLocalTime()).toMatch(/^\d{2}:\d{2}$/)
   })
+
+  it('getFreeSlotsBetweenFollowUps finds 10:30–11:00 gap', () => {
+    const a: ActivityFollowUp = {
+      id: '1',
+      activityId: 'a',
+      date: '2026-05-20',
+      startTime: '10:00:00',
+      durationMinutes: 30,
+      endTime: '10:30:00',
+      endDate: '2026-05-20',
+      endDateTime: '',
+      notes: null,
+    }
+    const b: ActivityFollowUp = {
+      ...a,
+      id: '2',
+      startTime: '11:00:00',
+      durationMinutes: 60,
+      endTime: '12:00:00',
+    }
+    const slots = getFreeSlotsBetweenFollowUps('2026-05-20', [a, b])
+    expect(slots).toHaveLength(1)
+    expect(slots[0]).toMatchObject({
+      date: '2026-05-20',
+      startTime: '10:30:00',
+      endTime: '11:00:00',
+      durationMinutes: 30,
+    })
+  })
+
+  it('getFreeSlotsBetweenFollowUps returns empty for contiguous activities', () => {
+    const a: ActivityFollowUp = {
+      id: '1',
+      activityId: 'a',
+      date: '2026-05-20',
+      startTime: '10:00:00',
+      durationMinutes: 30,
+      endTime: '10:30:00',
+      endDate: '2026-05-20',
+      endDateTime: '',
+      notes: null,
+    }
+    const b: ActivityFollowUp = {
+      ...a,
+      id: '2',
+      startTime: '10:30:00',
+      durationMinutes: 30,
+      endTime: '11:00:00',
+    }
+    expect(getFreeSlotsBetweenFollowUps('2026-05-20', [a, b])).toHaveLength(0)
+  })
+
+  it('getFreeSlotsBetweenFollowUps avoids negative gaps on overlap', () => {
+    const a: ActivityFollowUp = {
+      id: '1',
+      activityId: 'a',
+      date: '2026-05-20',
+      startTime: '10:00:00',
+      durationMinutes: 60,
+      endTime: '11:00:00',
+      endDate: '2026-05-20',
+      endDateTime: '',
+      notes: null,
+    }
+    const b: ActivityFollowUp = {
+      ...a,
+      id: '2',
+      startTime: '10:30:00',
+      durationMinutes: 30,
+      endTime: '11:00:00',
+    }
+    const slots = getFreeSlotsBetweenFollowUps('2026-05-20', [a, b])
+    expect(slots.every((s) => s.durationMinutes > 0)).toBe(true)
+  })
+
+  it('getMaxDurationForStartTime respects slot end', () => {
+    const slot = {
+      id: 'free',
+      date: '2026-05-20',
+      startTime: '10:30:00',
+      endTime: '11:00:00',
+      durationMinutes: 30,
+    }
+    expect(getMaxDurationForStartTime('10:30', slot)).toBe(30)
+    expect(getMaxDurationForStartTime('10:45', slot)).toBe(15)
+  })
+
+  it('validateFollowUpInsideSlot rejects out-of-range entries', () => {
+    const slot = {
+      id: 'free',
+      date: '2026-05-20',
+      startTime: '10:30:00',
+      endTime: '11:00:00',
+      durationMinutes: 30,
+    }
+    expect(validateFollowUpInsideSlot({ startTime: '10:30', durationMinutes: 30 }, slot).valid).toBe(
+      true,
+    )
+    expect(validateFollowUpInsideSlot({ startTime: '10:45', durationMinutes: 15 }, slot).valid).toBe(
+      true,
+    )
+    expect(validateFollowUpInsideSlot({ startTime: '10:20', durationMinutes: 10 }, slot).valid).toBe(
+      false,
+    )
+    expect(validateFollowUpInsideSlot({ startTime: '10:45', durationMinutes: 30 }, slot).valid).toBe(
+      false,
+    )
+  })
+
+  it('getTimelineItemHeight scales with duration', () => {
+    expect(getTimelineItemHeight(5)).toBe(MIN_FOLLOW_UP_HEIGHT)
+    expect(getTimelineItemHeight(120)).toBeGreaterThan(getTimelineItemHeight(5))
+  })
 })
+

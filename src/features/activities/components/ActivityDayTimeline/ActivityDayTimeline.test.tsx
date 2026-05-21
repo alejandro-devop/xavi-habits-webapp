@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ActivityDayTimeline } from '@/features/activities/components/ActivityDayTimeline'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 
-const followUp: ActivityFollowUp = {
+const base: ActivityFollowUp = {
   id: '1',
   activityId: 'a1',
   date: '2026-05-20',
@@ -12,7 +13,7 @@ const followUp: ActivityFollowUp = {
   endTime: '12:00:00',
   endDate: '2026-05-20',
   endDateTime: '2026-05-20T12:00:00',
-  notes: 'Deep work',
+  notes: null,
   activity: {
     id: 'a1',
     title: 'Coding',
@@ -21,21 +22,100 @@ const followUp: ActivityFollowUp = {
 }
 
 describe('ActivityDayTimeline', () => {
-  it('renders events in chronological order with times on the left', () => {
-    const early: ActivityFollowUp = { ...followUp, id: 'early', startTime: '09:00:00', endTime: '10:00:00' }
-    const late: ActivityFollowUp = { ...followUp, id: 'late', startTime: '14:00:00', endTime: '15:00:00' }
+  it('renders events with most recent first', () => {
+    const early: ActivityFollowUp = {
+      ...base,
+      id: 'early',
+      startTime: '09:00:00',
+      endTime: '10:00:00',
+      durationMinutes: 60,
+    }
+    const late: ActivityFollowUp = {
+      ...base,
+      id: 'late',
+      startTime: '10:03:00',
+      endTime: '10:33:00',
+      durationMinutes: 30,
+    }
 
     render(
       <ActivityDayTimeline
+        date="2026-05-20"
         followUps={[late, early]}
         onFollowUpClick={vi.fn()}
+        onFreeSlotClick={vi.fn()}
       />,
     )
 
     const entries = screen.getAllByRole('listitem')
     expect(entries).toHaveLength(2)
-    expect(entries[0]).toHaveTextContent('09:00')
-    expect(entries[1]).toHaveTextContent('14:00')
-    expect(screen.getAllByText('Coding')).toHaveLength(2)
+    expect(entries[0]).toHaveTextContent('10:03')
+    expect(entries[1]).toHaveTextContent('09:00')
+  })
+
+  it('renders free slot between contiguous gaps', () => {
+    const a: ActivityFollowUp = {
+      ...base,
+      id: 'a',
+      startTime: '10:00:00',
+      endTime: '10:30:00',
+      durationMinutes: 30,
+    }
+    const b: ActivityFollowUp = {
+      ...base,
+      id: 'b',
+      startTime: '11:00:00',
+      endTime: '12:00:00',
+      durationMinutes: 60,
+    }
+
+    render(
+      <ActivityDayTimeline
+        date="2026-05-20"
+        followUps={[a, b]}
+        onFollowUpClick={vi.fn()}
+        onFreeSlotClick={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /espacio libre de 10:30 a 11:00/i })).toBeInTheDocument()
+  })
+
+  it('calls onFreeSlotClick when free slot is clicked', async () => {
+    const user = userEvent.setup()
+    const onFreeSlotClick = vi.fn()
+    const a: ActivityFollowUp = {
+      ...base,
+      id: 'a',
+      startTime: '10:00:00',
+      endTime: '10:30:00',
+      durationMinutes: 30,
+    }
+    const b: ActivityFollowUp = {
+      ...base,
+      id: 'b',
+      startTime: '11:00:00',
+      endTime: '12:00:00',
+      durationMinutes: 60,
+    }
+
+    render(
+      <ActivityDayTimeline
+        date="2026-05-20"
+        followUps={[a, b]}
+        onFollowUpClick={vi.fn()}
+        onFreeSlotClick={onFreeSlotClick}
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: /espacio libre/i }))
+    expect(onFreeSlotClick).toHaveBeenCalledWith(
+      expect.objectContaining({
+        date: '2026-05-20',
+        startTime: '10:30:00',
+        endTime: '11:00:00',
+        durationMinutes: 30,
+      }),
+    )
   })
 })

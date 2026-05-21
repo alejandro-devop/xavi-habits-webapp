@@ -14,4 +14,24 @@ describe('IconPicker', () => {
 
     expect(onChange).toHaveBeenCalledWith('bell')
   })
+
+  it('finds gym-related icons when searching', async () => {
+    const user = userEvent.setup()
+    render(<IconPicker value={null} onChange={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+    await user.type(screen.getByRole('searchbox', { name: /buscar icono/i }), 'gym')
+
+    expect(screen.getByRole('option', { name: /pesas/i })).toBeTruthy()
+    expect(screen.getByRole('option', { name: /correr/i })).toBeTruthy()
+  })
+
+  it('shows category heading Trabajo when not searching', async () => {
+    const user = userEvent.setup()
+    render(<IconPicker value={null} onChange={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+
+    expect(screen.getByRole('heading', { name: 'Trabajo' })).toBeTruthy()
+  })
 })

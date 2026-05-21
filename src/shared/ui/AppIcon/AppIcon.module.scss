@@ -8,7 +8,12 @@
   color: currentColor;
 }
 
-/* Tamaño fijo por token — el SVG hereda vía 1em y overrides explícitos */
+.size2xs {
+  width: 0.625rem;
+  height: 0.625rem;
+  font-size: 0.625rem;
+}
+
 .xs {
   width: 0.75rem;
   height: 0.75rem;
@@ -39,6 +44,12 @@
   font-size: 1.5rem;
 }
 
+.size2xl {
+  width: 2rem;
+  height: 2rem;
+  font-size: 2rem;
+}
+
 .root :global(svg) {
   width: 1em;
   height: 1em;
@@ -53,6 +64,11 @@
   background: color-mix(in srgb, var(--color-text) 12%, var(--color-surface));
   border: 1px dashed var(--color-border);
   flex-shrink: 0;
+}
+
+.fallback.size2xs {
+  width: 0.625rem;
+  height: 0.625rem;
 }
 
 .fallback.xs {
@@ -78,4 +94,9 @@
 .fallback.xl {
   width: 1.5rem;
   height: 1.5rem;
+}
+
+.fallback.size2xl {
+  width: 2rem;
+  height: 2rem;
 }

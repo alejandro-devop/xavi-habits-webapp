@@ -28,7 +28,7 @@ export function ThemeToggle() {
       <span className={styles.icon} aria-hidden>
         {ICONS[preference]}
       </span>
-      <span>{LABELS[preference]}</span>
+      <span className={styles.label}>{LABELS[preference]}</span>
     </button>
   )
 }

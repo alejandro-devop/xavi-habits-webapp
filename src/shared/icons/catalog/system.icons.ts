@@ -1,0 +1,39 @@
+import {
+  faBell,
+  faCheck,
+  faEnvelope,
+  faEye,
+  faEyeSlash,
+  faFilter,
+  faGear,
+  faLock,
+  faMagnifyingGlass,
+  faPlay,
+  faPlus,
+  faPowerOff,
+  faStar,
+  faTrash,
+  faUser,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons'
+import type { AppIconEntry } from '@/shared/icons/types'
+
+/** UI / actions — hidden from activity IconPicker by default. */
+export const systemIcons = [
+  { name: 'check', label: 'Check', category: 'other', icon: faCheck, keywords: ['ok', 'hecho', 'completado'], showInPicker: false },
+  { name: 'xmark', label: 'Cerrar', category: 'other', icon: faXmark, keywords: ['close', 'cancelar'], showInPicker: false },
+  { name: 'plus', label: 'Añadir', category: 'other', icon: faPlus, keywords: ['nuevo', 'crear'], showInPicker: false },
+  { name: 'play', label: 'Iniciar', category: 'other', icon: faPlay, keywords: ['reproducir', 'start', 'comenzar'], showInPicker: false },
+  { name: 'power-off', label: 'Apagar', category: 'other', icon: faPowerOff, keywords: ['logout', 'cerrar sesión', 'shutdown', 'salir'], showInPicker: false },
+  { name: 'trash', label: 'Eliminar', category: 'other', icon: faTrash, keywords: ['borrar', 'delete'], showInPicker: false },
+  { name: 'user', label: 'Usuario', category: 'other', icon: faUser, keywords: ['perfil', 'cuenta'], showInPicker: false },
+  { name: 'lock', label: 'Bloqueo', category: 'other', icon: faLock, keywords: ['seguridad', 'password'], showInPicker: false },
+  { name: 'envelope', label: 'Correo', category: 'social', icon: faEnvelope, keywords: ['email', 'mail', 'correo'] },
+  { name: 'eye', label: 'Ver', category: 'other', icon: faEye, keywords: ['visible', 'mostrar'], showInPicker: false },
+  { name: 'eye-slash', label: 'Ocultar', category: 'other', icon: faEyeSlash, keywords: ['hidden', 'password'], showInPicker: false },
+  { name: 'gear', label: 'Ajustes', category: 'other', icon: faGear, keywords: ['settings', 'config'], showInPicker: false },
+  { name: 'search', label: 'Buscar', category: 'other', icon: faMagnifyingGlass, keywords: ['magnifying-glass', 'lupa'], showInPicker: false },
+  { name: 'filter', label: 'Filtrar', category: 'other', icon: faFilter, keywords: ['filtro', 'ordenar'], showInPicker: false },
+  { name: 'star', label: 'Estrella', category: 'other', icon: faStar, keywords: ['rating', 'destacado', 'favorito'] },
+  { name: 'bell', label: 'Campana', category: 'productivity', icon: faBell, keywords: ['notificación', 'alerta', 'recordatorio'] },
+] as const satisfies readonly AppIconEntry[]

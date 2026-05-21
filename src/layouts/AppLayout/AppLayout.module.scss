@@ -30,12 +30,12 @@
 .userEmail {
   font-size: 0.85rem;
   color: $color-muted;
-  max-width: 12rem;
+  max-width: 10rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     display: none;
   }
 }

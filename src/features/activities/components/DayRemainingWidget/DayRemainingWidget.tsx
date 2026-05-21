@@ -21,29 +21,32 @@ export function DayRemainingWidget({
   return (
     <DataCard
       variant="glass"
+      fillHeight
       className={[styles.root, className].filter(Boolean).join(' ')}
       title="Tiempo restante del día"
-      description={`Finaliza a las ${formatDayEndLabel(endTime)}`}
       icon={<AppIcon name="clock" size="md" decorative />}
       value={
         <div className={styles.body}>
-          <span className={styles.counter} aria-live="polite">
-            {display}
-          </span>
-          <div
-            className={styles.progressTrack}
-            role="progressbar"
-            aria-valuenow={elapsedPercentage}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Progreso del día hasta la hora de cierre"
-          >
-            <span
-              className={styles.progressFill}
-              style={{ width: `${elapsedPercentage}%` }}
-            />
+          <div className={styles.main}>
+            <span className={styles.counter} aria-live="polite">
+              {display}
+            </span>
+            <div
+              className={styles.progressTrack}
+              role="progressbar"
+              aria-valuenow={elapsedPercentage}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Progreso del día hasta la hora de cierre"
+            >
+              <span
+                className={styles.progressFill}
+                style={{ width: `${elapsedPercentage}%` }}
+              />
+            </div>
+            <span className={styles.progressHint}>{elapsedPercentage}% del día transcurrido</span>
           </div>
-          <span className={styles.progressHint}>{elapsedPercentage}% del día transcurrido</span>
+          <p className={styles.footer}>Finaliza a las {formatDayEndLabel(endTime)}</p>
         </div>
       }
     />

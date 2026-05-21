@@ -89,11 +89,21 @@ Las **variables CSS** se definen en `src/app/styles/_theme-variables.scss` y cam
 
 | Pieza | Uso |
 |-------|-----|
-| `app-icons.ts` | Catálogo cerrado de iconos permitidos |
+| `catalog/*.icons.ts` | Entradas por dominio (imports explícitos de FA) |
+| `app-icons.ts` | Agregación del catálogo + `appIconMap` + aliases |
+| `categories.ts` | Labels y orden de categorías en UI |
+| `icon-search.ts` | `filterAppIcons`, `groupIconsByCategory` |
 | `icon-utils.ts` | `normalizeIconName`, `getIconByName`, `toStoredIconName` |
 | `AppIcon` | Render por nombre almacenado |
+| `IconPicker` | Selector modal con categorías y búsqueda |
 
-**Regla de persistencia:** guardar solo el nombre limpio (`bell`, `home`, `calendar`). Nunca `fa-bell` ni `faBell`.
+**Regla de persistencia:** guardar solo el nombre limpio (`bell`, `home`, `briefcase`). Nunca `fa-bell` ni `faBell`. Los alias (`faHouse` → `home`) existen solo en normalización, no en BD.
+
+**Categorías (`AppIconCategory`):** `productivity`, `work`, `fitness`, `study`, `health`, `finance`, `technology`, `social`, `entertainment`, `mindfulness`, `home`, `other`.
+
+**Keywords:** cada entrada incluye sinónimos ES/EN para que `IconPicker` encuentre iconos por actividad (`gym` → `dumbbell`, `running`, `heart-pulse`). La búsqueda también usa el label de categoría (`finanzas` → iconos `finance`).
+
+**Iconos de sistema:** entradas con `showInPicker: false` (p. ej. `plus`, `xmark`, `gear`) — disponibles para `AppIcon` en UI, ocultos del selector de actividades.
 
 ### Shell de aplicación
 
@@ -155,7 +165,7 @@ Secciones:
 2. Buttons  
 3. Forms — Input, Textarea, Select, Checkbox, Switch, FormField  
 4. Advanced Forms — SearchSelect, IconPicker, AppIcon  
-5. Icons — catálogo y normalización `faBell → bell`  
+5. Icons — catálogo por categorías, búsqueda, ejemplos de actividades, normalización `faBell → bell`  
 6. Feedback — Alert, Toast, ConfirmDialog, Spinner, Skeleton, EmptyState  
 7. Surfaces — Card, GlassPanel, DataCard, StatCard  
 8. Data display — Table, Badge  
@@ -179,9 +189,34 @@ Nav sticky con anclas `#foundations`, `#buttons`, etc.
 
 Dependencias: `@fortawesome/fontawesome-svg-core`, `@fortawesome/free-solid-svg-icons`, `@fortawesome/react-fontawesome`.
 
-- Importar iconos **solo** en `src/shared/icons/app-icons.ts` (uno a uno).
-- En UI usar `<AppIcon name="bell" />`, no `<FontAwesomeIcon>` directo en features.
-- Añadir icono nuevo: entrada en `appIcons` + keywords + demo en Testing Hall `#icons`.
+- Importar iconos **solo** en `src/shared/icons/catalog/<dominio>.icons.ts` (uno a uno, nunca `import *`).
+- En UI usar `<AppIcon name="bell" size="md" />`, no `<FontAwesomeIcon>` directo en features.
+- `AppIcon` acepta `color` opcional (CSS / `var(--*)`) y tamaños `2xs`–`2xl`; si el nombre no existe, muestra fallback accesible.
+
+### Añadir un icono nuevo
+
+1. Verificar que el glifo existe en `@fortawesome/free-solid-svg-icons` (free solid).
+2. Añadir entrada en el archivo de categoría correspondiente:
+
+```ts
+{
+  name: 'briefcase',
+  label: 'Trabajo',
+  category: 'work',
+  icon: faBriefcase,
+  keywords: ['trabajo', 'office', 'job'],
+}
+```
+
+3. Si el `iconName` de FA difiere del nombre almacenado, registrar alias en `iconNameAliases` (ej. `person-running` → `running`).
+4. Probar búsqueda en Testing Hall `#icons` y, si aplica, en `IconPicker`.
+5. No usar Pro, Brands ni packs externos.
+
+### Naming
+
+- **Almacenado:** kebab-case semántico (`book-open`, `heart-pulse`).
+- **Prohibido en API/BD:** `faBookOpen`, `fa-book-open`.
+- **Por qué:** desacopla persistencia de Font Awesome, facilita migraciones y normalización uniforme (`faBell` / `fa-bell` / `bell` → `bell`).
 
 ## Providers globales
 

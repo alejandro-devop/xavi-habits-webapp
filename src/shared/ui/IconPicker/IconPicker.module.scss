@@ -69,10 +69,23 @@
   flex-shrink: 0;
 }
 
-.triggerValue {
+.triggerText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.triggerLabel {
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
+}
+
+.triggerValue {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -90,25 +103,82 @@
   }
 }
 
+.preview {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+}
+
+.previewIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.previewMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.previewLabel {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.previewName {
+  font-size: 0.8125rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-muted);
+}
+
+.previewCategory {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
 .gridWrap {
   margin-top: 1rem;
-  max-height: 18rem;
+  max-height: 22rem;
   overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.categorySection {
+  &:not(:first-child) {
+    margin-top: 1rem;
+  }
+}
+
+.categoryTitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .iconGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(2.75rem, 2.75rem));
+  grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
   gap: 0.5rem;
-  justify-content: start;
 }
 
 .iconCell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 2.75rem;
   padding: 0;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -117,11 +187,13 @@
   transition:
     border-color 0.15s ease,
     background 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 
   &:hover {
     border-color: var(--color-primary);
     background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+    transform: translateY(-1px);
   }
 
   &:focus-visible {
@@ -134,6 +206,10 @@
   border-color: var(--color-primary);
   background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+.iconCellFocused {
+  border-color: var(--color-primary);
 }
 
 .empty {

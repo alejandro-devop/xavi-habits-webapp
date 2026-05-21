@@ -11,6 +11,8 @@ type TopbarProps = {
 }
 
 export function Topbar({ title, breadcrumbs, actions, userArea, leading }: TopbarProps) {
+  const trailing = actions || userArea
+
   return (
     <header className={styles.topbar}>
       <div className={styles.leading}>
@@ -21,8 +23,12 @@ export function Topbar({ title, breadcrumbs, actions, userArea, leading }: Topba
           <h1 className={styles.title}>{title}</h1>
         ) : null}
       </div>
-      <div className={styles.actions}>{actions}</div>
-      {userArea ? <div className={styles.userArea}>{userArea}</div> : null}
+      {trailing ? (
+        <div className={styles.trailing}>
+          {actions ? <div className={styles.actions}>{actions}</div> : null}
+          {userArea ? <div className={styles.userArea}>{userArea}</div> : null}
+        </div>
+      ) : null}
     </header>
   )
 }

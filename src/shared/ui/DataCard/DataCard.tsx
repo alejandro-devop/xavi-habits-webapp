@@ -19,6 +19,8 @@ type DataCardProps = {
   icon?: ReactNode
   variant?: DataCardVariant
   className?: string
+  /** Stretch card and value area to parent height (widget rows). */
+  fillHeight?: boolean
 }
 
 const TREND_CLASS: Record<Trend['direction'], string> = {
@@ -35,12 +37,15 @@ export function DataCard({
   icon,
   variant = 'default',
   className,
+  fillHeight = false,
 }: DataCardProps) {
   const prefersReducedMotion = useReducedMotionPreference()
 
   return (
     <motion.article
-      className={[styles.card, styles[variant], className].filter(Boolean).join(' ')}
+      className={[styles.card, styles[variant], fillHeight ? styles.fillHeight : '', className]
+        .filter(Boolean)
+        .join(' ')}
       variants={prefersReducedMotion ? undefined : fadeUp}
       initial="hidden"
       animate="visible"

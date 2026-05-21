@@ -1,3 +1,5 @@
+@use '@/app/styles/mixins/breakpoints' as *;
+
 .root {
   height: 100%;
 }
@@ -5,12 +7,31 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  flex: 1;
+  min-height: 0;
+  gap: 0.35rem;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  gap: 0.45rem;
+}
+
+.footer {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--color-text-muted);
 }
 
 .counter {
   font-variant-numeric: tabular-nums;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -21,6 +42,7 @@
   border-radius: var(--radius-full, 999px);
   background: color-mix(in srgb, var(--color-text-muted) 18%, transparent);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .progressFill {
@@ -36,6 +58,27 @@
 }
 
 .progressHint {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--color-text-muted);
+  line-height: 1.2;
+}
+
+@include md {
+  .main {
+    gap: 0.65rem;
+    justify-content: flex-start;
+  }
+
+  .footer {
+    font-size: 0.8125rem;
+  }
+
+  .counter {
+    font-size: 2rem;
+  }
+
+  .progressHint {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
 }

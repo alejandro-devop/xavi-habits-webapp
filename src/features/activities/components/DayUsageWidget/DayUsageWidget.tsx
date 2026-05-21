@@ -55,9 +55,9 @@ export function DayUsageWidget({
   return (
     <DataCard
       variant="glass"
+      fillHeight
       className={[styles.root, className].filter(Boolean).join(' ')}
       title="Aprovechamiento del día"
-      description={`Ventana desde las ${dayEndLabel} del día anterior · ${date}`}
       icon={<AppIcon name="chart-line" size="md" decorative />}
       value={
         <div className={styles.body}>
@@ -78,11 +78,6 @@ export function DayUsageWidget({
               <span className={styles.statPct}>{wastePercentage}%</span>
             </div>
           </div>
-
-          <p className={styles.hint}>
-            Libre detectado entre actividades. Desperdicio: tiempo sin registrar desde el cierre del
-            día anterior.
-          </p>
 
           <div
             className={styles.segmentedBar}
@@ -108,6 +103,14 @@ export function DayUsageWidget({
               />
             ) : null}
           </div>
+
+          <p className={styles.hint}>
+            Libre detectado entre actividades. Desperdicio: tiempo sin registrar desde el cierre del
+            día anterior.
+          </p>
+          <p className={styles.descFoot}>
+            Ventana desde las {dayEndLabel} del día anterior · {date}
+          </p>
         </div>
       }
     />

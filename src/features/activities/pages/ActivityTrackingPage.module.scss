@@ -26,20 +26,45 @@
 }
 
 .widgetsRow {
-  display: grid;
-  width: 100%;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
   gap: var(--spacing-md);
-  grid-template-columns: 1fr;
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--spacing-md);
+  padding-bottom: 0.15rem;
+  scrollbar-width: thin;
 }
 
 .widgetRemaining,
 .widgetUsage {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+  width: min(85vw, 18rem);
+  height: 10.25rem;
+  min-height: 10.25rem;
   min-width: 0;
 }
 
 @include md {
   .widgetsRow {
+    display: grid;
+    overflow-x: visible;
+    scroll-snap-type: none;
     grid-template-columns: 3fr 7fr;
+    padding-bottom: 0;
+  }
+
+  .widgetRemaining,
+  .widgetUsage {
+    width: auto;
+    height: auto;
+    min-height: 0;
+    flex: unset;
   }
 }
 

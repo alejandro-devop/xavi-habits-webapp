@@ -22,4 +22,13 @@ describe('icon-utils', () => {
   it('toStoredIconName uses app alias when provided', () => {
     expect(toStoredIconName(faBell, 'bell')).toBe('bell')
   })
+
+  it('normalizes faBriefcase to briefcase', () => {
+    expect(normalizeIconName('faBriefcase')).toBe('briefcase')
+    expect(getIconByName('briefcase')).toBeTruthy()
+  })
+
+  it('returns null for unknown icon', () => {
+    expect(getIconByName('unknown-icon-xyz')).toBeNull()
+  })
 })

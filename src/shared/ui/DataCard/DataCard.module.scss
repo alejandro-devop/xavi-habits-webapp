@@ -52,9 +52,34 @@
   color: var(--color-text);
 }
 
+.fillHeight {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.fillHeight .header {
+  flex-shrink: 0;
+}
+
+.fillHeight .value {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+}
+
+.fillHeight .description {
+  flex-shrink: 0;
+}
+
 .description {
   margin-top: 0.35rem;
   font-size: 0.8125rem;
+  line-height: 1.35;
   color: var(--color-text-muted);
 }
 

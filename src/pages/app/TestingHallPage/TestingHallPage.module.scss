@@ -1,0 +1,116 @@
+@use '@/app/styles/mixins' as *;
+
+.page {
+  @include apple-background;
+  min-height: 100%;
+  padding-bottom: var(--spacing-xl);
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: var(--spacing-sm) 0 var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tokenGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.tokenSwatch {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.swatch {
+  height: 3rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.spacingBar {
+  height: 1rem;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
+  opacity: 0.5;
+}
+
+.radiusBox {
+  width: 4rem;
+  height: 3rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.shadowBox {
+  width: 6rem;
+  height: 3rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.blurBox {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  backdrop-filter: blur(var(--blur-lg));
+}
+
+.typeSample {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.motionDemo {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.motionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.staggerList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navLink {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+
+  &:hover {
+    color: var(--color-primary);
+    border-color: var(--color-border);
+  }
+}

@@ -1,17 +1,18 @@
 import { useLogoutMutation } from '@/features/auth/hooks/useLogoutMutation'
-import styles from './LogoutButton.module.scss'
+import { Button } from '@/shared/ui'
 
 export function LogoutButton() {
   const logoutMutation = useLogoutMutation()
 
   return (
-    <button
+    <Button
       type="button"
-      className={styles.button}
-      disabled={logoutMutation.isPending}
+      variant="ghost"
+      size="sm"
+      isLoading={logoutMutation.isPending}
       onClick={() => logoutMutation.mutate()}
     >
-      {logoutMutation.isPending ? 'Saliendo…' : 'Cerrar sesión'}
-    </button>
+      Cerrar sesión
+    </Button>
   )
 }

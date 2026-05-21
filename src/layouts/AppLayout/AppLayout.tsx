@@ -3,6 +3,7 @@ import { LogoutButton } from '@/features/auth/components/LogoutButton/LogoutButt
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { selectAuthUser } from '@/features/auth/store/auth.selectors'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { ThemeToggle } from '@/shared/ui'
 import styles from './AppLayout.module.scss'
 
 export function AppLayout() {
@@ -22,8 +23,17 @@ export function AppLayout() {
           >
             Hoy
           </NavLink>
+          <NavLink
+            className={({ isActive }) =>
+              [styles.navLink, isActive ? styles.navLinkActive : ''].filter(Boolean).join(' ')
+            }
+            to={authPaths.testingHall}
+          >
+            Testing Hall
+          </NavLink>
         </nav>
         <div className={styles.userArea}>
+          <ThemeToggle />
           {user ? <span className={styles.userEmail}>{user.email}</span> : null}
           <LogoutButton />
         </div>

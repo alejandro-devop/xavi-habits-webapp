@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router'
 import { AuthForm } from '@/features/auth/components/AuthForm/AuthForm'
-import { FormField } from '@/features/auth/components/FormField/FormField'
+import { Button, FormField } from '@/shared/ui'
 import { OtpInput } from '@/features/auth/components/OtpInput/OtpInput'
 import { useResetPasswordMutation } from '@/features/auth/hooks/useResetPasswordMutation'
 import { authPaths } from '@/features/auth/router/auth-paths'
@@ -113,9 +113,9 @@ export function ResetPasswordForm() {
           error={fieldErrors.confirmPassword}
           required
         />
-        <button className={styles.submit} type="submit" disabled={resetMutation.isPending}>
-          {resetMutation.isPending ? 'Guardando…' : 'Restablecer contraseña'}
-        </button>
+        <Button type="submit" fullWidth isLoading={resetMutation.isPending}>
+          Restablecer contraseña
+        </Button>
       </form>
     </AuthForm>
   )

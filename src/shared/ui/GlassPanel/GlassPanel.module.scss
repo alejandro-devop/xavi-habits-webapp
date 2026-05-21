@@ -1,0 +1,18 @@
+@use '@/app/styles/mixins' as *;
+
+.panel {
+  @include glass-panel;
+  padding: var(--spacing-lg);
+}
+
+.padding-sm {
+  padding: var(--spacing-md);
+}
+
+.padding-md {
+  padding: var(--spacing-lg);
+}
+
+.padding-lg {
+  padding: 1.5rem;
+}

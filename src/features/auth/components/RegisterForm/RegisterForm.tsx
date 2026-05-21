@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { AuthForm } from '@/features/auth/components/AuthForm/AuthForm'
-import { FormField } from '@/features/auth/components/FormField/FormField'
+import { Button, FormField } from '@/shared/ui'
 import { useRegisterMutation } from '@/features/auth/hooks/useRegisterMutation'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { getAuthErrorMessage } from '@/features/auth/utils/auth.errors'
@@ -114,9 +114,9 @@ export function RegisterForm() {
           error={fieldErrors.confirmPassword}
           required
         />
-        <button className={styles.submit} type="submit" disabled={registerMutation.isPending}>
-          {registerMutation.isPending ? 'Creando cuenta…' : 'Registrarse'}
-        </button>
+        <Button type="submit" fullWidth isLoading={registerMutation.isPending}>
+          Registrarse
+        </Button>
       </form>
     </AuthForm>
   )

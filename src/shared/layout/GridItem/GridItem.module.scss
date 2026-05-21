@@ -1,0 +1,31 @@
+@use '@/app/styles/mixins/breakpoints' as *;
+
+.item {
+  grid-column: span var(--span, 12);
+  min-width: 0;
+}
+
+@include sm {
+  .item {
+    grid-column: span var(--span-sm, var(--span, 12));
+  }
+}
+
+@include md {
+  .item {
+    grid-column: span var(--span-md, var(--span-sm, var(--span, 12)));
+  }
+}
+
+@include lg {
+  .item {
+    grid-column: span var(--span-lg, var(--span-md, var(--span-sm, var(--span, 12))));
+  }
+}
+
+@include xl {
+  .item {
+    grid-column: span
+      var(--span-xl, var(--span-lg, var(--span-md, var(--span-sm, var(--span, 12)))));
+  }
+}

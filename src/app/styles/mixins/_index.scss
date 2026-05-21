@@ -1,0 +1,37 @@
+@forward 'breakpoints';
+@forward 'responsive';
+
+@mixin card {
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+@mixin glass-panel {
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+
+  @supports not (backdrop-filter: blur(1px)) {
+    background: var(--color-surface-elevated);
+  }
+}
+
+@mixin focus-ring {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+@mixin apple-background {
+  background-color: var(--color-bg);
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    color-mix(in srgb, var(--color-primary) 12%, transparent),
+    transparent
+  );
+}

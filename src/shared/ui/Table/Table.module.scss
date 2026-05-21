@@ -1,0 +1,80 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.caption {
+  caption-side: top;
+  padding: var(--spacing-md);
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.head {
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+}
+
+.headCell {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.headCellSortable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.cell {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
+  color: var(--color-text);
+}
+
+.row:last-child .cell {
+  border-bottom: none;
+}
+
+.row:hover {
+  background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+}
+
+.alignEnd {
+  text-align: right;
+}
+
+.empty {
+  padding: var(--spacing-xl);
+}
+
+.loadingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+  border-radius: inherit;
+}

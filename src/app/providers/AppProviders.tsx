@@ -1,6 +1,7 @@
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import type { ReactNode } from 'react'
 import { AuthBootstrapProvider } from '@/features/auth/providers/AuthBootstrapProvider'
+import { ThemeProvider } from '@/features/theme'
 import { queryClient } from './query-client'
 import { queryPersistBuster, queryPersister } from './query-persist'
 
@@ -17,7 +18,9 @@ export function AppProviders({ children }: AppProvidersProps) {
         buster: queryPersistBuster,
       }}
     >
-      <AuthBootstrapProvider>{children}</AuthBootstrapProvider>
+      <ThemeProvider>
+        <AuthBootstrapProvider>{children}</AuthBootstrapProvider>
+      </ThemeProvider>
     </PersistQueryClientProvider>
   )
 }

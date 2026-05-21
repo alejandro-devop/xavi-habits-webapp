@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'react-router'
 import { AuthForm } from '@/features/auth/components/AuthForm/AuthForm'
-import { FormField } from '@/features/auth/components/FormField/FormField'
+import { Button, FormField } from '@/shared/ui'
 import { useLoginMutation } from '@/features/auth/hooks/useLoginMutation'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { getAuthErrorMessage } from '@/features/auth/utils/auth.errors'
@@ -94,9 +94,9 @@ export function LoginForm() {
             ¿Olvidaste tu contraseña?
           </Link>
         </p>
-        <button className={styles.submit} type="submit" disabled={loginMutation.isPending}>
-          {loginMutation.isPending ? 'Entrando…' : 'Entrar'}
-        </button>
+        <Button type="submit" fullWidth isLoading={loginMutation.isPending}>
+          Entrar
+        </Button>
       </form>
     </AuthForm>
   )

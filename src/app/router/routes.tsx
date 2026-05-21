@@ -7,6 +7,7 @@ import { authPaths } from '@/features/auth/router/auth-paths'
 import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout'
 import { AppLayout } from '@/layouts/AppLayout/AppLayout'
 import { PublicLayout } from '@/layouts/PublicLayout/PublicLayout'
+import { TestingHallPage } from '@/pages/app/TestingHallPage/TestingHallPage'
 import { TodayPage } from '@/pages/app/TodayPage/TodayPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage/ForgotPasswordPage'
 import { LoginPage } from '@/pages/auth/LoginPage/LoginPage'
@@ -78,6 +79,10 @@ export const routes: RouteObject[] = [
               {
                 path: 'today',
                 element: <TodayPage />,
+              },
+              {
+                path: 'testinghall',
+                element: <TestingHallPage />,
               },
             ],
           },

@@ -1,0 +1,35 @@
+.skeleton {
+  display: block;
+  background: color-mix(in srgb, var(--color-text) 10%, var(--color-surface));
+  border-radius: var(--radius-md);
+}
+
+.animated {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-text) 8%, var(--color-surface)) 0%,
+    color-mix(in srgb, var(--color-text) 14%, var(--color-surface)) 50%,
+    color-mix(in srgb, var(--color-text) 8%, var(--color-surface)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated {
+    animation: none;
+  }
+}

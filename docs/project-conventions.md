@@ -63,7 +63,9 @@ Checklist:
 
 | Tipo                                   | Ubicación                     |
 | -------------------------------------- | ----------------------------- |
-| Botón, loader, error UI genéricos      | `shared/components/`          |
+| Botón, Input, Card, Table, Modal, etc. | `shared/ui/`                  |
+| Container, Grid, Stack, Inline          | `shared/layout/`              |
+| Loader, error boundary, Suspense        | `shared/components/feedback/` |
 | Lista de hábitos, formulario de hábito | `features/habits/components/` |
 
 ## Hooks

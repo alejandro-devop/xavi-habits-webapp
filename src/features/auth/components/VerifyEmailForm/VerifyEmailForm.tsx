@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router'
 import { AuthForm } from '@/features/auth/components/AuthForm/AuthForm'
-import { FormField } from '@/features/auth/components/FormField/FormField'
+import { Button, FormField } from '@/shared/ui'
 import { OtpInput } from '@/features/auth/components/OtpInput/OtpInput'
 import {
   useResendOtpMutation,
@@ -129,19 +129,21 @@ export function VerifyEmailForm() {
         />
 
         {isAuthenticated ? (
-          <button
-            className={styles.secondary}
+          <Button
             type="button"
+            variant="secondary"
+            fullWidth
             disabled={resendDisabled}
+            isLoading={resendMutation.isPending}
             onClick={handleResend}
           >
-            {resendMutation.isPending ? 'Reenviando…' : 'Reenviar código'}
-          </button>
+            Reenviar código
+          </Button>
         ) : null}
 
-        <button className={styles.submit} type="submit" disabled={verifyMutation.isPending}>
-          {verifyMutation.isPending ? 'Verificando…' : 'Verificar'}
-        </button>
+        <Button type="submit" fullWidth isLoading={verifyMutation.isPending}>
+          Verificar
+        </Button>
       </form>
     </AuthForm>
   )

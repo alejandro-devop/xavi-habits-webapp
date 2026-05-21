@@ -1,10 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>xavi-habits-web</title>
+    <script>
+      ;(function () {
+        var key = 'xavi-theme'
+        var stored = null
+        try {
+          var raw = localStorage.getItem(key)
+          if (raw) {
+            var parsed = JSON.parse(raw)
+            stored = parsed && parsed.state && parsed.state.preference
+          }
+        } catch (e) {}
+        var preference = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
+        var resolved =
+          preference === 'system'
+            ? window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+            : preference
+        document.documentElement.setAttribute('data-theme', resolved)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Alert } from '@/shared/ui'
 import styles from './AuthForm.module.scss'
 
 type AuthFormProps = {
@@ -18,17 +19,9 @@ export function AuthForm({ title, subtitle, error, success, children, footer }: 
         {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
       </header>
 
-      {error ? (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Alert variant="danger">{error}</Alert> : null}
 
-      {success ? (
-        <p className={styles.success} role="status">
-          {success}
-        </p>
-      ) : null}
+      {success ? <Alert variant="success">{success}</Alert> : null}
 
       {children}
 

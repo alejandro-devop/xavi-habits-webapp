@@ -1,0 +1,53 @@
+---
+description: Usar el Design System Xavi al construir interfaces — buscar componente existente antes de crear UI nueva
+globs: "**/*.{tsx,scss}"
+alwaysApply: true
+---
+
+# Design System Xavi — regla para el agente
+
+Antes de escribir UI, **lee** `docs/design-system-agent-guide.md` y consulta ejemplos en `/app/testinghall`.
+
+## Flujo obligatorio
+
+1. **Identificar** la necesidad (acción, formulario, lista, métrica, layout…).
+2. **Buscar** en la guía el componente de `@/shared/ui` o `@/shared/layout` que encaje.
+3. **Importar** desde el barrel: `import { Button, Card } from '@/shared/ui'`.
+4. **No** usar HTML crudo (`<button>`, `<input>`) ni librerías UI externas si existe equivalente.
+5. Si **no hay** componente adecuado → proponer uno nuevo siguiendo `docs/design-system.md` (sección “Nuevos componentes”) y añadir demo en Testing Hall.
+
+## Mapa rápido
+
+| Necesidad | Usar |
+|-----------|------|
+| CTA / enlace | `Button` (`variant`, `to` para rutas) |
+| Campo texto | `FormField` o `Input` |
+| Texto largo | `Textarea` |
+| Lista opciones | `Select` |
+| On/off compacto | `Switch` (estilo iOS) |
+| Sí/no en formulario | `Checkbox` |
+| Bloque contenido | `Card` |
+| Panel glass / auth | `GlassPanel` |
+| KPI dashboard | `DataCard` o `StatCard` |
+| Tabla datos | `Table` + compound |
+| Sin datos | `EmptyState` |
+| Cargando | `Spinner` / `Skeleton` |
+| Mensaje sistema | `Alert` |
+| Etiqueta estado | `Badge` |
+| Diálogo | `Modal` |
+| Pestañas | `Tabs` |
+| Título página | `PageHeader` |
+| Grid responsive | `Grid` + `GridItem` |
+| Apilar / fila | `Stack` / `Inline` |
+| Ancho página | `Container` |
+| Animación entrada | `fadeUp`, `whileInView` + `useReducedMotionPreference` |
+
+## Estilos
+
+- Sass Modules por componente; colores/spacing con `var(--color-*)`, `var(--spacing-*)`.
+- No Tailwind, shadcn, MUI, Chakra, styled-components.
+- Tema: `useTheme()` / `ThemeToggle`; no hardcodear colores light-only.
+
+## Feedback al usuario
+
+Si falta un componente, dilo explícitamente: *“No existe X en el DS; propongo crear `shared/ui/X` porque…”* y espera confirmación si el alcance es grande.

@@ -5,7 +5,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba($color-primary, 0.06) 0%, $color-bg 40%);
+  @include apple-background;
 }
 
 .header {
@@ -29,8 +29,7 @@
 }
 
 .card {
-  @include card;
+  @include glass-panel;
   width: 100%;
   max-width: $auth-form-max-width;
-  background: $color-bg;
 }

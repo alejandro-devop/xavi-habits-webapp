@@ -1,9 +1,11 @@
 @use '@/app/styles/variables' as *;
+@use '@/app/styles/mixins' as *;
 
 .root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  @include apple-background;
 }
 
 .header {

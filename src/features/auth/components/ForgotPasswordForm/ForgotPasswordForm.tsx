@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { AuthForm } from '@/features/auth/components/AuthForm/AuthForm'
-import { FormField } from '@/features/auth/components/FormField/FormField'
+import { Button, FormField } from '@/shared/ui'
 import { useForgotPasswordMutation } from '@/features/auth/hooks/useForgotPasswordMutation'
 import {
   authPaths,
@@ -91,9 +91,9 @@ export function ForgotPasswordForm() {
           error={fieldError}
           required
         />
-        <button className={styles.submit} type="submit" disabled={forgotMutation.isPending}>
-          {forgotMutation.isPending ? 'Enviando…' : 'Enviar código'}
-        </button>
+        <Button type="submit" fullWidth isLoading={forgotMutation.isPending}>
+          Enviar código
+        </Button>
       </form>
     </AuthForm>
   )

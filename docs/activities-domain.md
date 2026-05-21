@@ -117,11 +117,12 @@ Hook `useElapsedTimer`: `setInterval(1s)` solo para re-render; el cálculo siemp
 
 Helpers: `src/features/activities/utils/activity-time.utils.ts` (sin librerías de fechas externas).
 
-### Timeline diaria
+### Timeline diaria (lista cronológica)
 
-- Horas en orden **descendente** (23 → 0); lo más reciente arriba.
-- Cards con altura proporcional: `getTimelineCardHeight(durationMinutes)`.
-- Constantes: `HOUR_BLOCK_HEIGHT = 96`, `MIN_FOLLOW_UP_HEIGHT = 48`.
+- Registros en **orden ascendente** por hora de inicio (más temprano arriba).
+- Rail izquierdo: bullet + línea conectora + hora inicio / hora fin.
+- Card a la derecha con título, categoría, notas y duración.
+- En el día **hoy**, se inserta un marcador **Ahora** en la posición cronológica correcta.
 - Click en card → `EditFollowUpModal` (editar / eliminar).
 
 ### Flujo UX

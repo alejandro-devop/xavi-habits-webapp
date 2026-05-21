@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { ActivityDayTimeline } from '@/features/activities/components/ActivityDayTimeline'
-import { ActivityTrackingEmptyState } from '@/features/activities/components/ActivityTrackingEmptyState'
 import { ActivityWeekSelector } from '@/features/activities/components/ActivityWeekSelector'
 import { EditFollowUpModal } from '@/features/activities/components/EditFollowUpModal'
 import { FinishActivityModal } from '@/features/activities/components/FinishActivityModal'
@@ -31,6 +30,7 @@ import {
   getCurrentWeekRange,
   getWeekDaysForDate,
   isFutureDate,
+  isToday,
 } from '@/features/activities/utils/activity-time.utils'
 import {
   selectRunningSession,
@@ -148,14 +148,14 @@ export function ActivityTrackingPage() {
   }
 
   const hasFollowUps = followUps.length > 0
-  const showEmpty = !isLoading && !isError && !hasFollowUps
+  const showDayHint = !isLoading && !isError && !hasFollowUps && !session
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
           <h2 className={styles.title}>Seguimiento de tiempo</h2>
-          <p className={styles.subtitle}>Semana actual · timeline diaria</p>
+          <p className={styles.subtitle}>Semana actual · registros en orden cronológico</p>
         </div>
       </header>
 
@@ -208,16 +208,18 @@ export function ActivityTrackingPage() {
         </div>
       ) : null}
 
-      {showEmpty ? (
-        <ActivityTrackingEmptyState
-          onStart={handleOpenStart}
-          onLogPast={() => setLogPastModalOpen(true)}
-          hasRunningSession={Boolean(session)}
-        />
+      {showDayHint ? (
+        <p className={styles.dayHint}>
+          No hay registros este día. Inicia una actividad o registra tiempo pasado con los botones de arriba.
+        </p>
       ) : null}
 
-      {!isLoading && !isError && hasFollowUps ? (
-        <ActivityDayTimeline followUps={followUps} onFollowUpClick={setEditFollowUp} />
+      {!isLoading && !isError ? (
+        <ActivityDayTimeline
+          followUps={followUps}
+          showCurrentTimeMarker={isToday(selectedDate)}
+          onFollowUpClick={setEditFollowUp}
+        />
       ) : null}
 
       <StartActivityModal

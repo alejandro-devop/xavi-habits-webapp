@@ -1,8 +1,5 @@
 import type { ActivityFollowUp, WeekDay } from '@/features/activities/types/activity-followup.types'
 
-export const HOUR_BLOCK_HEIGHT = 96
-export const MIN_FOLLOW_UP_HEIGHT = 48
-
 const MS_PER_MINUTE = 60_000
 const MS_PER_SECOND = 1_000
 
@@ -185,37 +182,25 @@ export function calculateEndTime(_date: string, startTime: string, durationMinut
   return `${pad2(hours)}:${pad2(minutes)}`
 }
 
-export function getTimelineCardHeight(durationMinutes: number): number {
-  return Math.max(
-    MIN_FOLLOW_UP_HEIGHT,
-    (durationMinutes / 60) * HOUR_BLOCK_HEIGHT,
-  )
-}
-
-export function getFollowUpStartHour(startTime: string): number {
-  return Math.floor(parseTimeToMinutes(startTime) / 60)
-}
-
-/** Horas 23 → 0 (más reciente arriba) */
-export function getTimelineHours(): number[] {
-  return Array.from({ length: 24 }, (_, i) => 23 - i)
-}
-
 export function sortFollowUpsByStartTimeDesc(followUps: ActivityFollowUp[]): ActivityFollowUp[] {
   return [...followUps].sort(
     (a, b) => parseTimeToMinutes(b.startTime) - parseTimeToMinutes(a.startTime),
   )
 }
 
-export function groupFollowUpsByHour(
-  followUps: ActivityFollowUp[],
-): Map<number, ActivityFollowUp[]> {
-  const map = new Map<number, ActivityFollowUp[]>()
-  for (const followUp of sortFollowUpsByStartTimeDesc(followUps)) {
-    const hour = getFollowUpStartHour(followUp.startTime)
-    const list = map.get(hour) ?? []
-    list.push(followUp)
-    map.set(hour, list)
+/** Orden cronológico ascendente (primero el más temprano del día). */
+export function sortFollowUpsByStartTimeAsc(followUps: ActivityFollowUp[]): ActivityFollowUp[] {
+  return [...followUps].sort(
+    (a, b) => parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime),
+  )
+}
+
+export function formatFollowUpTimeLabel(startTime: string, endTime: string): {
+  startLabel: string
+  endLabel: string
+} {
+  return {
+    startLabel: normalizeTimeForDisplay(startTime),
+    endLabel: normalizeTimeForDisplay(endTime),
   }
-  return map
 }

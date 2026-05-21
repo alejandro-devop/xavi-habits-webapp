@@ -4,6 +4,7 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.75rem;
+  box-sizing: border-box;
   text-align: left;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
@@ -21,6 +22,16 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+}
+
+.durationBadge {
+  flex-shrink: 0;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  border-radius: var(--radius-sm);
 }
 
 .header {

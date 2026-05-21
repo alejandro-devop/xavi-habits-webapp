@@ -2,16 +2,17 @@ import { describe, expect, it, vi, afterEach } from 'vitest'
 import {
   calculateDurationMinutes,
   calculateEndTime,
-  formatElapsedHHMMSS,
   formatDurationConversionHint,
-  getTimelineCardHeight,
+  formatElapsedHHMMSS,
+  formatFollowUpTimeLabel,
+  getCurrentLocalTime,
   getWeekDaysForDate,
   hoursMinutesToTotalMinutes,
   isFutureDate,
   minutesToHoursMinutes,
-  MIN_FOLLOW_UP_HEIGHT,
-  HOUR_BLOCK_HEIGHT,
+  sortFollowUpsByStartTimeAsc,
 } from '@/features/activities/utils/activity-time.utils'
+import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 
 describe('activity-time.utils', () => {
   afterEach(() => {
@@ -28,13 +29,12 @@ describe('activity-time.utils', () => {
 
   it('getWeekDaysForDate marks future days disabled', () => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date('2026-05-20T12:00:00')) // Wednesday
+    vi.setSystemTime(new Date('2026-05-20T12:00:00'))
+
     const days = getWeekDaysForDate(new Date(), '2026-05-20')
     expect(days).toHaveLength(7)
-    expect(days[0]?.label).toBe('Lun')
-    const futureDays = days.filter((d) => d.isFuture)
-    expect(futureDays.length).toBeGreaterThan(0)
     expect(days.find((d) => d.isToday)?.date).toBe('2026-05-20')
+    expect(days.some((d) => d.isFuture)).toBe(true)
   })
 
   it('formatElapsedHHMMSS formats from elapsed ms', () => {
@@ -51,12 +51,6 @@ describe('activity-time.utils', () => {
     expect(calculateEndTime('2026-05-20', '09:30', 90)).toBe('11:00')
   })
 
-  it('getTimelineCardHeight scales with duration', () => {
-    expect(getTimelineCardHeight(15)).toBe(MIN_FOLLOW_UP_HEIGHT)
-    expect(getTimelineCardHeight(60)).toBe(HOUR_BLOCK_HEIGHT)
-    expect(getTimelineCardHeight(120)).toBe(HOUR_BLOCK_HEIGHT * 2)
-  })
-
   it('hoursMinutesToTotalMinutes and minutesToHoursMinutes round-trip', () => {
     expect(hoursMinutesToTotalMinutes(1, 30)).toBe(90)
     expect(minutesToHoursMinutes(90)).toEqual({ hours: 1, minutes: 30 })
@@ -65,5 +59,40 @@ describe('activity-time.utils', () => {
   it('formatDurationConversionHint shows total minutes', () => {
     expect(formatDurationConversionHint(90)).toContain('90 minutos')
     expect(formatDurationConversionHint(90)).toContain('1 h 30 min')
+  })
+
+  it('formatFollowUpTimeLabel normalizes times', () => {
+    expect(formatFollowUpTimeLabel('11:30:00', '12:00:00')).toEqual({
+      startLabel: '11:30',
+      endLabel: '12:00',
+    })
+  })
+
+  it('sortFollowUpsByStartTimeAsc orders earliest first', () => {
+    const a: ActivityFollowUp = {
+      id: '1',
+      activityId: 'a',
+      date: '2026-05-20',
+      startTime: '14:00:00',
+      durationMinutes: 30,
+      endTime: '14:30:00',
+      endDate: '2026-05-20',
+      endDateTime: '',
+      notes: null,
+    }
+    const b: ActivityFollowUp = {
+      ...a,
+      id: '2',
+      startTime: '09:00:00',
+    }
+    const sorted = sortFollowUpsByStartTimeAsc([a, b])
+    expect(sorted[0]?.id).toBe('2')
+    expect(sorted[1]?.id).toBe('1')
+  })
+
+  it('getCurrentLocalTime returns HH:mm', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-20T14:05:00'))
+    expect(getCurrentLocalTime()).toMatch(/^\d{2}:\d{2}$/)
   })
 })

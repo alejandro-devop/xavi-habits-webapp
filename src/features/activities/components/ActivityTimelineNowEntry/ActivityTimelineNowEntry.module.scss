@@ -1,0 +1,64 @@
+.entry {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 1rem;
+  align-items: stretch;
+  list-style: none;
+}
+
+.rail {
+  display: flex;
+  gap: 0.65rem;
+}
+
+.railInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 1rem;
+  flex-shrink: 0;
+}
+
+.bulletNow {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+}
+
+.connector {
+  flex: 1;
+  width: 2px;
+  min-height: 1.5rem;
+  margin-top: 0.25rem;
+  background: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+
+.times {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding-top: 0.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.nowLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+}
+
+.timeNow {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.placeholder {
+  min-height: 0;
+}

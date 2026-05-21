@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { ActivityFollowUpCard } from '@/features/activities/components/ActivityFollowUpCard'
-import { getTimelineCardHeight } from '@/features/activities/utils/activity-time.utils'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 
 const followUp: ActivityFollowUp = {
@@ -22,11 +21,11 @@ const followUp: ActivityFollowUp = {
 }
 
 describe('ActivityFollowUpCard', () => {
-  it('applies height from durationMinutes', () => {
+  it('timeline variant hides time meta grid', () => {
     const onClick = vi.fn()
-    const { container } = render(<ActivityFollowUpCard followUp={followUp} onClick={onClick} />)
-    const button = container.querySelector('button')!
-    expect(button.style.minHeight).toBe(`${getTimelineCardHeight(120)}px`)
+    render(<ActivityFollowUpCard followUp={followUp} onClick={onClick} variant="timeline" />)
+    expect(screen.queryByText(/^Inicio$/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/2 h/i)).toBeInTheDocument()
   })
 
   it('calls onClick when pressed', async () => {

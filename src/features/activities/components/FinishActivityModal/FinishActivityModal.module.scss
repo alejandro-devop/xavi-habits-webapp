@@ -1,0 +1,27 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+
+  @media (max-width: 30rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.categoryIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-danger);
+}

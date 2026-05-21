@@ -1,6 +1,6 @@
 # Dominio Actividades — Xavi Habits Web
 
-Módulo de negocio **Actividades**: shell, categorías (6.1) y CRUD de actividades (6.2).
+Módulo de negocio **Actividades**: shell, categorías (6.1), CRUD de actividades (6.2) y time tracking (6.3).
 
 ## Principio: un solo acceso global
 
@@ -18,6 +18,7 @@ src/features/activities/
   hooks/
   pages/
   routes/
+  store/
   types/
   utils/
 ```
@@ -31,6 +32,7 @@ src/features/activities/
 | `/app/activities/:id` | Detalle | No |
 | `/app/activities/:id/edit` | Editar | No |
 | `/app/activities/categories` | CRUD categorías | No (subnav) |
+| `/app/activities/tracking` | Time tracking diario | No (subnav) |
 
 `ActivitiesModuleLayout` envuelve todas las rutas con `PageHeader`, `ActivitiesModuleNav` y `<Outlet />`.
 
@@ -38,7 +40,7 @@ Subnav interna:
 
 - **Actividades** → listado (`/app/activities`)
 - **Categorías** → panel categorías
-- **Time Tracking** → deshabilitado (Fase 6.3)
+- **Seguimiento** → timeline diaria (`/app/activities/tracking`)
 
 ## GraphQL — actividades
 
@@ -57,23 +59,76 @@ Campos relevantes: `title`, `description`, `status`, `priority`, `categoryId`, `
 
 Ver Fase 6.1: `activityCategories`, `activityCategoryAdd/Edit/Remove`. No eliminar categoría con actividades asignadas.
 
+## GraphQL — follow-ups (time tracking)
+
+| Operación | Uso |
+|-----------|-----|
+| `activityDayFollowUps(date)` | Timeline del día seleccionado |
+| `activityFollowUpsInDates(from, to)` | Rango semana visible (prefetch) |
+| `activityFollowUpAdd(input)` | Guardar al finalizar sesión |
+| `activityFollowUpEdit(input)` | Editar desde modal |
+| `activityFollowUpRemove(id)` | Eliminar con confirmación |
+
+Input de add/edit: `activityId`, `date` (YYYY-MM-DD), `startTime` (HH:mm), `durationMinutes`, `notes`.
+
 ## Query keys
 
 ```ts
-activityKeys.list(serializedFilters)  // sin search (solo cliente)
+activityKeys.list(serializedFilters)
 activityKeys.detail(id)
 activityKeys.categories.list()
 activityKeys.categories.detail(id)
+activityKeys.followUps.day(date)
+activityKeys.followUps.range(from, to)
 ```
 
 ### Invalidaciones
 
 | Mutación | Invalidar |
 |----------|-----------|
-| create / update / delete / complete (actividad) | `activityKeys.all` (lista + detalle afectado) |
+| actividad CRUD / complete | `activityKeys.all` |
 | categorías CRUD | `activityKeys.categories.*` |
+| follow-up create / update / delete | `followUps.day`, `followUps.range`, `activityKeys.detail(activityId)`, `activityKeys.all` |
 
-`complete` usa invalidación (sin optimistic update en 6.2) por estabilidad.
+## Time tracking — arquitectura
+
+### Sesión local en progreso
+
+- Store: `src/features/activities/store/activity-tracking.store.ts` (Zustand persist, key `xavi-activity-tracking-session`).
+- Solo **una** actividad en curso.
+- **Iniciar** no llama al backend; guarda `RunningActivitySession` con `startedAt` ISO.
+- **Cancelar** limpia el store (ConfirmDialog); no crea follow-up.
+- **Finalizar** abre modal de revisión → `activityFollowUpAdd` → limpia store solo en éxito.
+
+### Timer preciso
+
+```ts
+elapsedMs = Date.now() - new Date(startedAt).getTime()
+```
+
+Hook `useElapsedTimer`: `setInterval(1s)` solo para re-render; el cálculo siempre usa `Date.now()`. Persiste tras recarga.
+
+### Semana visible
+
+- Muestra **lunes → domingo** de la semana calendario actual (la de hoy).
+- Día por defecto: **hoy**.
+- Días **posteriores a hoy** en esa semana: deshabilitados.
+- Solo se pueden seleccionar hoy y días anteriores de la misma semana (sin navegación a semanas pasadas en 6.3).
+
+Helpers: `src/features/activities/utils/activity-time.utils.ts` (sin librerías de fechas externas).
+
+### Timeline diaria
+
+- Horas en orden **descendente** (23 → 0); lo más reciente arriba.
+- Cards con altura proporcional: `getTimelineCardHeight(durationMinutes)`.
+- Constantes: `HOUR_BLOCK_HEIGHT = 96`, `MIN_FOLLOW_UP_HEIGHT = 48`.
+- Click en card → `EditFollowUpModal` (editar / eliminar).
+
+### Flujo UX
+
+1. **Iniciar nueva actividad** → modal (actividad + notas) → sesión local + timer.
+2. **Finalizar** → modal (rectificar fecha, inicio, duración, notas; hora fin calculada) → guardar.
+3. **Editar registro** en timeline → modal → update o delete.
 
 ## Filtros del listado
 
@@ -82,8 +137,6 @@ activityKeys.categories.detail(id)
 | status, priority, categoryId, page, limit | GraphQL → React Query key |
 | search (título/descripción) | **Solo cliente** sobre resultados cargados |
 
-Botón «Limpiar filtros» restaura defaults (`limit: 50`, página 1).
-
 ## UI mobile / desktop
 
 | Viewport | Componente |
@@ -91,20 +144,13 @@ Botón «Limpiar filtros» restaura defaults (`limit: 50`, página 1).
 | ≥ 48rem | `ActivityTable` |
 | < 48rem | `ActivityCard` + FAB crear |
 
-Estados: skeleton, `ActivityEmptyState`, `Alert` en error.
+Tracking: timeline responsive; semana en grid 7 columnas.
 
 ## Formulario de actividad
 
 - `ActivityForm` compartido en create/edit.
 - Categorías vía `SearchSelect` con icono y color.
 - Fecha: `input[type=datetime-local]` (no hay DatePicker en DS aún).
-- Iconos de categoría: nombre limpio (`bell`), nunca `fa-bell`.
-
-## Time tracking (placeholder)
-
-- `spentTimeMinutes` se muestra en listado, detalle y placeholder.
-- Follow-ups (`activityFollowUp*`, `activityDayFollowUps`) → **Fase 6.3**.
-- `ActivityTimeTrackingPlaceholder` en detalle.
 
 ## Referencias
 

@@ -21,6 +21,12 @@ export const activityKeys = {
     list: () => [...activityKeys.categories.all(), 'list'] as const,
     detail: (id: string) => [...activityKeys.categories.all(), 'detail', id] as const,
   },
+  followUps: {
+    all: () => [...activityKeys.all, 'followUps'] as const,
+    day: (date: string) => [...activityKeys.followUps.all(), 'day', date] as const,
+    range: (from: string, to: string) =>
+      [...activityKeys.followUps.all(), 'range', from, to] as const,
+  },
 }
 
 export const courseKeys = {

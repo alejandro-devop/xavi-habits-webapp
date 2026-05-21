@@ -1,5 +1,6 @@
+import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 import { formatSpentMinutes } from '@/features/activities/utils/activity-date'
-import { Badge } from '@/shared/ui/Badge'
+import { Button } from '@/shared/ui/Button'
 import { Card } from '@/shared/ui/Card'
 import styles from './ActivityTimeTrackingPlaceholder.module.scss'
 
@@ -14,14 +15,16 @@ export function ActivityTimeTrackingPlaceholder({
     <Card className={styles.card}>
       <div className={styles.header}>
         <h2 className={styles.title}>Seguimiento de tiempo</h2>
-        <Badge variant="neutral">Próximamente</Badge>
       </div>
       <p className={styles.text}>
-        En la próxima fase podrás registrar follow-ups y ver el historial de tiempo por actividad.
+        Registra bloques de tiempo por día en la timeline del módulo de actividades.
       </p>
       <p className={styles.stat}>
         Tiempo acumulado: <strong>{formatSpentMinutes(spentTimeMinutes)}</strong>
       </p>
+      <Button variant="secondary" to={activitiesPaths.tracking}>
+        Ir a seguimiento de tiempo
+      </Button>
     </Card>
   )
 }

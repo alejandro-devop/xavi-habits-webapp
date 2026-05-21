@@ -1,0 +1,17 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.categoryIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-danger);
+}

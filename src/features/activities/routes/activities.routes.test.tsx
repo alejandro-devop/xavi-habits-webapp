@@ -20,6 +20,30 @@ vi.mock('@/features/activities/hooks/useActivityCategories', () => ({
   useDeleteActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false, variables: undefined }),
 }))
 
+vi.mock('@/features/activities/hooks/useActivityFollowUps', () => ({
+  useActivityDayFollowUpsQuery: () => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+  }),
+  useActivityFollowUpsInDatesQuery: () => ({
+    data: [],
+    isLoading: false,
+    isError: false,
+  }),
+  useCreateActivityFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateActivityFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteActivityFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
+vi.mock('@/features/activities/store/activity-tracking.store', () => ({
+  useActivityTrackingStore: (selector: (s: { session: null }) => unknown) =>
+    selector({ session: null }),
+  selectRunningSession: () => null,
+}))
+
 vi.mock('@/features/activities/hooks/useActivities', () => ({
   useActivitiesQuery: () => ({
     data: { activities: [], page: 1, limit: 50, total: 0 },
@@ -62,5 +86,11 @@ describe('activitiesRoutes', () => {
   it('renders categories panel at categories route', () => {
     renderActivitiesRoute('/activities/categories')
     expect(screen.getByRole('button', { name: /nueva categoría/i })).toBeInTheDocument()
+  })
+
+  it('renders tracking page at tracking route', () => {
+    renderActivitiesRoute('/activities/tracking')
+    expect(screen.getByRole('heading', { name: /seguimiento de tiempo/i })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /iniciar nueva actividad/i }).length).toBeGreaterThanOrEqual(1)
   })
 })

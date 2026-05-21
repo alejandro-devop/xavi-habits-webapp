@@ -1,5 +1,4 @@
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
-import { Badge } from '@/shared/ui/Badge'
 import { AppNavLink } from '@/shared/ui/NavLink'
 import styles from './ActivitiesModuleNav.module.scss'
 
@@ -12,10 +11,9 @@ export function ActivitiesModuleNav() {
       <AppNavLink to={activitiesPaths.categories} icon="gear">
         Categorías
       </AppNavLink>
-      <span className={styles.disabledItem} aria-disabled="true">
-        <span className={styles.disabledLabel}>Time Tracking</span>
-        <Badge variant="neutral">Próximamente</Badge>
-      </span>
+      <AppNavLink to={activitiesPaths.tracking} icon="clock">
+        Seguimiento
+      </AppNavLink>
     </nav>
   )
 }

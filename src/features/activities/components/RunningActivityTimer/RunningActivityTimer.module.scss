@@ -1,0 +1,76 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+}
+
+.header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  flex-shrink: 0;
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  display: block;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.title {
+  margin: 0.15rem 0 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.category {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.notes {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.started {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

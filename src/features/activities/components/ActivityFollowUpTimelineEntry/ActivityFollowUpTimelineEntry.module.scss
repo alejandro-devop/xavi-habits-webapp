@@ -48,8 +48,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-.continueBtn {
+.quickActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
   margin-top: 0.25rem;
+}
+
+.quickActionBtn {
   min-width: 1.75rem;
   min-height: 1.75rem;
   padding: 0.2rem;

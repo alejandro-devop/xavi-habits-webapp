@@ -119,9 +119,10 @@ describe('ActivityDayTimeline', () => {
     )
   })
 
-  it('shows continue button only on most recent follow-up', async () => {
+  it('shows quick actions only on most recent follow-up', async () => {
     const user = userEvent.setup()
     const onContinueAfterFollowUp = vi.fn()
+    const onStartFromFollowUp = vi.fn()
     const early: ActivityFollowUp = {
       ...base,
       id: 'early',
@@ -144,17 +145,17 @@ describe('ActivityDayTimeline', () => {
         onFollowUpClick={vi.fn()}
         onFreeSlotClick={vi.fn()}
         onContinueAfterFollowUp={onContinueAfterFollowUp}
+        onStartFromFollowUp={onStartFromFollowUp}
       />,
     )
 
-    const continueButtons = screen.getAllByRole('button', {
-      name: /registrar actividad desde las/i,
-    })
-    expect(continueButtons).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: /iniciar actividad desde las/i })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: /registrar actividad desde las/i })).toHaveLength(1)
 
-    await user.click(continueButtons[0]!)
-    expect(onContinueAfterFollowUp).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'late' }),
-    )
+    await user.click(screen.getByRole('button', { name: /iniciar actividad desde las 11:30/i }))
+    expect(onStartFromFollowUp).toHaveBeenCalledWith(expect.objectContaining({ id: 'late' }))
+
+    await user.click(screen.getByRole('button', { name: /registrar actividad desde las 11:30/i }))
+    expect(onContinueAfterFollowUp).toHaveBeenCalledWith(expect.objectContaining({ id: 'late' }))
   })
 })

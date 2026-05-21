@@ -24,6 +24,7 @@ import {
   faPenToSquare,
   faPersonRunning,
   faPiggyBank,
+  faPlay,
   faPlus,
   faStar,
   faTrash,
@@ -41,6 +42,7 @@ export type AppIconName =
   | 'check'
   | 'xmark'
   | 'plus'
+  | 'play'
   | 'trash'
   | 'edit'
   | 'user'
@@ -81,6 +83,7 @@ export const appIcons: AppIconEntry[] = [
   { name: 'check', label: 'Check', icon: faCheck, keywords: ['ok', 'hecho', 'completado'] },
   { name: 'xmark', label: 'Cerrar', icon: faXmark, keywords: ['close', 'cancelar'] },
   { name: 'plus', label: 'Añadir', icon: faPlus, keywords: ['nuevo', 'crear'] },
+  { name: 'play', label: 'Iniciar', icon: faPlay, keywords: ['reproducir', 'start', 'comenzar'] },
   { name: 'trash', label: 'Eliminar', icon: faTrash, keywords: ['borrar', 'delete'] },
   {
     name: 'edit',

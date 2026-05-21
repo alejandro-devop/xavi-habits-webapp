@@ -16,10 +16,11 @@ type ActivityDayTimelineProps = {
   followUps: ActivityFollowUp[]
   freeSlots?: TimelineFreeSlot[]
   showCurrentTimeMarker?: boolean
-  continueAfterDisabled?: boolean
+  quickActionsDisabled?: boolean
   onFollowUpClick: (followUp: ActivityFollowUp) => void
   onFreeSlotClick: (slot: TimelineFreeSlot) => void
   onContinueAfterFollowUp?: (followUp: ActivityFollowUp) => void
+  onStartFromFollowUp?: (followUp: ActivityFollowUp) => void
 }
 
 export function ActivityDayTimeline({
@@ -27,10 +28,11 @@ export function ActivityDayTimeline({
   followUps,
   freeSlots: freeSlotsProp,
   showCurrentTimeMarker = false,
-  continueAfterDisabled = false,
+  quickActionsDisabled = false,
   onFollowUpClick,
   onFreeSlotClick,
   onContinueAfterFollowUp,
+  onStartFromFollowUp,
 }: ActivityDayTimelineProps) {
   const mostRecentFollowUpId = useMemo(
     () => getMostRecentFollowUp(date, followUps)?.id ?? null,
@@ -72,12 +74,14 @@ export function ActivityDayTimeline({
             key={item.data.id}
             followUp={item.data}
             isLast={isLast}
-            showContinueButton={
-              Boolean(onContinueAfterFollowUp) && item.data.id === mostRecentFollowUpId
+            showQuickActions={
+              item.data.id === mostRecentFollowUpId &&
+              Boolean(onContinueAfterFollowUp || onStartFromFollowUp)
             }
-            continueDisabled={continueAfterDisabled}
+            quickActionsDisabled={quickActionsDisabled}
             onClick={onFollowUpClick}
             onContinueAfter={onContinueAfterFollowUp}
+            onStartFrom={onStartFromFollowUp}
           />
         )
       })}

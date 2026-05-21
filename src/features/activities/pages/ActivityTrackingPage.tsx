@@ -59,6 +59,7 @@ export function ActivityTrackingPage() {
   const clearSession = useActivityTrackingStore((s) => s.clearSession)
 
   const [startModalOpen, setStartModalOpen] = useState(false)
+  const [startInitialStartTime, setStartInitialStartTime] = useState<string | null>(null)
   const [logPastModalOpen, setLogPastModalOpen] = useState(false)
   const [logPastInitialStartTime, setLogPastInitialStartTime] = useState<string | null>(null)
   const [finishModalOpen, setFinishModalOpen] = useState(false)
@@ -107,6 +108,7 @@ export function ActivityTrackingPage() {
       ),
     )
     setStartModalOpen(false)
+    setStartInitialStartTime(null)
   }
 
   const handleLogPastSave = (input: ActivityFollowUpInput) => {
@@ -132,6 +134,13 @@ export function ActivityTrackingPage() {
 
   const handleOpenStart = () => {
     if (session) return
+    setStartInitialStartTime(null)
+    setStartModalOpen(true)
+  }
+
+  const handleStartFromFollowUp = (followUp: ActivityFollowUp) => {
+    if (session) return
+    setStartInitialStartTime(getFollowUpEndTimeForNextEntry(followUp, selectedDate))
     setStartModalOpen(true)
   }
 
@@ -259,18 +268,23 @@ export function ActivityTrackingPage() {
           followUps={followUps}
           freeSlots={freeSlots}
           showCurrentTimeMarker={isToday(selectedDate)}
-          continueAfterDisabled={Boolean(session)}
+          quickActionsDisabled={Boolean(session)}
           onFollowUpClick={setEditFollowUp}
           onFreeSlotClick={setFreeSlotModal}
           onContinueAfterFollowUp={handleContinueAfterFollowUp}
+          onStartFromFollowUp={handleStartFromFollowUp}
         />
       ) : null}
 
       <StartActivityModal
         open={startModalOpen}
         sessionDate={selectedDate}
+        initialStartTime={startInitialStartTime}
         activities={activities}
-        onClose={() => setStartModalOpen(false)}
+        onClose={() => {
+          setStartModalOpen(false)
+          setStartInitialStartTime(null)
+        }}
         onStart={handleStart}
       />
 

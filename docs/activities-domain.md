@@ -173,7 +173,9 @@ Helpers: `src/features/activities/utils/activity-day-metrics.utils.ts`. Hook rea
 2. **Finalizar** → modal (rectificar fecha, inicio, duración, notas; hora fin calculada) → guardar.
 3. **Editar registro** en timeline → modal → update o delete.
 4. **Espacio libre** en timeline → modal restringido → `activityFollowUpAdd`.
-5. **Botón +** en la actividad **más reciente** del día (arriba en la lista) → abre *Registrar tiempo pasado* con hora de inicio = hora de fin de ese registro (`getFollowUpEndTimeForNextEntry`).
+5. En la actividad **más reciente** del día (arriba en la lista), acciones rápidas con hora de inicio = fin de ese registro (`getFollowUpEndTimeForNextEntry`):
+   - **Play** → *Iniciar nueva actividad* (cronómetro en curso).
+   - **+** → *Registrar tiempo pasado*.
 
 ## Filtros del listado
 

@@ -11,19 +11,21 @@ import styles from './ActivityFollowUpTimelineEntry.module.scss'
 type ActivityFollowUpTimelineEntryProps = {
   followUp: ActivityFollowUp
   isLast: boolean
-  showContinueButton?: boolean
-  continueDisabled?: boolean
+  showQuickActions?: boolean
+  quickActionsDisabled?: boolean
   onClick: (followUp: ActivityFollowUp) => void
   onContinueAfter?: (followUp: ActivityFollowUp) => void
+  onStartFrom?: (followUp: ActivityFollowUp) => void
 }
 
 export function ActivityFollowUpTimelineEntry({
   followUp,
   isLast,
-  showContinueButton = false,
-  continueDisabled = false,
+  showQuickActions = false,
+  quickActionsDisabled = false,
   onClick,
   onContinueAfter,
+  onStartFrom,
 }: ActivityFollowUpTimelineEntryProps) {
   const { startLabel, endLabel } = formatFollowUpTimeLabel(followUp.startTime, followUp.endTime)
   const categoryColor = followUp.activity?.category?.color ?? 'var(--color-primary)'
@@ -44,18 +46,35 @@ export function ActivityFollowUpTimelineEntry({
         <div className={styles.times}>
           <span className={styles.timeStart}>{startLabel}</span>
           <span className={styles.timeEnd}>{endLabel}</span>
-          {showContinueButton && onContinueAfter ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={styles.continueBtn}
-              disabled={continueDisabled}
-              aria-label={`Registrar actividad desde las ${endLabel}`}
-              onClick={() => onContinueAfter(followUp)}
-            >
-              <AppIcon name="plus" size="sm" decorative />
-            </Button>
+          {showQuickActions ? (
+            <div className={styles.quickActions}>
+              {onStartFrom ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={styles.quickActionBtn}
+                  disabled={quickActionsDisabled}
+                  aria-label={`Iniciar actividad desde las ${endLabel}`}
+                  onClick={() => onStartFrom(followUp)}
+                >
+                  <AppIcon name="play" size="sm" decorative />
+                </Button>
+              ) : null}
+              {onContinueAfter ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className={styles.quickActionBtn}
+                  disabled={quickActionsDisabled}
+                  aria-label={`Registrar actividad desde las ${endLabel}`}
+                  onClick={() => onContinueAfter(followUp)}
+                >
+                  <AppIcon name="plus" size="sm" decorative />
+                </Button>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

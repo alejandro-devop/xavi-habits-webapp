@@ -17,6 +17,8 @@ import styles from './StartActivityModal.module.scss'
 type StartActivityModalProps = {
   open: boolean
   sessionDate: string
+  /** HH:mm al abrir desde timeline; si no se pasa, hora actual. */
+  initialStartTime?: string | null
   activities: Activity[]
   loading?: boolean
   onClose: () => void
@@ -26,6 +28,7 @@ type StartActivityModalProps = {
 export function StartActivityModal({
   open,
   sessionDate,
+  initialStartTime = null,
   activities,
   loading = false,
   onClose,
@@ -38,10 +41,12 @@ export function StartActivityModal({
 
   useEffect(() => {
     if (open) {
-      setValues(emptyStartActivityFormValues(getCurrentLocalTime()))
+      setValues(
+        emptyStartActivityFormValues(initialStartTime ?? getCurrentLocalTime()),
+      )
       setError(null)
     }
-  }, [open])
+  }, [open, initialStartTime])
 
   const handleSubmit = () => {
     const validationError = validateStartActivityForm(values, sessionDate)

@@ -296,20 +296,21 @@ export function ActivityTrackingPage() {
               Métricas del día seleccionado · {selectedDate}
             </p>
             <div className={styles.widgetsRow}>
-              <DayRemainingWidget className={styles.widgetRemaining} />
-              <DayUsageWidget
+            <DayUsageWidget
                 className={styles.widgetUsage}
                 date={selectedDate}
                 followUps={followUps}
                 freeSlots={freeSlots}
                 isLoading={isLoading}
               />
+              <DayRemainingWidget className={styles.widgetRemaining} />
               <CategoryTimeWidget
                 className={styles.widgetCategory}
                 date={selectedDate}
                 followUps={followUps}
                 isLoading={isLoading}
               />
+
             </div>
           </div>
         </Tabs.Panel>

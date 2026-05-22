@@ -21,7 +21,6 @@ export function DayRemainingWidget({
   return (
     <DataCard
       variant="glass"
-      fillHeight
       className={[styles.root, className].filter(Boolean).join(' ')}
       title="Tiempo restante del día"
       icon={<AppIcon name="clock" size="md" decorative />}

@@ -45,54 +45,29 @@
 
 .widgetsRow {
   display: flex;
-  flex-wrap: nowrap;
+  flex-direction: column;
   align-items: stretch;
   gap: var(--spacing-md);
   width: 100%;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: var(--spacing-md);
-  padding-bottom: 0.15rem;
-  scrollbar-width: thin;
 }
 
 .widgetRemaining,
 .widgetUsage,
 .widgetCategory {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-  width: min(85vw, 18rem);
-  height: 10.25rem;
-  min-height: 10.25rem;
+  width: 100%;
   min-width: 0;
-}
-
-.widgetCategory {
-  width: min(90vw, 20rem);
 }
 
 @include md {
   .widgetsRow {
     display: grid;
-    overflow-x: visible;
-    scroll-snap-type: none;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding-bottom: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: var(--spacing-md);
   }
 
-  .widgetRemaining,
-  .widgetUsage,
-  .widgetCategory {
-    width: auto;
-    height: auto;
-    min-height: 12rem;
-    flex: unset;
-  }
-
-  .widgetCategory {
-    width: auto;
+  .widgetUsage {
+    grid-column: 1 / -1;
   }
 }
 

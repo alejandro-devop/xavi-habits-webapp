@@ -55,7 +55,6 @@ export function DayUsageWidget({
   return (
     <DataCard
       variant="glass"
-      fillHeight
       className={[styles.root, className].filter(Boolean).join(' ')}
       title="Aprovechamiento del día"
       icon={<AppIcon name="chart-line" size="md" decorative />}

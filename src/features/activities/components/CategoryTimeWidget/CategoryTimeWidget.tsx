@@ -44,7 +44,6 @@ export function CategoryTimeWidget({
   return (
     <DataCard
       variant="glass"
-      fillHeight
       className={[styles.root, className].filter(Boolean).join(' ')}
       title="Tiempo por categoría"
       icon={<AppIcon name="chart-pie" size="md" decorative />}

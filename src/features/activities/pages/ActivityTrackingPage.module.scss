@@ -25,6 +25,24 @@
   color: var(--color-text-muted);
 }
 
+.views {
+  min-width: 0;
+}
+
+.timelinePanel,
+.summaryPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.summaryHint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
 .widgetsRow {
   display: flex;
   flex-wrap: nowrap;
@@ -41,7 +59,8 @@
 }
 
 .widgetRemaining,
-.widgetUsage {
+.widgetUsage,
+.widgetCategory {
   flex: 0 0 auto;
   scroll-snap-align: start;
   width: min(85vw, 18rem);
@@ -50,21 +69,30 @@
   min-width: 0;
 }
 
+.widgetCategory {
+  width: min(90vw, 20rem);
+}
+
 @include md {
   .widgetsRow {
     display: grid;
     overflow-x: visible;
     scroll-snap-type: none;
-    grid-template-columns: 3fr 7fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     padding-bottom: 0;
   }
 
   .widgetRemaining,
-  .widgetUsage {
+  .widgetUsage,
+  .widgetCategory {
     width: auto;
     height: auto;
-    min-height: 0;
+    min-height: 12rem;
     flex: unset;
+  }
+
+  .widgetCategory {
+    width: auto;
   }
 }
 

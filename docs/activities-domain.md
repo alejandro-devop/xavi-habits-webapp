@@ -146,12 +146,13 @@ Helpers en `activity-time.utils.ts`: `getFreeSlotsBetweenFollowUps`, `validateFo
 
 ### Widgets de tiempo del día (Fase 6.5)
 
-En la parte superior de **Seguimiento** (`ActivityTrackingPage`), antes de la timeline:
+En **Seguimiento** (`ActivityTrackingPage`), pestaña **Resumen** (los widgets no comparten vista con la timeline):
 
 | Widget | Fuente de datos | Comportamiento |
 |--------|-----------------|----------------|
 | **DayRemainingWidget** | Hora local (`Date.now()`), sin GraphQL | Cuenta regresiva `HH:mm:ss` hasta fin de día. Día actual independiente del selector de semana. |
 | **DayUsageWidget** | `followUps` + `freeSlots` del día seleccionado | Muestra tiempo aprovechado vs libre detectado entre actividades. |
+| **CategoryTimeWidget** | `followUps` del día seleccionado | Agrupa `durationMinutes` por categoría de la actividad; muestra total y desglose en horas (`formatHoursFromMinutes`). |
 
 **Fin de día (hardcoded):** `DAY_END_TIME = '23:00:00'` en `activity-day-metrics.utils.ts`. El contador restante usa `getRemainingDayMs(now, today, endTime)`; tras las 23:00 muestra `00:00:00`. Barra de progreso: % transcurrido de la ventana **00:00 → 23:00** del día actual.
 
@@ -165,7 +166,7 @@ En la parte superior de **Seguimiento** (`ActivityTrackingPage`), antes de la ti
 
 Los porcentajes del widget se calculan sobre `totalWindowMinutes`, no solo sobre aprovechado + libre.
 
-Helpers: `src/features/activities/utils/activity-day-metrics.utils.ts`. Hook realtime: `useRemainingDayTimer` (intervalo 1s, cálculo siempre con `Date.now()`).
+Helpers: `src/features/activities/utils/activity-day-metrics.utils.ts`, `activity-category-metrics.utils.ts`. Hook realtime: `useRemainingDayTimer` (intervalo 1s, cálculo siempre con `Date.now()`).
 
 ### Flujo UX
 

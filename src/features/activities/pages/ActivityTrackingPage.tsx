@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { ActivityDayTimeline } from '@/features/activities/components/ActivityDayTimeline'
 import { ActivityWeekSelector } from '@/features/activities/components/ActivityWeekSelector'
 import { DayRemainingWidget } from '@/features/activities/components/DayRemainingWidget'
+import { CategoryTimeWidget } from '@/features/activities/components/CategoryTimeWidget'
 import { DayUsageWidget } from '@/features/activities/components/DayUsageWidget'
 import { CreateFollowUpFromFreeSlotModal } from '@/features/activities/components/CreateFollowUpFromFreeSlotModal'
 import { EditFollowUpModal } from '@/features/activities/components/EditFollowUpModal'
@@ -47,7 +48,15 @@ import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { Skeleton } from '@/shared/ui/Skeleton'
+import { Tabs } from '@/shared/ui/Tabs'
 import styles from './ActivityTrackingPage.module.scss'
+
+const TRACKING_VIEW = {
+  timeline: 'timeline',
+  summary: 'summary',
+} as const
+
+type TrackingView = (typeof TRACKING_VIEW)[keyof typeof TRACKING_VIEW]
 
 export function ActivityTrackingPage() {
   const today = getCurrentLocalDate()
@@ -66,6 +75,7 @@ export function ActivityTrackingPage() {
   const [finishFormValues, setFinishFormValues] = useState<FinishActivityFormValues | null>(null)
   const [editFollowUp, setEditFollowUp] = useState<ActivityFollowUp | null>(null)
   const [freeSlotModal, setFreeSlotModal] = useState<TimelineFreeSlot | null>(null)
+  const [activeView, setActiveView] = useState<TrackingView>(TRACKING_VIEW.timeline)
 
   const { confirm } = useConfirmDialog()
 
@@ -207,74 +217,103 @@ export function ActivityTrackingPage() {
         />
       ) : null}
 
-      <div className={styles.widgetsRow}>
-        <DayRemainingWidget className={styles.widgetRemaining} />
-        <DayUsageWidget
-          className={styles.widgetUsage}
-          date={selectedDate}
-          followUps={followUps}
-          freeSlots={freeSlots}
-          isLoading={isLoading}
-        />
-      </div>
+      <Tabs
+        value={activeView}
+        onChange={(value) => setActiveView(value as TrackingView)}
+        className={styles.views}
+      >
+        <Tabs.List>
+          <Tabs.Tab value={TRACKING_VIEW.timeline}>Registro</Tabs.Tab>
+          <Tabs.Tab value={TRACKING_VIEW.summary}>Resumen</Tabs.Tab>
+        </Tabs.List>
 
-      <div className={styles.toolbar}>
-        <Button
-          variant="primary"
-          onClick={handleOpenStart}
-          disabled={Boolean(session)}
-          aria-label="Iniciar nueva actividad"
-        >
-          <AppIcon name="plus" size="sm" decorative />
-          Iniciar nueva actividad
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={handleOpenLogPast}
-          disabled={Boolean(session)}
-          aria-label="Registrar tiempo pasado"
-        >
-          <AppIcon name="clock" size="sm" decorative />
-          Registrar tiempo pasado
-        </Button>
-      </div>
+        <Tabs.Panel value={TRACKING_VIEW.timeline}>
+          <div className={styles.timelinePanel}>
+            <div className={styles.toolbar}>
+              <Button
+                variant="primary"
+                onClick={handleOpenStart}
+                disabled={Boolean(session)}
+                aria-label="Iniciar nueva actividad"
+              >
+                <AppIcon name="plus" size="sm" decorative />
+                Iniciar nueva actividad
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleOpenLogPast}
+                disabled={Boolean(session)}
+                aria-label="Registrar tiempo pasado"
+              >
+                <AppIcon name="clock" size="sm" decorative />
+                Registrar tiempo pasado
+              </Button>
+            </div>
 
-      {isError ? (
-        <Alert variant="danger" title="No se pudo cargar la timeline">
-          {error instanceof Error ? error.message : 'Error desconocido'}
-          <Button variant="ghost" onClick={() => refetch()}>
-            Reintentar
-          </Button>
-        </Alert>
-      ) : null}
+            {isError ? (
+              <Alert variant="danger" title="No se pudo cargar la timeline">
+                {error instanceof Error ? error.message : 'Error desconocido'}
+                <Button variant="ghost" onClick={() => refetch()}>
+                  Reintentar
+                </Button>
+              </Alert>
+            ) : null}
 
-      {isLoading ? (
-        <div className={styles.skeleton}>
-          <Skeleton height="3rem" />
-          <Skeleton height="12rem" />
-          <Skeleton height="12rem" />
-        </div>
-      ) : null}
+            {isLoading ? (
+              <div className={styles.skeleton}>
+                <Skeleton height="3rem" />
+                <Skeleton height="12rem" />
+                <Skeleton height="12rem" />
+              </div>
+            ) : null}
 
-      {showDayHint ? (
-        <p className={styles.dayHint}>
-          No hay registros este día. Inicia una actividad o registra tiempo pasado con los botones de arriba.
-        </p>
-      ) : null}
+            {showDayHint ? (
+              <p className={styles.dayHint}>
+                No hay registros este día. Inicia una actividad o registra tiempo pasado con los
+                botones de arriba.
+              </p>
+            ) : null}
 
-      {!isLoading && !isError ? (
-        <ActivityDayTimeline
-          date={selectedDate}
-          followUps={followUps}
-          freeSlots={freeSlots}
-          showCurrentTimeMarker={isToday(selectedDate)}
-          quickActionsDisabled={Boolean(session)}
-          onFollowUpClick={setEditFollowUp}
-          onFreeSlotClick={setFreeSlotModal}
-          onContinueAfterFollowUp={handleContinueAfterFollowUp}
-          onStartFromFollowUp={handleStartFromFollowUp}
-        />
-      ) : null}
+            {!isLoading && !isError ? (
+              <ActivityDayTimeline
+                date={selectedDate}
+                followUps={followUps}
+                freeSlots={freeSlots}
+                showCurrentTimeMarker={isToday(selectedDate)}
+                quickActionsDisabled={Boolean(session)}
+                onFollowUpClick={setEditFollowUp}
+                onFreeSlotClick={setFreeSlotModal}
+                onContinueAfterFollowUp={handleContinueAfterFollowUp}
+                onStartFromFollowUp={handleStartFromFollowUp}
+              />
+            ) : null}
+          </div>
+        </Tabs.Panel>
+
+        <Tabs.Panel value={TRACKING_VIEW.summary}>
+          <div className={styles.summaryPanel}>
+            <p className={styles.summaryHint}>
+              Métricas del día seleccionado · {selectedDate}
+            </p>
+            <div className={styles.widgetsRow}>
+              <DayRemainingWidget className={styles.widgetRemaining} />
+              <DayUsageWidget
+                className={styles.widgetUsage}
+                date={selectedDate}
+                followUps={followUps}
+                freeSlots={freeSlots}
+                isLoading={isLoading}
+              />
+              <CategoryTimeWidget
+                className={styles.widgetCategory}
+                date={selectedDate}
+                followUps={followUps}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
+        </Tabs.Panel>
+      </Tabs>
 
       <StartActivityModal
         open={startModalOpen}

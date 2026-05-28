@@ -1,58 +1,91 @@
 .root {
-  width: 100%;
-}
-
-.body {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: fit-content;
+  margin-inline: auto;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 12%);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--color-text) 6%, transparent) inset,
+    0 12px 32px color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 
-.main {
+.clock {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.ring {
+  display: block;
+  filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--color-primary) 18%, transparent));
+}
+
+.track {
+  stroke: color-mix(in srgb, var(--color-text-muted) 22%, transparent);
+}
+
+.progress {
+  stroke: url(#dayRemainingGradient);
+  transition: stroke-dashoffset 1s linear;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  gap: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 1.25rem;
+  text-align: center;
 }
 
-.footer {
-  flex-shrink: 0;
-  margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.35;
-  color: var(--color-text-muted);
+.icon {
+  color: var(--color-primary);
+  opacity: 0.85;
 }
 
 .counter {
   font-variant-numeric: tabular-nums;
-  font-size: 2rem;
+  font-size: 1.375rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.1;
+  color: var(--color-text);
 }
 
-.progressTrack {
-  height: 0.5rem;
-  border-radius: var(--radius-full, 999px);
-  background: color-mix(in srgb, var(--color-text-muted) 18%, transparent);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.progressFill {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    var(--color-primary),
-    color-mix(in srgb, var(--color-primary) 70%, var(--color-success))
-  );
-  transition: width 1s linear;
-}
-
-.progressHint {
-  font-size: 0.75rem;
+.sublabel {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--color-text-muted);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: 0.75rem;
   line-height: 1.35;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.elapsed {
+  color: color-mix(in srgb, var(--color-primary) 75%, var(--color-text-muted));
+  font-weight: 500;
+}
+
+.dot {
+  opacity: 0.45;
 }

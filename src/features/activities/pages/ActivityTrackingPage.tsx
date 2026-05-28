@@ -229,6 +229,7 @@ export function ActivityTrackingPage() {
 
         <Tabs.Panel value={TRACKING_VIEW.timeline}>
           <div className={styles.timelinePanel}>
+            <DayRemainingWidget className={styles.timelineClock} />
             <div className={styles.toolbar}>
               <Button
                 variant="primary"
@@ -303,7 +304,6 @@ export function ActivityTrackingPage() {
                 freeSlots={freeSlots}
                 isLoading={isLoading}
               />
-              <DayRemainingWidget className={styles.widgetRemaining} />
               <CategoryTimeWidget
                 className={styles.widgetCategory}
                 date={selectedDate}

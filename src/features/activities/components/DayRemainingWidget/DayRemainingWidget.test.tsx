@@ -13,9 +13,10 @@ describe('DayRemainingWidget', () => {
 
     render(<DayRemainingWidget />)
 
-    expect(screen.getByText('Tiempo restante del día')).toBeInTheDocument()
+    expect(screen.getByRole('article', { name: 'Tiempo restante del día' })).toBeInTheDocument()
     expect(screen.getByText('03:00:00')).toBeInTheDocument()
-    expect(screen.getByText(/Finaliza a las 11:00 PM/i)).toBeInTheDocument()
+    expect(screen.getByText(/cierra 11:00 PM/i)).toBeInTheDocument()
+    expect(screen.getByText(/87% transcurrido/i)).toBeInTheDocument()
   })
 
   it('renders 00:00:00 after day end', () => {

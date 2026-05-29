@@ -3,6 +3,8 @@ import type { DayOfWeek, TimeBlock, WeeklyRoutineActivity } from '../types/weekl
 export const BLOCK_HEIGHT_PX = 20
 export const BLOCK_MINUTES = 15
 export const TIME_COL_WIDTH = 68
+/** Duración máxima de un evento en el planner (4 h). */
+export const MAX_ROUTINE_EVENT_DURATION_MINUTES = 4 * 60
 
 export const ALL_DAYS: DayOfWeek[] = [
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
@@ -123,11 +125,23 @@ export function formatEventTime(startTime: string, durationMinutes: number): str
   return `${formatBlockTime(startTime)} – ${formatBlockTime(minutesToTime(endMinutes))}`
 }
 
+export function getEventEndTime(startTime: string, durationMinutes: number): string {
+  return minutesToTime(timeToMinutes(startTime) + durationMinutes)
+}
+
+export function formatEventEndTime(startTime: string, durationMinutes: number): string {
+  return formatBlockTime(getEventEndTime(startTime, durationMinutes))
+}
+
 export function buildDurationOptions(
   startTime: string,
   endTime: string,
+  maxDurationMinutes: number = MAX_ROUTINE_EVENT_DURATION_MINUTES,
 ): { label: string; value: number }[] {
-  const maxMinutes = timeToMinutes(endTime) - timeToMinutes(startTime)
+  const untilDayEnd = timeToMinutes(endTime) - timeToMinutes(startTime)
+  const maxMinutes = Math.min(untilDayEnd, maxDurationMinutes)
+  if (maxMinutes < BLOCK_MINUTES) return []
+
   const options: { label: string; value: number }[] = []
   for (let m = BLOCK_MINUTES; m <= maxMinutes; m += BLOCK_MINUTES) {
     const h = Math.floor(m / 60)
@@ -138,6 +152,19 @@ export function buildDurationOptions(
     options.push({ label: label.trim(), value: m })
   }
   return options
+}
+
+export function clampEventDuration(
+  startTime: string,
+  dayEndTime: string,
+  durationMinutes: number,
+): number {
+  const options = buildDurationOptions(startTime, dayEndTime)
+  if (options.length === 0) return BLOCK_MINUTES
+  const allowed = new Set(options.map((o) => o.value))
+  if (allowed.has(durationMinutes)) return durationMinutes
+  const next = options.find((o) => o.value >= durationMinutes)
+  return next?.value ?? options[options.length - 1]!.value
 }
 
 export function buildStartTimeOptions(

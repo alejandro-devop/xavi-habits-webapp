@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { formatDurationMinutes } from '@/features/activities/utils/activity-time.utils'
 import { Drawer } from '@/shared/ui/Drawer'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import {
@@ -36,6 +37,16 @@ function getCategoryColor(event: WeeklyRoutineActivity): string {
   return event.activity?.category?.color ?? 'var(--color-accent)'
 }
 
+function getCategoryIcon(event: WeeklyRoutineActivity): string {
+  return event.activity?.category?.icon ?? 'tag'
+}
+
+function formatEventLabel(event: WeeklyRoutineActivity): string {
+  const title = event.activity?.title ?? '—'
+  const duration = formatDurationMinutes(event.durationMinutes)
+  return `${title} (${duration})`
+}
+
 // ── Event block ───────────────────────────────────────────────────────────────
 
 type EventBlockProps = {
@@ -47,6 +58,7 @@ type EventBlockProps = {
 
 function EventBlock({ event, rowStart, rowSpan, onClick }: EventBlockProps) {
   const color = getCategoryColor(event)
+  const icon = getCategoryIcon(event)
   const timeLabel = formatEventTime(event.startTime, event.durationMinutes)
   const isShort = rowSpan <= 2
 
@@ -59,10 +71,18 @@ function EventBlock({ event, rowStart, rowSpan, onClick }: EventBlockProps) {
         '--event-color': color,
       } as React.CSSProperties}
       onClick={onClick}
-      aria-label={`${event.activity?.title ?? 'Evento'} – ${timeLabel}`}
+      aria-label={`${formatEventLabel(event)} – ${timeLabel}`}
     >
-      <span className={styles.eventTitle}>{event.activity?.title ?? '—'}</span>
-      {!isShort && <span className={styles.eventTime}>{timeLabel}</span>}
+      <span className={styles.eventHeading}>
+        <AppIcon
+          name={icon}
+          size="xs"
+          color={color}
+          className={styles.eventIcon}
+          decorative
+        />
+        <span className={styles.eventTitle}>{formatEventLabel(event)}</span>
+      </span>
       {!isShort && event.notes && <span className={styles.eventNotes}>{event.notes}</span>}
     </button>
   )
@@ -251,12 +271,15 @@ export function WeeklyPlanner({ routine, onSlotClick, onEventClick }: Props) {
               onEventClick(event)
             }}
           >
-            <span
-              className={styles.drawerEventDot}
-              style={{ background: getCategoryColor(event) }}
+            <AppIcon
+              name={getCategoryIcon(event)}
+              size="sm"
+              color={getCategoryColor(event)}
+              className={styles.drawerEventIcon}
+              decorative
             />
             <div className={styles.drawerEventInfo}>
-              <span className={styles.drawerEventTitle}>{event.activity?.title ?? '—'}</span>
+              <span className={styles.drawerEventTitle}>{formatEventLabel(event)}</span>
               <span className={styles.drawerEventTime}>
                 {formatEventTime(event.startTime, event.durationMinutes)}
               </span>

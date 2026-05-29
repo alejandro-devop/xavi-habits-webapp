@@ -5,6 +5,8 @@ import { useActivitiesQuery } from '@/features/activities/hooks/useActivities'
 import {
   buildDurationOptions,
   buildStartTimeOptions,
+  clampEventDuration,
+  formatEventEndTime,
   hasConflict,
   snapTimeTo15,
 } from '@/features/weekly-routine/utils/planner.utils'
@@ -15,6 +17,7 @@ import type {
 } from '@/features/weekly-routine/types/weekly-routine.types'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
+import { Input } from '@/shared/ui/Input'
 import { Select } from '@/shared/ui/Select'
 import { SteppedModal, useModalStep } from '@/shared/ui/SteppedModal'
 import { Textarea } from '@/shared/ui/Textarea'
@@ -86,6 +89,7 @@ function RoutineEventRootStep({
 
   const startTimeOptions = buildStartTimeOptions(routine.dayStartTime, routine.dayEndTime)
   const durationOptions = buildDurationOptions(values.startTime, routine.dayEndTime)
+  const endTimeLabel = formatEventEndTime(values.startTime, values.durationMinutes)
 
   return (
     <div className={styles.form}>
@@ -130,23 +134,32 @@ function RoutineEventRootStep({
             options={startTimeOptions}
             onChange={(v) => {
               set('startTime', v)
-              const opts = buildDurationOptions(v, routine.dayEndTime)
-              if (!opts.find((o) => o.value === values.durationMinutes)) {
-                set('durationMinutes', opts[0]?.value ?? 15)
-              }
+              set(
+                'durationMinutes',
+                clampEventDuration(v, routine.dayEndTime, values.durationMinutes),
+              )
             }}
           />
         </FormField>
 
-        <FormField id="event-duration" label="Duración">
+        <FormField
+          id="event-duration"
+          label="Duración"
+          helperText="Máximo 4 h por evento"
+        >
           <Select
             id="event-duration"
             value={String(values.durationMinutes)}
             options={durationOptions.map((o) => ({ value: String(o.value), label: o.label }))}
             onChange={(v) => set('durationMinutes', parseInt(v, 10))}
+            disabled={durationOptions.length === 0}
           />
         </FormField>
       </div>
+
+      <FormField id="event-end" label="Hora de fin (calculada)">
+        <Input id="event-end" type="text" value={endTimeLabel} readOnly disabled />
+      </FormField>
 
       <FormField id="event-notes" label="Notas" helperText="Descripción breve del evento">
         <Textarea
@@ -204,22 +217,32 @@ export function RoutineEventModal({
 }: Props) {
   const defaultTime = snapTimeTo15(initialTime ?? routine.dayStartTime)
 
+  const initialStartTime = editing?.startTime ?? defaultTime
   const [values, setValues] = useState<RoutineEventFormValues>({
     activityId: editing?.activityId ?? null,
     dayOfWeek: editing?.dayOfWeek ?? initialDay ?? 'monday',
-    startTime: editing?.startTime ?? defaultTime,
-    durationMinutes: editing?.durationMinutes ?? 30,
+    startTime: initialStartTime,
+    durationMinutes: clampEventDuration(
+      initialStartTime,
+      routine.dayEndTime,
+      editing?.durationMinutes ?? 30,
+    ),
     notes: editing?.notes ?? '',
   })
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
+    const startTime = editing?.startTime ?? defaultTime
     setValues({
       activityId: editing?.activityId ?? null,
       dayOfWeek: editing?.dayOfWeek ?? initialDay ?? 'monday',
-      startTime: editing?.startTime ?? defaultTime,
-      durationMinutes: editing?.durationMinutes ?? 30,
+      startTime,
+      durationMinutes: clampEventDuration(
+        startTime,
+        routine.dayEndTime,
+        editing?.durationMinutes ?? 30,
+      ),
       notes: editing?.notes ?? '',
     })
     setError(null)

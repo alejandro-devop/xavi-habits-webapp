@@ -38,9 +38,9 @@
   background: none;
   border: none;
   outline: none;
-  font-family: var(--font-family);
+  font-family: var(--font-handwritten);
   // 1rem (16px) evita el zoom automático en iOS/Android (threshold = 16px)
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: $font-weight-regular;
   color: var(--color-text);
   line-height: var(--paper-row-height);

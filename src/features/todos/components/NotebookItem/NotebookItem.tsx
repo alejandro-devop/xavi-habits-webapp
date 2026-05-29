@@ -86,6 +86,11 @@ export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Prop
       <span className={styles.title}>{todo.title}</span>
 
       <div className={styles.meta}>
+        {hasSubtasks ? (
+          <svg className={styles.subtaskIcon} width="12" height="12" viewBox="0 0 12 12" fill="none" aria-label="Tiene subtareas">
+            <path d="M2 3h8M4 6h6M4 9h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        ) : null}
         {todo.tags.length > 0 ? (
           <div className={styles.tags}>
             <span className={styles.tagsDesktop}>

@@ -29,7 +29,8 @@
 
 .title {
   flex: 1;
-  font-size: $font-size-sm;
+  font-family: var(--font-handwritten);
+  font-size: $font-size-lg;
   color: var(--color-text);
   outline: none;
   border-radius: 2px;
@@ -86,10 +87,10 @@
   border: none;
   border-bottom: 1px dashed var(--color-border);
   outline: none;
-  font-size: 1rem; // ≥16px evita zoom automático en iOS/Android
+  font-size: 1.125rem; // ≥16px evita zoom automático en iOS/Android
   color: var(--color-text);
   padding: 2px 0;
-  font-family: var(--font-family);
+  font-family: var(--font-handwritten);
 
   &:focus-visible {
     outline: none;

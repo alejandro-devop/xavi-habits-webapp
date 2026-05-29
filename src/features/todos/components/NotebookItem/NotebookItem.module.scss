@@ -72,13 +72,20 @@
 
 .title {
   flex: 1;
-  font-size: $font-size-sm;
+  font-family: var(--font-handwritten);
+  font-size: $font-size-xl;
   font-weight: $font-weight-regular;
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: var(--paper-row-height);
+}
+
+.subtaskIcon {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+  flex-shrink: 0;
 }
 
 .meta {

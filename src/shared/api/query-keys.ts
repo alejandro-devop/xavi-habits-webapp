@@ -38,6 +38,7 @@ export const courseKeys = {
 
 export const todoKeys = {
   all: ['todos'] as const,
+  lists: () => [...todoKeys.all, 'list'] as const,
   list: (filters: ListFilters = {}) => [...todoKeys.all, 'list', filters] as const,
   detail: (id: string) => [...todoKeys.all, 'detail', id] as const,
   folders: {

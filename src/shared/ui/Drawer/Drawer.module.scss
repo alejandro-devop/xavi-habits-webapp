@@ -1,3 +1,5 @@
+@use '@/app/styles/mixins' as *;
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -87,9 +89,57 @@
   background: color-mix(in srgb, var(--color-text) 6%, transparent);
   cursor: pointer;
   font-size: 1.25rem;
+  z-index: 2;
 
   &:focus-visible {
     outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
+  }
+}
+
+// ── Notebook variant ──────────────────────────────────────────────────────────
+.notebook {
+  @include paper-ruled-background;
+  background-attachment: local;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  box-shadow:
+    var(--paper-shadow),
+    -4px 0 12px rgba(0, 0, 0, 0.08);
+
+  // Offset the line grid so the first ruled line falls at the bottom of the
+  // first text line: padding-top (--spacing-lg = 2rem) + row-height - 1px line
+  background-position-y: calc(var(--spacing-lg) + 1px);
+
+  // No gap between header and body — the ruled grid takes care of rhythm
+  .header {
+    margin-bottom: 0;
+  }
+
+  // Close button must stand out against the paper background
+  .close {
+    background: var(--paper-bg);
+    border: 1.5px solid var(--color-border);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 0 0 3px var(--paper-bg);
+    color: var(--color-text);
+    line-height: 1;
+
+    &:hover {
+      background: color-mix(in srgb, var(--color-text) 8%, var(--paper-bg));
+    }
+  }
+
+  // Header title sits on exactly one ruled line
+  .title {
+    font-family: var(--font-handwritten);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: var(--paper-row-height);
   }
 }

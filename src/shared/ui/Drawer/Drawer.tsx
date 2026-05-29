@@ -8,11 +8,13 @@ import { useFocusTrap } from '@/shared/hooks/useFocusTrap'
 import styles from './Drawer.module.scss'
 
 export type DrawerSide = 'left' | 'right' | 'bottom'
+export type DrawerVariant = 'default' | 'notebook'
 
 type DrawerProps = {
   open: boolean
   onClose: () => void
   side?: DrawerSide
+  variant?: DrawerVariant
   title: string
   description?: string
   children?: ReactNode
@@ -29,6 +31,7 @@ export function Drawer({
   open,
   onClose,
   side = 'right',
+  variant = 'default',
   title,
   description,
   children,
@@ -73,7 +76,7 @@ export function Drawer({
             aria-modal="true"
             aria-labelledby={titleId}
             aria-describedby={description ? descriptionId : undefined}
-            className={[styles.panel, styles[side]].join(' ')}
+            className={[styles.panel, styles[side], variant === 'notebook' ? styles.notebook : ''].join(' ')}
             initial={prefersReducedMotion ? false : 'hidden'}
             animate={prefersReducedMotion ? undefined : 'visible'}
             exit={prefersReducedMotion ? undefined : 'hidden'}

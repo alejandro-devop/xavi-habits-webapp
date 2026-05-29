@@ -9,7 +9,7 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
+  gap: var(--paper-row-height);
 }
 
 .title {
@@ -19,9 +19,9 @@
   color: var(--color-text);
   outline: none;
   border-radius: 0;
-  line-height: $line-height-snug;
-  min-height: 1.4em;
-  padding: 4px 6px;
+  line-height: var(--paper-row-height);
+  min-height: var(--paper-row-height);
+  padding: 0 6px;
   margin: 0 -6px;
 
   &:focus {
@@ -37,7 +37,7 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
+  gap: 0;
 }
 
 .label {
@@ -50,6 +50,8 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-text-muted);
+  line-height: var(--paper-row-height);
+  min-height: var(--paper-row-height);
 }
 
 .subtaskCount {
@@ -63,21 +65,16 @@
 
 .description {
   width: 100%;
-  background: rgba(0, 0, 0, 0.025);
-  border: 1px solid var(--color-border);
-  border-radius: $radius-md;
-  padding: $spacing-sm;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
   font-family: var(--font-handwritten);
   font-size: 1.25rem; // ≥16px evita zoom automático en iOS/Android
   color: var(--color-text);
-  line-height: $line-height-relaxed;
-  resize: vertical;
+  line-height: var(--paper-row-height);
+  resize: none;
   outline: none;
-  transition: border-color 0.15s;
-
-  &:focus {
-    border-color: var(--color-primary);
-  }
 
   &:focus-visible {
     outline: none;
@@ -92,12 +89,16 @@
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-xs;
+  min-height: var(--paper-row-height);
+  align-items: center;
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: $spacing-xs;
+  min-height: var(--paper-row-height);
+  align-items: center;
 }
 
 .dangerZone {
@@ -127,12 +128,13 @@
 .newTagInput {
   background: none;
   border: none;
-  border-bottom: 1px dashed var(--color-border);
   outline: none;
   font-size: 1.125rem; // ≥16px evita zoom automático en iOS/Android
   color: var(--color-text);
-  padding: 4px 0;
+  padding: 0;
   width: 100%;
+  height: var(--paper-row-height);
+  line-height: var(--paper-row-height);
   font-family: var(--font-handwritten);
 
   &:focus-visible {

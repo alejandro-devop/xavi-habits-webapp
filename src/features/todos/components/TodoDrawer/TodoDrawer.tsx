@@ -119,7 +119,7 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   }
 
   return (
-    <Drawer open={Boolean(todoId)} onClose={onClose} side="right" title="Detalle de tarea">
+    <Drawer open={Boolean(todoId)} onClose={onClose} side="right" variant="notebook" title="Detalle de tarea">
       {isLoading || !todo ? (
         <div className={styles.loading}>
           <Spinner />

@@ -1,6 +1,6 @@
 # API Core — Xavi Habits Web
 
-Infraestructura de comunicación con `xavi-api` (Fase 3). Sin UI de autenticación ni hooks de dominio todavía.
+Infraestructura de comunicación con **xavi-api** (`xavi-platform-node`). Sin UI de autenticación ni hooks de dominio todavía en algunas fases; ver `AGENTS.md` para la relación repo backend ↔ frontend.
 
 ## Base URL
 
@@ -25,9 +25,9 @@ Leer siempre desde `src/app/config/env.ts`:
 | Dominio | Protocolo | Cliente |
 |---------|-----------|---------|
 | Login, registro, OTP, refresh, logout, profile | REST `/api/auth/*` | `restRequest` + `features/auth/api/auth.api.ts` |
-| Hábitos, actividades, cursos | GraphQL `/graphql` | `graphqlRequest` |
+| Hábitos, actividades, cursos, todos | GraphQL `/graphql` | `graphqlRequest` |
 
-**Regla:** no usar REST legacy (`/api/habit`, `/api/activity`, `/api/course`) en código nuevo. Esos dominios viven solo en GraphQL.
+**Regla:** no usar REST legacy (`/api/habit`, `/api/activity`, `/api/course`, `/api/todo`, …) en código nuevo. Esos dominios viven solo en GraphQL.
 
 ## Cliente REST (`restRequest`)
 
@@ -100,9 +100,9 @@ Factory en `src/shared/api/query-keys.ts`:
 
 - `authKeys.profile()`
 - `habitKeys.list(filters)`, `habitKeys.detail(id)`, `habitKeys.myDay(date)`
-- `activityKeys.*`, `courseKeys.*`
+- `activityKeys.*`, `courseKeys.*`, `todoKeys.*`
 
-Usar en hooks de fases siguientes; invalidar tras mutations según dominio.
+Usar en hooks de fases siguientes; invalidar tras mutations según dominio. Todos: `docs/todos-domain.md`.
 
 ## Futuros hooks con React Query
 

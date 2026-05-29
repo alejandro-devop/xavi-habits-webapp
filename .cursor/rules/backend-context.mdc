@@ -1,0 +1,30 @@
+---
+description: Backend xavi-api y dominio GraphQL para agentes
+alwaysApply: true
+---
+
+# Backend — xavi-platform-node
+
+**xavi-habits-web** consume **xavi-api** del repo hermano **`xavi-platform-node`** (misma API que otros frontends Xavi).
+
+- Repo local típico: `/Users/jako/Developer/xavi-platform/xavi-platform-node`
+- GraphQL: `POST {VITE_API_URL}/graphql` (ver `src/app/config/env.ts`)
+- Auth: REST `/api/auth/*` (no GraphQL)
+- **Funcionalidad nueva en backend → GraphQL** (`src/graphql/modules/<dominio>/`), no rutas REST nuevas
+
+## Dominios ya usados en habits-web
+
+| Dominio | Módulo backend | Doc frontend |
+|---------|----------------|--------------|
+| Hábitos | `habit/` | (feature `habits`) |
+| Actividades | `activity/` | `docs/activities-domain.md` |
+| Cursos | `course/` | (feature `courses`) |
+| **Todos** | `todo/` | `docs/todos-domain.md` |
+
+## Todos (pendiente de UI)
+
+- Schema: `xavi-platform-node/src/graphql/modules/todo/todo.schema.ts`
+- Operaciones Bruno: `xavi-platform-node/docs/graphql/todo-bruno.md`
+- En frontend: seguir patrón `features/activities/` (`graphql/`, `api/`, `hooks/`, `todoKeys` en `query-keys.ts`)
+
+Antes de asumir campos o mutaciones, leer el SDL del backend; no usar REST `/api/todo` en código nuevo.

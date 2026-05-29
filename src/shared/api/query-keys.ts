@@ -35,3 +35,9 @@ export const courseKeys = {
   detail: (id: string) => [...courseKeys.all, 'detail', id] as const,
   progress: (courseId: string) => [...courseKeys.all, 'progress', courseId] as const,
 }
+
+export const todoKeys = {
+  all: ['todos'] as const,
+  list: (filters: ListFilters = {}) => [...todoKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...todoKeys.all, 'detail', id] as const,
+}

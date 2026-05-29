@@ -173,7 +173,7 @@ function RoutineEventRootStep({
 
       <div className={styles.footer}>
         {editing && onDelete ? (
-          <Button variant="danger" onClick={onDelete} disabled={submitting || deleting} loading={deleting}>
+          <Button variant="danger" onClick={onDelete} disabled={submitting || deleting} isLoading={deleting}>
             Eliminar
           </Button>
         ) : (
@@ -191,7 +191,7 @@ function RoutineEventRootStep({
             variant="primary"
             onClick={onSubmit}
             disabled={submitting || deleting}
-            loading={submitting}
+            isLoading={submitting}
           >
             {editing ? 'Guardar' : 'Agregar'}
           </Button>

@@ -112,7 +112,7 @@ export function RoutineFormModal({ open, editing, onClose, onSubmit, submitting 
       <Button variant="ghost" onClick={onClose} disabled={submitting}>
         Cancelar
       </Button>
-      <Button variant="primary" onClick={handleSubmit} disabled={submitting} loading={submitting}>
+      <Button variant="primary" onClick={handleSubmit} disabled={submitting} isLoading={submitting}>
         {editing ? 'Guardar' : 'Crear'}
       </Button>
     </div>

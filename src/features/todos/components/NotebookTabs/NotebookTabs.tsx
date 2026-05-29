@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useTodoFoldersQuery, useCreateTodoFolderMutation } from '@/features/todos/hooks/useTodos'
-import type { TodoFolder } from '@/features/todos/types/todo.types'
+import type { TodoCollection, TodoFolder } from '@/features/todos/types/todo.types'
+import { todoKeys } from '@/shared/api/query-keys'
 import { Modal } from '@/shared/ui/Modal/Modal'
 import { Button } from '@/shared/ui/Button/Button'
 import styles from './NotebookTabs.module.scss'
@@ -25,9 +27,35 @@ type Props = {
   onSelect: (folderId: string | null) => void
 }
 
+function usePendingCountsFromCache() {
+  const queryClient = useQueryClient()
+  const [counts, setCounts] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    function compute() {
+      const lists = queryClient.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
+      const map: Record<string, number> = {}
+      for (const [key, data] of lists) {
+        if (!data) continue
+        const filters = key[2] as Record<string, unknown>
+        const folderId = filters?.folderId
+        if (typeof folderId === 'string') {
+          map[folderId] = data.todos.filter((t) => t.status !== 'completed').length
+        }
+      }
+      setCounts(map)
+    }
+    compute()
+    return queryClient.getQueryCache().subscribe(compute)
+  }, [queryClient])
+
+  return counts
+}
+
 export function NotebookTabs({ selectedFolderId, onSelect }: Props) {
   const { data: folders = [] } = useTodoFoldersQuery()
   const createFolder = useCreateTodoFolderMutation()
+  const pendingCounts = usePendingCountsFromCache()
 
   const [showModal, setShowModal] = useState(false)
   const [newName, setNewName] = useState('')
@@ -84,7 +112,11 @@ export function NotebookTabs({ selectedFolderId, onSelect }: Props) {
           >
             <span className={styles.dot} style={{ background: folder.color }} />
             {folder.name}
-            {folder.todoCount > 0 ? (
+            {pendingCounts[folder.id] !== undefined ? (
+              pendingCounts[folder.id] > 0 ? (
+                <span className={styles.count}>{pendingCounts[folder.id]}</span>
+              ) : null
+            ) : folder.todoCount > 0 ? (
               <span className={styles.count}>{folder.todoCount}</span>
             ) : null}
           </button>

@@ -34,6 +34,10 @@ export const TODOS_QUERY = `
           total
           completed
         }
+        subtasks {
+          id
+          isCompleted
+        }
         tags {
           id
           name

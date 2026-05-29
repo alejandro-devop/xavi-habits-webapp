@@ -19,23 +19,28 @@ function subtaskProgressStyle(
   if (total === 0) return {}
   const pct = Math.round((completed / total) * 100)
   const ratio = completed / total
-  // Color semáforo según progreso
-  const color =
+
+  // Semaphore colors: fill (brighter) + track (faint, always visible)
+  const [fill, track] =
     ratio === 1
-      ? 'rgba(16, 185, 129, 0.13)'   // verde
+      ? ['rgba(16, 185, 129, 0.18)', 'rgba(16, 185, 129, 0.05)']   // verde
       : ratio >= 0.5
-        ? 'rgba(245, 158, 11, 0.12)' // amarillo
-        : 'rgba(239, 68, 68, 0.10)'  // rojo
+        ? ['rgba(245, 158, 11, 0.16)', 'rgba(245, 158, 11, 0.05)'] // amarillo
+        : ['rgba(239, 68, 68, 0.14)', 'rgba(239, 68, 68, 0.05)']   // rojo
+
   return {
-    background: `linear-gradient(to right, ${color} ${pct}%, transparent ${pct}%)`,
+    background: `linear-gradient(to right, ${fill} ${pct}%, ${track} ${pct}%)`,
   }
 }
 
 export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Props) {
   const isCompleted = todo.status === 'completed'
-  const hasSubtasks = todo.subtasksCount.total > 0
+  // subtasksCount puede ser null en tareas antiguas — usar el array real como fallback
+  const subtaskTotal = todo.subtasksCount?.total ?? todo.subtasks?.length ?? 0
+  const subtaskCompleted = todo.subtasksCount?.completed ?? todo.subtasks?.filter(s => s.isCompleted).length ?? 0
+  const hasSubtasks = subtaskTotal > 0
   const progressStyle = hasSubtasks && !focused
-    ? subtaskProgressStyle(todo.subtasksCount.completed, todo.subtasksCount.total)
+    ? subtaskProgressStyle(subtaskCompleted, subtaskTotal)
     : undefined
 
   return (

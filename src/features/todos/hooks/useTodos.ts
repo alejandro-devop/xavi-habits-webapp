@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as todosApi from '@/features/todos/api/todos.api'
 import type {
@@ -67,13 +68,28 @@ export function useTodosQuery(filters: TodoFilters = {}) {
 }
 
 export function useTodoQuery(id: string | undefined) {
+  const queryClient = useQueryClient()
   const enabled = useAuthReady()
-  return useQuery({
+  const query = useQuery({
     queryKey: todoKeys.detail(id ?? ''),
     enabled: enabled && Boolean(id),
     queryFn: () => todosApi.getTodo(id!),
     staleTime: 1000 * 60 * 2,
   })
+
+  // El detalle siempre trae subtasks/subtasksCount correctos desde el servidor.
+  // Si el cache de lista tiene datos desincronizados (ej. servidor devuelve
+  // subtasksCount incorrecto en la query de lista), esto los corrige al abrir el drawer.
+  const todo = query.data
+  useEffect(() => {
+    if (!todo) return
+    patchTodoInLists(queryClient, todo.id, {
+      subtasks: todo.subtasks,
+      subtasksCount: todo.subtasksCount,
+    })
+  }, [todo, queryClient])
+
+  return query
 }
 
 export function useTodoTagsQuery() {
@@ -225,18 +241,21 @@ export function useAddSubtaskMutation(todoId: string) {
 
   return useMutation({
     mutationFn: (input: TodoSubtaskInput) => todosApi.addSubtask(input),
-    onSuccess: () => {
+    onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: todoKeys.detail(todoId) })
-      // Actualizar subtasksCount en listas sin refetch completo
       queryClient.setQueriesData<TodoCollection>({ queryKey: todoKeys.lists() }, (old) => {
         if (!old) return old
         return {
           ...old,
-          todos: old.todos.map((t) =>
-            t.id === todoId
-              ? { ...t, subtasksCount: { ...t.subtasksCount, total: t.subtasksCount.total + 1 } }
-              : t,
-          ),
+          todos: old.todos.map((t) => {
+            if (t.id !== todoId) return t
+            const prev = t.subtasksCount ?? { total: 0, completed: 0 }
+            return {
+              ...t,
+              subtasks: [...(t.subtasks ?? []), data],
+              subtasksCount: { ...prev, total: prev.total + 1 },
+            }
+          }),
         }
       })
     },
@@ -252,29 +271,28 @@ export function useEditSubtaskMutation(todoId: string) {
 
   return useMutation({
     mutationFn: (input: TodoSubtaskEditInput) => todosApi.editSubtask(input),
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
       void queryClient.invalidateQueries({ queryKey: todoKeys.detail(todoId) })
-      // Si se está completando/descompletando, actualizar el contador en listas
-      if (variables.isCompleted !== undefined) {
-        const delta = variables.isCompleted ? 1 : -1
-        queryClient.setQueriesData<TodoCollection>({ queryKey: todoKeys.lists() }, (old) => {
-          if (!old) return old
-          return {
-            ...old,
-            todos: old.todos.map((t) =>
-              t.id === todoId
-                ? {
-                    ...t,
-                    subtasksCount: {
-                      ...t.subtasksCount,
-                      completed: t.subtasksCount.completed + delta,
-                    },
-                  }
-                : t,
-            ),
-          }
-        })
-      }
+      queryClient.setQueriesData<TodoCollection>({ queryKey: todoKeys.lists() }, (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          todos: old.todos.map((t) => {
+            if (t.id !== todoId) return t
+            const prev = t.subtasksCount ?? { total: 0, completed: 0 }
+            const delta = variables.isCompleted !== undefined
+              ? (variables.isCompleted ? 1 : -1)
+              : 0
+            return {
+              ...t,
+              subtasks: (t.subtasks ?? []).map((s) =>
+                s.id === variables.subtaskId ? { ...s, ...data } : s
+              ),
+              subtasksCount: { ...prev, completed: prev.completed + delta },
+            }
+          }),
+        }
+      })
     },
     onError: () => {
       toast.error('No se pudo actualizar la subtarea')
@@ -288,17 +306,25 @@ export function useRemoveSubtaskMutation(todoId: string) {
 
   return useMutation({
     mutationFn: (input: TodoSubtaskRemoveInput) => todosApi.removeSubtask(input),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: todoKeys.detail(todoId) })
       queryClient.setQueriesData<TodoCollection>({ queryKey: todoKeys.lists() }, (old) => {
         if (!old) return old
         return {
           ...old,
-          todos: old.todos.map((t) =>
-            t.id === todoId
-              ? { ...t, subtasksCount: { ...t.subtasksCount, total: t.subtasksCount.total - 1 } }
-              : t,
-          ),
+          todos: old.todos.map((t) => {
+            if (t.id !== todoId) return t
+            const prev = t.subtasksCount ?? { total: 0, completed: 0 }
+            const removed = (t.subtasks ?? []).find((s) => s.id === variables.subtaskId)
+            return {
+              ...t,
+              subtasks: (t.subtasks ?? []).filter((s) => s.id !== variables.subtaskId),
+              subtasksCount: {
+                total: Math.max(0, prev.total - 1),
+                completed: Math.max(0, prev.completed - (removed?.isCompleted ? 1 : 0)),
+              },
+            }
+          }),
         }
       })
     },

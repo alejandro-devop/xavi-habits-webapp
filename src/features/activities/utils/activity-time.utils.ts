@@ -5,6 +5,7 @@ import type {
   TimelineItem,
   ValidationResult,
 } from '@/features/activities/types/activity-timeline.types'
+import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/weekly-routine.types'
 
 const MS_PER_MINUTE = 60_000
 const MS_PER_SECOND = 1_000
@@ -385,9 +386,13 @@ export function getTimelineItemHeight(durationMinutes: number): number {
 export function buildTimelineItems(
   followUps: ActivityFollowUp[],
   freeSlots: TimelineFreeSlot[],
-  options: { showNow?: boolean; date: string },
+  options: {
+    showNow?: boolean
+    date: string
+    routineUpcoming?: WeeklyRoutineActivity | null
+  },
 ): TimelineItem[] {
-  const { showNow = false, date } = options
+  const { showNow = false, date, routineUpcoming = null } = options
 
   const items: TimelineItem[] = [
     ...followUps
@@ -401,6 +406,16 @@ export function buildTimelineItems(
       return { type: 'free-slot' as const, startMinutes, endMinutes, data: slot }
     }),
   ]
+
+  if (routineUpcoming) {
+    const startMinutes = timeToMinutes(routineUpcoming.startTime)
+    items.push({
+      type: 'routine-upcoming',
+      startMinutes,
+      endMinutes: startMinutes + routineUpcoming.durationMinutes,
+      data: routineUpcoming,
+    })
+  }
 
   items.sort((a, b) => {
     const aStart = a.type === 'now' ? timeToMinutes(getCurrentLocalTime()) : a.startMinutes

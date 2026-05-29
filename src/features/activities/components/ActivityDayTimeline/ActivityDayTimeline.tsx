@@ -4,6 +4,7 @@ import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/week
 import { ActivityFollowUpTimelineEntry } from '@/features/activities/components/ActivityFollowUpTimelineEntry'
 import { ActivityFreeSlotTimelineEntry } from '@/features/activities/components/ActivityFreeSlotTimelineEntry'
 import { ActivityTimelineNowEntry } from '@/features/activities/components/ActivityTimelineNowEntry'
+import { ActivityTimelineUpcomingEntry } from '@/features/activities/components/ActivityTimelineUpcomingEntry/ActivityTimelineUpcomingEntry'
 import type { TimelineFreeSlot } from '@/features/activities/types/activity-timeline.types'
 import {
   buildTimelineItems,
@@ -20,6 +21,7 @@ type ActivityDayTimelineProps = {
   showCurrentTimeMarker?: boolean
   quickActionsDisabled?: boolean
   routineSuggestion?: WeeklyRoutineActivity | null
+  routineUpcoming?: WeeklyRoutineActivity | null
   onFollowUpClick: (followUp: ActivityFollowUp) => void
   onFreeSlotClick: (slot: TimelineFreeSlot) => void
   onContinueAfterFollowUp?: (followUp: ActivityFollowUp) => void
@@ -34,6 +36,7 @@ export function ActivityDayTimeline({
   showCurrentTimeMarker = false,
   quickActionsDisabled = false,
   routineSuggestion,
+  routineUpcoming,
   onFollowUpClick,
   onFreeSlotClick,
   onContinueAfterFollowUp,
@@ -50,8 +53,9 @@ export function ActivityDayTimeline({
     return buildTimelineItems(followUps, freeSlots, {
       showNow: showCurrentTimeMarker,
       date,
+      routineUpcoming: showCurrentTimeMarker ? routineUpcoming : null,
     })
-  }, [date, followUps, freeSlotsProp, showCurrentTimeMarker])
+  }, [date, followUps, freeSlotsProp, showCurrentTimeMarker, routineUpcoming])
 
   if (items.length === 0) return null
 
@@ -69,6 +73,17 @@ export function ActivityDayTimeline({
                 isLast={isLast}
                 suggestion={routineSuggestion}
                 onStartSuggestion={onStartSuggestion}
+              />
+            )
+          }
+
+          if (item.type === 'routine-upcoming') {
+            return (
+              <ActivityTimelineUpcomingEntry
+                key={`routine-upcoming-${item.data.id}`}
+                event={item.data}
+                isLast={isLast}
+                onStart={quickActionsDisabled ? undefined : onStartSuggestion}
               />
             )
           }

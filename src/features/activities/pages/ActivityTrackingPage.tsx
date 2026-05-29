@@ -45,6 +45,7 @@ import {
   isToday,
 } from '@/features/activities/utils/activity-time.utils'
 import { useCurrentRoutineEventSuggestion } from '@/features/weekly-routine/hooks/useCurrentRoutineEventSuggestion'
+import { useUpcomingRoutineEventSuggestion } from '@/features/weekly-routine/hooks/useUpcomingRoutineEventSuggestion'
 import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/weekly-routine.types'
 import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -72,7 +73,8 @@ export function ActivityTrackingPage() {
     [openFollowUp],
   )
 
-  const routineSuggestion = useCurrentRoutineEventSuggestion()
+  const routineSuggestion = useCurrentRoutineEventSuggestion(selectedDate)
+  const routineUpcoming = useUpcomingRoutineEventSuggestion(selectedDate)
   const [startModalOpen, setStartModalOpen] = useState(false)
   const [startInitialStartTime, setStartInitialStartTime] = useState<string | null>(null)
   const [startInitialActivityId, setStartInitialActivityId] = useState<string | null>(null)
@@ -325,6 +327,7 @@ export function ActivityTrackingPage() {
                 showCurrentTimeMarker={isToday(selectedDate)}
                 quickActionsDisabled={Boolean(session)}
                 routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
+                routineUpcoming={isToday(selectedDate) ? routineUpcoming : null}
                 onFollowUpClick={setEditFollowUp}
                 onFreeSlotClick={setFreeSlotModal}
                 onContinueAfterFollowUp={handleContinueAfterFollowUp}

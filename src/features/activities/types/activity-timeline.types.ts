@@ -1,4 +1,5 @@
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
+import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/weekly-routine.types'
 
 export interface TimelineInterval {
   startMinutes: number
@@ -16,6 +17,12 @@ export interface TimelineFreeSlot {
 export type TimelineItem =
   | { type: 'follow-up'; startMinutes: number; endMinutes: number; data: ActivityFollowUp }
   | { type: 'free-slot'; startMinutes: number; endMinutes: number; data: TimelineFreeSlot }
+  | {
+      type: 'routine-upcoming'
+      startMinutes: number
+      endMinutes: number
+      data: WeeklyRoutineActivity
+    }
   | { type: 'now' }
 
 export type ValidationResult =

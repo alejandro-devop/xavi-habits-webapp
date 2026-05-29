@@ -20,19 +20,22 @@ function SubtaskRow({
 
   return (
     <li className={styles.subtask}>
-      <Checkbox
-        checked={subtask.isCompleted}
-        disabled={editSubtask.isPending}
-        onChange={() =>
-          editSubtask.mutate({
-            todoId,
-            subtaskId: subtask.id,
-            isCompleted: !subtask.isCompleted,
-          })
-        }
-        aria-label={subtask.title}
-      />
-      <span className={[styles.subtaskTitle, subtask.isCompleted ? styles.done : ''].join(' ')}>
+      <div className={styles.checkboxSlot}>
+        <Checkbox
+          id={`session-subtask-${subtask.id}`}
+          checked={subtask.isCompleted}
+          disabled={editSubtask.isPending}
+          aria-label={subtask.title}
+          onChange={() =>
+            editSubtask.mutate({
+              todoId,
+              subtaskId: subtask.id,
+              isCompleted: !subtask.isCompleted,
+            })
+          }
+        />
+      </div>
+      <span className={[styles.subtaskTitle, subtask.isCompleted ? styles.subtaskDone : ''].join(' ')}>
         {subtask.title}
       </span>
     </li>

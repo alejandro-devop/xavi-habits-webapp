@@ -22,13 +22,13 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2);
+  gap: var(--spacing-sm);
 }
 
 .todoOption {
   width: 100%;
   text-align: left;
-  padding: var(--spacing-3);
+  padding: var(--spacing-md);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-surface);

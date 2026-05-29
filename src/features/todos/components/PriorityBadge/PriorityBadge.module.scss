@@ -4,10 +4,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border-radius: $radius-md;
+  gap: 5px;
+  border-radius: $radius-full;
   border: 1.5px solid transparent;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.1s;
@@ -25,6 +23,22 @@
   &:hover {
     opacity: 0.85;
     transform: scale(1.04);
+  }
+
+  // Solo icono: cuadrado compacto
+  &.iconOnly {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: $radius-md;
+  }
+
+  // Con texto: pill con padding lateral
+  &.withLabel {
+    padding: 2px 10px;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    letter-spacing: 0.03em;
   }
 
   &.low {

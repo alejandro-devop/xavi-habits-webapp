@@ -46,20 +46,27 @@ function PriorityIcon({ priority }: { priority: TodoPriority }) {
 type Props = {
   priority: TodoPriority
   selected?: boolean
+  iconOnly?: boolean
   onClick?: () => void
 }
 
-export function PriorityBadge({ priority, selected, onClick }: Props) {
+export function PriorityBadge({ priority, selected, iconOnly = false, onClick }: Props) {
   return (
     <button
       type="button"
-      className={[styles.badge, styles[priority], selected ? styles.selected : ''].join(' ')}
+      className={[
+        styles.badge,
+        styles[priority],
+        selected ? styles.selected : '',
+        iconOnly ? styles.iconOnly : styles.withLabel,
+      ].join(' ')}
       onClick={onClick}
       aria-label={LABELS[priority]}
       title={LABELS[priority]}
       aria-pressed={selected}
     >
       <PriorityIcon priority={priority} />
+      {!iconOnly && <span>{LABELS[priority]}</span>}
     </button>
   )
 }

@@ -101,7 +101,7 @@ export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Prop
             </span>
           </div>
         ) : null}
-        <PriorityBadge priority={todo.priority} selected />
+        <PriorityBadge priority={todo.priority} selected iconOnly />
       </div>
     </motion.li>
   )

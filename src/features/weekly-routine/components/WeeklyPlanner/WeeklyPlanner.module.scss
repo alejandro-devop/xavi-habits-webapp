@@ -15,6 +15,8 @@
   inset: 0;
   overflow-x: auto;
   overflow-y: auto;
+  // Espacio bajo el grid para el RunningActivityWidget y el último bloque horario
+  padding-bottom: 8rem;
   -webkit-overflow-scrolling: touch;
   // paper-surface-base manually (sin overflow: hidden que bloquea el scroll)
   background-color: var(--paper-bg);

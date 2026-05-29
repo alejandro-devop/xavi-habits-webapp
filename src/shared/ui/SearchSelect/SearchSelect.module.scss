@@ -24,13 +24,17 @@
   gap: 0.25rem;
 }
 
-.trigger {
+// Wraps the single input + the chevron icon
+.inputWrapper {
+  position: relative;
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.65rem 0.85rem;
+  align-items: stretch;
+}
+
+.trigger {
+  flex: 1;
+  padding: 0.65rem 2.25rem 0.65rem 0.85rem; // right padding leaves room for chevron
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);
@@ -52,6 +56,13 @@
   }
 }
 
+// Closed state: looks like a select, cursor is pointer
+.triggerClosed {
+  cursor: pointer;
+  // Show placeholder color when empty (no selected value)
+  &:placeholder-shown { color: var(--color-text-muted); }
+}
+
 .triggerError {
   border-color: var(--color-danger);
 }
@@ -61,18 +72,13 @@
   cursor: not-allowed;
 }
 
-.triggerValue {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 0;
-}
-
-.placeholder {
-  color: var(--color-text-muted);
-}
 
 .chevron {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
   color: var(--color-text-muted);
   font-size: 0.75rem;
 }

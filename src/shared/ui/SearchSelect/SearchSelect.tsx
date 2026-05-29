@@ -49,10 +49,11 @@ export function SearchSelect({
   const describedBy = [helperId, errorId].filter(Boolean).join(' ') || undefined
 
   const rootRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-  const searchRef = useRef<HTMLInputElement>(null)
+  // Single input ref — always in the DOM, no button/input toggle
+  const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isOpenRef = useRef(false)
 
   const [isOpen, setIsOpen] = useState(false)
   // Options are shown with a delay so the virtual keyboard has time to settle first
@@ -73,9 +74,9 @@ export function SearchSelect({
     })
   }, [options, searchQuery])
 
-  // Reads refs directly — no stale closure, safe to call from rAF loop
+  // Reads ref directly — no stale closure, safe to call from rAF loop
   const updatePos = useCallback(() => {
-    const anchor = searchRef.current ?? triggerRef.current
+    const anchor = inputRef.current
     if (!anchor) return
     const rect = anchor.getBoundingClientRect()
     const vpHeight = window.visualViewport?.height ?? window.innerHeight
@@ -100,6 +101,7 @@ export function SearchSelect({
 
   const close = useCallback(() => {
     if (delayTimerRef.current) clearTimeout(delayTimerRef.current)
+    isOpenRef.current = false
     setIsOpen(false)
     setOptionsVisible(false)
     setSearchQuery('')
@@ -107,13 +109,16 @@ export function SearchSelect({
   }, [])
 
   const open = useCallback(() => {
-    if (disabled) return
+    // Guard: already open or disabled
+    if (disabled || isOpenRef.current) return
     if (delayTimerRef.current) clearTimeout(delayTimerRef.current)
+    isOpenRef.current = true
     setIsOpen(true)
     setOptionsVisible(false)
     setHighlightedIndex(0)
-    requestAnimationFrame(() => searchRef.current?.focus())
-    // Show options after keyboard animation settles (~320ms on iOS)
+    // Show options after keyboard animation settles (~320ms on iOS).
+    // No programmatic focus needed — the input is always in the DOM and the
+    // user's tap on it is already the gesture that triggers the keyboard.
     delayTimerRef.current = setTimeout(() => setOptionsVisible(true), 320)
   }, [disabled])
 
@@ -142,18 +147,18 @@ export function SearchSelect({
     if (opt.disabled) return
     onChange(opt.value, opt)
     close()
-    triggerRef.current?.focus()
+    inputRef.current?.blur()
   }
 
-  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (disabled) return
-    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      open()
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen) {
+      // Closed: open on arrow / enter / space
+      if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        open()
+      }
+      return
     }
-  }
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') { e.preventDefault(); close(); return }
     if (e.key === 'Tab') { close(); return }
     if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightedIndex((i) => Math.min(i + 1, filteredOptions.length - 1)) }
@@ -179,61 +184,53 @@ export function SearchSelect({
       ) : null}
 
       <div className={styles.control}>
-        {!isOpen ? (
-          <button
-            ref={triggerRef}
+        <div className={styles.inputWrapper}>
+          {/*
+           * Single <input> always in the DOM.
+           * When closed it's styled like a select trigger and is NOT readOnly so
+           * that iOS sees a genuine input tap → keyboard appears on first touch.
+           * When open it becomes a live search box.
+           */}
+          <input
+            ref={inputRef}
             id={id}
-            type="button"
+            type={isOpen ? 'search' : 'text'}
             role="combobox"
-            aria-expanded={false}
+            aria-expanded={isOpen && optionsVisible}
             aria-controls={listboxId}
             aria-haspopup="listbox"
+            aria-activedescendant={isOpen ? activeOptionId : undefined}
+            aria-autocomplete={isOpen ? 'list' : undefined}
             aria-invalid={Boolean(error)}
             aria-describedby={describedBy}
             disabled={disabled}
             className={[
               styles.trigger,
-              error ? styles.triggerError : '',
+              isOpen ? styles.searchInput : styles.triggerClosed,
+              error && !isOpen ? styles.triggerError : '',
               disabled ? styles.triggerDisabled : '',
             ].filter(Boolean).join(' ')}
-            onClick={open}
-            onFocus={open}
-            onKeyDown={handleTriggerKeyDown}
-          >
-            <span className={styles.triggerValue}>
-              {selected ? (
-                <>
-                  {selected.icon ? <span className={styles.optionIcon}>{selected.icon}</span> : null}
-                  <span>{selected.label}</span>
-                </>
-              ) : (
-                <span className={styles.placeholder}>{placeholder}</span>
-              )}
-            </span>
-            <span className={styles.chevron} aria-hidden>▾</span>
-          </button>
-        ) : (
-          <input
-            ref={searchRef}
-            id={id}
-            type="search"
-            role="combobox"
-            aria-expanded={optionsVisible}
-            aria-controls={listboxId}
-            aria-haspopup="listbox"
-            aria-activedescendant={activeOptionId}
-            aria-autocomplete="list"
-            aria-describedby={describedBy}
-            className={[styles.trigger, styles.searchInput].filter(Boolean).join(' ')}
-            placeholder={selected ? selected.label : searchPlaceholder}
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setHighlightedIndex(0) }}
-            onKeyDown={handleSearchKeyDown}
+            // When closed: show selected label (or empty → placeholder shows)
+            value={isOpen ? searchQuery : (selected?.label ?? '')}
+            placeholder={isOpen ? (selected?.label ?? searchPlaceholder) : placeholder}
+            onFocus={() => open()}
+            onChange={(e) => {
+              if (!isOpen) {
+                // Typing while closed → open and treat typed char as first query char
+                open()
+              }
+              setSearchQuery(e.target.value)
+              setHighlightedIndex(0)
+            }}
+            onKeyDown={handleKeyDown}
             onBlur={(e) => {
-              if (!dropdownRef.current?.contains(e.relatedTarget as Node)) close()
+              if (isOpen && !dropdownRef.current?.contains(e.relatedTarget as Node)) {
+                close()
+              }
             }}
           />
-        )}
+          {!isOpen ? <span className={styles.chevron} aria-hidden>▾</span> : null}
+        </div>
 
         {clearable && value && !disabled && !isOpen ? (
           <button

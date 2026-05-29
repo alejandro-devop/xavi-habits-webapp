@@ -101,6 +101,8 @@ Campo `Todo`: `folderId`, `folder { id name color todoCount }`.
 
 Migración: `028_todo_folders.sql`.
 
+Orden manual dentro de carpeta: campo `orderIndex`, mutation `todoReorder`, migración `029_todo_order_index.sql`. Ver `docs/todos-module-features.md`.
+
 ## GraphQL — subtareas
 
 | Operación | Uso |

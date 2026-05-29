@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { ActivityTodoFoldersField } from '@/features/activities/components/ActivityTodoFoldersField'
 import { CategoryPickerField } from '@/features/activities/components/CategoryPickerField'
 import type { ActivityCategory } from '@/features/activities/types/activity-category.types'
 import type { ActivityFormValues } from '@/features/activities/types/activity.types'
@@ -98,6 +99,12 @@ export function ActivityForm({
         value={values.categoryId}
         categories={categories}
         onChange={(value) => patch({ categoryId: value })}
+        disabled={loading}
+      />
+
+      <ActivityTodoFoldersField
+        value={values.todoFolderIds}
+        onChange={(todoFolderIds) => patch({ todoFolderIds })}
         disabled={loading}
       />
 

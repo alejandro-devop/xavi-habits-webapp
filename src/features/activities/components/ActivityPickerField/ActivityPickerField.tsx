@@ -68,6 +68,7 @@ export function ActivityPickerField({
         priority: 'medium',
         categoryId: quickCategoryId,
         scheduledDate: '',
+        todoFolderIds: [],
       }),
       {
         onSuccess: (activity) => {

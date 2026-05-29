@@ -27,6 +27,8 @@ export const activityKeys = {
     range: (from: string, to: string) =>
       [...activityKeys.followUps.all(), 'range', from, to] as const,
   },
+  pendingTodos: (activityId: string) =>
+    [...activityKeys.all, 'pendingTodos', activityId] as const,
 }
 
 export const courseKeys = {

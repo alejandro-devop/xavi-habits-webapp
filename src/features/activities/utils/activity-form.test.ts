@@ -28,6 +28,7 @@ describe('formValuesToInput', () => {
       priority: 'high',
       categoryId: 'cat-1',
       scheduledDate: '2026-05-20T10:00',
+      todoFolderIds: ['1', '2'],
     })
     expect(input.title).toBe('Tarea')
     expect(input.description).toBe('Notas')
@@ -35,5 +36,6 @@ describe('formValuesToInput', () => {
     expect(input.priority).toBe('high')
     expect(input.categoryId).toBe('cat-1')
     expect(input.scheduledDate).toMatch(/2026-05-20/)
+    expect(input.todoFolderIds).toEqual(['1', '2'])
   })
 })

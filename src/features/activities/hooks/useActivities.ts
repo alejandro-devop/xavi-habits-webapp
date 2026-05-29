@@ -86,6 +86,18 @@ export function useDeleteActivityMutation() {
   })
 }
 
+export function useActivityPendingTodosQuery(activityId: string | null | undefined) {
+  const isReady = useAuthBootstrap().status === 'ready'
+  const isAuthenticated = useAuthStore(selectIsAuthenticated)
+
+  return useQuery({
+    queryKey: activityKeys.pendingTodos(activityId ?? ''),
+    enabled: isReady && isAuthenticated && Boolean(activityId),
+    queryFn: () => activitiesApi.getActivityPendingTodos(activityId!),
+    staleTime: 1000 * 15,
+  })
+}
+
 export function useCompleteActivityMutation() {
   const queryClient = useQueryClient()
   const toast = useToast()

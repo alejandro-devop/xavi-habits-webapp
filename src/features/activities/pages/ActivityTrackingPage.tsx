@@ -18,6 +18,8 @@ import {
   useUpdateActivityFollowUpMutation,
 } from '@/features/activities/hooks/useActivityFollowUps'
 import { useActivitiesQuery } from '@/features/activities/hooks/useActivities'
+import { useCompleteTodoMutation } from '@/features/todos/hooks/useTodos'
+import type { RunningActivitySessionLinkedTodo } from '@/features/activities/types/activity-followup.types'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 import type {
   ActivityFollowUpInput,
@@ -100,13 +102,17 @@ export function ActivityTrackingPage() {
   const createMutation = useCreateActivityFollowUpMutation()
   const updateMutation = useUpdateActivityFollowUpMutation()
   const deleteMutation = useDeleteActivityFollowUpMutation()
+  const completeTodoMutation = useCompleteTodoMutation()
 
   const handleSelectDay = (date: string) => {
     if (isFutureDate(date)) return
     setSelectedDate(date)
   }
 
-  const handleStart = (values: StartActivityFormValues) => {
+  const handleStart = (
+    values: StartActivityFormValues,
+    linkedTodo?: RunningActivitySessionLinkedTodo,
+  ) => {
     const activity = activities.find((a) => a.id === values.activityId)
     if (!activity) return
 
@@ -115,6 +121,7 @@ export function ActivityTrackingPage() {
         activity,
         values.notes,
         startFormToStartedAtIso(selectedDate, values),
+        linkedTodo,
       ),
     )
     setStartModalOpen(false)
@@ -171,10 +178,25 @@ export function ActivityTrackingPage() {
   }
 
   const handleFinishSave = (input: ActivityFollowUpInput) => {
+    const linkedTodo = session?.linkedTodo ?? null
+
     createMutation.mutate(input, {
-      onSuccess: () => {
+      onSuccess: async () => {
         clearSession()
         setFinishModalOpen(false)
+
+        if (!linkedTodo) return
+
+        const confirmed = await confirm({
+          title: '¿Completar la tarea?',
+          description: `¿Marcar «${linkedTodo.title}» como completada? Las subtareas pueden quedar pendientes.`,
+          confirmLabel: 'Completar tarea',
+          cancelLabel: 'No',
+        })
+
+        if (confirmed) {
+          completeTodoMutation.mutate(linkedTodo.id)
+        }
       },
     })
   }

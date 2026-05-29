@@ -95,6 +95,7 @@ export function activityToRunningSession(
   activity: Activity,
   notes: string,
   startedAt: string,
+  linkedTodo?: RunningActivitySession['linkedTodo'],
 ): RunningActivitySession {
   return {
     activityId: activity.id,
@@ -105,6 +106,7 @@ export function activityToRunningSession(
     categoryIcon: activity.category?.icon ?? null,
     notes: notes.trim() || null,
     startedAt,
+    linkedTodo: linkedTodo ?? null,
   }
 }
 

@@ -11,6 +11,13 @@ export interface ActivityCategoryRef {
   orderIndex?: number
 }
 
+export interface ActivityTodoFolderRef {
+  id: string
+  name: string
+  color: string
+  orderIndex: number
+}
+
 export interface Activity {
   id: string
   userId: number
@@ -25,6 +32,7 @@ export interface Activity {
   createdAt: string
   updatedAt: string
   category?: ActivityCategoryRef | null
+  todoFolders?: ActivityTodoFolderRef[]
 }
 
 export interface ActivityInput {
@@ -34,6 +42,7 @@ export interface ActivityInput {
   priority?: ActivityPriority
   categoryId?: string | null
   scheduledDate?: string | null
+  todoFolderIds?: string[]
 }
 
 export interface ActivityEditInput {
@@ -44,6 +53,7 @@ export interface ActivityEditInput {
   priority?: ActivityPriority
   categoryId?: string | null
   scheduledDate?: string | null
+  todoFolderIds?: string[]
 }
 
 export interface ActivityFilters {
@@ -71,4 +81,5 @@ export interface ActivityFormValues {
   priority: ActivityPriority
   categoryId: string | null
   scheduledDate: string
+  todoFolderIds: string[]
 }

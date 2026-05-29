@@ -36,6 +36,12 @@ export const ACTIVITIES_QUERY = `
           icon
           color
         }
+        todoFolders {
+          id
+          name
+          color
+          orderIndex
+        }
       }
       page
       limit
@@ -66,6 +72,28 @@ export const ACTIVITY_QUERY = `
         icon
         color
         orderIndex
+      }
+      todoFolders {
+        id
+        name
+        color
+        orderIndex
+      }
+    }
+  }
+`
+
+export const ACTIVITY_PENDING_TODOS_QUERY = `
+  query ActivityPendingTodos($activityId: ID!, $limit: Int) {
+    activityPendingTodos(activityId: $activityId, limit: $limit) {
+      id
+      title
+      status
+      priority
+      folderId
+      subtasksCount {
+        total
+        completed
       }
     }
   }

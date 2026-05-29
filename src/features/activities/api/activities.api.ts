@@ -3,6 +3,7 @@ import {
   ACTIVITY_ADD_MUTATION,
   ACTIVITY_COMPLETE_MUTATION,
   ACTIVITY_EDIT_MUTATION,
+  ACTIVITY_PENDING_TODOS_QUERY,
   ACTIVITY_QUERY,
   ACTIVITY_REMOVE_MUTATION,
 } from '@/features/activities/graphql/activities.graphql'
@@ -13,6 +14,8 @@ import type {
   ActivityFilters,
   ActivityInput,
 } from '@/features/activities/types/activity.types'
+import type { TodoSubtasksCount } from '@/features/todos/types/todo.types'
+import type { TodoPriority, TodoStatus } from '@/features/todos/types/todo.types'
 import { toGraphQLActivityVariables } from '@/features/activities/utils/activity-filters'
 import { graphqlRequest } from '@/shared/api/graphql-client'
 
@@ -38,6 +41,19 @@ type ActivityRemoveData = {
 
 type ActivityCompleteData = {
   activityComplete: Activity
+}
+
+export type ActivityPendingTodo = {
+  id: string
+  title: string
+  status: TodoStatus
+  priority: TodoPriority
+  folderId: string | null
+  subtasksCount: TodoSubtasksCount
+}
+
+type ActivityPendingTodosData = {
+  activityPendingTodos: ActivityPendingTodo[]
 }
 
 export async function getActivities(filters: ActivityFilters = {}): Promise<ActivitiesResponse> {
@@ -80,4 +96,15 @@ export async function completeActivity(id: string): Promise<Activity> {
     id,
   })
   return data.activityComplete
+}
+
+export async function getActivityPendingTodos(
+  activityId: string,
+  limit = 50,
+): Promise<ActivityPendingTodosData['activityPendingTodos']> {
+  const data = await graphqlRequest<
+    ActivityPendingTodosData,
+    { activityId: string; limit: number }
+  >(ACTIVITY_PENDING_TODOS_QUERY, { activityId, limit })
+  return data.activityPendingTodos
 }

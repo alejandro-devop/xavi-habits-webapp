@@ -9,6 +9,7 @@ export function emptyActivityFormValues(): ActivityFormValues {
     priority: 'medium',
     categoryId: null,
     scheduledDate: '',
+    todoFolderIds: [],
   }
 }
 
@@ -20,6 +21,7 @@ export function activityToFormValues(activity: Activity): ActivityFormValues {
     priority: activity.priority,
     categoryId: activity.categoryId,
     scheduledDate: isoToDatetimeLocal(activity.scheduledDate),
+    todoFolderIds: activity.todoFolders?.map((f) => f.id) ?? [],
   }
 }
 
@@ -41,5 +43,6 @@ export function formValuesToInput(values: ActivityFormValues): ActivityInput {
     priority: values.priority,
     categoryId: values.categoryId,
     scheduledDate: datetimeLocalToIso(values.scheduledDate),
+    todoFolderIds: values.todoFolderIds,
   }
 }

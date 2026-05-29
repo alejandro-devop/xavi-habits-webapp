@@ -1,6 +1,10 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('@/features/todos/hooks/useTodos', () => ({
+  useTodoFoldersQuery: () => ({ data: [], isLoading: false }),
+}))
 import { ActivityForm } from '@/features/activities/components/ActivityForm/ActivityForm'
 import { emptyActivityFormValues } from '@/features/activities/utils/activity-form'
 import { renderWithProviders } from '@/test/render'

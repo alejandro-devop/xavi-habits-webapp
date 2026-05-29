@@ -1,3 +1,4 @@
+import { SessionLinkedTodo } from '@/features/activities/components/SessionLinkedTodo'
 import type { RunningActivitySession } from '@/features/activities/types/activity-followup.types'
 import { useElapsedTimer } from '@/features/activities/hooks/useElapsedTimer'
 import { isoToLocalTime } from '@/features/activities/utils/activity-time.utils'
@@ -49,6 +50,10 @@ export function RunningActivityTimer({
       </div>
 
       {session.notes ? <p className={styles.notes}>{session.notes}</p> : null}
+
+      {session.linkedTodo ? (
+        <SessionLinkedTodo todoId={session.linkedTodo.id} todoTitle={session.linkedTodo.title} />
+      ) : null}
 
       <p className={styles.started}>
         Inicio: <strong>{isoToLocalTime(session.startedAt)}</strong>

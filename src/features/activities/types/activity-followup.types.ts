@@ -47,6 +47,11 @@ export interface ActivityFollowUpsDateGroup {
   followUps: ActivityFollowUp[]
 }
 
+export interface RunningActivitySessionLinkedTodo {
+  id: string
+  title: string
+}
+
 export interface RunningActivitySession {
   activityId: string
   activityTitle: string
@@ -56,6 +61,7 @@ export interface RunningActivitySession {
   categoryIcon?: string | null
   notes?: string | null
   startedAt: string
+  linkedTodo?: RunningActivitySessionLinkedTodo | null
 }
 
 export interface StartActivityFormValues {

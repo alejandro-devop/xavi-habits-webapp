@@ -11,6 +11,7 @@ $tab-height: 32px;
   padding: 0;
   width: 100%;
   scrollbar-width: none;
+  touch-action: pan-x;
 
   &::-webkit-scrollbar {
     display: none;

@@ -4,6 +4,7 @@ import { ActivityWeekSelector } from '@/features/activities/components/ActivityW
 import { DayRemainingWidget } from '@/features/activities/components/DayRemainingWidget'
 import { CategoryTimeWidget } from '@/features/activities/components/CategoryTimeWidget'
 import { DayUsageWidget } from '@/features/activities/components/DayUsageWidget'
+import { DayStoryWidget } from '@/features/activities/components/DayStoryWidget'
 import { CreateFollowUpFromFreeSlotModal } from '@/features/activities/components/CreateFollowUpFromFreeSlotModal'
 import { EditFollowUpModal } from '@/features/activities/components/EditFollowUpModal'
 import { FinishActivityModal } from '@/features/activities/components/FinishActivityModal'
@@ -380,6 +381,12 @@ export function ActivityTrackingPage() {
                 isLoading={isLoading}
               />
 
+              <DayStoryWidget
+                className={styles.widgetStory}
+                date={selectedDate}
+                followUps={followUps}
+                isLoading={isLoading}
+              />
             </div>
           </div>
         </Tabs.Panel>

@@ -1,0 +1,211 @@
+.root {
+  width: 100%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.summaryCount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.summaryLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+/* ── Timeline ─────────────────────────────────────── */
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hour divider */
+.hourDivider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0 0.25rem 1.5rem;
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--color-text-muted) 18%, transparent);
+  }
+}
+
+.hourLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* Entry */
+.entry {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  gap: 0 0.75rem;
+  position: relative;
+}
+
+.entryLast .entryLine {
+  display: none;
+}
+
+/* Rail: dot + vertical connector */
+.entryRail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 0.25rem;
+}
+
+.entryDot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.entryLine {
+  width: 1px;
+  flex: 1;
+  min-height: 0.75rem;
+  background: color-mix(in srgb, var(--color-text-muted) 20%, transparent);
+  margin-top: 0.2rem;
+}
+
+/* Entry body */
+.entryBody {
+  padding-bottom: 0.875rem;
+  min-width: 0;
+}
+
+.entryMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.2rem;
+}
+
+.entryTime {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+  flex-shrink: 0;
+}
+
+.entryCategory {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.entryCategoryIcon {
+  flex-shrink: 0;
+}
+
+.entryDuration {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.entryActivity {
+  margin: 0 0 0.2rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entryText {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  overflow-wrap: break-word;
+}
+
+.entryTextFallback {
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ── Footer ────────────────────────────────────────── */
+
+.empty,
+.foot {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
+}
+
+/* ── Skeleton ──────────────────────────────────────── */
+
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-glass-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+}
+
+.skeletonEntry {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.skeletonEntryBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.25rem;
+}

@@ -1,16 +1,25 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { useLocation } from 'react-router'
+import { FinishActivityModal } from '@/features/activities/components/FinishActivityModal'
 import { RunningActivityTimer } from '@/features/activities/components/RunningActivityTimer'
+import { useActivitiesQuery } from '@/features/activities/hooks/useActivities'
 import {
   useActivityOpenFollowUpQuery,
   useDeleteActivityFollowUpMutation,
   useUpdateActivityFollowUpMutation,
 } from '@/features/activities/hooks/useActivityFollowUps'
 import { useElapsedTimer } from '@/features/activities/hooks/useElapsedTimer'
-import type { RunningActivitySession } from '@/features/activities/types/activity-followup.types'
+import type {
+  FinishActivityFormValues,
+  RunningActivitySession,
+} from '@/features/activities/types/activity-followup.types'
 import { getCurrentLocalDate } from '@/features/activities/utils/activity-time.utils'
-import { openFollowUpToRunningSession } from '@/features/activities/utils/activity-followup-form'
+import {
+  finishFormFromSession,
+  finishOpenFollowUpToEditInput,
+  openFollowUpToRunningSession,
+} from '@/features/activities/utils/activity-followup-form'
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 import { reducedTransition, transitions } from '@/shared/motion'
 import { useReducedMotionPreference } from '@/shared/motion/useReducedMotionPreference'
@@ -68,12 +77,17 @@ export function RunningActivityWidget() {
   const location = useLocation()
   const prefersReducedMotion = useReducedMotionPreference()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [finishModalOpen, setFinishModalOpen] = useState(false)
+  const [finishFormValues, setFinishFormValues] = useState<FinishActivityFormValues | null>(null)
 
   const { data: openFollowUp } = useActivityOpenFollowUpQuery()
   const session = useMemo(
     () => (openFollowUp ? openFollowUpToRunningSession(openFollowUp) : null),
     [openFollowUp],
   )
+  const { data: activitiesData } = useActivitiesQuery({ limit: 100, page: 1 })
+  const activities = activitiesData?.activities ?? []
+
   const updateMutation = useUpdateActivityFollowUpMutation()
   const deleteMutation = useDeleteActivityFollowUpMutation()
 
@@ -82,10 +96,16 @@ export function RunningActivityWidget() {
 
   function handleFinish() {
     if (!session) return
-    updateMutation.mutate(
-      { id: session.followUpId },
-      { onSuccess: () => setDrawerOpen(false) },
-    )
+    setDrawerOpen(false)
+    setFinishFormValues(finishFormFromSession(session, getCurrentLocalDate()))
+    setFinishModalOpen(true)
+  }
+
+  function handleFinishSave(values: FinishActivityFormValues) {
+    if (!session) return
+    updateMutation.mutate(finishOpenFollowUpToEditInput(session.followUpId, values), {
+      onSuccess: () => setFinishModalOpen(false),
+    })
   }
 
   function handleCancel() {
@@ -128,9 +148,20 @@ export function RunningActivityWidget() {
             session={session}
             onFinish={handleFinish}
             onCancel={handleCancel}
-            loading={updateMutation.isPending || deleteMutation.isPending}
+            loading={deleteMutation.isPending}
           />
         </Drawer>
+      ) : null}
+
+      {finishFormValues ? (
+        <FinishActivityModal
+          open={finishModalOpen}
+          initialValues={finishFormValues}
+          activities={activities}
+          loading={updateMutation.isPending}
+          onClose={() => setFinishModalOpen(false)}
+          onSave={handleFinishSave}
+        />
       ) : null}
     </>
   )

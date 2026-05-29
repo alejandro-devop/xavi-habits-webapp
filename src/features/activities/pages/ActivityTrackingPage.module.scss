@@ -56,7 +56,8 @@
 }
 
 .widgetUsage,
-.widgetCategory {
+.widgetCategory,
+.widgetStory {
   width: 100%;
   min-width: 0;
 }
@@ -69,7 +70,8 @@
     gap: var(--spacing-md);
   }
 
-  .widgetUsage {
+  .widgetUsage,
+  .widgetStory {
     grid-column: 1 / -1;
   }
 }

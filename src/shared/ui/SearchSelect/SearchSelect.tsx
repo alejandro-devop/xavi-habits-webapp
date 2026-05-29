@@ -103,15 +103,19 @@ export function SearchSelect({
   // Reposition on scroll / resize / virtual keyboard while open
   useEffect(() => {
     if (!isOpen) return
-    window.addEventListener('scroll', updatePos, true)
-    window.addEventListener('resize', updatePos)
-    window.visualViewport?.addEventListener('resize', updatePos)
-    window.visualViewport?.addEventListener('scroll', updatePos)
+
+    // rAF wrapper so we measure after the browser has painted the new layout
+    const onViewportChange = () => requestAnimationFrame(updatePos)
+
+    window.addEventListener('scroll', onViewportChange, true)
+    window.addEventListener('resize', onViewportChange)
+    window.visualViewport?.addEventListener('resize', onViewportChange)
+    window.visualViewport?.addEventListener('scroll', onViewportChange)
     return () => {
-      window.removeEventListener('scroll', updatePos, true)
-      window.removeEventListener('resize', updatePos)
-      window.visualViewport?.removeEventListener('resize', updatePos)
-      window.visualViewport?.removeEventListener('scroll', updatePos)
+      window.removeEventListener('scroll', onViewportChange, true)
+      window.removeEventListener('resize', onViewportChange)
+      window.visualViewport?.removeEventListener('resize', onViewportChange)
+      window.visualViewport?.removeEventListener('scroll', onViewportChange)
     }
   }, [isOpen, updatePos])
 
@@ -265,6 +269,11 @@ export function SearchSelect({
                     onChange={(e) => {
                       setSearchQuery(e.target.value)
                       setHighlightedIndex(0)
+                    }}
+                    onFocus={() => {
+                      // Wait for the virtual keyboard animation to finish (~300ms on iOS)
+                      // then recalculate so the dropdown stays above the keyboard
+                      setTimeout(updatePos, 320)
                     }}
                     aria-label={searchPlaceholder}
                   />

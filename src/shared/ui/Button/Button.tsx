@@ -20,11 +20,17 @@ type ButtonCommonProps = {
   className?: string
 }
 
-export type ButtonProps = ButtonCommonProps &
-  (
-    | (ButtonHTMLAttributes<HTMLButtonElement> & { to?: never })
-    | (Omit<LinkProps, 'children'> & { type?: never })
-  )
+type ButtonAsButtonProps = ButtonCommonProps &
+  ButtonHTMLAttributes<HTMLButtonElement> & { to?: never }
+
+type ButtonAsLinkProps = ButtonCommonProps &
+  Omit<LinkProps, 'children' | 'className'> & { type?: never }
+
+export type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps
+
+function isLinkButton(props: ButtonProps): props is ButtonAsLinkProps {
+  return 'to' in props && props.to != null
+}
 
 function useButtonClasses({
   variant = 'primary',
@@ -57,17 +63,11 @@ function ButtonContent({
 }
 
 export function Button(props: ButtonProps) {
-  const {
-    variant = 'primary',
-    size = 'md',
-    isLoading = false,
-    fullWidth = false,
-    leftIcon,
-    rightIcon,
-    children,
-    className,
-    ...rest
-  } = props
+  const variant = props.variant ?? 'primary'
+  const size = props.size ?? 'md'
+  const isLoading = props.isLoading ?? false
+  const fullWidth = props.fullWidth ?? false
+  const { leftIcon, rightIcon, children, className } = props
 
   const prefersReducedMotion = useReducedMotionPreference()
   const classNames = useButtonClasses({ variant, size, fullWidth, className })
@@ -84,21 +84,45 @@ export function Button(props: ButtonProps) {
         transition: transitions.fast,
       }
 
-  if ('to' in rest && rest.to) {
-    const { to, ...linkProps } = rest
+  if (isLinkButton(props)) {
+    const {
+      variant: _variant,
+      size: _size,
+      isLoading: _isLoading,
+      fullWidth: _fullWidth,
+      leftIcon: _leftIcon,
+      rightIcon: _rightIcon,
+      children: _children,
+      className: _className,
+      to,
+      ...anchorProps
+    } = props
+
     return (
       <motion.span
         {...motionProps}
         style={{ display: fullWidth ? 'block' : 'inline-block' }}
       >
-        <Link className={classNames} to={to} aria-busy={isLoading} {...linkProps}>
+        <Link className={classNames} to={to} aria-busy={isLoading} {...anchorProps}>
           {content}
         </Link>
       </motion.span>
     )
   }
 
-  const { type = 'button', disabled, ...buttonProps } = rest as ButtonHTMLAttributes<HTMLButtonElement>
+  const {
+    variant: _variant,
+    size: _size,
+    isLoading: _isLoading,
+    fullWidth: _fullWidth,
+    leftIcon: _leftIcon,
+    rightIcon: _rightIcon,
+    children: _children,
+    className: _className,
+    type = 'button',
+    disabled,
+    ...buttonProps
+  } = props
   const isDisabled = disabled || isLoading
 
   return (

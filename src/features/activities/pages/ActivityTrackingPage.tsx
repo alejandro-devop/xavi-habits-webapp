@@ -7,7 +7,6 @@ import { DayUsageWidget } from '@/features/activities/components/DayUsageWidget'
 import { CreateFollowUpFromFreeSlotModal } from '@/features/activities/components/CreateFollowUpFromFreeSlotModal'
 import { EditFollowUpModal } from '@/features/activities/components/EditFollowUpModal'
 import { FinishActivityModal } from '@/features/activities/components/FinishActivityModal'
-import { RunningActivityTimer } from '@/features/activities/components/RunningActivityTimer'
 import { LogPastActivityModal } from '@/features/activities/components/LogPastActivityModal'
 import { StartActivityModal } from '@/features/activities/components/StartActivityModal'
 import {
@@ -223,6 +222,34 @@ export function ActivityTrackingPage() {
     })
   }
 
+  const handleFinishAndContinue = (
+    finishValues: FinishActivityFormValues,
+    nextStart: StartActivityFormValues,
+  ) => {
+    if (!session) return
+    const linkedTodo = session.linkedTodo ?? null
+
+    updateMutation.mutate(finishOpenFollowUpToEditInput(session.followUpId, finishValues), {
+      onSuccess: async () => {
+        setFinishModalOpen(false)
+
+        if (linkedTodo) {
+          const confirmed = await confirm({
+            title: '¿Completar la tarea?',
+            description: `¿Marcar «${linkedTodo.title}» como completada? Las subtareas pueden quedar pendientes.`,
+            confirmLabel: 'Completar tarea',
+            cancelLabel: 'No',
+          })
+          if (confirmed) {
+            completeTodoMutation.mutate(linkedTodo.id)
+          }
+        }
+
+        startMutation.mutate(startFormToFollowUpStartInput(selectedDate, nextStart))
+      },
+    })
+  }
+
   const handleDeleteFollowUp = async (followUp: ActivityFollowUp) => {
     const confirmed = await confirm({
       title: 'Eliminar registro',
@@ -251,15 +278,6 @@ export function ActivityTrackingPage() {
       </header>
 
       <ActivityWeekSelector days={weekDays} onSelect={handleSelectDay} />
-
-      {session ? (
-        <RunningActivityTimer
-          session={session}
-          onFinish={handleOpenFinish}
-          onCancel={handleCancelSession}
-          loading={startMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
-        />
-      ) : null}
 
       <Tabs
         value={activeView}
@@ -326,6 +344,8 @@ export function ActivityTrackingPage() {
                 freeSlots={freeSlots}
                 showCurrentTimeMarker={isToday(selectedDate)}
                 quickActionsDisabled={Boolean(session)}
+                runningSession={isToday(selectedDate) ? session : null}
+                sessionLoading={startMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
                 routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
                 routineUpcoming={isToday(selectedDate) ? routineUpcoming : null}
                 onFollowUpClick={setEditFollowUp}
@@ -333,6 +353,8 @@ export function ActivityTrackingPage() {
                 onContinueAfterFollowUp={handleContinueAfterFollowUp}
                 onStartFromFollowUp={handleStartFromFollowUp}
                 onStartSuggestion={handleStartSuggestion}
+                onFinishSession={handleOpenFinish}
+                onCancelSession={handleCancelSession}
               />
             ) : null}
           </div>
@@ -398,8 +420,11 @@ export function ActivityTrackingPage() {
           initialValues={finishFormValues}
           activities={activities}
           loading={updateMutation.isPending}
+          routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
+          routineUpcoming={isToday(selectedDate) ? routineUpcoming : null}
           onClose={() => setFinishModalOpen(false)}
           onSave={handleFinishSave}
+          onSaveAndContinue={handleFinishAndContinue}
         />
       ) : null}
 

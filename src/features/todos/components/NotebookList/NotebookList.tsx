@@ -17,6 +17,34 @@ import {
 import type { TodoFilters } from '@/features/todos/types/todo.types'
 import styles from './NotebookList.module.scss'
 
+function draftKey(folderId: string | null) {
+  return `todo-draft:${folderId ?? '__all__'}`
+}
+
+function useTodoDraft(folderId: string | null) {
+  const [value, setValue] = useState(() => sessionStorage.getItem(draftKey(folderId)) ?? '')
+
+  useEffect(() => {
+    setValue(sessionStorage.getItem(draftKey(folderId)) ?? '')
+  }, [folderId])
+
+  const set = useCallback((v: string) => {
+    setValue(v)
+    if (v) {
+      sessionStorage.setItem(draftKey(folderId), v)
+    } else {
+      sessionStorage.removeItem(draftKey(folderId))
+    }
+  }, [folderId])
+
+  const clear = useCallback(() => {
+    sessionStorage.removeItem(draftKey(folderId))
+    setValue('')
+  }, [folderId])
+
+  return { value, set, clear }
+}
+
 type Props = {
   filters?: TodoFilters
 }
@@ -51,16 +79,18 @@ export function NotebookList({ filters = {} }: Props) {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
   const [openTodoId, setOpenTodoId] = useState<string | null>(null)
   const newInputRef = useRef<HTMLInputElement>(null)
+  const draft = useTodoDraft(selectedFolderId)
 
   const handleAdd = useCallback(
     (title: string) => {
+      draft.clear()
       createTodo.mutate({
         title,
         priority: 'medium',
         folderId: selectedFolderId ?? undefined,
       })
     },
-    [createTodo, selectedFolderId],
+    [createTodo, draft, selectedFolderId],
   )
 
   const handleToggleComplete = useCallback(
@@ -157,7 +187,13 @@ export function NotebookList({ filters = {} }: Props) {
         />
       }
     >
-      <NotebookInput ref={newInputRef} onAdd={handleAdd} />
+      <NotebookInput
+        ref={newInputRef}
+        value={draft.value}
+        onChange={draft.set}
+        onAdd={handleAdd}
+        onClear={draft.clear}
+      />
 
       {isLoading ? (
         <div className={styles.loading}>

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
+import type { ActivityFollowUp, RunningActivitySession } from '@/features/activities/types/activity-followup.types'
 import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/weekly-routine.types'
 import { ActivityFollowUpTimelineEntry } from '@/features/activities/components/ActivityFollowUpTimelineEntry'
 import { ActivityFreeSlotTimelineEntry } from '@/features/activities/components/ActivityFreeSlotTimelineEntry'
@@ -20,6 +20,8 @@ type ActivityDayTimelineProps = {
   freeSlots?: TimelineFreeSlot[]
   showCurrentTimeMarker?: boolean
   quickActionsDisabled?: boolean
+  runningSession?: RunningActivitySession | null
+  sessionLoading?: boolean
   routineSuggestion?: WeeklyRoutineActivity | null
   routineUpcoming?: WeeklyRoutineActivity | null
   onFollowUpClick: (followUp: ActivityFollowUp) => void
@@ -27,6 +29,8 @@ type ActivityDayTimelineProps = {
   onContinueAfterFollowUp?: (followUp: ActivityFollowUp) => void
   onStartFromFollowUp?: (followUp: ActivityFollowUp) => void
   onStartSuggestion?: (event: WeeklyRoutineActivity) => void
+  onFinishSession?: () => void
+  onCancelSession?: () => void
 }
 
 export function ActivityDayTimeline({
@@ -35,6 +39,8 @@ export function ActivityDayTimeline({
   freeSlots: freeSlotsProp,
   showCurrentTimeMarker = false,
   quickActionsDisabled = false,
+  runningSession,
+  sessionLoading,
   routineSuggestion,
   routineUpcoming,
   onFollowUpClick,
@@ -42,6 +48,8 @@ export function ActivityDayTimeline({
   onContinueAfterFollowUp,
   onStartFromFollowUp,
   onStartSuggestion,
+  onFinishSession,
+  onCancelSession,
 }: ActivityDayTimelineProps) {
   const mostRecentFollowUpId = useMemo(
     () => getMostRecentFollowUp(date, followUps)?.id ?? null,
@@ -71,7 +79,11 @@ export function ActivityDayTimeline({
                 key="now"
                 enabled
                 isLast={isLast}
-                suggestion={routineSuggestion}
+                runningSession={runningSession}
+                onFinish={onFinishSession}
+                onCancel={onCancelSession}
+                sessionLoading={sessionLoading}
+                suggestion={runningSession ? null : routineSuggestion}
                 onStartSuggestion={onStartSuggestion}
               />
             )

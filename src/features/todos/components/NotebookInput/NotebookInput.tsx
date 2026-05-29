@@ -1,27 +1,27 @@
-import { forwardRef, useState } from 'react'
+import { forwardRef } from 'react'
 import styles from './NotebookInput.module.scss'
 
 type Props = {
+  value: string
+  onChange: (value: string) => void
   onAdd: (title: string) => void
+  onClear: () => void
 }
 
 export const NotebookInput = forwardRef<HTMLInputElement, Props>(function NotebookInput(
-  { onAdd },
+  { value, onChange, onAdd, onClear },
   ref,
 ) {
-  const [value, setValue] = useState('')
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       const title = value.trim()
       if (title) {
         onAdd(title)
-        setValue('')
       }
     }
     if (e.key === 'Escape') {
-      setValue('')
+      onClear()
       ;(e.target as HTMLInputElement).blur()
     }
   }
@@ -33,7 +33,7 @@ export const NotebookInput = forwardRef<HTMLInputElement, Props>(function Notebo
         ref={ref}
         className={styles.input}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Nueva tarea…"
         aria-label="Nueva tarea"

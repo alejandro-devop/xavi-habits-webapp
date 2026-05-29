@@ -73,7 +73,17 @@ export function SearchSelect({
   const updatePos = useCallback(() => {
     if (!triggerRef.current) return
     const rect = triggerRef.current.getBoundingClientRect()
-    setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width })
+    const vp = window.visualViewport ?? { height: window.innerHeight, width: window.innerWidth, offsetTop: 0, offsetLeft: 0 }
+    const vpHeight = vp.height
+    const dropdownMaxH = 240 // max-height approx: search input + list
+    const spaceBelow = vpHeight - rect.bottom
+    const openUpward = spaceBelow < dropdownMaxH && rect.top > spaceBelow
+
+    setDropdownPos({
+      top: openUpward ? rect.top - dropdownMaxH - 4 : rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+    })
   }, [])
 
   const close = useCallback(() => {
@@ -90,14 +100,18 @@ export function SearchSelect({
     requestAnimationFrame(() => searchRef.current?.focus())
   }, [disabled, updatePos])
 
-  // Reposition on scroll / resize while open
+  // Reposition on scroll / resize / virtual keyboard while open
   useEffect(() => {
     if (!isOpen) return
     window.addEventListener('scroll', updatePos, true)
     window.addEventListener('resize', updatePos)
+    window.visualViewport?.addEventListener('resize', updatePos)
+    window.visualViewport?.addEventListener('scroll', updatePos)
     return () => {
       window.removeEventListener('scroll', updatePos, true)
       window.removeEventListener('resize', updatePos)
+      window.visualViewport?.removeEventListener('resize', updatePos)
+      window.visualViewport?.removeEventListener('scroll', updatePos)
     }
   }, [isOpen, updatePos])
 

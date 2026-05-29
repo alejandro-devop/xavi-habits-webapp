@@ -56,7 +56,7 @@ export function SearchSelect({
   const isOpenRef = useRef(false)
 
   const [isOpen, setIsOpen] = useState(false)
-  // Options are shown with a delay so the virtual keyboard has time to settle first
+  // Options shown only after the virtual keyboard has finished animating
   const [optionsVisible, setOptionsVisible] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
@@ -74,23 +74,40 @@ export function SearchSelect({
     })
   }, [options, searchQuery])
 
-  // Reads ref directly — no stale closure, safe to call from rAF loop
+  /**
+   * Compute the fixed-position coordinates for the options portal.
+   *
+   * getBoundingClientRect() gives coords relative to the *layout* viewport,
+   * but on iOS the *visual* viewport (window.visualViewport) may be offset
+   * when the software keyboard is open. We subtract offsetTop/offsetLeft so
+   * the portal is anchored to what the user actually sees.
+   */
   const updatePos = useCallback(() => {
     const anchor = inputRef.current
     if (!anchor) return
     const rect = anchor.getBoundingClientRect()
-    const vpHeight = window.visualViewport?.height ?? window.innerHeight
+    const vv = window.visualViewport
+    const vpHeight = vv?.height ?? window.innerHeight
+    const offsetTop  = vv?.offsetTop  ?? 0
+    const offsetLeft = vv?.offsetLeft ?? 0
+
+    // Coordinates relative to the visual viewport
+    const top    = rect.top    - offsetTop
+    const bottom = rect.bottom - offsetTop
+    const left   = rect.left   - offsetLeft
+
     const dropdownMaxH = 240
-    const spaceBelow = vpHeight - rect.bottom
-    const openUpward = spaceBelow < dropdownMaxH && rect.top > spaceBelow
+    const spaceBelow = vpHeight - bottom
+    const openUpward = spaceBelow < dropdownMaxH && top > spaceBelow
+
     setDropdownPos({
-      top: openUpward ? rect.top - dropdownMaxH - 4 : rect.bottom + 4,
-      left: rect.left,
+      top:   openUpward ? top - dropdownMaxH - 4 : bottom + 4,
+      left,
       width: rect.width,
     })
   }, [])
 
-  // Continuous rAF loop while open: options always stay anchored to the input
+  // Continuous rAF loop while options are visible: stays anchored to the input
   useEffect(() => {
     if (!optionsVisible) return
     let animId: number
@@ -109,17 +126,36 @@ export function SearchSelect({
   }, [])
 
   const open = useCallback(() => {
-    // Guard: already open or disabled
     if (disabled || isOpenRef.current) return
     if (delayTimerRef.current) clearTimeout(delayTimerRef.current)
     isOpenRef.current = true
     setIsOpen(true)
     setOptionsVisible(false)
     setHighlightedIndex(0)
-    // Show options after keyboard animation settles (~320ms on iOS).
-    // No programmatic focus needed — the input is always in the DOM and the
-    // user's tap on it is already the gesture that triggers the keyboard.
-    delayTimerRef.current = setTimeout(() => setOptionsVisible(true), 320)
+
+    // Show options once the virtual keyboard has finished animating.
+    // Strategy: listen to visualViewport "resize" events; once the viewport
+    // stops changing for 120 ms the keyboard has settled. Fall back to a
+    // fixed timeout in case no resize event fires (desktop, keyboard already up).
+    const vv = window.visualViewport
+    if (vv) {
+      let stableTimer: ReturnType<typeof setTimeout>
+      const showOptions = () => {
+        vv.removeEventListener('resize', onVVResize)
+        if (delayTimerRef.current) clearTimeout(delayTimerRef.current)
+        clearTimeout(stableTimer)
+        setOptionsVisible(true)
+      }
+      const onVVResize = () => {
+        clearTimeout(stableTimer)
+        stableTimer = setTimeout(showOptions, 120)
+      }
+      vv.addEventListener('resize', onVVResize)
+      // Fallback: if keyboard never resizes the viewport (desktop) show after 200 ms
+      delayTimerRef.current = setTimeout(showOptions, 200)
+    } else {
+      delayTimerRef.current = setTimeout(() => setOptionsVisible(true), 320)
+    }
   }, [disabled])
 
   // Cleanup timer on unmount
@@ -152,7 +188,6 @@ export function SearchSelect({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isOpen) {
-      // Closed: open on arrow / enter / space
       if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
         e.preventDefault()
         open()
@@ -187,8 +222,9 @@ export function SearchSelect({
         <div className={styles.inputWrapper}>
           {/*
            * Single <input> always in the DOM.
-           * When closed it's styled like a select trigger and is NOT readOnly so
-           * that iOS sees a genuine input tap → keyboard appears on first touch.
+           * When closed it is styled like a select trigger (non-readOnly so
+           * iOS shows the keyboard on the very first tap — no programmatic
+           * focus needed).
            * When open it becomes a live search box.
            */}
           <input
@@ -210,15 +246,13 @@ export function SearchSelect({
               error && !isOpen ? styles.triggerError : '',
               disabled ? styles.triggerDisabled : '',
             ].filter(Boolean).join(' ')}
-            // When closed: show selected label (or empty → placeholder shows)
+            // Closed: show selected label (empty → placeholder shows)
+            // Open: show live search query
             value={isOpen ? searchQuery : (selected?.label ?? '')}
             placeholder={isOpen ? (selected?.label ?? searchPlaceholder) : placeholder}
             onFocus={() => open()}
             onChange={(e) => {
-              if (!isOpen) {
-                // Typing while closed → open and treat typed char as first query char
-                open()
-              }
+              if (!isOpen) open()
               setSearchQuery(e.target.value)
               setHighlightedIndex(0)
             }}

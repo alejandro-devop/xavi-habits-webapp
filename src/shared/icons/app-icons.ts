@@ -5,6 +5,7 @@ import {
   fitnessIcons,
   healthIcons,
   homeIcons,
+  petsIcons,
   mindfulnessIcons,
   productivityIcons,
   studyIcons,
@@ -28,6 +29,7 @@ const catalogIcons = [
   ...entertainmentIcons,
   ...mindfulnessIcons,
   ...homeIcons,
+  ...petsIcons,
 ] as const
 
 export const appIcons: AppIconEntry[] = catalogIcons.map((entry) => ({ ...entry }))

@@ -1,0 +1,301 @@
+@use '@/app/styles/mixins/paper' as *;
+@use '@/app/styles/tokens' as *;
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+
+.wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.scroll {
+  position: absolute;
+  inset: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  // paper-surface-base manually (sin overflow: hidden que bloquea el scroll)
+  background-color: var(--paper-bg);
+  box-shadow: var(--paper-shadow);
+  @include paper-texture;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-line) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--paper-line);
+    border-radius: 3px;
+  }
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+
+.grid {
+  display: grid;
+  min-width: max-content;
+  position: relative;
+  z-index: 1;
+}
+
+// ── Corner ────────────────────────────────────────────────────────────────────
+
+.corner {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 4;
+  background: var(--paper-bg);
+  border-bottom: 2px solid var(--paper-line);
+  border-right: 1px solid var(--paper-line);
+}
+
+// ── Day headers ───────────────────────────────────────────────────────────────
+
+.dayHeader {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--paper-bg);
+  border-bottom: 2px solid var(--paper-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  user-select: none;
+  border-right: 1px solid var(--paper-line);
+}
+
+// ── Stripe bands (alternating per hour) ───────────────────────────────────────
+
+.stripeEven {
+  background: var(--paper-bg);
+}
+
+.stripeOdd {
+  background: color-mix(in srgb, var(--paper-line) 30%, var(--paper-bg));
+}
+
+// ── Time labels ───────────────────────────────────────────────────────────────
+
+.timeLabel {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 0 var(--space-2) 0 0;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding-top: 3px;
+  border-right: 2px solid var(--paper-margin);
+  box-sizing: border-box;
+}
+
+.timeLabelHour {
+  color: var(--color-text-secondary);
+  font-weight: 700;
+  font-size: var(--text-xs);
+}
+
+.timeLabelQuarter {
+  color: var(--color-text-tertiary);
+  font-size: 9px;
+  font-weight: 400;
+}
+
+// ── Day column ────────────────────────────────────────────────────────────────
+
+.dayColumn {
+  position: relative;
+  border-right: 1px solid var(--paper-line);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+// ── Slots ─────────────────────────────────────────────────────────────────────
+
+.slot {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-top: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  padding: 0;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-accent) 8%, transparent) !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+    z-index: 1;
+    position: relative;
+  }
+}
+
+.slotHour {
+  border-top-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+}
+
+.slotQuarter {
+  border-top-color: color-mix(in srgb, var(--color-border) 25%, transparent);
+}
+
+.slotOccupied {
+  pointer-events: none;
+  cursor: default;
+}
+
+// ── Events layer ──────────────────────────────────────────────────────────────
+
+.eventsLayer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+}
+
+// ── Event block ───────────────────────────────────────────────────────────────
+
+.event {
+  pointer-events: all;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--event-color) 18%, var(--paper-bg));
+  border-left: 3px solid var(--event-color);
+  padding: 2px var(--space-2);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  margin: 1px 2px;
+  transition: filter 0.12s ease, transform 0.1s ease;
+  min-height: 0;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--event-color) 20%, transparent);
+
+  &:hover {
+    filter: brightness(0.94);
+    transform: scale(1.01);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--event-color);
+    outline-offset: 1px;
+  }
+}
+
+.eventShort {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+}
+
+.eventGroup {
+  --event-color: var(--color-text-secondary);
+  background: var(--color-surface-raised);
+  border-left-color: var(--color-border);
+}
+
+.eventTitle {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.eventTime {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.eventNotes {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+// ── Drawer events ─────────────────────────────────────────────────────────────
+
+.drawerEvent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border-subtle);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+
+  &:hover {
+    background: var(--color-surface-hover);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.drawerEventDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.drawerEventInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.drawerEventTitle {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.drawerEventTime {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.drawerEventChevron {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}

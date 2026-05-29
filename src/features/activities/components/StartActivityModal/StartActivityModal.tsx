@@ -27,6 +27,8 @@ export type StartActivityModalProps = {
   open: boolean
   sessionDate: string
   initialStartTime?: string | null
+  initialActivityId?: string | null
+  initialNotes?: string | null
   activities: Activity[]
   loading?: boolean
   onClose: () => void
@@ -229,6 +231,8 @@ export function StartActivityModal({
   open,
   sessionDate,
   initialStartTime = null,
+  initialActivityId = null,
+  initialNotes = null,
   activities,
   loading = false,
   onClose,
@@ -241,10 +245,14 @@ export function StartActivityModal({
 
   useEffect(() => {
     if (open) {
-      setValues(emptyStartActivityFormValues(initialStartTime ?? getCurrentLocalTime()))
+      setValues({
+        ...emptyStartActivityFormValues(initialStartTime ?? getCurrentLocalTime()),
+        activityId: initialActivityId ?? null,
+        notes: initialNotes ?? '',
+      })
       setCheckingTodos(false)
     }
-  }, [open, initialStartTime])
+  }, [open, initialStartTime, initialActivityId, initialNotes])
 
   const isBusy = loading || checkingTodos
 

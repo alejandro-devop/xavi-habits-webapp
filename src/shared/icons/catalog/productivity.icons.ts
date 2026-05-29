@@ -6,9 +6,11 @@ import {
   faCalendarDays,
   faClipboard,
   faClock,
+  faFlag,
   faHourglass,
   faListCheck,
   faStopwatch,
+  faTag,
   faTrophy,
 } from '@fortawesome/free-solid-svg-icons'
 import type { AppIconEntry } from '@/shared/icons/types'
@@ -25,4 +27,6 @@ export const productivityIcons = [
   { name: 'bookmark', label: 'Marcador', category: 'productivity', icon: faBookmark, keywords: ['guardar', 'referencia', 'favorito'] },
   { name: 'target', label: 'Objetivo', category: 'productivity', icon: faBullseye, keywords: ['bullseye', 'meta', 'objetivo', 'focus'] },
   { name: 'trophy', label: 'Logro', category: 'productivity', icon: faTrophy, keywords: ['premio', 'recompensa', 'hito'] },
+  { name: 'flag', label: 'Meta', category: 'productivity', icon: faFlag, keywords: ['objetivo', 'hito', 'prioridad', 'marcador'] },
+  { name: 'tag', label: 'Etiqueta', category: 'productivity', icon: faTag, keywords: ['tags', 'categoría', 'clasificar', 'label'] },
 ] as const satisfies readonly AppIconEntry[]

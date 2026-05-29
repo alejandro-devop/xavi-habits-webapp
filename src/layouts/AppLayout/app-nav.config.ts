@@ -1,5 +1,6 @@
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 import { authPaths } from '@/features/auth/router/auth-paths'
+import { weeklyRoutinePaths } from '@/features/weekly-routine'
 import type { SidebarNavItem } from '@/shared/ui/Sidebar'
 import type { CommandAction } from '@/shared/ui/CommandPalette'
 
@@ -7,6 +8,7 @@ export const appSidebarItems: SidebarNavItem[] = [
   { to: authPaths.today, label: 'Hoy', icon: 'home', end: true },
   { to: activitiesPaths.root, label: 'Actividades', icon: 'list-check' },
   { to: '/app/todos', label: 'Tareas', icon: 'clipboard' },
+  { to: weeklyRoutinePaths.root, label: 'Rutina', icon: 'calendar-week' },
   { to: authPaths.testingHall, label: 'Testing Hall', icon: 'search' },
 ]
 
@@ -36,6 +38,13 @@ export function createCommandActions(handlers: {
       icon: 'clipboard',
       keywords: ['todos', 'tareas', 'notebook'],
       onSelect: () => handlers.navigate('/app/todos'),
+    },
+    {
+      id: 'go-weekly-routine',
+      label: 'Ir a Rutina semanal',
+      icon: 'calendar-week',
+      keywords: ['rutina', 'planner', 'agenda', 'semana'],
+      onSelect: () => handlers.navigate(weeklyRoutinePaths.root),
     },
     {
       id: 'go-testing-hall',

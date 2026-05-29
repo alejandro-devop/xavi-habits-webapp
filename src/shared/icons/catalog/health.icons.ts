@@ -7,7 +7,10 @@ import {
   faHeartPulse,
   faMedkit,
   faMoon,
+  faPills,
   faStethoscope,
+  faSyringe,
+  faTooth,
   faUtensils,
   faWeightScale,
 } from '@fortawesome/free-solid-svg-icons'
@@ -25,4 +28,7 @@ export const healthIcons = [
   { name: 'medkit', label: 'Botiquín', category: 'health', icon: faMedkit, keywords: ['medicina', 'primeros auxilios', 'salud'] },
   { name: 'stethoscope', label: 'Médico', category: 'health', icon: faStethoscope, keywords: ['doctor', 'consulta', 'salud'] },
   { name: 'weight-scale', label: 'Peso', category: 'health', icon: faWeightScale, keywords: ['báscula', 'fitness', 'control'] },
+  { name: 'pills', label: 'Medicación', category: 'health', icon: faPills, keywords: ['pastillas', 'farmacia', 'tratamiento', 'medicina'] },
+  { name: 'syringe', label: 'Vacuna', category: 'health', icon: faSyringe, keywords: ['inyección', 'vacuna', 'médico', 'salud'] },
+  { name: 'tooth', label: 'Dental', category: 'health', icon: faTooth, keywords: ['dientes', 'dentista', 'higiene', 'salud'] },
 ] as const satisfies readonly AppIconEntry[]

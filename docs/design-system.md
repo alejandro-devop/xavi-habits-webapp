@@ -99,7 +99,7 @@ Las **variables CSS** se definen en `src/app/styles/_theme-variables.scss` y cam
 
 **Regla de persistencia:** guardar solo el nombre limpio (`bell`, `home`, `briefcase`). Nunca `fa-bell` ni `faBell`. Los alias (`faHouse` → `home`) existen solo en normalización, no en BD.
 
-**Categorías (`AppIconCategory`):** `productivity`, `work`, `fitness`, `study`, `health`, `finance`, `technology`, `social`, `entertainment`, `mindfulness`, `home`, `other`.
+**Categorías (`AppIconCategory`):** `productivity`, `work`, `fitness`, `study`, `health`, `finance`, `technology`, `social`, `entertainment`, `mindfulness`, `home`, `pets`, `other`.
 
 **Keywords:** cada entrada incluye sinónimos ES/EN para que `IconPicker` encuentre iconos por actividad (`gym` → `dumbbell`, `running`, `heart-pulse`). La búsqueda también usa el label de categoría (`finanzas` → iconos `finance`).
 

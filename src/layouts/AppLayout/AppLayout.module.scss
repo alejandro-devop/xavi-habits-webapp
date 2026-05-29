@@ -37,6 +37,14 @@
     padding: $spacing-sm;
     padding-bottom: calc($spacing-sm + 5rem);
   }
+
+  // Full-width mode: páginas que requieren todo el espacio (ej: planner)
+  &:has(.fullWidthPage) {
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
 }
 
 .userEmail {

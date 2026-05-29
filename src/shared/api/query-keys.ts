@@ -39,6 +39,13 @@ export const courseKeys = {
   progress: (courseId: string) => [...courseKeys.all, 'progress', courseId] as const,
 }
 
+export const weeklyRoutineKeys = {
+  all: ['weeklyRoutines'] as const,
+  list: (filters: ListFilters = {}) => [...weeklyRoutineKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...weeklyRoutineKeys.all, 'detail', id] as const,
+  active: () => [...weeklyRoutineKeys.all, 'active'] as const,
+}
+
 export const todoKeys = {
   all: ['todos'] as const,
   lists: () => [...todoKeys.all, 'list'] as const,

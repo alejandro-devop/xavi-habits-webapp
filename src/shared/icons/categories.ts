@@ -12,6 +12,7 @@ export const APP_ICON_CATEGORY_LABELS: Record<AppIconCategory, string> = {
   entertainment: 'Entretenimiento',
   mindfulness: 'Bienestar',
   home: 'Hogar y día a día',
+  pets: 'Mascotas',
   other: 'Otros',
 }
 
@@ -28,6 +29,7 @@ export const APP_ICON_CATEGORY_ORDER: AppIconCategory[] = [
   'entertainment',
   'mindfulness',
   'home',
+  'pets',
   'other',
 ]
 

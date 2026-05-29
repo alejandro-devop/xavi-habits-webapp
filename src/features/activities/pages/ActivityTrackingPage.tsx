@@ -44,6 +44,8 @@ import {
   isFutureDate,
   isToday,
 } from '@/features/activities/utils/activity-time.utils'
+import { useCurrentRoutineEventSuggestion } from '@/features/weekly-routine/hooks/useCurrentRoutineEventSuggestion'
+import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/weekly-routine.types'
 import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
@@ -70,8 +72,11 @@ export function ActivityTrackingPage() {
     [openFollowUp],
   )
 
+  const routineSuggestion = useCurrentRoutineEventSuggestion()
   const [startModalOpen, setStartModalOpen] = useState(false)
   const [startInitialStartTime, setStartInitialStartTime] = useState<string | null>(null)
+  const [startInitialActivityId, setStartInitialActivityId] = useState<string | null>(null)
+  const [startInitialNotes, setStartInitialNotes] = useState<string | null>(null)
   const [logPastModalOpen, setLogPastModalOpen] = useState(false)
   const [logPastInitialStartTime, setLogPastInitialStartTime] = useState<string | null>(null)
   const [finishModalOpen, setFinishModalOpen] = useState(false)
@@ -147,12 +152,24 @@ export function ActivityTrackingPage() {
   const handleOpenStart = () => {
     if (session) return
     setStartInitialStartTime(null)
+    setStartInitialActivityId(null)
+    setStartInitialNotes(null)
+    setStartModalOpen(true)
+  }
+
+  const handleStartSuggestion = (event: WeeklyRoutineActivity) => {
+    if (session) return
+    setStartInitialStartTime(null)
+    setStartInitialActivityId(event.activityId)
+    setStartInitialNotes(event.notes ?? null)
     setStartModalOpen(true)
   }
 
   const handleStartFromFollowUp = (followUp: ActivityFollowUp) => {
     if (session) return
     setStartInitialStartTime(getFollowUpEndTimeForNextEntry(followUp, selectedDate))
+    setStartInitialActivityId(null)
+    setStartInitialNotes(null)
     setStartModalOpen(true)
   }
 
@@ -307,10 +324,12 @@ export function ActivityTrackingPage() {
                 freeSlots={freeSlots}
                 showCurrentTimeMarker={isToday(selectedDate)}
                 quickActionsDisabled={Boolean(session)}
+                routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
                 onFollowUpClick={setEditFollowUp}
                 onFreeSlotClick={setFreeSlotModal}
                 onContinueAfterFollowUp={handleContinueAfterFollowUp}
                 onStartFromFollowUp={handleStartFromFollowUp}
+                onStartSuggestion={handleStartSuggestion}
               />
             ) : null}
           </div>
@@ -345,10 +364,14 @@ export function ActivityTrackingPage() {
         open={startModalOpen}
         sessionDate={selectedDate}
         initialStartTime={startInitialStartTime}
+        initialActivityId={startInitialActivityId}
+        initialNotes={startInitialNotes}
         activities={activities}
         onClose={() => {
           setStartModalOpen(false)
           setStartInitialStartTime(null)
+          setStartInitialActivityId(null)
+          setStartInitialNotes(null)
         }}
         onStart={handleStart}
       />

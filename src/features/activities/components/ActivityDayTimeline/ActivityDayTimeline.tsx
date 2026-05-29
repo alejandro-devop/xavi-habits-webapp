@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
+import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/weekly-routine.types'
 import { ActivityFollowUpTimelineEntry } from '@/features/activities/components/ActivityFollowUpTimelineEntry'
 import { ActivityFreeSlotTimelineEntry } from '@/features/activities/components/ActivityFreeSlotTimelineEntry'
 import { ActivityTimelineNowEntry } from '@/features/activities/components/ActivityTimelineNowEntry'
@@ -18,10 +19,12 @@ type ActivityDayTimelineProps = {
   freeSlots?: TimelineFreeSlot[]
   showCurrentTimeMarker?: boolean
   quickActionsDisabled?: boolean
+  routineSuggestion?: WeeklyRoutineActivity | null
   onFollowUpClick: (followUp: ActivityFollowUp) => void
   onFreeSlotClick: (slot: TimelineFreeSlot) => void
   onContinueAfterFollowUp?: (followUp: ActivityFollowUp) => void
   onStartFromFollowUp?: (followUp: ActivityFollowUp) => void
+  onStartSuggestion?: (event: WeeklyRoutineActivity) => void
 }
 
 export function ActivityDayTimeline({
@@ -30,10 +33,12 @@ export function ActivityDayTimeline({
   freeSlots: freeSlotsProp,
   showCurrentTimeMarker = false,
   quickActionsDisabled = false,
+  routineSuggestion,
   onFollowUpClick,
   onFreeSlotClick,
   onContinueAfterFollowUp,
   onStartFromFollowUp,
+  onStartSuggestion,
 }: ActivityDayTimelineProps) {
   const mostRecentFollowUpId = useMemo(
     () => getMostRecentFollowUp(date, followUps)?.id ?? null,
@@ -57,7 +62,15 @@ export function ActivityDayTimeline({
           const isLast = index === items.length - 1
 
           if (item.type === 'now') {
-            return <ActivityTimelineNowEntry key="now" enabled isLast={isLast} />
+            return (
+              <ActivityTimelineNowEntry
+                key="now"
+                enabled
+                isLast={isLast}
+                suggestion={routineSuggestion}
+                onStartSuggestion={onStartSuggestion}
+              />
+            )
           }
 
           if (item.type === 'free-slot') {

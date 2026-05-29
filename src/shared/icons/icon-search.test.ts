@@ -35,6 +35,15 @@ describe('filterAppIcons', () => {
     const result = filterAppIcons(appIcons, 'trabajo remoto', { pickerOnly: true })
     expect(result.some((e) => e.name === 'laptop')).toBe(true)
   })
+
+  it('finds pet icons by mascota keyword', () => {
+    const result = filterAppIcons(appIcons, 'mascota', { pickerOnly: true })
+    const names = result.map((e) => e.name)
+    expect(names).toContain('dog')
+    expect(names).toContain('cat')
+    expect(names).toContain('paw')
+    expect(result.every((e) => e.category === 'pets')).toBe(true)
+  })
 })
 
 describe('groupIconsByCategory', () => {

@@ -1,0 +1,44 @@
+// This class is detected by AppLayout via :has() to remove max-width and padding
+:global(.fullWidthPage) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading {
+  padding: var(--space-4);
+}
+
+.notFound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  flex: 1;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.notFoundIcon {
+  color: var(--color-text-tertiary);
+  opacity: 0.4;
+}

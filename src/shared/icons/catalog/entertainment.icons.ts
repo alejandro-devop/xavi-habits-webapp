@@ -6,8 +6,10 @@ import {
   faGamepad,
   faGuitar,
   faHeadphones,
+  faMasksTheater,
   faMusic,
   faPalette,
+  faPizzaSlice,
   faTv,
 } from '@fortawesome/free-solid-svg-icons'
 import type { AppIconEntry } from '@/shared/icons/types'
@@ -23,4 +25,6 @@ export const entertainmentIcons = [
   { name: 'gamepad', label: 'Gaming', category: 'entertainment', icon: faGamepad, keywords: ['juegos', 'videojuegos', 'gaming', 'play'] },
   { name: 'dice', label: 'Juego', category: 'entertainment', icon: faDice, keywords: ['azar', 'board game', 'ocio'] },
   { name: 'tv', label: 'Televisión', category: 'entertainment', icon: faTv, keywords: ['series', 'streaming', 'pantalla'] },
+  { name: 'pizza-slice', label: 'Pizza', category: 'entertainment', icon: faPizzaSlice, keywords: ['comida', 'cena', 'ocio', 'restaurante'] },
+  { name: 'masks-theater', label: 'Teatro', category: 'entertainment', icon: faMasksTheater, keywords: ['drama', 'actuación', 'cultura', 'show'] },
 ] as const satisfies readonly AppIconEntry[]

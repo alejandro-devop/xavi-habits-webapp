@@ -4,6 +4,7 @@ import { Spinner } from '@/shared/ui/Spinner'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { NotebookItem } from '@/features/todos/components/NotebookItem/NotebookItem'
 import { NotebookInput } from '@/features/todos/components/NotebookInput/NotebookInput'
+import { NotebookTabs } from '@/features/todos/components/NotebookTabs/NotebookTabs'
 import { TodoDrawer } from '@/features/todos/components/TodoDrawer/TodoDrawer'
 import {
   useCompleteTodoMutation,
@@ -20,7 +21,13 @@ type Props = {
 }
 
 export function NotebookList({ filters = {} }: Props) {
-  const { data, isLoading } = useTodosQuery({ limit: 50, ...filters })
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
+
+  const { data, isLoading } = useTodosQuery({
+    limit: 50,
+    ...filters,
+    folderId: selectedFolderId,
+  })
   const todos = useMemo(() => data?.todos ?? [], [data?.todos])
 
   const createTodo = useCreateTodoMutation()
@@ -28,16 +35,19 @@ export function NotebookList({ filters = {} }: Props) {
   const updateTodo = useUpdateTodoMutation()
   const removeTodo = useRemoveTodoMutation()
   const { confirm } = useConfirmDialog()
-
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
   const [openTodoId, setOpenTodoId] = useState<string | null>(null)
   const newInputRef = useRef<HTMLInputElement>(null)
 
   const handleAdd = useCallback(
     (title: string) => {
-      createTodo.mutate({ title, priority: 'medium' })
+      createTodo.mutate({
+        title,
+        priority: 'medium',
+        folderId: selectedFolderId ?? undefined,
+      })
     },
-    [createTodo],
+    [createTodo, selectedFolderId],
   )
 
   const handleToggleComplete = useCallback(
@@ -123,6 +133,8 @@ export function NotebookList({ filters = {} }: Props) {
   }, [todos, focusedIndex, openTodoId, handleToggleComplete, handleDelete])
 
   return (
+    <div className={styles.container}>
+    <NotebookTabs selectedFolderId={selectedFolderId} onSelect={(id) => { setSelectedFolderId(id); setFocusedIndex(-1) }} />
     <div className={styles.notebook}>
       <div className={styles.margin} aria-hidden="true" />
 
@@ -154,6 +166,7 @@ export function NotebookList({ filters = {} }: Props) {
       </div>
 
       <TodoDrawer todoId={openTodoId} onClose={() => setOpenTodoId(null)} />
+    </div>
     </div>
   )
 }

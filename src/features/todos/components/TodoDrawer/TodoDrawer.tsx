@@ -9,7 +9,9 @@ import {
   useTodoTagsQuery,
   useUpdateTodoMutation,
   useCreateTodoTagMutation,
+  useRemoveTodoMutation,
 } from '@/features/todos/hooks/useTodos'
+import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import type { TodoPriority, TodoTag } from '@/features/todos/types/todo.types'
 import styles from './TodoDrawer.module.scss'
 
@@ -22,7 +24,9 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   const { data: todo, isLoading } = useTodoQuery(todoId ?? undefined)
   const { data: allTags = [] } = useTodoTagsQuery()
   const updateTodo = useUpdateTodoMutation()
+  const removeTodo = useRemoveTodoMutation()
   const createTag = useCreateTodoTagMutation()
+  const { confirm } = useConfirmDialog()
 
   const titleRef = useRef<HTMLHeadingElement>(null)
   const descRef = useRef<HTMLTextAreaElement>(null)
@@ -87,6 +91,27 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     )
   }
 
+  const handleDelete = async () => {
+    if (!todo) return
+    const ok = await confirm({
+      title: '¿Eliminar esta tarea?',
+      description: 'Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      variant: 'danger',
+    })
+    if (ok) {
+      removeTodo.mutate(todo.id)
+      onClose()
+    }
+  }
+
+  const handleRemoveTagFromTodo = (tag: TodoTag) => {
+    if (!todo) return
+    const newIds = todo.tags.filter((t) => t.id !== tag.id).map((t) => t.id)
+    updateTodo.mutate({ id: todo.id, tagIds: newIds })
+  }
+
   const selectedTagIds = todo?.tags.map((t) => t.id) ?? []
 
   return (
@@ -134,15 +159,28 @@ export function TodoDrawer({ todoId, onClose }: Props) {
 
           <section className={styles.section}>
             <span className={styles.label}>Etiquetas</span>
+            {todo.tags.length > 0 ? (
+              <div className={styles.tags}>
+                {todo.tags.map((tag) => (
+                  <TagChip
+                    key={tag.id}
+                    tag={tag}
+                    selected
+                    onRemove={handleRemoveTagFromTodo}
+                  />
+                ))}
+              </div>
+            ) : null}
             <div className={styles.tags}>
-              {allTags.map((tag) => (
-                <TagChip
-                  key={tag.id}
-                  tag={tag}
-                  selected={selectedTagIds.includes(tag.id)}
-                  onToggle={handleTagToggle}
-                />
-              ))}
+              {allTags
+                .filter((tag) => !selectedTagIds.includes(tag.id))
+                .map((tag) => (
+                  <TagChip
+                    key={tag.id}
+                    tag={tag}
+                    onToggle={handleTagToggle}
+                  />
+                ))}
             </div>
             <input
               className={styles.newTagInput}
@@ -164,6 +202,16 @@ export function TodoDrawer({ todoId, onClose }: Props) {
             </span>
             <SubtaskList todoId={todo.id} subtasks={todo.subtasks} />
           </section>
+
+          <div className={styles.dangerZone}>
+            <button
+              type="button"
+              className={styles.deleteBtn}
+              onClick={() => void handleDelete()}
+            >
+              Eliminar tarea
+            </button>
+          </div>
         </div>
       )}
     </Drawer>

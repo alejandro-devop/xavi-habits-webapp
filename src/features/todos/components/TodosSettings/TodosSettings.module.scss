@@ -1,0 +1,129 @@
+@use '@/app/styles/tokens' as *;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+  padding: $spacing-lg;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+
+  @media (max-width: #{$breakpoint-md}) {
+    padding: $spacing-xs $spacing-2;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.sectionTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-md;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.colorBtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.1s;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+.nameInput {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-family);
+  font-size: $font-size-sm;
+  color: var(--color-text);
+  padding: 0;
+
+  &:focus {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: $radius-sm;
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--color-danger, #ef4444);
+    background: color-mix(in srgb, var(--color-danger, #ef4444) 8%, transparent);
+  }
+}
+
+.colorPicker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: $spacing-xs $spacing-sm;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+  box-shadow: var(--shadow-md);
+}
+
+.swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.1s, border-color 0.1s;
+  flex-shrink: 0;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.active {
+    border-color: var(--color-text);
+  }
+}
+
+.empty {
+  font-size: $font-size-sm;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: $spacing-xs 0;
+}

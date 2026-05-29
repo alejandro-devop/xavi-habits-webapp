@@ -1,0 +1,165 @@
+@use '@/app/styles/tokens' as *;
+
+$paper-bg: #fafaf5;
+$tab-height: 32px;
+
+.wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: $tab-height;
+  padding: 0 $spacing-sm;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: none;
+  border-radius: $radius-md $radius-md 0 0;
+  cursor: pointer;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+  user-select: none;
+
+  & + & {
+    margin-left: 3px;
+  }
+
+  &:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.07);
+    color: var(--color-text);
+  }
+}
+
+.active {
+  background: $paper-bg;
+  color: var(--color-text);
+  font-weight: $font-weight-semibold;
+  z-index: 1;
+
+  // Hide the bottom border so it blends with the paper
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $paper-bg;
+  }
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.count {
+  font-size: 10px;
+  font-weight: $font-weight-regular;
+  color: var(--color-text-muted);
+  background: rgba(0, 0, 0, 0.07);
+  padding: 1px 5px;
+  border-radius: $radius-full;
+
+  .active & {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--color-text-muted);
+  }
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: $tab-height;
+  width: $tab-height;
+  border: 1.5px dashed rgba(0, 0, 0, 0.2);
+  border-bottom: none;
+  border-radius: $radius-md $radius-md 0 0;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-left: 4px;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text);
+  }
+}
+
+.newFolderRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+  box-shadow: var(--shadow-md);
+  position: absolute;
+  z-index: 100;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 200px;
+}
+
+.newFolderInput {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: $font-size-sm;
+  color: var(--color-text);
+  font-family: var(--font-family);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+}
+
+.colorPicker {
+  display: flex;
+  gap: 4px;
+}
+
+.colorSwatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  transition: border-color 0.1s;
+
+  &.selectedColor {
+    border-color: var(--color-text);
+  }
+}
+
+.addWrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}

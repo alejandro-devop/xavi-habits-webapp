@@ -7,10 +7,18 @@ $margin-line-color: #e8b4b8;
 $paper-line-color: rgba(0, 0, 0, 0.07);
 $paper-bg: #fafaf5;
 
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
 .notebook {
   position: relative;
   background: $paper-bg;
-  border-radius: $radius-xl;
+  border-radius: 0 $radius-xl $radius-xl $radius-xl;
+  width: 100%;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.08),
     0 4px 16px rgba(0, 0, 0, 0.06),

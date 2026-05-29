@@ -3,6 +3,8 @@ import * as todosApi from '@/features/todos/api/todos.api'
 import type {
   TodoEditInput,
   TodoFilters,
+  TodoFolderEditInput,
+  TodoFolderInput,
   TodoInput,
   TodoSubtaskEditInput,
   TodoSubtaskInput,
@@ -186,6 +188,63 @@ export function useUpdateTodoTagMutation() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [...todoKeys.all, 'tags'] })
       void queryClient.invalidateQueries({ queryKey: todoKeys.all })
+    },
+  })
+}
+
+export function useTodoFoldersQuery() {
+  const enabled = useAuthReady()
+  return useQuery({
+    queryKey: todoKeys.folders.list(),
+    enabled,
+    queryFn: () => todosApi.getTodoFolders(),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export function useCreateTodoFolderMutation() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+
+  return useMutation({
+    mutationFn: (input: TodoFolderInput) => todosApi.createTodoFolder(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: todoKeys.folders.all() })
+    },
+    onError: () => {
+      toast.error('No se pudo crear la carpeta')
+    },
+  })
+}
+
+export function useUpdateTodoFolderMutation() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+
+  return useMutation({
+    mutationFn: (input: TodoFolderEditInput) => todosApi.updateTodoFolder(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: todoKeys.folders.all() })
+    },
+    onError: () => {
+      toast.error('No se pudo actualizar la carpeta')
+    },
+  })
+}
+
+export function useRemoveTodoFolderMutation() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+
+  return useMutation({
+    mutationFn: (id: string) => todosApi.removeTodoFolder(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: todoKeys.folders.all() })
+      void queryClient.invalidateQueries({ queryKey: todoKeys.all })
+      toast.success('Carpeta eliminada')
+    },
+    onError: () => {
+      toast.error('No se pudo eliminar la carpeta')
     },
   })
 }

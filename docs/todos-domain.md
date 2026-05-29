@@ -85,6 +85,22 @@ Campo `Todo.tags`: `{ id, name, color }`.
 
 Resumen completo: **`docs/todos-module-features.md`**.
 
+## GraphQL — carpetas (implementado en backend)
+
+| Operación | Uso |
+|-----------|-----|
+| `todoFolders` | Listar carpetas (`todoCount` por carpeta) |
+| `todoFolder(id)` | Detalle |
+| `todoFolderAdd(input: { name, color, orderIndex? })` | Crear — color hex `#RRGGBB` |
+| `todoFolderEdit` | Editar nombre, color u orden |
+| `todoFolderRemove(id)` | Borrar carpeta; las tareas quedan sin carpeta |
+| `todos(folderId)` / `todos(withoutFolder: true)` | Filtrar listado |
+| `todoAdd` / `todoEdit` | `folderId` — `null` quita la carpeta |
+
+Campo `Todo`: `folderId`, `folder { id name color todoCount }`.
+
+Migración: `028_todo_folders.sql`.
+
 ## GraphQL — subtareas
 
 | Operación | Uso |

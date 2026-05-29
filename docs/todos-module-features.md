@@ -2,7 +2,7 @@
 
 Cliente: **xavi-habits-web** · API: **xavi-platform-node** (`POST /graphql`)
 
-Migración etiquetas: `migrations/027_todo_tags.sql`
+Migraciones: `027_todo_tags.sql`, `028_todo_folders.sql`
 
 ---
 
@@ -11,86 +11,83 @@ Migración etiquetas: `migrations/027_todo_tags.sql`
 | Feature | GraphQL | Notas |
 |---------|---------|--------|
 | Listar tareas | `todos` | Paginado, filtros |
-| Ver una tarea | `todo(id)` | Incluye subtareas y etiquetas |
-| Crear tarea | `todoAdd` | Opcional: `tagIds` |
-| Editar tarea | `todoEdit` | Opcional: `tagIds` (reemplaza todas las etiquetas de la tarea) |
+| Ver una tarea | `todo(id)` | Subtareas, etiquetas, carpeta |
+| Crear tarea | `todoAdd` | Opcional: `tagIds`, `folderId` |
+| Editar tarea | `todoEdit` | Opcional: `tagIds`, `folderId` (`null` = sin carpeta) |
 | Borrar tarea | `todoRemove` | |
-| Completar tarea | `todoComplete` | Atajo: `status` + `completedAt` |
+| Completar tarea | `todoComplete` | |
 
 ### Campos de una tarea
 
-- Título, descripción
-- Estado: `pending` · `in_progress` · `completed` · `cancelled`
-- Prioridad: `low` · `medium` · `high` · `urgent`
-- Fecha límite (`dueDate`)
-- Progreso de subtareas (`subtasksCount`)
-- **Etiquetas** (`tags`)
+- Título, descripción, estado, prioridad, fechas
+- `subtasksCount`, `subtasks`
+- **`folderId`** / **`folder`** — una carpeta como máximo
+- **`tags`** — varias etiquetas
 
 ### Filtros en listado (`todos`)
 
-- `status`, `priority`
-- `dueBefore`, `dueAfter`
-- **`tagId`** — solo tareas que llevan esa etiqueta
+- `status`, `priority`, `dueBefore`, `dueAfter`
+- `tagId` — tareas con esa etiqueta
+- **`folderId`** — tareas en esa carpeta
+- **`withoutFolder: true`** — tareas sin carpeta
 - `page`, `limit`
 
 ---
 
-## Subtareas (checklist)
+## Carpetas (agrupar tareas)
+
+Una tarea puede estar en **una carpeta** o en ninguna. Cada carpeta tiene nombre, color y orden.
 
 | Feature | GraphQL |
 |---------|---------|
-| Listar (en detalle) | campo `subtasks` en `todo` |
-| Añadir | `todoSubtaskAdd` |
-| Editar / marcar hecha | `todoSubtaskEdit` |
-| Borrar | `todoSubtaskRemove` |
+| Listar mis carpetas | `todoFolders` (incluye `todoCount`) |
+| Ver una carpeta | `todoFolder(id)` |
+| Crear carpeta | `todoFolderAdd(input: { name, color, orderIndex? })` |
+| Editar carpeta | `todoFolderEdit` |
+| **Eliminar carpeta** | `todoFolderRemove` — las tareas **quedan** sin carpeta (`folder_id` → null) |
+
+### Asignar carpeta a una tarea
+
+- Crear: `todoAdd` → `folderId: "3"`
+- Mover o quitar: `todoEdit` → `folderId: "3"` o `folderId: null`
+- Filtrar: `todos(folderId: "3")` o `todos(withoutFolder: true)`
 
 ---
 
 ## Etiquetas (con color)
 
-Cada usuario tiene sus propias etiquetas. El **color** es hexadecimal de 6 dígitos, p. ej. `#3B82F6`. No puede haber dos etiquetas con el mismo nombre para el mismo usuario.
+Varias etiquetas por tarea. CRUD global + asignación vía `tagIds` en `todoAdd` / `todoEdit`.
 
 | Feature | GraphQL |
 |---------|---------|
-| Listar mis etiquetas | `todoTags` |
-| Ver una etiqueta | `todoTag(id)` |
-| Crear etiqueta | `todoTagAdd(input: { name, color })` |
-| Editar nombre o color | `todoTagEdit` |
-| Borrar etiqueta | `todoTagRemove` — quita la etiqueta de todas las tareas |
-
-### Asignar etiquetas a tareas
-
-- Al **crear** tarea: `todoAdd` → `input.tagIds: ["1", "2"]`
-- Al **editar** tarea: `todoEdit` → `input.tagIds` (lista completa; `[]` deja la tarea sin etiquetas)
-- En listado y detalle: campo `tags { id name color }`
-
-### Ejemplo crear etiqueta
-
-```graphql
-mutation TodoTagAdd($input: TodoTagInput!) {
-  todoTagAdd(input: $input) {
-    id
-    name
-    color
-  }
-}
-```
-
-Variables: `{ "input": { "name": "Trabajo", "color": "#2563EB" } }`
+| Listar | `todoTags` |
+| Crear | `todoTagAdd` |
+| Editar | `todoTagEdit` |
+| Eliminar (permanente) | `todoTagRemove` |
+| Quitar de una tarea | `todoEdit` con `tagIds` sin esa etiqueta (o `[]`) |
 
 ---
 
-## Pendiente / no incluido aún
+## Subtareas
 
-- Carpetas o proyectos
-- Buscar por texto en el título
-- Varias etiquetas a la vez en filtro (`tagIds` AND/OR)
-- UI en habits-web (`features/todos/`)
+| Feature | GraphQL |
+|---------|---------|
+| Listar | `todo` → `subtasks` |
+| Añadir | `todoSubtaskAdd` |
+| Editar | `todoSubtaskEdit` |
+| Borrar | `todoSubtaskRemove` |
 
 ---
 
-## Referencias técnicas
+## Pendiente en frontend
 
-- Backend SDL: `xavi-platform-node/src/graphql/modules/todo/todo.schema.ts`
+- UI `features/todos/` en habits-web
+- Rutas `/app/todos`, sidebar de carpetas, chips de etiquetas
+
+---
+
+## Referencias
+
+- SDL: `xavi-platform-node/src/graphql/modules/todo/todo.schema.ts`
 - Bruno: `xavi-platform-node/docs/graphql/todo-bruno.md`
-- Plan frontend: `docs/todos-domain.md`
+- Plan: `docs/todos-domain.md`

@@ -2,6 +2,10 @@ import {
   TODO_ADD_MUTATION,
   TODO_COMPLETE_MUTATION,
   TODO_EDIT_MUTATION,
+  TODO_FOLDER_ADD_MUTATION,
+  TODO_FOLDER_EDIT_MUTATION,
+  TODO_FOLDER_REMOVE_MUTATION,
+  TODO_FOLDERS_QUERY,
   TODO_QUERY,
   TODO_REMOVE_MUTATION,
   TODO_SUBTASK_ADD_MUTATION,
@@ -18,6 +22,9 @@ import type {
   TodoCollection,
   TodoEditInput,
   TodoFilters,
+  TodoFolder,
+  TodoFolderEditInput,
+  TodoFolderInput,
   TodoInput,
   TodoSubtask,
   TodoSubtaskEditInput,
@@ -120,4 +127,33 @@ export async function removeTodoTag(id: string): Promise<boolean> {
     { id },
   )
   return data.todoTagRemove
+}
+
+export async function getTodoFolders(): Promise<TodoFolder[]> {
+  const data = await graphqlRequest<{ todoFolders: TodoFolder[] }>(TODO_FOLDERS_QUERY)
+  return data.todoFolders
+}
+
+export async function createTodoFolder(input: TodoFolderInput): Promise<TodoFolder> {
+  const data = await graphqlRequest<{ todoFolderAdd: TodoFolder }, { input: TodoFolderInput }>(
+    TODO_FOLDER_ADD_MUTATION,
+    { input },
+  )
+  return data.todoFolderAdd
+}
+
+export async function updateTodoFolder(input: TodoFolderEditInput): Promise<TodoFolder> {
+  const data = await graphqlRequest<{ todoFolderEdit: TodoFolder }, { input: TodoFolderEditInput }>(
+    TODO_FOLDER_EDIT_MUTATION,
+    { input },
+  )
+  return data.todoFolderEdit
+}
+
+export async function removeTodoFolder(id: string): Promise<boolean> {
+  const data = await graphqlRequest<{ todoFolderRemove: boolean }, { id: string }>(
+    TODO_FOLDER_REMOVE_MUTATION,
+    { id },
+  )
+  return data.todoFolderRemove
 }

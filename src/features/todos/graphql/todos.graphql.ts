@@ -3,6 +3,8 @@ export const TODOS_QUERY = `
     $status: TodoStatus
     $priority: TodoPriority
     $tagId: ID
+    $folderId: ID
+    $withoutFolder: Boolean
     $dueBefore: DateTime
     $dueAfter: DateTime
     $page: Int
@@ -12,6 +14,8 @@ export const TODOS_QUERY = `
       status: $status
       priority: $priority
       tagId: $tagId
+      folderId: $folderId
+      withoutFolder: $withoutFolder
       dueBefore: $dueBefore
       dueAfter: $dueAfter
       page: $page
@@ -208,5 +212,52 @@ export const TODO_TAG_EDIT_MUTATION = `
 export const TODO_TAG_REMOVE_MUTATION = `
   mutation TodoTagRemove($id: ID!) {
     todoTagRemove(id: $id)
+  }
+`
+
+export const TODO_FOLDERS_QUERY = `
+  query TodoFolders {
+    todoFolders {
+      id
+      name
+      color
+      orderIndex
+      todoCount
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const TODO_FOLDER_ADD_MUTATION = `
+  mutation TodoFolderAdd($input: TodoFolderInput!) {
+    todoFolderAdd(input: $input) {
+      id
+      name
+      color
+      orderIndex
+      todoCount
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const TODO_FOLDER_EDIT_MUTATION = `
+  mutation TodoFolderEdit($input: TodoFolderEditInput!) {
+    todoFolderEdit(input: $input) {
+      id
+      name
+      color
+      orderIndex
+      todoCount
+      updatedAt
+    }
+  }
+`
+
+export const TODO_FOLDER_REMOVE_MUTATION = `
+  mutation TodoFolderRemove($id: ID!) {
+    todoFolderRemove(id: $id)
   }
 `

@@ -1,6 +1,29 @@
 export type TodoStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled'
 export type TodoPriority = 'low' | 'medium' | 'high' | 'urgent'
 
+export interface TodoFolder {
+  id: string
+  name: string
+  color: string
+  orderIndex: number
+  todoCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TodoFolderInput {
+  name: string
+  color: string
+  orderIndex?: number
+}
+
+export interface TodoFolderEditInput {
+  id: string
+  name?: string
+  color?: string
+  orderIndex?: number
+}
+
 export interface TodoTag {
   id: string
   name: string
@@ -49,6 +72,8 @@ export interface TodoFilters {
   status?: TodoStatus | null
   priority?: TodoPriority | null
   tagId?: string | null
+  folderId?: string | null
+  withoutFolder?: boolean | null
   dueBefore?: string | null
   dueAfter?: string | null
   page?: number
@@ -62,6 +87,7 @@ export interface TodoInput {
   priority?: TodoPriority
   dueDate?: string | null
   tagIds?: string[]
+  folderId?: string | null
 }
 
 export interface TodoEditInput {
@@ -72,6 +98,7 @@ export interface TodoEditInput {
   priority?: TodoPriority
   dueDate?: string | null
   tagIds?: string[]
+  folderId?: string | null
 }
 
 export interface TodoSubtaskInput {

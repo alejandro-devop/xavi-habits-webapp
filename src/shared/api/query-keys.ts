@@ -40,4 +40,8 @@ export const todoKeys = {
   all: ['todos'] as const,
   list: (filters: ListFilters = {}) => [...todoKeys.all, 'list', filters] as const,
   detail: (id: string) => [...todoKeys.all, 'detail', id] as const,
+  folders: {
+    all: () => [...todoKeys.all, 'folders'] as const,
+    list: () => [...todoKeys.folders.all(), 'list'] as const,
+  },
 }

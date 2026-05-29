@@ -9,6 +9,7 @@ import {
   useTodoQuery,
   useTodoTagsQuery,
   useUpdateTodoMutation,
+  useCompleteTodoMutation,
   useCreateTodoTagMutation,
   useRemoveTodoMutation,
 } from '@/features/todos/hooks/useTodos'
@@ -63,6 +64,7 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   const { data: todo, isLoading } = useTodoQuery(todoId ?? undefined)
   const { data: allTags = [] } = useTodoTagsQuery()
   const updateTodo = useUpdateTodoMutation()
+  const completeTodo = useCompleteTodoMutation()
   const removeTodo = useRemoveTodoMutation()
   const createTag = useCreateTodoTagMutation()
   const { confirm } = useConfirmDialog()
@@ -136,6 +138,15 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     )
   }
 
+  const handleToggleComplete = () => {
+    if (!todo) return
+    if (todo.status === 'completed') {
+      updateTodo.mutate({ id: todo.id, status: 'pending' })
+    } else {
+      completeTodo.mutate(todo.id)
+    }
+  }
+
   const handleDelete = () => {
     if (!todo) return
     void confirm({
@@ -165,14 +176,33 @@ export function TodoDrawer({ todoId, onClose }: Props) {
         </div>
       ) : (
         <div className={styles.body}>
-          <h2
-            ref={titleRef}
-            className={styles.title}
-            contentEditable
-            suppressContentEditableWarning
-            onBlur={handleTitleBlur}
-            aria-label="Título de la tarea"
-          />
+          <div className={[styles.titleRow, todo.status === 'completed' ? styles.completedRow : ''].join(' ')}>
+            <button
+              type="button"
+              className={styles.completeBtn}
+              onClick={handleToggleComplete}
+              aria-label={todo.status === 'completed' ? 'Marcar como pendiente' : 'Marcar como completada'}
+            >
+              {todo.status === 'completed' ? (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
+                  <path d="M5 9l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
+                </svg>
+              )}
+            </button>
+            <h2
+              ref={titleRef}
+              className={styles.title}
+              contentEditable
+              suppressContentEditableWarning
+              onBlur={handleTitleBlur}
+              aria-label="Título de la tarea"
+            />
+          </div>
 
           <section className={[styles.section, styles.descriptionSection].join(' ')}>
             <span className={styles.label}>Descripción</span>

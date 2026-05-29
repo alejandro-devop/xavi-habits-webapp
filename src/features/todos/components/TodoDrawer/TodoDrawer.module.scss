@@ -12,7 +12,50 @@
   gap: var(--paper-row-height);
 }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  min-height: var(--paper-row-height);
+}
+
+.completedRow .title {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.completeBtn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: color 0.15s, transform 0.1s;
+
+  &:hover {
+    color: var(--color-success);
+    transform: scale(1.15);
+  }
+
+  .completedRow & {
+    color: var(--color-success);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    border-radius: 50%;
+    outline-offset: 2px;
+  }
+}
+
 .title {
+  flex: 1;
   font-family: var(--font-handwritten);
   font-size: 1.75rem;
   font-weight: $font-weight-semibold;

@@ -64,7 +64,6 @@ $tab-height: 32px;
   font-weight: $font-weight-semibold;
   z-index: 1;
 
-  // Hide the bottom border so it blends with the paper
   &::after {
     content: '';
     position: absolute;
@@ -145,57 +144,91 @@ $tab-height: 32px;
   }
 }
 
-.newFolderRow {
+// ── Modal content ──────────────────────────────────────────────
+
+.modalBody {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: $spacing-xs;
-  padding: $spacing-xs $spacing-sm;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: $radius-md;
-  box-shadow: var(--shadow-md);
-  position: absolute;
-  z-index: 100;
-  top: calc(100% + 4px);
-  left: 0;
-  min-width: 200px;
 }
 
-.newFolderInput {
-  flex: 1;
-  background: none;
-  border: none;
-  outline: none;
+.fieldLabel {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.modalInput {
+  width: 100%;
+  padding: $spacing-xs $spacing-sm;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
   font-size: $font-size-sm;
   color: var(--color-text);
-  font-family: var(--font-family);
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+  margin-bottom: $spacing-xs;
 
   &::placeholder {
     color: var(--color-text-muted);
   }
-}
 
-.colorPicker {
-  display: flex;
-  gap: 4px;
-}
-
-.colorSwatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid transparent;
-  flex-shrink: 0;
-  transition: border-color 0.1s;
-
-  &.selectedColor {
-    border-color: var(--color-text);
+  &:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
   }
 }
 
-.addWrapper {
-  position: relative;
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+}
+
+.colorSwatch {
+  aspect-ratio: 1;
+  border-radius: $radius-md;
+  cursor: pointer;
+  border: 2px solid transparent;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: transform 0.1s, outline-color 0.1s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.selectedColor {
+    outline-color: var(--color-text);
+    transform: scale(1.08);
+  }
+}
+
+.preview {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+}
+
+.previewDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.previewName {
+  font-size: $font-size-sm;
+  color: var(--color-text);
+  font-weight: $font-weight-medium;
+  opacity: 0.85;
 }

@@ -4,6 +4,7 @@ import {
   Checkbox,
   FormField,
   Input,
+  MarkdownEditor,
   Section,
   Select,
   Switch,
@@ -19,6 +20,7 @@ export function FormsSection() {
   const [switchOn, setSwitchOn] = useState(false)
   const [selectValue, setSelectValue] = useState('')
   const [textarea, setTextarea] = useState('')
+  const [markdown, setMarkdown] = useState('# Hola\n\nTexto **negrita** y *cursiva*.\n\n- Item uno\n- Item dos')
 
   return (
     <Section id="forms" title="Forms" description="Controles de formulario">
@@ -35,6 +37,16 @@ export function FormsSection() {
             maxLength={120}
             showCount
           />
+          <div>
+            <p style={{ margin: '0 0 var(--spacing-xs)', fontWeight: 600 }}>MarkdownEditor</p>
+            <MarkdownEditor
+              value={markdown}
+              onChange={setMarkdown}
+              savedValue={markdown}
+              maxLength={500}
+              placeholder="Prueba el editor…"
+            />
+          </div>
           <Select
             id="th-select"
             label="Select"

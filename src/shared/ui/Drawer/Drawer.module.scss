@@ -34,9 +34,11 @@
   bottom: 0;
   width: 100vw;
   border-radius: 0;
+  padding: var(--spacing-sm) var(--spacing-xs);
 
   @media (min-width: 768px) {
-    width: max(30vw, 22rem);
+    width: min(42rem, 92vw);
+    padding: var(--spacing-lg);
     border-radius: 0;
   }
 }
@@ -108,9 +110,12 @@
     var(--paper-shadow),
     -4px 0 12px rgba(0, 0, 0, 0.08);
 
-  // Offset the line grid so the first ruled line falls at the bottom of the
-  // first text line: padding-top (--spacing-lg = 2rem) + row-height - 1px line
-  background-position-y: calc(var(--spacing-lg) + 1px);
+  // Alinear renglones con padding-top del panel (mobile vs desktop)
+  background-position-y: calc(var(--spacing-sm) + 1px);
+
+  @media (min-width: 768px) {
+    background-position-y: calc(var(--spacing-lg) + 1px);
+  }
 
   // No gap between header and body — the ruled grid takes care of rhythm
   .header {

@@ -1,0 +1,338 @@
+@use '@/app/styles/tokens' as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  min-width: 0;
+}
+
+// ── Notebook / ruled paper ────────────────────────────────────────────────────
+.notebook {
+  gap: 0;
+
+  .toolbarBtn {
+    font-family: var(--font-handwritten);
+  }
+
+  .toolbar {
+    height: var(--paper-row-height);
+    min-height: var(--paper-row-height);
+    align-items: center;
+    padding: 0 6px;
+    margin: 0 -6px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .toolbarBtn {
+    height: calc(var(--paper-row-height) - 8px);
+    min-width: 1.65rem;
+  }
+
+  .editorWrap {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+
+    &:focus-within {
+      border-color: transparent;
+    }
+  }
+
+  .editorContent {
+    min-height: calc(var(--paper-row-height) * 3);
+  }
+
+  .editorWrap :global(.tiptap) {
+    min-height: calc(var(--paper-row-height) * 3);
+    padding: 0 6px;
+    margin: 0 -6px;
+    background: transparent;
+    font-family: var(--font-handwritten);
+    font-size: 1.25rem;
+    line-height: var(--paper-row-height);
+    color: var(--color-text);
+
+    &:focus {
+      outline: none;
+    }
+
+    p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      float: left;
+      height: 0;
+      pointer-events: none;
+      color: var(--color-text-muted);
+      line-height: var(--paper-row-height);
+    }
+
+    > * {
+      margin: 0;
+    }
+
+    p,
+    li,
+    blockquote {
+      line-height: var(--paper-row-height);
+      min-height: var(--paper-row-height);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-weight: $font-weight-semibold;
+      line-height: var(--paper-row-height);
+      min-height: var(--paper-row-height);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 1.25rem;
+    }
+
+    li {
+      padding: 0;
+    }
+
+    li p {
+      min-height: 0;
+      margin: 0;
+    }
+
+    blockquote {
+      padding-left: $spacing-sm;
+      border-left: 3px solid var(--color-border);
+      color: var(--color-text-muted);
+    }
+
+    a {
+      color: var(--color-primary);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+    }
+
+    code {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 0.85em;
+      padding: 0.1em 0.35em;
+      border-radius: $radius-sm;
+      background: color-mix(in srgb, var(--color-text) 8%, transparent);
+    }
+
+    pre {
+      margin: 0;
+      padding: 0 $spacing-sm;
+      border-radius: 0;
+      background: color-mix(in srgb, var(--color-text) 4%, transparent);
+      overflow-x: auto;
+      line-height: var(--paper-row-height);
+
+      code {
+        padding: 0;
+        background: none;
+      }
+    }
+  }
+
+  .footer {
+    min-height: var(--paper-row-height);
+    line-height: var(--paper-row-height);
+    padding: 0 6px;
+    margin: 0 -6px;
+  }
+
+  .status,
+  .count {
+    font-family: var(--font-handwritten);
+    font-size: $font-size-sm;
+  }
+}
+
+// ── Default variant ───────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+}
+
+.toolbarBtn {
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 0.35rem;
+  border: none;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: var(--color-text);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.toolbarBtnActive {
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
+}
+
+.editorWrap {
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+  background: var(--color-surface);
+  transition: border-color 0.15s;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+  }
+}
+
+.editorContent {
+  min-height: 8rem;
+}
+
+.editorSurface {
+  outline: none;
+}
+
+.editorWrap :global(.tiptap) {
+  min-height: 8rem;
+  padding: $spacing-sm;
+  color: var(--color-text);
+  line-height: $line-height-relaxed;
+  outline: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    color: var(--color-text-muted);
+  }
+
+  > * + * {
+    margin-top: 0.5em;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: $font-weight-semibold;
+    line-height: $line-height-snug;
+  }
+
+  h1 {
+    font-size: 1.45rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.25rem;
+  }
+
+  blockquote {
+    margin: 0;
+    padding-left: $spacing-sm;
+    border-left: 3px solid var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  code {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    border-radius: $radius-sm;
+    background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  pre {
+    margin: 0;
+    padding: $spacing-sm;
+    border-radius: $radius-md;
+    background: color-mix(in srgb, var(--color-text) 6%, transparent);
+    overflow-x: auto;
+
+    code {
+      padding: 0;
+      background: none;
+    }
+  }
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-sm;
+  min-height: 1.25rem;
+}
+
+.status {
+  font-size: $font-size-xs;
+  color: var(--color-text-muted);
+}
+
+.count {
+  font-size: $font-size-xs;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}

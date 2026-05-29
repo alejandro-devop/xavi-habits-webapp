@@ -40,6 +40,11 @@
   gap: 0;
 }
 
+.descriptionSection {
+  // Sin gap extra: label → toolbar → editor comparten la cuadrícula del cuaderno
+  min-width: 0;
+}
+
 .label {
   display: flex;
   align-items: center;
@@ -61,28 +66,6 @@
   background: var(--color-bg);
   padding: 1px 6px;
   border-radius: $radius-full;
-}
-
-.description {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  font-family: var(--font-handwritten);
-  font-size: 1.25rem; // ≥16px evita zoom automático en iOS/Android
-  color: var(--color-text);
-  line-height: var(--paper-row-height);
-  resize: none;
-  outline: none;
-
-  &:focus-visible {
-    outline: none;
-  }
-
-  &::placeholder {
-    color: var(--color-text-muted);
-  }
 }
 
 .priorities {

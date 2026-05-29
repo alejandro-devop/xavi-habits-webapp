@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Drawer } from '@/shared/ui/Drawer'
 import { Spinner } from '@/shared/ui/Spinner'
+import { MarkdownEditor } from '@/shared/ui/MarkdownEditor'
 import { PriorityBadge } from '@/features/todos/components/PriorityBadge/PriorityBadge'
 import { TagChip } from '@/features/todos/components/TagChip/TagChip'
 import { SubtaskList } from '@/features/todos/components/SubtaskList/SubtaskList'
@@ -12,12 +13,50 @@ import {
   useRemoveTodoMutation,
 } from '@/features/todos/hooks/useTodos'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
-import type { TodoPriority, TodoTag } from '@/features/todos/types/todo.types'
+import { TODO_DESCRIPTION_MAX_LENGTH } from '@/shared/constants/text-limits'
+import type { TodoPriority, TodoTag, Todo } from '@/features/todos/types/todo.types'
 import styles from './TodoDrawer.module.scss'
 
 type Props = {
   todoId: string | null
   onClose: () => void
+}
+
+type DescriptionEditorProps = {
+  todo: Todo
+  onSave: (description: string | null, onSuccess?: () => void) => void
+}
+
+function TodoDescriptionEditor({ todo, onSave }: DescriptionEditorProps) {
+  const [description, setDescription] = useState(todo.description ?? '')
+  const [savedDescription, setSavedDescription] = useState(todo.description ?? '')
+
+  const handleDescriptionSave = useCallback(
+    (nextDescription: string) => {
+      const normalized = nextDescription.trim() ? nextDescription : null
+      const current = todo.description ?? null
+      if (normalized === current) {
+        setSavedDescription(nextDescription)
+        return
+      }
+      onSave(normalized, () => setSavedDescription(nextDescription))
+    },
+    [onSave, todo.description],
+  )
+
+  return (
+    <MarkdownEditor
+      value={description}
+      onChange={setDescription}
+      onSave={handleDescriptionSave}
+      savedValue={savedDescription}
+      saveDebounceMs={1000}
+      maxLength={TODO_DESCRIPTION_MAX_LENGTH}
+      placeholder="Añade una descripción… (# título, **negrita**, - lista)"
+      variant="notebook"
+      aria-label="Descripción de la tarea"
+    />
+  )
 }
 
 export function TodoDrawer({ todoId, onClose }: Props) {
@@ -29,7 +68,6 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   const { confirm } = useConfirmDialog()
 
   const titleRef = useRef<HTMLHeadingElement>(null)
-  const descRef = useRef<HTMLTextAreaElement>(null)
   const [newTagName, setNewTagName] = useState('')
 
   useEffect(() => {
@@ -40,19 +78,20 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [todo?.id])
 
+  const handleDescriptionSave = useCallback(
+    (description: string | null, onSuccess?: () => void) => {
+      if (!todo) return
+      updateTodo.mutate({ id: todo.id, description }, { onSuccess: () => onSuccess?.() })
+    },
+    [todo, updateTodo],
+  )
+
   if (!todoId) return null
 
   const handleTitleBlur = () => {
     const newTitle = titleRef.current?.textContent?.trim()
     if (!newTitle || !todo || newTitle === todo.title) return
     updateTodo.mutate({ id: todo.id, title: newTitle })
-  }
-
-  const handleDescBlur = () => {
-    if (!todo) return
-    const newDesc = descRef.current?.value ?? ''
-    if (newDesc === (todo.description ?? '')) return
-    updateTodo.mutate({ id: todo.id, description: newDesc || null })
   }
 
   const handlePriority = (priority: TodoPriority) => {
@@ -63,7 +102,7 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   const TAG_COLORS = ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#06B6D4','#84CC16']
 
   const sanitizeTagName = (raw: string) =>
-    raw.replace(/[^\p{L}\p{N} _\-]/gu, '').slice(0, 25)
+    raw.replace(/[^\p{L}\p{N} _-]/gu, '').slice(0, 25)
 
   const handleTagInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewTagName(sanitizeTagName(e.target.value))
@@ -135,16 +174,9 @@ export function TodoDrawer({ todoId, onClose }: Props) {
             aria-label="Título de la tarea"
           />
 
-          <section className={styles.section}>
+          <section className={[styles.section, styles.descriptionSection].join(' ')}>
             <span className={styles.label}>Descripción</span>
-            <textarea
-              ref={descRef}
-              className={styles.description}
-              defaultValue={todo.description ?? ''}
-              onBlur={handleDescBlur}
-              placeholder="Añade una descripción…"
-              rows={4}
-            />
+            <TodoDescriptionEditor key={todo.id} todo={todo} onSave={handleDescriptionSave} />
           </section>
 
           <section className={styles.section}>

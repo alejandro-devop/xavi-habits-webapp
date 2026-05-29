@@ -131,11 +131,14 @@ export function useUpdateTodoMutation() {
       if (variables.status !== undefined) listPatch.status = variables.status
       if (variables.priority !== undefined) listPatch.priority = variables.priority
 
+      const detailPatch: Partial<Todo> = { ...listPatch }
+      if (variables.description !== undefined) detailPatch.description = variables.description
+
       if (Object.keys(listPatch).length > 0) {
         patchTodoInLists(queryClient, variables.id, listPatch)
       }
       queryClient.setQueryData<Todo>(todoKeys.detail(variables.id), (old) =>
-        old ? { ...old, ...listPatch } : old,
+        old ? { ...old, ...detailPatch } : old,
       )
       return { previousLists, previousDetail }
     },

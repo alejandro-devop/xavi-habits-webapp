@@ -125,8 +125,10 @@ export function NotebookList({ filters = {} }: Props) {
         target.isContentEditable ||
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA'
+      // Never intercept keyboard events on links or buttons outside the list
+      const isNavigating = target.tagName === 'A' || target.closest('a') !== null
 
-      if (isEditing) return
+      if (isEditing || isNavigating) return
 
       if (openTodoId) {
         if (e.key === 'Escape') setOpenTodoId(null)

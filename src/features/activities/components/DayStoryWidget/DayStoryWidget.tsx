@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
-import { normalizeTimeForDisplay, parseTimeToMinutes, sortFollowUpsByStartTimeAsc } from '@/features/activities/utils/activity-time.utils'
+import { normalizeTimeForDisplay, sortFollowUpsByStartTimeAsc } from '@/features/activities/utils/activity-time.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { DataCard } from '@/shared/ui/DataCard'
 import { Skeleton } from '@/shared/ui/Skeleton'
@@ -180,7 +180,7 @@ export function DayStoryWidget({
         <Skeleton width="30%" height={28} />
         {[1, 2, 3].map((i) => (
           <div key={i} className={styles.skeletonEntry}>
-            <Skeleton width={36} height={36} style={{ borderRadius: '50%' }} />
+            <Skeleton width={36} height={36} circle />
             <div className={styles.skeletonEntryBody}>
               <Skeleton width="25%" height={11} />
               <Skeleton width="85%" height={13} />

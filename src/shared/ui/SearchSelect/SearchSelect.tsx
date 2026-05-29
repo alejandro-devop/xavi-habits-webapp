@@ -52,8 +52,11 @@ export function SearchSelect({
   const triggerRef = useRef<HTMLButtonElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [isOpen, setIsOpen] = useState(false)
+  // Options are shown with a delay so the virtual keyboard has time to settle first
+  const [optionsVisible, setOptionsVisible] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const [dropdownPos, setDropdownPos] = useState<DropdownPos>({ top: 0, left: 0, width: 0 })
@@ -70,9 +73,8 @@ export function SearchSelect({
     })
   }, [options, searchQuery])
 
+  // Reads refs directly — no stale closure, safe to call from rAF loop
   const updatePos = useCallback(() => {
-    // Always anchor to the search input when it's mounted (open state),
-    // fall back to the trigger button otherwise.
     const anchor = searchRef.current ?? triggerRef.current
     if (!anchor) return
     const rect = anchor.getBoundingClientRect()
@@ -85,43 +87,40 @@ export function SearchSelect({
       left: rect.left,
       width: rect.width,
     })
-  }, []) // no deps — reads refs directly, always current
+  }, [])
+
+  // Continuous rAF loop while open: options always stay anchored to the input
+  useEffect(() => {
+    if (!optionsVisible) return
+    let animId: number
+    const tick = () => { updatePos(); animId = requestAnimationFrame(tick) }
+    animId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(animId)
+  }, [optionsVisible, updatePos])
 
   const close = useCallback(() => {
+    if (delayTimerRef.current) clearTimeout(delayTimerRef.current)
     setIsOpen(false)
+    setOptionsVisible(false)
     setSearchQuery('')
     setHighlightedIndex(0)
   }, [])
 
   const open = useCallback(() => {
     if (disabled) return
+    if (delayTimerRef.current) clearTimeout(delayTimerRef.current)
     setIsOpen(true)
+    setOptionsVisible(false)
     setHighlightedIndex(0)
     requestAnimationFrame(() => searchRef.current?.focus())
+    // Show options after keyboard animation settles (~320ms on iOS)
+    delayTimerRef.current = setTimeout(() => setOptionsVisible(true), 320)
   }, [disabled])
 
-  // Recalculate position once the search input is mounted and positioned
-  useEffect(() => {
-    if (isOpen) requestAnimationFrame(updatePos)
-  }, [isOpen, updatePos])
+  // Cleanup timer on unmount
+  useEffect(() => () => { if (delayTimerRef.current) clearTimeout(delayTimerRef.current) }, [])
 
-  // Reposition on scroll / resize / virtual keyboard
-  useEffect(() => {
-    if (!isOpen) return
-    const onViewportChange = () => requestAnimationFrame(updatePos)
-    window.addEventListener('scroll', onViewportChange, true)
-    window.addEventListener('resize', onViewportChange)
-    window.visualViewport?.addEventListener('resize', onViewportChange)
-    window.visualViewport?.addEventListener('scroll', onViewportChange)
-    return () => {
-      window.removeEventListener('scroll', onViewportChange, true)
-      window.removeEventListener('resize', onViewportChange)
-      window.visualViewport?.removeEventListener('resize', onViewportChange)
-      window.visualViewport?.removeEventListener('scroll', onViewportChange)
-    }
-  }, [isOpen, updatePos])
-
-  // Click outside: close if outside both the root and the portal dropdown
+  // Click outside: close if outside both input root and options portal
   useEffect(() => {
     if (!isOpen) return
     const onPointerDown = (e: MouseEvent | TouchEvent) => {
@@ -156,8 +155,9 @@ export function SearchSelect({
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') { e.preventDefault(); close(); return }
+    if (e.key === 'Tab') { close(); return }
     if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightedIndex((i) => Math.min(i + 1, filteredOptions.length - 1)) }
-    if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightedIndex((i) => Math.max(i - 1, 0)) }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); setHighlightedIndex((i) => Math.max(i - 1, 0)) }
     if (e.key === 'Enter') {
       e.preventDefault()
       const opt = filteredOptions[highlightedIndex]
@@ -179,7 +179,6 @@ export function SearchSelect({
       ) : null}
 
       <div className={styles.control}>
-        {/* Closed state: button trigger */}
         {!isOpen ? (
           <button
             ref={triggerRef}
@@ -196,10 +195,9 @@ export function SearchSelect({
               styles.trigger,
               error ? styles.triggerError : '',
               disabled ? styles.triggerDisabled : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+            ].filter(Boolean).join(' ')}
             onClick={open}
+            onFocus={open}
             onKeyDown={handleTriggerKeyDown}
           >
             <span className={styles.triggerValue}>
@@ -215,13 +213,12 @@ export function SearchSelect({
             <span className={styles.chevron} aria-hidden>▾</span>
           </button>
         ) : (
-          /* Open state: search input replaces the trigger, stays in document flow */
           <input
             ref={searchRef}
             id={id}
             type="search"
             role="combobox"
-            aria-expanded={true}
+            aria-expanded={optionsVisible}
             aria-controls={listboxId}
             aria-haspopup="listbox"
             aria-activedescendant={activeOptionId}
@@ -233,7 +230,6 @@ export function SearchSelect({
             onChange={(e) => { setSearchQuery(e.target.value); setHighlightedIndex(0) }}
             onKeyDown={handleSearchKeyDown}
             onBlur={(e) => {
-              // Close only if focus moves outside both root and dropdown
               if (!dropdownRef.current?.contains(e.relatedTarget as Node)) close()
             }}
           />
@@ -251,11 +247,10 @@ export function SearchSelect({
         ) : null}
       </div>
 
-      {/* Portal: only the options list */}
       {typeof document !== 'undefined'
         ? createPortal(
             <AnimatePresence>
-              {isOpen ? (
+              {optionsVisible ? (
                 <motion.div
                   ref={dropdownRef}
                   className={styles.dropdown}
@@ -291,9 +286,7 @@ export function SearchSelect({
                             index === highlightedIndex ? styles.optionHighlighted : '',
                             value === opt.value ? styles.optionSelected : '',
                             opt.disabled ? styles.optionDisabled : '',
-                          ]
-                            .filter(Boolean)
-                            .join(' ')}
+                          ].filter(Boolean).join(' ')}
                           onMouseEnter={() => setHighlightedIndex(index)}
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => selectOption(opt)}

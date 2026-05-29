@@ -9,9 +9,10 @@ type Props = {
   focused: boolean
   onFocus: () => void
   onClick: () => void
+  onToggle: () => void
 }
 
-export function NotebookItem({ todo, focused, onFocus, onClick }: Props) {
+export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Props) {
   const isCompleted = todo.status === 'completed'
 
   return (
@@ -32,7 +33,16 @@ export function NotebookItem({ todo, focused, onFocus, onClick }: Props) {
       }}
       aria-label={todo.title}
     >
-      <div className={styles.check} aria-hidden="true">
+      <button
+        type="button"
+        className={styles.check}
+        aria-label={isCompleted ? 'Marcar como pendiente' : 'Marcar como completada'}
+        onClick={(e) => {
+          e.stopPropagation()
+          onToggle()
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         {isCompleted ? (
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <circle cx="7" cy="7" r="6.5" stroke="currentColor" />
@@ -43,7 +53,7 @@ export function NotebookItem({ todo, focused, onFocus, onClick }: Props) {
             <circle cx="7" cy="7" r="6.5" stroke="currentColor" />
           </svg>
         )}
-      </div>
+      </button>
 
       <span className={styles.title}>{todo.title}</span>
 

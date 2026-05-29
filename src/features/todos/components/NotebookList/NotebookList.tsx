@@ -159,6 +159,7 @@ export function NotebookList({ filters = {} }: Props) {
                 focused={focusedIndex === index}
                 onFocus={() => setFocusedIndex(index)}
                 onClick={() => setOpenTodoId(todo.id)}
+                onToggle={() => handleToggleComplete(todo)}
               />
             ))}
           </ul>

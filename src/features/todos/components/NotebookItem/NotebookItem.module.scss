@@ -47,6 +47,22 @@
   align-items: center;
   justify-content: center;
   color: var(--color-text-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.1s;
+
+  &:hover {
+    color: var(--color-success);
+    transform: scale(1.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    border-radius: 50%;
+    outline-offset: 2px;
+  }
 
   .completed & {
     color: var(--color-success);

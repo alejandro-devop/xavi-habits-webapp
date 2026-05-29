@@ -86,10 +86,14 @@
   border: none;
   border-bottom: 1px dashed var(--color-border);
   outline: none;
-  font-size: $font-size-sm;
+  font-size: 1rem; // ≥16px evita zoom automático en iOS/Android
   color: var(--color-text);
   padding: 2px 0;
   font-family: var(--font-family);
+
+  &:focus-visible {
+    outline: none;
+  }
 
   &::placeholder {
     color: var(--color-text-muted);

@@ -28,7 +28,19 @@ export function NotebookList({ filters = {} }: Props) {
     ...filters,
     folderId: selectedFolderId,
   })
-  const todos = useMemo(() => data?.todos ?? [], [data?.todos])
+  const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
+
+  const todos = useMemo(() => {
+    const raw = data?.todos ?? []
+    return [...raw].sort((a, b) => {
+      // Completadas siempre al final
+      const aComp = a.status === 'completed' ? 1 : 0
+      const bComp = b.status === 'completed' ? 1 : 0
+      if (aComp !== bComp) return aComp - bComp
+      // Dentro del mismo grupo, ordenar por prioridad
+      return (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2)
+    })
+  }, [data?.todos])
 
   const createTodo = useCreateTodoMutation()
   const completeTodo = useCompleteTodoMutation()
@@ -134,7 +146,9 @@ export function NotebookList({ filters = {} }: Props) {
 
   return (
     <div className={styles.container}>
-    <NotebookTabs selectedFolderId={selectedFolderId} onSelect={(id) => { setSelectedFolderId(id); setFocusedIndex(-1) }} />
+      <div className={styles.tabsBar}>
+        <NotebookTabs selectedFolderId={selectedFolderId} onSelect={(id) => { setSelectedFolderId(id); setFocusedIndex(-1) }} />
+      </div>
     <div className={styles.notebook}>
       <div className={styles.margin} aria-hidden="true" />
 

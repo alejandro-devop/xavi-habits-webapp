@@ -2,3 +2,11 @@ $breakpoint-sm: 480px;
 $breakpoint-md: 768px;
 $breakpoint-lg: 1024px;
 $breakpoint-xl: 1280px;
+
+// Sidebar se muestra solo cuando hay suficiente ancho Y no es landscape móvil/tablet
+// "desktop" = ≥1024px, o bien ≥768px en portrait sin teclado virtual
+@mixin sidebar-visible {
+  @media (min-width: #{$breakpoint-lg}) {
+    @content;
+  }
+}

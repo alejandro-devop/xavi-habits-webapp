@@ -16,7 +16,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
 
-  @include md {
+  @include lg {
     display: flex;
   }
 }

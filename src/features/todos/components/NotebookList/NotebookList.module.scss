@@ -18,15 +18,30 @@ $margin-line-color-dark: rgba(232, 140, 145, 0.35);
   width: 100%;
 }
 
+// Contenedor de tabs: mismo ancho que el notebook, fondo del papel,
+// border-radius en la parte superior, overflow hidden para contener el scroll
+.tabsBar {
+  width: 100%;
+  background: $paper-bg;
+  border-radius: $radius-xl $radius-xl 0 0;
+  overflow: hidden; // las tabs no se desbordan del contenedor
+  padding: $spacing-xs $spacing-xs 0;
+  box-sizing: border-box;
+
+  :global([data-theme='dark']) & {
+    background: $paper-bg-dark;
+  }
+}
+
 .notebook {
   position: relative;
   background: $paper-bg;
-  border-radius: 0 $radius-xl $radius-xl $radius-xl;
+  // Sin border-radius superior: conecta visualmente con tabsBar
+  border-radius: 0 0 $radius-xl $radius-xl;
   width: 100%;
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    2px 2px 0 rgba(0, 0, 0, 0.04);
+    0 4px 16px rgba(0, 0, 0, 0.07),
+    2px 4px 0 rgba(0, 0, 0, 0.03);
   overflow: hidden;
   min-height: 400px;
 

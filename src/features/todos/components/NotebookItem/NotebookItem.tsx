@@ -12,12 +12,40 @@ type Props = {
   onToggle: () => void
 }
 
+function subtaskProgressStyle(
+  completed: number,
+  total: number,
+): React.CSSProperties {
+  if (total === 0) return {}
+  const pct = Math.round((completed / total) * 100)
+  const ratio = completed / total
+  // Color semáforo según progreso
+  const color =
+    ratio === 1
+      ? 'rgba(16, 185, 129, 0.13)'   // verde
+      : ratio >= 0.5
+        ? 'rgba(245, 158, 11, 0.12)' // amarillo
+        : 'rgba(239, 68, 68, 0.10)'  // rojo
+  return {
+    background: `linear-gradient(to right, ${color} ${pct}%, transparent ${pct}%)`,
+  }
+}
+
 export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Props) {
   const isCompleted = todo.status === 'completed'
+  const hasSubtasks = todo.subtasksCount.total > 0
+  const progressStyle = hasSubtasks && !focused
+    ? subtaskProgressStyle(todo.subtasksCount.completed, todo.subtasksCount.total)
+    : undefined
 
   return (
     <motion.li
-      className={[styles.row, focused ? styles.focused : '', isCompleted ? styles.completed : ''].join(' ')}
+      className={[
+        styles.row,
+        focused ? styles.focused : '',
+        isCompleted ? styles.completed : '',
+      ].join(' ')}
+      style={progressStyle}
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: 'easeOut' }}
@@ -74,11 +102,6 @@ export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Prop
           </div>
         ) : null}
         <PriorityBadge priority={todo.priority} selected />
-        {todo.subtasksCount.total > 0 ? (
-          <span className={styles.subtasks}>
-            {todo.subtasksCount.completed}/{todo.subtasksCount.total}
-          </span>
-        ) : null}
       </div>
     </motion.li>
   )

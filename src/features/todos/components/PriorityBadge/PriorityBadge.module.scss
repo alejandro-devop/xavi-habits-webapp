@@ -3,15 +3,16 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  border-radius: $radius-full;
-  font-size: $font-size-xs;
-  font-weight: $font-weight-medium;
-  letter-spacing: 0.03em;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: $radius-md;
   border: 1.5px solid transparent;
   cursor: pointer;
   transition: opacity 0.15s, transform 0.1s;
   background: transparent;
+  flex-shrink: 0;
 
   &:not(.selected) {
     opacity: 0.45;

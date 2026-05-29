@@ -14,7 +14,7 @@
 }
 
 .menuBtn {
-  @include md {
+  @include lg {
     display: none;
   }
 }
@@ -26,7 +26,7 @@
   padding: $spacing-lg;
   width: 100%;
 
-  @media (max-width: 768px) {
+  @media (max-width: #{$breakpoint-lg - 1}) {
     padding: $spacing-sm;
   }
 }
@@ -39,7 +39,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  @media (max-width: 768px) {
+  @media (max-width: #{$breakpoint-lg - 1}) {
     display: none;
   }
 }

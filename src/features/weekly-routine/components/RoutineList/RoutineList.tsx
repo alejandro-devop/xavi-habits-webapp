@@ -13,7 +13,7 @@ type Props = {
   onOpen: (id: string) => void
 }
 
-export function RoutineList({ routines, onAdd, onEdit, onDelete, onSetActive, onOpen }: Props) {
+export function RoutineList({ routines, onEdit, onDelete, onSetActive, onOpen }: Props) {
   const { confirm } = useConfirmDialog()
 
   async function handleDelete(routine: WeeklyRoutine) {
@@ -55,7 +55,7 @@ export function RoutineList({ routines, onAdd, onEdit, onDelete, onSetActive, on
             <div className={styles.itemInfo}>
               <span className={styles.itemName}>{routine.name}</span>
               {routine.isActive && (
-                <Badge variant="success" size="sm">Activa</Badge>
+                <Badge variant="success">Activa</Badge>
               )}
             </div>
             <AppIcon name="chevron-right" size="sm" className={styles.itemChevron} />

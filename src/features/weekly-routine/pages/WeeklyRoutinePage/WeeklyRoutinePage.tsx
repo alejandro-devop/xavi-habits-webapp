@@ -62,7 +62,7 @@ export function WeeklyRoutinePage() {
     <div className={styles.page}>
       <PageHeader
         title="Rutinas semanales"
-        description="Gestiona tus plantillas de semana"
+        subtitle="Gestiona tus plantillas de semana"
         actions={
           <Button variant="primary" size="sm" onClick={openCreate}>
             <AppIcon name="plus" size="sm" />

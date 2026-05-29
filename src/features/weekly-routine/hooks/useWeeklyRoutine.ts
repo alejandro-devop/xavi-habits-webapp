@@ -54,89 +54,89 @@ export function useActiveWeeklyRoutineQuery() {
 
 export function useCreateWeeklyRoutineMutation() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (input: WeeklyRoutineInput) => api.createWeeklyRoutine(input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
-      showToast({ message: 'Rutina creada', type: 'success' })
+      toast.success('Rutina creada')
     },
-    onError: () => showToast({ message: 'No se pudo crear la rutina', type: 'error' }),
+    onError: () => toast.error('No se pudo crear la rutina'),
   })
 }
 
 export function useUpdateWeeklyRoutineMutation() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (input: WeeklyRoutineEditInput) => api.updateWeeklyRoutine(input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
-      showToast({ message: 'Rutina actualizada', type: 'success' })
+      toast.success('Rutina actualizada')
     },
-    onError: () => showToast({ message: 'No se pudo actualizar la rutina', type: 'error' }),
+    onError: () => toast.error('No se pudo actualizar la rutina'),
   })
 }
 
 export function useRemoveWeeklyRoutineMutation() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (id: string) => api.removeWeeklyRoutine(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
-      showToast({ message: 'Rutina eliminada', type: 'success' })
+      toast.success('Rutina eliminada')
     },
-    onError: () => showToast({ message: 'No se pudo eliminar la rutina', type: 'error' }),
+    onError: () => toast.error('No se pudo eliminar la rutina'),
   })
 }
 
 export function useSetActiveWeeklyRoutineMutation() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (id: string) => api.setWeeklyRoutineActive(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
-      showToast({ message: 'Rutina activada', type: 'success' })
+      toast.success('Rutina activada')
     },
-    onError: () => showToast({ message: 'No se pudo activar la rutina', type: 'error' }),
+    onError: () => toast.error('No se pudo activar la rutina'),
   })
 }
 
 export function useAddWeeklyRoutineActivityMutation() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (input: WeeklyRoutineActivityInput) => api.addWeeklyRoutineActivity(input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
     },
-    onError: () => showToast({ message: 'No se pudo agregar la actividad', type: 'error' }),
+    onError: () => toast.error('No se pudo agregar la actividad'),
   })
 }
 
 export function useUpdateWeeklyRoutineActivityMutation() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (input: WeeklyRoutineActivityEditInput) => api.updateWeeklyRoutineActivity(input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
     },
-    onError: () => showToast({ message: 'No se pudo actualizar la actividad', type: 'error' }),
+    onError: () => toast.error('No se pudo actualizar la actividad'),
   })
 }
 
 export function useRemoveWeeklyRoutineActivityMutation() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (id: string) => api.removeWeeklyRoutineActivity(id),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
-      showToast({ message: 'Evento eliminado', type: 'success' })
+      toast.success('Evento eliminado')
     },
-    onError: () => showToast({ message: 'No se pudo eliminar el evento', type: 'error' }),
+    onError: () => toast.error('No se pudo eliminar el evento'),
   })
 }

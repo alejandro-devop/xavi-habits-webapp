@@ -97,10 +97,10 @@ export function WeeklyRoutineDetailPage() {
     <div className={`${styles.page} fullWidthPage`}>
       <PageHeader
         title={isLoading ? '' : (routine?.name ?? 'Rutina')}
-        description={
+        subtitle={
           routine
             ? `${routine.isActive ? 'Activa · ' : ''}${routine.dayStartTime}–${routine.dayEndTime}`
-            : ''
+            : undefined
         }
         actions={
           <Button

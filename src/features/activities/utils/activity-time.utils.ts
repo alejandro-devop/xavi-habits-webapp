@@ -256,7 +256,8 @@ export function getFollowUpEndTimeForNextEntry(
 
 export function getFollowUpInterval(followUp: ActivityFollowUp, date: string): TimelineInterval {
   const startMinutes = timeToMinutes(followUp.startTime)
-  let endMinutes = startMinutes + Math.max(0, followUp.durationMinutes)
+  const duration = followUp.durationMinutes ?? 0
+  let endMinutes = startMinutes + Math.max(0, duration)
 
   if (followUp.endDate && followUp.endDate !== date) {
     endMinutes = MINUTES_PER_DAY

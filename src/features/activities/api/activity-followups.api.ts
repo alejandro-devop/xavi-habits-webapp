@@ -3,13 +3,16 @@ import {
   ACTIVITY_FOLLOW_UP_ADD_MUTATION,
   ACTIVITY_FOLLOW_UP_EDIT_MUTATION,
   ACTIVITY_FOLLOW_UP_REMOVE_MUTATION,
+  ACTIVITY_FOLLOW_UP_START_MUTATION,
   ACTIVITY_FOLLOW_UPS_IN_DATES_QUERY,
+  ACTIVITY_OPEN_FOLLOW_UP_QUERY,
 } from '@/features/activities/graphql/activity-followups.graphql'
 import type {
   ActivityDayFollowUp,
   ActivityFollowUp,
   ActivityFollowUpEditInput,
   ActivityFollowUpInput,
+  ActivityFollowUpStartInput,
   ActivityFollowUpsDateGroup,
 } from '@/features/activities/types/activity-followup.types'
 import { graphqlRequest } from '@/shared/api/graphql-client'
@@ -22,8 +25,16 @@ type ActivityFollowUpsInDatesData = {
   activityFollowUpsInDates: ActivityFollowUpsDateGroup[]
 }
 
+type ActivityOpenFollowUpData = {
+  activityOpenFollowUp: ActivityFollowUp | null
+}
+
 type ActivityFollowUpAddData = {
   activityFollowUpAdd: ActivityFollowUp
+}
+
+type ActivityFollowUpStartData = {
+  activityFollowUpStart: ActivityFollowUp
 }
 
 type ActivityFollowUpEditData = {
@@ -32,6 +43,11 @@ type ActivityFollowUpEditData = {
 
 type ActivityFollowUpRemoveData = {
   activityFollowUpRemove: boolean
+}
+
+export async function getActivityOpenFollowUp(): Promise<ActivityFollowUp | null> {
+  const data = await graphqlRequest<ActivityOpenFollowUpData>(ACTIVITY_OPEN_FOLLOW_UP_QUERY)
+  return data.activityOpenFollowUp ?? null
 }
 
 export async function getActivityDayFollowUps(date: string): Promise<ActivityDayFollowUp[]> {
@@ -51,6 +67,16 @@ export async function getActivityFollowUpsInDates(
     { from, to },
   )
   return data.activityFollowUpsInDates ?? []
+}
+
+export async function startActivityFollowUp(
+  input: ActivityFollowUpStartInput,
+): Promise<ActivityFollowUp> {
+  const data = await graphqlRequest<
+    ActivityFollowUpStartData,
+    { input: ActivityFollowUpStartInput }
+  >(ACTIVITY_FOLLOW_UP_START_MUTATION, { input })
+  return data.activityFollowUpStart
 }
 
 export async function createActivityFollowUp(

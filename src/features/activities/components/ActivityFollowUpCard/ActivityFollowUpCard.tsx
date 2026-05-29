@@ -15,6 +15,11 @@ export function ActivityFollowUpCard({
   onClick,
   variant = 'default',
 }: ActivityFollowUpCardProps) {
+  if (followUp.isOpen || followUp.durationMinutes === null || !followUp.endTime) {
+    return null
+  }
+
+  const durationMinutes = followUp.durationMinutes
   const activity = followUp.activity
   const category = activity?.category
   const accentColor = category?.color ?? 'var(--color-primary)'
@@ -46,7 +51,7 @@ export function ActivityFollowUpCard({
         </div>
         {isTimeline ? (
           <span className={styles.durationBadge}>
-            {formatDurationMinutes(followUp.durationMinutes)}
+            {formatDurationMinutes(durationMinutes)}
           </span>
         ) : null}
       </div>
@@ -65,7 +70,7 @@ export function ActivityFollowUpCard({
           </div>
           <div>
             <dt>Duración</dt>
-            <dd>{formatDurationMinutes(followUp.durationMinutes)}</dd>
+            <dd>{formatDurationMinutes(durationMinutes)}</dd>
           </div>
         </dl>
       ) : null}

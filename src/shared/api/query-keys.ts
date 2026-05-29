@@ -23,6 +23,7 @@ export const activityKeys = {
   },
   followUps: {
     all: () => [...activityKeys.all, 'followUps'] as const,
+    open: () => [...activityKeys.followUps.all(), 'open'] as const,
     day: (date: string) => [...activityKeys.followUps.all(), 'day', date] as const,
     range: (from: string, to: string) =>
       [...activityKeys.followUps.all(), 'range', from, to] as const,

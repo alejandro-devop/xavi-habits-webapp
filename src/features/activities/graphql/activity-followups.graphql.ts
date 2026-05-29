@@ -4,10 +4,12 @@ const FOLLOW_UP_FIELDS = `
   date
   startTime
   durationMinutes
+  isOpen
   endTime
   endDate
   endDateTime
   notes
+  linkedTodoId
 `
 
 const FOLLOW_UP_ACTIVITY_FIELDS = `
@@ -20,6 +22,23 @@ const FOLLOW_UP_ACTIVITY_FIELDS = `
       name
       color
       icon
+    }
+  }
+`
+
+const FOLLOW_UP_LINKED_TODO_FIELDS = `
+  linkedTodo {
+    id
+    title
+  }
+`
+
+export const ACTIVITY_OPEN_FOLLOW_UP_QUERY = `
+  query ActivityOpenFollowUp {
+    activityOpenFollowUp {
+      ${FOLLOW_UP_FIELDS}
+      ${FOLLOW_UP_ACTIVITY_FIELDS}
+      ${FOLLOW_UP_LINKED_TODO_FIELDS}
     }
   }
 `
@@ -50,6 +69,16 @@ export const ACTIVITY_FOLLOW_UPS_IN_DATES_QUERY = `
           }
         }
       }
+    }
+  }
+`
+
+export const ACTIVITY_FOLLOW_UP_START_MUTATION = `
+  mutation ActivityFollowUpStart($input: ActivityFollowUpStartInput!) {
+    activityFollowUpStart(input: $input) {
+      ${FOLLOW_UP_FIELDS}
+      ${FOLLOW_UP_ACTIVITY_FIELDS}
+      ${FOLLOW_UP_LINKED_TODO_FIELDS}
     }
   }
 `

@@ -37,6 +37,7 @@ describe('useActivityFollowUps mutations', () => {
       date: '2026-05-20',
       startTime: '09:30:00',
       durationMinutes: 90,
+      isOpen: false,
       endTime: '11:00:00',
       endDate: '2026-05-20',
       endDateTime: '2026-05-20T11:00:00',

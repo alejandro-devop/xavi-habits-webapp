@@ -18,6 +18,7 @@ describe('activity-followup-form', () => {
     vi.setSystemTime(new Date('2026-05-20T11:30:00.000Z'))
 
     const session: RunningActivitySession = {
+      followUpId: '99',
       activityId: '7',
       activityTitle: 'Deep work',
       startedAt: '2026-05-20T10:00:00.000Z',

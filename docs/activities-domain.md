@@ -65,9 +65,11 @@ Ver Fase 6.1: `activityCategories`, `activityCategoryAdd/Edit/Remove`. No elimin
 |-----------|-----|
 | `activityDayFollowUps(date)` | Timeline del día seleccionado |
 | `activityFollowUpsInDates(from, to)` | Rango semana visible (prefetch) |
-| `activityFollowUpAdd(input)` | Guardar al finalizar sesión |
-| `activityFollowUpEdit(input)` | Editar desde modal |
-| `activityFollowUpRemove(id)` | Eliminar con confirmación |
+| `activityOpenFollowUp` | Follow-up abierto (sesión en curso), sincronizado entre dispositivos |
+| `activityFollowUpStart(input)` | Iniciar sesión (follow-up sin duración) |
+| `activityFollowUpAdd(input)` | Registrar tiempo pasado (siempre con duración) |
+| `activityFollowUpEdit(input)` | Finalizar sesión abierta o editar registro cerrado |
+| `activityFollowUpRemove(id)` | Cancelar sesión abierta o eliminar registro |
 
 Input de add/edit: `activityId`, `date` (YYYY-MM-DD), `startTime` (HH:mm:ss en API), `durationMinutes`, `notes`.
 
@@ -78,6 +80,7 @@ activityKeys.list(serializedFilters)
 activityKeys.detail(id)
 activityKeys.categories.list()
 activityKeys.categories.detail(id)
+activityKeys.followUps.open()
 activityKeys.followUps.day(date)
 activityKeys.followUps.range(from, to)
 ```
@@ -88,17 +91,19 @@ activityKeys.followUps.range(from, to)
 |----------|-----------|
 | actividad CRUD / complete | `activityKeys.all` |
 | categorías CRUD | `activityKeys.categories.*` |
-| follow-up create / update / delete | `followUps.day`, `followUps.range`, `activityKeys.detail(activityId)`, `activityKeys.all` |
+| follow-up start / create / update / delete | `followUps.open`, `followUps.day`, `followUps.range`, `activityKeys.detail(activityId)`, `activityKeys.all` |
 
 ## Time tracking — arquitectura
 
-### Sesión local en progreso
+### Sesión en curso (follow-up abierto)
 
-- Store: `src/features/activities/store/activity-tracking.store.ts` (Zustand persist, key `xavi-activity-tracking-session`).
-- Solo **una** actividad en curso.
-- **Iniciar** no llama al backend; guarda `RunningActivitySession` con `startedAt` ISO.
-- **Cancelar** limpia el store (ConfirmDialog); no crea follow-up.
-- **Finalizar** abre modal de revisión → `activityFollowUpAdd` → limpia store solo en éxito.
+- Query: `activityOpenFollowUp` (`activityKeys.followUps.open()`), con `refetchOnWindowFocus` para sincronizar entre dispositivos.
+- Solo **una** sesión abierta por usuario (índice único en backend).
+- **Iniciar** → `activityFollowUpStart` (crea follow-up con `durationMinutes: null`, `date`, `startTime`, `linkedTodoId` opcional).
+- **Cancelar** → `activityFollowUpRemove` (ConfirmDialog).
+- **Finalizar** → modal de revisión → `activityFollowUpEdit` con `durationMinutes` (cierra el mismo registro).
+- Los follow-ups abiertos **no** aparecen en `activityDayFollowUps` ni en métricas del día hasta cerrarse.
+- UI: `RunningActivitySession` se deriva del follow-up abierto para el timer (`openFollowUpToRunningSession`).
 
 ### Timer preciso
 

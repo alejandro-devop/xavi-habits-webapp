@@ -21,6 +21,7 @@ vi.mock('@/features/activities/hooks/useActivityCategories', () => ({
 }))
 
 vi.mock('@/features/activities/hooks/useActivityFollowUps', () => ({
+  useActivityOpenFollowUpQuery: () => ({ data: null, isLoading: false }),
   useActivityDayFollowUpsQuery: () => ({
     data: [],
     isLoading: false,
@@ -33,15 +34,10 @@ vi.mock('@/features/activities/hooks/useActivityFollowUps', () => ({
     isLoading: false,
     isError: false,
   }),
+  useStartActivityFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
   useCreateActivityFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
   useUpdateActivityFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
   useDeleteActivityFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
-}))
-
-vi.mock('@/features/activities/store/activity-tracking.store', () => ({
-  useActivityTrackingStore: (selector: (s: { session: null }) => unknown) =>
-    selector({ session: null }),
-  selectRunningSession: () => null,
 }))
 
 vi.mock('@/features/activities/hooks/useActivities', () => ({

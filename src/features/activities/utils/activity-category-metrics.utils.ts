@@ -40,6 +40,7 @@ export function getCategoryTimeFromFollowUps(
   >()
 
   for (const followUp of followUps) {
+    if (followUp.durationMinutes === null) continue
     const minutes = Math.max(0, followUp.durationMinutes)
     if (minutes === 0) continue
 

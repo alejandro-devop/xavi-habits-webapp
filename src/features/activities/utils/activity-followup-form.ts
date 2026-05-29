@@ -1,12 +1,13 @@
 import type {
   ActivityFollowUp,
+  ActivityFollowUpStartInput,
   EditFollowUpFormValues,
   FinishActivityFormValues,
   LogPastActivityFormValues,
   RunningActivitySession,
+  RunningActivitySessionLinkedTodo,
   StartActivityFormValues,
 } from '@/features/activities/types/activity-followup.types'
-import type { Activity } from '@/features/activities/types/activity.types'
 import {
   calculateDurationMinutes,
   getCurrentLocalDate,
@@ -91,22 +92,50 @@ export function startFormToStartedAtIso(sessionDate: string, values: StartActivi
   return localDateTimeToIso(sessionDate, values.startTime)
 }
 
-export function activityToRunningSession(
-  activity: Activity,
-  notes: string,
-  startedAt: string,
-  linkedTodo?: RunningActivitySession['linkedTodo'],
-): RunningActivitySession {
+export function startFormToFollowUpStartInput(
+  sessionDate: string,
+  values: StartActivityFormValues,
+  linkedTodo?: RunningActivitySessionLinkedTodo,
+): ActivityFollowUpStartInput {
   return {
-    activityId: activity.id,
-    activityTitle: activity.title,
-    categoryId: activity.categoryId,
-    categoryName: activity.category?.name ?? null,
-    categoryColor: activity.category?.color ?? null,
-    categoryIcon: activity.category?.icon ?? null,
-    notes: notes.trim() || null,
-    startedAt,
-    linkedTodo: linkedTodo ?? null,
+    activityId: values.activityId!,
+    date: sessionDate,
+    startTime: normalizeTimeToSeconds(values.startTime),
+    notes: values.notes.trim() || null,
+    linkedTodoId: linkedTodo?.id ?? null,
+  }
+}
+
+export function openFollowUpToRunningSession(followUp: ActivityFollowUp): RunningActivitySession {
+  const activity = followUp.activity
+  const linkedTodo = followUp.linkedTodo
+    ? { id: followUp.linkedTodo.id, title: followUp.linkedTodo.title }
+    : null
+
+  return {
+    followUpId: followUp.id,
+    activityId: followUp.activityId,
+    activityTitle: activity?.title ?? 'Actividad',
+    categoryId: activity?.category?.id ?? null,
+    categoryName: activity?.category?.name ?? null,
+    categoryColor: activity?.category?.color ?? null,
+    categoryIcon: activity?.category?.icon ?? null,
+    notes: followUp.notes,
+    startedAt: localDateTimeToIso(followUp.date, followUp.startTime),
+    linkedTodo,
+  }
+}
+
+export function finishOpenFollowUpToEditInput(
+  followUpId: string,
+  values: FinishActivityFormValues,
+): { id: string; date: string; startTime: string; durationMinutes: number; notes: string | null } {
+  return {
+    id: followUpId,
+    date: values.date,
+    startTime: normalizeTimeToSeconds(values.startTime),
+    durationMinutes: Math.round(values.durationMinutes),
+    notes: values.notes.trim() || null,
   }
 }
 
@@ -150,7 +179,7 @@ export function followUpToEditFormValues(followUp: ActivityFollowUp): EditFollow
     notes: followUp.notes ?? '',
     date: followUp.date,
     startTime: normalizeTimeForDisplay(followUp.startTime),
-    durationMinutes: followUp.durationMinutes,
+    durationMinutes: followUp.durationMinutes ?? 30,
   }
 }
 

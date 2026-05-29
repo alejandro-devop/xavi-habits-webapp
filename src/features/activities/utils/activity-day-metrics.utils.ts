@@ -84,7 +84,10 @@ export function formatDurationFromMinutes(minutes: number): string {
 }
 
 export function getUsedMinutesFromFollowUps(followUps: ActivityFollowUp[]): number {
-  return followUps.reduce((sum, f) => sum + Math.max(0, f.durationMinutes), 0)
+  return followUps.reduce((sum, f) => {
+    if (f.durationMinutes === null) return sum
+    return sum + Math.max(0, f.durationMinutes)
+  }, 0)
 }
 
 export function getFreeMinutesFromSlots(freeSlots: TimelineFreeSlot[]): number {

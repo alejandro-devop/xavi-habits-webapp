@@ -27,6 +27,11 @@ export function ActivityFollowUpTimelineEntry({
   onContinueAfter,
   onStartFrom,
 }: ActivityFollowUpTimelineEntryProps) {
+  if (followUp.isOpen || followUp.durationMinutes === null || !followUp.endTime) {
+    return null
+  }
+
+  const durationMinutes = followUp.durationMinutes
   const { startLabel, endLabel } = formatFollowUpTimeLabel(followUp.startTime, followUp.endTime)
   const categoryColor = followUp.activity?.category?.color ?? 'var(--color-primary)'
 
@@ -81,7 +86,7 @@ export function ActivityFollowUpTimelineEntry({
 
       <div
         className={styles.cardWrap}
-        style={{ minHeight: getTimelineItemHeight(followUp.durationMinutes) }}
+        style={{ minHeight: getTimelineItemHeight(durationMinutes) }}
       >
         <ActivityFollowUpCard followUp={followUp} onClick={onClick} variant="timeline" />
       </div>

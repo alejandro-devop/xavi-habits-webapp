@@ -10,17 +10,33 @@ export interface ActivityFollowUpActivityRef {
   } | null
 }
 
+export interface ActivityFollowUpLinkedTodoRef {
+  id: string
+  title: string
+}
+
 export interface ActivityFollowUp {
   id: string
   activityId: string
   date: string
   startTime: string
-  durationMinutes: number
-  endTime: string
-  endDate: string
-  endDateTime: string
+  durationMinutes: number | null
+  isOpen?: boolean
+  endTime: string | null
+  endDate: string | null
+  endDateTime: string | null
   notes: string | null
+  linkedTodoId?: string | null
+  linkedTodo?: ActivityFollowUpLinkedTodoRef | null
   activity?: ActivityFollowUpActivityRef | null
+}
+
+export interface ActivityFollowUpStartInput {
+  activityId: string
+  date: string
+  startTime: string
+  notes?: string | null
+  linkedTodoId?: string | null
 }
 
 export type ActivityDayFollowUp = ActivityFollowUp
@@ -53,6 +69,7 @@ export interface RunningActivitySessionLinkedTodo {
 }
 
 export interface RunningActivitySession {
+  followUpId: string
   activityId: string
   activityTitle: string
   categoryId?: string | null

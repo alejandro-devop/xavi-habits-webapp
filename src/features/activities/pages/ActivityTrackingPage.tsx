@@ -13,8 +13,10 @@ import { StartActivityModal } from '@/features/activities/components/StartActivi
 import {
   useActivityDayFollowUpsQuery,
   useActivityFollowUpsInDatesQuery,
+  useActivityOpenFollowUpQuery,
   useCreateActivityFollowUpMutation,
   useDeleteActivityFollowUpMutation,
+  useStartActivityFollowUpMutation,
   useUpdateActivityFollowUpMutation,
 } from '@/features/activities/hooks/useActivityFollowUps'
 import { useActivitiesQuery } from '@/features/activities/hooks/useActivities'
@@ -28,9 +30,10 @@ import type {
 } from '@/features/activities/types/activity-followup.types'
 import type { TimelineFreeSlot } from '@/features/activities/types/activity-timeline.types'
 import {
-  activityToRunningSession,
   finishFormFromSession,
-  startFormToStartedAtIso,
+  finishOpenFollowUpToEditInput,
+  openFollowUpToRunningSession,
+  startFormToFollowUpStartInput,
 } from '@/features/activities/utils/activity-followup-form'
 import {
   getCurrentLocalDate,
@@ -41,10 +44,6 @@ import {
   isFutureDate,
   isToday,
 } from '@/features/activities/utils/activity-time.utils'
-import {
-  selectRunningSession,
-  useActivityTrackingStore,
-} from '@/features/activities/store/activity-tracking.store'
 import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
@@ -65,9 +64,11 @@ export function ActivityTrackingPage() {
   const [selectedDate, setSelectedDate] = useState(today)
   const weekRange = getCurrentWeekRange()
 
-  const session = useActivityTrackingStore(selectRunningSession)
-  const startSession = useActivityTrackingStore((s) => s.startSession)
-  const clearSession = useActivityTrackingStore((s) => s.clearSession)
+  const { data: openFollowUp } = useActivityOpenFollowUpQuery()
+  const session = useMemo(
+    () => (openFollowUp ? openFollowUpToRunningSession(openFollowUp) : null),
+    [openFollowUp],
+  )
 
   const [startModalOpen, setStartModalOpen] = useState(false)
   const [startInitialStartTime, setStartInitialStartTime] = useState<string | null>(null)
@@ -99,6 +100,7 @@ export function ActivityTrackingPage() {
   const { data: activitiesData } = useActivitiesQuery({ limit: 100, page: 1 })
   const activities = activitiesData?.activities ?? []
 
+  const startMutation = useStartActivityFollowUpMutation()
   const createMutation = useCreateActivityFollowUpMutation()
   const updateMutation = useUpdateActivityFollowUpMutation()
   const deleteMutation = useDeleteActivityFollowUpMutation()
@@ -113,19 +115,12 @@ export function ActivityTrackingPage() {
     values: StartActivityFormValues,
     linkedTodo?: RunningActivitySessionLinkedTodo,
   ) => {
-    const activity = activities.find((a) => a.id === values.activityId)
-    if (!activity) return
-
-    startSession(
-      activityToRunningSession(
-        activity,
-        values.notes,
-        startFormToStartedAtIso(selectedDate, values),
-        linkedTodo,
-      ),
-    )
-    setStartModalOpen(false)
-    setStartInitialStartTime(null)
+    startMutation.mutate(startFormToFollowUpStartInput(selectedDate, values, linkedTodo), {
+      onSuccess: () => {
+        setStartModalOpen(false)
+        setStartInitialStartTime(null)
+      },
+    })
   }
 
   const handleLogPastSave = (input: ActivityFollowUpInput) => {
@@ -168,7 +163,15 @@ export function ActivityTrackingPage() {
       confirmLabel: 'Cancelar actividad',
       variant: 'danger',
     })
-    if (confirmed) clearSession()
+    if (!session) return
+    if (!confirmed) return
+
+    deleteMutation.mutate({
+      id: session.followUpId,
+      date: openFollowUp?.date ?? selectedDate,
+      activityId: session.activityId,
+      wasOpen: true,
+    })
   }
 
   const handleOpenFinish = () => {
@@ -177,12 +180,12 @@ export function ActivityTrackingPage() {
     setFinishModalOpen(true)
   }
 
-  const handleFinishSave = (input: ActivityFollowUpInput) => {
-    const linkedTodo = session?.linkedTodo ?? null
+  const handleFinishSave = (values: FinishActivityFormValues) => {
+    if (!session) return
+    const linkedTodo = session.linkedTodo ?? null
 
-    createMutation.mutate(input, {
+    updateMutation.mutate(finishOpenFollowUpToEditInput(session.followUpId, values), {
       onSuccess: async () => {
-        clearSession()
         setFinishModalOpen(false)
 
         if (!linkedTodo) return
@@ -235,7 +238,7 @@ export function ActivityTrackingPage() {
           session={session}
           onFinish={handleOpenFinish}
           onCancel={handleCancelSession}
-          loading={createMutation.isPending}
+          loading={startMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
         />
       ) : null}
 
@@ -368,7 +371,7 @@ export function ActivityTrackingPage() {
           open={finishModalOpen}
           initialValues={finishFormValues}
           activities={activities}
-          loading={createMutation.isPending}
+          loading={updateMutation.isPending}
           onClose={() => setFinishModalOpen(false)}
           onSave={handleFinishSave}
         />

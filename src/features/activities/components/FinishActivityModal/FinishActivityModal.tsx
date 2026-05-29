@@ -2,10 +2,7 @@ import { useEffect, useState } from 'react'
 import { ActivityPickerField } from '@/features/activities/components/ActivityPickerField'
 import type { Activity } from '@/features/activities/types/activity.types'
 import type { FinishActivityFormValues } from '@/features/activities/types/activity-followup.types'
-import {
-  finishFormToInput,
-  validateFinishActivityForm,
-} from '@/features/activities/utils/activity-followup-form'
+import { validateFinishActivityForm } from '@/features/activities/utils/activity-followup-form'
 import { DurationHoursMinutesFields } from '@/features/activities/components/DurationHoursMinutesFields'
 import { calculateEndTime } from '@/features/activities/utils/activity-time.utils'
 import { Button } from '@/shared/ui/Button'
@@ -21,7 +18,7 @@ type FinishActivityModalProps = {
   activities: Activity[]
   loading?: boolean
   onClose: () => void
-  onSave: (input: ReturnType<typeof finishFormToInput>) => void
+  onSave: (values: FinishActivityFormValues) => void
 }
 
 export function FinishActivityModal({
@@ -51,7 +48,7 @@ export function FinishActivityModal({
       return
     }
     setError(null)
-    onSave(finishFormToInput(values))
+    onSave(values)
   }
 
   return (

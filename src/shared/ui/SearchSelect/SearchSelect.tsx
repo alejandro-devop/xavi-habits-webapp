@@ -50,8 +50,8 @@ export function SearchSelect({
 
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
-  const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,20 +71,21 @@ export function SearchSelect({
   }, [options, searchQuery])
 
   const updatePos = useCallback(() => {
-    if (!triggerRef.current) return
-    const rect = triggerRef.current.getBoundingClientRect()
-    const vp = window.visualViewport ?? { height: window.innerHeight, width: window.innerWidth, offsetTop: 0, offsetLeft: 0 }
-    const vpHeight = vp.height
-    const dropdownMaxH = 240 // max-height approx: search input + list
+    // Always anchor to the search input when it's mounted (open state),
+    // fall back to the trigger button otherwise.
+    const anchor = searchRef.current ?? triggerRef.current
+    if (!anchor) return
+    const rect = anchor.getBoundingClientRect()
+    const vpHeight = window.visualViewport?.height ?? window.innerHeight
+    const dropdownMaxH = 240
     const spaceBelow = vpHeight - rect.bottom
     const openUpward = spaceBelow < dropdownMaxH && rect.top > spaceBelow
-
     setDropdownPos({
       top: openUpward ? rect.top - dropdownMaxH - 4 : rect.bottom + 4,
       left: rect.left,
       width: rect.width,
     })
-  }, [])
+  }, []) // no deps — reads refs directly, always current
 
   const close = useCallback(() => {
     setIsOpen(false)
@@ -94,19 +95,20 @@ export function SearchSelect({
 
   const open = useCallback(() => {
     if (disabled) return
-    updatePos()
     setIsOpen(true)
     setHighlightedIndex(0)
     requestAnimationFrame(() => searchRef.current?.focus())
-  }, [disabled, updatePos])
+  }, [disabled])
 
-  // Reposition on scroll / resize / virtual keyboard while open
+  // Recalculate position once the search input is mounted and positioned
+  useEffect(() => {
+    if (isOpen) requestAnimationFrame(updatePos)
+  }, [isOpen, updatePos])
+
+  // Reposition on scroll / resize / virtual keyboard
   useEffect(() => {
     if (!isOpen) return
-
-    // rAF wrapper so we measure after the browser has painted the new layout
     const onViewportChange = () => requestAnimationFrame(updatePos)
-
     window.addEventListener('scroll', onViewportChange, true)
     window.addEventListener('resize', onViewportChange)
     window.visualViewport?.addEventListener('resize', onViewportChange)
@@ -119,7 +121,7 @@ export function SearchSelect({
     }
   }, [isOpen, updatePos])
 
-  // Click outside: close if click is outside both trigger root and portal dropdown
+  // Click outside: close if outside both the root and the portal dropdown
   useEffect(() => {
     if (!isOpen) return
     const onPointerDown = (e: MouseEvent | TouchEvent) => {
@@ -144,35 +146,20 @@ export function SearchSelect({
     triggerRef.current?.focus()
   }
 
-  const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
     if (disabled) return
-    if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      if (!isOpen) open()
-      else if (event.key === 'ArrowDown') setHighlightedIndex(0)
-    }
-    if (event.key === 'Escape' && isOpen) {
-      event.preventDefault()
-      close()
+    if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      open()
     }
   }
 
-  const handleListKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      event.preventDefault()
-      close()
-      return
-    }
-    if (event.key === 'ArrowDown') {
-      event.preventDefault()
-      setHighlightedIndex((i) => Math.min(i + 1, filteredOptions.length - 1))
-    }
-    if (event.key === 'ArrowUp') {
-      event.preventDefault()
-      setHighlightedIndex((i) => Math.max(i - 1, 0))
-    }
-    if (event.key === 'Enter') {
-      event.preventDefault()
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') { e.preventDefault(); close(); return }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightedIndex((i) => Math.min(i + 1, filteredOptions.length - 1)) }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setHighlightedIndex((i) => Math.max(i - 1, 0)) }
+    if (e.key === 'Enter') {
+      e.preventDefault()
       const opt = filteredOptions[highlightedIndex]
       if (opt) selectOption(opt)
     }
@@ -192,44 +179,67 @@ export function SearchSelect({
       ) : null}
 
       <div className={styles.control}>
-        <button
-          ref={triggerRef}
-          id={id}
-          type="button"
-          role="combobox"
-          aria-expanded={isOpen}
-          aria-controls={listboxId}
-          aria-haspopup="listbox"
-          aria-invalid={Boolean(error)}
-          aria-describedby={describedBy}
-          aria-activedescendant={isOpen ? activeOptionId : undefined}
-          disabled={disabled}
-          className={[
-            styles.trigger,
-            error ? styles.triggerError : '',
-            disabled ? styles.triggerDisabled : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          onClick={() => (isOpen ? close() : open())}
-          onKeyDown={handleTriggerKeyDown}
-        >
-          <span className={styles.triggerValue}>
-            {selected ? (
-              <>
-                {selected.icon ? <span className={styles.optionIcon}>{selected.icon}</span> : null}
-                <span>{selected.label}</span>
-              </>
-            ) : (
-              <span className={styles.placeholder}>{placeholder}</span>
-            )}
-          </span>
-          <span className={styles.chevron} aria-hidden>
-            ▾
-          </span>
-        </button>
+        {/* Closed state: button trigger */}
+        {!isOpen ? (
+          <button
+            ref={triggerRef}
+            id={id}
+            type="button"
+            role="combobox"
+            aria-expanded={false}
+            aria-controls={listboxId}
+            aria-haspopup="listbox"
+            aria-invalid={Boolean(error)}
+            aria-describedby={describedBy}
+            disabled={disabled}
+            className={[
+              styles.trigger,
+              error ? styles.triggerError : '',
+              disabled ? styles.triggerDisabled : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            onClick={open}
+            onKeyDown={handleTriggerKeyDown}
+          >
+            <span className={styles.triggerValue}>
+              {selected ? (
+                <>
+                  {selected.icon ? <span className={styles.optionIcon}>{selected.icon}</span> : null}
+                  <span>{selected.label}</span>
+                </>
+              ) : (
+                <span className={styles.placeholder}>{placeholder}</span>
+              )}
+            </span>
+            <span className={styles.chevron} aria-hidden>▾</span>
+          </button>
+        ) : (
+          /* Open state: search input replaces the trigger, stays in document flow */
+          <input
+            ref={searchRef}
+            id={id}
+            type="search"
+            role="combobox"
+            aria-expanded={true}
+            aria-controls={listboxId}
+            aria-haspopup="listbox"
+            aria-activedescendant={activeOptionId}
+            aria-autocomplete="list"
+            aria-describedby={describedBy}
+            className={[styles.trigger, styles.searchInput].filter(Boolean).join(' ')}
+            placeholder={selected ? selected.label : searchPlaceholder}
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setHighlightedIndex(0) }}
+            onKeyDown={handleSearchKeyDown}
+            onBlur={(e) => {
+              // Close only if focus moves outside both root and dropdown
+              if (!dropdownRef.current?.contains(e.relatedTarget as Node)) close()
+            }}
+          />
+        )}
 
-        {clearable && value && !disabled ? (
+        {clearable && value && !disabled && !isOpen ? (
           <button
             type="button"
             className={styles.clear}
@@ -241,6 +251,7 @@ export function SearchSelect({
         ) : null}
       </div>
 
+      {/* Portal: only the options list */}
       {typeof document !== 'undefined'
         ? createPortal(
             <AnimatePresence>
@@ -258,25 +269,7 @@ export function SearchSelect({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={prefersReducedMotion ? reducedTransition : transitions.fast}
-                  onKeyDown={handleListKeyDown}
                 >
-                  <input
-                    ref={searchRef}
-                    type="search"
-                    className={styles.search}
-                    placeholder={searchPlaceholder}
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value)
-                      setHighlightedIndex(0)
-                    }}
-                    onFocus={() => {
-                      // Wait for the virtual keyboard animation to finish (~300ms on iOS)
-                      // then recalculate so the dropdown stays above the keyboard
-                      setTimeout(updatePos, 320)
-                    }}
-                    aria-label={searchPlaceholder}
-                  />
                   <ul
                     id={listboxId}
                     role="listbox"
@@ -284,9 +277,7 @@ export function SearchSelect({
                     aria-label={label ?? 'Opciones'}
                   >
                     {filteredOptions.length === 0 ? (
-                      <li className={styles.empty} role="presentation">
-                        {emptyMessage}
-                      </li>
+                      <li className={styles.empty} role="presentation">{emptyMessage}</li>
                     ) : (
                       filteredOptions.map((opt, index) => (
                         <li
@@ -307,9 +298,7 @@ export function SearchSelect({
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => selectOption(opt)}
                         >
-                          {opt.icon ? (
-                            <span className={styles.optionIcon}>{opt.icon}</span>
-                          ) : null}
+                          {opt.icon ? <span className={styles.optionIcon}>{opt.icon}</span> : null}
                           <span className={styles.optionText}>
                             <span className={styles.optionLabel}>{opt.label}</span>
                             {opt.description ? (
@@ -327,16 +316,8 @@ export function SearchSelect({
           )
         : null}
 
-      {helperText ? (
-        <p id={helperId} className={styles.helper}>
-          {helperText}
-        </p>
-      ) : null}
-      {error ? (
-        <p id={errorId} className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {helperText ? <p id={helperId} className={styles.helper}>{helperText}</p> : null}
+      {error ? <p id={errorId} className={styles.error} role="alert">{error}</p> : null}
     </div>
   )
 }

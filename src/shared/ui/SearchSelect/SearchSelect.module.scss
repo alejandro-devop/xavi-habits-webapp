@@ -92,6 +92,19 @@
   }
 }
 
+// When open, the trigger becomes a text input in-place
+.searchInput {
+  caret-color: var(--color-primary);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  // Remove browser's default search input clear button
+  &::-webkit-search-cancel-button { display: none; }
+}
+
 .dropdown {
   // position/top/left/width come from inline style (portal with fixed positioning)
   z-index: 600;
@@ -101,19 +114,6 @@
   backdrop-filter: blur(var(--blur-md, 12px));
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-}
-
-.search {
-  width: 100%;
-  padding: 0.6rem 0.85rem;
-  border: none;
-  border-bottom: 1px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text);
-
-  &:focus {
-    outline: none;
-  }
 }
 
 .list {

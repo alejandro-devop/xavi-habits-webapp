@@ -27,23 +27,36 @@ type Props = {
   onSelect: (folderId: string | null) => void
 }
 
+function computePendingCounts(queryClient: ReturnType<typeof useQueryClient>): Record<string, number> {
+  const lists = queryClient.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
+  const map: Record<string, number> = {}
+  for (const [key, data] of lists) {
+    if (!data) continue
+    const filters = key[2] as Record<string, unknown>
+    const folderId = filters?.folderId
+    if (typeof folderId === 'string') {
+      map[folderId] = data.todos.filter((t) => t.status !== 'completed').length
+    }
+  }
+  return map
+}
+
 function usePendingCountsFromCache() {
   const queryClient = useQueryClient()
   const [counts, setCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     function compute() {
-      const lists = queryClient.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
-      const map: Record<string, number> = {}
-      for (const [key, data] of lists) {
-        if (!data) continue
-        const filters = key[2] as Record<string, unknown>
-        const folderId = filters?.folderId
-        if (typeof folderId === 'string') {
-          map[folderId] = data.todos.filter((t) => t.status !== 'completed').length
-        }
-      }
-      setCounts(map)
+      const next = computePendingCounts(queryClient)
+      // Only update state when counts actually changed — avoids infinite loop
+      // caused by subscribe firing on every observer update
+      setCounts((prev) => {
+        const prevKeys = Object.keys(prev)
+        const nextKeys = Object.keys(next)
+        if (prevKeys.length !== nextKeys.length) return next
+        if (nextKeys.every((k) => prev[k] === next[k])) return prev
+        return next
+      })
     }
     compute()
     return queryClient.getQueryCache().subscribe(compute)

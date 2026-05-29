@@ -30,10 +30,12 @@
   max-width: $layout-max-width;
   margin: 0 auto;
   padding: $spacing-lg;
+  padding-bottom: calc($spacing-lg + 5rem);
   width: 100%;
 
   @media (max-width: #{$breakpoint-lg - 1}) {
     padding: $spacing-sm;
+    padding-bottom: calc($spacing-sm + 5rem);
   }
 }
 

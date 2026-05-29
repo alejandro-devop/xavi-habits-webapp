@@ -1,24 +1,35 @@
 import { useEffect, useState } from 'react'
-import { formatElapsedHHMMSS } from '@/features/activities/utils/activity-time.utils'
+import {
+  formatElapsedCompact,
+  formatElapsedHHMMSS,
+} from '@/features/activities/utils/activity-time.utils'
 
-export function useElapsedTimer(startedAtIso: string | null | undefined): string {
-  const [display, setDisplay] = useState('00:00:00')
+type ElapsedFormat = 'hhmmss' | 'compact'
+
+export function useElapsedTimer(
+  startedAtIso: string | null | undefined,
+  format: ElapsedFormat = 'hhmmss',
+): string {
+  const empty = format === 'compact' ? '0m' : '00:00:00'
+  const [display, setDisplay] = useState(empty)
 
   useEffect(() => {
     if (!startedAtIso) {
-      setDisplay('00:00:00')
+      setDisplay(empty)
       return
     }
 
+    const formatter = format === 'compact' ? formatElapsedCompact : formatElapsedHHMMSS
+
     const tick = () => {
       const elapsedMs = Date.now() - new Date(startedAtIso).getTime()
-      setDisplay(formatElapsedHHMMSS(elapsedMs))
+      setDisplay(formatter(elapsedMs))
     }
 
     tick()
-    const intervalId = window.setInterval(tick, 1000)
+    const intervalId = window.setInterval(tick, format === 'compact' ? 60_000 : 1000)
     return () => window.clearInterval(intervalId)
-  }, [startedAtIso])
+  }, [startedAtIso, format, empty])
 
   return display
 }

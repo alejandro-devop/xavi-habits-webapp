@@ -138,6 +138,15 @@ export function formatElapsedHHMMSS(elapsedMs: number): string {
   return `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`
 }
 
+export function formatElapsedCompact(elapsedMs: number): string {
+  const totalMinutes = Math.max(0, Math.floor(elapsedMs / 1000 / 60))
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  if (hours === 0) return `${minutes}m`
+  if (minutes === 0) return `${hours}h`
+  return `${hours}h ${minutes}m`
+}
+
 export function formatDurationMinutes(minutes: number): string {
   if (minutes < 60) return `${minutes} min`
   const h = Math.floor(minutes / 60)

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router'
+import { RunningActivityWidget } from '@/features/activities/components/RunningActivityWidget'
 import { LogoutButton } from '@/features/auth/components/LogoutButton/LogoutButton'
 import { useLogoutMutation } from '@/features/auth/hooks/useLogoutMutation'
 import { selectAuthUser } from '@/features/auth/store/auth.selectors'
@@ -73,6 +74,8 @@ function AppLayoutShell() {
             <Outlet />
           </main>
         </div>
+
+        <RunningActivityWidget />
 
         <Drawer
           open={mobileNavOpen}

@@ -1,0 +1,30 @@
+@mixin paper-texture {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+    opacity: var(--paper-texture-opacity);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+@mixin paper-ruled-background {
+  background-color: var(--paper-bg);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent calc(var(--paper-row-height) - 1px),
+    var(--paper-line) calc(var(--paper-row-height) - 1px),
+    var(--paper-line) var(--paper-row-height)
+  );
+  background-position: 0 0;
+}
+
+@mixin paper-surface-base {
+  position: relative;
+  background-color: var(--paper-bg);
+  box-shadow: var(--paper-shadow);
+  overflow: hidden;
+}

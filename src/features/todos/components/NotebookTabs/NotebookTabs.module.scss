@@ -1,7 +1,5 @@
 @use '@/app/styles/tokens' as *;
 
-$paper-bg: #fafaf5;
-$paper-bg-dark: #242424;
 $tab-height: 32px;
 
 .wrapper {
@@ -60,7 +58,7 @@ $tab-height: 32px;
 }
 
 .active {
-  background: $paper-bg;
+  background: var(--paper-bg);
   color: var(--color-text);
   font-weight: $font-weight-semibold;
   z-index: 1;
@@ -72,15 +70,7 @@ $tab-height: 32px;
     left: 0;
     right: 0;
     height: 2px;
-    background: $paper-bg;
-  }
-
-  :global([data-theme='dark']) & {
-    background: $paper-bg-dark;
-
-    &::after {
-      background: $paper-bg-dark;
-    }
+    background: var(--paper-bg);
   }
 }
 

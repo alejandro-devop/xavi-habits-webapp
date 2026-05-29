@@ -60,6 +60,7 @@ function AppLayoutShell() {
               </Button>
             }
             title="Xavi"
+            titleClassName={styles.topbarBrand}
             actions={<ThemeToggle />}
             userArea={
               <>

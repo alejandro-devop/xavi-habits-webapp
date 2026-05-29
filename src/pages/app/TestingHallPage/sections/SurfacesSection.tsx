@@ -1,9 +1,9 @@
-import { Card, DataCard, GlassPanel, Section, StatCard } from '@/shared/ui'
+import { Card, DataCard, GlassPanel, PaperRow, PaperSurface, Section, StatCard } from '@/shared/ui'
 import { Grid, GridItem } from '@/shared/layout'
 
 export function SurfacesSection() {
   return (
-    <Section id="surfaces" title="Surfaces" description="Card, glass y métricas">
+    <Section id="surfaces" title="Surfaces" description="Card, glass, paper y métricas">
       <Grid columns={12} gap="md">
         <GridItem span={12} md={6}>
           <Card>
@@ -16,6 +16,13 @@ export function SurfacesSection() {
             <strong>GlassPanel</strong>
             <p>Glassmorphism controlado.</p>
           </GlassPanel>
+        </GridItem>
+        <GridItem span={12}>
+          <PaperSurface minHeight="auto">
+            <PaperRow divider={false}>Fila alineada al cuaderno (40px)</PaperRow>
+            <PaperRow>Segunda fila con divisor</PaperRow>
+            <PaperRow focused>Tercera fila con foco</PaperRow>
+          </PaperSurface>
         </GridItem>
         <GridItem span={12} md={6} lg={4}>
           <DataCard title="Hábitos completados" value="24" description="Esta semana" trend={{ value: '+12%', direction: 'up' }} icon="✓" />

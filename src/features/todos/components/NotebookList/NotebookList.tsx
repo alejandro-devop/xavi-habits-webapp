@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EmptyState } from '@/shared/ui/EmptyState'
+import { PaperSurface } from '@/shared/ui/PaperSurface'
 import { Spinner } from '@/shared/ui/Spinner'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { NotebookItem } from '@/features/todos/components/NotebookItem/NotebookItem'
@@ -145,43 +146,44 @@ export function NotebookList({ filters = {} }: Props) {
   }, [todos, focusedIndex, openTodoId, handleToggleComplete, handleDelete])
 
   return (
-    <div className={styles.container}>
-      <div className={styles.tabsBar}>
-        <NotebookTabs selectedFolderId={selectedFolderId} onSelect={(id) => { setSelectedFolderId(id); setFocusedIndex(-1) }} />
-      </div>
-    <div className={styles.notebook}>
-      <div className={styles.margin} aria-hidden="true" />
+    <PaperSurface
+      tabs={
+        <NotebookTabs
+          selectedFolderId={selectedFolderId}
+          onSelect={(id) => {
+            setSelectedFolderId(id)
+            setFocusedIndex(-1)
+          }}
+        />
+      }
+    >
+      <NotebookInput ref={newInputRef} onAdd={handleAdd} />
 
-      <div className={styles.content}>
-        <NotebookInput ref={newInputRef} onAdd={handleAdd} />
-
-        {isLoading ? (
-          <div className={styles.loading}>
-            <Spinner />
-          </div>
-        ) : todos.length === 0 ? (
-          <EmptyState
-            title="Sin tareas pendientes"
-            description='Presiona N para añadir tu primera tarea.'
-          />
-        ) : (
-          <ul className={styles.list} role="list">
-            {todos.map((todo, index) => (
-              <NotebookItem
-                key={todo.id}
-                todo={todo}
-                focused={focusedIndex === index}
-                onFocus={() => setFocusedIndex(index)}
-                onClick={() => setOpenTodoId(todo.id)}
-                onToggle={() => handleToggleComplete(todo)}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+      {isLoading ? (
+        <div className={styles.loading}>
+          <Spinner />
+        </div>
+      ) : todos.length === 0 ? (
+        <EmptyState
+          title="Sin tareas pendientes"
+          description='Presiona N para añadir tu primera tarea.'
+        />
+      ) : (
+        <ul className={styles.list} role="list">
+          {todos.map((todo, index) => (
+            <NotebookItem
+              key={todo.id}
+              todo={todo}
+              focused={focusedIndex === index}
+              onFocus={() => setFocusedIndex(index)}
+              onClick={() => setOpenTodoId(todo.id)}
+              onToggle={() => handleToggleComplete(todo)}
+            />
+          ))}
+        </ul>
+      )}
 
       <TodoDrawer todoId={openTodoId} onClose={() => setOpenTodoId(null)} />
-    </div>
-    </div>
+    </PaperSurface>
   )
 }

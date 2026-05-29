@@ -4,8 +4,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 $spacing-md 0 60px;
-  height: 40px;
+  padding: 0 var(--spacing-md) 0 calc(var(--paper-margin-width) + var(--spacing-md));
+  height: var(--paper-row-height);
   position: relative;
 
   &:focus-within {
@@ -17,7 +17,7 @@
 .bullet {
   position: absolute;
   left: 0;
-  width: 44px;
+  width: var(--paper-margin-width);
   height: 100%;
   display: flex;
   align-items: center;
@@ -43,7 +43,7 @@
   font-size: 1rem;
   font-weight: $font-weight-regular;
   color: var(--color-text);
-  line-height: 40px;
+  line-height: var(--paper-row-height);
   padding: 0;
 
   &:focus-visible {

@@ -1,0 +1,36 @@
+@use '@/app/styles/tokens' as *;
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--paper-row-height);
+  padding: 0 var(--spacing-md) 0 calc(var(--paper-margin-width) + var(--spacing-md));
+  position: relative;
+  user-select: none;
+}
+
+.divider::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--paper-line);
+}
+
+.focused {
+  background: rgba(255, 210, 80, 0.12);
+}
+
+.interactive {
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+  }
+}

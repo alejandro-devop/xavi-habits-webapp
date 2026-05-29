@@ -4,13 +4,14 @@ import styles from './Topbar.module.scss'
 
 type TopbarProps = {
   title?: string
+  titleClassName?: string
   breadcrumbs?: BreadcrumbItem[]
   actions?: ReactNode
   userArea?: ReactNode
   leading?: ReactNode
 }
 
-export function Topbar({ title, breadcrumbs, actions, userArea, leading }: TopbarProps) {
+export function Topbar({ title, titleClassName, breadcrumbs, actions, userArea, leading }: TopbarProps) {
   const trailing = actions || userArea
 
   return (
@@ -20,7 +21,7 @@ export function Topbar({ title, breadcrumbs, actions, userArea, leading }: Topba
         {breadcrumbs && breadcrumbs.length > 0 ? (
           <Breadcrumbs items={breadcrumbs} />
         ) : title ? (
-          <h1 className={styles.title}>{title}</h1>
+          <h1 className={[styles.title, titleClassName].filter(Boolean).join(' ')}>{title}</h1>
         ) : null}
       </div>
       {trailing ? (

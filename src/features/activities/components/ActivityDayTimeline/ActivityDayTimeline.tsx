@@ -9,6 +9,7 @@ import {
   getFreeSlotsBetweenFollowUps,
   getMostRecentFollowUp,
 } from '@/features/activities/utils/activity-time.utils'
+import { PaperSurface } from '@/shared/ui/PaperSurface'
 import styles from './ActivityDayTimeline.module.scss'
 
 type ActivityDayTimelineProps = {
@@ -50,41 +51,43 @@ export function ActivityDayTimeline({
   if (items.length === 0) return null
 
   return (
-    <ol className={styles.root} aria-label="Registros del día, más reciente arriba">
-      {items.map((item, index) => {
-        const isLast = index === items.length - 1
+    <PaperSurface ruled={false} withMargin={false} minHeight="auto" className={styles.paper}>
+      <ol className={styles.root} aria-label="Registros del día, más reciente arriba">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1
 
-        if (item.type === 'now') {
-          return <ActivityTimelineNowEntry key="now" enabled isLast={isLast} />
-        }
+          if (item.type === 'now') {
+            return <ActivityTimelineNowEntry key="now" enabled isLast={isLast} />
+          }
 
-        if (item.type === 'free-slot') {
+          if (item.type === 'free-slot') {
+            return (
+              <ActivityFreeSlotTimelineEntry
+                key={item.data.id}
+                slot={item.data}
+                isLast={isLast}
+                onClick={onFreeSlotClick}
+              />
+            )
+          }
+
           return (
-            <ActivityFreeSlotTimelineEntry
+            <ActivityFollowUpTimelineEntry
               key={item.data.id}
-              slot={item.data}
+              followUp={item.data}
               isLast={isLast}
-              onClick={onFreeSlotClick}
+              showQuickActions={
+                item.data.id === mostRecentFollowUpId &&
+                Boolean(onContinueAfterFollowUp || onStartFromFollowUp)
+              }
+              quickActionsDisabled={quickActionsDisabled}
+              onClick={onFollowUpClick}
+              onContinueAfter={onContinueAfterFollowUp}
+              onStartFrom={onStartFromFollowUp}
             />
           )
-        }
-
-        return (
-          <ActivityFollowUpTimelineEntry
-            key={item.data.id}
-            followUp={item.data}
-            isLast={isLast}
-            showQuickActions={
-              item.data.id === mostRecentFollowUpId &&
-              Boolean(onContinueAfterFollowUp || onStartFromFollowUp)
-            }
-            quickActionsDisabled={quickActionsDisabled}
-            onClick={onFollowUpClick}
-            onContinueAfter={onContinueAfterFollowUp}
-            onStartFrom={onStartFromFollowUp}
-          />
-        )
-      })}
-    </ol>
+        })}
+      </ol>
+    </PaperSurface>
   )
 }

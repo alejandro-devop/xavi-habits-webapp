@@ -4,8 +4,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 $spacing-md 0 60px;
-  height: 40px;
+  padding: 0 var(--spacing-md) 0 calc(var(--paper-margin-width) + var(--spacing-md));
+  height: var(--paper-row-height);
   position: relative;
   cursor: pointer;
   border-radius: 0;
@@ -19,7 +19,7 @@
     right: 0;
     bottom: 0;
     height: 1px;
-    background: rgba(0, 0, 0, 0.07);
+    background: var(--paper-line);
   }
 
   &:focus-visible {
@@ -42,7 +42,7 @@
 .check {
   position: absolute;
   left: 0;
-  width: 44px;
+  width: var(--paper-margin-width);
   height: 100%;
   display: flex;
   align-items: center;
@@ -78,7 +78,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 40px;
+  line-height: var(--paper-row-height);
 }
 
 .meta {

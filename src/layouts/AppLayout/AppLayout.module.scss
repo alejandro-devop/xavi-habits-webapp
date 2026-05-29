@@ -19,6 +19,12 @@
   }
 }
 
+.topbarBrand {
+  @include lg {
+    display: none;
+  }
+}
+
 .main {
   flex: 1;
   max-width: $layout-max-width;

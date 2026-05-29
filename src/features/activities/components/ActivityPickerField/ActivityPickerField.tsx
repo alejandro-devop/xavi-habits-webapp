@@ -20,6 +20,7 @@ type ActivityPickerFieldProps = {
   activities: Activity[]
   disabled?: boolean
   error?: string
+  onCreateNew?: () => void
 }
 
 export function ActivityPickerField({
@@ -31,6 +32,7 @@ export function ActivityPickerField({
   activities,
   disabled = false,
   error,
+  onCreateNew,
 }: ActivityPickerFieldProps) {
   const { data: categories = [] } = useActivityCategoriesQuery()
   const createMutation = useCreateActivityMutation()
@@ -150,7 +152,7 @@ export function ActivityPickerField({
       <button
         type="button"
         className={panelStyles.createLink}
-        onClick={() => setCreating(true)}
+        onClick={() => (onCreateNew ? onCreateNew() : setCreating(true))}
         disabled={disabled}
       >
         + Crear actividad

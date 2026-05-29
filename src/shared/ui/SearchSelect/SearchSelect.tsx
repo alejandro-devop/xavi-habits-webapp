@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback, useId, useMemo, useRef, useState } from 'react'
-import { useClickOutside } from '@/shared/hooks/useClickOutside'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { reducedTransition, transitions } from '@/shared/motion'
 import { useReducedMotionPreference } from '@/shared/motion/useReducedMotionPreference'
 import styles from './SearchSelect.module.scss'
@@ -27,6 +27,8 @@ type SearchSelectProps = {
   emptyMessage?: string
 }
 
+type DropdownPos = { top: number; left: number; width: number }
+
 export function SearchSelect({
   label,
   placeholder = 'Seleccionar…',
@@ -47,10 +49,14 @@ export function SearchSelect({
   const describedBy = [helperId, errorId].filter(Boolean).join(' ') || undefined
 
   const rootRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
+  const [dropdownPos, setDropdownPos] = useState<DropdownPos>({ top: 0, left: 0, width: 0 })
   const prefersReducedMotion = useReducedMotionPreference()
 
   const selected = options.find((opt) => opt.value === value) ?? null
@@ -64,6 +70,12 @@ export function SearchSelect({
     })
   }, [options, searchQuery])
 
+  const updatePos = useCallback(() => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    setDropdownPos({ top: rect.bottom + 4, left: rect.left, width: rect.width })
+  }, [])
+
   const close = useCallback(() => {
     setIsOpen(false)
     setSearchQuery('')
@@ -72,18 +84,46 @@ export function SearchSelect({
 
   const open = useCallback(() => {
     if (disabled) return
+    updatePos()
     setIsOpen(true)
     setHighlightedIndex(0)
     requestAnimationFrame(() => searchRef.current?.focus())
-  }, [disabled])
+  }, [disabled, updatePos])
 
-  useClickOutside(rootRef, close, isOpen)
+  // Reposition on scroll / resize while open
+  useEffect(() => {
+    if (!isOpen) return
+    window.addEventListener('scroll', updatePos, true)
+    window.addEventListener('resize', updatePos)
+    return () => {
+      window.removeEventListener('scroll', updatePos, true)
+      window.removeEventListener('resize', updatePos)
+    }
+  }, [isOpen, updatePos])
+
+  // Click outside: close if click is outside both trigger root and portal dropdown
+  useEffect(() => {
+    if (!isOpen) return
+    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null
+      if (!target) return
+      if (rootRef.current?.contains(target)) return
+      if (dropdownRef.current?.contains(target)) return
+      close()
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('touchstart', onPointerDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('touchstart', onPointerDown)
+    }
+  }, [isOpen, close])
 
   const selectOption = (opt: SearchSelectOption) => {
     if (opt.disabled) return
     onChange(opt.value, opt)
     close()
-    rootRef.current?.querySelector<HTMLButtonElement>('button[role="combobox"]')?.focus()
+    triggerRef.current?.focus()
   }
 
   const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -135,6 +175,7 @@ export function SearchSelect({
 
       <div className={styles.control}>
         <button
+          ref={triggerRef}
           id={id}
           type="button"
           role="combobox"
@@ -182,72 +223,86 @@ export function SearchSelect({
         ) : null}
       </div>
 
-      <AnimatePresence>
-        {isOpen ? (
-          <motion.div
-            className={styles.dropdown}
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={prefersReducedMotion ? reducedTransition : transitions.fast}
-            onKeyDown={handleListKeyDown}
-          >
-            <input
-              ref={searchRef}
-              type="search"
-              className={styles.search}
-              placeholder={searchPlaceholder}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setHighlightedIndex(0)
-              }}
-              aria-label={searchPlaceholder}
-            />
-            <ul
-              id={listboxId}
-              role="listbox"
-              className={styles.list}
-              aria-label={label ?? 'Opciones'}
-            >
-              {filteredOptions.length === 0 ? (
-                <li className={styles.empty} role="presentation">
-                  {emptyMessage}
-                </li>
-              ) : (
-                filteredOptions.map((opt, index) => (
-                  <li
-                    key={opt.value}
-                    id={`${id}-option-${opt.value}`}
-                    role="option"
-                    aria-selected={value === opt.value}
-                    aria-disabled={opt.disabled}
-                    className={[
-                      styles.option,
-                      index === highlightedIndex ? styles.optionHighlighted : '',
-                      value === opt.value ? styles.optionSelected : '',
-                      opt.disabled ? styles.optionDisabled : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    onMouseEnter={() => setHighlightedIndex(index)}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => selectOption(opt)}
+      {typeof document !== 'undefined'
+        ? createPortal(
+            <AnimatePresence>
+              {isOpen ? (
+                <motion.div
+                  ref={dropdownRef}
+                  className={styles.dropdown}
+                  style={{
+                    position: 'fixed',
+                    top: dropdownPos.top,
+                    left: dropdownPos.left,
+                    width: dropdownPos.width,
+                  }}
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={prefersReducedMotion ? reducedTransition : transitions.fast}
+                  onKeyDown={handleListKeyDown}
+                >
+                  <input
+                    ref={searchRef}
+                    type="search"
+                    className={styles.search}
+                    placeholder={searchPlaceholder}
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value)
+                      setHighlightedIndex(0)
+                    }}
+                    aria-label={searchPlaceholder}
+                  />
+                  <ul
+                    id={listboxId}
+                    role="listbox"
+                    className={styles.list}
+                    aria-label={label ?? 'Opciones'}
                   >
-                    {opt.icon ? <span className={styles.optionIcon}>{opt.icon}</span> : null}
-                    <span className={styles.optionText}>
-                      <span className={styles.optionLabel}>{opt.label}</span>
-                      {opt.description ? (
-                        <span className={styles.optionDescription}>{opt.description}</span>
-                      ) : null}
-                    </span>
-                  </li>
-                ))
-              )}
-            </ul>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                    {filteredOptions.length === 0 ? (
+                      <li className={styles.empty} role="presentation">
+                        {emptyMessage}
+                      </li>
+                    ) : (
+                      filteredOptions.map((opt, index) => (
+                        <li
+                          key={opt.value}
+                          id={`${id}-option-${opt.value}`}
+                          role="option"
+                          aria-selected={value === opt.value}
+                          aria-disabled={opt.disabled}
+                          className={[
+                            styles.option,
+                            index === highlightedIndex ? styles.optionHighlighted : '',
+                            value === opt.value ? styles.optionSelected : '',
+                            opt.disabled ? styles.optionDisabled : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                          onMouseEnter={() => setHighlightedIndex(index)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => selectOption(opt)}
+                        >
+                          {opt.icon ? (
+                            <span className={styles.optionIcon}>{opt.icon}</span>
+                          ) : null}
+                          <span className={styles.optionText}>
+                            <span className={styles.optionLabel}>{opt.label}</span>
+                            {opt.description ? (
+                              <span className={styles.optionDescription}>{opt.description}</span>
+                            ) : null}
+                          </span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
 
       {helperText ? (
         <p id={helperId} className={styles.helper}>

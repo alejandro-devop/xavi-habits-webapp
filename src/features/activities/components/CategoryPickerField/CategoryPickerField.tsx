@@ -24,6 +24,7 @@ type CategoryPickerFieldProps = {
   categories: ActivityCategory[]
   disabled?: boolean
   clearable?: boolean
+  onCreateNew?: () => void
 }
 
 export function CategoryPickerField({
@@ -35,6 +36,7 @@ export function CategoryPickerField({
   categories,
   disabled = false,
   clearable = true,
+  onCreateNew,
 }: CategoryPickerFieldProps) {
   const createMutation = useCreateActivityCategoryMutation()
 
@@ -169,7 +171,7 @@ export function CategoryPickerField({
       <button
         type="button"
         className={panelStyles.createLink}
-        onClick={() => setCreating(true)}
+        onClick={() => (onCreateNew ? onCreateNew() : setCreating(true))}
         disabled={disabled}
       >
         + Crear categoría

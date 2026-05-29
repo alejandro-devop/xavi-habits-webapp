@@ -1,0 +1,212 @@
+export const TODOS_QUERY = `
+  query Todos(
+    $status: TodoStatus
+    $priority: TodoPriority
+    $tagId: ID
+    $dueBefore: DateTime
+    $dueAfter: DateTime
+    $page: Int
+    $limit: Int
+  ) {
+    todos(
+      status: $status
+      priority: $priority
+      tagId: $tagId
+      dueBefore: $dueBefore
+      dueAfter: $dueAfter
+      page: $page
+      limit: $limit
+    ) {
+      todos {
+        id
+        title
+        status
+        priority
+        dueDate
+        completedAt
+        createdAt
+        updatedAt
+        subtasksCount {
+          total
+          completed
+        }
+        tags {
+          id
+          name
+          color
+        }
+      }
+      page
+      limit
+      total
+    }
+  }
+`
+
+export const TODO_QUERY = `
+  query Todo($id: ID!) {
+    todo(id: $id) {
+      id
+      userId
+      title
+      description
+      status
+      priority
+      dueDate
+      completedAt
+      createdAt
+      updatedAt
+      subtasks {
+        id
+        todoId
+        title
+        isCompleted
+        orderIndex
+        createdAt
+        updatedAt
+      }
+      subtasksCount {
+        total
+        completed
+      }
+      tags {
+        id
+        name
+        color
+      }
+    }
+  }
+`
+
+export const TODO_TAGS_QUERY = `
+  query TodoTags {
+    todoTags {
+      id
+      name
+      color
+    }
+  }
+`
+
+export const TODO_ADD_MUTATION = `
+  mutation TodoAdd($input: TodoInput!) {
+    todoAdd(input: $input) {
+      id
+      title
+      status
+      priority
+      dueDate
+      completedAt
+      createdAt
+      updatedAt
+      subtasksCount {
+        total
+        completed
+      }
+      tags {
+        id
+        name
+        color
+      }
+    }
+  }
+`
+
+export const TODO_EDIT_MUTATION = `
+  mutation TodoEdit($input: TodoEditInput!) {
+    todoEdit(input: $input) {
+      id
+      title
+      description
+      status
+      priority
+      dueDate
+      completedAt
+      updatedAt
+      subtasksCount {
+        total
+        completed
+      }
+      tags {
+        id
+        name
+        color
+      }
+    }
+  }
+`
+
+export const TODO_REMOVE_MUTATION = `
+  mutation TodoRemove($id: ID!) {
+    todoRemove(id: $id)
+  }
+`
+
+export const TODO_COMPLETE_MUTATION = `
+  mutation TodoComplete($id: ID!) {
+    todoComplete(id: $id) {
+      id
+      status
+      completedAt
+    }
+  }
+`
+
+export const TODO_SUBTASK_ADD_MUTATION = `
+  mutation TodoSubtaskAdd($input: TodoSubtaskInput!) {
+    todoSubtaskAdd(input: $input) {
+      id
+      todoId
+      title
+      isCompleted
+      orderIndex
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const TODO_SUBTASK_EDIT_MUTATION = `
+  mutation TodoSubtaskEdit($input: TodoSubtaskEditInput!) {
+    todoSubtaskEdit(input: $input) {
+      id
+      todoId
+      title
+      isCompleted
+      orderIndex
+      updatedAt
+    }
+  }
+`
+
+export const TODO_SUBTASK_REMOVE_MUTATION = `
+  mutation TodoSubtaskRemove($input: TodoSubtaskRemoveInput!) {
+    todoSubtaskRemove(input: $input)
+  }
+`
+
+export const TODO_TAG_ADD_MUTATION = `
+  mutation TodoTagAdd($input: TodoTagInput!) {
+    todoTagAdd(input: $input) {
+      id
+      name
+      color
+    }
+  }
+`
+
+export const TODO_TAG_EDIT_MUTATION = `
+  mutation TodoTagEdit($input: TodoTagEditInput!) {
+    todoTagEdit(input: $input) {
+      id
+      name
+      color
+    }
+  }
+`
+
+export const TODO_TAG_REMOVE_MUTATION = `
+  mutation TodoTagRemove($id: ID!) {
+    todoTagRemove(id: $id)
+  }
+`

@@ -1,0 +1,92 @@
+@use '@/app/styles/tokens' as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:hover .remove {
+    opacity: 1;
+  }
+}
+
+.title {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: var(--color-text);
+  outline: none;
+  border-radius: 2px;
+
+  &:focus {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  &.completed {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+  }
+}
+
+.remove {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  padding: 0 4px;
+  transition: opacity 0.15s;
+
+  &:hover {
+    color: var(--color-danger);
+  }
+}
+
+.newRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: 4px 0;
+}
+
+.addIcon {
+  font-size: $font-size-lg;
+  color: var(--color-text-muted);
+  line-height: 1;
+  width: 16px;
+  text-align: center;
+}
+
+.newInput {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 1px dashed var(--color-border);
+  outline: none;
+  font-size: $font-size-sm;
+  color: var(--color-text);
+  padding: 2px 0;
+  font-family: var(--font-family);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+}

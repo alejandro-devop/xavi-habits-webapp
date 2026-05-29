@@ -8,6 +8,7 @@ import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout'
 import { AppLayout } from '@/layouts/AppLayout/AppLayout'
 import { PublicLayout } from '@/layouts/PublicLayout/PublicLayout'
 import { activitiesRoutes } from '@/features/activities'
+import { todosRoutes } from '@/features/todos'
 import { TestingHallPage } from '@/pages/app/TestingHallPage/TestingHallPage'
 import { TodayPage } from '@/pages/app/TodayPage/TodayPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage/ForgotPasswordPage'
@@ -86,6 +87,7 @@ export const routes: RouteObject[] = [
                 element: <TestingHallPage />,
               },
               activitiesRoutes,
+              todosRoutes,
             ],
           },
         ],

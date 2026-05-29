@@ -1,0 +1,108 @@
+@use '@/app/styles/tokens' as *;
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 $spacing-md 0 60px;
+  height: 40px;
+  position: relative;
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.12s;
+  user-select: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.07);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+    border-radius: $radius-sm;
+  }
+}
+
+.focused {
+  background: rgba(255, 210, 80, 0.12);
+}
+
+.completed .title {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+
+.check {
+  position: absolute;
+  left: 0;
+  width: 44px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+
+  .completed & {
+    color: var(--color-success);
+  }
+}
+
+.title {
+  flex: 1;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-regular;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 40px;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  flex-shrink: 0;
+}
+
+.tags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tagsDesktop {
+  display: none;
+
+  @media (min-width: #{$breakpoint-md}) {
+    display: contents;
+  }
+}
+
+.tagsMobile {
+  display: flex;
+  align-items: center;
+
+  @media (min-width: #{$breakpoint-md}) {
+    display: none;
+  }
+}
+
+.moreTags {
+  font-size: $font-size-xs;
+  color: var(--color-text-muted);
+}
+
+.subtasks {
+  font-size: $font-size-xs;
+  color: var(--color-text-muted);
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 6px;
+  border-radius: $radius-full;
+}

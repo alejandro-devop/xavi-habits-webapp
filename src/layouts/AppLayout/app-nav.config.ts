@@ -6,6 +6,7 @@ import type { CommandAction } from '@/shared/ui/CommandPalette'
 export const appSidebarItems: SidebarNavItem[] = [
   { to: authPaths.today, label: 'Hoy', icon: 'home', end: true },
   { to: activitiesPaths.root, label: 'Actividades', icon: 'list-check' },
+  { to: '/app/todos', label: 'Tareas', icon: 'clipboard' },
   { to: authPaths.testingHall, label: 'Testing Hall', icon: 'search' },
 ]
 
@@ -28,6 +29,13 @@ export function createCommandActions(handlers: {
       icon: 'list-check',
       keywords: ['activities', 'tareas', 'categorías'],
       onSelect: () => handlers.navigate(activitiesPaths.root),
+    },
+    {
+      id: 'go-todos',
+      label: 'Ir a Tareas',
+      icon: 'clipboard',
+      keywords: ['todos', 'tareas', 'notebook'],
+      onSelect: () => handlers.navigate('/app/todos'),
     },
     {
       id: 'go-testing-hall',

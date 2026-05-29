@@ -30,8 +30,13 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(20rem, 90vw);
-  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+  width: 100vw;
+  border-radius: 0;
+
+  @media (min-width: 768px) {
+    width: max(30vw, 22rem);
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+  }
 }
 
 .bottom {

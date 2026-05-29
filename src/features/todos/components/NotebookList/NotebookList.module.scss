@@ -1,0 +1,69 @@
+@use '@/app/styles/tokens' as *;
+
+// Notebook line height — shared between paper lines and item height
+$line-height: 40px;
+$margin-width: 44px;
+$margin-line-color: #e8b4b8;
+$paper-line-color: rgba(0, 0, 0, 0.07);
+$paper-bg: #fafaf5;
+
+.notebook {
+  position: relative;
+  background: $paper-bg;
+  border-radius: $radius-xl;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    2px 2px 0 rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  min-height: 400px;
+
+  // Horizontal ruled lines via background gradient
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent calc(#{$line-height} - 1px),
+      $paper-line-color calc(#{$line-height} - 1px),
+      $paper-line-color $line-height
+    );
+  background-position: 0 0;
+
+  // Paper texture subtle
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.margin {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: $margin-width;
+  width: 1.5px;
+  background: $margin-line-color;
+  z-index: 1;
+  opacity: 0.7;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-xl * 2;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}

@@ -26,6 +26,12 @@
   max-width: 40rem;
 }
 
+.subtitleHideOnMobile {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

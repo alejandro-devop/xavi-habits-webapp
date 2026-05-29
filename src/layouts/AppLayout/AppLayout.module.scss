@@ -25,6 +25,10 @@
   margin: 0 auto;
   padding: $spacing-lg;
   width: 100%;
+
+  @media (max-width: 768px) {
+    padding: $spacing-sm;
+  }
 }
 
 .userEmail {

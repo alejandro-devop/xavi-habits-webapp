@@ -69,6 +69,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
   font-size: var(--text-xs);
   font-weight: 700;
   color: var(--color-text-secondary);
@@ -76,6 +78,38 @@
   text-transform: uppercase;
   user-select: none;
   border-right: 1px solid var(--paper-line);
+}
+
+.dayHeaderLabel {
+  flex-shrink: 0;
+}
+
+.dayStatsBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    color: var(--color-text-secondary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+  }
 }
 
 // ── Stripe bands (alternating per hour) ───────────────────────────────────────

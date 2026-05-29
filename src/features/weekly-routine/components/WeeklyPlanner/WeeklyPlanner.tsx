@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { formatDurationMinutes } from '@/features/activities/utils/activity-time.utils'
+import { DayCategoryTimeModal } from '@/features/weekly-routine/components/DayCategoryTimeModal/DayCategoryTimeModal'
 import { Drawer } from '@/shared/ui/Drawer'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import {
   BLOCK_HEIGHT_PX,
   DAY_LABELS,
+  DAY_LABELS_FULL,
   TIME_COL_WIDTH,
   formatBlockTime,
   formatEventTime,
@@ -116,6 +118,7 @@ function GroupBlock({ events, rowStart, onClick }: GroupBlockProps) {
 
 export function WeeklyPlanner({ routine, onSlotClick, onEventClick }: Props) {
   const [groupDrawer, setGroupDrawer] = useState<WeeklyRoutineActivity[] | null>(null)
+  const [categoryModalDay, setCategoryModalDay] = useState<DayOfWeek | null>(null)
 
   const days = getOrderedDays(routine.startDay)
   const blocks = generateTimeBlocks(routine.dayStartTime, routine.dayEndTime)
@@ -144,7 +147,15 @@ export function WeeklyPlanner({ routine, onSlotClick, onEventClick }: Props) {
               style={{ gridRow: 1, gridColumn: colIdx + 2 }}
               role="columnheader"
             >
-              {DAY_LABELS[day]}
+              <span className={styles.dayHeaderLabel}>{DAY_LABELS[day]}</span>
+              <button
+                type="button"
+                className={styles.dayStatsBtn}
+                onClick={() => setCategoryModalDay(day)}
+                aria-label={`Tiempo por categoría el ${DAY_LABELS_FULL[day]}`}
+              >
+                <AppIcon name="chart-pie" size="xs" decorative />
+              </button>
             </div>
           ))}
 
@@ -253,6 +264,13 @@ export function WeeklyPlanner({ routine, onSlotClick, onEventClick }: Props) {
           })}
         </div>
       </div>
+
+      <DayCategoryTimeModal
+        open={categoryModalDay !== null}
+        day={categoryModalDay}
+        activities={categoryModalDay ? getActivitiesForDay(routine, categoryModalDay) : []}
+        onClose={() => setCategoryModalDay(null)}
+      />
 
       {/* ── Group drawer ── */}
       <Drawer

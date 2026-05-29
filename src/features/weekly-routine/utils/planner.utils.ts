@@ -194,3 +194,90 @@ export function groupActivitiesByBlock(
   }
   return map
 }
+
+export const UNCATEGORIZED_ROUTINE_CATEGORY_ID = '__uncategorized__'
+
+export type RoutineCategoryTimeEntry = {
+  id: string
+  name: string
+  color: string
+  icon: string | null
+  minutes: number
+}
+
+export type RoutineCategoryTimeMetrics = {
+  entries: RoutineCategoryTimeEntry[]
+  totalMinutes: number
+}
+
+export function getCategoryTimeFromRoutineActivities(
+  activities: WeeklyRoutineActivity[],
+): RoutineCategoryTimeMetrics {
+  const totals = new Map<
+    string,
+    { name: string; color: string; icon: string | null; minutes: number }
+  >()
+
+  for (const activity of activities) {
+    const minutes = Math.max(0, activity.durationMinutes)
+    if (minutes === 0) continue
+
+    const category = activity.activity?.category
+    const id = category?.id ?? UNCATEGORIZED_ROUTINE_CATEGORY_ID
+    const existing = totals.get(id)
+
+    if (existing) {
+      existing.minutes += minutes
+      continue
+    }
+
+    totals.set(id, {
+      name: category?.name ?? 'Sin categoría',
+      color: category?.color ?? 'var(--color-text-muted)',
+      icon: category?.icon ?? null,
+      minutes,
+    })
+  }
+
+  const totalMinutes = [...totals.values()].reduce((sum, row) => sum + row.minutes, 0)
+
+  const entries: RoutineCategoryTimeEntry[] = [...totals.entries()]
+    .map(([id, row]) => ({
+      id,
+      name: row.name,
+      color: row.color,
+      icon: row.icon,
+      minutes: row.minutes,
+    }))
+    .sort((a, b) => b.minutes - a.minutes)
+
+  return { entries, totalMinutes }
+}
+
+/** CSS `conic-gradient` stops for a category pie chart (0° at top, clockwise). */
+export function buildCategoryPieGradient(
+  entries: Pick<RoutineCategoryTimeEntry, 'color' | 'minutes'>[],
+  totalMinutes: number,
+): string {
+  if (totalMinutes <= 0 || entries.length === 0) {
+    return 'color-mix(in srgb, var(--color-text-muted) 18%, transparent)'
+  }
+
+  let angle = 0
+  const stops: string[] = []
+
+  for (const entry of entries) {
+    const slice = (entry.minutes / totalMinutes) * 360
+    if (slice <= 0) continue
+    const start = angle
+    const end = angle + slice
+    stops.push(`${entry.color} ${start}deg ${end}deg`)
+    angle = end
+  }
+
+  if (stops.length === 0) {
+    return 'color-mix(in srgb, var(--color-text-muted) 18%, transparent)'
+  }
+
+  return `conic-gradient(from -90deg, ${stops.join(', ')})`
+}

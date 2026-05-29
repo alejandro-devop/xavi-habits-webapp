@@ -60,13 +60,7 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     updateTodo.mutate({ id: todo.id, priority })
   }
 
-  const handleTagToggle = (tag: TodoTag) => {
-    if (!todo) return
-    const currentIds = todo.tags.map((t) => t.id)
-    const isSelected = currentIds.includes(tag.id)
-    const newIds = isSelected ? currentIds.filter((id) => id !== tag.id) : [...currentIds, tag.id]
-    updateTodo.mutate({ id: todo.id, tagIds: newIds })
-  }
+  const TAG_COLORS = ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#06B6D4','#84CC16']
 
   const sanitizeTagName = (raw: string) =>
     raw.replace(/[^\p{L}\p{N} _\-]/gu, '').slice(0, 25)
@@ -79,31 +73,43 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     if (e.key !== 'Enter') return
     const name = newTagName.trim()
     if (!name || !todo) return
+
+    const existing = allTags.find((t) => t.name.toLowerCase() === name.toLowerCase())
+
+    if (existing) {
+      const alreadyAssigned = todo.tags.some((t) => t.id === existing.id)
+      if (!alreadyAssigned) {
+        updateTodo.mutate({ id: todo.id, tagIds: [...todo.tags.map((t) => t.id), existing.id] })
+      }
+      setNewTagName('')
+      return
+    }
+
+    const color = TAG_COLORS[allTags.length % TAG_COLORS.length]
     createTag.mutate(
-      { name, color: '#636366' },
+      { name, color },
       {
         onSuccess: (newTag) => {
-          const currentIds = todo.tags.map((t) => t.id)
-          updateTodo.mutate({ id: todo.id, tagIds: [...currentIds, newTag.id] })
+          updateTodo.mutate({ id: todo.id, tagIds: [...todo.tags.map((t) => t.id), newTag.id] })
           setNewTagName('')
         },
       },
     )
   }
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!todo) return
-    const ok = await confirm({
+    void confirm({
       title: '¿Eliminar esta tarea?',
       description: 'Esta acción no se puede deshacer.',
       confirmLabel: 'Eliminar',
       cancelLabel: 'Cancelar',
       variant: 'danger',
+      onConfirm: () => {
+        removeTodo.mutate(todo.id)
+        onClose()
+      },
     })
-    if (ok) {
-      removeTodo.mutate(todo.id)
-      onClose()
-    }
   }
 
   const handleRemoveTagFromTodo = (tag: TodoTag) => {
@@ -111,8 +117,6 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     const newIds = todo.tags.filter((t) => t.id !== tag.id).map((t) => t.id)
     updateTodo.mutate({ id: todo.id, tagIds: newIds })
   }
-
-  const selectedTagIds = todo?.tags.map((t) => t.id) ?? []
 
   return (
     <Drawer open={Boolean(todoId)} onClose={onClose} side="right" title="Detalle de tarea">
@@ -171,23 +175,12 @@ export function TodoDrawer({ todoId, onClose }: Props) {
                 ))}
               </div>
             ) : null}
-            <div className={styles.tags}>
-              {allTags
-                .filter((tag) => !selectedTagIds.includes(tag.id))
-                .map((tag) => (
-                  <TagChip
-                    key={tag.id}
-                    tag={tag}
-                    onToggle={handleTagToggle}
-                  />
-                ))}
-            </div>
             <input
               className={styles.newTagInput}
               value={newTagName}
               onChange={handleTagInput}
               onKeyDown={handleAddTag}
-              placeholder="Nueva etiqueta… (Enter para crear)"
+              placeholder="Añadir etiqueta… (Enter)"
             />
           </section>
 

@@ -62,15 +62,15 @@ export function NotebookList({ filters = {} }: Props) {
   )
 
   const handleDelete = useCallback(
-    async (todo: (typeof todos)[number]) => {
-      const ok = await confirm({
+    (todo: (typeof todos)[number]) => {
+      void confirm({
         title: '¿Eliminar esta tarea?',
         description: 'Esta acción no se puede deshacer.',
         confirmLabel: 'Eliminar',
         cancelLabel: 'Cancelar',
         variant: 'danger',
+        onConfirm: () => removeTodo.mutate(todo.id),
       })
-      if (ok) removeTodo.mutate(todo.id)
     },
     [confirm, removeTodo],
   )

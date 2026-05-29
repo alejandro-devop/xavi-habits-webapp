@@ -66,15 +66,15 @@ function TagRow({ tag, pickerOpen, onTogglePicker }: TagRowProps) {
     onTogglePicker()
   }
 
-  const handleRemove = async () => {
-    const ok = await confirm({
+  const handleRemove = () => {
+    void confirm({
       title: `¿Eliminar etiqueta "${tag.name}"?`,
       description: 'Se quitará de todas las tareas que la usen.',
       confirmLabel: 'Eliminar',
       cancelLabel: 'Cancelar',
       variant: 'danger',
+      onConfirm: () => removeTag.mutate(tag.id),
     })
-    if (ok) removeTag.mutate(tag.id)
   }
 
   return (
@@ -134,15 +134,15 @@ function FolderRow({ folder, pickerOpen, onTogglePicker }: FolderRowProps) {
     onTogglePicker()
   }
 
-  const handleRemove = async () => {
-    const ok = await confirm({
+  const handleRemove = () => {
+    void confirm({
       title: `¿Eliminar carpeta "${folder.name}"?`,
       description: 'Las tareas dentro no se eliminarán, solo quedarán sin carpeta.',
       confirmLabel: 'Eliminar',
       cancelLabel: 'Cancelar',
       variant: 'danger',
+      onConfirm: () => removeFolder.mutate(folder.id),
     })
-    if (ok) removeFolder.mutate(folder.id)
   }
 
   return (

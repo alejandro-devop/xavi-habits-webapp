@@ -2,7 +2,7 @@
 
 Cliente: **xavi-habits-web** · API: **xavi-platform-node** (`POST /graphql`)
 
-Migraciones: `027_todo_tags.sql`, `028_todo_folders.sql`
+Migraciones: `027_todo_tags.sql`, `028_todo_folders.sql`, `029_todo_order_index.sql`
 
 ---
 
@@ -51,6 +51,18 @@ Una tarea puede estar en **una carpeta** o en ninguna. Cada carpeta tiene nombre
 - Crear: `todoAdd` → `folderId: "3"`
 - Mover o quitar: `todoEdit` → `folderId: "3"` o `folderId: null`
 - Filtrar: `todos(folderId: "3")` o `todos(withoutFolder: true)`
+
+### Orden dentro de la carpeta
+
+Campo `orderIndex` en cada tarea. El listado por carpeta (`todos(folderId: …)` o `withoutFolder: true`) ordena por `orderIndex` ascendente.
+
+| Acción | GraphQL |
+|--------|---------|
+| Posición al crear | `todoAdd` → `orderIndex` opcional (si no, va al final) |
+| Cambiar posición | `todoEdit` → `orderIndex` |
+| Reordenar varias (drag & drop) | `todoReorder(input: { folderId, todoIds })` — `todoIds` en el orden deseado; `folderId: null` = sin carpeta |
+
+Al mover una tarea a otra carpeta sin `orderIndex`, se coloca al final de la carpeta destino.
 
 ---
 

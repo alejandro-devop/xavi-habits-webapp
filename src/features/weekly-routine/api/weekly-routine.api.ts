@@ -8,12 +8,14 @@ import {
   WEEKLY_ROUTINE_SET_ACTIVE_MUTATION,
   WEEKLY_ROUTINE_TOGGLE_ACTIVE_MUTATION,
   WEEKLY_ROUTINE_ACTIVITY_ADD_MUTATION,
+  WEEKLY_ROUTINE_ACTIVITY_BATCH_ADD_MUTATION,
   WEEKLY_ROUTINE_ACTIVITY_EDIT_MUTATION,
   WEEKLY_ROUTINE_ACTIVITY_REMOVE_MUTATION,
 } from '@/features/weekly-routine/graphql/weekly-routine.graphql'
 import type {
   WeeklyRoutine,
   WeeklyRoutineActivity,
+  WeeklyRoutineActivityBatchInput,
   WeeklyRoutineActivityEditInput,
   WeeklyRoutineActivityInput,
   WeeklyRoutineCollection,
@@ -31,6 +33,7 @@ type RoutineRemoveData = { weeklyRoutineRemove: boolean }
 type RoutineSetActiveData = { weeklyRoutineSetActive: WeeklyRoutine }
 type RoutineToggleActiveData = { weeklyRoutineToggleActive: WeeklyRoutine }
 type ActivityAddData = { weeklyRoutineActivityAdd: WeeklyRoutineActivity }
+type ActivityBatchAddData = { weeklyRoutineActivityBatchAdd: WeeklyRoutineActivity[] }
 type ActivityEditData = { weeklyRoutineActivityEdit: WeeklyRoutineActivity }
 type ActivityRemoveData = { weeklyRoutineActivityRemove: boolean }
 
@@ -108,6 +111,16 @@ export async function addWeeklyRoutineActivity(
     { input },
   )
   return data.weeklyRoutineActivityAdd
+}
+
+export async function addWeeklyRoutineActivitiesBatch(
+  input: WeeklyRoutineActivityBatchInput,
+): Promise<WeeklyRoutineActivity[]> {
+  const data = await graphqlRequest<ActivityBatchAddData, { input: WeeklyRoutineActivityBatchInput }>(
+    WEEKLY_ROUTINE_ACTIVITY_BATCH_ADD_MUTATION,
+    { input },
+  )
+  return data.weeklyRoutineActivityBatchAdd
 }
 
 export async function updateWeeklyRoutineActivity(

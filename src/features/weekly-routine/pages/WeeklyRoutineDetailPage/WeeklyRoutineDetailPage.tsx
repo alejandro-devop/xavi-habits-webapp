@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router'
 import { RoutineEventModal } from '@/features/weekly-routine/components/RoutineEventModal/RoutineEventModal'
 import { WeeklyPlanner } from '@/features/weekly-routine/components/WeeklyPlanner/WeeklyPlanner'
 import {
+  useAddWeeklyRoutineActivitiesBatchMutation,
   useAddWeeklyRoutineActivityMutation,
   useRemoveWeeklyRoutineActivityMutation,
   useUpdateWeeklyRoutineActivityMutation,
@@ -29,6 +30,7 @@ export function WeeklyRoutineDetailPage() {
   const { data: routine, isLoading } = useWeeklyRoutineQuery(id)
 
   const addActivity = useAddWeeklyRoutineActivityMutation()
+  const addActivitiesBatch = useAddWeeklyRoutineActivitiesBatchMutation()
   const updateActivity = useUpdateWeeklyRoutineActivityMutation()
   const removeActivity = useRemoveWeeklyRoutineActivityMutation()
 
@@ -57,7 +59,19 @@ export function WeeklyRoutineDetailPage() {
       updateActivity.mutate(
         {
           id: editingEvent.id,
-          dayOfWeek: values.dayOfWeek,
+          dayOfWeek: values.days[0],
+          startTime: values.startTime,
+          durationMinutes: values.durationMinutes,
+          notes: values.notes || null,
+        },
+        { onSuccess: () => setEventModalOpen(false) },
+      )
+    } else if (values.days.length > 1) {
+      addActivitiesBatch.mutate(
+        {
+          routineId: routine.id,
+          activityId: values.activityId!,
+          days: values.days,
           startTime: values.startTime,
           durationMinutes: values.durationMinutes,
           notes: values.notes || null,
@@ -69,7 +83,7 @@ export function WeeklyRoutineDetailPage() {
         {
           routineId: routine.id,
           activityId: values.activityId!,
-          dayOfWeek: values.dayOfWeek,
+          dayOfWeek: values.days[0],
           startTime: values.startTime,
           durationMinutes: values.durationMinutes,
           notes: values.notes || null,
@@ -147,7 +161,7 @@ export function WeeklyRoutineDetailPage() {
           onClose={() => setEventModalOpen(false)}
           onSubmit={handleEventSubmit}
           onDelete={editingEvent ? handleDeleteEvent : undefined}
-          submitting={addActivity.isPending || updateActivity.isPending}
+          submitting={addActivity.isPending || addActivitiesBatch.isPending || updateActivity.isPending}
           deleting={removeActivity.isPending}
         />
       )}

@@ -81,6 +81,15 @@ export interface WeeklyRoutineActivityEditInput {
   notes?: string | null
 }
 
+export interface WeeklyRoutineActivityBatchInput {
+  routineId: string
+  activityId: string
+  days: DayOfWeek[]
+  startTime: string
+  durationMinutes: number
+  notes?: string | null
+}
+
 // Planner-specific types
 export interface TimeBlock {
   time: string

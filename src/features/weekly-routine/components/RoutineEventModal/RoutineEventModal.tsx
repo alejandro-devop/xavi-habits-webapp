@@ -6,6 +6,7 @@ import {
   buildDurationOptions,
   buildStartTimeOptions,
   clampEventDuration,
+  DAY_LABELS_FULL,
   formatEventEndTime,
   hasConflict,
   snapTimeTo15,
@@ -15,6 +16,7 @@ import type {
   WeeklyRoutine,
   WeeklyRoutineActivity,
 } from '@/features/weekly-routine/types/weekly-routine.types'
+import { DayPickerToggle } from '@/features/weekly-routine/components/DayPickerToggle'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
@@ -27,7 +29,7 @@ import styles from './RoutineEventModal.module.scss'
 
 export type RoutineEventFormValues = {
   activityId: string | null
-  dayOfWeek: DayOfWeek
+  days: DayOfWeek[]
   startTime: string
   durationMinutes: number
   notes: string
@@ -56,7 +58,7 @@ const DAY_OPTIONS: { label: string; value: DayOfWeek }[] = [
   { label: 'Domingo', value: 'sunday' },
 ]
 
-// ── Root step (needs useModalStep so must live inside SteppedModal) ────────────
+// ── Root step ─────────────────────────────────────────────────────────────────
 
 type RootStepProps = {
   values: RoutineEventFormValues
@@ -117,14 +119,23 @@ function RoutineEventRootStep({
         />
       </FormField>
 
-      <FormField id="event-day" label="Día">
-        <Select
-          id="event-day"
-          value={values.dayOfWeek}
-          options={DAY_OPTIONS}
-          onChange={(v) => set('dayOfWeek', v as DayOfWeek)}
-        />
-      </FormField>
+      {editing ? (
+        <FormField id="event-day" label="Día">
+          <Select
+            id="event-day"
+            value={values.days[0]}
+            options={DAY_OPTIONS}
+            onChange={(v) => set('days', [v as DayOfWeek])}
+          />
+        </FormField>
+      ) : (
+        <FormField id="event-days" label="Días">
+          <DayPickerToggle
+            selected={values.days}
+            onChange={(days) => set('days', days)}
+          />
+        </FormField>
+      )}
 
       <div className={styles.row}>
         <FormField id="event-start" label="Hora de inicio">
@@ -220,7 +231,7 @@ export function RoutineEventModal({
   const initialStartTime = editing?.startTime ?? defaultTime
   const [values, setValues] = useState<RoutineEventFormValues>({
     activityId: editing?.activityId ?? null,
-    dayOfWeek: editing?.dayOfWeek ?? initialDay ?? 'monday',
+    days: [editing?.dayOfWeek ?? initialDay ?? 'monday'],
     startTime: initialStartTime,
     durationMinutes: clampEventDuration(
       initialStartTime,
@@ -236,7 +247,7 @@ export function RoutineEventModal({
     const startTime = editing?.startTime ?? defaultTime
     setValues({
       activityId: editing?.activityId ?? null,
-      dayOfWeek: editing?.dayOfWeek ?? initialDay ?? 'monday',
+      days: [editing?.dayOfWeek ?? initialDay ?? 'monday'],
       startTime,
       durationMinutes: clampEventDuration(
         startTime,
@@ -261,8 +272,12 @@ export function RoutineEventModal({
       setError('Selecciona una actividad.')
       return
     }
-    if (hasConflict(allActivitiesInRoutine, values.dayOfWeek, values.startTime, values.durationMinutes, editing?.id)) {
-      setError('Este horario se solapa con otro evento del mismo día.')
+    const conflictingDays = values.days.filter((day) =>
+      hasConflict(allActivitiesInRoutine, day, values.startTime, values.durationMinutes, editing?.id)
+    )
+    if (conflictingDays.length > 0) {
+      const names = conflictingDays.map((d) => DAY_LABELS_FULL[d]).join(', ')
+      setError(`Este horario se solapa con eventos existentes en: ${names}`)
       return
     }
     onSubmit(values)

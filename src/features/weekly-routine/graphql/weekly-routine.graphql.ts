@@ -120,6 +120,14 @@ export const WEEKLY_ROUTINE_ACTIVITY_ADD_MUTATION = `
   }
 `
 
+export const WEEKLY_ROUTINE_ACTIVITY_BATCH_ADD_MUTATION = `
+  mutation WeeklyRoutineActivityBatchAdd($input: WeeklyRoutineActivityBatchInput!) {
+    weeklyRoutineActivityBatchAdd(input: $input) {
+      ${WEEKLY_ROUTINE_ACTIVITY_FIELDS}
+    }
+  }
+`
+
 export const WEEKLY_ROUTINE_ACTIVITY_EDIT_MUTATION = `
   mutation WeeklyRoutineActivityEdit($input: WeeklyRoutineActivityEditInput!) {
     weeklyRoutineActivityEdit(input: $input) {

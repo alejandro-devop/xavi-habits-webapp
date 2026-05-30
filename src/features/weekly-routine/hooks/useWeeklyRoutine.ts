@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as api from '@/features/weekly-routine/api/weekly-routine.api'
 import type {
+  WeeklyRoutineActivityBatchInput,
   WeeklyRoutineActivityEditInput,
   WeeklyRoutineActivityInput,
   WeeklyRoutineEditInput,
@@ -113,6 +114,18 @@ export function useAddWeeklyRoutineActivityMutation() {
       void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
     },
     onError: () => toast.error('No se pudo agregar la actividad'),
+  })
+}
+
+export function useAddWeeklyRoutineActivitiesBatchMutation() {
+  const qc = useQueryClient()
+  const toast = useToast()
+  return useMutation({
+    mutationFn: (input: WeeklyRoutineActivityBatchInput) => api.addWeeklyRoutineActivitiesBatch(input),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: weeklyRoutineKeys.all })
+    },
+    onError: () => toast.error('No se pudo agregar las actividades'),
   })
 }
 

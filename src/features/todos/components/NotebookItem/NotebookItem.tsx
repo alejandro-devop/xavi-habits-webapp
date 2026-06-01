@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { PriorityBadge } from '@/features/todos/components/PriorityBadge/PriorityBadge'
 import { TagChip } from '@/features/todos/components/TagChip/TagChip'
+import { DueDateLabel } from '@/features/todos/components/DueDateLabel/DueDateLabel'
 import type { Todo } from '@/features/todos/types/todo.types'
 import styles from './NotebookItem.module.scss'
 
@@ -10,6 +11,7 @@ type Props = {
   onFocus: () => void
   onClick: () => void
   onToggle: () => void
+  onToggleToday?: () => void
 }
 
 function subtaskProgressStyle(
@@ -33,7 +35,7 @@ function subtaskProgressStyle(
   }
 }
 
-export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Props) {
+export function NotebookItem({ todo, focused, onFocus, onClick, onToggle, onToggleToday }: Props) {
   const isCompleted = todo.status === 'completed'
   // subtasksCount puede ser null en tareas antiguas — usar el array real como fallback
   const subtaskTotal = todo.subtasksCount?.total ?? todo.subtasks?.length ?? 0
@@ -96,6 +98,7 @@ export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Prop
             <path d="M2 3h8M4 6h6M4 9h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         ) : null}
+        <DueDateLabel dueDate={todo.dueDate} status={todo.status} />
         {todo.tags.length > 0 ? (
           <div className={styles.tags}>
             <span className={styles.tagsDesktop}>
@@ -110,6 +113,23 @@ export function NotebookItem({ todo, focused, onFocus, onClick, onToggle }: Prop
               <span className={styles.moreTags}>{todo.tags.length} tag{todo.tags.length !== 1 ? 's' : ''}</span>
             </span>
           </div>
+        ) : null}
+        {onToggleToday != null ? (
+          <button
+            type="button"
+            className={[styles.todayBtn, todo.selectedToday ? styles.todayActive : ''].join(' ')}
+            aria-label={todo.selectedToday ? 'Quitar de tareas de hoy' : 'Agregar a tareas de hoy'}
+            aria-pressed={todo.selectedToday}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleToday()
+            }}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-13h2v6l4 2.4-1 1.7-5-3V7z"/>
+            </svg>
+          </button>
         ) : null}
         <PriorityBadge priority={todo.priority} selected iconOnly />
       </div>

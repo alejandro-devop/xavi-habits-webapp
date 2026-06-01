@@ -8,6 +8,7 @@ import { SubtaskList } from '@/features/todos/components/SubtaskList/SubtaskList
 import {
   useTodoQuery,
   useTodoTagsQuery,
+  useTodoFoldersQuery,
   useUpdateTodoMutation,
   useCompleteTodoMutation,
   useCreateTodoTagMutation,
@@ -63,6 +64,7 @@ function TodoDescriptionEditor({ todo, onSave }: DescriptionEditorProps) {
 export function TodoDrawer({ todoId, onClose }: Props) {
   const { data: todo, isLoading } = useTodoQuery(todoId ?? undefined)
   const { data: allTags = [] } = useTodoTagsQuery()
+  const { data: folders = [] } = useTodoFoldersQuery()
   const updateTodo = useUpdateTodoMutation()
   const completeTodo = useCompleteTodoMutation()
   const removeTodo = useRemoveTodoMutation()
@@ -176,37 +178,94 @@ export function TodoDrawer({ todoId, onClose }: Props) {
         </div>
       ) : (
         <div className={styles.body}>
-          <div className={[styles.titleRow, todo.status === 'completed' ? styles.completedRow : ''].join(' ')}>
-            <button
-              type="button"
-              className={styles.completeBtn}
-              onClick={handleToggleComplete}
-              aria-label={todo.status === 'completed' ? 'Marcar como pendiente' : 'Marcar como completada'}
-            >
-              {todo.status === 'completed' ? (
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
-                  <path d="M5 9l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <div className={styles.titleGroup}>
+            <div className={[styles.titleRow, todo.status === 'completed' ? styles.completedRow : ''].join(' ')}>
+              <button
+                type="button"
+                className={styles.completeBtn}
+                onClick={handleToggleComplete}
+                aria-label={todo.status === 'completed' ? 'Marcar como pendiente' : 'Marcar como completada'}
+              >
+                {todo.status === 'completed' ? (
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
+                    <path d="M5 9l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
+                  </svg>
+                )}
+              </button>
+              <h2
+                ref={titleRef}
+                className={styles.title}
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={handleTitleBlur}
+                aria-label="Título de la tarea"
+              />
+            </div>
+
+            <div className={styles.subTitleRow}>
+              <select
+                className={styles.folderChip}
+                value={todo.folderId ?? ''}
+                onChange={(e) => {
+                  updateTodo.mutate({ id: todo.id, folderId: e.target.value || null })
+                }}
+                aria-label="Carpeta de la tarea"
+              >
+                <option value="">Sin carpeta</option>
+                {folders.map((f) => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className={[styles.todayChip, todo.selectedToday ? styles.todayChipActive : ''].join(' ')}
+                onClick={() => updateTodo.mutate({ id: todo.id, selectedToday: !todo.selectedToday })}
+                aria-pressed={todo.selectedToday}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-13h2v6l4 2.4-1 1.7-5-3V7z"/>
                 </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
-                </svg>
-              )}
-            </button>
-            <h2
-              ref={titleRef}
-              className={styles.title}
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={handleTitleBlur}
-              aria-label="Título de la tarea"
-            />
+                {todo.selectedToday ? 'En lista de hoy' : 'Agregar a hoy'}
+              </button>
+            </div>
           </div>
 
           <section className={[styles.section, styles.descriptionSection].join(' ')}>
             <span className={styles.label}>Descripción</span>
             <TodoDescriptionEditor key={todo.id} todo={todo} onSave={handleDescriptionSave} />
+          </section>
+
+          <section className={styles.section}>
+            <span className={styles.label}>Fecha límite</span>
+            <div className={styles.dateRow}>
+              <input
+                type="date"
+                className={styles.dateInput}
+                value={todo.dueDate ? todo.dueDate.slice(0, 10) : ''}
+                onChange={(e) => {
+                  const val = e.target.value
+                  updateTodo.mutate({
+                    id: todo.id,
+                    dueDate: val ? new Date(val + 'T12:00:00').toISOString() : null,
+                  })
+                }}
+              />
+              {todo.dueDate ? (
+                <button
+                  type="button"
+                  className={styles.clearDateBtn}
+                  onClick={() => updateTodo.mutate({ id: todo.id, dueDate: null })}
+                  aria-label="Quitar fecha límite"
+                >
+                  ×
+                </button>
+              ) : null}
+            </div>
           </section>
 
           <section className={styles.section}>

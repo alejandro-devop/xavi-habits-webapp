@@ -1,0 +1,51 @@
+@use '@/app/styles/tokens' as *;
+
+.label {
+  font-size: 10px;
+  font-weight: $font-weight-medium;
+  padding: 1px 5px;
+  border-radius: $radius-full;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.6;
+}
+
+.today {
+  background: rgba(245, 158, 11, 0.15);
+  color: #B45309;
+
+  :global([data-theme='dark']) & {
+    background: rgba(245, 158, 11, 0.2);
+    color: #FCD34D;
+  }
+}
+
+.soon {
+  background: rgba(249, 115, 22, 0.12);
+  color: #C2410C;
+
+  :global([data-theme='dark']) & {
+    background: rgba(249, 115, 22, 0.18);
+    color: #FB923C;
+  }
+}
+
+.future {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065F46;
+
+  :global([data-theme='dark']) & {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34D399;
+  }
+}
+
+.overdue {
+  background: rgba(239, 68, 68, 0.12);
+  color: #B91C1C;
+
+  :global([data-theme='dark']) & {
+    background: rgba(239, 68, 68, 0.18);
+    color: #FCA5A5;
+  }
+}

@@ -104,6 +104,38 @@ $tab-height: 32px;
   }
 }
 
+.todayTab {
+  color: #B45309;
+
+  &.active {
+    color: #92400E;
+  }
+
+  :global([data-theme='dark']) & {
+    color: #FCD34D;
+
+    &.active {
+      color: #FDE68A;
+    }
+  }
+}
+
+.suggestedTab {
+  color: #7C3AED;
+
+  &.active {
+    color: #6D28D9;
+  }
+
+  :global([data-theme='dark']) & {
+    color: #A78BFA;
+
+    &.active {
+      color: #C4B5FD;
+    }
+  }
+}
+
 .addBtn {
   display: flex;
   align-items: center;

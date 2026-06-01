@@ -22,6 +22,9 @@ const FOLDER_COLORS = [
   '#64748B',
 ]
 
+export const TODAY_FOLDER_ID = '__today__'
+export const SUGGESTED_FOLDER_ID = '__suggested__'
+
 type Props = {
   selectedFolderId: string | null
   onSelect: (folderId: string | null) => void
@@ -36,6 +39,13 @@ function computePendingCounts(queryClient: ReturnType<typeof useQueryClient>): R
     const folderId = filters?.folderId
     if (typeof folderId === 'string') {
       map[folderId] = data.todos.filter((t) => t.status !== 'completed').length
+    }
+    if (filters?.selectedToday === true) {
+      map[TODAY_FOLDER_ID] = data.todos.filter((t) => t.status !== 'completed').length
+    }
+    // Suggested: selectedToday === false (ya filtrado por pendingOnly en el servidor)
+    if (filters?.selectedToday === false) {
+      map[SUGGESTED_FOLDER_ID] = data.todos.length
     }
   }
   return map
@@ -110,10 +120,30 @@ export function NotebookTabs({ selectedFolderId, onSelect }: Props) {
       <div className={styles.wrapper}>
         <button
           type="button"
-          className={[styles.tab, selectedFolderId === null ? styles.active : ''].join(' ')}
-          onClick={() => onSelect(null)}
+          className={[styles.tab, styles.todayTab, selectedFolderId === TODAY_FOLDER_ID ? styles.active : ''].join(' ')}
+          onClick={() => onSelect(TODAY_FOLDER_ID)}
         >
-          Todas
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-13h2v6l4 2.4-1 1.7-5-3V7z"/>
+          </svg>
+          Hoy
+          {pendingCounts[TODAY_FOLDER_ID] != null && pendingCounts[TODAY_FOLDER_ID] > 0 ? (
+            <span className={styles.count}>{pendingCounts[TODAY_FOLDER_ID]}</span>
+          ) : null}
+        </button>
+
+        <button
+          type="button"
+          className={[styles.tab, styles.suggestedTab, selectedFolderId === SUGGESTED_FOLDER_ID ? styles.active : ''].join(' ')}
+          onClick={() => onSelect(SUGGESTED_FOLDER_ID)}
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M12 2a7 7 0 0 0-7 7c0 2.6 1.4 4.8 3.5 6.1V17a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-1.9C17.6 13.8 19 11.6 19 9a7 7 0 0 0-7-7zm-1 14v-1h2v1h-2zm3-3.2-.6.4-.4.3V14h-2v-.5l-.4-.3-.6-.4A5 5 0 0 1 7 9a5 5 0 0 1 10 0 5 5 0 0 1-3 4.8z"/>
+          </svg>
+          Suggested
+          {pendingCounts[SUGGESTED_FOLDER_ID] != null && pendingCounts[SUGGESTED_FOLDER_ID] > 0 ? (
+            <span className={styles.count}>{pendingCounts[SUGGESTED_FOLDER_ID]}</span>
+          ) : null}
         </button>
 
         {folders.map((folder) => (

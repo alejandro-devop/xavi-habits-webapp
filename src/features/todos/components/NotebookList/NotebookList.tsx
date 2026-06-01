@@ -5,7 +5,8 @@ import { Spinner } from '@/shared/ui/Spinner'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { NotebookItem } from '@/features/todos/components/NotebookItem/NotebookItem'
 import { NotebookInput } from '@/features/todos/components/NotebookInput/NotebookInput'
-import { NotebookTabs } from '@/features/todos/components/NotebookTabs/NotebookTabs'
+import { NotebookTabs, TODAY_FOLDER_ID, SUGGESTED_FOLDER_ID } from '@/features/todos/components/NotebookTabs/NotebookTabs'
+import { NotebookFilters, type DateRange } from '@/features/todos/components/NotebookFilters/NotebookFilters'
 import { TodoDrawer } from '@/features/todos/components/TodoDrawer/TodoDrawer'
 import {
   useCompleteTodoMutation,
@@ -16,6 +17,42 @@ import {
 } from '@/features/todos/hooks/useTodos'
 import type { TodoFilters } from '@/features/todos/types/todo.types'
 import styles from './NotebookList.module.scss'
+
+// ─── Helpers de rango de fechas ───────────────────────────────────────────────
+
+function getEndOfToday(): string {
+  const d = new Date()
+  d.setHours(23, 59, 59, 999)
+  return d.toISOString()
+}
+
+function computeDateRange(range: DateRange): { dueAfter: string; dueBefore: string } {
+  const now = new Date()
+  switch (range) {
+    case 'today': {
+      const s = new Date(now); s.setHours(0, 0, 0, 0)
+      const e = new Date(now); e.setHours(23, 59, 59, 999)
+      return { dueAfter: s.toISOString(), dueBefore: e.toISOString() }
+    }
+    case 'week': {
+      const day = now.getDay()
+      const s = new Date(now)
+      s.setDate(now.getDate() - (day === 0 ? 6 : day - 1))
+      s.setHours(0, 0, 0, 0)
+      const e = new Date(s)
+      e.setDate(s.getDate() + 6)
+      e.setHours(23, 59, 59, 999)
+      return { dueAfter: s.toISOString(), dueBefore: e.toISOString() }
+    }
+    case 'month': {
+      const s = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
+      const e = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+      return { dueAfter: s.toISOString(), dueBefore: e.toISOString() }
+    }
+  }
+}
+
+// ─── Draft persistido por carpeta ─────────────────────────────────────────────
 
 function draftKey(folderId: string | null) {
   return `todo-draft:${folderId ?? '__all__'}`
@@ -50,23 +87,43 @@ type Props = {
 }
 
 export function NotebookList({ filters = {} }: Props) {
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(TODAY_FOLDER_ID)
+  const [dateRange, setDateRange] = useState<DateRange | null>('today')
+  const [showCompleted, setShowCompleted] = useState(false)
 
-  const { data, isLoading } = useTodosQuery({
+  const isToday = selectedFolderId === TODAY_FOLDER_ID
+  const isSuggested = selectedFolderId === SUGGESTED_FOLDER_ID
+
+  // ── Construir filtros para la query ──────────────────────────────────────────
+  const dateFilters = useMemo((): { dueAfter?: string; dueBefore?: string } => {
+    // Suggested e Hoy no usan el filtro de fechas del panel
+    if (isToday || isSuggested) return {}
+    if (!dateRange) return {}
+    return computeDateRange(dateRange)
+  }, [isToday, isSuggested, dateRange])
+
+  const queryFilters = useMemo((): TodoFilters => ({
     limit: 50,
     ...filters,
-    folderId: selectedFolderId,
-  })
+    folderId: (isToday || isSuggested) ? undefined : selectedFolderId,
+    selectedToday: isToday ? true : isSuggested ? false : undefined,
+    // Suggested: siempre pendingOnly=true (no le afecta showCompleted)
+    pendingOnly: isSuggested ? true : (showCompleted ? undefined : true),
+    // Suggested: siempre filtra por dueBefore = fin de hoy
+    dueBefore: isSuggested ? getEndOfToday() : (dateFilters.dueBefore ?? undefined),
+    dueAfter: isSuggested ? undefined : (dateFilters.dueAfter ?? undefined),
+  }), [isToday, isSuggested, selectedFolderId, showCompleted, dateFilters, filters])
+
+  const { data, isLoading } = useTodosQuery(queryFilters)
+
   const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
 
   const todos = useMemo(() => {
     const raw = data?.todos ?? []
     return [...raw].sort((a, b) => {
-      // Completadas siempre al final
       const aComp = a.status === 'completed' ? 1 : 0
       const bComp = b.status === 'completed' ? 1 : 0
       if (aComp !== bComp) return aComp - bComp
-      // Dentro del mismo grupo, ordenar por prioridad
       return (PRIORITY_ORDER[a.priority] ?? 2) - (PRIORITY_ORDER[b.priority] ?? 2)
     })
   }, [data?.todos])
@@ -87,10 +144,18 @@ export function NotebookList({ filters = {} }: Props) {
       createTodo.mutate({
         title,
         priority: 'medium',
-        folderId: selectedFolderId ?? undefined,
+        folderId: isToday ? undefined : (selectedFolderId ?? undefined),
+        selectedToday: isToday ? true : undefined,
       })
     },
-    [createTodo, draft, selectedFolderId],
+    [createTodo, draft, selectedFolderId, isToday],
+  )
+
+  const handleToggleToday = useCallback(
+    (todo: (typeof todos)[number]) => {
+      updateTodo.mutate({ id: todo.id, selectedToday: !todo.selectedToday })
+    },
+    [updateTodo],
   )
 
   const handleToggleComplete = useCallback(
@@ -125,7 +190,6 @@ export function NotebookList({ filters = {} }: Props) {
         target.isContentEditable ||
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA'
-      // Never intercept keyboard events on links or buttons outside the list
       const isNavigating = target.tagName === 'A' || target.closest('a') !== null
 
       if (isEditing || isNavigating) return
@@ -167,35 +231,48 @@ export function NotebookList({ filters = {} }: Props) {
           break
         case 'n':
         case 'N':
-          e.preventDefault()
-          newInputRef.current?.focus()
+          if (!isSuggested) {
+            e.preventDefault()
+            newInputRef.current?.focus()
+          }
           break
       }
     }
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [todos, focusedIndex, openTodoId, handleToggleComplete, handleDelete])
+  }, [todos, focusedIndex, openTodoId, isSuggested, handleToggleComplete, handleDelete])
 
   return (
     <PaperSurface
       tabs={
-        <NotebookTabs
-          selectedFolderId={selectedFolderId}
-          onSelect={(id) => {
-            setSelectedFolderId(id)
-            setFocusedIndex(-1)
-          }}
-        />
+        <>
+          <NotebookFilters
+            dateRange={dateRange}
+            showCompleted={showCompleted}
+            onDateRangeChange={setDateRange}
+            onShowCompletedChange={setShowCompleted}
+          />
+          <NotebookTabs
+            selectedFolderId={selectedFolderId}
+            onSelect={(id) => {
+              setSelectedFolderId(id)
+              setFocusedIndex(-1)
+            }}
+          />
+        </>
       }
     >
-      <NotebookInput
-        ref={newInputRef}
-        value={draft.value}
-        onChange={draft.set}
-        onAdd={handleAdd}
-        onClear={draft.clear}
-      />
+      {/* Input oculto en Suggested */}
+      {!isSuggested && (
+        <NotebookInput
+          ref={newInputRef}
+          value={draft.value}
+          onChange={draft.set}
+          onAdd={handleAdd}
+          onClear={draft.clear}
+        />
+      )}
 
       {isLoading ? (
         <div className={styles.loading}>
@@ -203,8 +280,12 @@ export function NotebookList({ filters = {} }: Props) {
         </div>
       ) : todos.length === 0 ? (
         <EmptyState
-          title="Sin tareas pendientes"
-          description='Presiona N para añadir tu primera tarea.'
+          title={isSuggested ? 'Sin tareas sugeridas' : 'Sin tareas pendientes'}
+          description={
+            isSuggested
+              ? 'Las tareas con fecha de vencimiento de hoy o anteriores aparecerán aquí.'
+              : 'Presiona N para añadir tu primera tarea.'
+          }
         />
       ) : (
         <ul className={styles.list} role="list">
@@ -216,6 +297,7 @@ export function NotebookList({ filters = {} }: Props) {
               onFocus={() => setFocusedIndex(index)}
               onClick={() => setOpenTodoId(todo.id)}
               onToggle={() => handleToggleComplete(todo)}
+              onToggleToday={() => handleToggleToday(todo)}
             />
           ))}
         </ul>

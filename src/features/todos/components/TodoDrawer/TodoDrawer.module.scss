@@ -12,6 +12,11 @@
   gap: var(--paper-row-height);
 }
 
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+}
+
 .titleRow {
   display: flex;
   align-items: center;
@@ -148,6 +153,130 @@
 
   &:hover {
     background: color-mix(in srgb, var(--color-danger, #ef4444) 8%, transparent);
+  }
+}
+
+.subTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  height: var(--paper-row-height);
+  min-height: var(--paper-row-height);
+}
+
+.todayChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: $radius-full;
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: $font-size-xs;
+  color: var(--color-text-muted);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: #B45309;
+    color: #B45309;
+  }
+
+  :global([data-theme='dark']) &:hover {
+    border-color: #FCD34D;
+    color: #FCD34D;
+  }
+}
+
+.todayChipActive {
+  border-color: #B45309;
+  color: #B45309;
+  background: rgba(245, 158, 11, 0.08);
+
+  :global([data-theme='dark']) & {
+    border-color: #FCD34D;
+    color: #FCD34D;
+    background: rgba(245, 158, 11, 0.1);
+  }
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  height: var(--paper-row-height);
+}
+
+.dateInput {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  outline: none;
+  font-family: var(--font-handwritten);
+  font-size: $font-size-base;
+  color: var(--color-text);
+  padding: 2px 0;
+  cursor: pointer;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-bottom-color: var(--color-primary);
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    opacity: 0.5;
+    cursor: pointer;
+  }
+}
+
+.folderChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: $radius-full;
+  cursor: pointer;
+  font-family: var(--font-family);
+  font-size: $font-size-xs;
+  color: var(--color-text-muted);
+  outline: none;
+  transition: border-color 0.15s, color 0.15s;
+  max-width: 140px;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  option {
+    background: var(--color-bg-surface, var(--color-bg));
+    color: var(--color-text);
+  }
+}
+
+.clearDateBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s, background 0.15s;
+
+  &:hover {
+    color: var(--color-danger, #ef4444);
+    background: rgba(239, 68, 68, 0.1);
   }
 }
 

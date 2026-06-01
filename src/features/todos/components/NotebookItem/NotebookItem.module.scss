@@ -123,3 +123,42 @@
   color: var(--color-text-muted);
 }
 
+.todayBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+  opacity: 0.4;
+  transition: color 0.15s, opacity 0.15s;
+
+  &:hover {
+    color: #B45309;
+    opacity: 1;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    border-radius: $radius-sm;
+    outline-offset: 1px;
+  }
+
+  :global([data-theme='dark']) &:hover {
+    color: #FCD34D;
+  }
+}
+
+.todayActive {
+  color: #B45309;
+  opacity: 1;
+
+  :global([data-theme='dark']) & {
+    color: #FCD34D;
+  }
+}
+

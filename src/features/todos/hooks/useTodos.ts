@@ -49,6 +49,77 @@ function snapshotLists(qc: QC) {
   return qc.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
 }
 
+function addTodoToTodayCache(qc: QC, todo: Todo) {
+  const allLists = qc.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
+  for (const [key, data] of allLists) {
+    if (!data) continue
+    const filters = key[2] as Record<string, unknown> | undefined
+    if (filters?.selectedToday !== true) continue
+    if (data.todos.some((t) => t.id === todo.id)) continue
+    qc.setQueryData(key, { ...data, todos: [todo, ...data.todos], total: data.total + 1 })
+  }
+}
+
+function removeTodoFromTodayCache(qc: QC, id: string) {
+  const allLists = qc.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
+  for (const [key, data] of allLists) {
+    if (!data) continue
+    const filters = key[2] as Record<string, unknown> | undefined
+    if (filters?.selectedToday !== true) continue
+    if (!data.todos.some((t) => t.id === id)) continue
+    qc.setQueryData(key, {
+      ...data,
+      todos: data.todos.filter((t) => t.id !== id),
+      total: data.total - 1,
+    })
+  }
+}
+
+function addTodoToFolderCache(qc: QC, todo: Todo, folderId: string) {
+  const allLists = qc.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
+  for (const [key, data] of allLists) {
+    if (!data) continue
+    const filters = key[2] as Record<string, unknown> | undefined
+    if (filters?.folderId !== folderId) continue
+    if (data.todos.some((t) => t.id === todo.id)) continue
+    qc.setQueryData(key, { ...data, todos: [todo, ...data.todos], total: data.total + 1 })
+  }
+}
+
+function removeTodoFromMismatchedFolderLists(qc: QC, id: string, newFolderId: string | null) {
+  const allLists = qc.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
+  for (const [key, data] of allLists) {
+    if (!data) continue
+    const filters = key[2] as Record<string, unknown> | undefined
+    const shouldRemove =
+      (filters?.folderId !== undefined && filters.folderId !== newFolderId) ||
+      (filters?.withoutFolder === true && newFolderId !== null)
+    if (!shouldRemove) continue
+    if (!data.todos.some((t) => t.id === id)) continue
+    qc.setQueryData(key, {
+      ...data,
+      todos: data.todos.filter((t) => t.id !== id),
+      total: data.total - 1,
+    })
+  }
+}
+
+// Quita un ítem del caché de la carpeta Suggested (selectedToday === false)
+function removeTodoFromSuggestedCache(qc: QC, id: string) {
+  const allLists = qc.getQueriesData<TodoCollection>({ queryKey: todoKeys.lists() })
+  for (const [key, data] of allLists) {
+    if (!data) continue
+    const filters = key[2] as Record<string, unknown> | undefined
+    if (filters?.selectedToday !== false) continue
+    if (!data.todos.some((t) => t.id === id)) continue
+    qc.setQueryData(key, {
+      ...data,
+      todos: data.todos.filter((t) => t.id !== id),
+      total: data.total - 1,
+    })
+  }
+}
+
 function restoreLists(qc: QC, snapshot: ReturnType<typeof snapshotLists>) {
   for (const [key, data] of snapshot) {
     qc.setQueryData(key, data)
@@ -146,6 +217,8 @@ export function useUpdateTodoMutation() {
       if (variables.title !== undefined) listPatch.title = variables.title
       if (variables.status !== undefined) listPatch.status = variables.status
       if (variables.priority !== undefined) listPatch.priority = variables.priority
+      if (variables.selectedToday !== undefined) listPatch.selectedToday = variables.selectedToday
+      if (variables.folderId !== undefined) listPatch.folderId = variables.folderId ?? null
 
       const detailPatch: Partial<Todo> = { ...listPatch }
       if (variables.description !== undefined) detailPatch.description = variables.description
@@ -153,6 +226,41 @@ export function useUpdateTodoMutation() {
       if (Object.keys(listPatch).length > 0) {
         patchTodoInLists(queryClient, variables.id, listPatch)
       }
+
+      // Mover el todo entre listas de carpeta optimistamente
+      if (variables.folderId !== undefined) {
+        removeTodoFromMismatchedFolderLists(queryClient, variables.id, variables.folderId ?? null)
+        // Agregar a la carpeta destino si su lista ya está en cache
+        if (variables.folderId) {
+          let sourceTodo: Todo | undefined
+          for (const [, data] of previousLists) {
+            sourceTodo = data?.todos.find((t) => t.id === variables.id)
+            if (sourceTodo) break
+          }
+          if (!sourceTodo) sourceTodo = previousDetail ?? undefined
+          if (sourceTodo) {
+            addTodoToFolderCache(queryClient, { ...sourceTodo, ...listPatch }, variables.folderId)
+          }
+        }
+      }
+
+      // Mantener los cachés virtuales sincronizados inmediatamente sin esperar refetch
+      if (variables.selectedToday === true) {
+        // Buscar el todo en los snapshots para agregarlo al caché de "Hoy"
+        let sourceTodo: Todo | undefined
+        for (const [, data] of previousLists) {
+          sourceTodo = data?.todos.find((t) => t.id === variables.id)
+          if (sourceTodo) break
+        }
+        if (!sourceTodo) sourceTodo = previousDetail ?? undefined
+        if (sourceTodo) addTodoToTodayCache(queryClient, { ...sourceTodo, ...listPatch })
+        // También quitarlo de Suggested (ya no es un candidato)
+        removeTodoFromSuggestedCache(queryClient, variables.id)
+      } else if (variables.selectedToday === false) {
+        removeTodoFromTodayCache(queryClient, variables.id)
+        // Si pasa a no-hoy, Suggested se actualiza vía invalidateQueries en onSuccess
+      }
+
       queryClient.setQueryData<Todo>(todoKeys.detail(variables.id), (old) =>
         old ? { ...old, ...detailPatch } : old,
       )
@@ -170,7 +278,12 @@ export function useUpdateTodoMutation() {
       queryClient.setQueryData<Todo>(todoKeys.detail(variables.id), (old) =>
         old ? { ...old, ...data } : data,
       )
-      patchTodoInLists(queryClient, variables.id, data)
+      // selectedToday y folderId mueven la tarea entre listas filtradas — invalidar todas (activas e inactivas)
+      if (variables.selectedToday !== undefined || variables.folderId !== undefined) {
+        void queryClient.invalidateQueries({ queryKey: todoKeys.lists(), refetchType: 'all' })
+      } else {
+        patchTodoInLists(queryClient, variables.id, data)
+      }
     },
   })
 }

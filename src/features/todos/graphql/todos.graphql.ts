@@ -5,6 +5,8 @@ export const TODOS_QUERY = `
     $tagId: ID
     $folderId: ID
     $withoutFolder: Boolean
+    $selectedToday: Boolean
+    $pendingOnly: Boolean
     $dueBefore: DateTime
     $dueAfter: DateTime
     $page: Int
@@ -16,6 +18,8 @@ export const TODOS_QUERY = `
       tagId: $tagId
       folderId: $folderId
       withoutFolder: $withoutFolder
+      selectedToday: $selectedToday
+      pendingOnly: $pendingOnly
       dueBefore: $dueBefore
       dueAfter: $dueAfter
       page: $page
@@ -28,6 +32,7 @@ export const TODOS_QUERY = `
         priority
         dueDate
         completedAt
+        selectedToday
         createdAt
         updatedAt
         subtasksCount {
@@ -62,6 +67,8 @@ export const TODO_QUERY = `
       priority
       dueDate
       completedAt
+      selectedToday
+      folderId
       createdAt
       updatedAt
       subtasks {
@@ -105,6 +112,7 @@ export const TODO_ADD_MUTATION = `
       priority
       dueDate
       completedAt
+      selectedToday
       createdAt
       updatedAt
       subtasksCount {
@@ -130,6 +138,8 @@ export const TODO_EDIT_MUTATION = `
       priority
       dueDate
       completedAt
+      selectedToday
+      folderId
       updatedAt
       subtasksCount {
         total

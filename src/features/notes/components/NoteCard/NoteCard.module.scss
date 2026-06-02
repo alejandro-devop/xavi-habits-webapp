@@ -1,0 +1,117 @@
+@use '@/app/styles/tokens' as *;
+@use '@/app/styles/mixins' as *;
+
+.card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.time {
+  font-size: 12px;
+  color: $color-text-muted;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.tags {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.tagBtn {
+  background: none;
+  border: 1px dashed $color-border;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 12px;
+  color: $color-text-muted;
+  cursor: pointer;
+  line-height: 1.4;
+
+  &:hover {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.tagPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: $color-bg;
+  border-radius: 8px;
+}
+
+.tagInput {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 12px;
+  color: $color-text;
+  min-width: 140px;
+  flex: 1;
+
+  &::placeholder {
+    color: $color-text-muted;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: $color-text-muted;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-bg;
+    color: $color-text;
+  }
+
+  &.danger:hover {
+    background: rgba($color-danger, 0.08);
+    color: $color-danger;
+  }
+}
+
+.body {
+  min-height: 40px;
+}
+
+.preview {
+  cursor: text;
+  padding: 4px 0;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}

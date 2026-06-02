@@ -1,0 +1,133 @@
+.loading,
+.empty {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.description {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--spacing-lg);
+}
+
+.section {
+  margin-top: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sectionTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0 0 4px;
+}
+
+.objectivesList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.objectiveItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.statusDot {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  min-height: 12px;
+  padding: 0;
+  appearance: none;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &.status-pending {
+    color: var(--color-text-muted);
+    background: transparent;
+  }
+
+  &.status-in_progress {
+    color: var(--color-warning);
+    background: var(--color-warning);
+  }
+
+  &.status-completed {
+    color: var(--color-success);
+    background: var(--color-success);
+  }
+}
+
+.objectiveTitle {
+  font-size: 0.9375rem;
+  color: var(--color-text);
+  flex: 1;
+
+  &.done {
+    color: var(--color-text-muted);
+    text-decoration: line-through;
+  }
+}
+
+.removeObjective {
+  flex-shrink: 0;
+}
+
+.addObjectiveForm {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: 4px;
+
+  // Input grows, button stays compact on wide screens
+  > :first-child {
+    flex: 1;
+  }
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+.logTimeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.logEntry {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-left: 2px solid var(--color-border);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.logDate {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.logContent {
+  font-size: 0.875rem;
+}

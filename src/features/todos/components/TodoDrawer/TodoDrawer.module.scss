@@ -107,6 +107,35 @@
   min-height: var(--paper-row-height);
 }
 
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.convertNoteBtn {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: $color-primary;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  padding: 2px 8px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+
+  &:hover:not(:disabled) {
+    opacity: 1;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
 .subtaskCount {
   font-size: $font-size-xs;
   font-weight: $font-weight-regular;

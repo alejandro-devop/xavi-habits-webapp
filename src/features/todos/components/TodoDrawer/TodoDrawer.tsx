@@ -15,6 +15,8 @@ import {
   useRemoveTodoMutation,
 } from '@/features/todos/hooks/useTodos'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
+import { useToast } from '@/shared/ui/Toast'
+import { useCreateNote } from '@/features/notes/hooks/useNotes'
 import { TODO_DESCRIPTION_MAX_LENGTH } from '@/shared/constants/text-limits'
 import type { TodoPriority, TodoTag, Todo } from '@/features/todos/types/todo.types'
 import styles from './TodoDrawer.module.scss'
@@ -70,6 +72,8 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   const removeTodo = useRemoveTodoMutation()
   const createTag = useCreateTodoTagMutation()
   const { confirm } = useConfirmDialog()
+  const { showToast } = useToast()
+  const createNote = useCreateNote()
 
   const titleRef = useRef<HTMLHeadingElement>(null)
   const [newTagName, setNewTagName] = useState('')
@@ -170,6 +174,15 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     updateTodo.mutate({ id: todo.id, tagIds: newIds })
   }
 
+  const handleConvertToNote = () => {
+    if (!todo?.description?.trim()) return
+    const content = `# ${todo.title}\n\n${todo.description}`
+    createNote.mutate(
+      { content, tagIds: todo.tags.map((t) => t.id) },
+      { onSuccess: () => showToast({ message: 'Nota creada desde la descripción', type: 'success' }) },
+    )
+  }
+
   return (
     <Drawer open={Boolean(todoId)} onClose={onClose} side="right" variant="notebook" title="Detalle de tarea">
       {isLoading || !todo ? (
@@ -236,7 +249,20 @@ export function TodoDrawer({ todoId, onClose }: Props) {
           </div>
 
           <section className={[styles.section, styles.descriptionSection].join(' ')}>
-            <span className={styles.label}>Descripción</span>
+            <div className={styles.labelRow}>
+              <span className={styles.label}>Descripción</span>
+              {todo.description?.trim() ? (
+                <button
+                  type="button"
+                  className={styles.convertNoteBtn}
+                  onClick={handleConvertToNote}
+                  disabled={createNote.isPending}
+                  title="Crear nota desde esta descripción"
+                >
+                  {createNote.isPending ? '…' : '→ Nota'}
+                </button>
+              ) : null}
+            </div>
             <TodoDescriptionEditor key={todo.id} todo={todo} onSave={handleDescriptionSave} />
           </section>
 

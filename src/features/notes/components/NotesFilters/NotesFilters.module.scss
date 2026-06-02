@@ -1,0 +1,55 @@
+@use '@/app/styles/tokens' as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.dates {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dateField {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $color-text-secondary;
+
+  input[type='date'] {
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 13px;
+    background: $color-surface;
+    color: $color-text;
+    outline: none;
+
+    &:focus {
+      border-color: $color-primary;
+    }
+  }
+}
+
+.clearBtn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: $color-primary;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

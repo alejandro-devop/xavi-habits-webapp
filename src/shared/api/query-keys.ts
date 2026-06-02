@@ -56,3 +56,34 @@ export const todoKeys = {
     list: () => [...todoKeys.folders.all(), 'list'] as const,
   },
 }
+
+export const noteKeys = {
+  all: ['notes'] as const,
+  lists: () => [...noteKeys.all, 'list'] as const,
+  list: (filters: ListFilters = {}) => [...noteKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...noteKeys.all, 'detail', id] as const,
+}
+
+export const quarterKeys = {
+  all: ['quarters'] as const,
+  list: () => [...quarterKeys.all, 'list'] as const,
+  detail: (id: string) => [...quarterKeys.all, 'detail', id] as const,
+  active: () => [...quarterKeys.all, 'active'] as const,
+  projects: {
+    all: () => [...quarterKeys.all, 'projects'] as const,
+    list: () => [...quarterKeys.projects.all(), 'list'] as const,
+    detail: (id: string) => [...quarterKeys.projects.all(), 'detail', id] as const,
+  },
+  sessionLogs: {
+    all: () => [...quarterKeys.all, 'sessionLogs'] as const,
+    byQuarter: (quarterId: string, projectId?: string) =>
+      [...quarterKeys.sessionLogs.all(), 'quarter', quarterId, projectId ?? 'all'] as const,
+    byProject: (projectId: string) =>
+      [...quarterKeys.sessionLogs.all(), 'project', projectId] as const,
+  },
+  weekSchedule: {
+    all: () => [...quarterKeys.all, 'weekSchedule'] as const,
+    byQuarter: (quarterId: string) =>
+      [...quarterKeys.weekSchedule.all(), 'quarter', quarterId] as const,
+  },
+}

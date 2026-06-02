@@ -8,7 +8,10 @@ export const appSidebarItems: SidebarNavItem[] = [
   { to: authPaths.today, label: 'Hoy', icon: 'home', end: true },
   { to: activitiesPaths.root, label: 'Actividades', icon: 'list-check' },
   { to: '/app/todos', label: 'Tareas', icon: 'clipboard' },
+  { to: '/app/notes', label: 'Notas', icon: 'file-lines' },
   { to: weeklyRoutinePaths.root, label: 'Rutina', icon: 'calendar-week' },
+  { to: '/app/quarters', label: 'Quarters', icon: 'calendar-days' },
+  { to: '/app/projects', label: 'Proyectos', icon: 'diagram-project' },
   { to: authPaths.testingHall, label: 'Testing Hall', icon: 'search' },
 ]
 

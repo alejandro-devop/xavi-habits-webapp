@@ -72,7 +72,7 @@ export function TodoDrawer({ todoId, onClose }: Props) {
   const removeTodo = useRemoveTodoMutation()
   const createTag = useCreateTodoTagMutation()
   const { confirm } = useConfirmDialog()
-  const { showToast } = useToast()
+  const toast = useToast()
   const createNote = useCreateNote()
 
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -179,7 +179,7 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     const content = `# ${todo.title}\n\n${todo.description}`
     createNote.mutate(
       { content, tagIds: todo.tags.map((t) => t.id) },
-      { onSuccess: () => showToast({ message: 'Nota creada desde la descripción', type: 'success' }) },
+      { onSuccess: () => toast.success('Nota creada desde la descripción') },
     )
   }
 

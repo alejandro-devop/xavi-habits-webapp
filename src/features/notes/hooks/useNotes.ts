@@ -40,7 +40,7 @@ function removeNoteFromLists(qc: QC, id: string) {
 export function useNotes(filters: NotesFilters = {}) {
   const authReady = useAuthReady()
   return useQuery({
-    queryKey: noteKeys.list(filters),
+    queryKey: noteKeys.list(filters as Record<string, unknown>),
     queryFn: () => notesApi.getNotes(filters),
     enabled: authReady,
   })
@@ -48,39 +48,39 @@ export function useNotes(filters: NotesFilters = {}) {
 
 export function useCreateNote() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (input: NoteInput) => notesApi.createNote(input),
     onSuccess: (note) => {
       addNoteToLists(qc, note)
       qc.setQueryData(noteKeys.detail(note.id), note)
     },
-    onError: () => showToast({ message: 'Error al crear la nota', type: 'error' }),
+    onError: () => toast.error('Error al crear la nota'),
   })
 }
 
 export function useUpdateNote() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (input: NoteEditInput) => notesApi.updateNote(input),
     onSuccess: (note) => {
       patchNoteInLists(qc, note.id, note)
       qc.setQueryData(noteKeys.detail(note.id), note)
     },
-    onError: () => showToast({ message: 'Error al actualizar la nota', type: 'error' }),
+    onError: () => toast.error('Error al actualizar la nota'),
   })
 }
 
 export function useRemoveNote() {
   const qc = useQueryClient()
-  const { showToast } = useToast()
+  const toast = useToast()
   return useMutation({
     mutationFn: (id: string) => notesApi.removeNote(id),
     onSuccess: (_, id) => {
       removeNoteFromLists(qc, id)
       qc.removeQueries({ queryKey: noteKeys.detail(id) })
     },
-    onError: () => showToast({ message: 'Error al eliminar la nota', type: 'error' }),
+    onError: () => toast.error('Error al eliminar la nota'),
   })
 }

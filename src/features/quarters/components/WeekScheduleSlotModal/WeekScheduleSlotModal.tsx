@@ -94,7 +94,7 @@ export function WeekScheduleSlotModal({ open, onClose, quarter, dayOfWeek, slot 
     >
       <form onSubmit={(e) => void handleSubmit(e)}>
         {!isEdit && (
-          <FormField label="Proyecto">
+          <FormField id="slot-project" label="Proyecto">
             <Select
               id="slot-project"
               options={projectOptions}
@@ -105,7 +105,7 @@ export function WeekScheduleSlotModal({ open, onClose, quarter, dayOfWeek, slot 
           </FormField>
         )}
 
-        <FormField label="Horas planificadas">
+        <FormField id="slot-hours" label="Horas planificadas">
           <Input
             id="slot-hours"
             type="number"
@@ -118,7 +118,7 @@ export function WeekScheduleSlotModal({ open, onClose, quarter, dayOfWeek, slot 
           />
         </FormField>
 
-        <FormField label="Hora de inicio (opcional)">
+        <FormField id="slot-time" label="Hora de inicio (opcional)">
           <Input
             id="slot-time"
             type="time"
@@ -127,7 +127,7 @@ export function WeekScheduleSlotModal({ open, onClose, quarter, dayOfWeek, slot 
           />
         </FormField>
 
-        <FormField label="Notas (opcional)">
+        <FormField id="slot-notes" label="Notas (opcional)">
           <Input
             id="slot-notes"
             type="text"

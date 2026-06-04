@@ -83,7 +83,7 @@ export function useCreateHabitMutation() {
   return useMutation({
     mutationFn: (input: HabitInput) => habitsApi.createHabit(input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: habitKeys.all })
+      void queryClient.invalidateQueries({ queryKey: habitKeys.all, refetchType: 'all' })
       toast.success('Hábito creado')
     },
   })
@@ -95,8 +95,8 @@ export function useUpdateHabitMutation() {
   return useMutation({
     mutationFn: (input: HabitEditInput) => habitsApi.updateHabit(input),
     onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({ queryKey: habitKeys.all })
-      void queryClient.invalidateQueries({ queryKey: habitKeys.detail(variables.id) })
+      void queryClient.invalidateQueries({ queryKey: habitKeys.all, refetchType: 'all' })
+      void queryClient.invalidateQueries({ queryKey: habitKeys.detail(variables.id), refetchType: 'all' })
       toast.success('Hábito actualizado')
     },
   })
@@ -108,7 +108,7 @@ export function useDeleteHabitMutation() {
   return useMutation({
     mutationFn: (id: string) => habitsApi.removeHabit(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: habitKeys.all })
+      void queryClient.invalidateQueries({ queryKey: habitKeys.all, refetchType: 'all' })
       toast.success('Hábito eliminado')
     },
   })

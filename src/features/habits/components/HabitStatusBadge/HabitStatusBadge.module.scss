@@ -1,0 +1,25 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.active {
+  color: var(--color-success-text, #166534);
+  background: var(--color-success-subtle, #dcfce7);
+}
+
+.completed {
+  color: var(--color-info-text, #1e40af);
+  background: var(--color-info-subtle, #dbeafe);
+}
+
+.archived {
+  color: var(--color-text-tertiary);
+  background: var(--color-surface-raised);
+}

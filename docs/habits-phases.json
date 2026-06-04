@@ -94,12 +94,36 @@
       "name": "Frontend: CRUD de hábitos",
       "repo": "frontend",
       "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "completedBy": null,
-      "notes": "",
+      "status": "complete",
+      "startedAt": "2026-06-04",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "HabitTypeBadge tiene su propio .module.scss. HabitFormPage es wrapper de ruta (carga hábito y muestra HabitFormModal con mode='edit'). La acción Archivar envía status:'archived' vía useUpdateHabitMutation; el campo se acepta en el backend según el plan.",
       "dependsOn": [5, 6]
+    },
+    {
+      "number": 9,
+      "name": "Frontend: Gestión de categorías de hábitos",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "complete",
+      "startedAt": "2026-06-04",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "HabitCategory en habit.types.ts extendida con userId y description. HABIT_CATEGORIES_QUERY actualizada para incluir esos campos. useHabitCategoriesQuery re-exportada desde useHabitCategories.ts (ya existía en useHabits.ts).",
+      "dependsOn": [4]
+    },
+    {
+      "number": 10,
+      "name": "Frontend: HabitFormModal multi-paso (SteppedModal)",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "complete",
+      "startedAt": "2026-06-04",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "HabitFormModal refactorizado a SteppedModal con 3 pasos (useState<1|2|3>). NewCategoryButton es un subcomponente interno para acceder a useModalStep().push. CreateHabitCategoryStep creado como componente independiente con campos: name, icon, color.",
+      "dependsOn": [8, 9]
     }
   ]
 }

@@ -1468,6 +1468,219 @@ Función `buildHabitEditPayload(formValues, habit: Habit): HabitEditInput` — s
 
 ---
 
+## Fase 9 — Frontend: Gestión de categorías de hábitos
+
+**Repo:** Frontend
+**Dependencias:** Fase 4
+**Riesgo:** Bajo (backend completamente listo; patrón idéntico al módulo de actividades)
+
+### Backend GraphQL ya disponible
+
+Las siguientes operaciones ya existen en el backend y no requieren cambios:
+
+- `habitCategoryAdd(input: HabitCategoryInput!): HabitCategory!`  
+  Campos input: `name` (obligatorio), `description`, `icon`, `color`, `orderIndex`
+- `habitCategoryEdit(input: HabitCategoryEditInput!): HabitCategory!`  
+  Campos input: `id` (obligatorio) + mismos opcionales
+- `habitCategoryRemove(id: ID!): Boolean!`
+- `habitCategory(id: ID!): HabitCategory` (query individual — también nuevo en el frontend)
+
+### Archivos a crear
+
+```
+src/features/habits/
+├── graphql/
+│   └── habit-categories.graphql.ts        (nuevo)
+├── api/
+│   └── habit-categories.api.ts            (nuevo)
+├── hooks/
+│   └── useHabitCategories.ts              (nuevo)
+├── types/
+│   └── habit-category.types.ts            (nuevo)
+├── utils/
+│   └── habit-category-form.utils.ts       (nuevo)
+├── components/
+│   └── HabitCategoryForm/
+│       ├── HabitCategoryForm.tsx
+│       ├── HabitCategoryForm.module.scss
+│       └── index.ts
+└── pages/
+    ├── HabitCategoriesPage.tsx            (nuevo)
+    └── HabitCategoriesPage.module.scss
+```
+
+### Archivos a modificar
+
+- `src/shared/api/query-keys.ts` — añadir `habitKeys.categories.detail(id)`.
+- `src/features/habits/routes/habits-paths.ts` — añadir `categories: '/app/habits/categories'`.
+- `src/features/habits/routes/habits.routes.tsx` — añadir ruta `categories` → `<HabitCategoriesPage />`.
+
+### Descripción de cada pieza
+
+**`habit-category.types.ts`:**
+
+```ts
+export interface HabitCategoryInput {
+  name: string
+  description?: string | null
+  icon?: string | null
+  color?: string | null
+  orderIndex?: number
+}
+
+export interface HabitCategoryEditInput extends HabitCategoryInput {
+  id: string
+}
+
+export interface HabitCategoryFormValues {
+  name: string
+  description: string
+  icon: string | null
+  color: string | null
+  orderIndex: string
+}
+```
+
+**`habit-categories.graphql.ts`:** Exportar `HABIT_CATEGORY_QUERY`, `HABIT_CATEGORY_ADD_MUTATION`, `HABIT_CATEGORY_EDIT_MUTATION`, `HABIT_CATEGORY_REMOVE_MUTATION`.
+
+**`habit-categories.api.ts`:** `createHabitCategory`, `updateHabitCategory`, `removeHabitCategory`, `getHabitCategory`.
+
+**`useHabitCategories.ts`:**
+- Reusar el patrón de `useHabits.ts`.
+- Exportar: `useCreateHabitCategoryMutation()`, `useUpdateHabitCategoryMutation()`, `useRemoveHabitCategoryMutation()`.
+- Cada mutación invalida `habitKeys.categories.list()`.
+- `useHabitCategoriesQuery()` **ya existe** en `useHabits.ts`; no duplicarla, re-exportarla desde aquí si es necesario o simplemente importarla desde donde ya está.
+
+**`habit-category-form.utils.ts`:**
+- `defaultCategoryFormValues(category?: HabitCategory): HabitCategoryFormValues`
+- `buildCategoryCreatePayload(values): HabitCategoryInput`
+- `buildCategoryEditPayload(values, category): HabitCategoryEditInput`
+
+**`HabitCategoryForm`:**
+Props: `values`, `onChange`, `onSubmit`, `onCancel`, `submitLabel`, `loading?`.
+Campos (seguir el patrón de `ActivityCategoryForm`):
+1. `name` (Input, obligatorio)
+2. `description` (Textarea, opcional)
+3. `icon` (IconPicker, clearable)
+4. `color` (input type=color + Input de texto)
+5. `orderIndex` (Input type=number, min 0)
+
+**`HabitCategoriesPage`:**
+- Llama `useHabitCategoriesQuery()`.
+- Lista las categorías ordenadas por `orderIndex` ascendente.
+- Cada fila muestra: swatch de color, icono, nombre, acciones.
+- Botón "Nueva categoría" → abre `Modal` (no SteppedModal) con `HabitCategoryForm` en modo create.
+- Acción "Editar" → abre el mismo `Modal` en modo edit con la categoría seleccionada.
+- Acción "Eliminar" → `useConfirmDialog` → `useRemoveHabitCategoryMutation`.
+- Si no hay categorías: `<EmptyState>`.
+
+### Criterio de done
+
+- Crear una categoría con nombre, icono y color aparece inmediatamente en la lista y en el selector de `HabitFormModal`.
+- Editar el nombre o color de una categoría se refleja en tiempo real.
+- Eliminar una categoría que ya tiene hábitos: el backend debería devolver error; mostrarlo como toast.
+
+---
+
+## Fase 10 — Frontend: HabitFormModal multi-paso (SteppedModal)
+
+**Repo:** Frontend
+**Dependencias:** Fase 8, Fase 9
+**Riesgo:** Medio (refactor del componente más usado del módulo; mismo patrón que `StartActivityModal`)
+
+### Qué cambia
+
+`HabitFormModal` actual usa `Modal` plano con scroll largo. Se reemplaza por `SteppedModal` con 3 pasos. El Paso 2 permite crear una categoría nueva inline (empujando un paso extra al stack), igual que `StartActivityModal` hace con `CreateActivityStep`.
+
+### Archivos a crear
+
+```
+src/features/habits/components/
+└── CreateHabitCategoryStep/
+    ├── CreateHabitCategoryStep.tsx    (nuevo)
+    └── index.ts                       (nuevo)
+```
+
+### Archivos a modificar
+
+```
+src/features/habits/components/HabitFormModal/
+├── HabitFormModal.tsx          (reemplazar implementación)
+└── HabitFormModal.module.scss  (actualizar estilos)
+```
+
+### Pasos del formulario
+
+**Paso 1 — Básicos**  
+Título del paso: `"Datos básicos"` / description: `"Nombre y tipo del hábito."`
+
+Campos:
+- `name` (Input, obligatorio, autoFocus)
+- `description` (Textarea, opcional)
+- `habitType` (Select: "Sí/No" | "Contador" | "Tiempo") — deshabilitado en edit si `habit.days > 0`
+- `shouldAvoid` (Switch "Es algo a evitar")
+
+Footer del paso: botón "Cancelar" (ghost) + botón "Siguiente →".
+
+**Paso 2 — Apariencia y organización**  
+Título: `"Apariencia"` / description: `"Personaliza el aspecto y categoría."`
+
+Campos:
+- `icon` (IconPicker, clearable)
+- `color` (input type=color + Input de texto)
+- `categoryId` (Select con opción "Sin categoría" + botón "+ Nueva categoría" que hace `push` a `CreateHabitCategoryStep`)
+- `measureId` (Select de medidas, visible solo si `habitType !== 'boolean'` — por ahora un Input de texto con el ID, igual que en la Fase 8 hasta que exista picker de medidas)
+
+Footer: "← Anterior" (ghost) + "Siguiente →".
+
+**Paso 3 — Fechas y metas**  
+Título: `"Configuración"` / description: `"Define fechas, salvavidas y meta diaria."`
+
+Campos:
+- `weeklyLifelines` (Input number, min 0)
+- `startDate` (Input date, deshabilitado en edit si `habit.days > 0`)
+- `endDate` (Input date, deshabilitado en edit si `habit.days > 0`)
+- `dailyGoal` (Input number, visible solo si `habitType === 'count'`, label "Meta diaria (veces)")
+- `timerGoal` (Input number, visible solo si `habitType === 'time'`, label "Meta diaria (minutos)")
+- Aviso de bloqueo si `hasFollowUps` (igual que antes)
+
+Footer: "← Anterior" (ghost) + botón submit ("Crear hábito" / "Guardar cambios").
+
+### `CreateHabitCategoryStep`
+
+Patrón idéntico a `CreateActivityStep` en el módulo de actividades.
+
+```tsx
+type Props = { onCreated: (categoryId: string) => void }
+
+export function CreateHabitCategoryStep({ onCreated }: Props) {
+  const { pop } = useModalStep()
+  // Campos: name (obligatorio), icon (IconPicker), color (input type=color + text)
+  // Al crear con éxito: onCreated(category.id) → pop()
+}
+```
+
+Usa `useCreateHabitCategoryMutation()` de la Fase 9.
+
+### Implementación de `HabitFormModal`
+
+- Reemplaza `Modal` → `SteppedModal`.
+- El estado `values: HabitFormValues` se mantiene en el componente raíz (igual que antes).
+- La función `handleSubmit` solo se llama desde el footer del Paso 3.
+- Los footers de los Pasos 1 y 2 solo validan su bloque de campos antes de avanzar (Paso 1: `name` no vacío; Paso 2: sin validación obligatoria).
+- `SteppedModal` gestiona el historial de pasos via `push`/`pop`; los 3 pasos iniciales NO se pushean — el componente raíz es el Paso 1 y el contenido de los steps 2 y 3 se pasan como subcomponentes que llaman `useModalStep().pop()` para retroceder.
+- Alternativamente (más sencillo): usar `useState<1|2|3>(1)` para el paso actual en lugar de `push`/`pop`, ya que los 3 pasos son lineales. Solo usar `push` para `CreateHabitCategoryStep`.
+
+### Criterio de done
+
+- El modal de creación tiene 3 pasos con indicador visual de progreso (nativo de `SteppedModal`).
+- En el Paso 2, "Nueva categoría" empuja un paso extra, crea la categoría y vuelve al Paso 2 con la nueva categoría seleccionada.
+- Editar un hábito existente pre-rellena los 3 pasos correctamente.
+- Las fechas y tipo siguen bloqueados en modo edit si `habit.days > 0`.
+- Cerrar el modal en cualquier paso descarta los cambios (sin confirmación).
+
+---
+
 ## Tabla resumen de fases
 
 | Fase | Nombre | Repo | Riesgo | Dependencias |
@@ -1480,5 +1693,7 @@ Función `buildHabitEditPayload(formValues, habit: Habit): HabitEditInput` — s
 | 6 | Vista semanal | Frontend | Bajo | 5 |
 | 7 | Calendario de progreso | Frontend | Bajo | 4 |
 | 8 | CRUD de hábitos | Frontend | Medio | 5, 6 |
+| 9 | Gestión de categorías | Frontend | Bajo | 4 |
+| 10 | HabitFormModal multi-paso | Frontend | Medio | 8, 9 |
 
-Las fases 7 y 8 pueden ejecutarse en paralelo una vez que 5 y 6 estén completas. La Fase 7 puede incluso empezar en paralelo con la 5 (solo depende de 4), pero la 8 necesita 6 completa.
+Las fases 9 y 10 son independientes de las vistas (7) y pueden ejecutarse en cualquier orden. La Fase 10 depende de la 9 porque el Paso 2 del formulario permite crear categorías inline.

@@ -6,7 +6,9 @@ export type HabitDayStatus = 'empty' | 'accomplished' | 'failed' | 'lifeline'
 
 export interface HabitCategory {
   id: string
+  userId: number
   name: string
+  description: string | null
   icon: string | null
   color: string | null
   orderIndex: number

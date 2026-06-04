@@ -16,6 +16,7 @@ export const habitKeys = {
   categories: {
     all: () => [...habitKeys.all, 'categories'] as const,
     list: () => [...habitKeys.categories.all(), 'list'] as const,
+    detail: (id: string) => [...habitKeys.categories.all(), 'detail', id] as const,
   },
 }
 

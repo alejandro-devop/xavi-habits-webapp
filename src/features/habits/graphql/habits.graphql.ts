@@ -141,7 +141,9 @@ export const HABIT_CATEGORIES_QUERY = `
   query HabitCategories {
     habitCategories {
       id
+      userId
       name
+      description
       icon
       color
       orderIndex

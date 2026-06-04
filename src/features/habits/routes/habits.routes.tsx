@@ -6,6 +6,7 @@ import { HabitDetailPage } from '@/features/habits/pages/HabitDetailPage'
 import { HabitFormPage } from '@/features/habits/pages/HabitFormPage'
 import { HabitWeekViewPage } from '@/features/habits/pages/HabitWeekViewPage'
 import { HabitCalendarPage } from '@/features/habits/pages/HabitCalendarPage'
+import { HabitCategoriesPage } from '@/features/habits/pages/HabitCategoriesPage'
 
 export const habitsRoutes: RouteObject = {
   path: 'habits',
@@ -22,6 +23,10 @@ export const habitsRoutes: RouteObject = {
     {
       path: 'list',
       element: <HabitsListPage />,
+    },
+    {
+      path: 'categories',
+      element: <HabitCategoriesPage />,
     },
     {
       path: ':id/edit',

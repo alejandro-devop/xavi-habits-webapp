@@ -1,0 +1,25 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: var(--color-surface-raised);
+  color: var(--color-text-secondary);
+}
+
+.boolean {
+  color: var(--color-primary, #4f46e5);
+  background: var(--color-primary-subtle, #eef2ff);
+}
+
+.count {
+  color: var(--color-warning-text, #92400e);
+  background: var(--color-warning-subtle, #fef3c7);
+}
+
+.time {
+  color: var(--color-success-text, #166534);
+  background: var(--color-success-subtle, #dcfce7);
+}

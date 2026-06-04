@@ -68,7 +68,7 @@ export function buildHabitCreatePayload(values: HabitFormValues): HabitInput {
       values.habitType === 'count' && values.dailyGoal !== '' ? Number(values.dailyGoal) : null,
     timerGoal:
       values.habitType === 'time' && values.timerGoal !== '' ? Number(values.timerGoal) : null,
-    dailyGoal: values.habitType === 'boolean',
+    dailyGoal: values.habitType === 'boolean' ? 1 : null,
   }
 }
 

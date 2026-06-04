@@ -115,7 +115,7 @@ export interface HabitInput {
   weeklyLifelines?: number
   shouldAvoid?: boolean
   shouldKeep?: boolean
-  dailyGoal?: boolean
+  dailyGoal?: number | null
   timerGoal?: number | null
   timesGoal?: number | null
   icon?: string | null

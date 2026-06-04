@@ -43,7 +43,7 @@
 
 .progressBar {
   position: relative;
-  height: 0.45rem;
+  height: 1.1rem;
   background: var(--color-border);
   border-radius: 999px;
   overflow: hidden;
@@ -68,6 +68,57 @@
   color: var(--color-text-tertiary);
   white-space: nowrap;
   padding-right: 0.25rem;
+}
+
+.weekStrip {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.weekDot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.dotLabel {
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.weekDot::before {
+  content: '';
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--color-border);
+  border: 2px solid transparent;
+}
+
+.weekDot.dot--accomplished::before {
+  background: var(--color-success-subtle, #dcfce7);
+  border-color: var(--color-success-text, #166534);
+}
+
+.weekDot.dot--failed::before {
+  background: var(--color-danger-subtle, #fee2e2);
+  border-color: var(--color-danger-text, #991b1b);
+}
+
+.weekDot.dot--lifeline::before {
+  background: var(--color-surface-raised);
+  border-color: var(--color-text-secondary);
+}
+
+.weekDot.dot--today::before {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
 }
 
 .footer {

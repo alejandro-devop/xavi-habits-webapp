@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Modal } from '@/shared/ui/Modal'
 import { HabitFollowUpForm } from '@/features/habits/components/HabitFollowUpForm'
-import { getTodayString, getYesterdayString } from '@/features/habits/utils/habit-type.utils'
+import { getTodayString } from '@/features/habits/utils/habit-type.utils'
 import type { Habit, HabitDayEntry } from '@/features/habits/types/habit.types'
 import styles from './HabitDayCell.module.scss'
 
@@ -13,12 +13,13 @@ type Props = {
   lifelinesRemaining: number
 }
 
-export function HabitDayCell({ entry, habit, lifelinesRemaining }: Props) {
+export function HabitDayCell({ entry, habit }: Props) {
   const [formOpen, setFormOpen] = useState(false)
 
   const today = getTodayString()
-  const yesterday = getYesterdayString()
-  const isEditable = entry.date === today || entry.date === yesterday
+  const isEditable =
+    entry.date <= today &&
+    (habit.startDate == null || entry.date >= habit.startDate)
 
   const date = new Date(entry.date + 'T12:00:00Z')
   const dayLabel = DAY_LABELS[date.getUTCDay()]

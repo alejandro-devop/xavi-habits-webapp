@@ -8,6 +8,7 @@ import { HabitTypeBadge } from '@/features/habits/components/HabitTypeBadge'
 import { HabitPeriodProgress } from '@/features/habits/components/HabitPeriodProgress'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { Popover } from '@/shared/ui/Popover'
+import { AppIcon } from '@/shared/ui/AppIcon'
 import styles from './HabitCard.module.scss'
 
 type Props = {
@@ -43,7 +44,7 @@ export function HabitCard({ habit, onEdit }: Props) {
       variant: 'danger',
     })
     if (!ok) return
-    updateMutation.mutate({ id: habit.id, name: habit.name, habitType: habit.habitType, status: 'archived' })
+    updateMutation.mutate({ id: habit.id, status: 'archived' })
   }
 
   const kebabTrigger = (
@@ -96,7 +97,7 @@ export function HabitCard({ habit, onEdit }: Props) {
       <div className={styles.body}>
         <div className={styles.main}>
           <div className={styles.identity}>
-            {habit.icon && <span className={styles.icon}>{habit.icon}</span>}
+            {habit.icon && <AppIcon name={habit.icon} size="sm" className={styles.icon} />}
             <span className={styles.name}>{habit.name}</span>
           </div>
           <div className={styles.badges}>

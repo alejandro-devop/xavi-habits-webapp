@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { HabitStreakBadge } from '@/features/habits/components/HabitStreakBadge'
 import { HabitLifelineButton } from '@/features/habits/components/HabitLifelineButton'
 import { HabitFollowUpForm } from '@/features/habits/components/HabitFollowUpForm'
+import { useHabitWeekViewQuery } from '@/features/habits/hooks/useHabits'
+import { getMondayOfWeek } from '@/features/habits/utils/habit-type.utils'
+import { AppIcon } from '@/shared/ui/AppIcon'
 import { Modal } from '@/shared/ui/Modal'
 import { Button } from '@/shared/ui/Button'
 import type { HabitMyDayEntry } from '@/features/habits/types/habit.types'
@@ -12,9 +15,14 @@ type Props = {
   date: string
 }
 
+const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+
 export function HabitDayCard({ entry, date }: Props) {
   const { habit, followUp, lifelinesRemaining } = entry
   const [formOpen, setFormOpen] = useState(false)
+
+  const weekStart = getMondayOfWeek(date)
+  const { data: weekView } = useHabitWeekViewQuery(habit.id, weekStart)
 
   const hasFollowUp = followUp !== null
   const showLifeline =
@@ -54,7 +62,7 @@ export function HabitDayCard({ entry, date }: Props) {
       <div className={styles.header}>
         <div className={styles.meta}>
           {habit.icon ? (
-            <span className={styles.icon}>{habit.icon}</span>
+            <AppIcon name={habit.icon} size="sm" className={styles.icon} />
           ) : null}
           <span className={styles.name}>{habit.name}</span>
         </div>
@@ -65,6 +73,29 @@ export function HabitDayCard({ entry, date }: Props) {
         <div className={styles.progressBar} aria-label={`${habit.streak}/${habit.periodDays} días`}>
           <div className={styles.progressFill} style={{ width: `${progress * 100}%` }} />
           <span className={styles.progressLabel}>{habit.streak}/{habit.periodDays} días</span>
+        </div>
+      )}
+
+      {weekView && (
+        <div className={styles.weekStrip}>
+          {weekView.days.map((day) => {
+            const d = new Date(day.date + 'T12:00:00Z')
+            const label = DAY_LABELS[d.getUTCDay() === 0 ? 6 : d.getUTCDay() - 1]
+            const isToday = day.date === date
+            return (
+              <div
+                key={day.date}
+                className={[
+                  styles.weekDot,
+                  styles[`dot--${day.status}`],
+                  isToday ? styles['dot--today'] : '',
+                ].join(' ')}
+                title={day.date}
+              >
+                <span className={styles.dotLabel}>{label}</span>
+              </div>
+            )
+          })}
         </div>
       )}
 

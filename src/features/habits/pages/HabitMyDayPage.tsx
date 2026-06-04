@@ -25,9 +25,32 @@ export function HabitMyDayPage() {
     )
   }
 
+  const total = data.length
+  const accomplished = data.filter((e) => e.followUp?.isAccomplished || e.followUp?.isLifeline).length
+  const failed = data.filter((e) => e.followUp?.isFailed).length
+  const pending = total - accomplished - failed
+
+  const pctAccomplished = total > 0 ? (accomplished / total) * 100 : 0
+  const pctFailed = total > 0 ? (failed / total) * 100 : 0
+  const pctPending = total > 0 ? (pending / total) * 100 : 0
+
   return (
     <div className={styles.root}>
       <p className={styles.date}>{formatDate(today)}</p>
+
+      <div className={styles.summaryBar}>
+        <div className={styles.barTrack}>
+          <div className={styles.barAccomplished} style={{ width: `${pctAccomplished}%` }} />
+          <div className={styles.barFailed} style={{ width: `${pctFailed}%` }} />
+          <div className={styles.barPending} style={{ width: `${pctPending}%` }} />
+        </div>
+        <div className={styles.barLegend}>
+          <span className={styles.legendAccomplished}>{accomplished} logrado{accomplished !== 1 ? 's' : ''}</span>
+          <span className={styles.legendFailed}>{failed} fallado{failed !== 1 ? 's' : ''}</span>
+          <span className={styles.legendPending}>{pending} pendiente{pending !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+
       <ul className={styles.list}>
         {data.map((entry) => (
           <li key={entry.habit.id}>

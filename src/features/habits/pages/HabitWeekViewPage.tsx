@@ -4,6 +4,7 @@ import { useHabitWeekViewQuery } from '@/features/habits/hooks/useHabits'
 import { HabitWeekNav } from '@/features/habits/components/HabitWeekNav'
 import { HabitWeekGrid } from '@/features/habits/components/HabitWeekGrid'
 import { HabitLifelinesIndicator } from '@/features/habits/components/HabitLifelinesIndicator'
+import { AppIcon } from '@/shared/ui/AppIcon'
 import { Spinner } from '@/shared/ui/Spinner'
 import { addDaysToString, getMondayOfWeek, getTodayString } from '@/features/habits/utils/habit-type.utils'
 import styles from './HabitWeekViewPage.module.scss'
@@ -41,7 +42,7 @@ export function HabitWeekViewPage() {
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        {habit.icon && <span className={styles.icon}>{habit.icon}</span>}
+        {habit.icon && <AppIcon name={habit.icon} size="md" className={styles.icon} />}
         <h1 className={styles.title}>{habit.name}</h1>
       </header>
 

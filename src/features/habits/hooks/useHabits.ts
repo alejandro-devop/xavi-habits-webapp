@@ -30,7 +30,7 @@ export function useHabitMyDayQuery(date: string) {
 export function useHabitsQuery(filters: HabitFilters = {}) {
   const enabled = useHabitQueryGuard()
   return useQuery({
-    queryKey: habitKeys.list(filters),
+    queryKey: habitKeys.list(filters as Record<string, unknown>),
     enabled,
     queryFn: () => habitsApi.getHabits(filters),
     staleTime: 1000 * 30,

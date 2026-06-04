@@ -127,8 +127,10 @@ export interface HabitInput {
   measureId?: string | null
 }
 
-export interface HabitEditInput extends HabitInput {
+export interface HabitEditInput extends Partial<HabitInput> {
   id: string
+  status?: HabitStatus
+  isActive?: boolean
 }
 
 export interface HabitFollowUpAddInput {

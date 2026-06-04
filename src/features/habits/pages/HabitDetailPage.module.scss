@@ -51,7 +51,13 @@
   margin: 0;
 }
 
-.weekPanel,
+.weekPanel {
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .historyPanel {
   padding-top: 1rem;
 }

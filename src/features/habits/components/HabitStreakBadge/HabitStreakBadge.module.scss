@@ -1,0 +1,19 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.empty {
+  color: var(--color-text-tertiary);
+  background: var(--color-surface-raised);
+}
+
+.active {
+  color: var(--color-warning-text, #92400e);
+  background: var(--color-warning-subtle, #fef3c7);
+}

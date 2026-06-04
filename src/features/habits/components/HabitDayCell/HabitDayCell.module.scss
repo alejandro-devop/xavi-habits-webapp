@@ -1,0 +1,86 @@
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 4rem;
+  border: 2px solid transparent;
+  border-radius: 0.75rem;
+  background: var(--color-surface-raised);
+  cursor: default;
+  transition: transform 0.1s, box-shadow 0.1s;
+  padding: 0.5rem 0.25rem;
+}
+
+.editable {
+  cursor: pointer;
+  border-color: var(--color-border);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.empty {
+  background: var(--color-surface-raised);
+  opacity: 0.6;
+}
+
+.accomplished {
+  background: var(--color-success-subtle, #dcfce7);
+  border-color: var(--color-success-subtle, #bbf7d0);
+
+  .dayLabel,
+  .dayNumber {
+    color: var(--color-success-text, #166534);
+  }
+}
+
+.failed {
+  background: var(--color-danger-subtle, #fee2e2);
+  border-color: var(--color-danger-subtle, #fecaca);
+
+  .dayLabel,
+  .dayNumber {
+    color: var(--color-danger-text, #991b1b);
+  }
+}
+
+.lifeline {
+  background: var(--color-info-subtle, #dbeafe);
+  border-color: var(--color-info-subtle, #bfdbfe);
+
+  .dayLabel,
+  .dayNumber {
+    color: var(--color-info-text, #1e40af);
+  }
+}
+
+.dayLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.dayNumber {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.statusIcon {
+  font-size: 0.75rem;
+  line-height: 1;
+  margin-top: 0.1rem;
+}

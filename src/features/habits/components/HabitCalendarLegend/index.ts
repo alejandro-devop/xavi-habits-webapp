@@ -1,0 +1,1 @@
+export { HabitCalendarLegend } from './HabitCalendarLegend'

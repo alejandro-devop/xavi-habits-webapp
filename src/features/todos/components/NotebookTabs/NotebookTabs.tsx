@@ -23,6 +23,7 @@ const FOLDER_COLORS = [
 ]
 
 export const TODAY_FOLDER_ID = '__today__'
+export const DAILY_POOL_FOLDER_ID = '__daily_pool__'
 export const SUGGESTED_FOLDER_ID = '__suggested__'
 
 type Props = {
@@ -130,6 +131,17 @@ export function NotebookTabs({ selectedFolderId, onSelect }: Props) {
           {pendingCounts[TODAY_FOLDER_ID] != null && pendingCounts[TODAY_FOLDER_ID] > 0 ? (
             <span className={styles.count}>{pendingCounts[TODAY_FOLDER_ID]}</span>
           ) : null}
+        </button>
+
+        <button
+          type="button"
+          className={[styles.tab, styles.dailyPoolTab, selectedFolderId === DAILY_POOL_FOLDER_ID ? styles.active : ''].join(' ')}
+          onClick={() => onSelect(DAILY_POOL_FOLDER_ID)}
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+            <path d="M19 3h-1V1h-2v2H8V1H6v2H5C3.9 3 3 3.9 3 5v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H5V9h14v12zm0-14H5V5h14v2zM7 11h5v5H7z"/>
+          </svg>
+          Mi Rutina
         </button>
 
         <button

@@ -12,6 +12,7 @@ type Props = {
   onClick: () => void
   onToggle: () => void
   onToggleToday?: () => void
+  onChangePriority?: (priority: Todo['priority']) => void
 }
 
 function subtaskProgressStyle(
@@ -35,7 +36,7 @@ function subtaskProgressStyle(
   }
 }
 
-export function NotebookItem({ todo, focused, onFocus, onClick, onToggle, onToggleToday }: Props) {
+export function NotebookItem({ todo, focused, onFocus, onClick, onToggle, onToggleToday, onChangePriority }: Props) {
   const isCompleted = todo.status === 'completed'
   // subtasksCount puede ser null en tareas antiguas — usar el array real como fallback
   const subtaskTotal = todo.subtasksCount?.total ?? todo.subtasks?.length ?? 0
@@ -131,7 +132,12 @@ export function NotebookItem({ todo, focused, onFocus, onClick, onToggle, onTogg
             </svg>
           </button>
         ) : null}
-        <PriorityBadge priority={todo.priority} selected iconOnly />
+        <PriorityBadge
+          priority={todo.priority}
+          selected
+          iconOnly
+          onChangePriority={onChangePriority}
+        />
       </div>
     </motion.li>
   )

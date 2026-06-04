@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
-import { useAddHabitFollowUpMutation } from '@/features/habits/hooks/useHabitFollowUps'
+import {
+  useAddHabitFollowUpMutation,
+  useUpdateHabitFollowUpMutation,
+} from '@/features/habits/hooks/useHabitFollowUps'
 import { HabitDifficultyPicker } from '@/features/habits/components/HabitDifficultyPicker'
 import { Button } from '@/shared/ui/Button'
 import { Input } from '@/shared/ui/Input'
@@ -16,19 +19,30 @@ type Props = {
 
 export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: Props) {
   const { confirm } = useConfirmDialog()
-  const mutation = useAddHabitFollowUpMutation()
+  const addMutation = useAddHabitFollowUpMutation()
+  const updateMutation = useUpdateHabitFollowUpMutation()
+  const isEditing = Boolean(existingFollowUp)
+  const mutation = isEditing ? updateMutation : addMutation
 
   const [count, setCount] = useState<string>(existingFollowUp?.count?.toString() ?? '')
   const [time, setTime] = useState<string>(existingFollowUp?.time?.toString() ?? '')
   const [difficulty, setDifficulty] = useState<number | null>(existingFollowUp?.difficulty ?? null)
   const [notes, setNotes] = useState<string>(existingFollowUp?.notes ?? '')
 
-  function buildBaseInput() {
-    return {
-      habitId: habit.id,
-      date,
-      difficulty: difficulty ?? null,
-      notes: notes.trim() || null,
+  function mutate(fields: Record<string, unknown>) {
+    if (isEditing && existingFollowUp) {
+      updateMutation.mutate(
+        {
+          input: { id: existingFollowUp.id, difficulty: difficulty ?? null, notes: notes.trim() || null, ...fields },
+          context: { habitId: habit.id, date },
+        },
+        { onSuccess },
+      )
+    } else {
+      addMutation.mutate(
+        { habitId: habit.id, date, difficulty: difficulty ?? null, notes: notes.trim() || null, ...fields },
+        { onSuccess },
+      )
     }
   }
 
@@ -36,8 +50,7 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
     const extra: Record<string, unknown> = { isAccomplished: true }
     if (habit.habitType === 'count' && count !== '') extra.count = Number(count)
     if (habit.habitType === 'time' && time !== '') extra.time = Number(time)
-
-    mutation.mutate({ ...buildBaseInput(), ...extra }, { onSuccess })
+    mutate(extra)
   }
 
   async function handleFail() {
@@ -49,7 +62,7 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
       variant: 'danger',
     })
     if (!ok) return
-    mutation.mutate({ ...buildBaseInput(), isFailed: true }, { onSuccess })
+    mutate({ isFailed: true })
   }
 
   const measureLabel = habit.measure?.name ?? 'veces'
@@ -99,25 +112,14 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
       </div>
 
       <div className={styles.actions}>
-        {habit.habitType !== 'boolean' ? (
-          <Button
-            variant="primary"
-            onClick={handleAccomplish}
-            isLoading={mutation.isPending}
-            disabled={mutation.isPending}
-          >
-            Logrado
-          </Button>
-        ) : (
-          <Button
-            variant="primary"
-            onClick={handleAccomplish}
-            isLoading={mutation.isPending}
-            disabled={mutation.isPending}
-          >
-            Logrado
-          </Button>
-        )}
+        <Button
+          variant="primary"
+          onClick={handleAccomplish}
+          isLoading={mutation.isPending}
+          disabled={mutation.isPending}
+        >
+          Logrado
+        </Button>
         <Button
           variant="danger"
           onClick={handleFail}

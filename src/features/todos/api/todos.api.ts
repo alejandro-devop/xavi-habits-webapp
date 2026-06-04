@@ -16,10 +16,18 @@ import {
   TODO_TAG_REMOVE_MUTATION,
   TODO_TAGS_QUERY,
   TODOS_QUERY,
+  TODO_DAILY_TEMPLATES_QUERY,
+  TODO_DAILY_TEMPLATES_BY_DAY_QUERY,
+  TODO_DAILY_TEMPLATE_ADD_MUTATION,
+  TODO_DAILY_TEMPLATE_EDIT_MUTATION,
+  TODO_DAILY_TEMPLATE_REMOVE_MUTATION,
 } from '@/features/todos/graphql/todos.graphql'
 import type {
   Todo,
   TodoCollection,
+  TodoDailyTemplate,
+  TodoDailyTemplateEditInput,
+  TodoDailyTemplateInput,
   TodoEditInput,
   TodoFilters,
   TodoFolder,
@@ -156,4 +164,47 @@ export async function removeTodoFolder(id: string): Promise<boolean> {
     { id },
   )
   return data.todoFolderRemove
+}
+
+export async function getTodoDailyTemplates(): Promise<TodoDailyTemplate[]> {
+  const data = await graphqlRequest<{ todoDailyTemplates: TodoDailyTemplate[] }>(
+    TODO_DAILY_TEMPLATES_QUERY,
+  )
+  return data.todoDailyTemplates
+}
+
+export async function getTodoDailyTemplatesByDay(day: number): Promise<TodoDailyTemplate[]> {
+  const data = await graphqlRequest<
+    { todoDailyTemplatesByDay: TodoDailyTemplate[] },
+    { day: number }
+  >(TODO_DAILY_TEMPLATES_BY_DAY_QUERY, { day })
+  return data.todoDailyTemplatesByDay
+}
+
+export async function createTodoDailyTemplate(
+  input: TodoDailyTemplateInput,
+): Promise<TodoDailyTemplate> {
+  const data = await graphqlRequest<
+    { todoDailyTemplateAdd: TodoDailyTemplate },
+    { input: TodoDailyTemplateInput }
+  >(TODO_DAILY_TEMPLATE_ADD_MUTATION, { input })
+  return data.todoDailyTemplateAdd
+}
+
+export async function updateTodoDailyTemplate(
+  input: TodoDailyTemplateEditInput,
+): Promise<TodoDailyTemplate> {
+  const data = await graphqlRequest<
+    { todoDailyTemplateEdit: TodoDailyTemplate },
+    { input: TodoDailyTemplateEditInput }
+  >(TODO_DAILY_TEMPLATE_EDIT_MUTATION, { input })
+  return data.todoDailyTemplateEdit
+}
+
+export async function removeTodoDailyTemplate(id: string): Promise<boolean> {
+  const data = await graphqlRequest<{ todoDailyTemplateRemove: boolean }, { id: string }>(
+    TODO_DAILY_TEMPLATE_REMOVE_MUTATION,
+    { id },
+  )
+  return data.todoDailyTemplateRemove
 }

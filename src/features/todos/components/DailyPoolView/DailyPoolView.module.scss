@@ -1,0 +1,110 @@
+@use '@/app/styles/tokens' as *;
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: $spacing-lg;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  padding: $spacing-xs $spacing-sm;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+  transition: background $duration-normal;
+
+  &:hover {
+    background: var(--color-surface-hover, rgba(0, 0, 0, 0.03));
+  }
+
+  :global([data-theme='dark']) & {
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+}
+
+.itemMain {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  min-width: 0;
+  flex: 1;
+}
+
+.itemTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folderChip {
+  font-size: 10px;
+  font-weight: $font-weight-regular;
+  color: var(--color-text-muted);
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: $radius-full;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  :global([data-theme='dark']) & {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.itemActions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  flex-shrink: 0;
+}
+
+.addBtn {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  padding: 3px 10px;
+  border-radius: $radius-full;
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background $duration-fast, color $duration-fast, border-color $duration-fast;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.addBtnDone {
+  border-color: #059669;
+  color: #059669;
+
+  &:hover:not(:disabled) {
+    background: #059669;
+    color: #fff;
+  }
+}

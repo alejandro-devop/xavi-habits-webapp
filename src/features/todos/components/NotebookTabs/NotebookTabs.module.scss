@@ -120,6 +120,22 @@ $tab-height: 32px;
   }
 }
 
+.dailyPoolTab {
+  color: #047857;
+
+  &.active {
+    color: #065F46;
+  }
+
+  :global([data-theme='dark']) & {
+    color: #34D399;
+
+    &.active {
+      color: #6EE7B7;
+    }
+  }
+}
+
 .suggestedTab {
   color: #7C3AED;
 

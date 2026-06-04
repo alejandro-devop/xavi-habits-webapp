@@ -4,6 +4,8 @@ import * as todosApi from '@/features/todos/api/todos.api'
 import type {
   Todo,
   TodoCollection,
+  TodoDailyTemplateEditInput,
+  TodoDailyTemplateInput,
   TodoEditInput,
   TodoFilters,
   TodoFolderEditInput,
@@ -128,8 +130,9 @@ function restoreLists(qc: QC, snapshot: ReturnType<typeof snapshotLists>) {
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
-export function useTodosQuery(filters: TodoFilters = {}) {
-  const enabled = useAuthReady()
+export function useTodosQuery(filters: TodoFilters = {}, opts?: { enabled?: boolean }) {
+  const authReady = useAuthReady()
+  const enabled = authReady && (opts?.enabled ?? true)
   return useQuery({
     queryKey: todoKeys.list(filters as Record<string, unknown>),
     enabled,
@@ -538,6 +541,76 @@ export function useRemoveTodoFolderMutation() {
     },
     onError: () => {
       toast.error('No se pudo eliminar la carpeta')
+    },
+  })
+}
+
+// ─── Daily template queries ───────────────────────────────────────────────────
+
+export function useTodoDailyTemplatesQuery() {
+  const enabled = useAuthReady()
+  return useQuery({
+    queryKey: todoKeys.dailyTemplates.list(),
+    enabled,
+    queryFn: () => todosApi.getTodoDailyTemplates(),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+export function useTodoDailyTemplatesByDayQuery(day: number) {
+  const enabled = useAuthReady()
+  return useQuery({
+    queryKey: todoKeys.dailyTemplates.byDay(day),
+    enabled,
+    queryFn: () => todosApi.getTodoDailyTemplatesByDay(day),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+// ─── Daily template mutations ─────────────────────────────────────────────────
+
+export function useCreateTodoDailyTemplateMutation() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+
+  return useMutation({
+    mutationFn: (input: TodoDailyTemplateInput) => todosApi.createTodoDailyTemplate(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: todoKeys.dailyTemplates.all() })
+    },
+    onError: () => {
+      toast.error('No se pudo crear la plantilla')
+    },
+  })
+}
+
+export function useUpdateTodoDailyTemplateMutation() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+
+  return useMutation({
+    mutationFn: (input: TodoDailyTemplateEditInput) => todosApi.updateTodoDailyTemplate(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: todoKeys.dailyTemplates.all() })
+    },
+    onError: () => {
+      toast.error('No se pudo actualizar la plantilla')
+    },
+  })
+}
+
+export function useRemoveTodoDailyTemplateMutation() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+
+  return useMutation({
+    mutationFn: (id: string) => todosApi.removeTodoDailyTemplate(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: todoKeys.dailyTemplates.all() })
+      toast.success('Plantilla eliminada')
+    },
+    onError: () => {
+      toast.error('No se pudo eliminar la plantilla')
     },
   })
 }

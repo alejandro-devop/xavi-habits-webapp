@@ -136,3 +136,35 @@ export interface TodoTagEditInput {
   name?: string
   color?: string
 }
+
+export interface TodoDailyTemplate {
+  id: string
+  userId: number
+  title: string
+  description: string | null
+  priority: TodoPriority
+  folderId: string | null
+  days: number[]
+  orderIndex: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TodoDailyTemplateInput {
+  title: string
+  description?: string | null
+  priority?: TodoPriority
+  folderId?: string | null
+  days: number[]
+  orderIndex?: number
+}
+
+export interface TodoDailyTemplateEditInput {
+  id: string
+  title?: string
+  description?: string | null
+  priority?: TodoPriority
+  folderId?: string | null
+  days?: number[]
+  orderIndex?: number
+}

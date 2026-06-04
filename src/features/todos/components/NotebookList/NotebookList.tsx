@@ -5,7 +5,8 @@ import { Spinner } from '@/shared/ui/Spinner'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { NotebookItem } from '@/features/todos/components/NotebookItem/NotebookItem'
 import { NotebookInput } from '@/features/todos/components/NotebookInput/NotebookInput'
-import { NotebookTabs, TODAY_FOLDER_ID, SUGGESTED_FOLDER_ID } from '@/features/todos/components/NotebookTabs/NotebookTabs'
+import { NotebookTabs, TODAY_FOLDER_ID, SUGGESTED_FOLDER_ID, DAILY_POOL_FOLDER_ID } from '@/features/todos/components/NotebookTabs/NotebookTabs'
+import { DailyPoolView } from '@/features/todos/components/DailyPoolView/DailyPoolView'
 import { NotebookFilters, type DateRange } from '@/features/todos/components/NotebookFilters/NotebookFilters'
 import { TodoDrawer } from '@/features/todos/components/TodoDrawer/TodoDrawer'
 import {
@@ -93,28 +94,29 @@ export function NotebookList({ filters = {} }: Props) {
 
   const isToday = selectedFolderId === TODAY_FOLDER_ID
   const isSuggested = selectedFolderId === SUGGESTED_FOLDER_ID
+  const isDailyPool = selectedFolderId === DAILY_POOL_FOLDER_ID
 
   // ── Construir filtros para la query ──────────────────────────────────────────
   const dateFilters = useMemo((): { dueAfter?: string; dueBefore?: string } => {
-    // Suggested e Hoy no usan el filtro de fechas del panel
-    if (isToday || isSuggested) return {}
+    // Suggested, Hoy y Daily Pool no usan el filtro de fechas del panel
+    if (isToday || isSuggested || isDailyPool) return {}
     if (!dateRange) return {}
     return computeDateRange(dateRange)
-  }, [isToday, isSuggested, dateRange])
+  }, [isToday, isSuggested, isDailyPool, dateRange])
 
   const queryFilters = useMemo((): TodoFilters => ({
     limit: 50,
     ...filters,
-    folderId: (isToday || isSuggested) ? undefined : selectedFolderId,
+    folderId: (isToday || isSuggested || isDailyPool) ? undefined : selectedFolderId,
     selectedToday: isToday ? true : isSuggested ? false : undefined,
     // Suggested: siempre pendingOnly=true (no le afecta showCompleted)
     pendingOnly: isSuggested ? true : (showCompleted ? undefined : true),
     // Suggested: siempre filtra por dueBefore = fin de hoy
     dueBefore: isSuggested ? getEndOfToday() : (dateFilters.dueBefore ?? undefined),
     dueAfter: isSuggested ? undefined : (dateFilters.dueAfter ?? undefined),
-  }), [isToday, isSuggested, selectedFolderId, showCompleted, dateFilters, filters])
+  }), [isToday, isSuggested, isDailyPool, selectedFolderId, showCompleted, dateFilters, filters])
 
-  const { data, isLoading } = useTodosQuery(queryFilters)
+  const { data, isLoading } = useTodosQuery(queryFilters, { enabled: !isDailyPool })
 
   const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
 
@@ -167,6 +169,13 @@ export function NotebookList({ filters = {} }: Props) {
       }
     },
     [completeTodo, updateTodo],
+  )
+
+  const handleChangePriority = useCallback(
+    (todo: (typeof todos)[number], priority: (typeof todo)['priority']) => {
+      updateTodo.mutate({ id: todo.id, priority })
+    },
+    [updateTodo],
   )
 
   const handleDelete = useCallback(
@@ -231,7 +240,7 @@ export function NotebookList({ filters = {} }: Props) {
           break
         case 'n':
         case 'N':
-          if (!isSuggested) {
+          if (!isSuggested && !isDailyPool) {
             e.preventDefault()
             newInputRef.current?.focus()
           }
@@ -263,8 +272,8 @@ export function NotebookList({ filters = {} }: Props) {
         </>
       }
     >
-      {/* Input oculto en Suggested */}
-      {!isSuggested && (
+      {/* Input oculto en Suggested y Daily Pool */}
+      {!isSuggested && !isDailyPool && (
         <NotebookInput
           ref={newInputRef}
           value={draft.value}
@@ -274,7 +283,9 @@ export function NotebookList({ filters = {} }: Props) {
         />
       )}
 
-      {isLoading ? (
+      {isDailyPool ? (
+        <DailyPoolView />
+      ) : isLoading ? (
         <div className={styles.loading}>
           <Spinner />
         </div>
@@ -298,6 +309,7 @@ export function NotebookList({ filters = {} }: Props) {
               onClick={() => setOpenTodoId(todo.id)}
               onToggle={() => handleToggleComplete(todo)}
               onToggleToday={() => handleToggleToday(todo)}
+              onChangePriority={(priority) => handleChangePriority(todo, priority)}
             />
           ))}
         </ul>

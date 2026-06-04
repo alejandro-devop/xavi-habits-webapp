@@ -275,3 +275,54 @@ export const TODO_FOLDER_REMOVE_MUTATION = `
     todoFolderRemove(id: $id)
   }
 `
+
+const DAILY_TEMPLATE_FIELDS = `
+  id
+  userId
+  title
+  description
+  priority
+  folderId
+  days
+  orderIndex
+  createdAt
+  updatedAt
+`
+
+export const TODO_DAILY_TEMPLATES_QUERY = `
+  query TodoDailyTemplates {
+    todoDailyTemplates {
+      ${DAILY_TEMPLATE_FIELDS}
+    }
+  }
+`
+
+export const TODO_DAILY_TEMPLATES_BY_DAY_QUERY = `
+  query TodoDailyTemplatesByDay($day: Int!) {
+    todoDailyTemplatesByDay(day: $day) {
+      ${DAILY_TEMPLATE_FIELDS}
+    }
+  }
+`
+
+export const TODO_DAILY_TEMPLATE_ADD_MUTATION = `
+  mutation TodoDailyTemplateAdd($input: TodoDailyTemplateInput!) {
+    todoDailyTemplateAdd(input: $input) {
+      ${DAILY_TEMPLATE_FIELDS}
+    }
+  }
+`
+
+export const TODO_DAILY_TEMPLATE_EDIT_MUTATION = `
+  mutation TodoDailyTemplateEdit($input: TodoDailyTemplateEditInput!) {
+    todoDailyTemplateEdit(input: $input) {
+      ${DAILY_TEMPLATE_FIELDS}
+    }
+  }
+`
+
+export const TODO_DAILY_TEMPLATE_REMOVE_MUTATION = `
+  mutation TodoDailyTemplateRemove($id: ID!) {
+    todoDailyTemplateRemove(id: $id)
+  }
+`

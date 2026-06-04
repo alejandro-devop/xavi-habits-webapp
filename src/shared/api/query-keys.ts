@@ -63,6 +63,11 @@ export const todoKeys = {
     all: () => [...todoKeys.all, 'folders'] as const,
     list: () => [...todoKeys.folders.all(), 'list'] as const,
   },
+  dailyTemplates: {
+    all: () => [...todoKeys.all, 'dailyTemplates'] as const,
+    list: () => [...todoKeys.dailyTemplates.all(), 'list'] as const,
+    byDay: (day: number) => [...todoKeys.dailyTemplates.all(), 'byDay', day] as const,
+  },
 }
 
 export const noteKeys = {

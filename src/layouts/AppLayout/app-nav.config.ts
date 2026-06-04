@@ -1,5 +1,6 @@
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 import { authPaths } from '@/features/auth/router/auth-paths'
+import { habitsPaths } from '@/features/habits'
 import { weeklyRoutinePaths } from '@/features/weekly-routine'
 import type { SidebarNavItem } from '@/shared/ui/Sidebar'
 import type { CommandAction } from '@/shared/ui/CommandPalette'
@@ -9,6 +10,7 @@ export const appSidebarItems: SidebarNavItem[] = [
   { to: activitiesPaths.root, label: 'Actividades', icon: 'list-check' },
   { to: '/app/todos', label: 'Tareas', icon: 'clipboard' },
   { to: '/app/notes', label: 'Notas', icon: 'file-lines' },
+  { to: habitsPaths.myDay, label: 'Hábitos', icon: 'fire' },
   { to: weeklyRoutinePaths.root, label: 'Rutina', icon: 'calendar-week' },
   { to: '/app/quarters', label: 'Quarters', icon: 'calendar-days' },
   { to: '/app/projects', label: 'Proyectos', icon: 'diagram-project' },

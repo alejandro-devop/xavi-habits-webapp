@@ -22,11 +22,11 @@
       "name": "Algoritmo de racha",
       "repo": "backend",
       "repoPath": "/Users/jako/Developer/xavi-platform/xavi-platform-node",
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "completedBy": null,
-      "notes": "",
+      "status": "complete",
+      "startedAt": "2026-06-03",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "habit.types.ts también modificado (necesario para compilación TS). Post-deploy: ejecutar syncHabitStreakFromLogs para todos los hábitos existentes para recalcular streaks con el nuevo algoritmo.",
       "dependsOn": [1]
     },
     {

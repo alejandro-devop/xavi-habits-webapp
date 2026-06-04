@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit *)",
+      "Bash(npx tsc -b *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm audit)",
+      "Bash(pnpm test *)",
+      "Bash(source ~/.nvm/nvm.sh && nvm use 20.11.0 && cd /Users/jako/Developer/xavi-platform/xavi-platform-node && npx tsc *)",
+      "Bash(source ~/.nvm/nvm.sh && nvm use 20.11.0 && cd /Users/jako/Developer/xavi-platform/xavi-platform-node && node --version && npx jest *)",
+      "Bash(source ~/.nvm/nvm.sh && nvm use 20.11.0 && cd /Users/jako/Developer/xavi-platform/xavi-platform-node && npx jest *)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__Claude_Preview__preview_screenshot",
+      "mcp__Claude_Preview__preview_console_logs",
+      "mcp__Claude_Preview__preview_snapshot",
+      "mcp__Claude_Preview__preview_logs",
+      "mcp__Claude_Preview__preview_list",
+      "mcp__ccd_session__mark_chapter"
+    ]
+  }
+}

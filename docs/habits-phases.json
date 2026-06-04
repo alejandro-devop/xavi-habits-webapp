@@ -34,11 +34,11 @@
       "name": "Servicio y GraphQL",
       "repo": "backend",
       "repoPath": "/Users/jako/Developer/xavi-platform/xavi-platform-node",
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "completedBy": null,
-      "notes": "",
+      "status": "complete",
+      "startedAt": "2026-06-04",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "Migración 041_habits_cleanup.sql CREADA pero NO ejecutada. Aplicar manualmente post-deploy con: psql ... < migrations/041_habits_cleanup.sql",
       "dependsOn": [1, 2]
     },
     {

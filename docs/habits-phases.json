@@ -1,0 +1,105 @@
+{
+  "module": "habits",
+  "description": "Tracker de fases de implementación del módulo de hábitos. Leer antes de implementar cualquier fase.",
+  "planDocument": "docs/habits-implementation-plan.md",
+  "lastUpdated": "2026-06-03",
+  "currentPhase": 1,
+  "phases": [
+    {
+      "number": 1,
+      "name": "Migración DB",
+      "repo": "backend",
+      "repoPath": "/Users/jako/Developer/xavi-platform/xavi-platform-node",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": []
+    },
+    {
+      "number": 2,
+      "name": "Algoritmo de racha",
+      "repo": "backend",
+      "repoPath": "/Users/jako/Developer/xavi-platform/xavi-platform-node",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [1]
+    },
+    {
+      "number": 3,
+      "name": "Servicio y GraphQL",
+      "repo": "backend",
+      "repoPath": "/Users/jako/Developer/xavi-platform/xavi-platform-node",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [1, 2]
+    },
+    {
+      "number": 4,
+      "name": "Frontend: Feature folder base",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [3]
+    },
+    {
+      "number": 5,
+      "name": "Frontend: Vista diaria (Mi día)",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [4]
+    },
+    {
+      "number": 6,
+      "name": "Frontend: Vista semanal",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [5]
+    },
+    {
+      "number": 7,
+      "name": "Frontend: Calendario de progreso",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [4]
+    },
+    {
+      "number": 8,
+      "name": "Frontend: CRUD de hábitos",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [5, 6]
+    }
+  ]
+}

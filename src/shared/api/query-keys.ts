@@ -10,6 +10,13 @@ export const habitKeys = {
   list: (filters: ListFilters = {}) => [...habitKeys.all, 'list', filters] as const,
   detail: (id: string) => [...habitKeys.all, 'detail', id] as const,
   myDay: (date: string) => [...habitKeys.all, 'myDay', date] as const,
+  weekView: (habitId: string, weekStart: string) =>
+    [...habitKeys.all, 'weekView', habitId, weekStart] as const,
+  calendar: (from: string, to: string) => [...habitKeys.all, 'calendar', from, to] as const,
+  categories: {
+    all: () => [...habitKeys.all, 'categories'] as const,
+    list: () => [...habitKeys.categories.all(), 'list'] as const,
+  },
 }
 
 export const activityKeys = {

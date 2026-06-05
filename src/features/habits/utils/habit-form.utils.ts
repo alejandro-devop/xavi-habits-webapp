@@ -14,6 +14,7 @@ export interface HabitFormValues {
   endDate: string
   dailyGoal: string
   timerGoal: string
+  purposeId: string | null
 }
 
 export function defaultFormValues(habit?: Habit): HabitFormValues {
@@ -32,6 +33,7 @@ export function defaultFormValues(habit?: Habit): HabitFormValues {
       endDate: '',
       dailyGoal: '',
       timerGoal: '',
+      purposeId: null,
     }
   }
   return {
@@ -48,6 +50,7 @@ export function defaultFormValues(habit?: Habit): HabitFormValues {
     endDate: habit.endDate ?? '',
     dailyGoal: habit.timesGoal != null ? String(habit.timesGoal) : '',
     timerGoal: habit.timerGoal != null ? String(habit.timerGoal) : '',
+    purposeId: habit.purposeId ?? null,
   }
 }
 
@@ -69,12 +72,26 @@ export function buildHabitCreatePayload(values: HabitFormValues): HabitInput {
     timerGoal:
       values.habitType === 'time' && values.timerGoal !== '' ? Number(values.timerGoal) : null,
     dailyGoal: values.habitType === 'boolean' ? 1 : null,
+    purposeId: values.purposeId || null,
   }
 }
 
 export function buildHabitEditPayload(values: HabitFormValues, habit: Habit): HabitEditInput {
-  return {
-    id: habit.id,
-    ...buildHabitCreatePayload(values),
+  const payload = buildHabitCreatePayload(values)
+  const hasFollowUps = habit.days > 0
+
+  if (hasFollowUps) {
+    // Backend rejects date/type changes when follow-ups exist; omit locked fields
+    delete payload.startDate
+    delete payload.endDate
+    delete payload.habitType
   }
+
+  // null goal values would overwrite existing DB values with null (violating NOT NULL).
+  // undefined means "don't change" in the backend's partial update.
+  if (payload.timerGoal === null) delete payload.timerGoal
+  if (payload.timesGoal === null) delete payload.timesGoal
+  if (payload.dailyGoal === null) delete payload.dailyGoal
+
+  return { id: habit.id, ...payload }
 }

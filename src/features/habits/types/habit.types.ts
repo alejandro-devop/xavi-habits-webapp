@@ -1,3 +1,5 @@
+import type { HabitPurpose } from './habit-purpose.types'
+
 export type HabitType = 'boolean' | 'count' | 'time'
 
 export type HabitStatus = 'active' | 'completed' | 'archived'
@@ -45,10 +47,12 @@ export interface Habit {
   endDate: string | null
   categoryId: string | null
   measureId: string | null
+  purposeId: string | null
   createdAt: string
   updatedAt: string
   category?: HabitCategory | null
   measure?: HabitMeasure | null
+  purpose?: HabitPurpose | null
 }
 
 export interface HabitFollowUp {
@@ -125,6 +129,7 @@ export interface HabitInput {
   endDate?: string | null
   categoryId?: string | null
   measureId?: string | null
+  purposeId?: string | null
 }
 
 export interface HabitEditInput extends Partial<HabitInput> {

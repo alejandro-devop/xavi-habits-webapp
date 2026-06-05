@@ -1,0 +1,62 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--color-surface-raised, #f8f9fa);
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0.5rem 0.5rem 0 0;
+  margin: -1rem -1.25rem 0;
+  min-height: 1.75rem;
+}
+
+.icon {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.context {
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.name {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  background: transparent;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0.5rem 0.5rem 0 0;
+  margin: -1rem -1.25rem 0;
+  min-height: 1.75rem;
+}
+
+.ctaText {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+}
+
+.ctaLink {
+  font-size: 0.7rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

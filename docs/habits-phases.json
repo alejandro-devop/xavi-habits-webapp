@@ -142,11 +142,11 @@
       "name": "Frontend: Página Mi Persona Ideal",
       "repo": "frontend",
       "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "completedBy": null,
-      "notes": "",
+      "status": "complete",
+      "startedAt": "2026-06-04",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "pnpm add @dnd-kit/core @dnd-kit/utilities ejecutado. Pool horizontal usa PersonaColumn con placement='pool'. DragOverlay renderiza copia de la card activa.",
       "dependsOn": [11]
     },
     {
@@ -154,11 +154,11 @@
       "name": "Frontend: Conectar hábitos con propósitos",
       "repo": "frontend",
       "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "completedBy": null,
-      "notes": "",
+      "status": "complete",
+      "startedAt": "2026-06-04",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "filteredPurposes calculado antes del JSX para evitar hooks condicionales. Picker filtra por placement en cliente. Si no hay propósitos en la columna correcta, muestra texto con Link a /app/habits/persona.",
       "dependsOn": [10, 11]
     },
     {
@@ -166,11 +166,11 @@
       "name": "Frontend: Banner de propósito en Mi Día",
       "repo": "frontend",
       "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
-      "status": "pending",
-      "startedAt": null,
-      "completedAt": null,
-      "completedBy": null,
-      "notes": "",
+      "status": "complete",
+      "startedAt": "2026-06-05",
+      "completedAt": "2026-06-05",
+      "completedBy": "claude-code",
+      "notes": "Banner ocupa ancho completo con margen negativo para salir del padding de la card. CTA de 'Asignar propósito' muestra solo cuando purpose es null/undefined o cuando placement='pool'.",
       "dependsOn": [12, 13]
     }
   ]

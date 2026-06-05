@@ -7,4 +7,5 @@ export const habitsPaths = {
   edit: (id: string) => `/app/habits/${id}/edit`,
   week: (id: string) => `/app/habits/${id}/week`,
   calendar: (id: string) => `/app/habits/${id}/calendar`,
+  persona: '/app/habits/persona',
 } as const

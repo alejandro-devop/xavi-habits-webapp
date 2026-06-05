@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { HabitStreakBadge } from '@/features/habits/components/HabitStreakBadge'
 import { HabitLifelineButton } from '@/features/habits/components/HabitLifelineButton'
 import { HabitFollowUpForm } from '@/features/habits/components/HabitFollowUpForm'
+import { HabitPurposeBanner } from '@/features/habits/components/HabitPurposeBanner'
 import { useHabitWeekViewQuery } from '@/features/habits/hooks/useHabits'
 import { getMondayOfWeek } from '@/features/habits/utils/habit-type.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -59,6 +60,8 @@ export function HabitDayCard({ entry, date }: Props) {
 
   return (
     <div className={styles.card}>
+      <HabitPurposeBanner purpose={entry.habit.purpose} habitId={entry.habit.id} />
+      <div className={styles.content}>
       <div className={styles.header}>
         <div className={styles.meta}>
           {habit.icon ? (
@@ -122,6 +125,7 @@ export function HabitDayCard({ entry, date }: Props) {
             Editar
           </Button>
         )}
+      </div>
       </div>
 
       <Modal

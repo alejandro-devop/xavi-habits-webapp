@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Habit } from '@/features/habits/types/habit.types'
 import {
   buildHabitCreatePayload,
@@ -11,7 +11,9 @@ import {
   useHabitCategoriesQuery,
   useUpdateHabitMutation,
 } from '@/features/habits/hooks/useHabits'
+import { useHabitPurposesQuery } from '@/features/habits/hooks/useHabitPurposes'
 import { CreateHabitCategoryStep } from '@/features/habits/components/CreateHabitCategoryStep'
+import { CreateHabitPurposeStep } from '@/features/habits/components/CreateHabitPurposeStep'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
@@ -60,14 +62,53 @@ function NewCategoryButton({
   )
 }
 
+function NewPurposeButton({
+  disabled,
+  shouldAvoid,
+  onCreated,
+}: {
+  disabled: boolean
+  shouldAvoid: boolean
+  onCreated: (purposeId: string) => void
+}) {
+  const { push } = useModalStep()
+  const placement = shouldAvoid ? 'avoid' : 'want'
+
+  return (
+    <button
+      type="button"
+      className={styles.newCategoryBtn}
+      disabled={disabled}
+      onClick={() =>
+        push({
+          title: 'Nuevo propósito',
+          description: 'Crea un propósito y asígnalo a este hábito.',
+          content: <CreateHabitPurposeStep placement={placement} onCreated={onCreated} />,
+        })
+      }
+    >
+      + Nuevo propósito
+    </button>
+  )
+}
+
 export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [values, setValues] = useState<HabitFormValues>(() => defaultFormValues(habit))
   const [nameError, setNameError] = useState<string | null>(null)
 
   const { data: categories = [] } = useHabitCategoriesQuery()
+  const { data: purposes = [] } = useHabitPurposesQuery()
   const createMutation = useCreateHabitMutation()
   const updateMutation = useUpdateHabitMutation()
+
+  useEffect(() => {
+    if (open) {
+      setValues(defaultFormValues(habit))
+      setNameError(null)
+      setStep(1)
+    }
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const hasFollowUps = mode === 'edit' && habit.days > 0
   const isMutating = createMutation.isPending || updateMutation.isPending
@@ -220,6 +261,19 @@ export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalPro
     </div>
   )
 
+  const filteredPurposes = purposes.filter((p) =>
+    values.shouldAvoid ? p.placement === 'avoid' : p.placement === 'want',
+  )
+  const purposeColumnLabel = values.shouldAvoid ? 'Quiero dejar de ser' : 'Quiero ser'
+
+  const purposeOptions = [
+    { value: '', label: 'Sin propósito' },
+    ...filteredPurposes.map((p) => ({
+      value: p.id,
+      label: p.icon ? `${p.icon} ${p.name}` : p.name,
+    })),
+  ]
+
   const step3Content = (
     <div className={styles.stepContent}>
       <FormField id="habit-lifelines" label="Salvavidas por semana">
@@ -283,6 +337,27 @@ export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalPro
           Las fechas y el tipo no se pueden modificar porque ya hay registros.
         </p>
       )}
+      <div className={styles.purposeField}>
+        {filteredPurposes.length > 0 ? (
+          <Select
+            id="habit-purpose"
+            label="Propósito (opcional)"
+            options={purposeOptions}
+            value={values.purposeId ?? ''}
+            onChange={(v) => patch({ purposeId: v || null })}
+            disabled={isMutating}
+          />
+        ) : (
+          <p className={styles.purposeEmpty}>
+            No tienes propósitos en &quot;{purposeColumnLabel}&quot; aún.
+          </p>
+        )}
+        <NewPurposeButton
+          disabled={isMutating}
+          shouldAvoid={values.shouldAvoid}
+          onCreated={(id) => patch({ purposeId: id })}
+        />
+      </div>
     </div>
   )
 

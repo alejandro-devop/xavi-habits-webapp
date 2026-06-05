@@ -23,6 +23,7 @@ const HABIT_FIELDS = `
   endDate
   categoryId
   measureId
+  purposeId
   createdAt
   updatedAt
 `
@@ -46,6 +47,12 @@ export const HABIT_MY_DAY_QUERY = `
     habitMyDay(date: $date) {
       habit {
         ${HABIT_FIELDS}
+        purpose {
+          id
+          name
+          icon
+          placement
+        }
       }
       followUp {
         ${FOLLOW_UP_FIELDS}
@@ -90,6 +97,12 @@ export const HABIT_QUERY = `
         name
         icon
         color
+      }
+      purpose {
+        id
+        name
+        icon
+        placement
       }
     }
   }

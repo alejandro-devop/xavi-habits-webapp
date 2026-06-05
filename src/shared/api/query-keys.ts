@@ -18,6 +18,10 @@ export const habitKeys = {
     list: () => [...habitKeys.categories.all(), 'list'] as const,
     detail: (id: string) => [...habitKeys.categories.all(), 'detail', id] as const,
   },
+  purposes: {
+    all: () => [...habitKeys.all, 'purposes'] as const,
+    list: () => [...habitKeys.purposes.all(), 'list'] as const,
+  },
 }
 
 export const activityKeys = {

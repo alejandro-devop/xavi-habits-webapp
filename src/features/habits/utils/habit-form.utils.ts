@@ -77,7 +77,7 @@ export function buildHabitCreatePayload(values: HabitFormValues): HabitInput {
 }
 
 export function buildHabitEditPayload(values: HabitFormValues, habit: Habit): HabitEditInput {
-  const payload = buildHabitCreatePayload(values)
+  const payload: Partial<HabitInput> = buildHabitCreatePayload(values)
   const hasFollowUps = habit.days > 0
 
   if (hasFollowUps) {

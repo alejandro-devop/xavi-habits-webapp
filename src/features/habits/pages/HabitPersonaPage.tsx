@@ -159,6 +159,7 @@ export function HabitPersonaPage() {
                 purpose={activePurpose}
                 onEdit={() => {}}
                 onDelete={() => {}}
+                onMove={() => {}}
                 dragging
               />
             ) : null}

@@ -124,6 +124,54 @@
       "completedBy": "claude-code",
       "notes": "HabitFormModal refactorizado a SteppedModal con 3 pasos (useState<1|2|3>). NewCategoryButton es un subcomponente interno para acceder a useModalStep().push. CreateHabitCategoryStep creado como componente independiente con campos: name, icon, color.",
       "dependsOn": [8, 9]
+    },
+    {
+      "number": 11,
+      "name": "Backend: Entidad HabitPurpose",
+      "repo": "backend",
+      "repoPath": "/Users/jako/Developer/xavi-platform/xavi-platform-node",
+      "status": "complete",
+      "startedAt": "2026-06-04",
+      "completedAt": "2026-06-04",
+      "completedBy": "claude-code",
+      "notes": "Migración creada como 043_habit_purposes.sql (042 ya existía para todo templates). Aplicar manualmente post-deploy: psql ... < migrations/043_habit_purposes.sql",
+      "dependsOn": [3]
+    },
+    {
+      "number": 12,
+      "name": "Frontend: Página Mi Persona Ideal",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [11]
+    },
+    {
+      "number": 13,
+      "name": "Frontend: Conectar hábitos con propósitos",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [10, 11]
+    },
+    {
+      "number": 14,
+      "name": "Frontend: Banner de propósito en Mi Día",
+      "repo": "frontend",
+      "repoPath": "/Users/jako/Developer/xavi-fronts/xavi-habits-web",
+      "status": "pending",
+      "startedAt": null,
+      "completedAt": null,
+      "completedBy": null,
+      "notes": "",
+      "dependsOn": [12, 13]
     }
   ]
 }

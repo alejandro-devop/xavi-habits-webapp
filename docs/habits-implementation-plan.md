@@ -1695,5 +1695,630 @@ Usa `useCreateHabitCategoryMutation()` de la Fase 9.
 | 8 | CRUD de hábitos | Frontend | Medio | 5, 6 |
 | 9 | Gestión de categorías | Frontend | Bajo | 4 |
 | 10 | HabitFormModal multi-paso | Frontend | Medio | 8, 9 |
+| 11 | Backend: Entidad HabitPurpose | Backend | Bajo | 3 |
+| 12 | Frontend: Página Mi Persona Ideal | Frontend | Medio | 11 |
+| 13 | Frontend: Conectar hábitos con propósitos | Frontend | Bajo | 10, 11 |
+| 14 | Frontend: Banner de propósito en Mi Día | Frontend | Bajo | 12, 13 |
 
 Las fases 9 y 10 son independientes de las vistas (7) y pueden ejecutarse en cualquier orden. La Fase 10 depende de la 9 porque el Paso 2 del formulario permite crear categorías inline.
+
+Las fases 11–14 implementan la funcionalidad "Mi Persona Ideal". La Fase 11 puede ejecutarse en paralelo con cualquier fase frontend ya que es backend puro. Las Fases 13 y 14 son lineales y dependen de que tanto el backend (11) como el formulario multi-paso (10) estén listos.
+
+---
+
+## Fase 11 — Backend: Entidad HabitPurpose
+
+**Repo:** Backend
+**Dependencias:** Fase 3
+**Riesgo:** Bajo
+
+### Scope exacto
+
+Nueva entidad `HabitPurpose` (propósito/característica de identidad). Nueva tabla en DB, tipos TypeScript, servicio CRUD, y exposición vía GraphQL. Modificación de `habits` para aceptar `purposeId` opcional. La migración se CREA pero NO se ejecuta.
+
+### Archivos a crear o modificar
+
+| Archivo | Acción |
+|---|---|
+| `migrations/042_habit_purposes.sql` | CREAR |
+| `src/types/services/habit-purpose.types.ts` | CREAR |
+| `src/services/habit-purpose.service.ts` | CREAR |
+| `src/graphql/modules/habit/habit.schema.ts` | MODIFICAR |
+| `src/graphql/modules/habit/habit.resolvers.ts` | MODIFICAR |
+| `src/validators/schemas/habit.schemas.ts` | MODIFICAR |
+| `src/types/services/habit.types.ts` | MODIFICAR |
+| `src/services/habit.service.ts` | MODIFICAR |
+
+### Contenido de `042_habit_purposes.sql`
+
+```sql
+-- Nueva tabla de propósitos de identidad
+CREATE TABLE habit_purposes (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  icon VARCHAR(100),
+  placement VARCHAR(10) NOT NULL DEFAULT 'pool'
+    CHECK (placement IN ('pool', 'want', 'avoid')),
+  order_index INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_habit_purposes_user_id ON habit_purposes(user_id, placement);
+
+-- Añadir referencia opcional a propósito en la tabla de hábitos
+ALTER TABLE habits
+  ADD COLUMN purpose_id INTEGER REFERENCES habit_purposes(id) ON DELETE SET NULL;
+
+-- DOWN
+-- ALTER TABLE habits DROP COLUMN IF EXISTS purpose_id;
+-- DROP TABLE IF EXISTS habit_purposes;
+```
+
+`placement` puede ser `'pool'` (creado pero no asignado a columna), `'want'` (lo que quiero) o `'avoid'` (lo que no quiero).
+
+### Contenido de `habit-purpose.types.ts`
+
+```typescript
+export type HabitPurposePlacement = 'pool' | 'want' | 'avoid'
+
+export interface HabitPurpose {
+  id: string
+  userId: number
+  name: string
+  icon: string | null
+  placement: HabitPurposePlacement
+  orderIndex: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface HabitPurposeInput {
+  name: string
+  icon?: string | null
+  placement?: HabitPurposePlacement
+  orderIndex?: number
+}
+
+export interface HabitPurposeEditInput extends Partial<HabitPurposeInput> {
+  id: string
+}
+```
+
+### Contenido de `habit-purpose.service.ts`
+
+Funciones:
+- `listHabitPurposes(userId: number): Promise<HabitPurpose[]>` — SELECT ordenado por `placement, order_index ASC`.
+- `getHabitPurpose(id: string, userId: number): Promise<HabitPurpose>` — SELECT + verificación de propiedad; lanzar `NotFoundError` si no existe.
+- `createHabitPurpose(userId: number, input: HabitPurposeInput): Promise<HabitPurpose>` — INSERT con `placement = input.placement ?? 'pool'`.
+- `updateHabitPurpose(id: string, userId: number, input: HabitPurposeEditInput): Promise<HabitPurpose>` — UPDATE parcial de los campos presentes en input; no actualizar campos ausentes.
+- `removeHabitPurpose(id: string, userId: number): Promise<boolean>` — DELETE. El `ON DELETE SET NULL` en `habits.purpose_id` asegura que los hábitos enlazados no se rompen.
+
+Constante `PURPOSE_RETURNING`:
+```
+id, user_id, name, icon, placement, order_index, created_at, updated_at
+```
+
+Función `mapPurpose(row)` que convierte snake_case a camelCase.
+
+### Cambios en `habit.types.ts` (backend)
+
+Añadir a `Habit`:
+```typescript
+purposeId: number | null
+```
+
+Añadir a `CreateHabitInput` y `UpdateHabitInput`:
+```typescript
+purposeId?: string | null
+```
+
+### Cambios en `habit.service.ts`
+
+- En `HABIT_RETURNING`: añadir `purpose_id`.
+- En `mapHabit(row)`: añadir `purposeId: row.purpose_id ?? null`.
+- En `createHabit`: añadir `purpose_id` al INSERT si `input.purposeId` está presente.
+- En `updateHabit`: añadir `purposeId` al `fieldMap` como `purpose_id`.
+
+### Cambios en `habit.schemas.ts`
+
+En `legacyHabitFields` (o donde corresponda): añadir `purposeId: z.string().nullable().optional()`.
+
+Nuevos schemas:
+```typescript
+export const habitPurposeInputSchema = z.object({
+  name: z.string().min(1).max(255),
+  icon: z.string().max(100).nullable().optional(),
+  placement: z.enum(['pool', 'want', 'avoid']).optional(),
+  orderIndex: z.number().int().min(0).optional(),
+})
+
+export const habitPurposeEditInputSchema = z.object({
+  id: habitIdString,
+  name: z.string().min(1).max(255).optional(),
+  icon: z.string().max(100).nullable().optional(),
+  placement: z.enum(['pool', 'want', 'avoid']).optional(),
+  orderIndex: z.number().int().min(0).optional(),
+}).refine(
+  (d) => ['name', 'icon', 'placement', 'orderIndex'].some((k) => d[k as keyof typeof d] !== undefined),
+  { message: 'At least one field required' }
+)
+```
+
+### Cambios en `habit.schema.ts` (GraphQL)
+
+Añadir:
+```graphql
+enum HabitPurposePlacement { pool want avoid }
+
+type HabitPurpose {
+  id: ID!
+  userId: Int!
+  name: String!
+  icon: String
+  placement: HabitPurposePlacement!
+  orderIndex: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+extend type Query {
+  habitPurposes: [HabitPurpose!]!
+  habitPurpose(id: ID!): HabitPurpose!
+}
+
+extend type Mutation {
+  habitPurposeAdd(input: HabitPurposeInput!): HabitPurpose!
+  habitPurposeEdit(input: HabitPurposeEditInput!): HabitPurpose!
+  habitPurposeRemove(id: ID!): Boolean!
+}
+
+input HabitPurposeInput {
+  name: String!
+  icon: String
+  placement: HabitPurposePlacement
+  orderIndex: Int
+}
+
+input HabitPurposeEditInput {
+  id: ID!
+  name: String
+  icon: String
+  placement: HabitPurposePlacement
+  orderIndex: Int
+}
+```
+
+En el tipo `Habit` existente, añadir:
+```graphql
+purposeId: ID
+purpose: HabitPurpose
+```
+
+En `HabitInput` y `HabitEditInput`, añadir:
+```graphql
+purposeId: ID
+```
+
+### Cambios en `habit.resolvers.ts`
+
+Añadir resolvers en `Query`:
+```typescript
+habitPurposes: async (_p, _a, ctx) => {
+  requireAuth(ctx, 'habitPurposes')
+  return habitPurposeService.listHabitPurposes(uid(ctx))
+},
+habitPurpose: withValidatedResolver(z.object({ id: habitIdString }), async (_p, { id }, ctx) => {
+  requireAuth(ctx, 'habitPurpose')
+  return habitPurposeService.getHabitPurpose(id, uid(ctx))
+}, 'habitPurpose'),
+```
+
+Añadir resolvers en `Mutation`:
+```typescript
+habitPurposeAdd: withValidatedResolver(habitPurposeInputSchema, async (_p, { input }, ctx) => {
+  requireAuth(ctx, 'habitPurposeAdd')
+  return habitPurposeService.createHabitPurpose(uid(ctx), input)
+}, 'habitPurposeAdd'),
+habitPurposeEdit: withValidatedResolver(habitPurposeEditInputSchema, async (_p, { input }, ctx) => {
+  requireAuth(ctx, 'habitPurposeEdit')
+  return habitPurposeService.updateHabitPurpose(input.id, uid(ctx), input)
+}, 'habitPurposeEdit'),
+habitPurposeRemove: withValidatedResolver(z.object({ id: habitIdString }), async (_p, { id }, ctx) => {
+  requireAuth(ctx, 'habitPurposeRemove')
+  return habitPurposeService.removeHabitPurpose(id, uid(ctx))
+}, 'habitPurposeRemove'),
+```
+
+Field resolver en `Habit` para cargar el propósito si `purposeId` está presente:
+```typescript
+Habit: {
+  purpose: async (habit, _args, ctx) => {
+    if (!habit.purposeId) return null
+    return habitPurposeService.getHabitPurpose(String(habit.purposeId), uid(ctx))
+  },
+}
+```
+
+### Criterio de done
+
+- `habitPurposes` query devuelve lista vacía para usuario sin propósitos.
+- `habitPurposeAdd` crea un propósito con `placement = 'pool'` por defecto.
+- `habitPurposeEdit` con `placement: 'want'` mueve el propósito a esa columna.
+- `habitPurposeRemove` no rompe hábitos enlazados (su `purposeId` queda null en DB).
+- `habitAdd` con `purposeId` válido enlaza el hábito al propósito.
+- La migración `042` se CREA como archivo pero NO se ejecuta (se aplica manualmente post-deploy).
+
+---
+
+## Fase 12 — Frontend: Página "Mi Persona Ideal"
+
+**Repo:** Frontend
+**Dependencias:** Fase 11
+**Riesgo:** Medio (drag & drop — librería nueva en el proyecto)
+
+### Scope exacto
+
+Nueva página `/habits/persona` con tres zonas: pool (propósitos sin asignar), columna "Lo que quiero" y columna "Lo que no quiero". Drag & drop entre zonas. CRUD completo de propósitos. Instalar `@dnd-kit/core` y `@dnd-kit/utilities`.
+
+### Instalación previa
+
+```bash
+pnpm add @dnd-kit/core @dnd-kit/utilities
+```
+
+### Archivos a crear
+
+```
+src/features/habits/
+├── types/
+│   └── habit-purpose.types.ts
+├── graphql/
+│   └── habit-purposes.graphql.ts
+├── api/
+│   └── habit-purposes.api.ts
+├── hooks/
+│   └── useHabitPurposes.ts
+├── components/
+│   ├── HabitPurposeCard/
+│   │   ├── HabitPurposeCard.tsx
+│   │   ├── HabitPurposeCard.module.scss
+│   │   └── index.ts
+│   ├── HabitPurposeForm/
+│   │   ├── HabitPurposeForm.tsx
+│   │   ├── HabitPurposeForm.module.scss
+│   │   └── index.ts
+│   └── PersonaColumn/
+│       ├── PersonaColumn.tsx
+│       ├── PersonaColumn.module.scss
+│       └── index.ts
+└── pages/
+    ├── HabitPersonaPage.tsx
+    └── HabitPersonaPage.module.scss
+```
+
+### Archivos a modificar
+
+| Archivo | Cambio |
+|---|---|
+| `src/features/habits/routes/habits-paths.ts` | Añadir `persona: '/app/habits/persona'` |
+| `src/features/habits/routes/habits.routes.tsx` | Añadir ruta `persona` → `<HabitPersonaPage />` |
+| `src/features/habits/components/HabitsModuleLayout/HabitsModuleLayout.tsx` | Añadir link "Mi Persona" al nav |
+| `src/shared/api/query-keys.ts` | Añadir `habitKeys.purposes` |
+
+### Contenido de `habit-purpose.types.ts` (frontend)
+
+Espeja los tipos del backend:
+```typescript
+export type HabitPurposePlacement = 'pool' | 'want' | 'avoid'
+
+export interface HabitPurpose {
+  id: string
+  userId: number
+  name: string
+  icon: string | null
+  placement: HabitPurposePlacement
+  orderIndex: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface HabitPurposeInput {
+  name: string
+  icon?: string | null
+  placement?: HabitPurposePlacement
+  orderIndex?: number
+}
+
+export interface HabitPurposeEditInput extends Partial<HabitPurposeInput> {
+  id: string
+}
+```
+
+### Contenido de `habit-purposes.graphql.ts`
+
+```typescript
+export const HABIT_PURPOSES_QUERY = `
+  query HabitPurposes {
+    habitPurposes {
+      id userId name icon placement orderIndex createdAt updatedAt
+    }
+  }
+`
+
+export const HABIT_PURPOSE_ADD_MUTATION = `
+  mutation HabitPurposeAdd($input: HabitPurposeInput!) {
+    habitPurposeAdd(input: $input) {
+      id userId name icon placement orderIndex createdAt updatedAt
+    }
+  }
+`
+
+export const HABIT_PURPOSE_EDIT_MUTATION = `
+  mutation HabitPurposeEdit($input: HabitPurposeEditInput!) {
+    habitPurposeEdit(input: $input) {
+      id userId name icon placement orderIndex createdAt updatedAt
+    }
+  }
+`
+
+export const HABIT_PURPOSE_REMOVE_MUTATION = `
+  mutation HabitPurposeRemove($id: ID!) {
+    habitPurposeRemove(id: $id)
+  }
+`
+```
+
+### Contenido de `habit-purposes.api.ts`
+
+- `getHabitPurposes(): Promise<HabitPurpose[]>`
+- `createHabitPurpose(input: HabitPurposeInput): Promise<HabitPurpose>`
+- `updateHabitPurpose(input: HabitPurposeEditInput): Promise<HabitPurpose>`
+- `removeHabitPurpose(id: string): Promise<boolean>`
+
+### Contenido de `useHabitPurposes.ts`
+
+Query keys: `habitKeys.purposes.all()`, `habitKeys.purposes.list()`.
+
+- `useHabitPurposesQuery()` — staleTime: 60s.
+- `useCreateHabitPurposeMutation()` — onSuccess: invalidar `habitKeys.purposes.list()`, toast "Propósito creado".
+- `useUpdateHabitPurposeMutation()` — onSuccess: invalidar `habitKeys.purposes.list()`, toast "Propósito actualizado".
+- `useRemoveHabitPurposeMutation()` — onSuccess: invalidar `habitKeys.purposes.list()`, toast "Propósito eliminado".
+
+### Descripción de `HabitPurposeCard`
+
+Props: `purpose: HabitPurpose`, `onEdit: () => void`, `onDelete: () => void`, `dragging?: boolean`.
+
+La card muestra:
+- Icono (si existe) + nombre del propósito.
+- Menú contextual (tres puntos): "Editar" y "Eliminar".
+- Cuando `dragging = true`: aplicar clase CSS de sombra/opacidad reducida para feedback visual.
+
+Para el drag, el componente debe exponerse como un `useDraggable` de `@dnd-kit/core`. El `id` del draggable es `purpose.id`. El `data` del drag incluye `{ placement: purpose.placement }`.
+
+### Descripción de `HabitPurposeForm`
+
+Props: `initial?: HabitPurpose`, `onSubmit: (values: HabitPurposeInput) => void`, `onCancel: () => void`, `loading?: boolean`.
+
+Campos:
+1. `name` (Input, obligatorio, autoFocus)
+2. `icon` (IconPicker, clearable — mismo componente que usa HabitCategoryForm)
+
+Footer: botón cancelar (ghost) + botón "Guardar".
+
+### Descripción de `PersonaColumn`
+
+Props: `title: string`, `placement: HabitPurposePlacement`, `purposes: HabitPurpose[]`, `onEdit: (p: HabitPurpose) => void`, `onDelete: (id: string) => void`.
+
+Internamente implementa `useDroppable({ id: placement })` de `@dnd-kit/core`.
+
+Muestra el título, un contador de propósitos, y la lista de `HabitPurposeCard`.
+
+Cuando hay un propósito sobre ella (`isOver = true`): aplicar clase CSS de highlight en el borde/fondo.
+
+Si la lista está vacía y no hay drag sobre ella: mostrar placeholder "Arrastra propósitos aquí".
+
+### Descripción de `HabitPersonaPage`
+
+Estado local:
+- `editingPurpose: HabitPurpose | null` — propósito en edición (abre modal).
+- `isCreating: boolean` — abre modal de creación.
+- `activeId: string | null` — id del propósito siendo arrastrado (para overlay).
+
+Llama `useHabitPurposesQuery()`. Deriva las tres listas filtrando por `placement`:
+- `pool = purposes.filter(p => p.placement === 'pool')`
+- `want = purposes.filter(p => p.placement === 'want')`
+- `avoid = purposes.filter(p => p.placement === 'avoid')`
+
+Layout:
+```
+[ Header: "Mi Persona Ideal" ] [ Botón "Nuevo propósito" ]
+
+[ Pool — sin asignar ]
+  [ card ] [ card ] [ card ] ...
+
+[ Lo que quiero ]          [ Lo que no quiero ]
+  [ card ]                   [ card ]
+  [ card ]                   [ card ]
+```
+
+Pool horizontal (scroll) con las cards no asignadas.
+Las dos columnas debajo en layout de dos columnas.
+
+**Implementación DnD:**
+
+Usar `DndContext` de `@dnd-kit/core` con sensor de puntero (`PointerSensor`).
+
+`onDragStart`: guardar `activeId = event.active.id`.
+
+`onDragEnd`: si `event.over` existe y `event.over.id` es diferente al `placement` actual del propósito, llamar `useUpdateHabitPurposeMutation().mutate({ id: activeId, placement: event.over.id as HabitPurposePlacement })`. Limpiar `activeId`.
+
+`DragOverlay`: renderizar una copia de `HabitPurposeCard` del propósito con `activeId` mientras se arrastra, con `dragging = true`.
+
+Las tres `PersonaColumn` (pool, want, avoid) son los `useDroppable` con sus respectivos `id`.
+
+**Modal de crear/editar:**
+
+Usar `Modal` estándar del proyecto con `HabitPurposeForm` dentro.
+
+En creación: `useCreateHabitPurposeMutation().mutate({ name, icon, placement: 'pool' })`.
+En edición: `useUpdateHabitPurposeMutation().mutate({ id, name, icon })`.
+
+Eliminar: `useConfirmDialog` → `useRemoveHabitPurposeMutation().mutate(id)`.
+
+### Criterio de done
+
+- `/app/habits/persona` es accesible desde el nav del módulo.
+- Crear un propósito lo muestra en el pool.
+- Arrastrar del pool a "Lo que quiero" actualiza su `placement` en la DB y la UI refleja el cambio sin recarga.
+- Arrastrar de "Lo que no quiero" a "Lo que quiero" funciona igual.
+- Editar el nombre e icono funciona desde el menú contextual.
+- Eliminar un propósito que ya está enlazado a un hábito no rompe la app (el hábito pierde la referencia silenciosamente por el ON DELETE SET NULL del backend).
+
+---
+
+## Fase 13 — Frontend: Conectar hábitos con propósitos
+
+**Repo:** Frontend
+**Dependencias:** Fases 10 y 11
+**Riesgo:** Bajo
+
+### Scope exacto
+
+Añadir el campo opcional `purposeId` al formulario de hábitos (Paso 3 del SteppedModal). Actualizar los tipos y queries del frontend para incluir `purposeId` y el objeto `purpose` embebido. El picker de propósito filtra por columna según el tipo de hábito.
+
+### Archivos a modificar
+
+| Archivo | Cambio |
+|---|---|
+| `src/features/habits/types/habit.types.ts` | Añadir `purposeId`, `purpose` a `Habit` y a `HabitInput`/`HabitEditInput` |
+| `src/features/habits/graphql/habits.graphql.ts` | Añadir `purposeId` a `HABIT_FIELDS`; añadir `purpose { id name icon placement }` a queries que lo necesiten |
+| `src/features/habits/components/HabitFormModal/HabitFormModal.tsx` | Añadir campo propósito en el Paso 3 |
+
+### Cambios en `habit.types.ts` (frontend)
+
+En la interfaz `Habit`:
+```typescript
+purposeId: string | null
+purpose?: HabitPurpose | null
+```
+
+En `HabitInput` y `HabitEditInput`:
+```typescript
+purposeId?: string | null
+```
+
+Importar `HabitPurpose` desde `habit-purpose.types.ts`.
+
+### Cambios en `habits.graphql.ts`
+
+En `HABIT_FIELDS`: añadir `purposeId`.
+
+En `HABIT_QUERY` (query de detalle): añadir el bloque:
+```graphql
+purpose {
+  id
+  name
+  icon
+  placement
+}
+```
+
+En `HABIT_MY_DAY_QUERY`, en el sub-objeto `habit`: añadir `purposeId` y el bloque `purpose { id name icon placement }`.
+
+### Cambios en `HabitFormModal`
+
+En el Paso 3 (Fechas y metas), añadir al final del formulario:
+
+```
+[ Propósito (opcional) ]
+Select con las opciones filtradas:
+  - Si shouldAvoid = true  → mostrar propósitos con placement = 'avoid'
+  - Si shouldAvoid = false → mostrar propósitos con placement = 'want'
+  - Opción "Sin propósito" siempre disponible (valor null)
+```
+
+El componente llama `useHabitPurposesQuery()` para obtener todos los propósitos. Filtra en cliente por `placement`.
+
+Si no hay propósitos en la columna correspondiente: mostrar texto informativo "No tienes propósitos en '...' aún. Ve a Mi Persona para crearlos." con link a `habitsPaths.persona`.
+
+En `habit-form.utils.ts`: incluir `purposeId` en `buildHabitCreatePayload` y `buildHabitEditPayload`.
+
+### Criterio de done
+
+- Al crear un hábito con `shouldAvoid = false`, el picker de propósito muestra solo los de `placement = 'want'`.
+- Al crear un hábito con `shouldAvoid = true`, el picker muestra solo los de `placement = 'avoid'`.
+- El propósito seleccionado se persiste en la DB (`habits.purpose_id`).
+- Editar un hábito que ya tiene propósito pre-selecciona el propósito en el picker.
+- Seleccionar "Sin propósito" envía `purposeId: null` y borra la referencia.
+
+---
+
+## Fase 14 — Frontend: Banner de propósito en "Mi Día"
+
+**Repo:** Frontend
+**Dependencias:** Fases 12 y 13
+**Riesgo:** Bajo
+
+### Scope exacto
+
+Modificar `HabitDayCard` para mostrar encima de cada hábito un banner con el propósito asociado. Si el hábito no tiene propósito, mostrar una invitación sutil para asignarlo.
+
+### Archivos a crear
+
+```
+src/features/habits/components/
+└── HabitPurposeBanner/
+    ├── HabitPurposeBanner.tsx
+    ├── HabitPurposeBanner.module.scss
+    └── index.ts
+```
+
+### Archivos a modificar
+
+| Archivo | Cambio |
+|---|---|
+| `src/features/habits/components/HabitDayCard/HabitDayCard.tsx` | Añadir `HabitPurposeBanner` encima del contenido principal |
+| `src/features/habits/components/HabitDayCard/HabitDayCard.module.scss` | Ajustar layout para acomodar el banner |
+
+### Descripción de `HabitPurposeBanner`
+
+Props: `purpose: HabitPurpose | null | undefined`, `habitId: string`.
+
+**Si `purpose` existe:**
+
+Mostrar un chip/banner compacto con:
+- Icono del propósito (si tiene) + nombre.
+- Texto de contexto pequeño según `purpose.placement`:
+  - `'want'` → "Para ser: ..."
+  - `'avoid'` → "Para dejar de ser: ..."
+- El banner es visualmente discreto (fondo sutil, texto secundario), no compite con la acción principal de la card.
+
+**Si `purpose` es null o undefined:**
+
+Mostrar un CTA sutil: texto "¿Por qué haces este hábito?" con un link/botón pequeño "Asignar propósito" que navega a `habitsPaths.persona`. El CTA debe ser claramente opcional y no intrusivo — fuente pequeña, color terciario, sin icono llamativo.
+
+### Cambios en `HabitDayCard`
+
+El componente recibe `entry: HabitMyDayEntry`. Dado que la Fase 13 ya añade `purpose` al objeto `habit` en la query `habitMyDay`, el dato llega directamente en `entry.habit.purpose`.
+
+Estructura del componente actualizada:
+```tsx
+<div className={styles.card}>
+  <HabitPurposeBanner purpose={entry.habit.purpose} habitId={entry.habit.id} />
+  <div className={styles.content}>
+    {/* contenido existente de la card */}
+  </div>
+</div>
+```
+
+El banner va fuera del `content` y ocupa el ancho completo de la card, separado visualmente del cuerpo principal (borde inferior fino o fondo distinto).
+
+### Criterio de done
+
+- En Mi Día, cada hábito con propósito muestra el banner con icono y nombre del propósito.
+- El texto "Para ser:" aparece en hábitos `placement = 'want'`; "Para dejar de ser:" en `placement = 'avoid'`.
+- Hábitos sin propósito muestran el CTA "¿Por qué haces este hábito?".
+- El link "Asignar propósito" navega a `/app/habits/persona`.
+- La card mantiene su funcionalidad completa (registrar follow-up, lifeline, etc.) sin regresiones.

@@ -58,6 +58,10 @@ Terminar con la pregunta: **"¿Confirmas que quieres ejecutar esta fase? (sí/no
 
 6. **Regla especial para la Fase 3:** Crear la migración `041_habits_cleanup.sql` pero NO ejecutarla. Dejar una nota en `"notes"` del JSON indicando que debe aplicarse manualmente post-deploy.
 
+7. **Regla especial para la Fase 11:** Crear la migración `042_habit_purposes.sql` pero NO ejecutarla. Dejar una nota en `"notes"` del JSON indicando que debe aplicarse manualmente post-deploy.
+
+8. **Regla especial para la Fase 12:** Antes de implementar cualquier componente, ejecutar `pnpm add @dnd-kit/core @dnd-kit/utilities` en el repo frontend. Verificar que el comando termina sin errores antes de continuar.
+
 ### Paso 6: Al terminar la implementación
 
 Actualizar `docs/habits-phases.json`:

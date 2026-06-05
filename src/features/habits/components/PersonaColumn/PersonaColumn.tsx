@@ -9,9 +9,10 @@ type PersonaColumnProps = {
   purposes: HabitPurpose[]
   onEdit: (p: HabitPurpose) => void
   onDelete: (id: string) => void
+  onMove: (id: string, placement: HabitPurposePlacement) => void
 }
 
-export function PersonaColumn({ title, placement, purposes, onEdit, onDelete }: PersonaColumnProps) {
+export function PersonaColumn({ title, placement, purposes, onEdit, onDelete, onMove }: PersonaColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: placement })
 
   return (
@@ -31,6 +32,7 @@ export function PersonaColumn({ title, placement, purposes, onEdit, onDelete }: 
             purpose={p}
             onEdit={() => onEdit(p)}
             onDelete={() => onDelete(p.id)}
+            onMove={(pl) => onMove(p.id, pl)}
           />
         ))}
 

@@ -75,6 +75,10 @@ export function HabitPersonaPage() {
     )
   }
 
+  const handleMove = (id: string, placement: HabitPurposePlacement) => {
+    updateMutation.mutate({ id, placement })
+  }
+
   const handleDelete = async (id: string) => {
     const purpose = purposes.find((p) => p.id === id)
     const confirmed = await confirm({
@@ -126,6 +130,7 @@ export function HabitPersonaPage() {
               purposes={pool}
               onEdit={(p) => setEditingPurpose(p)}
               onDelete={(id) => void handleDelete(id)}
+              onMove={handleMove}
             />
           </div>
 
@@ -136,6 +141,7 @@ export function HabitPersonaPage() {
               purposes={want}
               onEdit={(p) => setEditingPurpose(p)}
               onDelete={(id) => void handleDelete(id)}
+              onMove={handleMove}
             />
             <PersonaColumn
               title="Lo que no quiero"
@@ -143,6 +149,7 @@ export function HabitPersonaPage() {
               purposes={avoid}
               onEdit={(p) => setEditingPurpose(p)}
               onDelete={(id) => void handleDelete(id)}
+              onMove={handleMove}
             />
           </div>
 

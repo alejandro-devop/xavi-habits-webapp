@@ -52,15 +52,7 @@ import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { Skeleton } from '@/shared/ui/Skeleton'
-import { Tabs } from '@/shared/ui/Tabs'
 import styles from './ActivityTrackingPage.module.scss'
-
-const TRACKING_VIEW = {
-  timeline: 'timeline',
-  summary: 'summary',
-} as const
-
-type TrackingView = (typeof TRACKING_VIEW)[keyof typeof TRACKING_VIEW]
 
 export function ActivityTrackingPage() {
   const today = getCurrentLocalDate()
@@ -85,7 +77,6 @@ export function ActivityTrackingPage() {
   const [finishFormValues, setFinishFormValues] = useState<FinishActivityFormValues | null>(null)
   const [editFollowUp, setEditFollowUp] = useState<ActivityFollowUp | null>(null)
   const [freeSlotModal, setFreeSlotModal] = useState<TimelineFreeSlot | null>(null)
-  const [activeView, setActiveView] = useState<TrackingView>(TRACKING_VIEW.timeline)
 
   const { confirm } = useConfirmDialog()
 
@@ -271,126 +262,128 @@ export function ActivityTrackingPage() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h2 className={styles.title}>Seguimiento de tiempo</h2>
-          <p className={styles.subtitle}>Semana actual · más reciente arriba</p>
+      <div className={styles.topRow}>
+        <ActivityWeekSelector days={weekDays} onSelect={handleSelectDay} />
+        <div className={styles.topActions}>
+          <Button
+            variant="primary"
+            onClick={handleOpenStart}
+            disabled={Boolean(session)}
+            aria-label="Iniciar nueva actividad"
+          >
+            <AppIcon name="plus" size="sm" decorative />
+            Iniciar
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleOpenLogPast}
+            disabled={Boolean(session)}
+            aria-label="Registrar tiempo pasado"
+          >
+            <AppIcon name="clock" size="sm" decorative />
+            Registrar
+          </Button>
         </div>
-      </header>
+      </div>
 
-      <ActivityWeekSelector days={weekDays} onSelect={handleSelectDay} />
+      <div className={styles.mobileMetrics}>
+        <DayRemainingWidget />
+        <DayUsageWidget
+          date={selectedDate}
+          followUps={followUps}
+          freeSlots={freeSlots}
+          isLoading={isLoading}
+        />
+      </div>
 
-      <Tabs
-        value={activeView}
-        onChange={(value) => setActiveView(value as TrackingView)}
-        className={styles.views}
-      >
-        <Tabs.List>
-          <Tabs.Tab value={TRACKING_VIEW.timeline}>Registro</Tabs.Tab>
-          <Tabs.Tab value={TRACKING_VIEW.summary}>Resumen</Tabs.Tab>
-        </Tabs.List>
-
-        <Tabs.Panel value={TRACKING_VIEW.timeline}>
-          <div className={styles.timelinePanel}>
-            <DayRemainingWidget className={styles.timelineClock} />
-            <div className={styles.toolbar}>
-              <Button
-                variant="primary"
-                onClick={handleOpenStart}
-                disabled={Boolean(session)}
-                aria-label="Iniciar nueva actividad"
-              >
-                <AppIcon name="plus" size="sm" decorative />
-                Iniciar nueva actividad
+      <div className={styles.layout}>
+        <div className={styles.timelineCol}>
+          {isError ? (
+            <Alert variant="danger" title="No se pudo cargar la timeline">
+              {error instanceof Error ? error.message : 'Error desconocido'}
+              <Button variant="ghost" onClick={() => refetch()}>
+                Reintentar
               </Button>
-              <Button
-                variant="secondary"
-                onClick={handleOpenLogPast}
-                disabled={Boolean(session)}
-                aria-label="Registrar tiempo pasado"
-              >
-                <AppIcon name="clock" size="sm" decorative />
-                Registrar tiempo pasado
-              </Button>
+            </Alert>
+          ) : null}
+
+          {isLoading ? (
+            <div className={styles.skeleton}>
+              <Skeleton height="3rem" />
+              <Skeleton height="12rem" />
+              <Skeleton height="12rem" />
             </div>
+          ) : null}
 
-            {isError ? (
-              <Alert variant="danger" title="No se pudo cargar la timeline">
-                {error instanceof Error ? error.message : 'Error desconocido'}
-                <Button variant="ghost" onClick={() => refetch()}>
-                  Reintentar
-                </Button>
-              </Alert>
-            ) : null}
-
-            {isLoading ? (
-              <div className={styles.skeleton}>
-                <Skeleton height="3rem" />
-                <Skeleton height="12rem" />
-                <Skeleton height="12rem" />
-              </div>
-            ) : null}
-
-            {showDayHint ? (
-              <p className={styles.dayHint}>
-                No hay registros este día. Inicia una actividad o registra tiempo pasado con los
-                botones de arriba.
-              </p>
-            ) : null}
-
-            {!isLoading && !isError ? (
-              <ActivityDayTimeline
-                date={selectedDate}
-                followUps={followUps}
-                freeSlots={freeSlots}
-                showCurrentTimeMarker={isToday(selectedDate)}
-                quickActionsDisabled={Boolean(session)}
-                runningSession={isToday(selectedDate) ? session : null}
-                sessionLoading={startMutation.isPending || updateMutation.isPending || deleteMutation.isPending}
-                routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
-                routineUpcoming={isToday(selectedDate) ? routineUpcoming : null}
-                onFollowUpClick={setEditFollowUp}
-                onFreeSlotClick={setFreeSlotModal}
-                onContinueAfterFollowUp={handleContinueAfterFollowUp}
-                onStartFromFollowUp={handleStartFromFollowUp}
-                onStartSuggestion={handleStartSuggestion}
-                onFinishSession={handleOpenFinish}
-                onCancelSession={handleCancelSession}
-              />
-            ) : null}
-          </div>
-        </Tabs.Panel>
-
-        <Tabs.Panel value={TRACKING_VIEW.summary}>
-          <div className={styles.summaryPanel}>
-            <p className={styles.summaryHint}>
-              Métricas del día seleccionado · {selectedDate}
+          {showDayHint ? (
+            <p className={styles.dayHint}>
+              No hay registros este día. Usa los botones de arriba para empezar.
             </p>
-            <div className={styles.widgetsRow}>
-            <DayUsageWidget
-                className={styles.widgetUsage}
-                date={selectedDate}
-                followUps={followUps}
-                freeSlots={freeSlots}
-                isLoading={isLoading}
-              />
-              <CategoryTimeWidget
-                className={styles.widgetCategory}
-                date={selectedDate}
-                followUps={followUps}
-                isLoading={isLoading}
-              />
+          ) : null}
 
-              <DayStoryWidget
-                className={styles.widgetStory}
-                date={selectedDate}
-                followUps={followUps}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
-        </Tabs.Panel>
-      </Tabs>
+          {!isLoading && !isError ? (
+            <ActivityDayTimeline
+              date={selectedDate}
+              followUps={followUps}
+              freeSlots={freeSlots}
+              showCurrentTimeMarker={isToday(selectedDate)}
+              quickActionsDisabled={Boolean(session)}
+              runningSession={isToday(selectedDate) ? session : null}
+              sessionLoading={
+                startMutation.isPending || updateMutation.isPending || deleteMutation.isPending
+              }
+              routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
+              routineUpcoming={isToday(selectedDate) ? routineUpcoming : null}
+              onFollowUpClick={setEditFollowUp}
+              onFreeSlotClick={setFreeSlotModal}
+              onContinueAfterFollowUp={handleContinueAfterFollowUp}
+              onStartFromFollowUp={handleStartFromFollowUp}
+              onStartSuggestion={handleStartSuggestion}
+              onFinishSession={handleOpenFinish}
+              onCancelSession={handleCancelSession}
+            />
+          ) : null}
+        </div>
+
+        <aside className={styles.summaryCol}>
+          <DayRemainingWidget />
+          <DayUsageWidget
+            date={selectedDate}
+            followUps={followUps}
+            freeSlots={freeSlots}
+            isLoading={isLoading}
+          />
+          <CategoryTimeWidget
+            date={selectedDate}
+            followUps={followUps}
+            isLoading={isLoading}
+          />
+          <DayStoryWidget date={selectedDate} followUps={followUps} isLoading={isLoading} />
+        </aside>
+      </div>
+
+      <div className={styles.mobileActions}>
+        <Button
+          variant="primary"
+          onClick={handleOpenStart}
+          disabled={Boolean(session)}
+          className={styles.mobileActionBtn}
+          aria-label="Iniciar nueva actividad"
+        >
+          <AppIcon name="plus" size="sm" decorative />
+          Iniciar
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={handleOpenLogPast}
+          disabled={Boolean(session)}
+          className={styles.mobileActionBtn}
+          aria-label="Registrar tiempo pasado"
+        >
+          <AppIcon name="clock" size="sm" decorative />
+          Registrar
+        </Button>
+      </div>
 
       <StartActivityModal
         open={startModalOpen}

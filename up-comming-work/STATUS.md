@@ -10,7 +10,7 @@
 | [layout-improvements.md](./layout-improvements.md) | 4/5 | Casi completo (falta flyout opcional) |
 | [habits-module-improvements.md](./habits-module-improvements.md) | 6/6 | ✅ Completado |
 | [habit-month-view-and-difficulty-picker.md](./habit-month-view-and-difficulty-picker.md) | 2/2 partes | ✅ Completado |
-| [activities-module-improvements.md](./activities-module-improvements.md) | 4/5 | Mejoras 1+2+4+5 completadas |
+| [activities-module-improvements.md](./activities-module-improvements.md) | 5/5 | ✅ Completado |
 | [todos-module-improvements.md](./todos-module-improvements.md) | 0/4 | ⬜ Pendiente |
 
 ---
@@ -117,7 +117,7 @@
 |----|--------|--------|----------------------|
 | 1 | `ActivitiesModuleLayout`: quitar `PageHeader` + eliminar `max-width: 72rem` | ✅ Completada | 2026-06-23 |
 | 2 | `ActivitiesModuleNav`: convertir a tabs pill sin iconos | ✅ Completada | `NavLink` + estilos pill; fondo `--color-surface-elevated` |
-| 3 | `ActivityTrackingPage`: 2 columnas desktop + sticky bar mobile | ⬜ Pendiente | `ActivityTrackingPage.tsx`, `.module.scss` |
+| 3 | `ActivityTrackingPage`: 2 columnas desktop + sticky bar mobile | ✅ Completada | 2026-06-23 — sin tabs; widgets resumen siempre visibles en desktop |
 | 4 | `ActivityCategoriesPanel`: grid `auto-fill minmax(240px)` + tarjeta "+" | ✅ Completada | 2026-06-23 — tarjeta "+" solo desktop (`@include md`) |
 | 5 | `ActivityDetailPage`: 2 columnas desktop + sticky bar mobile | ✅ Completada | 2026-06-23 — metadata + acciones en sidebar desktop |
 
@@ -159,9 +159,8 @@
 
 ## Próximo trabajo sugerido
 
-1. **activities-module-improvements.md → Mejora 3** — `ActivityTrackingPage` (la más compleja).
-2. **todos-module-improvements.md** — comenzar por Mejora 1 (la más simple).
-3. **layout-improvements.md → Mejora 5** — flyout on hover (opcional).
+1. **todos-module-improvements.md** — comenzar por Mejora 1 (la más simple).
+2. **layout-improvements.md → Mejora 5** — flyout on hover (opcional).
 
 ---
 

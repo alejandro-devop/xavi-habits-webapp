@@ -55,6 +55,18 @@ vi.mock('@/features/activities/hooks/useActivities', () => ({
   useCompleteActivityMutation: () => ({ mutate: vi.fn(), isPending: false, variables: undefined }),
 }))
 
+vi.mock('@/features/weekly-routine/hooks/useCurrentRoutineEventSuggestion', () => ({
+  useCurrentRoutineEventSuggestion: () => null,
+}))
+
+vi.mock('@/features/weekly-routine/hooks/useUpcomingRoutineEventSuggestion', () => ({
+  useUpcomingRoutineEventSuggestion: () => null,
+}))
+
+vi.mock('@/features/todos/hooks/useTodos', () => ({
+  useCompleteTodoMutation: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
 function renderActivitiesRoute(initialEntry: string) {
   const router = createMemoryRouter([activitiesRoutes], { initialEntries: [initialEntry] })
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -86,7 +98,7 @@ describe('activitiesRoutes', () => {
 
   it('renders tracking page at tracking route', () => {
     renderActivitiesRoute('/activities/tracking')
-    expect(screen.getByRole('heading', { name: /seguimiento de tiempo/i })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: /semana actual/i })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /iniciar nueva actividad/i }).length).toBeGreaterThanOrEqual(1)
   })
 })

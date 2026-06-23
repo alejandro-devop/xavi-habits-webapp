@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useParams } from 'react-router'
-import { HabitCalendarLegend } from '@/features/habits/components/HabitCalendarLegend'
-import { HabitContributionGrid } from '@/features/habits/components/HabitContributionGrid'
+import { HabitMonthView } from '@/features/habits/components/HabitMonthView'
 import { useHabitFollowUpsInDatesQuery, useHabitQuery } from '@/features/habits/hooks/useHabits'
 import type { HabitFollowUp } from '@/features/habits/types/habit.types'
 import { getTodayString } from '@/features/habits/utils/habit-type.utils'
@@ -57,13 +56,7 @@ export function HabitCalendarPage() {
   return (
     <div className={styles.root}>
       <h2 className={styles.title}>{habit.name}</h2>
-      <HabitContributionGrid
-        startDate={startDate}
-        endDate={rangeEnd}
-        followUpByDate={followUpByDate}
-        habit={habit}
-      />
-      <HabitCalendarLegend habitType={habit.habitType} />
+      <HabitMonthView habit={habit} followUpByDate={followUpByDate} today={today} />
     </div>
   )
 }

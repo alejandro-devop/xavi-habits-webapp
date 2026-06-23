@@ -9,8 +9,8 @@
 |-----------|----------|--------|
 | [layout-improvements.md](./layout-improvements.md) | 4/5 | Casi completo (falta flyout opcional) |
 | [habits-module-improvements.md](./habits-module-improvements.md) | 6/6 | ✅ Completado |
-| [habit-month-view-and-difficulty-picker.md](./habit-month-view-and-difficulty-picker.md) | 1/2 partes | Parte 1 completada |
-| [activities-module-improvements.md](./activities-module-improvements.md) | 0/5 | Pendiente |
+| [habit-month-view-and-difficulty-picker.md](./habit-month-view-and-difficulty-picker.md) | 2/2 partes | ✅ Completado |
+| [activities-module-improvements.md](./activities-module-improvements.md) | 2/5 | Mejoras 1 + 2 completadas |
 
 ---
 
@@ -87,12 +87,17 @@
 
 | ID | Ítem | Estado | Notas |
 |----|------|--------|-------|
-| 2.1 | Crear `HabitMonthView` | ⬜ Pendiente | Componente no existe |
-| 2.2 | Crear `HabitMonthView.module.scss` | ⬜ Pendiente | — |
-| 2.3 | Actualizar `HabitCalendarPage` | ⬜ Pendiente | Sigue `HabitContributionGrid` |
-| 2.4 | Export barrel habits | ⬜ Pendiente | — |
-| 2.5 | Verificar tipo `HabitFollowUp` | ⬜ Pendiente | — |
-| 2.6 | Verificar `AppIcon` `message-circle` | ⬜ Pendiente | — |
+| 2.1 | Crear `HabitMonthView` | ✅ Completada | 2026-06-23 |
+| 2.2 | Crear `HabitMonthView.module.scss` | ✅ Completada | |
+| 2.3 | Actualizar `HabitCalendarPage` | ✅ Completada | Reemplaza `HabitContributionGrid` + `HabitCalendarLegend` |
+| 2.4 | Export barrel habits | ✅ Completada | `HabitMonthView/index.ts` |
+| 2.5 | Verificar tipo `HabitFollowUp` | ✅ Completada | Campos ya existían en `habit.types.ts` |
+| 2.6 | Verificar `AppIcon` `message-circle` | ✅ Completada | Usado `comments` (no existe `message-circle`) |
+
+### Desvíos respecto al spec
+
+- Ícono de nota: `comments` en lugar de `message-circle` (no disponible en catálogo).
+- Invalidación de cache: añadida en `useHabitFollowUps.ts` para `habitKeys.calendar` (requerido para refrescar la vista tras guardar).
 
 ### Orden recomendado del spec
 
@@ -109,8 +114,8 @@
 
 | ID | Mejora | Estado | Archivos principales |
 |----|--------|--------|----------------------|
-| 1 | `ActivitiesModuleLayout`: quitar `PageHeader` + eliminar `max-width: 72rem` | ⬜ Pendiente | `ActivitiesModuleLayout.tsx`, `.module.scss` |
-| 2 | `ActivitiesModuleNav`: convertir a tabs pill sin iconos | ⬜ Pendiente | `ActivitiesModuleNav.tsx`, `.module.scss` |
+| 1 | `ActivitiesModuleLayout`: quitar `PageHeader` + eliminar `max-width: 72rem` | ✅ Completada | 2026-06-23 |
+| 2 | `ActivitiesModuleNav`: convertir a tabs pill sin iconos | ✅ Completada | `NavLink` + estilos pill; fondo `--color-surface-elevated` |
 | 3 | `ActivityTrackingPage`: 2 columnas desktop + sticky bar mobile | ⬜ Pendiente | `ActivityTrackingPage.tsx`, `.module.scss` |
 | 4 | `ActivityCategoriesPanel`: grid `auto-fill minmax(240px)` + tarjeta "+" | ⬜ Pendiente | `ActivityCategoriesPanel.tsx`, `.module.scss` |
 | 5 | `ActivityDetailPage`: 2 columnas desktop + sticky bar mobile | ⬜ Pendiente | `ActivityDetailPage.tsx`, `.module.scss` |
@@ -133,9 +138,10 @@
 
 ## Próximo trabajo sugerido
 
-1. **habit-month-view-and-difficulty-picker.md → Parte 2** — `HabitMonthView` + `HabitCalendarPage`.
-2. **activities-module-improvements.md → Mejoras 1 + 2** — inicio más seguro del módulo de actividades.
-3. **layout-improvements.md → Mejora 5** — flyout on hover (opcional).
+1. **activities-module-improvements.md → Mejora 4** — grid responsive en `ActivityCategoriesPanel`.
+2. **activities-module-improvements.md → Mejora 5** — `ActivityDetailPage` 2 columnas + sticky bar.
+3. **activities-module-improvements.md → Mejora 3** — `ActivityTrackingPage` (la más compleja).
+4. **layout-improvements.md → Mejora 5** — flyout on hover (opcional).
 
 ---
 

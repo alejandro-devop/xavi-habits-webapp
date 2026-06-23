@@ -1,19 +1,35 @@
+import { NavLink } from 'react-router'
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
-import { AppNavLink } from '@/shared/ui/NavLink'
 import styles from './ActivitiesModuleNav.module.scss'
 
 export function ActivitiesModuleNav() {
   return (
     <nav className={styles.nav} aria-label="Secciones de actividades">
-      <AppNavLink to={activitiesPaths.root} end icon="list-check">
+      <NavLink
+        to={activitiesPaths.root}
+        end
+        className={({ isActive }) =>
+          [styles.tab, isActive ? styles.tabActive : ''].filter(Boolean).join(' ')
+        }
+      >
         Actividades
-      </AppNavLink>
-      <AppNavLink to={activitiesPaths.categories} icon="gear">
+      </NavLink>
+      <NavLink
+        to={activitiesPaths.categories}
+        className={({ isActive }) =>
+          [styles.tab, isActive ? styles.tabActive : ''].filter(Boolean).join(' ')
+        }
+      >
         Categorías
-      </AppNavLink>
-      <AppNavLink to={activitiesPaths.tracking} icon="clock">
+      </NavLink>
+      <NavLink
+        to={activitiesPaths.tracking}
+        className={({ isActive }) =>
+          [styles.tab, isActive ? styles.tabActive : ''].filter(Boolean).join(' ')
+        }
+      >
         Seguimiento
-      </AppNavLink>
+      </NavLink>
     </nav>
   )
 }

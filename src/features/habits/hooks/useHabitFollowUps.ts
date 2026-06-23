@@ -44,6 +44,10 @@ export function useAddHabitFollowUpMutation() {
         queryKey: [...habitKeys.all, 'weekView', variables.habitId],
         refetchType: 'all',
       })
+      void queryClient.invalidateQueries({
+        queryKey: [...habitKeys.all, 'calendar'],
+        refetchType: 'all',
+      })
     },
     onError: () => {
       toast.error('Error al registrar el log')
@@ -71,6 +75,10 @@ export function useUpdateHabitFollowUpMutation() {
         queryKey: [...habitKeys.all, 'weekView', context.habitId],
         refetchType: 'all',
       })
+      void queryClient.invalidateQueries({
+        queryKey: [...habitKeys.all, 'calendar'],
+        refetchType: 'all',
+      })
     },
     onError: () => {
       toast.error('Error al actualizar el log')
@@ -90,6 +98,10 @@ export function useRemoveHabitFollowUpMutation() {
       void queryClient.invalidateQueries({ queryKey: habitKeys.detail(context.habitId), refetchType: 'all' })
       void queryClient.invalidateQueries({
         queryKey: [...habitKeys.all, 'weekView', context.habitId],
+        refetchType: 'all',
+      })
+      void queryClient.invalidateQueries({
+        queryKey: [...habitKeys.all, 'calendar'],
         refetchType: 'all',
       })
     },

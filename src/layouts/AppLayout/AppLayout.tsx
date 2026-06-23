@@ -19,13 +19,36 @@ import { Topbar } from '@/shared/ui/Topbar'
 import { AppNavLink } from '@/shared/ui/NavLink'
 import styles from './AppLayout.module.scss'
 
+const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
+
+function readSidebarCollapsedPreference(): boolean {
+  try {
+    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY)
+    return stored !== null ? stored === 'true' : true
+  } catch {
+    return true
+  }
+}
+
 function AppLayoutShell() {
   const navigate = useNavigate()
   const user = useAuthStore(selectAuthUser)
   const { cyclePreference } = useTheme()
   const logoutMutation = useLogoutMutation()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsedPreference)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  const toggleSidebarCollapse = () => {
+    setSidebarCollapsed((v) => {
+      const next = !v
+      try {
+        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
+      } catch {
+        // ignore storage errors
+      }
+      return next
+    })
+  }
 
   const commandActions = useMemo(
     () =>
@@ -44,7 +67,22 @@ function AppLayoutShell() {
           brand="Xavi"
           items={appSidebarItems}
           collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+          onToggleCollapse={toggleSidebarCollapse}
+          footer={
+            <div
+              className={[
+                styles.sidebarUserArea,
+                sidebarCollapsed ? styles.sidebarUserAreaCollapsed : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
+              {!sidebarCollapsed && user ? (
+                <span className={styles.userEmail}>{user.email}</span>
+              ) : null}
+              <LogoutButton />
+            </div>
+          }
         />
 
         <div className={styles.mainColumn}>
@@ -63,12 +101,6 @@ function AppLayoutShell() {
             title="Xavi"
             titleClassName={styles.topbarBrand}
             actions={<ThemeToggle />}
-            userArea={
-              <>
-                {user ? <span className={styles.userEmail}>{user.email}</span> : null}
-                <LogoutButton />
-              </>
-            }
           />
           <main className={styles.main}>
             <Outlet />

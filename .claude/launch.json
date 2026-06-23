@@ -5,7 +5,8 @@
       "name": "xavi-habits-web",
       "runtimeExecutable": "/Users/jako/.nvm/versions/node/v22.14.0/bin/node",
       "runtimeArgs": ["/Users/jako/Developer/xavi-fronts/xavi-habits-web/node_modules/vite/bin/vite.js"],
-      "port": 5173
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }

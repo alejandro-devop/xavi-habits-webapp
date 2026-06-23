@@ -27,11 +27,10 @@
 
 .main {
   flex: 1;
-  max-width: $layout-max-width;
-  margin: 0 auto;
-  padding: $spacing-lg;
-  padding-bottom: calc($spacing-lg + 5rem);
+  padding: $spacing-md;
+  padding-bottom: calc($spacing-md + 5rem);
   width: 100%;
+  min-width: 0;
 
   @media (max-width: #{$breakpoint-lg - 1}) {
     padding: $spacing-sm;
@@ -40,11 +39,21 @@
 
   // Full-width mode: páginas que requieren todo el espacio (ej: planner)
   &:has(.fullWidthPage) {
-    max-width: none;
     padding: 0;
-    margin: 0;
     overflow: hidden;
   }
+}
+
+.sidebarUserArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs, 0.25rem);
+  align-items: flex-start;
+  width: 100%;
+}
+
+.sidebarUserAreaCollapsed {
+  align-items: center;
 }
 
 .userEmail {

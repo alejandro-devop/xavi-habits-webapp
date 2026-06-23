@@ -3,7 +3,7 @@
 .sidebar {
   display: none;
   flex-direction: column;
-  width: 15rem;
+  width: 14rem;
   padding: var(--spacing-md);
   border-right: 1px solid var(--color-border);
   background: color-mix(in srgb, var(--color-glass-surface, var(--color-surface)) 75%, transparent);
@@ -22,7 +22,10 @@
 }
 
 .collapsed {
-  width: 4.25rem;
+  width: 2.75rem;
+  padding: var(--spacing-sm) 0.35rem;
+  align-items: center;
+  overflow: visible;
 }
 
 .brand {
@@ -30,6 +33,11 @@
   font-weight: 700;
   margin-bottom: var(--spacing-lg);
   padding: 0 0.25rem;
+}
+
+.collapsed .brand {
+  display: none;
+  margin-bottom: 0;
 }
 
 .nav {
@@ -46,7 +54,7 @@
 
 .collapseBtn {
   margin-top: var(--spacing-sm);
-  align-self: flex-end;
+  align-self: center;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface);

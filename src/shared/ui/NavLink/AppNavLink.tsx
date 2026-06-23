@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { NavLink as RouterNavLink, type NavLinkProps as RouterNavLinkProps } from 'react-router'
 import type { AppIconName } from '@/shared/icons'
 import { AppIcon } from '@/shared/ui/AppIcon'
+import { Tooltip } from '@/shared/ui/Tooltip'
 import styles from './AppNavLink.module.scss'
 
 type AppNavLinkProps = RouterNavLinkProps & {
@@ -17,7 +18,7 @@ export function AppNavLink({
   className,
   ...props
 }: AppNavLinkProps) {
-  return (
+  const link = (
     <RouterNavLink
       {...props}
       className={({ isActive }) =>
@@ -25,7 +26,9 @@ export function AppNavLink({
           styles.link,
           isActive ? styles.active : '',
           collapsed ? styles.collapsed : '',
-          typeof className === 'function' ? className({ isActive, isPending: false, isTransitioning: false }) : className,
+          typeof className === 'function'
+            ? className({ isActive, isPending: false, isTransitioning: false })
+            : className,
         ]
           .filter(Boolean)
           .join(' ')
@@ -35,4 +38,14 @@ export function AppNavLink({
       <span className={styles.label}>{children}</span>
     </RouterNavLink>
   )
+
+  if (collapsed) {
+    return (
+      <Tooltip content={children} placement="right" delay={200}>
+        {link}
+      </Tooltip>
+    )
+  }
+
+  return link
 }

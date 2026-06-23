@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { AppIconName } from '@/shared/icons'
+import { AppIcon } from '@/shared/ui/AppIcon'
 import { AppNavLink } from '@/shared/ui/NavLink'
 import styles from './Sidebar.module.scss'
 
@@ -56,7 +57,11 @@ export function Sidebar({
           onClick={onToggleCollapse}
           aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
         >
-          {collapsed ? '»' : '«'}
+          {collapsed ? (
+            <AppIcon name="chevron-right" size="xs" decorative />
+          ) : (
+            <AppIcon name="arrow-left" size="xs" decorative />
+          )}
         </button>
       ) : null}
     </aside>

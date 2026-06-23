@@ -23,26 +23,33 @@
 }
 
 .statLabel {
-  font-size: 0.6875rem;
+  font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: var(--color-text-muted);
   line-height: 1.2;
 }
 
 .statValue {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--color-text);
   line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .statPct {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
+
+// Semantic colors per stat position
+.stats .stat:nth-child(1) .statValue { color: var(--color-success); }
+.stats .stat:nth-child(2) .statValue { color: var(--color-warning); }
+.stats .stat:nth-child(3) .statValue { color: var(--color-danger); }
 
 .segmentedBar {
   display: flex;
@@ -74,16 +81,15 @@
   flex-shrink: 0;
 }
 
-.hint,
-.descFoot {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  line-height: 1.35;
+.hint {
+  display: none;
 }
 
 .descFoot {
-  margin-top: 0.15rem;
+  margin: 0;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  line-height: 1.35;
 }
 
 .skeletonCard {

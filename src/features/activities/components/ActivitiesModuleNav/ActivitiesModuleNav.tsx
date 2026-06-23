@@ -6,8 +6,7 @@ export function ActivitiesModuleNav() {
   return (
     <nav className={styles.nav} aria-label="Secciones de actividades">
       <NavLink
-        to={activitiesPaths.root}
-        end
+        to={activitiesPaths.list}
         className={({ isActive }) =>
           [styles.tab, isActive ? styles.tabActive : ''].filter(Boolean).join(' ')
         }

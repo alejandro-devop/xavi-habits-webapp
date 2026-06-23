@@ -5,11 +5,8 @@
   width: 100%;
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--radius-xl);
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-primary) 12%);
-  box-shadow:
-    0 1px 0 color-mix(in srgb, var(--color-text) 6%, transparent) inset,
-    0 12px 32px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .header {
@@ -42,9 +39,9 @@
 .remaining {
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--color-text);
   white-space: nowrap;
@@ -87,21 +84,18 @@
   left: 0;
   height: 100%;
   border-radius: inherit;
-  background: var(
-    --color-border-secondary,
-    color-mix(in srgb, var(--color-text-muted) 45%, var(--color-border))
-  );
+  background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 70%, var(--color-text-muted)));
   transition: width 1s linear;
 }
 
 .nowMarker {
   position: absolute;
-  top: 0;
-  width: 3px;
-  height: 100%;
-  margin-left: -1.5px;
+  top: -3px;
+  width: 2px;
+  height: calc(100% + 6px);
+  margin-left: -1px;
   border-radius: 1px;
-  background: var(--color-text-info, var(--color-primary));
+  background: var(--color-text);
   transition: left 1s linear;
   z-index: 1;
 }

@@ -1,5 +1,6 @@
 export const activitiesPaths = {
   root: '/app/activities',
+  list: '/app/activities/list',
   new: '/app/activities/new',
   categories: '/app/activities/categories',
   tracking: '/app/activities/tracking',

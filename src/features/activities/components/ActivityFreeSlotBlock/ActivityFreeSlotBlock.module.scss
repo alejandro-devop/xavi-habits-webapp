@@ -1,25 +1,22 @@
 .card {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.25rem;
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.6rem 0.75rem;
   box-sizing: border-box;
   text-align: left;
   border-radius: var(--radius-md);
-  border: 1px dashed color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
-  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-elevated));
-  backdrop-filter: blur(8px);
+  border: 1px dashed color-mix(in srgb, var(--color-border) 70%, transparent);
+  background: transparent;
   cursor: pointer;
   transition:
-    box-shadow 0.15s ease,
     border-color 0.15s ease,
     background 0.15s ease;
 
   &:hover {
     border-color: var(--color-primary);
-    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-elevated));
-    box-shadow: var(--shadow-sm);
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent);
   }
 
   &:focus-visible {
@@ -43,18 +40,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: var(--radius-sm);
-  border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent);
-  color: var(--color-primary);
+  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
 .title {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 
 .compact .title {
@@ -63,8 +60,8 @@
 
 .range {
   margin: 0;
-  font-size: 0.8125rem;
-  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 

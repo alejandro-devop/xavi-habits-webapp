@@ -49,7 +49,7 @@ export function ActivityEditPage() {
   if (isError || !activity) {
     return (
       <Alert variant="danger" title="No se pudo cargar la actividad">
-        <Button variant="ghost" size="sm" to={activitiesPaths.root}>
+        <Button variant="ghost" size="sm" to={activitiesPaths.list}>
           Volver
         </Button>
       </Alert>

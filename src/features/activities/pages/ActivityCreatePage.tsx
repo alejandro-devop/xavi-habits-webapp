@@ -25,7 +25,7 @@ export function ActivityCreatePage() {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <Button variant="ghost" size="sm" to={activitiesPaths.root}>
+        <Button variant="ghost" size="sm" to={activitiesPaths.list}>
           ← Volver
         </Button>
         <h1 className={styles.title}>Nueva actividad</h1>
@@ -39,7 +39,7 @@ export function ActivityCreatePage() {
           categories={categories}
           onChange={setValues}
           onSubmit={handleSubmit}
-          onCancel={() => navigate(activitiesPaths.root)}
+          onCancel={() => navigate(activitiesPaths.list)}
           submitLabel="Crear actividad"
           loading={createMutation.isPending}
         />

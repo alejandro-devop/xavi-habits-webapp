@@ -41,7 +41,7 @@ export function ActivityDetailPage() {
     })
     if (!confirmed || !id) return
     deleteMutation.mutate(id, {
-      onSuccess: () => navigate(activitiesPaths.root),
+      onSuccess: () => navigate(activitiesPaths.list),
     })
   }
 
@@ -58,7 +58,7 @@ export function ActivityDetailPage() {
     return (
       <Alert variant="danger" title="Actividad no encontrada">
         {error instanceof Error ? error.message : 'No se pudo cargar la actividad.'}
-        <Button variant="ghost" size="sm" to={activitiesPaths.root}>
+        <Button variant="ghost" size="sm" to={activitiesPaths.list}>
           Volver al listado
         </Button>
       </Alert>
@@ -71,7 +71,7 @@ export function ActivityDetailPage() {
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <Button variant="ghost" size="sm" to={activitiesPaths.root}>
+        <Button variant="ghost" size="sm" to={activitiesPaths.list}>
           ← Actividades
         </Button>
         <Button variant="ghost" size="sm" to={activitiesPaths.edit(activity.id)}>

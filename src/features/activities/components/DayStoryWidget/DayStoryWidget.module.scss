@@ -10,23 +10,24 @@
 
 .summary {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.35rem;
   margin: 0;
 }
 
 .summaryCount {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--color-text);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .summaryLabel {
   font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 500;
   color: var(--color-text-muted);
 }
 
@@ -68,8 +69,8 @@
 /* Entry */
 .entry {
   display: grid;
-  grid-template-columns: 1.5rem 1fr;
-  gap: 0 0.75rem;
+  grid-template-columns: 1.25rem 1fr;
+  gap: 0 0.6rem;
   position: relative;
 }
 
@@ -104,7 +105,7 @@
 
 /* Entry body */
 .entryBody {
-  padding-bottom: 0.875rem;
+  padding-bottom: 0.65rem;
   min-width: 0;
 }
 

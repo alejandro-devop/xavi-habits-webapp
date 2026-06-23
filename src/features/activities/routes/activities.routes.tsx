@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router'
+import { Navigate } from 'react-router'
 import { ActivitiesModuleLayout } from '@/features/activities/components/ActivitiesModuleLayout'
 import { ActivityCategoriesPage } from '@/features/activities/pages/ActivityCategoriesPage'
 import { ActivityCreatePage } from '@/features/activities/pages/ActivityCreatePage'
@@ -14,6 +15,10 @@ export const activitiesRoutes: RouteObject = {
   children: [
     {
       index: true,
+      element: <Navigate to="tracking" replace />,
+    },
+    {
+      path: 'list',
       element: <ActivitiesListPage />,
     },
     {

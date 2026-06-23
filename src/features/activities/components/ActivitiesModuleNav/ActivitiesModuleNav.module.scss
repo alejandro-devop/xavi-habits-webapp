@@ -4,7 +4,7 @@
   padding: 3px;
   margin-inline: auto;
   border-radius: var(--radius-md);
-  background: var(--color-surface-elevated, var(--color-surface));
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -19,11 +19,11 @@
 .tab {
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.85rem;
+  padding: 0.35rem 1rem;
   border-radius: calc(var(--radius-md) - 2px);
   font-size: 0.875rem;
   font-weight: 400;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   text-decoration: none;
   white-space: nowrap;
   transition:
@@ -32,15 +32,15 @@
 
   &:hover:not(.tabActive) {
     background: color-mix(in srgb, var(--color-text) 5%, transparent);
-    color: var(--color-text);
+    color: var(--color-text-secondary);
   }
 }
 
 .tabActive {
   background: var(--color-surface);
   color: var(--color-text);
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 0 rgba(0, 0, 0, 0.04);
 }
 
 .disabledItem {

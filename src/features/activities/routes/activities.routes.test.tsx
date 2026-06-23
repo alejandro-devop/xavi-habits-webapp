@@ -85,8 +85,13 @@ function renderActivitiesRoute(initialEntry: string) {
 }
 
 describe('activitiesRoutes', () => {
-  it('renders activities list at module root', () => {
+  it('redirects module root to tracking', () => {
     renderActivitiesRoute('/activities')
+    expect(screen.getAllByRole('button', { name: /iniciar nueva actividad/i }).length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('renders activities list at list route', () => {
+    renderActivitiesRoute('/activities/list')
     expect(screen.getByText(/tus actividades/i)).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /nueva actividad/i }).length).toBeGreaterThanOrEqual(1)
   })
@@ -98,7 +103,7 @@ describe('activitiesRoutes', () => {
 
   it('renders tracking page at tracking route', () => {
     renderActivitiesRoute('/activities/tracking')
-    expect(screen.getByRole('group', { name: /semana actual/i })).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: /secciones de actividades/i })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /iniciar nueva actividad/i }).length).toBeGreaterThanOrEqual(1)
   })
 })

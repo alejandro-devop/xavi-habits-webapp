@@ -17,6 +17,7 @@ import {
   nextOrderIndex,
 } from '@/features/activities/utils/activity-category-form'
 import { Alert } from '@/shared/ui/Alert'
+import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { Modal } from '@/shared/ui/Modal'
@@ -137,6 +138,15 @@ export function ActivityCategoriesPanel() {
               deleting={deleteMutation.isPending && deleteMutation.variables === category.id}
             />
           ))}
+          <button
+            type="button"
+            className={styles.addCard}
+            onClick={openCreate}
+            aria-label="Nueva categoría"
+          >
+            <AppIcon name="plus" size="sm" decorative />
+            Nueva categoría
+          </button>
         </div>
       ) : null}
 

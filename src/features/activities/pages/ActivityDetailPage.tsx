@@ -72,85 +72,115 @@ export function ActivityDetailPage() {
     <div className={styles.page}>
       <div className={styles.toolbar}>
         <Button variant="ghost" size="sm" to={activitiesPaths.root}>
-          ← Volver
+          ← Actividades
         </Button>
-        <div className={styles.toolbarActions}>
-          <Button variant="ghost" size="sm" to={activitiesPaths.edit(activity.id)}>
-            Editar
-          </Button>
-          {!isCompleted ? (
-            <Button
-              size="sm"
-              onClick={handleComplete}
-              isLoading={completeMutation.isPending}
-            >
-              Completar
-            </Button>
-          ) : null}
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => void handleDelete()}
-            isLoading={deleteMutation.isPending}
-          >
-            Eliminar
-          </Button>
-        </div>
+        <Button variant="ghost" size="sm" to={activitiesPaths.edit(activity.id)}>
+          Editar
+        </Button>
       </div>
 
-      <Card className={styles.mainCard}>
-        <div className={styles.header}>
-          <span
-            className={styles.iconWrap}
-            style={{ backgroundColor: `${accent}22`, color: accent, borderColor: accent }}
-            aria-hidden
-          >
-            <AppIcon name={activity.category?.icon ?? 'list-check'} size="lg" decorative />
-          </span>
-          <div>
-            <h1 className={styles.title}>{activity.title}</h1>
-            {activity.category ? (
-              <Link to={activitiesPaths.categories} className={styles.categoryLink}>
-                {activity.category.name}
-              </Link>
+      <div className={styles.layout}>
+        <div className={styles.mainCol}>
+          <Card className={styles.mainCard}>
+            <div className={styles.header}>
+              <span
+                className={styles.iconWrap}
+                style={{ backgroundColor: `${accent}22`, color: accent, borderColor: accent }}
+                aria-hidden
+              >
+                <AppIcon name={activity.category?.icon ?? 'list-check'} size="lg" decorative />
+              </span>
+              <div>
+                <h1 className={styles.title}>{activity.title}</h1>
+                {activity.category ? (
+                  <Link to={activitiesPaths.categories} className={styles.categoryLink}>
+                    {activity.category.name}
+                  </Link>
+                ) : (
+                  <span className={styles.categoryMuted}>Sin categoría</span>
+                )}
+              </div>
+            </div>
+
+            {activity.description ? (
+              <p className={styles.description}>{activity.description}</p>
             ) : (
-              <span className={styles.categoryMuted}>Sin categoría</span>
+              <p className={styles.descriptionMuted}>Sin descripción</p>
             )}
-          </div>
+
+            <div className={styles.badges}>
+              <ActivityPriorityBadge priority={activity.priority} />
+              <ActivityStatusBadge status={activity.status} />
+            </div>
+          </Card>
+
+          <ActivityTimeTrackingPlaceholder spentTimeMinutes={activity.spentTimeMinutes} />
         </div>
 
-        {activity.description ? (
-          <p className={styles.description}>{activity.description}</p>
-        ) : (
-          <p className={styles.descriptionMuted}>Sin descripción</p>
-        )}
+        <aside className={styles.sideCol}>
+          <Card className={styles.sideCard}>
+            <dl className={styles.metaGrid}>
+              <div>
+                <dt>Programada</dt>
+                <dd>{formatActivityDate(activity.scheduledDate)}</dd>
+              </div>
+              <div>
+                <dt>Completada</dt>
+                <dd>{formatActivityDate(activity.completedAt)}</dd>
+              </div>
+              <div>
+                <dt>Creada</dt>
+                <dd>{formatActivityDate(activity.createdAt)}</dd>
+              </div>
+              <div>
+                <dt>Actualizada</dt>
+                <dd>{formatActivityDate(activity.updatedAt)}</dd>
+              </div>
+            </dl>
 
-        <div className={styles.badges}>
-          <ActivityPriorityBadge priority={activity.priority} />
-          <ActivityStatusBadge status={activity.status} />
-        </div>
+            <div className={styles.sideActions}>
+              {!isCompleted ? (
+                <Button
+                  onClick={handleComplete}
+                  isLoading={completeMutation.isPending}
+                  className={styles.sideActionBtn}
+                >
+                  Completar actividad
+                </Button>
+              ) : null}
+              <Button
+                variant="danger"
+                onClick={() => void handleDelete()}
+                isLoading={deleteMutation.isPending}
+                className={styles.sideActionBtn}
+              >
+                Eliminar
+              </Button>
+            </div>
+          </Card>
+        </aside>
+      </div>
 
-        <dl className={styles.metaGrid}>
-          <div>
-            <dt>Programada</dt>
-            <dd>{formatActivityDate(activity.scheduledDate)}</dd>
-          </div>
-          <div>
-            <dt>Completada</dt>
-            <dd>{formatActivityDate(activity.completedAt)}</dd>
-          </div>
-          <div>
-            <dt>Creada</dt>
-            <dd>{formatActivityDate(activity.createdAt)}</dd>
-          </div>
-          <div>
-            <dt>Actualizada</dt>
-            <dd>{formatActivityDate(activity.updatedAt)}</dd>
-          </div>
-        </dl>
-      </Card>
-
-      <ActivityTimeTrackingPlaceholder spentTimeMinutes={activity.spentTimeMinutes} />
+      <div className={styles.mobileActions}>
+        {!isCompleted ? (
+          <Button
+            variant="primary"
+            onClick={handleComplete}
+            isLoading={completeMutation.isPending}
+            className={styles.mobileActionBtn}
+          >
+            Completar
+          </Button>
+        ) : null}
+        <Button
+          variant="danger"
+          onClick={() => void handleDelete()}
+          isLoading={deleteMutation.isPending}
+          className={styles.mobileActionBtn}
+        >
+          Eliminar
+        </Button>
+      </div>
     </div>
   )
 }

@@ -1,24 +1,61 @@
+@use '@/app/styles/mixins/breakpoints' as *;
+
 .page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
+  padding-bottom: 5rem;
+
+  @include md {
+    padding-bottom: 0;
+  }
 }
 
 .toolbar {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
+
+  & > *:last-child {
+    margin-left: auto;
+  }
 }
 
-.toolbarActions {
+.layout {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 1rem;
+
+  @include md {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.25rem;
+    align-items: start;
+  }
+}
+
+.mainCol {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.sideCol {
+  display: none;
+
+  @include md {
+    display: block;
+  }
 }
 
 .mainCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sideCard {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -83,7 +120,7 @@
 
 .metaGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.75rem;
   margin: 0;
   font-size: 0.875rem;
@@ -98,4 +135,40 @@
     margin: 0.15rem 0 0;
     color: var(--color-text);
   }
+}
+
+.sideActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.sideActionBtn {
+  width: 100%;
+  justify-content: center;
+}
+
+.mobileActions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  z-index: 50;
+
+  @include md {
+    display: none;
+  }
+}
+
+.mobileActionBtn {
+  flex: 1;
+  justify-content: center;
 }

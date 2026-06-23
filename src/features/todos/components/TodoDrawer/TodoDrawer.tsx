@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Drawer } from '@/shared/ui/Drawer'
 import { Spinner } from '@/shared/ui/Spinner'
 import { MarkdownEditor } from '@/shared/ui/MarkdownEditor'
@@ -24,6 +25,7 @@ import styles from './TodoDrawer.module.scss'
 type Props = {
   todoId: string | null
   onClose: () => void
+  asPanel?: boolean
 }
 
 type DescriptionEditorProps = {
@@ -63,7 +65,7 @@ function TodoDescriptionEditor({ todo, onSave }: DescriptionEditorProps) {
   )
 }
 
-export function TodoDrawer({ todoId, onClose }: Props) {
+export function TodoDrawer({ todoId, onClose, asPanel = false }: Props) {
   const { data: todo, isLoading } = useTodoQuery(todoId ?? undefined)
   const { data: allTags = [] } = useTodoTagsQuery()
   const { data: folders = [] } = useTodoFoldersQuery()
@@ -183,177 +185,218 @@ export function TodoDrawer({ todoId, onClose }: Props) {
     )
   }
 
-  return (
-    <Drawer open={Boolean(todoId)} onClose={onClose} side="right" variant="notebook" title="Detalle de tarea">
-      {isLoading || !todo ? (
-        <div className={styles.loading}>
-          <Spinner />
+  const inner = isLoading || !todo ? (
+    <div className={styles.loading}>
+      <Spinner />
+    </div>
+  ) : (
+    <div className={styles.body}>
+      <div className={styles.titleGroup}>
+        <div className={[styles.titleRow, todo.status === 'completed' ? styles.completedRow : ''].join(' ')}>
+          <button
+            type="button"
+            className={styles.completeBtn}
+            onClick={handleToggleComplete}
+            aria-label={todo.status === 'completed' ? 'Marcar como pendiente' : 'Marcar como completada'}
+          >
+            {todo.status === 'completed' ? (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
+                <path d="M5 9l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
+              </svg>
+            )}
+          </button>
+          <h2
+            ref={titleRef}
+            className={styles.title}
+            contentEditable
+            suppressContentEditableWarning
+            onBlur={handleTitleBlur}
+            aria-label="Título de la tarea"
+          />
         </div>
-      ) : (
-        <div className={styles.body}>
-          <div className={styles.titleGroup}>
-            <div className={[styles.titleRow, todo.status === 'completed' ? styles.completedRow : ''].join(' ')}>
-              <button
-                type="button"
-                className={styles.completeBtn}
-                onClick={handleToggleComplete}
-                aria-label={todo.status === 'completed' ? 'Marcar como pendiente' : 'Marcar como completada'}
-              >
-                {todo.status === 'completed' ? (
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
-                    <path d="M5 9l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <circle cx="9" cy="9" r="8.5" stroke="currentColor" />
-                  </svg>
-                )}
-              </button>
-              <h2
-                ref={titleRef}
-                className={styles.title}
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={handleTitleBlur}
-                aria-label="Título de la tarea"
-              />
-            </div>
 
-            <div className={styles.subTitleRow}>
-              <select
-                className={styles.folderChip}
-                value={todo.folderId ?? ''}
-                onChange={(e) => {
-                  updateTodo.mutate({ id: todo.id, folderId: e.target.value || null })
-                }}
-                aria-label="Carpeta de la tarea"
-              >
-                <option value="">Sin carpeta</option>
-                {folders.map((f) => (
-                  <option key={f.id} value={f.id}>{f.name}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className={[styles.todayChip, todo.selectedToday ? styles.todayChipActive : ''].join(' ')}
-                onClick={() => updateTodo.mutate({ id: todo.id, selectedToday: !todo.selectedToday })}
-                aria-pressed={todo.selectedToday}
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-13h2v6l4 2.4-1 1.7-5-3V7z"/>
-                </svg>
-                {todo.selectedToday ? 'En lista de hoy' : 'Agregar a hoy'}
-              </button>
-            </div>
-          </div>
+        <div className={styles.subTitleRow}>
+          <select
+            className={styles.folderChip}
+            value={todo.folderId ?? ''}
+            onChange={(e) => {
+              updateTodo.mutate({ id: todo.id, folderId: e.target.value || null })
+            }}
+            aria-label="Carpeta de la tarea"
+          >
+            <option value="">Sin carpeta</option>
+            {folders.map((f) => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className={[styles.todayChip, todo.selectedToday ? styles.todayChipActive : ''].join(' ')}
+            onClick={() => updateTodo.mutate({ id: todo.id, selectedToday: !todo.selectedToday })}
+            aria-pressed={todo.selectedToday}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-13h2v6l4 2.4-1 1.7-5-3V7z"/>
+            </svg>
+            {todo.selectedToday ? 'En lista de hoy' : 'Agregar a hoy'}
+          </button>
+        </div>
+      </div>
 
-          <section className={[styles.section, styles.descriptionSection].join(' ')}>
-            <div className={styles.labelRow}>
-              <span className={styles.label}>Descripción</span>
-              {todo.description?.trim() ? (
-                <button
-                  type="button"
-                  className={styles.convertNoteBtn}
-                  onClick={handleConvertToNote}
-                  disabled={createNote.isPending}
-                  title="Crear nota desde esta descripción"
-                >
-                  {createNote.isPending ? '…' : '→ Nota'}
-                </button>
-              ) : null}
-            </div>
-            <TodoDescriptionEditor key={todo.id} todo={todo} onSave={handleDescriptionSave} />
-          </section>
-
-          <section className={styles.section}>
-            <span className={styles.label}>Fecha límite</span>
-            <div className={styles.dateRow}>
-              <input
-                type="date"
-                className={styles.dateInput}
-                value={todo.dueDate ? todo.dueDate.slice(0, 10) : ''}
-                onChange={(e) => {
-                  const val = e.target.value
-                  updateTodo.mutate({
-                    id: todo.id,
-                    dueDate: val ? new Date(val + 'T12:00:00').toISOString() : null,
-                  })
-                }}
-              />
-              {todo.dueDate ? (
-                <button
-                  type="button"
-                  className={styles.clearDateBtn}
-                  onClick={() => updateTodo.mutate({ id: todo.id, dueDate: null })}
-                  aria-label="Quitar fecha límite"
-                >
-                  ×
-                </button>
-              ) : null}
-            </div>
-          </section>
-
-          <section className={styles.section}>
-            <span className={styles.label}>Prioridad</span>
-            <div className={styles.priorities}>
-              {(['low', 'medium', 'high', 'urgent'] as TodoPriority[]).map((p) => (
-                <PriorityBadge
-                  key={p}
-                  priority={p}
-                  selected={todo.priority === p}
-                  onClick={() => handlePriority(p)}
-                />
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.section}>
-            <span className={styles.label}>Etiquetas</span>
-            {todo.tags.length > 0 ? (
-              <div className={styles.tags}>
-                {todo.tags.map((tag) => (
-                  <TagChip
-                    key={tag.id}
-                    tag={tag}
-                    selected
-                    onRemove={handleRemoveTagFromTodo}
-                  />
-                ))}
-              </div>
-            ) : null}
-            <input
-              className={styles.newTagInput}
-              value={newTagName}
-              onChange={handleTagInput}
-              onKeyDown={handleAddTag}
-              placeholder="Añadir etiqueta… (Enter)"
-            />
-          </section>
-
-          <section className={styles.section}>
-            <span className={styles.label}>
-              Subtareas
-              {todo.subtasksCount.total > 0 ? (
-                <span className={styles.subtaskCount}>
-                  {todo.subtasksCount.completed}/{todo.subtasksCount.total}
-                </span>
-              ) : null}
-            </span>
-            <SubtaskList todoId={todo.id} subtasks={todo.subtasks} />
-          </section>
-
-          <div className={styles.dangerZone}>
+      <section className={[styles.section, styles.descriptionSection].join(' ')}>
+        <div className={styles.labelRow}>
+          <span className={styles.label}>Descripción</span>
+          {todo.description?.trim() ? (
             <button
               type="button"
-              className={styles.deleteBtn}
-              onClick={() => void handleDelete()}
+              className={styles.convertNoteBtn}
+              onClick={handleConvertToNote}
+              disabled={createNote.isPending}
+              title="Crear nota desde esta descripción"
             >
-              Eliminar tarea
+              {createNote.isPending ? '…' : '→ Nota'}
+            </button>
+          ) : null}
+        </div>
+        <TodoDescriptionEditor key={todo.id} todo={todo} onSave={handleDescriptionSave} />
+      </section>
+
+      <section className={styles.section}>
+        <span className={styles.label}>Fecha límite</span>
+        <div className={styles.dateRow}>
+          <input
+            type="date"
+            className={styles.dateInput}
+            value={todo.dueDate ? todo.dueDate.slice(0, 10) : ''}
+            onChange={(e) => {
+              const val = e.target.value
+              updateTodo.mutate({
+                id: todo.id,
+                dueDate: val ? new Date(val + 'T12:00:00').toISOString() : null,
+              })
+            }}
+          />
+          {todo.dueDate ? (
+            <button
+              type="button"
+              className={styles.clearDateBtn}
+              onClick={() => updateTodo.mutate({ id: todo.id, dueDate: null })}
+              aria-label="Quitar fecha límite"
+            >
+              ×
+            </button>
+          ) : null}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <span className={styles.label}>Prioridad</span>
+        <div className={styles.priorities}>
+          {(['low', 'medium', 'high', 'urgent'] as TodoPriority[]).map((p) => (
+            <PriorityBadge
+              key={p}
+              priority={p}
+              selected={todo.priority === p}
+              onClick={() => handlePriority(p)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <span className={styles.label}>Etiquetas</span>
+        {todo.tags.length > 0 ? (
+          <div className={styles.tags}>
+            {todo.tags.map((tag) => (
+              <TagChip
+                key={tag.id}
+                tag={tag}
+                selected
+                onRemove={handleRemoveTagFromTodo}
+              />
+            ))}
+          </div>
+        ) : null}
+        <input
+          className={styles.newTagInput}
+          value={newTagName}
+          onChange={handleTagInput}
+          onKeyDown={handleAddTag}
+          placeholder="Añadir etiqueta… (Enter)"
+        />
+      </section>
+
+      <section className={styles.section}>
+        <span className={styles.label}>
+          Subtareas
+          {todo.subtasksCount?.total > 0 ? (
+            <span className={styles.subtaskCount}>
+              {todo.subtasksCount.completed}/{todo.subtasksCount.total}
+            </span>
+          ) : null}
+        </span>
+        <SubtaskList todoId={todo.id} subtasks={todo.subtasks ?? []} />
+      </section>
+
+      <div className={styles.dangerZone}>
+        <button
+          type="button"
+          className={styles.deleteBtn}
+          onClick={() => void handleDelete()}
+        >
+          Eliminar tarea
+        </button>
+      </div>
+    </div>
+  )
+
+  if (asPanel) {
+    return (
+      <motion.aside
+        className={styles.panel}
+        initial={{ opacity: 0, x: 40 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 40 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <div className={styles.panelMargin} aria-hidden="true" />
+        <div className={styles.panelBody}>
+          <div className={styles.panelHeader}>
+            <span className={styles.panelTitle}>Detalle</span>
+            <button
+              type="button"
+              className={styles.panelClose}
+              onClick={onClose}
+              aria-label="Cerrar panel"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </button>
           </div>
+          <div className={styles.panelContent}>
+            <motion.div
+              key={todoId}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              {inner}
+            </motion.div>
+          </div>
         </div>
-      )}
+      </motion.aside>
+    )
+  }
+
+  return (
+    <Drawer open={Boolean(todoId)} onClose={onClose} side="right" variant="notebook" title="Detalle de tarea">
+      {inner}
     </Drawer>
   )
 }

@@ -11,7 +11,7 @@
 | [habits-module-improvements.md](./habits-module-improvements.md) | 6/6 | ✅ Completado |
 | [habit-month-view-and-difficulty-picker.md](./habit-month-view-and-difficulty-picker.md) | 2/2 partes | ✅ Completado |
 | [activities-module-improvements.md](./activities-module-improvements.md) | 5/5 | ✅ Completado |
-| [todos-module-improvements.md](./todos-module-improvements.md) | 0/4 | ⬜ Pendiente |
+| [todos-module-improvements.md](./todos-module-improvements.md) | 1/4 | 🔄 En progreso (Mejora 2 ✅ 2026-06-23) |
 
 ---
 
@@ -146,10 +146,14 @@
 
 | ID | Mejora | Estado | Archivos principales |
 |----|--------|--------|----------------------|
-| 1 | `NotebookList`: añadir `max-width: 640px` centrado al cuaderno | ⬜ Pendiente | `NotebookList.tsx`, `NotebookList.module.scss` |
-| 2 | `TodoDrawer`: panel lateral en desktop (≥768px), drawer en mobile | ⬜ Pendiente | `TodoDrawer.tsx`, `TodoDrawer.module.scss`, `NotebookList.tsx` |
-| 3 | `NotebookFilters`: mover dentro del papel (fila compacta bajo input) | ⬜ Pendiente | `NotebookFilters.tsx`, `NotebookFilters.module.scss`, `NotebookList.tsx` |
-| 4 | `NotebookTabs`: pestañas de carpetas compactas en mobile (solo dot de color) | ⬜ Pendiente | `NotebookTabs.tsx`, `NotebookTabs.module.scss` |
+| 1 | `NotebookList`: añadir `max-width: 640px` centrado al cuaderno | ⏪ Revertido | Feedback: cuaderno demasiado estrecho |
+| 2 | `TodoDrawer`: panel lateral en desktop (≥768px), drawer en mobile | ✅ Completada | 2026-06-23 — panel dentro de PaperSurface, comparte renglones y margen rojo |
+| 3 | `NotebookFilters`: mover dentro del papel (fila compacta bajo input) | ⏪ Revertido | — |
+| 4 | `NotebookTabs`: pestañas de carpetas compactas en mobile | ⏪ Revertido | — |
+
+### Nota post-revert
+
+- Se mantiene fix de crash: `subtasks ?? []` en `TodoDrawer` / `SubtaskList` (error `.slice()` en subtareas).
 
 ### Orden de implementación
 

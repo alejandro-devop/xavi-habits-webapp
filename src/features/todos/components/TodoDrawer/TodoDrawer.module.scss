@@ -329,3 +329,79 @@
     color: var(--color-text-muted);
   }
 }
+
+// ── Panel lateral desktop ──────────────────────────────────────────────────────
+// El panel vive DENTRO de PaperSurface — no necesita fondo propio.
+// Los renglones y el shadow del papel se heredan del contenedor padre.
+// El separador visual con el listado es el propio margen rojo del panel.
+
+.panel {
+  width: clamp(320px, 38%, 600px);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-self: stretch;
+}
+
+.panelMargin {
+  width: var(--paper-margin-width, 44px);
+  flex-shrink: 0;
+  border-right: 1.5px solid var(--paper-margin);
+}
+
+.panelBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.75rem;
+  min-height: var(--paper-row-height);
+  border-bottom: 1px solid var(--paper-line);
+  flex-shrink: 0;
+}
+
+.panelTitle {
+  font-family: var(--font-handwritten);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.panelClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.12s, background 0.12s;
+  padding: 0;
+
+  &:hover {
+    color: var(--color-text);
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  :global([data-theme='dark']) &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.panelContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0.75rem 2rem;
+}

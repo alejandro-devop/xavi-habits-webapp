@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { PaperSurface } from '@/shared/ui/PaperSurface'
 import { Spinner } from '@/shared/ui/Spinner'
@@ -140,6 +141,19 @@ export function NotebookList({ filters = {} }: Props) {
   const newInputRef = useRef<HTMLInputElement>(null)
   const draft = useTodoDraft(selectedFolderId)
 
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches,
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+
+  const showPanel = Boolean(openTodoId) && isDesktop
+
   const handleAdd = useCallback(
     (title: string) => {
       draft.clear()
@@ -204,8 +218,12 @@ export function NotebookList({ filters = {} }: Props) {
       if (isEditing || isNavigating) return
 
       if (openTodoId) {
-        if (e.key === 'Escape') setOpenTodoId(null)
-        return
+        if (e.key === 'Escape') {
+          setOpenTodoId(null)
+          return
+        }
+        // Mobile drawer bloquea toda navegación; panel desktop permite ↑↓ y Enter
+        if (!isDesktop) return
       }
 
       switch (e.key) {
@@ -250,7 +268,7 @@ export function NotebookList({ filters = {} }: Props) {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [todos, focusedIndex, openTodoId, isSuggested, handleToggleComplete, handleDelete])
+  }, [todos, focusedIndex, openTodoId, isSuggested, isDesktop, handleToggleComplete, handleDelete])
 
   return (
     <PaperSurface
@@ -272,50 +290,64 @@ export function NotebookList({ filters = {} }: Props) {
         </>
       }
     >
-      {/* Input oculto en Suggested y Daily Pool */}
-      {!isSuggested && !isDailyPool && (
-        <NotebookInput
-          ref={newInputRef}
-          value={draft.value}
-          onChange={draft.set}
-          onAdd={handleAdd}
-          onClear={draft.clear}
-        />
-      )}
-
-      {isDailyPool ? (
-        <DailyPoolView />
-      ) : isLoading ? (
-        <div className={styles.loading}>
-          <Spinner />
-        </div>
-      ) : todos.length === 0 ? (
-        <EmptyState
-          title={isSuggested ? 'Sin tareas sugeridas' : 'Sin tareas pendientes'}
-          description={
-            isSuggested
-              ? 'Las tareas con fecha de vencimiento de hoy o anteriores aparecerán aquí.'
-              : 'Presiona N para añadir tu primera tarea.'
-          }
-        />
-      ) : (
-        <ul className={styles.list} role="list">
-          {todos.map((todo, index) => (
-            <NotebookItem
-              key={todo.id}
-              todo={todo}
-              focused={focusedIndex === index}
-              onFocus={() => setFocusedIndex(index)}
-              onClick={() => setOpenTodoId(todo.id)}
-              onToggle={() => handleToggleComplete(todo)}
-              onToggleToday={() => handleToggleToday(todo)}
-              onChangePriority={(priority) => handleChangePriority(todo, priority)}
+      <div className={styles.contentRow}>
+        <div className={styles.listColumn}>
+          {/* Input oculto en Suggested y Daily Pool */}
+          {!isSuggested && !isDailyPool && (
+            <NotebookInput
+              ref={newInputRef}
+              value={draft.value}
+              onChange={draft.set}
+              onAdd={handleAdd}
+              onClear={draft.clear}
             />
-          ))}
-        </ul>
-      )}
+          )}
 
-      <TodoDrawer todoId={openTodoId} onClose={() => setOpenTodoId(null)} />
+          {isDailyPool ? (
+            <DailyPoolView />
+          ) : isLoading ? (
+            <div className={styles.loading}>
+              <Spinner />
+            </div>
+          ) : todos.length === 0 ? (
+            <EmptyState
+              title={isSuggested ? 'Sin tareas sugeridas' : 'Sin tareas pendientes'}
+              description={
+                isSuggested
+                  ? 'Las tareas con fecha de vencimiento de hoy o anteriores aparecerán aquí.'
+                  : 'Presiona N para añadir tu primera tarea.'
+              }
+            />
+          ) : (
+            <ul className={styles.list} role="list">
+              {todos.map((todo, index) => (
+                <NotebookItem
+                  key={todo.id}
+                  todo={todo}
+                  focused={focusedIndex === index}
+                  onFocus={() => setFocusedIndex(index)}
+                  onClick={() => setOpenTodoId(todo.id)}
+                  onToggle={() => handleToggleComplete(todo)}
+                  onToggleToday={() => handleToggleToday(todo)}
+                  onChangePriority={(priority) => handleChangePriority(todo, priority)}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Panel desktop: columna hermana del listado, hereda el papel */}
+        <AnimatePresence>
+          {showPanel && (
+            <TodoDrawer todoId={openTodoId} onClose={() => setOpenTodoId(null)} asPanel />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Drawer mobile: comportamiento original */}
+      {!isDesktop && (
+        <TodoDrawer todoId={openTodoId} onClose={() => setOpenTodoId(null)} />
+      )}
     </PaperSurface>
   )
 }

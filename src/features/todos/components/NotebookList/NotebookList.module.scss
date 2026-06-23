@@ -1,5 +1,15 @@
 @use '@/app/styles/tokens' as *;
 
+.contentRow {
+  display: flex;
+  align-items: stretch;
+}
+
+.listColumn {
+  flex: 1;
+  min-width: 0;
+}
+
 .loading {
   display: flex;
   justify-content: center;

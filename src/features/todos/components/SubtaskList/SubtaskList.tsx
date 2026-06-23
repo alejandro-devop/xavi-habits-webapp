@@ -13,7 +13,7 @@ type Props = {
   subtasks: TodoSubtask[]
 }
 
-export function SubtaskList({ todoId, subtasks }: Props) {
+export function SubtaskList({ todoId, subtasks = [] }: Props) {
   const [newTitle, setNewTitle] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const addSubtask = useAddSubtaskMutation(todoId)

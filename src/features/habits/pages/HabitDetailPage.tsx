@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, type NavigateFunction } from 'react-router'
 import { useHabitFollowUpsInDatesQuery, useHabitQuery, useHabitWeekViewQuery } from '@/features/habits/hooks/useHabits'
 import { HabitStatsBanner } from '@/features/habits/components/HabitStatsBanner'
 import { HabitStatusBadge } from '@/features/habits/components/HabitStatusBadge'
@@ -16,6 +16,14 @@ import { Button } from '@/shared/ui/Button'
 import { Spinner } from '@/shared/ui/Spinner'
 import { Tabs } from '@/shared/ui/Tabs'
 import styles from './HabitDetailPage.module.scss'
+
+function goBack(navigate: NavigateFunction) {
+  if (window.history.length > 1) {
+    navigate(-1)
+  } else {
+    navigate(habitsPaths.list)
+  }
+}
 
 export function HabitDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -40,7 +48,7 @@ export function HabitDetailPage() {
     return (
       <div className={styles.center}>
         <p>Hábito no encontrado.</p>
-        <Button variant="ghost" onClick={() => navigate(habitsPaths.list)}>
+        <Button variant="ghost" onClick={() => goBack(navigate)}>
           Volver a la lista
         </Button>
       </div>
@@ -51,16 +59,14 @@ export function HabitDetailPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(habitsPaths.list)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => goBack(navigate)}>
             ← Volver
           </Button>
           <div className={styles.titleRow}>
-            {habit.icon && <AppIcon name={habit.icon} size="md" className={styles.icon} />}
+            {habit.icon ? <AppIcon name={habit.icon} size="md" className={styles.icon} /> : null}
             <h1 className={styles.title}>{habit.name}</h1>
+          </div>
+          <div className={styles.badgesRow}>
             <HabitStatusBadge status={habit.status} />
             <HabitTypeBadge habitType={habit.habitType} />
           </div>

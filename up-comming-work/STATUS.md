@@ -1,6 +1,6 @@
 # Upcoming work — estado de implementación
 
-> **Última actualización:** 2026-06-23  
+> **Última actualización:** 2026-06-23 (activities module añadido)  
 > Índice de memoria para agentes y desarrolladores. Actualizar este archivo al completar (o abandonar) ítems de los specs en este directorio.
 
 ## Resumen
@@ -8,8 +8,9 @@
 | Documento | Progreso | Estado |
 |-----------|----------|--------|
 | [layout-improvements.md](./layout-improvements.md) | 4/5 | Casi completo (falta flyout opcional) |
-| [habits-module-improvements.md](./habits-module-improvements.md) | 4/6 | En progreso |
-| [habit-month-view-and-difficulty-picker.md](./habit-month-view-and-difficulty-picker.md) | 0/2 partes | Pendiente |
+| [habits-module-improvements.md](./habits-module-improvements.md) | 6/6 | ✅ Completado |
+| [habit-month-view-and-difficulty-picker.md](./habit-month-view-and-difficulty-picker.md) | 1/2 partes | Parte 1 completada |
+| [activities-module-improvements.md](./activities-module-improvements.md) | 0/5 | Pendiente |
 
 ---
 
@@ -59,14 +60,13 @@
 | 2 | `HabitMyDayPage`: fecha hero + grid adaptativo | ✅ Completada | Fecha como `<h1>`; grid 350px alineado a la izq (ajuste manual vs spec) |
 | 3 | `HabitDayCard`: limpiar ruido visual | ✅ Completada | Banner solo con propósito asignado; progress label fuera; dots más grandes |
 | 4 | `HabitsListPage`: grid 2 columnas | ✅ Completada | `repeat(auto-fill, minmax(18rem, 1fr))` |
-| 5 | `HabitDetailPage`: header limpio + `navigate(-1)` | ⬜ Pendiente | `HabitDetailPage.tsx`, `.module.scss` |
-| 6 | `HabitPersonaPage`: 3 columnas horizontales DnD | ⬜ Pendiente | `HabitPersonaPage.tsx`, `.module.scss` |
+| 5 | `HabitDetailPage`: header limpio + `navigate(-1)` | ✅ Completada | Badges en fila separada; `goBack()` con fallback a lista |
+| 6 | `HabitPersonaPage`: 3 columnas horizontales DnD | ✅ Completada | `.threeColumns` 3→2→1 responsive |
 
 ### Contexto actual del código
 
 - `HabitsModuleLayout` ya no impone `max-width`; sub-nav con estilo tab y sin `PageHeader` duplicado.
-- Mi Día: grid de cards a **350px** max, gap `0.5rem`, alineación izquierda (preferencia del usuario).
-- Orden pendiente: **5 → 6** (detalle y persona).
+- Spec **habits-module-improvements.md** completado (6/6).
 
 ---
 
@@ -78,10 +78,10 @@
 
 | ID | Ítem | Estado | Notas |
 |----|------|--------|-------|
-| 1.1 | Default difficulty `2` en `HabitFollowUpForm` | ⬜ Pendiente | Sigue `?? null` |
-| 1.2 | Rediseño picker (slider desktop / stepper mobile) | ⬜ Pendiente | Sigue UI de 5 botones toggle |
-| 1.3 | Reescribir `HabitDifficultyPicker.module.scss` | ⬜ Pendiente | — |
-| 1.4 | Animación bump al cambiar nivel | ⏸️ Opcional | — |
+| 1.1 | Default difficulty `2` en `HabitFollowUpForm` | ✅ Completada | |
+| 1.2 | Rediseño picker (slider desktop / stepper mobile) | ✅ Completada | |
+| 1.3 | Reescribir `HabitDifficultyPicker.module.scss` | ✅ Completada | |
+| 1.4 | Animación bump al cambiar nivel | ✅ Completada | |
 
 ### Parte 2 — HabitMonthView
 
@@ -103,11 +103,39 @@
 
 ---
 
+## activities-module-improvements.md
+
+**Alcance:** módulo `src/features/activities/` (layout shell, nav tabs, seguimiento, categorías, detalle).
+
+| ID | Mejora | Estado | Archivos principales |
+|----|--------|--------|----------------------|
+| 1 | `ActivitiesModuleLayout`: quitar `PageHeader` + eliminar `max-width: 72rem` | ⬜ Pendiente | `ActivitiesModuleLayout.tsx`, `.module.scss` |
+| 2 | `ActivitiesModuleNav`: convertir a tabs pill sin iconos | ⬜ Pendiente | `ActivitiesModuleNav.tsx`, `.module.scss` |
+| 3 | `ActivityTrackingPage`: 2 columnas desktop + sticky bar mobile | ⬜ Pendiente | `ActivityTrackingPage.tsx`, `.module.scss` |
+| 4 | `ActivityCategoriesPanel`: grid `auto-fill minmax(240px)` + tarjeta "+" | ⬜ Pendiente | `ActivityCategoriesPanel.tsx`, `.module.scss` |
+| 5 | `ActivityDetailPage`: 2 columnas desktop + sticky bar mobile | ⬜ Pendiente | `ActivityDetailPage.tsx`, `.module.scss` |
+
+### Notas de diseño
+
+- **Breakpoint desktop/mobile:** `@include md` (≥768px) para mejoras 3 y 5.
+- **Seguimiento desktop:** 2 columnas (3fr / 2fr). Tab "Resumen" eliminado en desktop; widgets siempre visibles.
+- **Seguimiento mobile:** métricas compactas arriba + tabs "Registro / Resumen" + sticky bar "Iniciar / Registrar".
+- **Detalle desktop:** columna derecha fija 280px con metadata + acciones.
+- **Detalle mobile:** sticky bar con "Completar" + "Eliminar".
+- **Tabs nav:** `overflow-x: auto; scrollbar-width: none` para pantallas estrechas.
+- **Sticky bars:** respetar `safe-area-inset-bottom` (notch iPhone).
+
+### Orden recomendado del spec
+
+1 → 2 → 4 → 5 → 3 (Mejora 3 es la más compleja, al final)
+
+---
+
 ## Próximo trabajo sugerido
 
-1. **habits-module-improvements.md → Mejora 5** — `HabitDetailPage`: header limpio + `navigate(-1)`.
-2. **habits-module-improvements.md → Mejora 6** — `HabitPersonaPage`: 3 columnas horizontales DnD.
-3. **habit-month-view-and-difficulty-picker.md → 1.1 + 1.2** — default difficulty + rediseño picker.
+1. **habit-month-view-and-difficulty-picker.md → Parte 2** — `HabitMonthView` + `HabitCalendarPage`.
+2. **activities-module-improvements.md → Mejoras 1 + 2** — inicio más seguro del módulo de actividades.
+3. **layout-improvements.md → Mejora 5** — flyout on hover (opcional).
 
 ---
 

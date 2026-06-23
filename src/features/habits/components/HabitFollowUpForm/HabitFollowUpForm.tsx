@@ -26,7 +26,7 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
 
   const [count, setCount] = useState<string>(existingFollowUp?.count?.toString() ?? '')
   const [time, setTime] = useState<string>(existingFollowUp?.time?.toString() ?? '')
-  const [difficulty, setDifficulty] = useState<number | null>(existingFollowUp?.difficulty ?? null)
+  const [difficulty, setDifficulty] = useState<number | null>(existingFollowUp?.difficulty ?? 2)
   const [notes, setNotes] = useState<string>(existingFollowUp?.notes ?? '')
 
   function mutate(fields: Record<string, unknown>) {

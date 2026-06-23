@@ -123,7 +123,7 @@ export function HabitPersonaPage() {
 
       {!isLoading && !isError ? (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className={styles.pool}>
+          <div className={styles.threeColumns}>
             <PersonaColumn
               title="Sin asignar"
               placement="pool"
@@ -132,9 +132,6 @@ export function HabitPersonaPage() {
               onDelete={(id) => void handleDelete(id)}
               onMove={handleMove}
             />
-          </div>
-
-          <div className={styles.columns}>
             <PersonaColumn
               title="Lo que quiero"
               placement="want"

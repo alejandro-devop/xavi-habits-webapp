@@ -36,20 +36,28 @@ export function HabitMyDayPage() {
 
   return (
     <div className={styles.root}>
-      <p className={styles.date}>{formatDate(today)}</p>
+      <header className={styles.pageHeader}>
+        <h1 className={styles.date}>{formatDate(today)}</h1>
 
-      <div className={styles.summaryBar}>
-        <div className={styles.barTrack}>
-          <div className={styles.barAccomplished} style={{ width: `${pctAccomplished}%` }} />
-          <div className={styles.barFailed} style={{ width: `${pctFailed}%` }} />
-          <div className={styles.barPending} style={{ width: `${pctPending}%` }} />
+        <div className={styles.summaryBar}>
+          <div className={styles.barTrack}>
+            <div className={styles.barAccomplished} style={{ width: `${pctAccomplished}%` }} />
+            <div className={styles.barFailed} style={{ width: `${pctFailed}%` }} />
+            <div className={styles.barPending} style={{ width: `${pctPending}%` }} />
+          </div>
+          <div className={styles.barLegend}>
+            <span className={styles.legendAccomplished}>
+              {accomplished} logrado{accomplished !== 1 ? 's' : ''}
+            </span>
+            <span className={styles.legendFailed}>
+              {failed} fallado{failed !== 1 ? 's' : ''}
+            </span>
+            <span className={styles.legendPending}>
+              {pending} pendiente{pending !== 1 ? 's' : ''}
+            </span>
+          </div>
         </div>
-        <div className={styles.barLegend}>
-          <span className={styles.legendAccomplished}>{accomplished} logrado{accomplished !== 1 ? 's' : ''}</span>
-          <span className={styles.legendFailed}>{failed} fallado{failed !== 1 ? 's' : ''}</span>
-          <span className={styles.legendPending}>{pending} pendiente{pending !== 1 ? 's' : ''}</span>
-        </div>
-      </div>
+      </header>
 
       <ul className={styles.list}>
         {data.map((entry) => (

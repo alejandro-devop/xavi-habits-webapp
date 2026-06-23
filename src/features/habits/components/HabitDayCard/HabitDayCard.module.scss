@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  width: 100%;
   padding: 1rem 1.25rem;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -17,7 +18,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding-top: 0.75rem;
 }
 
 .header {
@@ -48,33 +48,32 @@
   text-overflow: ellipsis;
 }
 
+.progressGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.progressLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  align-self: flex-end;
+  line-height: 1;
+}
+
 .progressBar {
-  position: relative;
-  height: 1.1rem;
+  height: 0.375rem;
   background: var(--color-border);
   border-radius: 999px;
   overflow: hidden;
 }
 
 .progressFill {
-  position: absolute;
-  top: 0;
-  left: 0;
   height: 100%;
   background: var(--color-primary);
   border-radius: 999px;
-  transition: width 0.3s;
-}
-
-.progressLabel {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  font-size: 0.65rem;
-  color: var(--color-text-tertiary);
-  white-space: nowrap;
-  padding-right: 0.25rem;
+  transition: width 0.3s ease;
 }
 
 .weekStrip {
@@ -92,7 +91,7 @@
 }
 
 .dotLabel {
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   color: var(--color-text-tertiary);
   font-weight: 500;
   line-height: 1;
@@ -101,8 +100,8 @@
 .weekDot::before {
   content: '';
   display: block;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 50%;
   background: var(--color-border);
   border: 2px solid transparent;

@@ -58,9 +58,14 @@ export function HabitDayCard({ entry, date }: Props) {
   const progress =
     habit.periodDays > 0 ? Math.min(habit.streak / habit.periodDays, 1) : null
 
+  const showPurposeBanner =
+    entry.habit.purpose != null && entry.habit.purpose.placement !== 'pool'
+
   return (
     <div className={styles.card}>
-      <HabitPurposeBanner purpose={entry.habit.purpose} habitId={entry.habit.id} />
+      {showPurposeBanner ? (
+        <HabitPurposeBanner purpose={entry.habit.purpose} habitId={entry.habit.id} />
+      ) : null}
       <div className={styles.content}>
       <div className={styles.header}>
         <div className={styles.meta}>
@@ -73,9 +78,16 @@ export function HabitDayCard({ entry, date }: Props) {
       </div>
 
       {progress !== null && (
-        <div className={styles.progressBar} aria-label={`${habit.streak}/${habit.periodDays} días`}>
-          <div className={styles.progressFill} style={{ width: `${progress * 100}%` }} />
-          <span className={styles.progressLabel}>{habit.streak}/{habit.periodDays} días</span>
+        <div className={styles.progressGroup}>
+          <span className={styles.progressLabel}>
+            {habit.streak}/{habit.periodDays} días
+          </span>
+          <div
+            className={styles.progressBar}
+            aria-label={`${habit.streak}/${habit.periodDays} días`}
+          >
+            <div className={styles.progressFill} style={{ width: `${progress * 100}%` }} />
+          </div>
         </div>
       )}
 

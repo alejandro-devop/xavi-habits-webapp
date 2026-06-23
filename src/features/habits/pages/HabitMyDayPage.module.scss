@@ -10,11 +10,19 @@
   padding: 3rem 0;
 }
 
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .date {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
   text-transform: capitalize;
   margin: 0;
+  line-height: 1.2;
 }
 
 .summaryBar {
@@ -90,10 +98,21 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(0, 350px));
+  justify-content: start;
+  gap: 0.5rem;
+
+  > li {
+    max-width: 350px;
+    width: 100%;
+  }
 
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
+    justify-content: stretch;
+
+    > li {
+      max-width: none;
+    }
   }
 }

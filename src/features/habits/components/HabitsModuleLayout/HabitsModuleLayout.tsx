@@ -1,24 +1,23 @@
 import { Outlet } from 'react-router'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
-import { PageHeader } from '@/shared/ui/PageHeader'
 import { AppNavLink } from '@/shared/ui/NavLink'
 import styles from './HabitsModuleLayout.module.scss'
+
+function habitsNavLinkClassName({ isActive }: { isActive: boolean }) {
+  return [styles.navLink, isActive ? styles.navLinkActive : ''].filter(Boolean).join(' ')
+}
 
 export function HabitsModuleLayout() {
   return (
     <div className={styles.root}>
-      <PageHeader
-        title="Hábitos"
-        subtitle="Registra y sigue tus hábitos diarios."
-      />
       <nav className={styles.nav} aria-label="Secciones de hábitos">
-        <AppNavLink to={habitsPaths.myDay} icon="sun">
+        <AppNavLink to={habitsPaths.myDay} icon="sun" className={habitsNavLinkClassName}>
           Mi Día
         </AppNavLink>
-        <AppNavLink to={habitsPaths.list} icon="list">
+        <AppNavLink to={habitsPaths.list} icon="list" className={habitsNavLinkClassName}>
           Mis Hábitos
         </AppNavLink>
-        <AppNavLink to={habitsPaths.persona} icon="user">
+        <AppNavLink to={habitsPaths.persona} icon="user" className={habitsNavLinkClassName}>
           Mi Persona
         </AppNavLink>
       </nav>

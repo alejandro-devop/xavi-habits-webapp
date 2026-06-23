@@ -1,19 +1,43 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   width: 100%;
-  max-width: 72rem;
-  margin: 0 auto;
 }
 
 .nav {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 0.35rem 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--color-border);
+  gap: 0.25rem;
+  padding-bottom: 0;
+  border-bottom: 2px solid var(--color-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.navLink {
+  flex-shrink: 0;
+  border-radius: 0;
+  padding: 0.5rem 0.75rem;
+  background: transparent !important;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-size: 0.875rem;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-text) 5%, transparent) !important;
+    border-bottom-color: var(--color-border);
+  }
+}
+
+.navLinkActive {
+  color: var(--color-primary);
+  background: transparent !important;
+  border-bottom: 2px solid var(--color-primary);
 }
 
 .content {

@@ -3,8 +3,11 @@
   flex-direction: column;
   gap: 1rem;
   width: 100%;
+  align-items: center;
 }
 
 .content {
   min-width: 0;
+  width: 100%;
+  align-self: stretch;
 }

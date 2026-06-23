@@ -14,9 +14,23 @@
 
 .topRow {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  width: 100%;
+  position: relative;
+
+  @include md {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+  }
+}
+
+.selectorWrap {
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
 }
 
 .topActions {
@@ -25,6 +39,9 @@
 
   @include md {
     display: flex;
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 }
 

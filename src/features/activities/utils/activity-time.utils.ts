@@ -64,6 +64,58 @@ export function getWeekDaysForDate(anchor: Date, selectedDate: string): WeekDay[
   })
 }
 
+/** All days in a calendar month (1-based month). */
+export function getMonthDaysForDate(
+  year: number,
+  month: number,
+  selectedDate: string,
+): WeekDay[] {
+  const today = getCurrentLocalDate()
+  const weekdayLabels = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const daysInMonth = new Date(year, month, 0).getDate()
+
+  return Array.from({ length: daysInMonth }, (_, index) => {
+    const dayNumber = index + 1
+    const date = `${year}-${pad2(month)}-${pad2(dayNumber)}`
+    const day = new Date(year, month - 1, dayNumber)
+    return {
+      date,
+      label: weekdayLabels[day.getDay()] ?? '',
+      dayNumber,
+      isToday: date === today,
+      isFuture: isFutureDate(date),
+      isSelected: date === selectedDate,
+    }
+  })
+}
+
+export function getYearMonthFromDate(date: string): { year: number; month: number } {
+  const [year, month] = date.split('-').map(Number)
+  return { year: year ?? 0, month: month ?? 1 }
+}
+
+export function getMonthRange(year: number, month: number): { from: string; to: string } {
+  const daysInMonth = new Date(year, month, 0).getDate()
+  return {
+    from: `${year}-${pad2(month)}-01`,
+    to: `${year}-${pad2(month)}-${pad2(daysInMonth)}`,
+  }
+}
+
+export function canNavigateToNextMonth(
+  year: number,
+  month: number,
+  today: string = getCurrentLocalDate(),
+): boolean {
+  const { year: todayYear, month: todayMonth } = getYearMonthFromDate(today)
+  return year < todayYear || (year === todayYear && month < todayMonth)
+}
+
+export function shiftMonth(year: number, month: number, delta: -1 | 1): { year: number; month: number } {
+  const d = new Date(year, month - 1 + delta, 1)
+  return { year: d.getFullYear(), month: d.getMonth() + 1 }
+}
+
 export function getCurrentWeekRange(): { from: string; to: string } {
   const today = new Date()
   const days = getWeekDaysForDate(today, getCurrentLocalDate())

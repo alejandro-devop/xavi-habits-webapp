@@ -1,14 +1,25 @@
-import { useMemo } from 'react'
 import { useRemainingDayTimer } from '@/features/activities/hooks/useRemainingDayTimer'
 import {
   DAY_END_TIME,
   formatDayEndLabel,
 } from '@/features/activities/utils/activity-day-metrics.utils'
+import { normalizeTimeForDisplay } from '@/features/activities/utils/activity-time.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import styles from './DayRemainingWidget.module.scss'
 
-const CLOCK_SIZE = 140
-const STROKE_WIDTH = 7
+/** Matches `DAY_START_TIME` in activity-day-metrics.utils.ts */
+const DAY_START_TIME = '00:00:00'
+
+function formatDayStartLabel(startTime: string): string {
+  const normalized = normalizeTimeForDisplay(startTime)
+  const [h, m] = normalized.split(':').map(Number)
+  if (Number.isNaN(h) || Number.isNaN(m)) return '12:00am'
+
+  const period = h >= 12 ? 'pm' : 'am'
+  const hour12 = h % 12 === 0 ? 12 : h % 12
+  const minutes = String(m).padStart(2, '0')
+  return `${hour12}:${minutes}${period}`
+}
 
 type DayRemainingWidgetProps = {
   endTime?: string
@@ -20,82 +31,54 @@ export function DayRemainingWidget({
   className,
 }: DayRemainingWidgetProps) {
   const { display, elapsedPercentage } = useRemainingDayTimer(endTime)
-  const remainingPct = Math.max(0, Math.min(100, 100 - elapsedPercentage))
 
-  const { radius, circumference, strokeDashoffset, center } = useMemo(() => {
-    const r = (CLOCK_SIZE - STROKE_WIDTH) / 2 - 2
-    const c = 2 * Math.PI * r
-    return {
-      radius: r,
-      circumference: c,
-      strokeDashoffset: c - (remainingPct / 100) * c,
-      center: CLOCK_SIZE / 2,
-    }
-  }, [remainingPct])
+  const nowLabel = new Date().toLocaleTimeString('es-ES', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+
+  const dayStartLabel = formatDayStartLabel(DAY_START_TIME)
+  const nowPosition = `${elapsedPercentage}%`
 
   return (
     <article
       className={[styles.root, className].filter(Boolean).join(' ')}
       aria-label="Tiempo restante del día"
     >
-      <div className={styles.clock}>
-        <svg
-          className={styles.ring}
-          viewBox={`0 0 ${CLOCK_SIZE} ${CLOCK_SIZE}`}
-          width={CLOCK_SIZE}
-          height={CLOCK_SIZE}
-          aria-hidden
-        >
-          <defs>
-            <linearGradient id="dayRemainingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="var(--color-primary)" />
-              <stop
-                offset="100%"
-                stopColor="color-mix(in srgb, var(--color-primary) 55%, var(--color-success))"
-              />
-            </linearGradient>
-          </defs>
-          <circle
-            className={styles.track}
-            cx={center}
-            cy={center}
-            r={radius}
-            fill="none"
-            strokeWidth={STROKE_WIDTH}
-          />
-          <circle
-            className={styles.progress}
-            cx={center}
-            cy={center}
-            r={radius}
-            fill="none"
-            strokeWidth={STROKE_WIDTH}
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
-            transform={`rotate(-90 ${center} ${center})`}
-            role="progressbar"
-            aria-valuenow={remainingPct}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Porcentaje de tiempo restante"
-          />
-        </svg>
-        <div className={styles.face}>
-          <AppIcon name="clock" size="sm" decorative className={styles.icon} />
-          <time className={styles.counter} aria-live="polite">
-            {display}
-          </time>
-          <span className={styles.sublabel}>restante</span>
+      <div className={styles.header}>
+        <div className={styles.headerLeft}>
+          <AppIcon name="clock" size="sm" decorative className={styles.headerIcon} />
+          <span className={styles.headerTitle}>Día de hoy</span>
         </div>
+        <time className={styles.remaining} aria-live="polite">
+          {display} restante
+        </time>
       </div>
-      <p className={styles.footer}>
-        <span className={styles.elapsed}>{elapsedPercentage}% transcurrido</span>
-        <span className={styles.dot} aria-hidden>
-          ·
+
+      <span className={styles.nowBadge}>ahora — {nowLabel}</span>
+
+      <div className={styles.bar}>
+        <span className={styles.track} aria-hidden />
+        <span
+          className={styles.progress}
+          style={{ width: nowPosition }}
+          role="progressbar"
+          aria-valuenow={elapsedPercentage}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Progreso del día"
+        />
+        <span className={styles.nowMarker} style={{ left: nowPosition }} aria-hidden />
+      </div>
+
+      <div className={styles.labels}>
+        <span>{dayStartLabel}</span>
+        <span>{formatDayEndLabel(endTime)}</span>
+        <span className={styles.nowLabel} style={{ left: nowPosition }}>
+          ▲ ahora
         </span>
-        <span>cierra {formatDayEndLabel(endTime)}</span>
-      </p>
+      </div>
     </article>
   )
 }

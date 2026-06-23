@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ActivityDayTimeline } from '@/features/activities/components/ActivityDayTimeline'
-import { ActivityWeekSelector } from '@/features/activities/components/ActivityWeekSelector'
+import { ActivityMonthSelector } from '@/features/activities/components/ActivityMonthSelector'
 import { DayRemainingWidget } from '@/features/activities/components/DayRemainingWidget'
 import { CategoryTimeWidget } from '@/features/activities/components/CategoryTimeWidget'
 import { DayUsageWidget } from '@/features/activities/components/DayUsageWidget'
@@ -37,10 +37,10 @@ import {
 } from '@/features/activities/utils/activity-followup-form'
 import {
   getCurrentLocalDate,
-  getCurrentWeekRange,
   getFollowUpEndTimeForNextEntry,
   getFreeSlotsBetweenFollowUps,
-  getWeekDaysForDate,
+  getMonthRange,
+  getYearMonthFromDate,
   isFutureDate,
   isToday,
 } from '@/features/activities/utils/activity-time.utils'
@@ -57,7 +57,11 @@ import styles from './ActivityTrackingPage.module.scss'
 export function ActivityTrackingPage() {
   const today = getCurrentLocalDate()
   const [selectedDate, setSelectedDate] = useState(today)
-  const weekRange = getCurrentWeekRange()
+  const [visibleMonth, setVisibleMonth] = useState(() => getYearMonthFromDate(today))
+  const monthRange = useMemo(
+    () => getMonthRange(visibleMonth.year, visibleMonth.month),
+    [visibleMonth],
+  )
 
   const { data: openFollowUp } = useActivityOpenFollowUpQuery()
   const session = useMemo(
@@ -80,10 +84,16 @@ export function ActivityTrackingPage() {
 
   const { confirm } = useConfirmDialog()
 
-  const weekDays = useMemo(
-    () => getWeekDaysForDate(new Date(), selectedDate),
-    [selectedDate],
-  )
+  const handleSelectDay = (date: string) => {
+    if (isFutureDate(date)) return
+    setSelectedDate(date)
+    const { year, month } = getYearMonthFromDate(date)
+    setVisibleMonth({ year, month })
+  }
+
+  const handleMonthChange = (year: number, month: number) => {
+    setVisibleMonth({ year, month })
+  }
 
   const { data: followUps = [], isLoading, isError, error, refetch } =
     useActivityDayFollowUpsQuery(selectedDate)
@@ -93,7 +103,7 @@ export function ActivityTrackingPage() {
     [selectedDate, followUps],
   )
 
-  useActivityFollowUpsInDatesQuery(weekRange.from, weekRange.to)
+  useActivityFollowUpsInDatesQuery(monthRange.from, monthRange.to)
 
   const { data: activitiesData } = useActivitiesQuery({ limit: 100, page: 1 })
   const activities = activitiesData?.activities ?? []
@@ -103,11 +113,6 @@ export function ActivityTrackingPage() {
   const updateMutation = useUpdateActivityFollowUpMutation()
   const deleteMutation = useDeleteActivityFollowUpMutation()
   const completeTodoMutation = useCompleteTodoMutation()
-
-  const handleSelectDay = (date: string) => {
-    if (isFutureDate(date)) return
-    setSelectedDate(date)
-  }
 
   const handleStart = (
     values: StartActivityFormValues,
@@ -263,7 +268,15 @@ export function ActivityTrackingPage() {
   return (
     <div className={styles.page}>
       <div className={styles.topRow}>
-        <ActivityWeekSelector days={weekDays} onSelect={handleSelectDay} />
+        <div className={styles.selectorWrap}>
+          <ActivityMonthSelector
+            year={visibleMonth.year}
+            month={visibleMonth.month}
+            selectedDate={selectedDate}
+            onSelect={handleSelectDay}
+            onMonthChange={handleMonthChange}
+          />
+        </div>
         <div className={styles.topActions}>
           <Button
             variant="primary"

@@ -2,12 +2,14 @@
   display: flex;
   gap: 2px;
   padding: 3px;
+  margin-inline: auto;
   border-radius: var(--radius-md);
   background: var(--color-surface-elevated, var(--color-surface));
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
   width: fit-content;
+  max-width: 100%;
 
   &::-webkit-scrollbar {
     display: none;

@@ -10,8 +10,13 @@ import {
   getFreeSlotsBetweenFollowUps,
   getMostRecentFollowUp,
   getMaxDurationForStartTime,
+  getMonthDaysForDate,
+  getMonthRange,
   getTimelineItemHeight,
   getWeekDaysForDate,
+  getYearMonthFromDate,
+  canNavigateToNextMonth,
+  shiftMonth,
   hoursMinutesToTotalMinutes,
   isFutureDate,
   MIN_FOLLOW_UP_HEIGHT,
@@ -42,6 +47,39 @@ describe('activity-time.utils', () => {
     expect(days).toHaveLength(7)
     expect(days.find((d) => d.isToday)?.date).toBe('2026-05-20')
     expect(days.some((d) => d.isFuture)).toBe(true)
+  })
+
+  it('getMonthDaysForDate returns all days in month with future flags', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-20T12:00:00'))
+
+    const days = getMonthDaysForDate(2026, 5, '2026-05-20')
+    expect(days).toHaveLength(31)
+    expect(days.find((d) => d.isSelected)?.date).toBe('2026-05-20')
+    expect(days.filter((d) => d.isFuture)).toHaveLength(11)
+  })
+
+  it('getMonthRange returns first and last day of month', () => {
+    expect(getMonthRange(2026, 5)).toEqual({ from: '2026-05-01', to: '2026-05-31' })
+    expect(getMonthRange(2026, 2)).toEqual({ from: '2026-02-01', to: '2026-02-28' })
+  })
+
+  it('canNavigateToNextMonth blocks future months', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-20T12:00:00'))
+
+    expect(canNavigateToNextMonth(2026, 4)).toBe(true)
+    expect(canNavigateToNextMonth(2026, 5)).toBe(false)
+    expect(canNavigateToNextMonth(2026, 6)).toBe(false)
+  })
+
+  it('shiftMonth moves across year boundary', () => {
+    expect(shiftMonth(2026, 1, -1)).toEqual({ year: 2025, month: 12 })
+    expect(shiftMonth(2026, 12, 1)).toEqual({ year: 2027, month: 1 })
+  })
+
+  it('getYearMonthFromDate parses YYYY-MM-DD', () => {
+    expect(getYearMonthFromDate('2026-05-20')).toEqual({ year: 2026, month: 5 })
   })
 
   it('formatElapsedHHMMSS formats from elapsed ms', () => {

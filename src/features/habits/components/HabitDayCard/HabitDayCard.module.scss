@@ -122,6 +122,11 @@
   border-color: var(--color-text-secondary);
 }
 
+.weekDot.dot--partial::before {
+  background: var(--color-warning-subtle, #fef3c7);
+  border-color: var(--color-warning-text, #92400e);
+}
+
 .weekDot.dot--today::before {
   outline: 2px solid var(--color-primary);
   outline-offset: 1px;
@@ -164,4 +169,15 @@
 .lifeline {
   color: var(--color-text-secondary);
   background: var(--color-surface-raised);
+}
+
+.partial {
+  color: var(--color-warning-text, #92400e);
+  background: var(--color-warning-subtle, #fef3c7);
+}
+
+.dailyProgressGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
 }

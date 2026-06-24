@@ -43,11 +43,21 @@ const FOLLOW_UP_FIELDS = `
   archived
 `
 
+const MEASURE_FIELDS = `
+  id
+  name
+  abbreviation
+  type
+`
+
 export const HABIT_MY_DAY_QUERY = `
   query HabitMyDay($date: String!) {
     habitMyDay(date: $date) {
       habit {
         ${HABIT_FIELDS}
+        measure {
+          ${MEASURE_FIELDS}
+        }
         purpose {
           id
           name
@@ -99,6 +109,9 @@ export const HABIT_QUERY = `
         icon
         color
       }
+      measure {
+        ${MEASURE_FIELDS}
+      }
       purpose {
         id
         name
@@ -125,6 +138,8 @@ export const HABIT_WEEK_VIEW_QUERY = `
           isFailed
           isLifeline
           difficulty
+          count
+          time
         }
       }
       lifelinesRemaining
@@ -161,6 +176,20 @@ export const HABIT_CATEGORIES_QUERY = `
       icon
       color
       orderIndex
+    }
+  }
+`
+
+export const HABIT_MEASURES_QUERY = `
+  query HabitMeasures {
+    habitMeasures {
+      id
+      userId
+      name
+      abbreviation
+      type
+      createdAt
+      updatedAt
     }
   }
 `

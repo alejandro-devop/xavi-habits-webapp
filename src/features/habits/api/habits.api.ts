@@ -5,6 +5,7 @@ import {
   HABIT_WEEK_VIEW_QUERY,
   HABIT_FOLLOW_UPS_IN_DATES_QUERY,
   HABIT_CATEGORIES_QUERY,
+  HABIT_MEASURES_QUERY,
   HABIT_ADD_MUTATION,
   HABIT_EDIT_MUTATION,
   HABIT_REMOVE_MUTATION,
@@ -13,6 +14,7 @@ import {
 import type {
   Habit,
   HabitCategory,
+  HabitMeasure,
   HabitCollection,
   HabitEditInput,
   HabitFilters,
@@ -69,6 +71,14 @@ export async function getHabitCategories(): Promise<HabitCategory[]> {
     {},
   )
   return data.habitCategories
+}
+
+export async function getHabitMeasures(): Promise<HabitMeasure[]> {
+  const data = await graphqlRequest<{ habitMeasures: HabitMeasure[] }, Record<string, never>>(
+    HABIT_MEASURES_QUERY,
+    {},
+  )
+  return data.habitMeasures
 }
 
 export async function createHabit(input: HabitInput): Promise<Habit> {

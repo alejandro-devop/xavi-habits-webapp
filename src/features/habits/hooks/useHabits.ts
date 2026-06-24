@@ -77,6 +77,16 @@ export function useHabitCategoriesQuery() {
   })
 }
 
+export function useHabitMeasuresQuery() {
+  const enabled = useHabitQueryGuard()
+  return useQuery({
+    queryKey: habitKeys.measures.list(),
+    enabled,
+    queryFn: () => habitsApi.getHabitMeasures(),
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
 export function useCreateHabitMutation() {
   const queryClient = useQueryClient()
   const toast = useToast()

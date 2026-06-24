@@ -50,15 +50,17 @@ export function defaultFormValues(habit?: Habit): HabitFormValues {
     weeklyLifelines: String(habit.weeklyLifelines),
     startDate: habit.startDate ?? '',
     endDate: habit.endDate ?? '',
-    dailyGoal: habit.timesGoal != null ? String(habit.timesGoal) : '',
-    timerGoal: habit.timerGoal != null ? String(habit.timerGoal) : '',
+    dailyGoal:
+      habit.habitType === 'count' && habit.dailyGoal > 0 ? String(habit.dailyGoal) : '',
+    timerGoal:
+      habit.habitType === 'time' && habit.timerGoal > 0 ? String(habit.timerGoal) : '',
     purposeId: habit.purposeId ?? null,
     hidden: habit.hidden,
   }
 }
 
 export function buildHabitCreatePayload(values: HabitFormValues): HabitInput {
-  return {
+  const payload: HabitInput = {
     name: values.name.trim(),
     description: values.description.trim() || null,
     habitType: values.habitType,
@@ -70,14 +72,19 @@ export function buildHabitCreatePayload(values: HabitFormValues): HabitInput {
     weeklyLifelines: Number(values.weeklyLifelines) || 0,
     startDate: values.startDate || null,
     endDate: values.endDate || null,
-    timesGoal:
-      values.habitType === 'count' && values.dailyGoal !== '' ? Number(values.dailyGoal) : null,
-    timerGoal:
-      values.habitType === 'time' && values.timerGoal !== '' ? Number(values.timerGoal) : null,
-    dailyGoal: values.habitType === 'boolean' ? 1 : null,
     purposeId: values.purposeId || null,
     hidden: values.hidden,
   }
+
+  if (values.habitType === 'count' && values.dailyGoal !== '') {
+    payload.dailyGoal = Number(values.dailyGoal)
+  }
+
+  if (values.habitType === 'time' && values.timerGoal !== '') {
+    payload.timerGoal = Number(values.timerGoal)
+  }
+
+  return payload
 }
 
 export function buildHabitEditPayload(values: HabitFormValues, habit: Habit): HabitEditInput {
@@ -93,9 +100,9 @@ export function buildHabitEditPayload(values: HabitFormValues, habit: Habit): Ha
 
   // null goal values would overwrite existing DB values with null (violating NOT NULL).
   // undefined means "don't change" in the backend's partial update.
-  if (payload.timerGoal === null) delete payload.timerGoal
-  if (payload.timesGoal === null) delete payload.timesGoal
-  if (payload.dailyGoal === null) delete payload.dailyGoal
+  if (payload.timerGoal === undefined) delete payload.timerGoal
+  if (payload.timesGoal === undefined) delete payload.timesGoal
+  if (payload.dailyGoal === undefined) delete payload.dailyGoal
 
   return { id: habit.id, ...payload }
 }

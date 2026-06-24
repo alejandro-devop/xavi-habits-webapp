@@ -1,4 +1,5 @@
 import type { Habit, HabitFollowUp } from '@/features/habits/types/habit.types'
+import { getFollowUpProgressValue, getHabitDailyGoal } from '@/features/habits/utils/habit-progress.utils'
 import { addDaysToString, getMondayOfWeek } from '@/features/habits/utils/habit-type.utils'
 import styles from './HabitContributionGrid.module.scss'
 
@@ -15,29 +16,27 @@ function getCellClass(followUp: HabitFollowUp | undefined, habit: Habit): string
   if (!followUp) return styles['cell--empty']
   if (followUp.isLifeline) return styles['cell--lifeline']
   if (followUp.isFailed) return styles['cell--failed']
-  if (!followUp.isAccomplished) return styles['cell--empty']
+
+  const goal = getHabitDailyGoal(habit)
+  const value = getFollowUpProgressValue(followUp, habit.habitType)
+
+  if (!followUp.isAccomplished) {
+    if (goal > 0 && value > 0) {
+      const pct = value / goal
+      if (pct < 0.5) return styles['cell--accomplished-low']
+      if (pct < 1) return styles['cell--accomplished-mid']
+    }
+    return styles['cell--empty']
+  }
 
   if (habit.habitType === 'boolean') return styles['cell--accomplished-full']
 
-  if (habit.habitType === 'count') {
-    const goal = habit.timesGoal
-    if (!goal || followUp.count === null) return styles['cell--accomplished-full']
-    const pct = followUp.count / goal
-    if (pct < 0.5) return styles['cell--accomplished-low']
-    if (pct < 1) return styles['cell--accomplished-mid']
-    return styles['cell--accomplished-full']
-  }
+  if (goal <= 0 || value <= 0) return styles['cell--accomplished-full']
 
-  if (habit.habitType === 'time') {
-    const goal = habit.timerGoal
-    if (!goal || followUp.time === null) return styles['cell--accomplished-full']
-    const pct = followUp.time / goal
-    if (pct < 0.5) return styles['cell--accomplished-low']
-    if (pct < 1) return styles['cell--accomplished-mid']
-    return styles['cell--accomplished-full']
-  }
-
-  return styles['cell--empty']
+  const pct = value / goal
+  if (pct < 0.5) return styles['cell--accomplished-low']
+  if (pct < 1) return styles['cell--accomplished-mid']
+  return styles['cell--accomplished-full']
 }
 
 export function HabitContributionGrid({ startDate, endDate, followUpByDate, habit }: Props) {

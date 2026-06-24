@@ -22,6 +22,11 @@ export const habitKeys = {
     all: () => [...habitKeys.all, 'purposes'] as const,
     list: () => [...habitKeys.purposes.all(), 'list'] as const,
   },
+  measures: {
+    all: () => [...habitKeys.all, 'measures'] as const,
+    list: () => [...habitKeys.measures.all(), 'list'] as const,
+    detail: (id: string) => [...habitKeys.measures.all(), 'detail', id] as const,
+  },
 }
 
 export const activityKeys = {

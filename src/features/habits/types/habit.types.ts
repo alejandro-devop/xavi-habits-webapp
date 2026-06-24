@@ -18,8 +18,12 @@ export interface HabitCategory {
 
 export interface HabitMeasure {
   id: string
+  userId: number
   name: string
-  unit: string | null
+  abbreviation: string | null
+  type: string | null
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Habit {
@@ -38,9 +42,9 @@ export interface Habit {
   streak: number
   maxStreak: number
   days: number
-  dailyGoal: boolean
-  timerGoal: number | null
-  timesGoal: number | null
+  dailyGoal: number
+  timerGoal: number
+  timesGoal: number
   icon: string | null
   color: string | null
   orderIndex: number
@@ -120,9 +124,9 @@ export interface HabitInput {
   weeklyLifelines?: number
   shouldAvoid?: boolean
   shouldKeep?: boolean
-  dailyGoal?: number | null
-  timerGoal?: number | null
-  timesGoal?: number | null
+  dailyGoal?: number
+  timerGoal?: number
+  timesGoal?: number
   icon?: string | null
   color?: string | null
   orderIndex?: number

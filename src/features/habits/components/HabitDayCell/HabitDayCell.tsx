@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Modal } from '@/shared/ui/Modal'
 import { HabitFollowUpForm } from '@/features/habits/components/HabitFollowUpForm'
 import { getTodayString } from '@/features/habits/utils/habit-type.utils'
+import { isPartialFollowUp } from '@/features/habits/utils/habit-progress.utils'
 import type { Habit, HabitDayEntry } from '@/features/habits/types/habit.types'
 import styles from './HabitDayCell.module.scss'
 
@@ -25,24 +26,28 @@ export function HabitDayCell({ entry, habit }: Props) {
   const dayLabel = DAY_LABELS[date.getUTCDay()]
   const dayNumber = date.getUTCDate()
 
+  const displayStatus =
+    entry.followUp && isPartialFollowUp(habit, entry.followUp) ? 'partial' : entry.status
+
   function statusIcon() {
-    if (entry.status === 'accomplished') return '✓'
-    if (entry.status === 'failed') return '✗'
-    if (entry.status === 'lifeline') return '🛡'
+    if (displayStatus === 'accomplished') return '✓'
+    if (displayStatus === 'failed') return '✗'
+    if (displayStatus === 'lifeline') return '🛡'
+    if (displayStatus === 'partial') return '◐'
     return null
   }
 
   return (
     <>
       <button
-        className={[styles.cell, styles[entry.status], isEditable ? styles.editable : ''].join(' ')}
+        className={[styles.cell, styles[displayStatus], isEditable ? styles.editable : ''].join(' ')}
         onClick={isEditable ? () => setFormOpen(true) : undefined}
         disabled={!isEditable}
-        aria-label={`${dayLabel} ${dayNumber} — ${entry.status}`}
+        aria-label={`${dayLabel} ${dayNumber} — ${displayStatus}`}
       >
         <span className={styles.dayLabel}>{dayLabel}</span>
         <span className={styles.dayNumber}>{dayNumber}</span>
-        {entry.status !== 'empty' && (
+        {displayStatus !== 'empty' && (
           <span className={styles.statusIcon}>{statusIcon()}</span>
         )}
       </button>

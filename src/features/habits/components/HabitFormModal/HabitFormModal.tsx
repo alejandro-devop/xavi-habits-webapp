@@ -11,11 +11,14 @@ import {
 import {
   useCreateHabitMutation,
   useHabitCategoriesQuery,
+  useHabitMeasuresQuery,
   useUpdateHabitMutation,
 } from '@/features/habits/hooks/useHabits'
 import { useHabitPurposesQuery } from '@/features/habits/hooks/useHabitPurposes'
 import { CreateHabitCategoryStep } from '@/features/habits/components/CreateHabitCategoryStep'
+import { CreateHabitMeasureStep } from '@/features/habits/components/CreateHabitMeasureStep'
 import { CreateHabitPurposeStep } from '@/features/habits/components/CreateHabitPurposeStep'
+import { formatMeasureDisplay, formatMeasureLabel } from '@/features/habits/utils/habit-measure-form.utils'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
@@ -94,12 +97,40 @@ function NewPurposeButton({
   )
 }
 
+function NewMeasureButton({
+  disabled,
+  onCreated,
+}: {
+  disabled: boolean
+  onCreated: (measureId: string) => void
+}) {
+  const { push } = useModalStep()
+
+  return (
+    <button
+      type="button"
+      className={styles.fieldActionLink}
+      disabled={disabled}
+      onClick={() =>
+        push({
+          title: 'Nueva medida',
+          description: 'Crea una unidad para este hábito (vasos, km, páginas…).',
+          content: <CreateHabitMeasureStep onCreated={onCreated} />,
+        })
+      }
+    >
+      + Nueva medida
+    </button>
+  )
+}
+
 export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [values, setValues] = useState<HabitFormValues>(() => defaultFormValues(habit))
   const [nameError, setNameError] = useState<string | null>(null)
 
   const { data: categories = [] } = useHabitCategoriesQuery()
+  const { data: measures = [] } = useHabitMeasuresQuery()
   const { data: purposes = [] } = useHabitPurposesQuery()
   const createMutation = useCreateHabitMutation()
   const updateMutation = useUpdateHabitMutation()
@@ -124,6 +155,14 @@ export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalPro
     { value: '', label: 'Sin categoría' },
     ...categories.map((c) => ({ value: c.id, label: c.name })),
   ]
+
+  const measureOptions = [
+    { value: '', label: 'Sin medida' },
+    ...measures.map((m) => ({ value: m.id, label: formatMeasureLabel(m) })),
+  ]
+
+  const selectedMeasure = measures.find((m) => m.id === values.measureId) ?? null
+  const goalUnitLabel = formatMeasureDisplay(selectedMeasure)
 
   function handleClose() {
     setValues(defaultFormValues(habit))
@@ -269,15 +308,29 @@ export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalPro
         </div>
       </div>
       {values.habitType !== 'boolean' && (
-        <FormField id="habit-measure" label="Medida (opcional)">
-          <Input
+        <div className={styles.categoryField}>
+          <Select
             id="habit-measure"
+            label="Medida (opcional)"
+            options={measureOptions}
             value={values.measureId}
-            onChange={(e) => patch({ measureId: e.target.value })}
-            placeholder="ID de medida"
+            onChange={(v) => patch({ measureId: v })}
             disabled={isMutating}
           />
-        </FormField>
+          <div className={styles.categoryActions}>
+            <NewMeasureButton
+              disabled={isMutating}
+              onCreated={(id) => patch({ measureId: id })}
+            />
+            <Link
+              to={habitsPaths.measures}
+              className={styles.fieldActionLink}
+              onClick={handleClose}
+            >
+              Gestionar medidas
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   )
@@ -328,7 +381,7 @@ export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalPro
         </FormField>
       </div>
       {values.habitType === 'count' && (
-        <FormField id="habit-daily-goal" label="Meta diaria (veces)">
+        <FormField id="habit-daily-goal" label={`Meta diaria (${goalUnitLabel})`}>
           <Input
             id="habit-daily-goal"
             type="number"

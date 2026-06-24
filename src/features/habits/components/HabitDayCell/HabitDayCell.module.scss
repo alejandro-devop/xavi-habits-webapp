@@ -64,6 +64,16 @@
   }
 }
 
+.partial {
+  background: var(--color-warning-subtle, #fef3c7);
+  border-color: var(--color-warning-subtle, #fde68a);
+
+  .dayLabel,
+  .dayNumber {
+    color: var(--color-warning-text, #92400e);
+  }
+}
+
 .dayLabel {
   font-size: 0.65rem;
   font-weight: 700;

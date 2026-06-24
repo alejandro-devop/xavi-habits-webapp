@@ -9,6 +9,13 @@ import { AppIcon } from '@/shared/ui/AppIcon'
 import { Modal } from '@/shared/ui/Modal'
 import { Button } from '@/shared/ui/Button'
 import type { HabitMyDayEntry } from '@/features/habits/types/habit.types'
+import {
+  formatProgressLabel,
+  getHabitDailyGoal,
+  getProgressRatio,
+  isPartialFollowUp,
+} from '@/features/habits/utils/habit-progress.utils'
+import { formatMeasureDisplay } from '@/features/habits/utils/habit-measure-form.utils'
 import styles from './HabitDayCard.module.scss'
 
 type Props = {
@@ -26,6 +33,12 @@ export function HabitDayCard({ entry, date }: Props) {
   const { data: weekView } = useHabitWeekViewQuery(habit.id, weekStart)
 
   const hasFollowUp = followUp !== null
+  const isPartial = followUp ? isPartialFollowUp(habit, followUp) : false
+  const dailyGoal = getHabitDailyGoal(habit)
+  const todayProgressRatio =
+    followUp && habit.habitType !== 'boolean' && dailyGoal > 0
+      ? getProgressRatio(habit, followUp)
+      : null
   const showLifeline =
     habit.weeklyLifelines > 0 &&
     (!hasFollowUp || (followUp?.isAccomplished && !followUp?.isLifeline))
@@ -42,13 +55,20 @@ export function HabitDayCard({ entry, date }: Props) {
     if (followUp.isAccomplished) {
       const value =
         habit.habitType === 'count' && followUp.count != null
-          ? ` · ${followUp.count} ${habit.measure?.name ?? 'veces'}`
+          ? ` · ${followUp.count} ${formatMeasureDisplay(habit.measure)}`
           : habit.habitType === 'time' && followUp.time != null
             ? ` · ${followUp.time} min`
             : ''
       return (
         <span className={[styles.badge, styles.accomplished].join(' ')}>
           Logrado{value}
+        </span>
+      )
+    }
+    if (isPartial) {
+      return (
+        <span className={[styles.badge, styles.partial].join(' ')}>
+          {formatProgressLabel(habit, followUp, formatMeasureDisplay(habit.measure))}
         </span>
       )
     }
@@ -77,6 +97,20 @@ export function HabitDayCard({ entry, date }: Props) {
         <HabitStreakBadge streak={habit.streak} />
       </div>
 
+      {todayProgressRatio !== null && (
+        <div className={styles.dailyProgressGroup}>
+          <span className={styles.progressLabel}>
+            Hoy: {followUp ? formatProgressLabel(habit, followUp, formatMeasureDisplay(habit.measure)) : ''}
+          </span>
+          <div className={styles.progressBar} aria-hidden>
+            <div
+              className={styles.progressFill}
+              style={{ width: `${todayProgressRatio * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {progress !== null && (
         <div className={styles.progressGroup}>
           <span className={styles.progressLabel}>
@@ -97,12 +131,15 @@ export function HabitDayCard({ entry, date }: Props) {
             const d = new Date(day.date + 'T12:00:00Z')
             const label = DAY_LABELS[d.getUTCDay() === 0 ? 6 : d.getUTCDay() - 1]
             const isToday = day.date === date
+            const dayIsPartial =
+              day.followUp != null && isPartialFollowUp(habit, day.followUp)
+            const dotStatus = dayIsPartial ? 'partial' : day.status
             return (
               <div
                 key={day.date}
                 className={[
                   styles.weekDot,
-                  styles[`dot--${day.status}`],
+                  styles[`dot--${dotStatus}`],
                   isToday ? styles['dot--today'] : '',
                 ].join(' ')}
                 title={day.date}
@@ -132,7 +169,13 @@ export function HabitDayCard({ entry, date }: Props) {
           </Button>
         )}
 
-        {hasFollowUp && (
+        {isPartial && (
+          <Button variant="primary" size="sm" onClick={() => setFormOpen(true)}>
+            Sumar
+          </Button>
+        )}
+
+        {hasFollowUp && !isPartial && (
           <Button variant="ghost" size="sm" onClick={() => setFormOpen(true)}>
             Editar
           </Button>

@@ -23,6 +23,9 @@ export function HabitsModuleLayout() {
         <AppNavLink to={habitsPaths.categories} icon="tag" className={habitsNavLinkClassName}>
           Categorías
         </AppNavLink>
+        <AppNavLink to={habitsPaths.measures} icon="weight-scale" className={habitsNavLinkClassName}>
+          Medidas
+        </AppNavLink>
         <AppNavLink to={habitsPaths.persona} icon="user" className={habitsNavLinkClassName}>
           Mi Persona
         </AppNavLink>

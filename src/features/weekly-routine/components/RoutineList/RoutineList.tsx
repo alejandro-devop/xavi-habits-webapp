@@ -1,6 +1,5 @@
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { AppIcon } from '@/shared/ui/AppIcon'
-import { Badge } from '@/shared/ui/Badge'
 import type { WeeklyRoutine } from '@/features/weekly-routine/types/weekly-routine.types'
 import styles from './RoutineList.module.scss'
 
@@ -11,6 +10,172 @@ type Props = {
   onDelete: (id: string) => void
   onSetActive: (id: string) => void
   onOpen: (id: string) => void
+}
+
+function formatTime(time: string) {
+  return time.slice(0, 5)
+}
+
+function HeroCard({
+  routine,
+  onEdit,
+  onDelete,
+  onOpen,
+}: {
+  routine: WeeklyRoutine
+  onEdit: (r: WeeklyRoutine) => void
+  onDelete: (r: WeeklyRoutine) => void
+  onOpen: (id: string) => void
+}) {
+  return (
+    <article className={styles.hero}>
+      <div className={styles.heroAccent} />
+
+      <div className={styles.heroContent}>
+        {/* Top row: badge + actions */}
+        <div className={styles.heroTopRow}>
+          <span className={styles.heroBadge}>
+            <span className={styles.heroDot} />
+            <span>Activa</span>
+          </span>
+          <div className={styles.heroActions}>
+            <button
+              type="button"
+              className={styles.heroActionBtn}
+              onClick={() => onEdit(routine)}
+              aria-label="Editar"
+            >
+              <AppIcon name="pen" size="sm" />
+            </button>
+            <button
+              type="button"
+              className={[styles.heroActionBtn, styles.heroActionBtnDanger].join(' ')}
+              onClick={() => onDelete(routine)}
+              aria-label="Eliminar"
+            >
+              <AppIcon name="trash" size="sm" />
+            </button>
+          </div>
+        </div>
+
+        {/* Name + description */}
+        <div className={styles.heroBody}>
+          <h2 className={styles.heroName}>{routine.name}</h2>
+          {routine.description ? (
+            <p className={styles.heroDesc}>{routine.description}</p>
+          ) : (
+            <p className={[styles.heroDesc, styles.heroDescEmpty].join(' ')}>Sin descripción</p>
+          )}
+        </div>
+
+        {/* Footer: stats + CTA */}
+        <div className={styles.heroFooter}>
+          <div className={styles.heroStats}>
+            {routine.activitiesCount != null && (
+              <span className={styles.heroStat}>
+                <AppIcon name="list-check" size="sm" />
+                <span>{routine.activitiesCount} {routine.activitiesCount === 1 ? 'actividad' : 'actividades'}</span>
+              </span>
+            )}
+            {routine.dayStartTime && routine.dayEndTime && (
+              <span className={styles.heroStat}>
+                <AppIcon name="clock" size="sm" />
+                <span>{formatTime(routine.dayStartTime)} – {formatTime(routine.dayEndTime)}</span>
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            className={styles.heroCta}
+            onClick={() => onOpen(routine.id)}
+          >
+            <span>Ver planner</span>
+            <AppIcon name="arrow-right" size="sm" />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function RoutineRow({
+  routine,
+  onEdit,
+  onDelete,
+  onSetActive,
+  onOpen,
+}: {
+  routine: WeeklyRoutine
+  onEdit: (r: WeeklyRoutine) => void
+  onDelete: (r: WeeklyRoutine) => void
+  onSetActive: (id: string) => void
+  onOpen: (id: string) => void
+}) {
+  return (
+    <article className={styles.row}>
+      {/* Clickeable: icono + info */}
+      <button
+        type="button"
+        className={styles.rowClickable}
+        onClick={() => onOpen(routine.id)}
+      >
+        <div className={styles.rowIcon}>
+          <AppIcon name="calendar-week" size="sm" />
+        </div>
+        <div className={styles.rowInfo}>
+          <span className={styles.rowName}>{routine.name}</span>
+          {routine.description && (
+            <span className={styles.rowDesc}>{routine.description}</span>
+          )}
+        </div>
+      </button>
+
+      {/* Stats (no clickeable) */}
+      <div className={styles.rowStats}>
+        {routine.activitiesCount != null && (
+          <span className={styles.rowStat}>
+            <AppIcon name="list-check" size="sm" />
+            <span>{routine.activitiesCount}</span>
+          </span>
+        )}
+        {routine.dayStartTime && routine.dayEndTime && (
+          <span className={styles.rowStat}>
+            <AppIcon name="clock" size="sm" />
+            <span>{formatTime(routine.dayStartTime)} – {formatTime(routine.dayEndTime)}</span>
+          </span>
+        )}
+      </div>
+
+      {/* Acciones */}
+      <div className={styles.rowActions}>
+        <button
+          type="button"
+          className={styles.rowActivateBtn}
+          onClick={() => onSetActive(routine.id)}
+          title="Activar rutina"
+        >
+          <AppIcon name="circle-play" size="sm" />
+          <span>Activar</span>
+        </button>
+        <button
+          type="button"
+          className={styles.rowBtn}
+          onClick={() => onEdit(routine)}
+          aria-label="Editar"
+        >
+          <AppIcon name="pen" size="sm" />
+        </button>
+        <button
+          type="button"
+          className={[styles.rowBtn, styles.rowBtnDanger].join(' ')}
+          onClick={() => onDelete(routine)}
+          aria-label="Eliminar"
+        >
+          <AppIcon name="trash" size="sm" />
+        </button>
+      </div>
+    </article>
+  )
 }
 
 export function RoutineList({ routines, onEdit, onDelete, onSetActive, onOpen }: Props) {
@@ -36,64 +201,37 @@ export function RoutineList({ routines, onEdit, onDelete, onSetActive, onOpen }:
     )
   }
 
-  return (
-    <ul className={styles.list} role="list">
-      {routines.map((routine) => (
-        <li
-          key={routine.id}
-          className={[styles.item, routine.isActive ? styles.itemActive : ''].join(' ')}
-        >
-          <button
-            type="button"
-            className={styles.itemMain}
-            onClick={() => onOpen(routine.id)}
-            aria-label={`Abrir planner de ${routine.name}`}
-          >
-            <div className={styles.iconWrap}>
-              <AppIcon name="calendar-week" size="md" />
-            </div>
-            <div className={styles.itemInfo}>
-              <span className={styles.itemName}>{routine.name}</span>
-              {routine.isActive && (
-                <Badge variant="success">Activa</Badge>
-              )}
-            </div>
-            <AppIcon name="chevron-right" size="sm" className={styles.itemChevron} />
-          </button>
+  const active = routines.find((r) => r.isActive)
+  const inactive = routines.filter((r) => !r.isActive)
 
-          <div className={styles.itemActions}>
-            {!routine.isActive && (
-              <button
-                type="button"
-                className={styles.actionBtn}
-                onClick={() => onSetActive(routine.id)}
-                aria-label="Activar rutina"
-                title="Activar"
-              >
-                <AppIcon name="circle-play" size="sm" />
-              </button>
-            )}
-            <button
-              type="button"
-              className={styles.actionBtn}
-              onClick={() => onEdit(routine)}
-              aria-label="Editar rutina"
-              title="Editar"
-            >
-              <AppIcon name="pen" size="sm" />
-            </button>
-            <button
-              type="button"
-              className={[styles.actionBtn, styles.actionBtnDanger].join(' ')}
-              onClick={() => handleDelete(routine)}
-              aria-label="Eliminar rutina"
-              title="Eliminar"
-            >
-              <AppIcon name="trash" size="sm" />
-            </button>
+  return (
+    <div className={styles.root}>
+      {active && (
+        <HeroCard
+          routine={active}
+          onEdit={onEdit}
+          onDelete={handleDelete}
+          onOpen={onOpen}
+        />
+      )}
+
+      {inactive.length > 0 && (
+        <section className={styles.otherSection}>
+          {active && <p className={styles.otherLabel}>Otras rutinas</p>}
+          <div className={styles.rowList}>
+            {inactive.map((routine) => (
+              <RoutineRow
+                key={routine.id}
+                routine={routine}
+                onEdit={onEdit}
+                onDelete={handleDelete}
+                onSetActive={onSetActive}
+                onOpen={onOpen}
+              />
+            ))}
           </div>
-        </li>
-      ))}
-    </ul>
+        </section>
+      )}
+    </div>
   )
 }

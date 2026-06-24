@@ -61,6 +61,46 @@
     0 4px 16px rgba(0, 0, 0, 0.07),
     2px 4px 0 rgba(0, 0, 0, 0.03);
   --paper-texture-opacity: 0.025;
+
+  // ── Spacing scale ────────────────────────────────────────────────────────────
+  --space-1: #{$spacing-1};
+  --space-2: #{$spacing-2};
+  --space-3: #{$spacing-3};
+  --space-4: #{$spacing-4};
+  --space-6: #{$spacing-6};
+  --space-16: #{$spacing-16};
+
+  // Numeric spacing aliases (additional format used in some components)
+  --spacing-3: #{$spacing-3};
+  --spacing-4: #{$spacing-4};
+  --spacing-8: #{$spacing-8};
+
+  // ── Typography scale ─────────────────────────────────────────────────────────
+  --text-xs: #{$font-size-xs};
+  --text-sm: #{$font-size-sm};
+  --text-base: #{$font-size-base};
+  --text-lg: #{$font-size-lg};
+  --text-xl: #{$font-size-xl};
+  --text-2xl: #{$font-size-2xl};
+  --font-size-xs: #{$font-size-xs};
+  --font-size-sm: #{$font-size-sm};
+
+  // ── Color aliases ─────────────────────────────────────────────────────────────
+  // Aliases referencing existing vars — theme-aware automatically
+  --color-text-primary: var(--color-text);
+  --color-text-tertiary: var(--color-text-muted);
+  --color-accent: var(--color-primary);
+  --color-error: var(--color-danger);
+  --color-focus: var(--color-focus-ring);
+
+  // ── Derived surface & border tokens ──────────────────────────────────────────
+  // color-mix() against existing vars so they adapt to both themes
+  --color-surface-raised: color-mix(in srgb, var(--color-text) 7%, var(--color-surface-elevated));
+  --color-surface-hover: color-mix(in srgb, var(--color-text) 5%, transparent);
+  --color-border-subtle: color-mix(in srgb, var(--color-border) 55%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--color-border) 180%, transparent);
+  --color-error-subtle: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  --color-success-subtle: color-mix(in srgb, var(--color-success) 12%, transparent);
 }
 
 [data-theme='dark'] {

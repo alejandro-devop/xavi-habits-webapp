@@ -19,7 +19,6 @@ import { Button } from '@/shared/ui/Button'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { Skeleton } from '@/shared/ui/Skeleton'
-import { PaperSurface } from '@/shared/ui/PaperSurface'
 import styles from './WeeklyRoutinePage.module.scss'
 
 export function WeeklyRoutinePage() {
@@ -72,23 +71,21 @@ export function WeeklyRoutinePage() {
       />
 
       <div className={styles.content}>
-        <PaperSurface withMargin={false} minHeight="300px">
-          {isLoading ? (
-            <div className={styles.loading}>
-              <Skeleton height={80} />
-              <Skeleton height={80} />
-            </div>
-          ) : (
-            <RoutineList
-              routines={routines}
-              onAdd={openCreate}
-              onEdit={openEdit}
-              onDelete={(id) => removeRoutine.mutate(id)}
-              onSetActive={(id) => setActive.mutate(id)}
-              onOpen={(id) => navigate(weeklyRoutinePaths.detail(id))}
-            />
-          )}
-        </PaperSurface>
+        {isLoading ? (
+          <div className={styles.loading}>
+            <Skeleton height={120} />
+            <Skeleton height={120} />
+          </div>
+        ) : (
+          <RoutineList
+            routines={routines}
+            onAdd={openCreate}
+            onEdit={openEdit}
+            onDelete={(id) => removeRoutine.mutate(id)}
+            onSetActive={(id) => setActive.mutate(id)}
+            onOpen={(id) => navigate(weeklyRoutinePaths.detail(id))}
+          />
+        )}
       </div>
 
       <RoutineFormModal

@@ -17,6 +17,9 @@ export function HabitsModuleLayout() {
         <AppNavLink to={habitsPaths.list} icon="list" className={habitsNavLinkClassName}>
           Mis Hábitos
         </AppNavLink>
+        <AppNavLink to={habitsPaths.archived} icon="folder" className={habitsNavLinkClassName}>
+          Archivados
+        </AppNavLink>
         <AppNavLink to={habitsPaths.categories} icon="tag" className={habitsNavLinkClassName}>
           Categorías
         </AppNavLink>

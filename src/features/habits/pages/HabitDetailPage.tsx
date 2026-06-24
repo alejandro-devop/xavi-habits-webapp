@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams, type NavigateFunction } from 'react-router'
-import { useHabitFollowUpsInDatesQuery, useHabitQuery, useHabitWeekViewQuery } from '@/features/habits/hooks/useHabits'
+import {
+  useDeleteHabitMutation,
+  useHabitFollowUpsInDatesQuery,
+  useHabitQuery,
+  useHabitWeekViewQuery,
+  useUpdateHabitMutation,
+} from '@/features/habits/hooks/useHabits'
 import { HabitStatsBanner } from '@/features/habits/components/HabitStatsBanner'
 import { HabitStatusBadge } from '@/features/habits/components/HabitStatusBadge'
 import { HabitTypeBadge } from '@/features/habits/components/HabitTypeBadge'
@@ -15,6 +21,7 @@ import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { Spinner } from '@/shared/ui/Spinner'
 import { Tabs } from '@/shared/ui/Tabs'
+import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import styles from './HabitDetailPage.module.scss'
 
 function goBack(navigate: NavigateFunction) {
@@ -28,13 +35,44 @@ function goBack(navigate: NavigateFunction) {
 export function HabitDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { confirm } = useConfirmDialog()
   const { data: habit, isLoading } = useHabitQuery(id)
+  const restoreMutation = useUpdateHabitMutation()
+  const deleteMutation = useDeleteHabitMutation()
   const [editOpen, setEditOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('week')
 
   const thisWeekStart = getMondayOfWeek(getTodayString())
   const [weekStart, setWeekStart] = useState(thisWeekStart)
   const { data: weekView } = useHabitWeekViewQuery(id, weekStart)
+
+  async function handleRestore() {
+    if (!habit) return
+    const ok = await confirm({
+      title: '¿Restaurar este hábito?',
+      description: 'Volverá a aparecer en Mis Día y en la lista de hábitos activos.',
+      confirmLabel: 'Restaurar',
+      cancelLabel: 'Cancelar',
+    })
+    if (!ok) return
+    restoreMutation.mutate({ id: habit.id, status: 'active' })
+  }
+
+  async function handleDelete() {
+    if (!habit) return
+    const ok = await confirm({
+      title: '¿Eliminar permanentemente?',
+      description:
+        'Se borrarán el hábito y todo su historial. Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      cancelLabel: 'Cancelar',
+      variant: 'danger',
+    })
+    if (!ok) return
+    deleteMutation.mutate(habit.id, {
+      onSuccess: () => navigate(habitsPaths.archived),
+    })
+  }
 
   if (isLoading) {
     return (
@@ -74,10 +112,39 @@ export function HabitDetailPage() {
             <p className={styles.description}>{habit.description}</p>
           )}
         </div>
-        <Button size="sm" onClick={() => setEditOpen(true)}>
-          Editar
-        </Button>
+        <div className={styles.headerActions}>
+          {habit.status === 'archived' ? (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleRestore}
+                disabled={restoreMutation.isPending}
+              >
+                Restaurar
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
+                onClick={handleDelete}
+                disabled={deleteMutation.isPending}
+              >
+                Eliminar
+              </Button>
+            </>
+          ) : (
+            <Button size="sm" onClick={() => setEditOpen(true)}>
+              Editar
+            </Button>
+          )}
+        </div>
       </header>
+
+      {habit.status === 'archived' && (
+        <p className={styles.archivedBanner}>
+          Este hábito está archivado y no aparece en Mis Día.
+        </p>
+      )}
 
       <HabitStatsBanner habit={habit} />
 

@@ -2,6 +2,7 @@ export const habitsPaths = {
   root: '/app/habits',
   myDay: '/app/habits/my-day',
   list: '/app/habits/list',
+  archived: '/app/habits/archived',
   categories: '/app/habits/categories',
   detail: (id: string) => `/app/habits/${id}`,
   edit: (id: string) => `/app/habits/${id}/edit`,

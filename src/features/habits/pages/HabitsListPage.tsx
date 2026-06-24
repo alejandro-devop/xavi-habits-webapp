@@ -3,6 +3,7 @@ import type { Habit } from '@/features/habits/types/habit.types'
 import { useHabitCategoriesQuery, useHabitsQuery } from '@/features/habits/hooks/useHabits'
 import { HabitCard } from '@/features/habits/components/HabitCard'
 import { HabitFormModal } from '@/features/habits/components/HabitFormModal'
+import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import { Button } from '@/shared/ui/Button'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Spinner } from '@/shared/ui/Spinner'
@@ -62,9 +63,14 @@ export function HabitsListPage() {
     <div className={styles.root}>
       <header className={styles.header}>
         <h1 className={styles.title}>Hábitos activos</h1>
-        <Button onClick={() => { setEditingHabit(null); setModalOpen(true) }}>
-          + Nuevo hábito
-        </Button>
+        <div className={styles.headerActions}>
+          <Button variant="ghost" to={habitsPaths.archived}>
+            Ver archivados
+          </Button>
+          <Button onClick={() => { setEditingHabit(null); setModalOpen(true) }}>
+            + Nuevo hábito
+          </Button>
+        </div>
       </header>
 
       {habits.length === 0 ? (

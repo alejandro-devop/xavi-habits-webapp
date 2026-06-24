@@ -7,7 +7,7 @@ import { sleepKeys } from '@/shared/api/query-keys'
 
 export function useSleepStatsQuery(filters: SleepStatsFilters = {}) {
   return useQuery({
-    queryKey: sleepKeys.stats(filters),
+    queryKey: sleepKeys.stats(filters as Record<string, unknown>),
     queryFn: () => sleepApi.getSleepStats(filters),
     staleTime: 1000 * 60,
   })

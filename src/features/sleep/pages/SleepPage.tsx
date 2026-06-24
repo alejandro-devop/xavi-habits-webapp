@@ -83,7 +83,9 @@ export function SleepPage() {
       />
 
       {mutationError && (
-        <Alert variant="danger" style={{ marginBottom: '1rem' }}>{mutationError}</Alert>
+        <div style={{ marginBottom: '1rem' }}>
+          <Alert variant="danger">{mutationError}</Alert>
+        </div>
       )}
 
       <SleepMonthView

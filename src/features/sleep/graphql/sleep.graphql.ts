@@ -84,3 +84,27 @@ export const SLEEP_LOG_REMOVE_MUTATION = `
     sleepLogRemove(id: $id)
   }
 `
+
+export const SLEEP_STATS_QUERY = `
+  query SleepStats($startDate: DateTime, $endDate: DateTime) {
+    sleepStats(startDate: $startDate, endDate: $endDate) {
+      totalNights
+      avgDurationMinutes
+      avgDurationHours
+      minDurationMinutes
+      minDurationHours
+      maxDurationMinutes
+      maxDurationHours
+      qualityDistribution {
+        poor
+        fair
+        good
+        excellent
+      }
+      period {
+        startDate
+        endDate
+      }
+    }
+  }
+`

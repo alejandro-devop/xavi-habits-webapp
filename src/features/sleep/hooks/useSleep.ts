@@ -1,9 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as sleepApi from '@/features/sleep/api/sleep.api'
 import { invalidateActivityFollowUpQueries, toFollowUpDateKey } from '@/features/activities/utils/invalidate-follow-up-queries'
-import type { SleepLogEditInput, SleepLogInput, SleepLogsFilters } from '@/features/sleep/types/sleep.types'
+import type { SleepLogEditInput, SleepLogInput, SleepLogsFilters, SleepStatsFilters } from '@/features/sleep/types/sleep.types'
 import { serializeSleepFilters } from '@/features/sleep/utils/sleep-filters'
 import { sleepKeys } from '@/shared/api/query-keys'
+
+export function useSleepStatsQuery(filters: SleepStatsFilters = {}) {
+  return useQuery({
+    queryKey: sleepKeys.stats(filters),
+    queryFn: () => sleepApi.getSleepStats(filters),
+    staleTime: 1000 * 60,
+  })
+}
 
 export function useSleepLogsQuery(filters: SleepLogsFilters = {}) {
   return useQuery({

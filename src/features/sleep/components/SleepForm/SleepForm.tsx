@@ -25,12 +25,13 @@ import styles from './SleepForm.module.scss'
 
 interface SleepFormProps {
   initialValues?: SleepLog
+  prefillDate?: string
   loading?: boolean
   onSubmit: (values: SleepLogInput) => void
   onCancel: () => void
 }
 
-function buildInitialValues(log?: SleepLog): SleepFormValues {
+function buildInitialValues(log?: SleepLog, prefillDate?: string): SleepFormValues {
   if (log) {
     return {
       sleepDate: sleepDateToInputValue(log.sleepDate),
@@ -42,7 +43,7 @@ function buildInitialValues(log?: SleepLog): SleepFormValues {
     }
   }
   return {
-    sleepDate: getTodayDate(),
+    sleepDate: prefillDate ?? getTodayDate(),
     bedtime: '22:00',
     wakeTime: '07:00',
     quality: '',
@@ -51,8 +52,8 @@ function buildInitialValues(log?: SleepLog): SleepFormValues {
   }
 }
 
-export function SleepForm({ initialValues, loading = false, onSubmit, onCancel }: SleepFormProps) {
-  const [values, setValues] = useState<SleepFormValues>(() => buildInitialValues(initialValues))
+export function SleepForm({ initialValues, prefillDate, loading = false, onSubmit, onCancel }: SleepFormProps) {
+  const [values, setValues] = useState<SleepFormValues>(() => buildInitialValues(initialValues, prefillDate))
   const [errors, setErrors] = useState<Partial<Record<keyof SleepFormValues, string>>>({})
 
   function patch(partial: Partial<SleepFormValues>) {

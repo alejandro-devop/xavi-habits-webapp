@@ -61,3 +61,32 @@ export interface SleepFormValues {
   moodOnWaking: string
   notes: string
 }
+
+export interface SleepQualityDistribution {
+  poor: number
+  fair: number
+  good: number
+  excellent: number
+}
+
+export interface SleepStatsPeriod {
+  startDate: string | null
+  endDate: string | null
+}
+
+export interface SleepStats {
+  totalNights: number
+  avgDurationMinutes: number
+  avgDurationHours: string
+  minDurationMinutes: number
+  minDurationHours: string
+  maxDurationMinutes: number
+  maxDurationHours: string
+  qualityDistribution: SleepQualityDistribution
+  period: SleepStatsPeriod
+}
+
+export interface SleepStatsFilters {
+  startDate?: string | null
+  endDate?: string | null
+}

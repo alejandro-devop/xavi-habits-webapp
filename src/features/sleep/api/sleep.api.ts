@@ -4,6 +4,7 @@ import {
   SLEEP_LOG_ADD_MUTATION,
   SLEEP_LOG_EDIT_MUTATION,
   SLEEP_LOG_REMOVE_MUTATION,
+  SLEEP_STATS_QUERY,
 } from '@/features/sleep/graphql/sleep.graphql'
 import type {
   SleepLog,
@@ -11,6 +12,8 @@ import type {
   SleepLogInput,
   SleepLogsFilters,
   SleepLogsResponse,
+  SleepStats,
+  SleepStatsFilters,
 } from '@/features/sleep/types/sleep.types'
 import { graphqlRequest } from '@/shared/api/graphql-client'
 
@@ -19,6 +22,7 @@ type SleepLogData = { sleepLog: SleepLog | null }
 type SleepLogAddData = { sleepLogAdd: SleepLog }
 type SleepLogEditData = { sleepLogEdit: SleepLog }
 type SleepLogRemoveData = { sleepLogRemove: boolean }
+type SleepStatsData = { sleepStats: SleepStats }
 
 export async function getSleepLogs(filters: SleepLogsFilters = {}): Promise<SleepLogsResponse> {
   const data = await graphqlRequest<SleepLogsData, SleepLogsFilters>(SLEEP_LOGS_QUERY, filters)
@@ -52,4 +56,9 @@ export async function removeSleepLog(id: string): Promise<boolean> {
     { id },
   )
   return data.sleepLogRemove
+}
+
+export async function getSleepStats(filters: SleepStatsFilters = {}): Promise<SleepStats> {
+  const data = await graphqlRequest<SleepStatsData, SleepStatsFilters>(SLEEP_STATS_QUERY, filters)
+  return data.sleepStats
 }

@@ -1,60 +1,64 @@
 import { useState } from 'react'
 import { Alert } from '@/shared/ui/Alert'
-import { Button } from '@/shared/ui/Button'
 import { Drawer } from '@/shared/ui/Drawer'
 import { PageHeader } from '@/shared/ui/PageHeader'
-import { Spinner } from '@/shared/ui/Spinner'
-import { SleepEmptyState } from '@/features/sleep/components/SleepEmptyState'
 import { SleepForm } from '@/features/sleep/components/SleepForm'
-import { SleepLogCard } from '@/features/sleep/components/SleepLogCard'
+import { SleepMonthView } from '@/features/sleep/components/SleepMonthView/SleepMonthView'
 import {
   useCreateSleepLogMutation,
   useRemoveSleepLogMutation,
-  useSleepLogsQuery,
   useUpdateSleepLogMutation,
 } from '@/features/sleep/hooks/useSleep'
 import type { SleepLog, SleepLogInput } from '@/features/sleep/types/sleep.types'
 import { sleepDateToInputValue } from '@/features/sleep/utils/sleep.utils'
-import styles from './SleepPage.module.scss'
 
 export function SleepPage() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [editing, setEditing] = useState<SleepLog | null>(null)
+  const [prefillDate, setPrefillDate] = useState<string | undefined>(undefined)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [mutationError, setMutationError] = useState<string | null>(null)
 
-  const { data, isLoading, isError } = useSleepLogsQuery({ limit: 30 })
   const createMutation = useCreateSleepLogMutation()
   const updateMutation = useUpdateSleepLogMutation()
   const removeMutation = useRemoveSleepLogMutation()
 
-  const logs = data?.sleepLogs ?? []
-
-  function openCreate() {
+  function openCreate(date?: string) {
     setEditing(null)
+    setPrefillDate(date)
+    setMutationError(null)
     setDrawerOpen(true)
   }
 
   function openEdit(log: SleepLog) {
     setEditing(log)
+    setPrefillDate(undefined)
+    setMutationError(null)
     setDrawerOpen(true)
   }
 
   function closeDrawer() {
     setDrawerOpen(false)
     setEditing(null)
+    setPrefillDate(undefined)
   }
 
   async function handleSubmit(values: SleepLogInput) {
-    if (editing) {
-      await updateMutation.mutateAsync({
-        id: editing.id,
-        ...values,
-        previousSleepDate: sleepDateToInputValue(editing.sleepDate),
-      })
-    } else {
-      await createMutation.mutateAsync(values)
+    setMutationError(null)
+    try {
+      if (editing) {
+        await updateMutation.mutateAsync({
+          id: editing.id,
+          ...values,
+          previousSleepDate: sleepDateToInputValue(editing.sleepDate),
+        })
+      } else {
+        await createMutation.mutateAsync(values)
+      }
+      closeDrawer()
+    } catch {
+      setMutationError('No se pudo guardar el registro. Intenta de nuevo.')
     }
-    closeDrawer()
   }
 
   async function handleDelete(log: SleepLog) {
@@ -75,42 +79,19 @@ export function SleepPage() {
     <>
       <PageHeader
         title="Sueño"
-        subtitle="Registra y revisa tus sesiones de sueño diarias."
+        subtitle="Seguimiento mensual de tus sesiones de sueño."
       />
 
-      <div className={styles.toolbar}>
-        <Button variant="primary" onClick={openCreate}>
-          Registrar sueño
-        </Button>
-      </div>
-
-      {isLoading && (
-        <div className={styles.center}>
-          <Spinner />
-        </div>
+      {mutationError && (
+        <Alert variant="danger" style={{ marginBottom: '1rem' }}>{mutationError}</Alert>
       )}
 
-      {isError && (
-        <Alert variant="danger">No se pudieron cargar los registros de sueño.</Alert>
-      )}
-
-      {!isLoading && !isError && logs.length === 0 && (
-        <SleepEmptyState onAdd={openCreate} />
-      )}
-
-      {logs.length > 0 && (
-        <div className={styles.list}>
-          {logs.map((log) => (
-            <SleepLogCard
-              key={log.id}
-              log={log}
-              onEdit={openEdit}
-              onDelete={handleDelete}
-              deleteLoading={deletingId === log.id}
-            />
-          ))}
-        </div>
-      )}
+      <SleepMonthView
+        onAdd={openCreate}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+        deletingId={deletingId}
+      />
 
       <Drawer
         open={drawerOpen}
@@ -119,6 +100,7 @@ export function SleepPage() {
       >
         <SleepForm
           initialValues={editing ?? undefined}
+          prefillDate={prefillDate}
           loading={formLoading}
           onSubmit={handleSubmit}
           onCancel={closeDrawer}

@@ -90,6 +90,7 @@ export const sleepKeys = {
   all: ['sleep'] as const,
   list: (filters: ListFilters = {}) => [...sleepKeys.all, 'list', filters] as const,
   detail: (id: string) => [...sleepKeys.all, 'detail', id] as const,
+  stats: (filters: ListFilters = {}) => [...sleepKeys.all, 'stats', filters] as const,
 }
 
 export const quarterKeys = {

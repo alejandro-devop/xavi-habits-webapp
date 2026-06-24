@@ -43,6 +43,7 @@
   // Mobile: single column
   grid-template-columns: 1fr;
   grid-template-areas:
+    'sleep'
     'habits'
     'routine'
     'todos'
@@ -52,16 +53,19 @@
   @include md {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      'habits   routine'
-      'todos    activities';
+      'sleep      sleep'
+      'habits     routine'
+      'todos      activities';
   }
 
   // Desktop: 3-col bento asimétrico
-  // Row 1: hábitos (2/3) | rutina (1/3)
-  // Row 2: tareas (1/3)  | actividades (2/3)
+  // Row 1: sueño (3/3)   — banner horizontal
+  // Row 2: hábitos (2/3) | rutina (1/3)
+  // Row 3: tareas (1/3)  | actividades (2/3)
   @include lg {
     grid-template-columns: repeat(3, 1fr);
     grid-template-areas:
+      'sleep  sleep      sleep'
       'habits habits routine'
       'todos  activities activities';
   }
@@ -71,3 +75,4 @@
 .areaRoutine    { grid-area: routine;    min-width: 0; overflow: hidden; }
 .areaTodos      { grid-area: todos;      min-width: 0; overflow: hidden; }
 .areaActivities { grid-area: activities; min-width: 0; overflow: hidden; }
+.areaSleep      { grid-area: sleep;      min-width: 0; overflow: hidden; }

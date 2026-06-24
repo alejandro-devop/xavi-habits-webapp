@@ -1,0 +1,177 @@
+@use '@/app/styles/mixins/responsive' as *;
+
+.widget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 0.875rem;
+  min-width: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+// ── Mobile: stacked layout (default) ─────────────────────────────────────────
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.link {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: none;
+
+  &:hover { text-decoration: underline; }
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+// ── 7-day strip ───────────────────────────────────────────────────────────────
+
+.strip {
+  display: flex;
+  gap: 0.375rem;
+  align-items: flex-end;
+  flex: 1;
+}
+
+.stripDay {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.stripBar {
+  width: 100%;
+  background: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  height: 3rem;
+
+  @include lg {
+    height: 2.5rem;
+  }
+}
+
+.stripFill {
+  width: 100%;
+  border-radius: 4px;
+  transition: height 0.4s ease;
+  min-height: 3px;
+}
+
+.stripLabel {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  line-height: 1;
+}
+
+.stripLabelToday {
+  color: var(--color-primary);
+}
+
+// ── Footer row (mobile/tablet) ────────────────────────────────────────────────
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--color-border);
+
+  @include lg {
+    display: none;
+  }
+}
+
+.statsText {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.statsHighlight {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  flex: 1;
+}
+
+// ── Desktop: horizontal banner layout ────────────────────────────────────────
+
+.desktopLayout {
+  display: none;
+
+  @include lg {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  width: 10rem;
+}
+
+.infoStats {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.stripCol {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.actionCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+// Hide mobile-only elements on desktop
+.mobileOnly {
+  @include lg {
+    display: none;
+  }
+}

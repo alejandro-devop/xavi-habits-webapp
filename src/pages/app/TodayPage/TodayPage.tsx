@@ -3,6 +3,7 @@ import { TodosWidget } from '@/features/todos/components/TodosWidget'
 import { ActivitiesWidget } from '@/features/activities/components/ActivitiesWidget'
 import { QuickActions } from '@/features/home/components/QuickActions'
 import { RoutineTodayWidget } from '@/features/home/components/RoutineTodayWidget'
+import { SleepWidget } from '@/features/sleep/components/SleepWidget'
 import styles from './TodayPage.module.scss'
 
 function getTodayLabel(): string {
@@ -36,6 +37,9 @@ export function TodayPage() {
         </div>
         <div className={styles.areaActivities}>
           <ActivitiesWidget />
+        </div>
+        <div className={styles.areaSleep}>
+          <SleepWidget />
         </div>
       </div>
     </section>

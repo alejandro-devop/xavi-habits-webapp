@@ -1,8 +1,6 @@
 import { useState } from 'react'
-import { Alert } from '@/shared/ui/Alert'
-import { Drawer } from '@/shared/ui/Drawer'
 import { PageHeader } from '@/shared/ui/PageHeader'
-import { SleepForm } from '@/features/sleep/components/SleepForm'
+import { SleepLogModal } from '@/features/sleep/components/SleepLogModal'
 import { SleepMonthView } from '@/features/sleep/components/SleepMonthView/SleepMonthView'
 import {
   useCreateSleepLogMutation,
@@ -13,11 +11,11 @@ import type { SleepLog, SleepLogInput } from '@/features/sleep/types/sleep.types
 import { sleepDateToInputValue } from '@/features/sleep/utils/sleep.utils'
 
 export function SleepPage() {
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<SleepLog | null>(null)
   const [prefillDate, setPrefillDate] = useState<string | undefined>(undefined)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [mutationError, setMutationError] = useState<string | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const createMutation = useCreateSleepLogMutation()
   const updateMutation = useUpdateSleepLogMutation()
@@ -26,25 +24,25 @@ export function SleepPage() {
   function openCreate(date?: string) {
     setEditing(null)
     setPrefillDate(date)
-    setMutationError(null)
-    setDrawerOpen(true)
+    setSubmitError(null)
+    setModalOpen(true)
   }
 
   function openEdit(log: SleepLog) {
     setEditing(log)
     setPrefillDate(undefined)
-    setMutationError(null)
-    setDrawerOpen(true)
+    setSubmitError(null)
+    setModalOpen(true)
   }
 
-  function closeDrawer() {
-    setDrawerOpen(false)
+  function closeModal() {
+    setModalOpen(false)
     setEditing(null)
     setPrefillDate(undefined)
   }
 
   async function handleSubmit(values: SleepLogInput) {
-    setMutationError(null)
+    setSubmitError(null)
     try {
       if (editing) {
         await updateMutation.mutateAsync({
@@ -55,9 +53,9 @@ export function SleepPage() {
       } else {
         await createMutation.mutateAsync(values)
       }
-      closeDrawer()
+      closeModal()
     } catch {
-      setMutationError('No se pudo guardar el registro. Intenta de nuevo.')
+      setSubmitError('No se pudo guardar el registro. Intenta de nuevo.')
     }
   }
 
@@ -77,16 +75,7 @@ export function SleepPage() {
 
   return (
     <>
-      <PageHeader
-        title="Sueño"
-        subtitle="Seguimiento mensual de tus sesiones de sueño."
-      />
-
-      {mutationError && (
-        <div style={{ marginBottom: '1rem' }}>
-          <Alert variant="danger">{mutationError}</Alert>
-        </div>
-      )}
+      <PageHeader title="Sueño" subtitle="Seguimiento mensual de tus sesiones de sueño." />
 
       <SleepMonthView
         onAdd={openCreate}
@@ -95,19 +84,15 @@ export function SleepPage() {
         deletingId={deletingId}
       />
 
-      <Drawer
-        open={drawerOpen}
-        onClose={closeDrawer}
-        title={editing ? 'Editar registro de sueño' : 'Registrar sueño'}
-      >
-        <SleepForm
-          initialValues={editing ?? undefined}
-          prefillDate={prefillDate}
-          loading={formLoading}
-          onSubmit={handleSubmit}
-          onCancel={closeDrawer}
-        />
-      </Drawer>
+      <SleepLogModal
+        open={modalOpen}
+        onClose={closeModal}
+        initialLog={editing ?? undefined}
+        prefillDate={prefillDate}
+        loading={formLoading}
+        submitError={submitError}
+        onSubmit={handleSubmit}
+      />
     </>
   )
 }

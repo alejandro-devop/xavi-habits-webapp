@@ -52,7 +52,14 @@
   gap: 0.35rem;
 }
 
-.newCategoryBtn {
+.categoryActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.fieldActionLink {
   align-self: flex-start;
   padding: 0;
   border: none;

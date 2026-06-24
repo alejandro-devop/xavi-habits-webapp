@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import type { Habit } from '@/features/habits/types/habit.types'
+import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import {
   buildHabitCreatePayload,
   buildHabitEditPayload,
@@ -47,7 +49,7 @@ function NewCategoryButton({
   return (
     <button
       type="button"
-      className={styles.newCategoryBtn}
+      className={styles.fieldActionLink}
       disabled={disabled}
       onClick={() =>
         push({
@@ -77,7 +79,7 @@ function NewPurposeButton({
   return (
     <button
       type="button"
-      className={styles.newCategoryBtn}
+      className={styles.fieldActionLink}
       disabled={disabled}
       onClick={() =>
         push({
@@ -242,10 +244,19 @@ export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalPro
           onChange={(v) => patch({ categoryId: v })}
           disabled={isMutating}
         />
-        <NewCategoryButton
-          disabled={isMutating}
-          onCreated={(id) => patch({ categoryId: id })}
-        />
+        <div className={styles.categoryActions}>
+          <NewCategoryButton
+            disabled={isMutating}
+            onCreated={(id) => patch({ categoryId: id })}
+          />
+          <Link
+            to={habitsPaths.categories}
+            className={styles.fieldActionLink}
+            onClick={handleClose}
+          >
+            Gestionar categorías
+          </Link>
+        </div>
       </div>
       {values.habitType !== 'boolean' && (
         <FormField id="habit-measure" label="Medida (opcional)">

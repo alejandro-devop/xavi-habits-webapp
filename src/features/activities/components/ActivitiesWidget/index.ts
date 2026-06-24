@@ -1,0 +1,1 @@
+export { ActivitiesWidget } from './ActivitiesWidget'

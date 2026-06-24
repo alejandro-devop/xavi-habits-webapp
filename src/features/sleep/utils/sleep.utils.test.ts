@@ -1,5 +1,17 @@
-import { describe, expect, it } from 'vitest'
-import { timeToIso } from '@/features/sleep/utils/sleep.utils'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { getTodayDate, timeToIso } from '@/features/sleep/utils/sleep.utils'
+
+describe('getTodayDate', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('returns local calendar date, not UTC', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-06-23T23:30:00-05:00'))
+    expect(getTodayDate()).toBe('2026-06-23')
+  })
+})
 
 describe('timeToIso', () => {
   it('preserves wall-clock time with timezone offset', () => {

@@ -24,6 +24,7 @@ export interface SleepLogInput {
   quality?: SleepQuality | null
   moodOnWaking?: MoodOnWaking | null
   notes?: string | null
+  bedtimeStartTime?: string
 }
 
 export interface SleepLogEditInput {
@@ -34,6 +35,7 @@ export interface SleepLogEditInput {
   quality?: SleepQuality | null
   moodOnWaking?: MoodOnWaking | null
   notes?: string | null
+  bedtimeStartTime?: string
 }
 
 export interface SleepLogsResponse {

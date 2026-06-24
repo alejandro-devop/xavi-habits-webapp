@@ -85,6 +85,7 @@ export function SleepForm({ initialValues, loading = false, onSubmit, onCancel }
       sleepDate: values.sleepDate,
       bedtime: timeToIso(values.sleepDate, values.bedtime),
       wakeTime: timeToIso(values.sleepDate, values.wakeTime),
+      bedtimeStartTime: values.bedtime,
       quality: values.quality ? (values.quality as SleepQuality) : null,
       moodOnWaking: values.moodOnWaking ? (values.moodOnWaking as MoodOnWaking) : null,
       notes: values.notes.trim() || null,

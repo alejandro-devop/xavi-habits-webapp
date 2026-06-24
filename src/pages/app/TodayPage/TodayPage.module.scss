@@ -67,7 +67,7 @@
   }
 }
 
-.areaHabits     { grid-area: habits; }
-.areaRoutine    { grid-area: routine; }
-.areaTodos      { grid-area: todos; }
-.areaActivities { grid-area: activities; }
+.areaHabits     { grid-area: habits;     min-width: 0; overflow: hidden; }
+.areaRoutine    { grid-area: routine;    min-width: 0; overflow: hidden; }
+.areaTodos      { grid-area: todos;      min-width: 0; overflow: hidden; }
+.areaActivities { grid-area: activities; min-width: 0; overflow: hidden; }

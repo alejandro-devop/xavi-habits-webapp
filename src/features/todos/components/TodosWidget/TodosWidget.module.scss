@@ -6,6 +6,8 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0.875rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .header {
@@ -87,6 +89,7 @@
 
 .taskTitle {
   flex: 1;
+  min-width: 0;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--color-text);

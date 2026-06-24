@@ -19,8 +19,8 @@ import {
   useStartActivityFollowUpMutation,
   useUpdateActivityFollowUpMutation,
 } from '@/features/activities/hooks/useActivityFollowUps'
+import { useRunningSessionFinishActions } from '@/features/activities/hooks/useRunningSessionFinishActions'
 import { useActivitiesQuery } from '@/features/activities/hooks/useActivities'
-import { useCompleteTodoMutation } from '@/features/todos/hooks/useTodos'
 import type { RunningActivitySessionLinkedTodo } from '@/features/activities/types/activity-followup.types'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 import type {
@@ -31,7 +31,6 @@ import type {
 import type { TimelineFreeSlot } from '@/features/activities/types/activity-timeline.types'
 import {
   finishFormFromSession,
-  finishOpenFollowUpToEditInput,
   openFollowUpToRunningSession,
   startFormToFollowUpStartInput,
 } from '@/features/activities/utils/activity-followup-form'
@@ -112,7 +111,19 @@ export function ActivityTrackingPage() {
   const createMutation = useCreateActivityFollowUpMutation()
   const updateMutation = useUpdateActivityFollowUpMutation()
   const deleteMutation = useDeleteActivityFollowUpMutation()
-  const completeTodoMutation = useCompleteTodoMutation()
+
+  const sessionDate = openFollowUp?.date ?? selectedDate
+  const {
+    handleFinishSave,
+    handleFinishAndContinue,
+    routineSuggestion: finishRoutineSuggestion,
+    routineUpcoming: finishRoutineUpcoming,
+    isSaving: isFinishSaving,
+  } = useRunningSessionFinishActions({
+    session,
+    sessionDate,
+    onFinished: () => setFinishModalOpen(false),
+  })
 
   const handleStart = (
     values: StartActivityFormValues,
@@ -191,60 +202,8 @@ export function ActivityTrackingPage() {
 
   const handleOpenFinish = () => {
     if (!session) return
-    setFinishFormValues(finishFormFromSession(session, selectedDate))
+    setFinishFormValues(finishFormFromSession(session, sessionDate))
     setFinishModalOpen(true)
-  }
-
-  const handleFinishSave = (values: FinishActivityFormValues) => {
-    if (!session) return
-    const linkedTodo = session.linkedTodo ?? null
-
-    updateMutation.mutate(finishOpenFollowUpToEditInput(session.followUpId, values), {
-      onSuccess: async () => {
-        setFinishModalOpen(false)
-
-        if (!linkedTodo) return
-
-        const confirmed = await confirm({
-          title: '¿Completar la tarea?',
-          description: `¿Marcar «${linkedTodo.title}» como completada? Las subtareas pueden quedar pendientes.`,
-          confirmLabel: 'Completar tarea',
-          cancelLabel: 'No',
-        })
-
-        if (confirmed) {
-          completeTodoMutation.mutate(linkedTodo.id)
-        }
-      },
-    })
-  }
-
-  const handleFinishAndContinue = (
-    finishValues: FinishActivityFormValues,
-    nextStart: StartActivityFormValues,
-  ) => {
-    if (!session) return
-    const linkedTodo = session.linkedTodo ?? null
-
-    updateMutation.mutate(finishOpenFollowUpToEditInput(session.followUpId, finishValues), {
-      onSuccess: async () => {
-        setFinishModalOpen(false)
-
-        if (linkedTodo) {
-          const confirmed = await confirm({
-            title: '¿Completar la tarea?',
-            description: `¿Marcar «${linkedTodo.title}» como completada? Las subtareas pueden quedar pendientes.`,
-            confirmLabel: 'Completar tarea',
-            cancelLabel: 'No',
-          })
-          if (confirmed) {
-            completeTodoMutation.mutate(linkedTodo.id)
-          }
-        }
-
-        startMutation.mutate(startFormToFollowUpStartInput(selectedDate, nextStart))
-      },
-    })
   }
 
   const handleDeleteFollowUp = async (followUp: ActivityFollowUp) => {
@@ -432,9 +391,9 @@ export function ActivityTrackingPage() {
           open={finishModalOpen}
           initialValues={finishFormValues}
           activities={activities}
-          loading={updateMutation.isPending}
-          routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
-          routineUpcoming={isToday(selectedDate) ? routineUpcoming : null}
+          loading={isFinishSaving}
+          routineSuggestion={finishRoutineSuggestion}
+          routineUpcoming={finishRoutineUpcoming}
           onClose={() => setFinishModalOpen(false)}
           onSave={handleFinishSave}
           onSaveAndContinue={handleFinishAndContinue}

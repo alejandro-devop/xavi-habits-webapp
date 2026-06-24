@@ -7,8 +7,8 @@ import { useActivitiesQuery } from '@/features/activities/hooks/useActivities'
 import {
   useActivityOpenFollowUpQuery,
   useDeleteActivityFollowUpMutation,
-  useUpdateActivityFollowUpMutation,
 } from '@/features/activities/hooks/useActivityFollowUps'
+import { useRunningSessionFinishActions } from '@/features/activities/hooks/useRunningSessionFinishActions'
 import { useElapsedTimer } from '@/features/activities/hooks/useElapsedTimer'
 import type {
   FinishActivityFormValues,
@@ -17,7 +17,6 @@ import type {
 import { getCurrentLocalDate } from '@/features/activities/utils/activity-time.utils'
 import {
   finishFormFromSession,
-  finishOpenFollowUpToEditInput,
   openFollowUpToRunningSession,
 } from '@/features/activities/utils/activity-followup-form'
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
@@ -85,11 +84,23 @@ export function RunningActivityWidget() {
     () => (openFollowUp ? openFollowUpToRunningSession(openFollowUp) : null),
     [openFollowUp],
   )
+  const sessionDate = openFollowUp?.date ?? getCurrentLocalDate()
+
   const { data: activitiesData } = useActivitiesQuery({ limit: 100, page: 1 })
   const activities = activitiesData?.activities ?? []
 
-  const updateMutation = useUpdateActivityFollowUpMutation()
   const deleteMutation = useDeleteActivityFollowUpMutation()
+  const {
+    handleFinishSave,
+    handleFinishAndContinue,
+    routineSuggestion,
+    routineUpcoming,
+    isSaving,
+  } = useRunningSessionFinishActions({
+    session,
+    sessionDate,
+    onFinished: () => setFinishModalOpen(false),
+  })
 
   const isOnTracking = location.pathname === activitiesPaths.tracking
   const visible = !isOnTracking && Boolean(session)
@@ -97,15 +108,8 @@ export function RunningActivityWidget() {
   function handleFinish() {
     if (!session) return
     setDrawerOpen(false)
-    setFinishFormValues(finishFormFromSession(session, getCurrentLocalDate()))
+    setFinishFormValues(finishFormFromSession(session, sessionDate))
     setFinishModalOpen(true)
-  }
-
-  function handleFinishSave(values: FinishActivityFormValues) {
-    if (!session) return
-    updateMutation.mutate(finishOpenFollowUpToEditInput(session.followUpId, values), {
-      onSuccess: () => setFinishModalOpen(false),
-    })
   }
 
   function handleCancel() {
@@ -113,7 +117,7 @@ export function RunningActivityWidget() {
     deleteMutation.mutate(
       {
         id: session.followUpId,
-        date: openFollowUp?.date ?? getCurrentLocalDate(),
+        date: sessionDate,
         activityId: session.activityId,
         wasOpen: true,
       },
@@ -153,14 +157,17 @@ export function RunningActivityWidget() {
         </Drawer>
       ) : null}
 
-      {finishFormValues ? (
+      {session && finishFormValues ? (
         <FinishActivityModal
           open={finishModalOpen}
           initialValues={finishFormValues}
           activities={activities}
-          loading={updateMutation.isPending}
+          loading={isSaving}
+          routineSuggestion={routineSuggestion}
+          routineUpcoming={routineUpcoming}
           onClose={() => setFinishModalOpen(false)}
           onSave={handleFinishSave}
+          onSaveAndContinue={handleFinishAndContinue}
         />
       ) : null}
     </>

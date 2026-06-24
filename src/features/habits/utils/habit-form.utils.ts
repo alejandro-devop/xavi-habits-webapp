@@ -15,6 +15,7 @@ export interface HabitFormValues {
   dailyGoal: string
   timerGoal: string
   purposeId: string | null
+  hidden: boolean
 }
 
 export function defaultFormValues(habit?: Habit): HabitFormValues {
@@ -34,6 +35,7 @@ export function defaultFormValues(habit?: Habit): HabitFormValues {
       dailyGoal: '',
       timerGoal: '',
       purposeId: null,
+      hidden: false,
     }
   }
   return {
@@ -51,6 +53,7 @@ export function defaultFormValues(habit?: Habit): HabitFormValues {
     dailyGoal: habit.timesGoal != null ? String(habit.timesGoal) : '',
     timerGoal: habit.timerGoal != null ? String(habit.timerGoal) : '',
     purposeId: habit.purposeId ?? null,
+    hidden: habit.hidden,
   }
 }
 
@@ -73,6 +76,7 @@ export function buildHabitCreatePayload(values: HabitFormValues): HabitInput {
       values.habitType === 'time' && values.timerGoal !== '' ? Number(values.timerGoal) : null,
     dailyGoal: values.habitType === 'boolean' ? 1 : null,
     purposeId: values.purposeId || null,
+    hidden: values.hidden,
   }
 }
 

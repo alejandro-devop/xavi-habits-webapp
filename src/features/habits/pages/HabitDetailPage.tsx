@@ -19,6 +19,7 @@ import { addDaysToString, getMondayOfWeek, getTodayString } from '@/features/hab
 import type { Habit, HabitFollowUp } from '@/features/habits/types/habit.types'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
+import { Switch } from '@/shared/ui/Switch'
 import { Spinner } from '@/shared/ui/Spinner'
 import { Tabs } from '@/shared/ui/Tabs'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
@@ -38,6 +39,7 @@ export function HabitDetailPage() {
   const { confirm } = useConfirmDialog()
   const { data: habit, isLoading } = useHabitQuery(id)
   const restoreMutation = useUpdateHabitMutation()
+  const updateMutation = useUpdateHabitMutation()
   const deleteMutation = useDeleteHabitMutation()
   const [editOpen, setEditOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('week')
@@ -56,6 +58,11 @@ export function HabitDetailPage() {
     })
     if (!ok) return
     restoreMutation.mutate({ id: habit.id, status: 'active' })
+  }
+
+  async function handleToggleHidden(checked: boolean) {
+    if (!habit) return
+    updateMutation.mutate({ id: habit.id, hidden: checked })
   }
 
   async function handleDelete() {
@@ -145,6 +152,21 @@ export function HabitDetailPage() {
           Este hábito está archivado y no aparece en Mis Día.
         </p>
       )}
+
+      {habit.status !== 'archived' ? (
+        <div className={styles.privacyRow}>
+          <Switch
+            id="habit-detail-hidden"
+            label="Ocultar de la interfaz"
+            checked={habit.hidden}
+            disabled={updateMutation.isPending}
+            onChange={(e) => void handleToggleHidden(e.target.checked)}
+          />
+          <p className={styles.privacyHint}>
+            No se mostrará en ningún sitio mientras «Ocultar hábitos ocultos» esté activo en Ajustes.
+          </p>
+        </div>
+      ) : null}
 
       <HabitStatsBanner habit={habit} />
 

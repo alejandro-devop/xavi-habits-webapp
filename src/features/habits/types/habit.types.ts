@@ -32,6 +32,7 @@ export interface Habit {
   restartCount: number
   weeklyLifelines: number
   status: HabitStatus
+  hidden: boolean
   shouldAvoid: boolean
   shouldKeep: boolean
   streak: number
@@ -130,6 +131,7 @@ export interface HabitInput {
   categoryId?: string | null
   measureId?: string | null
   purposeId?: string | null
+  hidden?: boolean
 }
 
 export interface HabitEditInput extends Partial<HabitInput> {

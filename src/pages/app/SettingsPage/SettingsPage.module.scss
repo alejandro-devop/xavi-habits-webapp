@@ -1,0 +1,39 @@
+.center {
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-8);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  max-width: 40rem;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sectionDescription {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}

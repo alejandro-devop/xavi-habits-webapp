@@ -74,11 +74,22 @@ export const todoKeys = {
   },
 }
 
+export const settingsKeys = {
+  all: ['settings'] as const,
+  my: () => [...settingsKeys.all, 'my'] as const,
+}
+
 export const noteKeys = {
   all: ['notes'] as const,
   lists: () => [...noteKeys.all, 'list'] as const,
   list: (filters: ListFilters = {}) => [...noteKeys.all, 'list', filters] as const,
   detail: (id: string) => [...noteKeys.all, 'detail', id] as const,
+}
+
+export const sleepKeys = {
+  all: ['sleep'] as const,
+  list: (filters: ListFilters = {}) => [...sleepKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...sleepKeys.all, 'detail', id] as const,
 }
 
 export const quarterKeys = {

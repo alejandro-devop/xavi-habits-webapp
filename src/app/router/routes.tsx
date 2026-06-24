@@ -13,6 +13,8 @@ import { weeklyRoutineRoutes } from '@/features/weekly-routine'
 import { notesRoutes } from '@/features/notes'
 import { quartersRoutes, projectsRoutes } from '@/features/quarters'
 import { habitsRoutes } from '@/features/habits'
+import { settingsRoutes } from '@/features/settings'
+import { sleepRoutes } from '@/features/sleep'
 import { TestingHallPage } from '@/pages/app/TestingHallPage/TestingHallPage'
 import { TodayPage } from '@/pages/app/TodayPage/TodayPage'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage/ForgotPasswordPage'
@@ -97,6 +99,8 @@ export const routes: RouteObject[] = [
               quartersRoutes,
               projectsRoutes,
               habitsRoutes,
+              sleepRoutes,
+              settingsRoutes,
             ],
           },
         ],

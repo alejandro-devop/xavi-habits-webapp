@@ -8,6 +8,7 @@ const HABIT_FIELDS = `
   restartCount
   weeklyLifelines
   status
+  hidden
   shouldAvoid
   shouldKeep
   streak

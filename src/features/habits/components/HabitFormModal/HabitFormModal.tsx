@@ -199,6 +199,16 @@ export function HabitFormModal({ mode, habit, open, onClose }: HabitFormModalPro
         onChange={(e) => patch({ shouldAvoid: e.target.checked })}
         disabled={isMutating}
       />
+      <Switch
+        id="habit-hidden"
+        label="Ocultar de la interfaz"
+        checked={values.hidden}
+        onChange={(e) => patch({ hidden: e.target.checked })}
+        disabled={isMutating}
+      />
+      <p className={styles.privacyHint}>
+        Los hábitos ocultos no se muestran cuando «Ocultar hábitos ocultos» está activo en Ajustes.
+      </p>
     </div>
   )
 

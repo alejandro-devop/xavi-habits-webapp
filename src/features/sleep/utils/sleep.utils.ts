@@ -1,5 +1,11 @@
 export function timeToIso(date: string, time: string): string {
-  return new Date(`${date}T${time}:00`).toISOString()
+  const local = new Date(`${date}T${time}:00`)
+  const offsetMinutes = -local.getTimezoneOffset()
+  const sign = offsetMinutes >= 0 ? '+' : '-'
+  const abs = Math.abs(offsetMinutes)
+  const oh = String(Math.floor(abs / 60)).padStart(2, '0')
+  const om = String(abs % 60).padStart(2, '0')
+  return `${date}T${time}:00${sign}${oh}:${om}`
 }
 
 export function isoToTime(iso: string): string {

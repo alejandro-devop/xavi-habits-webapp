@@ -48,6 +48,136 @@
   color: var(--color-text-secondary);
 }
 
+.nowIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: var(--now-accent-bg, color-mix(in srgb, var(--color-primary) 10%, transparent));
+  border: 1px solid var(--now-accent-border, color-mix(in srgb, var(--color-primary) 24%, transparent));
+  border-radius: 0.625rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.nowIndicatorDone {
+  --now-accent-bg: color-mix(in srgb, var(--color-text-secondary) 8%, transparent);
+  --now-accent-border: color-mix(in srgb, var(--color-text-secondary) 18%, transparent);
+}
+
+.nowIndicatorIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--now-accent-bg, color-mix(in srgb, var(--color-primary) 12%, transparent));
+  border: 1px solid var(--now-accent-border, color-mix(in srgb, var(--color-primary) 28%, transparent));
+  color: var(--now-accent, var(--color-primary));
+  flex-shrink: 0;
+}
+
+.nowIndicatorDone .nowIndicatorIcon {
+  color: var(--color-text-secondary);
+}
+
+.nowIndicatorInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.nowIndicatorLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--now-accent, var(--color-primary));
+}
+
+.nowIndicatorDone .nowIndicatorLabel {
+  color: var(--color-text-secondary);
+}
+
+.nowIndicatorTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nowIndicatorMeta {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.nowIndicatorPulse {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.75rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--now-accent, var(--color-primary));
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--now-accent, var(--color-primary)) 45%, transparent);
+  animation: nowPulse 2s ease-out infinite;
+}
+
+@keyframes nowPulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--now-accent, var(--color-primary)) 50%, transparent);
+  }
+
+  70% {
+    box-shadow: 0 0 0 0.45rem transparent;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.listViewport {
+  position: relative;
+  min-width: 0;
+}
+
+.mistTop,
+.mistBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1.75rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mistTop {
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    var(--color-surface) 0%,
+    color-mix(in srgb, var(--color-surface) 55%, transparent) 55%,
+    transparent 100%
+  );
+}
+
+.mistBottom {
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    var(--color-surface) 0%,
+    color-mix(in srgb, var(--color-surface) 55%, transparent) 55%,
+    transparent 100%
+  );
+}
+
 .list {
   list-style: none;
   margin: 0;
@@ -73,14 +203,27 @@
 
 .itemCurrent {
   opacity: 1;
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  margin: 0 -0.35rem;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+  border-radius: 0.4rem;
+}
+
+.itemUpcoming {
+  opacity: 0.9;
 }
 
 .itemPast {
   opacity: 0.35;
 }
 
-.item:not(.itemPast):not(.itemCurrent) {
+.item:not(.itemPast):not(.itemCurrent):not(.itemUpcoming) {
   opacity: 0.75;
+}
+
+.itemUpcoming:not(.itemCurrent) {
+  opacity: 0.85;
 }
 
 .timeCol {
@@ -142,6 +285,18 @@
   letter-spacing: 0.06em;
   color: var(--color-primary);
   background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.nextBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-text-secondary) 12%, transparent);
   padding: 0.15rem 0.45rem;
   border-radius: 999px;
   flex-shrink: 0;

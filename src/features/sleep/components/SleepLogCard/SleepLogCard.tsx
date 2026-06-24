@@ -12,7 +12,7 @@ import styles from './SleepLogCard.module.scss'
 interface SleepLogCardProps {
   log: SleepLog
   onEdit: (log: SleepLog) => void
-  onDelete: (id: string) => void
+  onDelete: (log: SleepLog) => void
   deleteLoading?: boolean
 }
 
@@ -77,7 +77,7 @@ export function SleepLogCard({ log, onEdit, onDelete, deleteLoading = false }: S
         <Button
           size="sm"
           variant="danger"
-          onClick={() => onDelete(log.id)}
+          onClick={() => onDelete(log)}
           disabled={deleteLoading}
           isLoading={deleteLoading}
         >

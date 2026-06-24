@@ -14,6 +14,7 @@ import {
   useUpdateSleepLogMutation,
 } from '@/features/sleep/hooks/useSleep'
 import type { SleepLog, SleepLogInput } from '@/features/sleep/types/sleep.types'
+import { sleepDateToInputValue } from '@/features/sleep/utils/sleep.utils'
 import styles from './SleepPage.module.scss'
 
 export function SleepPage() {
@@ -45,17 +46,24 @@ export function SleepPage() {
 
   async function handleSubmit(values: SleepLogInput) {
     if (editing) {
-      await updateMutation.mutateAsync({ id: editing.id, ...values })
+      await updateMutation.mutateAsync({
+        id: editing.id,
+        ...values,
+        previousSleepDate: sleepDateToInputValue(editing.sleepDate),
+      })
     } else {
       await createMutation.mutateAsync(values)
     }
     closeDrawer()
   }
 
-  async function handleDelete(id: string) {
-    setDeletingId(id)
+  async function handleDelete(log: SleepLog) {
+    setDeletingId(log.id)
     try {
-      await removeMutation.mutateAsync(id)
+      await removeMutation.mutateAsync({
+        id: log.id,
+        sleepDate: log.sleepDate,
+      })
     } finally {
       setDeletingId(null)
     }

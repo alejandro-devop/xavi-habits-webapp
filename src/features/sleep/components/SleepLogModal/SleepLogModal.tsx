@@ -1,12 +1,8 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import {
-  commitTimeUnitDigits,
-  isCompleteTimeUnit,
-  sanitizeTimeUnitDigits,
-} from '@/features/sleep/utils/time-spinner.utils'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { Button } from '@/shared/ui/Button'
 import { SteppedModal, useModalStep } from '@/shared/ui/SteppedModal'
 import { Textarea } from '@/shared/ui/Textarea'
+import { TimeSpinner } from '@/features/sleep/components/TimeSpinner'
 import type { MoodOnWaking, SleepLog, SleepLogInput, SleepQuality } from '@/features/sleep/types/sleep.types'
 import {
   calcDurationMinutes,
@@ -88,136 +84,6 @@ function buildInitial(log?: SleepLog, prefillDate?: string): WizardState {
     moodOnWaking: '',
     notes: '',
   }
-}
-
-// ─── TimeSpinner ──────────────────────────────────────────────────────────────
-
-interface TimeSpinnerProps {
-  label: string
-  value: string
-  onChange: (v: string) => void
-}
-
-function TimeSpinner({ label, value, onChange }: TimeSpinnerProps) {
-  const parts = value.split(':')
-  const h = parseInt(parts[0] ?? '0', 10) || 0
-  const m = parseInt(parts[1] ?? '0', 10) || 0
-  const mInputRef = useRef<HTMLInputElement>(null)
-  const [hourDraft, setHourDraft] = useState<string | null>(null)
-  const [minuteDraft, setMinuteDraft] = useState<string | null>(null)
-
-  function clearDrafts() {
-    setHourDraft(null)
-    setMinuteDraft(null)
-  }
-
-  function changeHour(delta: number) {
-    clearDrafts()
-    const next = ((h + delta) % 24 + 24) % 24
-    onChange(`${pad2(next)}:${pad2(m)}`)
-  }
-
-  function changeMinute(delta: number) {
-    clearDrafts()
-    const snapped = Math.round(m / 5) * 5
-    const next = ((snapped + delta * 5) % 60 + 60) % 60
-    onChange(`${pad2(h)}:${pad2(next)}`)
-  }
-
-  function commitHour(digits: string, focusMinutes = false) {
-    const nextHour = commitTimeUnitDigits(digits, 23)
-    onChange(`${pad2(nextHour)}:${pad2(m)}`)
-    setHourDraft(null)
-    if (focusMinutes) mInputRef.current?.focus()
-  }
-
-  function commitMinute(digits: string) {
-    const nextMinute = commitTimeUnitDigits(digits, 59)
-    onChange(`${pad2(h)}:${pad2(nextMinute)}`)
-    setMinuteDraft(null)
-  }
-
-  function handleHourChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const digits = sanitizeTimeUnitDigits(e.target.value)
-    setHourDraft(digits)
-    if (isCompleteTimeUnit(digits, 23)) commitHour(digits, true)
-  }
-
-  function handleHourBlur() {
-    if (hourDraft === null) return
-    if (hourDraft === '') {
-      setHourDraft(null)
-      return
-    }
-    commitHour(hourDraft)
-  }
-
-  function handleMinuteChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const digits = sanitizeTimeUnitDigits(e.target.value)
-    setMinuteDraft(digits)
-    if (isCompleteTimeUnit(digits, 59)) commitMinute(digits)
-  }
-
-  function handleMinuteBlur() {
-    if (minuteDraft === null) return
-    if (minuteDraft === '') {
-      setMinuteDraft(null)
-      return
-    }
-    commitMinute(minuteDraft)
-  }
-
-  return (
-    <div className={styles.spinner}>
-      <p className={styles.spinnerLabel}>{label}</p>
-      <div className={styles.spinnerRow}>
-        <div className={styles.spinnerUnit}>
-          <button type="button" className={styles.spinnerBtn} onClick={() => changeHour(1)} aria-label="Aumentar hora">
-            ▲
-          </button>
-          <input
-            className={styles.spinnerInput}
-            value={hourDraft ?? pad2(h)}
-            onChange={handleHourChange}
-            onBlur={handleHourBlur}
-            inputMode="numeric"
-            maxLength={2}
-            aria-label={`${label} — hora`}
-            onFocus={(e) => {
-              setHourDraft('')
-              e.target.select()
-            }}
-          />
-          <button type="button" className={styles.spinnerBtn} onClick={() => changeHour(-1)} aria-label="Disminuir hora">
-            ▼
-          </button>
-        </div>
-        <span className={styles.spinnerColon}>:</span>
-        <div className={styles.spinnerUnit}>
-          <button type="button" className={styles.spinnerBtn} onClick={() => changeMinute(1)} aria-label="Aumentar minuto">
-            ▲
-          </button>
-          <input
-            ref={mInputRef}
-            className={styles.spinnerInput}
-            value={minuteDraft ?? pad2(m)}
-            onChange={handleMinuteChange}
-            onBlur={handleMinuteBlur}
-            inputMode="numeric"
-            maxLength={2}
-            aria-label={`${label} — minuto`}
-            onFocus={(e) => {
-              setMinuteDraft('')
-              e.target.select()
-            }}
-          />
-          <button type="button" className={styles.spinnerBtn} onClick={() => changeMinute(-1)} aria-label="Disminuir minuto">
-            ▼
-          </button>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // ─── Step 1: Day ──────────────────────────────────────────────────────────────

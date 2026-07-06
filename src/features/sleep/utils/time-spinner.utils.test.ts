@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  appendDraftDigit,
   commitTimeUnitDigits,
   isCompleteTimeUnit,
+  nextDraftDigits,
   sanitizeTimeUnitDigits,
 } from '@/features/sleep/utils/time-spinner.utils'
 
@@ -31,5 +33,25 @@ describe('isCompleteTimeUnit', () => {
     expect(isCompleteTimeUnit('60', 59)).toBe(false)
     expect(isCompleteTimeUnit('23', 23)).toBe(true)
     expect(isCompleteTimeUnit('24', 23)).toBe(false)
+  })
+})
+
+describe('nextDraftDigits', () => {
+  it('builds multi-digit values while typing', () => {
+    expect(nextDraftDigits('', '3')).toBe('3')
+    expect(nextDraftDigits('3', '30')).toBe('30')
+    expect(nextDraftDigits('', '30')).toBe('30')
+  })
+
+  it('recovers when the browser concatenates onto a padded value', () => {
+    expect(nextDraftDigits('', '030')).toBe('30')
+    expect(nextDraftDigits('3', '030')).toBe('30')
+  })
+})
+
+describe('appendDraftDigit', () => {
+  it('appends one digit at a time', () => {
+    expect(appendDraftDigit('', '3')).toBe('3')
+    expect(appendDraftDigit('3', '0')).toBe('30')
   })
 })

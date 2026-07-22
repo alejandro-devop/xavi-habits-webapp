@@ -29,6 +29,14 @@ export function ActivitiesModuleNav() {
       >
         Seguimiento
       </NavLink>
+      <NavLink
+        to={activitiesPaths.standup}
+        className={({ isActive }) =>
+          [styles.tab, isActive ? styles.tabActive : ''].filter(Boolean).join(' ')
+        }
+      >
+        My Stand up
+      </NavLink>
     </nav>
   )
 }

@@ -84,6 +84,15 @@ export const settingsKeys = {
   my: () => [...settingsKeys.all, 'my'] as const,
 }
 
+export const standupKeys = {
+  all: ['standup'] as const,
+  membersRoot: () => [...standupKeys.all, 'members'] as const,
+  members: (includeInactive = false) =>
+    [...standupKeys.membersRoot(), includeInactive] as const,
+  day: (date: string) => [...standupKeys.all, 'day', date] as const,
+  summary: (date: string) => [...standupKeys.all, 'summary', date] as const,
+}
+
 export const noteKeys = {
   all: ['notes'] as const,
   lists: () => [...noteKeys.all, 'list'] as const,

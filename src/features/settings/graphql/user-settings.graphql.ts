@@ -4,6 +4,7 @@ export const MY_SETTINGS_QUERY = `
       userId
       hideHiddenHabits
       sleepActivityCategoryId
+      standupTodoFolderId
       createdAt
       updatedAt
     }
@@ -16,6 +17,7 @@ export const UPDATE_MY_SETTINGS_MUTATION = `
       userId
       hideHiddenHabits
       sleepActivityCategoryId
+      standupTodoFolderId
       createdAt
       updatedAt
     }

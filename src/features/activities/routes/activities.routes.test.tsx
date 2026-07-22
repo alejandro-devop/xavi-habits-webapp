@@ -65,6 +65,42 @@ vi.mock('@/features/weekly-routine/hooks/useUpcomingRoutineEventSuggestion', () 
 
 vi.mock('@/features/todos/hooks/useTodos', () => ({
   useCompleteTodoMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useTodoFoldersQuery: () => ({ data: [], isLoading: false }),
+}))
+
+vi.mock('@/features/activities/hooks/useStandup', () => ({
+  useStandupMembersQuery: () => ({ data: [], isLoading: false }),
+  useStandupDayQuery: () => ({
+    data: { day: null, items: [], carryOverCandidates: [] },
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  }),
+  useStandupDaySummaryQuery: () => ({ data: undefined, isFetching: false }),
+  useOpenStandupDayMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useCloseStandupDayMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useCreateStandupMemberMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateStandupMemberMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteStandupMemberMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useCreateStandupItemMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useUpdateStandupItemMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useDeleteStandupItemMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useCarryOverStandupItemsMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useCreateTodoFromStandupItemMutation: () => ({ mutate: vi.fn(), isPending: false }),
+}))
+
+vi.mock('@/features/settings/hooks/useUserSettings', () => ({
+  useUserSettingsQuery: () => ({
+    data: {
+      userId: 1,
+      hideHiddenHabits: false,
+      sleepActivityCategoryId: null,
+      standupTodoFolderId: null,
+      createdAt: '',
+      updatedAt: '',
+    },
+  }),
+  useUpdateUserSettingsMutation: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
 function renderActivitiesRoute(initialEntry: string) {
@@ -105,5 +141,12 @@ describe('activitiesRoutes', () => {
     renderActivitiesRoute('/activities/tracking')
     expect(screen.getByRole('navigation', { name: /secciones de actividades/i })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /iniciar nueva actividad/i }).length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('renders standup page at standup route', () => {
+    renderActivitiesRoute('/activities/standup')
+    expect(screen.getByRole('navigation', { name: /secciones de actividades/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /my stand up/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /abrir día/i })).toBeInTheDocument()
   })
 })

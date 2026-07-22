@@ -7,6 +7,7 @@ import { ActivityDetailPage } from '@/features/activities/pages/ActivityDetailPa
 import { ActivityEditPage } from '@/features/activities/pages/ActivityEditPage'
 import { ActivitiesListPage } from '@/features/activities/pages/ActivitiesListPage'
 import { ActivityTrackingPage } from '@/features/activities/pages/ActivityTrackingPage'
+import { StandupPage } from '@/features/activities/pages/StandupPage'
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 
 export const activitiesRoutes: RouteObject = {
@@ -28,6 +29,10 @@ export const activitiesRoutes: RouteObject = {
     {
       path: 'tracking',
       element: <ActivityTrackingPage />,
+    },
+    {
+      path: 'standup',
+      element: <StandupPage />,
     },
     {
       path: 'new',

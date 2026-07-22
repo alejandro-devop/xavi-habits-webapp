@@ -33,6 +33,7 @@ src/features/activities/
 | `/app/activities/:id/edit` | Editar | No |
 | `/app/activities/categories` | CRUD categorías | No (subnav) |
 | `/app/activities/tracking` | Time tracking diario | No (subnav) |
+| `/app/activities/standup` | My Stand up (equipo) | No (subnav) |
 
 `ActivitiesModuleLayout` envuelve todas las rutas con `PageHeader`, `ActivitiesModuleNav` y `<Outlet />`.
 
@@ -41,6 +42,7 @@ Subnav interna:
 - **Actividades** → listado (`/app/activities`)
 - **Categorías** → panel categorías
 - **Seguimiento** → timeline diaria (`/app/activities/tracking`)
+- **My Stand up** → seguimiento diario del equipo (`/app/activities/standup`)
 
 ## GraphQL — actividades
 

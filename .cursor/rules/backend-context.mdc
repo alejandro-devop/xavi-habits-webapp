@@ -20,6 +20,7 @@ alwaysApply: true
 | Actividades | `activity/` | `docs/activities-domain.md` |
 | Cursos | `course/` | (feature `courses`) |
 | **Todos** | `todo/` | `docs/todos-domain.md` |
+| **Learning Notes** | `learning-note/` | `docs/learning-domain.md` |
 
 ## Todos (pendiente de UI)
 

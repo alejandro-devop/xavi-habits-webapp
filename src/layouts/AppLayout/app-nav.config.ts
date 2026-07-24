@@ -1,6 +1,7 @@
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { habitsPaths } from '@/features/habits'
+import { learningPaths } from '@/features/learning'
 import { settingsPaths } from '@/features/settings'
 import { sleepPaths } from '@/features/sleep'
 import { weeklyRoutinePaths } from '@/features/weekly-routine'
@@ -12,6 +13,7 @@ export const appSidebarItems: SidebarNavItem[] = [
   { to: activitiesPaths.root, label: 'Actividades', icon: 'list-check' },
   { to: '/app/todos', label: 'Tareas', icon: 'clipboard' },
   { to: '/app/notes', label: 'Notas', icon: 'file-lines' },
+  { to: learningPaths.root, label: 'Learning', icon: 'graduation-cap' },
   { to: habitsPaths.myDay, label: 'Hábitos', icon: 'fire' },
   { to: sleepPaths.root, label: 'Sueño', icon: 'moon' },
   { to: weeklyRoutinePaths.root, label: 'Rutina', icon: 'calendar-week' },
@@ -47,6 +49,13 @@ export function createCommandActions(handlers: {
       icon: 'clipboard',
       keywords: ['todos', 'tareas', 'notebook'],
       onSelect: () => handlers.navigate('/app/todos'),
+    },
+    {
+      id: 'go-learning',
+      label: 'Ir a Learning',
+      icon: 'graduation-cap',
+      keywords: ['learning', 'conocimiento', 'notas', 'apuntes', 'buscar'],
+      onSelect: () => handlers.navigate(learningPaths.root),
     },
     {
       id: 'go-weekly-routine',

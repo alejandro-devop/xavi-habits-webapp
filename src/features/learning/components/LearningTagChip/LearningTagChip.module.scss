@@ -1,0 +1,44 @@
+@use '@/app/styles/tokens' as *;
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  background: color-mix(in srgb, $color-primary 12%, transparent);
+  color: $color-primary;
+  border: 1px solid color-mix(in srgb, $color-primary 30%, transparent);
+  transition: background 0.15s;
+  cursor: default;
+
+  &[role='button'] {
+    cursor: pointer;
+
+    &:hover {
+      background: color-mix(in srgb, $color-primary 20%, transparent);
+    }
+  }
+
+  &.selected {
+    background: color-mix(in srgb, $color-primary 22%, transparent);
+  }
+}
+
+.remove {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 2px;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+  }
+}

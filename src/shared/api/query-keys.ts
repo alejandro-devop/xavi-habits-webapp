@@ -100,6 +100,20 @@ export const noteKeys = {
   detail: (id: string) => [...noteKeys.all, 'detail', id] as const,
 }
 
+export const learningKeys = {
+  all: ['learning'] as const,
+  notes: {
+    all: () => [...learningKeys.all, 'notes'] as const,
+    lists: () => [...learningKeys.notes.all(), 'list'] as const,
+    list: (filters: ListFilters = {}) => [...learningKeys.notes.all(), 'list', filters] as const,
+    detail: (id: string) => [...learningKeys.notes.all(), 'detail', id] as const,
+  },
+  tags: {
+    all: () => [...learningKeys.all, 'tags'] as const,
+    list: (query = '') => [...learningKeys.tags.all(), 'list', query] as const,
+  },
+}
+
 export const sleepKeys = {
   all: ['sleep'] as const,
   list: (filters: ListFilters = {}) => [...sleepKeys.all, 'list', filters] as const,

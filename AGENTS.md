@@ -26,6 +26,7 @@ Este frontend **no incluye** el servidor. Toda la API vive en el repo hermano **
 | Actividades | `activity/` | `docs/activities-domain.md` |
 | Cursos | `course/` | feature `src/features/courses/` |
 | **Todos** | `todo/` | `docs/todos-domain.md`, `docs/todos-module-features.md` |
+| **Learning Notes** | `learning-note/` | `docs/learning-domain.md` |
 
 Referencia operaciones Todos: `xavi-platform-node/docs/graphql/todo-bruno.md`. Regla Cursor: `.cursor/rules/backend-context.mdc`.
 

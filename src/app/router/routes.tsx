@@ -11,6 +11,7 @@ import { activitiesRoutes } from '@/features/activities'
 import { todosRoutes } from '@/features/todos'
 import { weeklyRoutineRoutes } from '@/features/weekly-routine'
 import { notesRoutes } from '@/features/notes'
+import { learningRoutes } from '@/features/learning'
 import { quartersRoutes, projectsRoutes } from '@/features/quarters'
 import { habitsRoutes } from '@/features/habits'
 import { settingsRoutes } from '@/features/settings'
@@ -96,6 +97,7 @@ export const routes: RouteObject[] = [
               todosRoutes,
               weeklyRoutineRoutes,
               notesRoutes,
+              learningRoutes,
               quartersRoutes,
               projectsRoutes,
               habitsRoutes,

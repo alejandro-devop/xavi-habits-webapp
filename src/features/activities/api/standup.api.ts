@@ -13,6 +13,7 @@ import {
   STANDUP_MEMBER_UPDATE_MUTATION,
   STANDUP_MEMBERS_QUERY,
   STANDUP_OPEN_DAY_MUTATION,
+  STANDUP_WEEK_QUERY,
 } from '@/features/activities/graphql/standup.graphql'
 import type {
   StandupDay,
@@ -24,6 +25,7 @@ import type {
   StandupMember,
   StandupMemberCreateInput,
   StandupMemberUpdateInput,
+  StandupWeekEntry,
 } from '@/features/activities/types/standup.types'
 
 export async function getStandupMembers(includeInactive = false): Promise<StandupMember[]> {
@@ -54,6 +56,14 @@ export async function getStandupDaySummary(date: string): Promise<StandupDaySumm
     { date },
   )
   return data.standupDaySummary
+}
+
+export async function getStandupWeek(endDate: string, days = 5): Promise<StandupWeekEntry[]> {
+  const data = await graphqlRequest<
+    { standupWeek: StandupWeekEntry[] },
+    { endDate: string; days?: number }
+  >(STANDUP_WEEK_QUERY, { endDate, days })
+  return data.standupWeek ?? []
 }
 
 export async function createStandupMember(input: StandupMemberCreateInput): Promise<StandupMember> {

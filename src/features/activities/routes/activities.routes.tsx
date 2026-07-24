@@ -8,6 +8,7 @@ import { ActivityEditPage } from '@/features/activities/pages/ActivityEditPage'
 import { ActivitiesListPage } from '@/features/activities/pages/ActivitiesListPage'
 import { ActivityTrackingPage } from '@/features/activities/pages/ActivityTrackingPage'
 import { StandupPage } from '@/features/activities/pages/StandupPage'
+import { StandupWeekPage } from '@/features/activities/pages/StandupWeekPage'
 import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 
 export const activitiesRoutes: RouteObject = {
@@ -33,6 +34,10 @@ export const activitiesRoutes: RouteObject = {
     {
       path: 'standup',
       element: <StandupPage />,
+    },
+    {
+      path: 'standup/week',
+      element: <StandupWeekPage />,
     },
     {
       path: 'new',

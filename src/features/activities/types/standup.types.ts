@@ -1,5 +1,5 @@
 export type StandupDayStatus = 'open' | 'closed'
-export type StandupItemStatus = 'pending' | 'in_progress' | 'completed'
+export type StandupItemStatus = 'pending' | 'in_progress' | 'completed' | 'blocked'
 
 export interface StandupMember {
   id: string
@@ -31,6 +31,7 @@ export interface StandupItem {
   notes: string | null
   ticketNumber: string | null
   status: StandupItemStatus
+  blockedReason: string | null
   backlogStartedOn: string
   daysInBacklog: number
   sourceItemId: string | null
@@ -59,6 +60,12 @@ export interface StandupDaySummary {
   text: string
 }
 
+export interface StandupWeekEntry {
+  date: string
+  day: StandupDay | null
+  items: StandupItem[]
+}
+
 export interface StandupMemberCreateInput {
   name: string
   orderIndex?: number
@@ -78,6 +85,7 @@ export interface StandupItemCreateInput {
   notes?: string | null
   ticketNumber?: string | null
   status?: StandupItemStatus
+  blockedReason?: string | null
 }
 
 export interface StandupItemUpdateInput {
@@ -87,6 +95,7 @@ export interface StandupItemUpdateInput {
   notes?: string | null
   ticketNumber?: string | null
   status?: StandupItemStatus
+  blockedReason?: string | null
 }
 
 export interface StandupItemFormValues {
@@ -95,4 +104,5 @@ export interface StandupItemFormValues {
   ticketNumber: string
   memberId: string
   status: StandupItemStatus
+  blockedReason: string
 }

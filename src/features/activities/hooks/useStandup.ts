@@ -54,6 +54,16 @@ export function useStandupDaySummaryQuery(date: string, enabledExtra = false) {
   })
 }
 
+export function useStandupWeekQuery(endDate: string, days = 5) {
+  const enabled = useAuthReady() && Boolean(endDate)
+  return useQuery({
+    queryKey: standupKeys.week(endDate, days),
+    queryFn: () => standupApi.getStandupWeek(endDate, days),
+    enabled,
+    staleTime: 1000 * 30,
+  })
+}
+
 export function useCreateStandupMemberMutation() {
   const queryClient = useQueryClient()
   const toast = useToast()

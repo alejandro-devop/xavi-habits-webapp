@@ -1,4 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from '@dnd-kit/core'
+import { StandupItemDrawer } from '@/features/activities/components/StandupItemDrawer'
+import { StandupKanbanCard } from '@/features/activities/components/StandupKanbanCard'
+import { StandupKanbanColumn } from '@/features/activities/components/StandupKanbanColumn'
 import {
   useCarryOverStandupItemsMutation,
   useCloseStandupDayMutation,
@@ -19,6 +32,7 @@ import type {
   StandupItemFormValues,
   StandupItemStatus,
 } from '@/features/activities/types/standup.types'
+import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 import { getCurrentLocalDate } from '@/features/activities/utils/activity-time.utils'
 import {
   useUpdateUserSettingsMutation,
@@ -44,13 +58,15 @@ import styles from './StandupPage.module.scss'
 const STATUS_OPTIONS: { value: StandupItemStatus; label: string }[] = [
   { value: 'pending', label: 'Pendiente' },
   { value: 'in_progress', label: 'En progreso' },
+  { value: 'blocked', label: 'Bloqueada' },
   { value: 'completed', label: 'Completada' },
 ]
 
-const STATUS_BADGE: Record<StandupItemStatus, 'neutral' | 'primary' | 'success'> = {
+const STATUS_BADGE: Record<StandupItemStatus, 'neutral' | 'primary' | 'success' | 'danger'> = {
   pending: 'neutral',
   in_progress: 'primary',
   completed: 'success',
+  blocked: 'danger',
 }
 
 const emptyForm = (memberId = ''): StandupItemFormValues => ({
@@ -59,13 +75,15 @@ const emptyForm = (memberId = ''): StandupItemFormValues => ({
   ticketNumber: '',
   memberId,
   status: 'in_progress',
+  blockedReason: '',
 })
 
 export function StandupPage() {
   const toast = useToast()
   const { confirm } = useConfirmDialog()
   const today = getCurrentLocalDate()
-  const [selectedDate, setSelectedDate] = useState(today)
+  const [searchParams] = useSearchParams()
+  const [selectedDate, setSelectedDate] = useState(searchParams.get('date') || today)
   const [memberName, setMemberName] = useState('')
   const [itemModalOpen, setItemModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<StandupItem | null>(null)
@@ -74,6 +92,12 @@ export function StandupPage() {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [carryOverOpen, setCarryOverOpen] = useState(false)
   const [selectedCarryIds, setSelectedCarryIds] = useState<string[]>([])
+  const [quickAddMemberId, setQuickAddMemberId] = useState('')
+  const [quickAddTitle, setQuickAddTitle] = useState('')
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban')
+  const [activeDragId, setActiveDragId] = useState<string | null>(null)
+  const [detailItemId, setDetailItemId] = useState<string | null>(null)
+  const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
 
   const { data: settings } = useUserSettingsQuery()
   const updateSettings = useUpdateUserSettingsMutation()
@@ -123,21 +147,72 @@ export function StandupPage() {
       list.push(item)
       map.set(item.memberId, list)
     }
-    return [...map.entries()].map(([memberId, memberItems]) => ({
-      memberId,
-      memberName:
-        members.find((m) => m.id === memberId)?.name ??
-        memberItems[0]?.member?.name ??
-        'Sin responsable',
-      items: memberItems,
-    }))
+    const groups = [...map.entries()].map(([memberId, memberItems]) => {
+      const sortedItems = [...memberItems].sort((a, b) => {
+        if (a.status === 'blocked' && b.status !== 'blocked') return -1
+        if (b.status === 'blocked' && a.status !== 'blocked') return 1
+        return b.daysInBacklog - a.daysInBacklog
+      })
+      const stats = {
+        blocked: memberItems.filter((i) => i.status === 'blocked').length,
+        inProgress: memberItems.filter((i) => i.status === 'in_progress').length,
+        pending: memberItems.filter((i) => i.status === 'pending').length,
+        completed: memberItems.filter((i) => i.status === 'completed').length,
+      }
+      const maxBacklog = memberItems.reduce((max, i) => Math.max(max, i.daysInBacklog), 0)
+      return {
+        memberId,
+        memberName:
+          members.find((m) => m.id === memberId)?.name ??
+          memberItems[0]?.member?.name ??
+          'Sin responsable',
+        items: sortedItems,
+        stats,
+        maxBacklog,
+      }
+    })
+    return groups.sort((a, b) => {
+      if (a.stats.blocked !== b.stats.blocked) return b.stats.blocked - a.stats.blocked
+      if (a.maxBacklog !== b.maxBacklog) return b.maxBacklog - a.maxBacklog
+      return a.memberName.localeCompare(b.memberName, 'es')
+    })
   }, [items, members])
+
+  const dayStats = useMemo(() => {
+    const blocked = items.filter((i) => i.status === 'blocked').length
+    const inProgress = items.filter((i) => i.status === 'in_progress').length
+    const pending = items.filter((i) => i.status === 'pending').length
+    const completed = items.filter((i) => i.status === 'completed').length
+    const oldestBacklog = items.reduce((max, i) => Math.max(max, i.daysInBacklog), 0)
+    return { total: items.length, blocked, inProgress, pending, completed, oldestBacklog }
+  }, [items])
+
+  const memberNameById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const member of members) map.set(member.id, member.name)
+    return map
+  }, [members])
+
+  const kanbanColumns = useMemo(() => {
+    return STATUS_OPTIONS.map(({ value, label }) => ({
+      status: value,
+      title: label,
+      items: items
+        .filter((item) => item.status === value)
+        .sort((a, b) => b.daysInBacklog - a.daysInBacklog),
+    }))
+  }, [items])
+
+  const activeDragItem = activeDragId ? items.find((i) => i.id === activeDragId) ?? null : null
+  const detailItem = detailItemId ? items.find((i) => i.id === detailItemId) ?? null : null
 
   useEffect(() => {
     if (carryOverOpen) {
       setSelectedCarryIds(candidates.map((c) => c.id))
     }
   }, [carryOverOpen, candidates])
+
+  const effectiveQuickAddMemberId = quickAddMemberId || activeMembers[0]?.id || ''
 
   const openCreateItem = () => {
     setEditingItem(null)
@@ -154,6 +229,7 @@ export function StandupPage() {
       ticketNumber: item.ticketNumber ?? '',
       memberId: item.memberId,
       status: item.status,
+      blockedReason: item.blockedReason ?? '',
     })
     setFormError(null)
     setItemModalOpen(true)
@@ -168,6 +244,12 @@ export function StandupPage() {
       setFormError('Selecciona un responsable')
       return
     }
+    if (formValues.status === 'blocked' && !formValues.blockedReason.trim()) {
+      setFormError('Indica el motivo del bloqueo')
+      return
+    }
+
+    const blockedReason = formValues.status === 'blocked' ? formValues.blockedReason.trim() : null
 
     if (editingItem) {
       updateItem.mutate(
@@ -178,6 +260,7 @@ export function StandupPage() {
           ticketNumber: formValues.ticketNumber.trim() || null,
           memberId: formValues.memberId,
           status: formValues.status,
+          blockedReason,
         },
         { onSuccess: () => setItemModalOpen(false) },
       )
@@ -192,9 +275,76 @@ export function StandupPage() {
         ticketNumber: formValues.ticketNumber.trim() || null,
         memberId: formValues.memberId,
         status: formValues.status,
+        blockedReason,
       },
       { onSuccess: () => setItemModalOpen(false) },
     )
+  }
+
+  const handleQuickAdd = () => {
+    if (!quickAddTitle.trim() || !effectiveQuickAddMemberId) return
+    createItem.mutate({
+      date: selectedDate,
+      title: quickAddTitle.trim(),
+      memberId: effectiveQuickAddMemberId,
+      status: 'in_progress',
+    })
+    setQuickAddTitle('')
+  }
+
+  const handleDeleteItem = async (item: StandupItem) => {
+    const ok = await confirm({
+      title: 'Eliminar entrada',
+      description: `¿Eliminar "${item.title}"?`,
+      confirmLabel: 'Eliminar',
+      variant: 'danger',
+    })
+    if (ok) deleteItem.mutate(item.id)
+  }
+
+  const handleMoveItem = (item: StandupItem, status: StandupItemStatus) => {
+    if (status === item.status) return
+    if (status === 'blocked') {
+      setEditingItem(item)
+      setFormValues({
+        title: item.title,
+        notes: item.notes ?? '',
+        ticketNumber: item.ticketNumber ?? '',
+        memberId: item.memberId,
+        status: 'blocked',
+        blockedReason: item.blockedReason ?? '',
+      })
+      setFormError(null)
+      setItemModalOpen(true)
+      return
+    }
+    updateItem.mutate({ id: item.id, status })
+  }
+
+  const handleDrawerMove = (status: StandupItemStatus) => {
+    if (!detailItem) return
+    handleMoveItem(detailItem, status)
+    setDetailItemId(null)
+  }
+
+  const handleDrawerDelete = () => {
+    if (!detailItem) return
+    const item = detailItem
+    setDetailItemId(null)
+    void handleDeleteItem(item)
+  }
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string)
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveDragId(null)
+    if (!over) return
+    const item = items.find((i) => i.id === active.id)
+    if (!item) return
+    handleMoveItem(item, over.id as StandupItemStatus)
   }
 
   const handleCopySummary = async () => {
@@ -246,6 +396,9 @@ export function StandupPage() {
           >
             Resumen
           </Button>
+          <Link to={activitiesPaths.standupWeek} className={styles.weekLink}>
+            Ver semana
+          </Link>
           {isOpen && candidates.length > 0 ? (
             <Button variant="ghost" onClick={() => setCarryOverOpen(true)}>
               Traer de ayer ({candidates.length})
@@ -275,6 +428,54 @@ export function StandupPage() {
           />
         </FormField>
       </div>
+
+      {isOpen && activeMembers.length > 0 ? (
+        <div className={styles.quickAdd}>
+          <Select
+            id="quick-add-member"
+            aria-label="Responsable"
+            value={effectiveQuickAddMemberId}
+            options={activeMembers.map((m) => ({ value: m.id, label: m.name }))}
+            onChange={(value) => setQuickAddMemberId(value)}
+          />
+          <Input
+            aria-label="Nueva entrada rápida"
+            placeholder="Escribe y presiona Enter para agregar…"
+            value={quickAddTitle}
+            onChange={(e) => setQuickAddTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleQuickAdd()
+              }
+            }}
+          />
+          <Button
+            variant="secondary"
+            onClick={handleQuickAdd}
+            disabled={!quickAddTitle.trim() || createItem.isPending}
+          >
+            Agregar
+          </Button>
+        </div>
+      ) : null}
+
+      {day && items.length > 0 ? (
+        <div className={styles.dashboard}>
+          <span className={styles.dashboardStat}>{dayStats.total} entradas</span>
+          <span className={styles.dashboardStat}>{dayStats.inProgress} en progreso</span>
+          {dayStats.blocked > 0 ? (
+            <span className={`${styles.dashboardStat} ${styles.dashboardStatDanger}`}>
+              {dayStats.blocked} bloqueadas
+            </span>
+          ) : null}
+          {dayStats.oldestBacklog > 0 ? (
+            <span className={styles.dashboardStat}>
+              Más antiguo: {dayStats.oldestBacklog}d en backlog
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       <section className={styles.membersSection} aria-label="Responsables">
         <h2 className={styles.sectionTitle}>Responsables</h2>
@@ -337,6 +538,25 @@ export function StandupPage() {
         )}
       </section>
 
+      {day && items.length > 0 ? (
+        <div className={styles.viewToggle}>
+          <Button
+            variant={viewMode === 'list' ? 'primary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+          >
+            Lista
+          </Button>
+          <Button
+            variant={viewMode === 'kanban' ? 'primary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('kanban')}
+          >
+            Kanban
+          </Button>
+        </div>
+      ) : null}
+
       {isLoading ? <Skeleton height="8rem" /> : null}
       {isError ? (
         <Alert variant="danger">
@@ -365,12 +585,30 @@ export function StandupPage() {
         />
       ) : null}
 
-      {itemsByMember.map((group) => (
+      {viewMode === 'list' && itemsByMember.map((group) => (
         <section key={group.memberId} className={styles.group}>
-          <h3 className={styles.groupTitle}>{group.memberName}</h3>
+          <h3 className={styles.groupTitle}>
+            {group.memberName}
+            {group.stats.blocked > 0 ? (
+              <Badge variant="danger">{group.stats.blocked} bloqueada{group.stats.blocked > 1 ? 's' : ''}</Badge>
+            ) : null}
+            {group.stats.inProgress > 0 ? (
+              <Badge variant="primary">{group.stats.inProgress} en progreso</Badge>
+            ) : null}
+            {group.stats.pending > 0 ? (
+              <Badge variant="neutral">{group.stats.pending} pendiente{group.stats.pending > 1 ? 's' : ''}</Badge>
+            ) : null}
+          </h3>
           <ul className={styles.itemList}>
             {group.items.map((item) => (
-              <li key={item.id} className={styles.item}>
+              <li
+                key={item.id}
+                className={
+                  item.status === 'blocked'
+                    ? `${styles.item} ${styles.itemBlocked}`
+                    : styles.item
+                }
+              >
                 <div className={styles.itemMain}>
                   <div className={styles.itemTitleRow}>
                     <span className={styles.itemTitle}>{item.title}</span>
@@ -386,6 +624,9 @@ export function StandupPage() {
                     {item.notes ? <span>{item.notes}</span> : null}
                     {item.linkedTodoId ? <span>Todo vinculado</span> : null}
                   </div>
+                  {item.status === 'blocked' && item.blockedReason ? (
+                    <div className={styles.blockedReason}>🚧 {item.blockedReason}</div>
+                  ) : null}
                 </div>
                 {isOpen ? (
                   <div className={styles.itemActions}>
@@ -400,19 +641,7 @@ export function StandupPage() {
                     >
                       {item.linkedTodoId ? 'Ver todo' : 'A tareas'}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={async () => {
-                        const ok = await confirm({
-                          title: 'Eliminar entrada',
-                          description: `¿Eliminar “${item.title}”?`,
-                          confirmLabel: 'Eliminar',
-                          variant: 'danger',
-                        })
-                        if (ok) deleteItem.mutate(item.id)
-                      }}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => void handleDeleteItem(item)}>
                       Eliminar
                     </Button>
                   </div>
@@ -422,6 +651,60 @@ export function StandupPage() {
           </ul>
         </section>
       ))}
+
+      {viewMode === 'kanban' && day ? (
+        <DndContext sensors={dndSensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className={styles.kanbanBoard}>
+            {kanbanColumns.map((column) => (
+              <StandupKanbanColumn
+                key={column.status}
+                status={column.status}
+                title={column.title}
+                items={column.items}
+                memberNameById={memberNameById}
+                onOpenDetail={(item) => setDetailItemId(item.id)}
+                interactive={isOpen}
+              />
+            ))}
+          </div>
+
+          <DragOverlay>
+            {activeDragItem ? (
+              <StandupKanbanCard
+                item={activeDragItem}
+                memberName={
+                  memberNameById.get(activeDragItem.memberId) ??
+                  activeDragItem.member?.name ??
+                  'Sin responsable'
+                }
+                onOpenDetail={() => {}}
+                dragging
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      ) : null}
+
+      <StandupItemDrawer
+        item={detailItem}
+        memberName={
+          detailItem
+            ? memberNameById.get(detailItem.memberId) ?? detailItem.member?.name ?? 'Sin responsable'
+            : ''
+        }
+        onClose={() => setDetailItemId(null)}
+        onEdit={() => {
+          if (!detailItem) return
+          openEditItem(detailItem)
+          setDetailItemId(null)
+        }}
+        onMove={handleDrawerMove}
+        onCreateTodo={() => detailItem && createTodo.mutate(detailItem.id)}
+        onDelete={handleDrawerDelete}
+        canCreateTodo={Boolean(settings?.standupTodoFolderId)}
+        creatingTodo={createTodo.isPending}
+        interactive={isOpen}
+      />
 
       <Modal
         open={itemModalOpen}
@@ -467,6 +750,17 @@ export function StandupPage() {
               }
             />
           </FormField>
+          {formValues.status === 'blocked' ? (
+            <FormField id="standup-item-blocked-reason" label="Motivo del bloqueo">
+              <Input
+                id="standup-item-blocked-reason"
+                value={formValues.blockedReason}
+                onChange={(e) =>
+                  setFormValues((prev) => ({ ...prev, blockedReason: e.target.value }))
+                }
+              />
+            </FormField>
+          ) : null}
           <FormField id="standup-item-ticket" label="Ticket (opcional)">
             <Input
               id="standup-item-ticket"

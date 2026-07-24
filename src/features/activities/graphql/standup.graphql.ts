@@ -17,6 +17,7 @@ const ITEM_FIELDS = `
   notes
   ticketNumber
   status
+  blockedReason
   backlogStartedOn
   daysInBacklog
   sourceItemId
@@ -155,6 +156,20 @@ export const STANDUP_ITEM_UPDATE_MUTATION = `
 export const STANDUP_ITEM_DELETE_MUTATION = `
   mutation StandupItemDelete($input: StandupItemDeleteInput!) {
     standupItemDelete(input: $input)
+  }
+`
+
+export const STANDUP_WEEK_QUERY = `
+  query StandupWeek($endDate: String!, $days: Int) {
+    standupWeek(endDate: $endDate, days: $days) {
+      date
+      day {
+        ${DAY_FIELDS}
+      }
+      items {
+        ${ITEM_FIELDS}
+      }
+    }
   }
 `
 

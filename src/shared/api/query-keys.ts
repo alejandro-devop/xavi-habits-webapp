@@ -91,6 +91,7 @@ export const standupKeys = {
     [...standupKeys.membersRoot(), includeInactive] as const,
   day: (date: string) => [...standupKeys.all, 'day', date] as const,
   summary: (date: string) => [...standupKeys.all, 'summary', date] as const,
+  week: (endDate: string, days = 5) => [...standupKeys.all, 'week', endDate, days] as const,
 }
 
 export const noteKeys = {

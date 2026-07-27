@@ -25,12 +25,14 @@ type ActivityDayTimelineProps = {
   routineSuggestion?: WeeklyRoutineActivity | null
   routineUpcoming?: WeeklyRoutineActivity | null
   onFollowUpClick: (followUp: ActivityFollowUp) => void
+  onBitacoraClick?: (followUp: ActivityFollowUp) => void
   onFreeSlotClick: (slot: TimelineFreeSlot) => void
   onContinueAfterFollowUp?: (followUp: ActivityFollowUp) => void
   onStartFromFollowUp?: (followUp: ActivityFollowUp) => void
   onStartSuggestion?: (event: WeeklyRoutineActivity) => void
   onFinishSession?: () => void
   onCancelSession?: () => void
+  onOpenSessionBitacora?: (session: RunningActivitySession) => void
 }
 
 export function ActivityDayTimeline({
@@ -44,12 +46,14 @@ export function ActivityDayTimeline({
   routineSuggestion,
   routineUpcoming,
   onFollowUpClick,
+  onBitacoraClick,
   onFreeSlotClick,
   onContinueAfterFollowUp,
   onStartFromFollowUp,
   onStartSuggestion,
   onFinishSession,
   onCancelSession,
+  onOpenSessionBitacora,
 }: ActivityDayTimelineProps) {
   const mostRecentFollowUpId = useMemo(
     () => getMostRecentFollowUp(date, followUps)?.id ?? null,
@@ -82,6 +86,7 @@ export function ActivityDayTimeline({
                 runningSession={runningSession}
                 onFinish={onFinishSession}
                 onCancel={onCancelSession}
+                onOpenBitacora={onOpenSessionBitacora}
                 sessionLoading={sessionLoading}
                 suggestion={runningSession ? null : routineSuggestion}
                 onStartSuggestion={onStartSuggestion}
@@ -122,6 +127,7 @@ export function ActivityDayTimeline({
               }
               quickActionsDisabled={quickActionsDisabled}
               onClick={onFollowUpClick}
+              onBitacoraClick={onBitacoraClick}
               onContinueAfter={onContinueAfterFollowUp}
               onStartFrom={onStartFromFollowUp}
             />

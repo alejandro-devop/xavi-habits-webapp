@@ -1,0 +1,21 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 12rem;
+}
+
+.activityTitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.footerBar {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

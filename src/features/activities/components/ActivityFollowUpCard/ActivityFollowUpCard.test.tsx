@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ActivityFollowUpCard } from '@/features/activities/components/ActivityFollowUpCard'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
@@ -33,5 +34,35 @@ describe('ActivityFollowUpCard', () => {
     render(<ActivityFollowUpCard followUp={followUp} onClick={onClick} />)
     screen.getByRole('button', { name: /editar registro/i }).click()
     expect(onClick).toHaveBeenCalledWith(followUp)
+  })
+
+  it('shows bitácora icon and opens it without editing the registro', async () => {
+    const user = userEvent.setup()
+    const onClick = vi.fn()
+    const onBitacoraClick = vi.fn()
+    render(
+      <ActivityFollowUpCard
+        followUp={followUp}
+        onClick={onClick}
+        onBitacoraClick={onBitacoraClick}
+        variant="timeline"
+      />,
+    )
+
+    await user.click(screen.getByRole('button', { name: /ver bitácora/i }))
+    expect(onBitacoraClick).toHaveBeenCalledWith(followUp)
+    expect(onClick).not.toHaveBeenCalled()
+  })
+
+  it('hides bitácora icon when there are no notes', () => {
+    render(
+      <ActivityFollowUpCard
+        followUp={{ ...followUp, notes: null }}
+        onClick={vi.fn()}
+        onBitacoraClick={vi.fn()}
+        variant="timeline"
+      />,
+    )
+    expect(screen.queryByRole('button', { name: /ver bitácora/i })).not.toBeInTheDocument()
   })
 })

@@ -14,6 +14,7 @@ type ActivityFollowUpTimelineEntryProps = {
   showQuickActions?: boolean
   quickActionsDisabled?: boolean
   onClick: (followUp: ActivityFollowUp) => void
+  onBitacoraClick?: (followUp: ActivityFollowUp) => void
   onContinueAfter?: (followUp: ActivityFollowUp) => void
   onStartFrom?: (followUp: ActivityFollowUp) => void
 }
@@ -24,6 +25,7 @@ export function ActivityFollowUpTimelineEntry({
   showQuickActions = false,
   quickActionsDisabled = false,
   onClick,
+  onBitacoraClick,
   onContinueAfter,
   onStartFrom,
 }: ActivityFollowUpTimelineEntryProps) {
@@ -88,7 +90,12 @@ export function ActivityFollowUpTimelineEntry({
         className={styles.cardWrap}
         style={{ minHeight: getTimelineItemHeight(durationMinutes) }}
       >
-        <ActivityFollowUpCard followUp={followUp} onClick={onClick} variant="timeline" />
+        <ActivityFollowUpCard
+          followUp={followUp}
+          onClick={onClick}
+          onBitacoraClick={onBitacoraClick}
+          variant="timeline"
+        />
       </div>
     </li>
   )

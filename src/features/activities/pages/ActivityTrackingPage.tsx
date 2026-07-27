@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { ActivityBitacoraModal } from '@/features/activities/components/ActivityBitacoraModal'
+import type { ActivityBitacoraMode } from '@/features/activities/components/ActivityBitacoraModal'
 import { ActivityDayTimeline } from '@/features/activities/components/ActivityDayTimeline'
 import { ActivityMonthSelector } from '@/features/activities/components/ActivityMonthSelector'
 import { DayRemainingWidget } from '@/features/activities/components/DayRemainingWidget'
@@ -22,7 +24,7 @@ import {
 import { useRunningSessionFinishActions } from '@/features/activities/hooks/useRunningSessionFinishActions'
 import { useActivitiesQuery } from '@/features/activities/hooks/useActivities'
 import type { RunningActivitySessionLinkedTodo } from '@/features/activities/types/activity-followup.types'
-import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
+import type { ActivityFollowUp, RunningActivitySession } from '@/features/activities/types/activity-followup.types'
 import type {
   ActivityFollowUpInput,
   FinishActivityFormValues,
@@ -80,6 +82,11 @@ export function ActivityTrackingPage() {
   const [finishFormValues, setFinishFormValues] = useState<FinishActivityFormValues | null>(null)
   const [editFollowUp, setEditFollowUp] = useState<ActivityFollowUp | null>(null)
   const [freeSlotModal, setFreeSlotModal] = useState<TimelineFreeSlot | null>(null)
+  const [bitacoraTarget, setBitacoraTarget] = useState<{
+    followUpId: string
+    activityTitle: string
+    mode: ActivityBitacoraMode
+  } | null>(null)
 
   const { confirm } = useConfirmDialog()
 
@@ -221,6 +228,33 @@ export function ActivityTrackingPage() {
     )
   }
 
+  const bitacoraNotes = useMemo(() => {
+    if (!bitacoraTarget) return null
+    if (openFollowUp?.id === bitacoraTarget.followUpId) return openFollowUp.notes
+    return followUps.find((f) => f.id === bitacoraTarget.followUpId)?.notes ?? null
+  }, [bitacoraTarget, openFollowUp, followUps])
+
+  const handleOpenSessionBitacora = (running: RunningActivitySession) => {
+    setBitacoraTarget({
+      followUpId: running.followUpId,
+      activityTitle: running.activityTitle,
+      mode: running.notes?.trim() ? 'view' : 'edit',
+    })
+  }
+
+  const handleOpenFollowUpBitacora = (followUp: ActivityFollowUp) => {
+    setBitacoraTarget({
+      followUpId: followUp.id,
+      activityTitle: followUp.activity?.title ?? 'Actividad',
+      mode: 'view',
+    })
+  }
+
+  const handleSaveBitacora = (notes: string | null, onSuccess?: () => void) => {
+    if (!bitacoraTarget) return
+    updateMutation.mutate({ id: bitacoraTarget.followUpId, notes }, { onSuccess })
+  }
+
   const hasFollowUps = followUps.length > 0
   const showDayHint = !isLoading && !isError && !hasFollowUps && !session
 
@@ -307,12 +341,14 @@ export function ActivityTrackingPage() {
               routineSuggestion={isToday(selectedDate) ? routineSuggestion : null}
               routineUpcoming={isToday(selectedDate) ? routineUpcoming : null}
               onFollowUpClick={setEditFollowUp}
+              onBitacoraClick={handleOpenFollowUpBitacora}
               onFreeSlotClick={setFreeSlotModal}
               onContinueAfterFollowUp={handleContinueAfterFollowUp}
               onStartFromFollowUp={handleStartFromFollowUp}
               onStartSuggestion={handleStartSuggestion}
               onFinishSession={handleOpenFinish}
               onCancelSession={handleCancelSession}
+              onOpenSessionBitacora={handleOpenSessionBitacora}
             />
           ) : null}
         </div>
@@ -422,6 +458,18 @@ export function ActivityTrackingPage() {
         }}
         onDelete={handleDeleteFollowUp}
       />
+
+      {bitacoraTarget ? (
+        <ActivityBitacoraModal
+          open
+          followUpId={bitacoraTarget.followUpId}
+          activityTitle={bitacoraTarget.activityTitle}
+          notes={bitacoraNotes}
+          initialMode={bitacoraTarget.mode}
+          onClose={() => setBitacoraTarget(null)}
+          onSave={handleSaveBitacora}
+        />
+      ) : null}
     </div>
   )
 }

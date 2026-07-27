@@ -1,11 +1,14 @@
+import type { KeyboardEvent, MouseEvent } from 'react'
 import type { ActivityFollowUp } from '@/features/activities/types/activity-followup.types'
 import { formatDurationMinutes, normalizeTimeForDisplay } from '@/features/activities/utils/activity-time.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
+import { IconButton } from '@/shared/ui/IconButton'
 import styles from './ActivityFollowUpCard.module.scss'
 
 type ActivityFollowUpCardProps = {
   followUp: ActivityFollowUp
   onClick: (followUp: ActivityFollowUp) => void
+  onBitacoraClick?: (followUp: ActivityFollowUp) => void
   /** Lista timeline: sin grid de horas duplicado. */
   variant?: 'default' | 'timeline'
 }
@@ -13,6 +16,7 @@ type ActivityFollowUpCardProps = {
 export function ActivityFollowUpCard({
   followUp,
   onClick,
+  onBitacoraClick,
   variant = 'default',
 }: ActivityFollowUpCardProps) {
   if (followUp.isOpen || followUp.durationMinutes === null || !followUp.endTime) {
@@ -24,13 +28,30 @@ export function ActivityFollowUpCard({
   const category = activity?.category
   const accentColor = category?.color ?? 'var(--color-primary)'
   const isTimeline = variant === 'timeline'
+  const hasBitacora = Boolean(followUp.notes?.trim())
+
+  const handleCardActivate = () => onClick(followUp)
+
+  const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handleCardActivate()
+    }
+  }
+
+  const handleBitacoraClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    onBitacoraClick?.(followUp)
+  }
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       className={styles.card}
       style={{ borderLeftColor: accentColor }}
-      onClick={() => onClick(followUp)}
+      onClick={handleCardActivate}
+      onKeyDown={handleCardKeyDown}
       aria-label={`Editar registro: ${activity?.title ?? 'Actividad'}`}
     >
       <div className={styles.header}>
@@ -49,14 +70,24 @@ export function ActivityFollowUpCard({
           <span className={styles.title}>{activity?.title ?? 'Actividad'}</span>
           {category?.name ? <span className={styles.category}>{category.name}</span> : null}
         </div>
-        {isTimeline ? (
-          <span className={styles.durationBadge}>
-            {formatDurationMinutes(durationMinutes)}
-          </span>
-        ) : null}
+        <div className={styles.headerActions}>
+          {hasBitacora && onBitacoraClick ? (
+            <IconButton
+              icon="file-lines"
+              variant="ghost"
+              size="sm"
+              className={styles.bitacoraBtn}
+              onClick={handleBitacoraClick}
+              aria-label={`Ver bitácora de ${activity?.title ?? 'actividad'}`}
+            />
+          ) : null}
+          {isTimeline ? (
+            <span className={styles.durationBadge}>
+              {formatDurationMinutes(durationMinutes)}
+            </span>
+          ) : null}
+        </div>
       </div>
-
-      {followUp.notes ? <p className={styles.notes}>{followUp.notes}</p> : null}
 
       {!isTimeline ? (
         <dl className={styles.meta}>
@@ -74,6 +105,6 @@ export function ActivityFollowUpCard({
           </div>
         </dl>
       ) : null}
-    </button>
+    </div>
   )
 }

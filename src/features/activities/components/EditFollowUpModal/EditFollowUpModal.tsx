@@ -90,13 +90,14 @@ export function EditFollowUpModal({
           {followUp.activity?.title ?? '—'}
         </p>
 
-        <FormField id="edit-notes" label="Notas">
+        <FormField id="edit-notes" label="Bitácora">
           <Textarea
             id="edit-notes"
             value={values.notes}
             onChange={(e) => setValues((prev) => ({ ...prev, notes: e.target.value }))}
             rows={3}
             disabled={busy}
+            placeholder="Markdown opcional…"
           />
         </FormField>
 

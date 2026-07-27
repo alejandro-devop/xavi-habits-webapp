@@ -1,7 +1,5 @@
-import { useRef, useState } from 'react'
-import { useUpdateActivityFollowUpMutation } from '@/features/activities/hooks/useActivityFollowUps'
-import { useCurrentTimeMarker } from '@/features/activities/hooks/useCurrentTimeMarker'
 import { useElapsedTimer } from '@/features/activities/hooks/useElapsedTimer'
+import { useCurrentTimeMarker } from '@/features/activities/hooks/useCurrentTimeMarker'
 import type { RunningActivitySession } from '@/features/activities/types/activity-followup.types'
 import type { WeeklyRoutineActivity } from '@/features/weekly-routine/types/weekly-routine.types'
 import { formatEventTime } from '@/features/weekly-routine/utils/planner.utils'
@@ -15,6 +13,7 @@ type ActivityTimelineNowEntryProps = {
   runningSession?: RunningActivitySession | null
   onFinish?: () => void
   onCancel?: () => void
+  onOpenBitacora?: (session: RunningActivitySession) => void
   sessionLoading?: boolean
   suggestion?: WeeklyRoutineActivity | null
   onStartSuggestion?: (event: WeeklyRoutineActivity) => void
@@ -24,40 +23,18 @@ function RunningSessionCard({
   session,
   onFinish,
   onCancel,
+  onOpenBitacora,
   loading,
 }: {
   session: RunningActivitySession
   onFinish?: () => void
   onCancel?: () => void
+  onOpenBitacora?: (session: RunningActivitySession) => void
   loading?: boolean
 }) {
   const elapsed = useElapsedTimer(session.startedAt, 'compact')
   const accentColor = session.categoryColor ?? 'var(--color-primary)'
-  const updateMutation = useUpdateActivityFollowUpMutation()
-
-  const [isEditing, setIsEditing] = useState(false)
-  const [notesValue, setNotesValue] = useState(session.notes ?? '')
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  const handleOpenEdit = () => {
-    setNotesValue(session.notes ?? '')
-    setIsEditing(true)
-    setTimeout(() => textareaRef.current?.focus(), 0)
-  }
-
-  const handleSaveNotes = () => {
-    updateMutation.mutate(
-      { id: session.followUpId, notes: notesValue || null },
-      { onSuccess: () => setIsEditing(false) },
-    )
-  }
-
-  const handleCancelEdit = () => {
-    setNotesValue(session.notes ?? '')
-    setIsEditing(false)
-  }
-
-  const isSaving = updateMutation.isPending
+  const hasBitacora = Boolean(session.notes?.trim())
 
   return (
     <div className={styles.sessionCard} style={{ borderLeftColor: accentColor }}>
@@ -87,14 +64,14 @@ function RunningSessionCard({
             {elapsed}
           </span>
           <div className={styles.sessionActions}>
-            {!isEditing ? (
+            {onOpenBitacora ? (
               <IconButton
-                icon="pen"
-                variant="ghost"
+                icon="file-lines"
+                variant={hasBitacora ? 'secondary' : 'ghost'}
                 size="sm"
-                onClick={handleOpenEdit}
+                onClick={() => onOpenBitacora(session)}
                 disabled={loading}
-                aria-label="Editar notas"
+                aria-label={hasBitacora ? 'Abrir bitácora' : 'Añadir bitácora'}
               />
             ) : null}
             <IconButton
@@ -102,7 +79,7 @@ function RunningSessionCard({
               variant="primary"
               size="sm"
               onClick={onFinish}
-              disabled={loading || isEditing}
+              disabled={loading}
               aria-label="Finalizar actividad"
             />
             <IconButton
@@ -110,46 +87,12 @@ function RunningSessionCard({
               variant="danger"
               size="sm"
               onClick={onCancel}
-              disabled={loading || isEditing}
+              disabled={loading}
               aria-label="Cancelar actividad"
             />
           </div>
         </div>
       </div>
-
-      {isEditing ? (
-        <div className={styles.sessionNotesEdit}>
-          <textarea
-            ref={textareaRef}
-            className={styles.sessionNotesTextarea}
-            value={notesValue}
-            onChange={(e) => setNotesValue(e.target.value)}
-            placeholder="Añade una descripción o notas..."
-            rows={2}
-            disabled={isSaving}
-          />
-          <div className={styles.sessionNotesActions}>
-            <button
-              type="button"
-              className={styles.sessionNotesCancelBtn}
-              onClick={handleCancelEdit}
-              disabled={isSaving}
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              className={styles.sessionNotesSaveBtn}
-              onClick={handleSaveNotes}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Guardando…' : 'Guardar'}
-            </button>
-          </div>
-        </div>
-      ) : session.notes ? (
-        <p className={styles.sessionNotesPreview}>{session.notes}</p>
-      ) : null}
     </div>
   )
 }
@@ -160,6 +103,7 @@ export function ActivityTimelineNowEntry({
   runningSession,
   onFinish,
   onCancel,
+  onOpenBitacora,
   sessionLoading,
   suggestion,
   onStartSuggestion,
@@ -189,6 +133,7 @@ export function ActivityTimelineNowEntry({
           session={runningSession}
           onFinish={onFinish}
           onCancel={onCancel}
+          onOpenBitacora={onOpenBitacora}
           loading={sessionLoading}
         />
       ) : showSuggestion ? (

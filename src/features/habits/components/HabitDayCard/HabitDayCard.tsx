@@ -2,12 +2,17 @@ import { useState } from 'react'
 import { HabitStreakBadge } from '@/features/habits/components/HabitStreakBadge'
 import { HabitLifelineButton } from '@/features/habits/components/HabitLifelineButton'
 import { HabitFollowUpForm } from '@/features/habits/components/HabitFollowUpForm'
+import { HabitDayMarker } from '@/features/habits/components/HabitDayMarker'
 import { getTodayString } from '@/features/habits/utils/habit-type.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Modal } from '@/shared/ui/Modal'
 import type { HabitFollowUp, HabitMyDayEntry } from '@/features/habits/types/habit.types'
 import type { HabitWeekBarDay } from '@/features/habits/utils/habit-week.utils'
-import { isPartialFollowUp } from '@/features/habits/utils/habit-progress.utils'
+import {
+  followUpHasNotes,
+  getDayRingProgress,
+  isPartialFollowUp,
+} from '@/features/habits/utils/habit-progress.utils'
 import styles from './HabitDayCard.module.scss'
 
 type Props = {
@@ -110,6 +115,11 @@ export function HabitDayCard({
             day.date <= today &&
             (habit.startDate == null || day.date >= habit.startDate)
 
+          const ringProgress = getDayRingProgress(habit, dayFollowUp)
+          const hasNotes = followUpHasNotes(dayFollowUp)
+          const isQuantified = habit.habitType === 'count' || habit.habitType === 'time'
+          const difficulty = dayFollowUp?.difficulty ?? null
+
           const slotClass = [
             styles.daySlot,
             day.isInWeek ? styles.inWeek : styles.outOfWeek,
@@ -119,6 +129,7 @@ export function HabitDayCard({
           const cellClass = [
             styles.dayCell,
             styles[`status--${status}`],
+            isQuantified ? styles.quantified : '',
             day.isToday ? styles.today : '',
             day.isFuture ? styles.future : '',
             dayEditable ? styles.interactive : '',
@@ -126,51 +137,67 @@ export function HabitDayCard({
             .filter(Boolean)
             .join(' ')
 
+          const ariaParts = [
+            `${day.label} ${day.dayNumber}`,
+            status,
+            hasNotes ? 'con notas' : null,
+            difficulty != null && difficulty >= 2
+              ? difficulty === 2
+                ? 'normal'
+                : difficulty === 3
+                  ? 'difícil'
+                  : 'extremo'
+              : null,
+            ringProgress != null ? `progreso ${Math.round(ringProgress * 100)}%` : null,
+          ].filter(Boolean)
+
+          const marker = (
+            <HabitDayMarker
+              dayNumber={day.dayNumber}
+              progress={isQuantified ? ringProgress : null}
+              hasNotes={hasNotes}
+              difficulty={dayFollowUp?.difficulty ?? null}
+              className={styles.marker}
+              dayNumberClassName={styles.dayNumber}
+            />
+          )
+
+          const circleContent = (
+            <span className={styles.circleWrap}>
+              {connectsToNext ? (
+                <span
+                  className={[
+                    styles.connector,
+                    nextDay && !nextDay.isInWeek ? styles.connectorEndsAtWeek : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  aria-hidden
+                />
+              ) : null}
+              {marker}
+            </span>
+          )
+
           const cell = dayEditable ? (
             <button
               type="button"
               className={cellClass}
               title={day.date}
-              aria-label={`${day.label} ${day.dayNumber} — ${status}`}
+              aria-label={ariaParts.join(' — ')}
               onClick={() => openForm(day.date, dayFollowUp)}
             >
               <span className={styles.dayLabelMobile}>{weekdayShort(day.date)}</span>
-              <span className={styles.circleWrap}>
-                {connectsToNext ? (
-                  <span
-                    className={[
-                      styles.connector,
-                      nextDay && !nextDay.isInWeek ? styles.connectorEndsAtWeek : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    aria-hidden
-                  />
-                ) : null}
-                <span className={styles.dayNumber}>{day.dayNumber}</span>
-              </span>
+              {circleContent}
             </button>
           ) : (
             <div
               className={cellClass}
               title={day.date}
-              aria-label={`${day.label} ${day.dayNumber} — ${status}`}
+              aria-label={ariaParts.join(' — ')}
             >
               <span className={styles.dayLabelMobile}>{weekdayShort(day.date)}</span>
-              <span className={styles.circleWrap}>
-                {connectsToNext ? (
-                  <span
-                    className={[
-                      styles.connector,
-                      nextDay && !nextDay.isInWeek ? styles.connectorEndsAtWeek : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    aria-hidden
-                  />
-                ) : null}
-                <span className={styles.dayNumber}>{day.dayNumber}</span>
-              </span>
+              {circleContent}
             </div>
           )
 

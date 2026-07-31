@@ -104,7 +104,7 @@
 .listHeader {
   display: none;
 
-  @include lg {
+  @include xl {
     display: flex;
     align-items: flex-end;
     gap: 0;
@@ -160,7 +160,7 @@
 }
 
 .listHeaderDayMonthOnly {
-  @include lg {
+  @include xl {
     display: flex;
   }
 }

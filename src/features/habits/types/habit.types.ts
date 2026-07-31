@@ -113,6 +113,7 @@ export interface HabitFollowUpsDateGroup {
     difficulty: number | null
     count: number | null
     time: number | null
+    notes: string | null
   }>
 }
 

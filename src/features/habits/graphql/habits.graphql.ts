@@ -140,6 +140,7 @@ export const HABIT_WEEK_VIEW_QUERY = `
           difficulty
           count
           time
+          notes
         }
       }
       lifelinesRemaining
@@ -161,6 +162,7 @@ export const HABIT_FOLLOW_UPS_IN_DATES_QUERY = `
         difficulty
         count
         time
+        notes
       }
     }
   }

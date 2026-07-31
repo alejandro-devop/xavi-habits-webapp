@@ -66,3 +66,25 @@ export function isGoalMet(
   if (goal <= 0) return false
   return getCurrentProgressValue(habit, followUp) + extraAmount >= goal
 }
+
+/** Ratio 0–1 for the day progress ring. Null when no ring should render. */
+export function getDayRingProgress(
+  habit: Habit,
+  followUp: HabitFollowUp | null | undefined,
+): number | null {
+  if (!followUp || followUp.isFailed || followUp.isLifeline) return null
+
+  if (habit.habitType === 'boolean') {
+    return followUp.isAccomplished ? 1 : null
+  }
+
+  if (followUp.isAccomplished) return 1
+
+  const ratio = getProgressRatio(habit, followUp)
+  if (ratio === null || ratio <= 0) return null
+  return ratio
+}
+
+export function followUpHasNotes(followUp: HabitFollowUp | null | undefined): boolean {
+  return Boolean(followUp?.notes?.trim())
+}

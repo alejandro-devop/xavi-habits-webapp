@@ -1960,7 +1960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "activityfollowupcard_activityfollowupcard",
-      "community": 393,
+      "community": 58,
       "norm_label": "activityfollowupcard.tsx"
     },
     {
@@ -1970,7 +1970,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "activityfollowupcard_activityfollowupcard_activityfollowupcardprops",
-      "community": 393,
+      "community": 58,
       "norm_label": "activityfollowupcardprops"
     },
     {
@@ -1980,7 +1980,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "activityfollowupcard_activityfollowupcard_activityfollowupcard",
-      "community": 393,
+      "community": 58,
       "norm_label": "activityfollowupcard()"
     },
     {
@@ -1990,7 +1990,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "activityfollowupcard_index",
-      "community": 393,
+      "community": 58,
       "norm_label": "index.ts"
     },
     {
@@ -2590,7 +2590,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "activitytimelineupcomingentry_activitytimelineupcomingentry",
-      "community": 0,
+      "community": 450,
       "norm_label": "activitytimelineupcomingentry.tsx"
     },
     {
@@ -2600,7 +2600,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "activitytimelineupcomingentry_activitytimelineupcomingentry_props",
-      "community": 0,
+      "community": 450,
       "norm_label": "props"
     },
     {
@@ -2610,7 +2610,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "activitytimelineupcomingentry_activitytimelineupcomingentry_activitytimelineupcomingentry",
-      "community": 0,
+      "community": 450,
       "norm_label": "activitytimelineupcomingentry()"
     },
     {
@@ -2620,7 +2620,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "activitytodofoldersfield_activitytodofoldersfield",
-      "community": 72,
+      "community": 418,
       "norm_label": "activitytodofoldersfield.tsx"
     },
     {
@@ -2630,7 +2630,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "activitytodofoldersfield_activitytodofoldersfield_activitytodofoldersfieldprops",
-      "community": 72,
+      "community": 418,
       "norm_label": "activitytodofoldersfieldprops"
     },
     {
@@ -2640,7 +2640,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "activitytodofoldersfield_activitytodofoldersfield_togglefolder",
-      "community": 72,
+      "community": 418,
       "norm_label": "togglefolder()"
     },
     {
@@ -2650,7 +2650,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "activitytodofoldersfield_activitytodofoldersfield_folderoption",
-      "community": 72,
+      "community": 418,
       "norm_label": "folderoption()"
     },
     {
@@ -2660,7 +2660,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "activitytodofoldersfield_activitytodofoldersfield_activitytodofoldersfield",
-      "community": 72,
+      "community": 418,
       "norm_label": "activitytodofoldersfield()"
     },
     {
@@ -2670,7 +2670,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "activitytodofoldersfield_index",
-      "community": 72,
+      "community": 418,
       "norm_label": "index.ts"
     },
     {
@@ -2860,7 +2860,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createcategorystep_createcategorystep",
-      "community": 412,
+      "community": 426,
       "norm_label": "createcategorystep.tsx"
     },
     {
@@ -2870,7 +2870,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "createcategorystep_createcategorystep_createcategorystepprops",
-      "community": 412,
+      "community": 426,
       "norm_label": "createcategorystepprops"
     },
     {
@@ -2880,7 +2880,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "createcategorystep_createcategorystep_createcategorystep",
-      "community": 412,
+      "community": 426,
       "norm_label": "createcategorystep()"
     },
     {
@@ -2890,7 +2890,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createcategorystep_index",
-      "community": 412,
+      "community": 426,
       "norm_label": "index.ts"
     },
     {
@@ -2920,7 +2920,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal",
-      "community": 28,
+      "community": 36,
       "norm_label": "createfollowupfromfreeslotmodal.tsx"
     },
     {
@@ -2930,7 +2930,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodalprops",
-      "community": 28,
+      "community": 36,
       "norm_label": "createfollowupfromfreeslotmodalprops"
     },
     {
@@ -2940,7 +2940,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_rootstepprops",
-      "community": 28,
+      "community": 36,
       "norm_label": "rootstepprops"
     },
     {
@@ -2950,7 +2950,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_createfollowuprootstep",
-      "community": 28,
+      "community": 36,
       "norm_label": "createfollowuprootstep()"
     },
     {
@@ -2960,7 +2960,7 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal",
-      "community": 28,
+      "community": 36,
       "norm_label": "createfollowupfromfreeslotmodal()"
     },
     {
@@ -2970,7 +2970,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_index",
-      "community": 28,
+      "community": 36,
       "norm_label": "index.ts"
     },
     {
@@ -3220,7 +3220,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "durationhoursminutesfields_durationhoursminutesfields",
-      "community": 36,
+      "community": 55,
       "norm_label": "durationhoursminutesfields.tsx"
     },
     {
@@ -3230,7 +3230,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "durationhoursminutesfields_durationhoursminutesfields_durationhoursminutesfieldsprops",
-      "community": 36,
+      "community": 55,
       "norm_label": "durationhoursminutesfieldsprops"
     },
     {
@@ -3240,7 +3240,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "durationhoursminutesfields_durationhoursminutesfields_clamptotal",
-      "community": 36,
+      "community": 55,
       "norm_label": "clamptotal()"
     },
     {
@@ -3250,7 +3250,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "durationhoursminutesfields_durationhoursminutesfields_durationhoursminutesfields",
-      "community": 36,
+      "community": 55,
       "norm_label": "durationhoursminutesfields()"
     },
     {
@@ -3260,7 +3260,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "durationhoursminutesfields_index",
-      "community": 36,
+      "community": 55,
       "norm_label": "index.ts"
     },
     {
@@ -3360,7 +3360,7 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "finishactivitymodal_finishactivitymodal_suggestioncard",
-      "community": 0,
+      "community": 450,
       "norm_label": "suggestioncard()"
     },
     {
@@ -3420,7 +3420,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "logpastactivitymodal_logpastactivitymodal",
-      "community": 396,
+      "community": 28,
       "norm_label": "logpastactivitymodal.tsx"
     },
     {
@@ -3430,7 +3430,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "logpastactivitymodal_logpastactivitymodal_logpastactivitymodalprops",
-      "community": 396,
+      "community": 28,
       "norm_label": "logpastactivitymodalprops"
     },
     {
@@ -3440,7 +3440,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "logpastactivitymodal_logpastactivitymodal_rootstepprops",
-      "community": 396,
+      "community": 28,
       "norm_label": "rootstepprops"
     },
     {
@@ -3450,7 +3450,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "logpastactivitymodal_logpastactivitymodal_logpastactivityrootstep",
-      "community": 396,
+      "community": 28,
       "norm_label": "logpastactivityrootstep()"
     },
     {
@@ -3460,7 +3460,7 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "logpastactivitymodal_logpastactivitymodal_logpastactivitymodal",
-      "community": 396,
+      "community": 28,
       "norm_label": "logpastactivitymodal()"
     },
     {
@@ -3470,7 +3470,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "logpastactivitymodal_index",
-      "community": 396,
+      "community": 28,
       "norm_label": "index.ts"
     },
     {
@@ -3570,7 +3570,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "sessionlinkedtodo_sessionlinkedtodo",
-      "community": 43,
+      "community": 13,
       "norm_label": "sessionlinkedtodo.tsx"
     },
     {
@@ -3580,7 +3580,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "sessionlinkedtodo_sessionlinkedtodo_sessionlinkedtodoprops",
-      "community": 43,
+      "community": 13,
       "norm_label": "sessionlinkedtodoprops"
     },
     {
@@ -3590,7 +3590,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "sessionlinkedtodo_sessionlinkedtodo_subtaskrow",
-      "community": 43,
+      "community": 13,
       "norm_label": "subtaskrow()"
     },
     {
@@ -3600,7 +3600,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "sessionlinkedtodo_sessionlinkedtodo_sessionlinkedtodo",
-      "community": 43,
+      "community": 13,
       "norm_label": "sessionlinkedtodo()"
     },
     {
@@ -3610,7 +3610,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "sessionlinkedtodo_index",
-      "community": 43,
+      "community": 13,
       "norm_label": "index.ts"
     },
     {
@@ -3960,7 +3960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useactivities",
-      "community": 23,
+      "community": 40,
       "norm_label": "useactivities.ts"
     },
     {
@@ -3970,7 +3970,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivitiesquery",
-      "community": 23,
+      "community": 40,
       "norm_label": "useactivitiesquery()"
     },
     {
@@ -3980,7 +3980,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivityquery",
-      "community": 23,
+      "community": 40,
       "norm_label": "useactivityquery()"
     },
     {
@@ -4000,7 +4000,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "hooks_useactivities_useupdateactivitymutation",
-      "community": 23,
+      "community": 40,
       "norm_label": "useupdateactivitymutation()"
     },
     {
@@ -4020,7 +4020,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivitypendingtodosquery",
-      "community": 23,
+      "community": 40,
       "norm_label": "useactivitypendingtodosquery()"
     },
     {
@@ -4180,7 +4180,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_invalidatefollowupqueries",
-      "community": 33,
+      "community": 6,
       "norm_label": "invalidatefollowupqueries()"
     },
     {
@@ -4650,7 +4650,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_activityeditpage",
-      "community": 23,
+      "community": 40,
       "norm_label": "activityeditpage.tsx"
     },
     {
@@ -4660,7 +4660,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "pages_activityeditpage_activityeditpage",
-      "community": 23,
+      "community": 40,
       "norm_label": "activityeditpage()"
     },
     {
@@ -4690,7 +4690,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_standuppage",
-      "community": 442,
+      "community": 324,
       "norm_label": "standuppage.tsx"
     },
     {
@@ -4700,7 +4700,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "pages_standuppage_status_options",
-      "community": 442,
+      "community": 324,
       "norm_label": "status_options"
     },
     {
@@ -4710,7 +4710,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "pages_standuppage_status_badge",
-      "community": 442,
+      "community": 324,
       "norm_label": "status_badge"
     },
     {
@@ -4720,7 +4720,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "pages_standuppage_emptyform",
-      "community": 442,
+      "community": 324,
       "norm_label": "emptyform()"
     },
     {
@@ -5770,7 +5770,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "utils_activity_day_metrics_utils_formatdurationfromminutes",
-      "community": 5,
+      "community": 384,
       "norm_label": "formatdurationfromminutes()"
     },
     {
@@ -6030,7 +6030,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "utils_activity_followup_form_emptylogpastactivityformvalues",
-      "community": 396,
+      "community": 28,
       "norm_label": "emptylogpastactivityformvalues()"
     },
     {
@@ -6300,7 +6300,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form",
-      "community": 41,
+      "community": 36,
       "norm_label": "activity-free-slot-form.ts"
     },
     {
@@ -6310,7 +6310,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_emptyfreeslotformvalues",
-      "community": 28,
+      "community": 36,
       "norm_label": "emptyfreeslotformvalues()"
     },
     {
@@ -6320,7 +6320,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_freeslotdurationtotal",
-      "community": 41,
+      "community": 36,
       "norm_label": "freeslotdurationtotal()"
     },
     {
@@ -6330,7 +6330,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_clampfreeslotformtoslot",
-      "community": 41,
+      "community": 36,
       "norm_label": "clampfreeslotformtoslot()"
     },
     {
@@ -6340,7 +6340,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_validatefreeslotform",
-      "community": 41,
+      "community": 36,
       "norm_label": "validatefreeslotform()"
     },
     {
@@ -6350,7 +6350,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_freeslotformtoinput",
-      "community": 41,
+      "community": 36,
       "norm_label": "freeslotformtoinput()"
     },
     {
@@ -6410,7 +6410,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getcurrentlocaldate",
-      "community": 33,
+      "community": 6,
       "norm_label": "getcurrentlocaldate()"
     },
     {
@@ -6450,7 +6450,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getmondayofweek",
-      "community": 33,
+      "community": 6,
       "norm_label": "getmondayofweek()"
     },
     {
@@ -6460,7 +6460,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getweekdaysfordate",
-      "community": 33,
+      "community": 6,
       "norm_label": "getweekdaysfordate()"
     },
     {
@@ -6470,7 +6470,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getmonthdaysfordate",
-      "community": 33,
+      "community": 6,
       "norm_label": "getmonthdaysfordate()"
     },
     {
@@ -6520,7 +6520,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getcurrentweekrange",
-      "community": 33,
+      "community": 6,
       "norm_label": "getcurrentweekrange()"
     },
     {
@@ -6530,7 +6530,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "utils_activity_time_utils_isfuturedate",
-      "community": 33,
+      "community": 25,
       "norm_label": "isfuturedate()"
     },
     {
@@ -6560,7 +6560,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "utils_activity_time_utils_timetominutes",
-      "community": 41,
+      "community": 36,
       "norm_label": "timetominutes()"
     },
     {
@@ -6650,7 +6650,7 @@
       "source_location": "L203",
       "_origin": "ast",
       "id": "utils_activity_time_utils_formatdurationminutes",
-      "community": 393,
+      "community": 58,
       "norm_label": "formatdurationminutes()"
     },
     {
@@ -6660,7 +6660,7 @@
       "source_location": "L210",
       "_origin": "ast",
       "id": "utils_activity_time_utils_minutestohoursminutes",
-      "community": 36,
+      "community": 55,
       "norm_label": "minutestohoursminutes()"
     },
     {
@@ -6670,7 +6670,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "utils_activity_time_utils_hoursminutestototalminutes",
-      "community": 25,
+      "community": 36,
       "norm_label": "hoursminutestototalminutes()"
     },
     {
@@ -6680,7 +6680,7 @@
       "source_location": "L225",
       "_origin": "ast",
       "id": "utils_activity_time_utils_formatdurationconversionhint",
-      "community": 36,
+      "community": 55,
       "norm_label": "formatdurationconversionhint()"
     },
     {
@@ -6750,7 +6750,7 @@
       "source_location": "L284",
       "_origin": "ast",
       "id": "utils_activity_time_utils_sortfollowupsbystarttimeasc",
-      "community": 6,
+      "community": 47,
       "norm_label": "sortfollowupsbystarttimeasc()"
     },
     {
@@ -6800,7 +6800,7 @@
       "source_location": "L334",
       "_origin": "ast",
       "id": "utils_activity_time_utils_buildfreeslotid",
-      "community": 6,
+      "community": 25,
       "norm_label": "buildfreeslotid()"
     },
     {
@@ -6810,7 +6810,7 @@
       "source_location": "L340",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getfreeslotsbetweenfollowups",
-      "community": 6,
+      "community": 25,
       "norm_label": "getfreeslotsbetweenfollowups()"
     },
     {
@@ -6820,7 +6820,7 @@
       "source_location": "L388",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getfreeslotinterval",
-      "community": 41,
+      "community": 36,
       "norm_label": "getfreeslotinterval()"
     },
     {
@@ -6830,7 +6830,7 @@
       "source_location": "L395",
       "_origin": "ast",
       "id": "utils_activity_time_utils_isstarttimeinsideslot",
-      "community": 41,
+      "community": 36,
       "norm_label": "isstarttimeinsideslot()"
     },
     {
@@ -6840,7 +6840,7 @@
       "source_location": "L401",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getmaxdurationforstarttime",
-      "community": 41,
+      "community": 36,
       "norm_label": "getmaxdurationforstarttime()"
     },
     {
@@ -6850,7 +6850,7 @@
       "source_location": "L408",
       "_origin": "ast",
       "id": "utils_activity_time_utils_validatefollowupinsideslot",
-      "community": 41,
+      "community": 36,
       "norm_label": "validatefollowupinsideslot()"
     },
     {
@@ -7160,7 +7160,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "logoutbutton_logoutbutton",
-      "community": 38,
+      "community": 396,
       "norm_label": "logoutbutton.tsx"
     },
     {
@@ -7170,7 +7170,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "logoutbutton_logoutbutton_logoutbutton",
-      "community": 38,
+      "community": 396,
       "norm_label": "logoutbutton()"
     },
     {
@@ -7260,7 +7260,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "verifyemailform_verifyemailform",
-      "community": 66,
+      "community": 23,
       "norm_label": "verifyemailform.tsx"
     },
     {
@@ -7270,7 +7270,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "verifyemailform_verifyemailform_verifylocationstate",
-      "community": 66,
+      "community": 23,
       "norm_label": "verifylocationstate"
     },
     {
@@ -7280,7 +7280,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "verifyemailform_verifyemailform_verifyemailform",
-      "community": 66,
+      "community": 23,
       "norm_label": "verifyemailform()"
     },
     {
@@ -7330,7 +7330,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_uselogoutmutation",
-      "community": 38,
+      "community": 396,
       "norm_label": "uselogoutmutation.ts"
     },
     {
@@ -7340,7 +7340,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "hooks_uselogoutmutation_uselogoutmutation",
-      "community": 38,
+      "community": 396,
       "norm_label": "uselogoutmutation()"
     },
     {
@@ -7410,7 +7410,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useverifyemailmutation",
-      "community": 66,
+      "community": 23,
       "norm_label": "useverifyemailmutation.ts"
     },
     {
@@ -7420,7 +7420,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "hooks_useverifyemailmutation_verifyemailinput",
-      "community": 66,
+      "community": 23,
       "norm_label": "verifyemailinput"
     },
     {
@@ -7430,7 +7430,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "hooks_useverifyemailmutation_useverifyemailmutation",
-      "community": 66,
+      "community": 23,
       "norm_label": "useverifyemailmutation()"
     },
     {
@@ -7440,7 +7440,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "hooks_useverifyemailmutation_useresendotpmutation",
-      "community": 66,
+      "community": 23,
       "norm_label": "useresendotpmutation()"
     },
     {
@@ -8480,7 +8480,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "archivedhabitcard_archivedhabitcard",
-      "community": 430,
+      "community": 1,
       "norm_label": "archivedhabitcard.tsx"
     },
     {
@@ -8490,7 +8490,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "archivedhabitcard_archivedhabitcard_props",
-      "community": 430,
+      "community": 1,
       "norm_label": "props"
     },
     {
@@ -8500,7 +8500,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "archivedhabitcard_archivedhabitcard_archivedhabitcard",
-      "community": 430,
+      "community": 1,
       "norm_label": "archivedhabitcard()"
     },
     {
@@ -8510,7 +8510,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "archivedhabitcard_index",
-      "community": 430,
+      "community": 1,
       "norm_label": "index.ts"
     },
     {
@@ -8760,7 +8760,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid",
-      "community": 391,
+      "community": 432,
       "norm_label": "habitcontributiongrid.tsx"
     },
     {
@@ -8770,7 +8770,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid_props",
-      "community": 391,
+      "community": 432,
       "norm_label": "props"
     },
     {
@@ -8780,7 +8780,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid_day_labels",
-      "community": 391,
+      "community": 432,
       "norm_label": "day_labels"
     },
     {
@@ -8800,7 +8800,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid_habitcontributiongrid",
-      "community": 391,
+      "community": 432,
       "norm_label": "habitcontributiongrid()"
     },
     {
@@ -8810,7 +8810,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitcontributiongrid_index",
-      "community": 391,
+      "community": 432,
       "norm_label": "index.ts"
     },
     {
@@ -8827,7 +8827,7 @@
       "label": "Props",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
-      "source_location": "L13",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "habitdaycard_habitdaycard_props",
       "community": 452,
@@ -8837,7 +8837,7 @@
       "label": "DayStatus",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
-      "source_location": "L22",
+      "source_location": "L27",
       "_origin": "ast",
       "id": "habitdaycard_habitdaycard_daystatus",
       "community": 452,
@@ -8847,7 +8847,7 @@
       "label": "WEEKDAY_SHORT",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
-      "source_location": "L24",
+      "source_location": "L29",
       "_origin": "ast",
       "id": "habitdaycard_habitdaycard_weekday_short",
       "community": 452,
@@ -8857,7 +8857,7 @@
       "label": "weekdayShort()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
-      "source_location": "L26",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "habitdaycard_habitdaycard_weekdayshort",
       "community": 452,
@@ -8867,17 +8867,27 @@
       "label": "getDayStatus()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
-      "source_location": "L31",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "habitdaycard_habitdaycard_getdaystatus",
       "community": 452,
       "norm_label": "getdaystatus()"
     },
     {
+      "label": "isCompletedPath()",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "habitdaycard_habitdaycard_iscompletedpath",
+      "community": 452,
+      "norm_label": "iscompletedpath()"
+    },
+    {
       "label": "HabitDayCard()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
-      "source_location": "L40",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "habitdaycard_habitdaycard_habitdaycard",
       "community": 379,
@@ -8907,7 +8917,7 @@
       "label": "DAY_LABELS",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCell/HabitDayCell.tsx",
-      "source_location": "L9",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_day_labels",
       "community": 383,
@@ -8917,7 +8927,7 @@
       "label": "Props",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCell/HabitDayCell.tsx",
-      "source_location": "L11",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_props",
       "community": 383,
@@ -8927,7 +8937,7 @@
       "label": "HabitDayCell()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitDayCell/HabitDayCell.tsx",
-      "source_location": "L17",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_habitdaycell",
       "community": 383,
@@ -8941,6 +8951,46 @@
       "_origin": "ast",
       "id": "habitdaycell_index",
       "community": 383,
+      "norm_label": "index.ts"
+    },
+    {
+      "label": "HabitDayMarker.tsx",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitDayMarker/HabitDayMarker.tsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "habitdaymarker_habitdaymarker",
+      "community": 430,
+      "norm_label": "habitdaymarker.tsx"
+    },
+    {
+      "label": "Props",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitDayMarker/HabitDayMarker.tsx",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "habitdaymarker_habitdaymarker_props",
+      "community": 430,
+      "norm_label": "props"
+    },
+    {
+      "label": "HabitDayMarker()",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitDayMarker/HabitDayMarker.tsx",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "habitdaymarker_habitdaymarker_habitdaymarker",
+      "community": 430,
+      "norm_label": "habitdaymarker()"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitDayMarker/index.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "habitdaymarker_index",
+      "community": 430,
       "norm_label": "index.ts"
     },
     {
@@ -9047,7 +9097,7 @@
       "label": "HabitFollowUpForm()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFollowUpForm/HabitFollowUpForm.tsx",
-      "source_location": "L29",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "habitfollowupform_habitfollowupform_habitfollowupform",
       "community": 379,
@@ -9157,7 +9207,7 @@
       "label": "Props",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitLifelineButton/HabitLifelineButton.tsx",
-      "source_location": "L6",
+      "source_location": "L5",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton_props",
       "community": 37,
@@ -9167,7 +9217,7 @@
       "label": "HabitLifelineButton()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitLifelineButton/HabitLifelineButton.tsx",
-      "source_location": "L12",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton_habitlifelinebutton",
       "community": 37,
@@ -9800,7 +9850,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "habitweekselector_habitweekselector_formatweekrange",
-      "community": 89,
+      "community": 446,
       "norm_label": "formatweekrange()"
     },
     {
@@ -9870,37 +9920,37 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitswidget_habitswidget",
-      "community": 406,
+      "community": 391,
       "norm_label": "habitswidget.tsx"
     },
     {
       "label": "DAY_LETTERS",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitsWidget/HabitsWidget.tsx",
-      "source_location": "L8",
+      "source_location": "L9",
       "_origin": "ast",
       "id": "habitswidget_habitswidget_day_letters",
-      "community": 406,
+      "community": 391,
       "norm_label": "day_letters"
     },
     {
       "label": "getLast7Days()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitsWidget/HabitsWidget.tsx",
-      "source_location": "L10",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "habitswidget_habitswidget_getlast7days",
-      "community": 406,
+      "community": 391,
       "norm_label": "getlast7days()"
     },
     {
       "label": "HabitsWidget()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitsWidget/HabitsWidget.tsx",
-      "source_location": "L20",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "habitswidget_habitswidget_habitswidget",
-      "community": 406,
+      "community": 391,
       "norm_label": "habitswidget()"
     },
     {
@@ -9910,7 +9960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitswidget_index",
-      "community": 406,
+      "community": 391,
       "norm_label": "index.ts"
     },
     {
@@ -10060,7 +10110,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "hooks_usehabitcategories_usehabitcategoryqueryguard",
-      "community": 60,
+      "community": 23,
       "norm_label": "usehabitcategoryqueryguard()"
     },
     {
@@ -10077,27 +10127,27 @@
       "label": "FollowUpMutationContext",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabitFollowUps.ts",
-      "source_location": "L12",
+      "source_location": "L10",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_followupmutationcontext",
       "community": 37,
       "norm_label": "followupmutationcontext"
     },
     {
-      "label": "patchMyDayCache()",
+      "label": "invalidateAfterFollowUpChange()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabitFollowUps.ts",
-      "source_location": "L18",
+      "source_location": "L17",
       "_origin": "ast",
-      "id": "hooks_usehabitfollowups_patchmydaycache",
+      "id": "hooks_usehabitfollowups_invalidateafterfollowupchange",
       "community": 37,
-      "norm_label": "patchmydaycache()"
+      "norm_label": "invalidateafterfollowupchange()"
     },
     {
       "label": "useAddHabitFollowUpMutation()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabitFollowUps.ts",
-      "source_location": "L32",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_useaddhabitfollowupmutation",
       "community": 37,
@@ -10107,7 +10157,7 @@
       "label": "useUpdateHabitFollowUpMutation()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabitFollowUps.ts",
-      "source_location": "L58",
+      "source_location": "L57",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_useupdatehabitfollowupmutation",
       "community": 37,
@@ -10117,7 +10167,7 @@
       "label": "useRemoveHabitFollowUpMutation()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabitFollowUps.ts",
-      "source_location": "L89",
+      "source_location": "L76",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_useremovehabitfollowupmutation",
       "community": 37,
@@ -10257,7 +10307,7 @@
       "label": "useHabitQueryGuard()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L14",
+      "source_location": "L15",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitqueryguard",
       "community": 1,
@@ -10267,7 +10317,7 @@
       "label": "useHabitMyDayQuery()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L20",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitmydayquery",
       "community": 1,
@@ -10277,7 +10327,7 @@
       "label": "useHabitsQuery()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L30",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitsquery",
       "community": 1,
@@ -10287,7 +10337,7 @@
       "label": "useHabitQuery()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L40",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitquery",
       "community": 1,
@@ -10297,7 +10347,7 @@
       "label": "useHabitWeekViewQuery()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L50",
+      "source_location": "L51",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitweekviewquery",
       "community": 1,
@@ -10307,17 +10357,17 @@
       "label": "useHabitFollowUpsInDatesQuery()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L60",
+      "source_location": "L61",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitfollowupsindatesquery",
-      "community": 1,
+      "community": 391,
       "norm_label": "usehabitfollowupsindatesquery()"
     },
     {
       "label": "useHabitCategoriesQuery()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L70",
+      "source_location": "L71",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitcategoriesquery",
       "community": 1,
@@ -10327,7 +10377,7 @@
       "label": "useHabitMeasuresQuery()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L80",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitmeasuresquery",
       "community": 1,
@@ -10337,7 +10387,7 @@
       "label": "useCreateHabitMutation()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L90",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "hooks_usehabits_usecreatehabitmutation",
       "community": 1,
@@ -10347,7 +10397,7 @@
       "label": "useUpdateHabitMutation()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L102",
+      "source_location": "L103",
       "_origin": "ast",
       "id": "hooks_usehabits_useupdatehabitmutation",
       "community": 1,
@@ -10357,7 +10407,7 @@
       "label": "useDeleteHabitMutation()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L115",
+      "source_location": "L116",
       "_origin": "ast",
       "id": "hooks_usehabits_usedeletehabitmutation",
       "community": 1,
@@ -10367,7 +10417,7 @@
       "label": "useCompleteHabitMutation()",
       "file_type": "code",
       "source_file": "src/features/habits/hooks/useHabits.ts",
-      "source_location": "L127",
+      "source_location": "L128",
       "_origin": "ast",
       "id": "hooks_usehabits_usecompletehabitmutation",
       "community": 1,
@@ -10390,7 +10440,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitcalendarpage",
-      "community": 1,
+      "community": 391,
       "norm_label": "habitcalendarpage.tsx"
     },
     {
@@ -10400,7 +10450,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "pages_habitcalendarpage_habitcalendarpage",
-      "community": 1,
+      "community": 391,
       "norm_label": "habitcalendarpage()"
     },
     {
@@ -10440,7 +10490,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitdetailpage",
-      "community": 446,
+      "community": 391,
       "norm_label": "habitdetailpage.tsx"
     },
     {
@@ -10450,7 +10500,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "pages_habitdetailpage_goback",
-      "community": 446,
+      "community": 391,
       "norm_label": "goback()"
     },
     {
@@ -10470,7 +10520,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "pages_habitdetailpage_habithistorytab",
-      "community": 446,
+      "community": 391,
       "norm_label": "habithistorytab()"
     },
     {
@@ -10547,7 +10597,7 @@
       "label": "EMPTY_FOLLOW_UP_MAP",
       "file_type": "code",
       "source_file": "src/features/habits/pages/HabitMyDayPage.tsx",
-      "source_location": "L176",
+      "source_location": "L191",
       "_origin": "ast",
       "id": "pages_habitmydaypage_empty_follow_up_map",
       "community": 89,
@@ -10557,7 +10607,7 @@
       "label": "formatWeekHeading()",
       "file_type": "code",
       "source_file": "src/features/habits/pages/HabitMyDayPage.tsx",
-      "source_location": "L178",
+      "source_location": "L193",
       "_origin": "ast",
       "id": "pages_habitmydaypage_formatweekheading",
       "community": 89,
@@ -10590,7 +10640,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitweekviewpage",
-      "community": 446,
+      "community": 391,
       "norm_label": "habitweekviewpage.tsx"
     },
     {
@@ -10600,7 +10650,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "pages_habitweekviewpage_habitweekviewpage",
-      "community": 446,
+      "community": 391,
       "norm_label": "habitweekviewpage()"
     },
     {
@@ -10957,7 +11007,7 @@
       "label": "HabitInput",
       "file_type": "code",
       "source_file": "src/features/habits/types/habit.types.ts",
-      "source_location": "L119",
+      "source_location": "L120",
       "_origin": "ast",
       "id": "types_habit_types_habitinput",
       "community": 8,
@@ -10967,7 +11017,7 @@
       "label": "HabitEditInput",
       "file_type": "code",
       "source_file": "src/features/habits/types/habit.types.ts",
-      "source_location": "L141",
+      "source_location": "L142",
       "_origin": "ast",
       "id": "types_habit_types_habiteditinput",
       "community": 8,
@@ -10977,7 +11027,7 @@
       "label": "HabitFollowUpAddInput",
       "file_type": "code",
       "source_file": "src/features/habits/types/habit.types.ts",
-      "source_location": "L147",
+      "source_location": "L148",
       "_origin": "ast",
       "id": "types_habit_types_habitfollowupaddinput",
       "community": 8,
@@ -10987,7 +11037,7 @@
       "label": "HabitFollowUpEditInput",
       "file_type": "code",
       "source_file": "src/features/habits/types/habit.types.ts",
-      "source_location": "L160",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "types_habit_types_habitfollowupeditinput",
       "community": 8,
@@ -10997,7 +11047,7 @@
       "label": "HabitFilters",
       "file_type": "code",
       "source_file": "src/features/habits/types/habit.types.ts",
-      "source_location": "L172",
+      "source_location": "L173",
       "_origin": "ast",
       "id": "types_habit_types_habitfilters",
       "community": 8,
@@ -11334,6 +11384,26 @@
       "norm_label": "isgoalmet()"
     },
     {
+      "label": "getDayRingProgress()",
+      "file_type": "code",
+      "source_file": "src/features/habits/utils/habit-progress.utils.ts",
+      "source_location": "L71",
+      "_origin": "ast",
+      "id": "utils_habit_progress_utils_getdayringprogress",
+      "community": 379,
+      "norm_label": "getdayringprogress()"
+    },
+    {
+      "label": "followUpHasNotes()",
+      "file_type": "code",
+      "source_file": "src/features/habits/utils/habit-progress.utils.ts",
+      "source_location": "L88",
+      "_origin": "ast",
+      "id": "utils_habit_progress_utils_followuphasnotes",
+      "community": 383,
+      "norm_label": "followuphasnotes()"
+    },
+    {
       "label": "habit-type.utils.ts",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-type.utils.ts",
@@ -11374,20 +11444,40 @@
       "norm_label": "gethabittypelabel()"
     },
     {
-      "label": "getTodayString()",
+      "label": "pad2()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-type.utils.ts",
       "source_location": "L19",
       "_origin": "ast",
+      "id": "utils_habit_type_utils_pad2",
+      "community": 391,
+      "norm_label": "pad2()"
+    },
+    {
+      "label": "formatLocalDateToYmd()",
+      "file_type": "code",
+      "source_file": "src/features/habits/utils/habit-type.utils.ts",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "utils_habit_type_utils_formatlocaldatetoymd",
+      "community": 391,
+      "norm_label": "formatlocaldatetoymd()"
+    },
+    {
+      "label": "getTodayString()",
+      "file_type": "code",
+      "source_file": "src/features/habits/utils/habit-type.utils.ts",
+      "source_location": "L28",
+      "_origin": "ast",
       "id": "utils_habit_type_utils_gettodaystring",
-      "community": 446,
+      "community": 391,
       "norm_label": "gettodaystring()"
     },
     {
       "label": "getYesterdayString()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-type.utils.ts",
-      "source_location": "L23",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "utils_habit_type_utils_getyesterdaystring",
       "community": 391,
@@ -11397,17 +11487,17 @@
       "label": "addDaysToString()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-type.utils.ts",
-      "source_location": "L29",
+      "source_location": "L38",
       "_origin": "ast",
       "id": "utils_habit_type_utils_adddaystostring",
-      "community": 391,
+      "community": 89,
       "norm_label": "adddaystostring()"
     },
     {
       "label": "getMondayOfWeek()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-type.utils.ts",
-      "source_location": "L35",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "utils_habit_type_utils_getmondayofweek",
       "community": 391,
@@ -11447,7 +11537,7 @@
       "label": "pad2()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
-      "source_location": "L12",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "utils_habit_week_utils_pad2",
       "community": 89,
@@ -11457,7 +11547,7 @@
       "label": "getYearMonthFromDate()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
-      "source_location": "L16",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getyearmonthfromdate",
       "community": 89,
@@ -11467,7 +11557,7 @@
       "label": "getWeekEnd()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
-      "source_location": "L21",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getweekend",
       "community": 89,
@@ -11477,7 +11567,7 @@
       "label": "isFutureWeek()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
-      "source_location": "L25",
+      "source_location": "L27",
       "_origin": "ast",
       "id": "utils_habit_week_utils_isfutureweek",
       "community": 89,
@@ -11487,17 +11577,27 @@
       "label": "getMyDayFocusDate()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
-      "source_location": "L30",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getmydayfocusdate",
       "community": 89,
       "norm_label": "getmydayfocusdate()"
     },
     {
+      "label": "buildDay()",
+      "file_type": "code",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "utils_habit_week_utils_buildday",
+      "community": 89,
+      "norm_label": "buildday()"
+    },
+    {
       "label": "getMonthDaysForWeek()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
-      "source_location": "L36",
+      "source_location": "L63",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getmonthdaysforweek",
       "community": 89,
@@ -11507,11 +11607,21 @@
       "label": "getMonthRange()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
-      "source_location": "L61",
+      "source_location": "L101",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getmonthrange",
       "community": 89,
       "norm_label": "getmonthrange()"
+    },
+    {
+      "label": "getFollowUpQueryRange()",
+      "file_type": "code",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L110",
+      "_origin": "ast",
+      "id": "utils_habit_week_utils_getfollowupqueryrange",
+      "community": 89,
+      "norm_label": "getfollowupqueryrange()"
     },
     {
       "label": "QuickActions.tsx",
@@ -11560,7 +11670,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "routinetodaywidget_routinetodaywidget",
-      "community": 0,
+      "community": 450,
       "norm_label": "routinetodaywidget.tsx"
     },
     {
@@ -11570,7 +11680,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "routinetodaywidget_routinetodaywidget_getactivityaccent",
-      "community": 0,
+      "community": 450,
       "norm_label": "getactivityaccent()"
     },
     {
@@ -11580,7 +11690,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "routinetodaywidget_routinetodaywidget_nowindicator",
-      "community": 0,
+      "community": 450,
       "norm_label": "nowindicator()"
     },
     {
@@ -11590,7 +11700,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "routinetodaywidget_routinetodaywidget_routinetodaywidget",
-      "community": 0,
+      "community": 450,
       "norm_label": "routinetodaywidget()"
     },
     {
@@ -11600,7 +11710,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "routinetodaywidget_index",
-      "community": 0,
+      "community": 450,
       "norm_label": "index.ts"
     },
     {
@@ -12290,7 +12400,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "notecapture_notecapture",
-      "community": 18,
+      "community": 21,
       "norm_label": "notecapture.tsx"
     },
     {
@@ -12300,7 +12410,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "notecapture_notecapture_tag_colors",
-      "community": 18,
+      "community": 21,
       "norm_label": "tag_colors"
     },
     {
@@ -12310,7 +12420,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "notecapture_notecapture_sanitizetagname",
-      "community": 18,
+      "community": 21,
       "norm_label": "sanitizetagname()"
     },
     {
@@ -12320,7 +12430,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "notecapture_notecapture_props",
-      "community": 18,
+      "community": 21,
       "norm_label": "props"
     },
     {
@@ -12330,7 +12440,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "notecapture_notecapture_notecapture",
-      "community": 18,
+      "community": 21,
       "norm_label": "notecapture()"
     },
     {
@@ -12490,7 +12600,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "hooks_usenotes_useauthready",
-      "community": 18,
+      "community": 23,
       "norm_label": "useauthready()"
     },
     {
@@ -12550,7 +12660,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "hooks_usenotes_usecreatenote",
-      "community": 18,
+      "community": 21,
       "norm_label": "usecreatenote()"
     },
     {
@@ -13060,7 +13170,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "projectdetaildrawer_projectdetaildrawer",
-      "community": 55,
+      "community": 27,
       "norm_label": "projectdetaildrawer.tsx"
     },
     {
@@ -13070,7 +13180,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "projectdetaildrawer_projectdetaildrawer_objective_status_label",
-      "community": 55,
+      "community": 27,
       "norm_label": "objective_status_label"
     },
     {
@@ -13080,7 +13190,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "projectdetaildrawer_projectdetaildrawer_objective_status_next",
-      "community": 55,
+      "community": 27,
       "norm_label": "objective_status_next"
     },
     {
@@ -13090,7 +13200,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "projectdetaildrawer_projectdetaildrawer_props",
-      "community": 55,
+      "community": 27,
       "norm_label": "props"
     },
     {
@@ -13100,7 +13210,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "projectdetaildrawer_projectdetaildrawer_objectiveitem",
-      "community": 55,
+      "community": 27,
       "norm_label": "objectiveitem()"
     },
     {
@@ -13110,7 +13220,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "projectdetaildrawer_projectdetaildrawer_addobjectiveform",
-      "community": 55,
+      "community": 27,
       "norm_label": "addobjectiveform()"
     },
     {
@@ -13220,7 +13330,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "quarterformmodal_quarterformmodal",
-      "community": 88,
+      "community": 27,
       "norm_label": "quarterformmodal.tsx"
     },
     {
@@ -13230,7 +13340,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "quarterformmodal_quarterformmodal_props",
-      "community": 88,
+      "community": 27,
       "norm_label": "props"
     },
     {
@@ -13240,7 +13350,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "quarterformmodal_quarterformmodal_quarterformmodal",
-      "community": 88,
+      "community": 27,
       "norm_label": "quarterformmodal()"
     },
     {
@@ -13320,7 +13430,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_features_quarters_components_weeklyplanner_weeklyplanner_tsx_weeklyplanner_weeklyplanner",
-      "community": 58,
+      "community": 27,
       "norm_label": "weeklyplanner.tsx"
     },
     {
@@ -13330,7 +13440,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "weeklyplanner_weeklyplanner_days",
-      "community": 58,
+      "community": 27,
       "norm_label": "days"
     },
     {
@@ -13340,7 +13450,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "weeklyplanner_weeklyplanner_day_labels",
-      "community": 58,
+      "community": 27,
       "norm_label": "day_labels"
     },
     {
@@ -13350,7 +13460,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "src_features_quarters_components_weeklyplanner_weeklyplanner_tsx_weeklyplanner_weeklyplanner_props",
-      "community": 58,
+      "community": 27,
       "norm_label": "props"
     },
     {
@@ -13360,7 +13470,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "src_features_quarters_components_weeklyplanner_weeklyplanner_tsx_weeklyplanner_weeklyplanner_weeklyplanner",
-      "community": 58,
+      "community": 27,
       "norm_label": "weeklyplanner()"
     },
     {
@@ -13500,7 +13610,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "hooks_usequarters_useaddobjectivemutation",
-      "community": 55,
+      "community": 27,
       "norm_label": "useaddobjectivemutation()"
     },
     {
@@ -13510,7 +13620,7 @@
       "source_location": "L161",
       "_origin": "ast",
       "id": "hooks_usequarters_useupdateobjectivemutation",
-      "community": 55,
+      "community": 27,
       "norm_label": "useupdateobjectivemutation()"
     },
     {
@@ -13520,7 +13630,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "hooks_usequarters_useremoveobjectivemutation",
-      "community": 55,
+      "community": 27,
       "norm_label": "useremoveobjectivemutation()"
     },
     {
@@ -13530,7 +13640,7 @@
       "source_location": "L190",
       "_origin": "ast",
       "id": "hooks_usequarters_usecreatequartermutation",
-      "community": 88,
+      "community": 27,
       "norm_label": "usecreatequartermutation()"
     },
     {
@@ -13540,7 +13650,7 @@
       "source_location": "L203",
       "_origin": "ast",
       "id": "hooks_usequarters_useupdatequartermutation",
-      "community": 88,
+      "community": 27,
       "norm_label": "useupdatequartermutation()"
     },
     {
@@ -13660,7 +13770,7 @@
       "source_location": "L388",
       "_origin": "ast",
       "id": "hooks_usequarters_usedeleteweekscheduleslotmutation",
-      "community": 58,
+      "community": 27,
       "norm_label": "usedeleteweekscheduleslotmutation()"
     },
     {
@@ -14040,7 +14150,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "utils_format_getcurrentweekstart",
-      "community": 58,
+      "community": 27,
       "norm_label": "getcurrentweekstart()"
     },
     {
@@ -14540,7 +14650,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "sleepform_sleepform_buildinitialvalues",
-      "community": 384,
+      "community": 43,
       "norm_label": "buildinitialvalues()"
     },
     {
@@ -14700,7 +14810,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "sleeplogmodal_sleeplogmodal_buildinitial",
-      "community": 384,
+      "community": 43,
       "norm_label": "buildinitial()"
     },
     {
@@ -14720,7 +14830,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "sleeplogmodal_sleeplogmodal_step1day",
-      "community": 384,
+      "community": 43,
       "norm_label": "step1day()"
     },
     {
@@ -14890,7 +15000,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "sleeptimeline_sleeptimeline_formatshortdate",
-      "community": 384,
+      "community": 43,
       "norm_label": "formatshortdate()"
     },
     {
@@ -15540,7 +15650,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_sleep_utils",
-      "community": 384,
+      "community": 43,
       "norm_label": "sleep.utils.ts"
     },
     {
@@ -15560,7 +15670,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utils_sleep_utils_isototime",
-      "community": 384,
+      "community": 43,
       "norm_label": "isototime()"
     },
     {
@@ -15590,7 +15700,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "utils_sleep_utils_gettodaydate",
-      "community": 384,
+      "community": 43,
       "norm_label": "gettodaydate()"
     },
     {
@@ -15600,7 +15710,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "utils_sleep_utils_sleepdatetoinputvalue",
-      "community": 384,
+      "community": 43,
       "norm_label": "sleepdatetoinputvalue()"
     },
     {
@@ -15610,7 +15720,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "utils_sleep_utils_sleep_quality_labels",
-      "community": 384,
+      "community": 43,
       "norm_label": "sleep_quality_labels"
     },
     {
@@ -15620,7 +15730,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "utils_sleep_utils_mood_on_waking_labels",
-      "community": 384,
+      "community": 43,
       "norm_label": "mood_on_waking_labels"
     },
     {
@@ -15630,7 +15740,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "utils_sleep_utils_formatsleepquality",
-      "community": 384,
+      "community": 43,
       "norm_label": "formatsleepquality()"
     },
     {
@@ -15640,7 +15750,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "utils_sleep_utils_formatmoodonwaking",
-      "community": 384,
+      "community": 43,
       "norm_label": "formatmoodonwaking()"
     },
     {
@@ -15650,7 +15760,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "utils_sleep_utils_sleep_quality_options",
-      "community": 384,
+      "community": 43,
       "norm_label": "sleep_quality_options"
     },
     {
@@ -15660,7 +15770,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "utils_sleep_utils_mood_on_waking_options",
-      "community": 384,
+      "community": 43,
       "norm_label": "mood_on_waking_options"
     },
     {
@@ -16220,7 +16330,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "dailypoolview_dailypoolview_dailypoolview",
-      "community": 74,
+      "community": 13,
       "norm_label": "dailypoolview()"
     },
     {
@@ -16590,7 +16700,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "subtasklist_subtasklist",
-      "community": 43,
+      "community": 13,
       "norm_label": "subtasklist.tsx"
     },
     {
@@ -16600,7 +16710,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "subtasklist_subtasklist_props",
-      "community": 43,
+      "community": 13,
       "norm_label": "props"
     },
     {
@@ -16610,7 +16720,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "subtasklist_subtasklist_subtasklist",
-      "community": 43,
+      "community": 13,
       "norm_label": "subtasklist()"
     },
     {
@@ -16880,7 +16990,7 @@
       "source_location": "L435",
       "_origin": "ast",
       "id": "todossettings_todossettings_todossettings",
-      "community": 418,
+      "community": 13,
       "norm_label": "todossettings()"
     },
     {
@@ -16890,7 +17000,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "todoswidget_todoswidget",
-      "community": 426,
+      "community": 21,
       "norm_label": "todoswidget.tsx"
     },
     {
@@ -16900,7 +17010,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "todoswidget_todoswidget_priority_label",
-      "community": 426,
+      "community": 21,
       "norm_label": "priority_label"
     },
     {
@@ -16910,7 +17020,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "todoswidget_todoswidget_todoswidget",
-      "community": 426,
+      "community": 21,
       "norm_label": "todoswidget()"
     },
     {
@@ -16920,7 +17030,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "todoswidget_index",
-      "community": 426,
+      "community": 21,
       "norm_label": "index.ts"
     },
     {
@@ -16950,7 +17060,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "hooks_usetodos_useauthready",
-      "community": 418,
+      "community": 13,
       "norm_label": "useauthready()"
     },
     {
@@ -17060,7 +17170,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "hooks_usetodos_usetodosquery",
-      "community": 426,
+      "community": 21,
       "norm_label": "usetodosquery()"
     },
     {
@@ -17070,7 +17180,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "hooks_usetodos_usetodoquery",
-      "community": 43,
+      "community": 13,
       "norm_label": "usetodoquery()"
     },
     {
@@ -17080,7 +17190,7 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "hooks_usetodos_usetodotagsquery",
-      "community": 418,
+      "community": 13,
       "norm_label": "usetodotagsquery()"
     },
     {
@@ -17090,7 +17200,7 @@
       "source_location": "L179",
       "_origin": "ast",
       "id": "hooks_usetodos_usetodofoldersquery",
-      "community": 418,
+      "community": 13,
       "norm_label": "usetodofoldersquery()"
     },
     {
@@ -17140,7 +17250,7 @@
       "source_location": "L354",
       "_origin": "ast",
       "id": "hooks_usetodos_useaddsubtaskmutation",
-      "community": 43,
+      "community": 13,
       "norm_label": "useaddsubtaskmutation()"
     },
     {
@@ -17150,7 +17260,7 @@
       "source_location": "L384",
       "_origin": "ast",
       "id": "hooks_usetodos_useeditsubtaskmutation",
-      "community": 43,
+      "community": 13,
       "norm_label": "useeditsubtaskmutation()"
     },
     {
@@ -17160,7 +17270,7 @@
       "source_location": "L419",
       "_origin": "ast",
       "id": "hooks_usetodos_useremovesubtaskmutation",
-      "community": 43,
+      "community": 13,
       "norm_label": "useremovesubtaskmutation()"
     },
     {
@@ -17170,7 +17280,7 @@
       "source_location": "L455",
       "_origin": "ast",
       "id": "hooks_usetodos_usecreatetodotagmutation",
-      "community": 18,
+      "community": 21,
       "norm_label": "usecreatetodotagmutation()"
     },
     {
@@ -17230,7 +17340,7 @@
       "source_location": "L550",
       "_origin": "ast",
       "id": "hooks_usetodos_usetododailytemplatesquery",
-      "community": 418,
+      "community": 13,
       "norm_label": "usetododailytemplatesquery()"
     },
     {
@@ -17240,7 +17350,7 @@
       "source_location": "L560",
       "_origin": "ast",
       "id": "hooks_usetodos_usetododailytemplatesbydayquery",
-      "community": 74,
+      "community": 13,
       "norm_label": "usetododailytemplatesbydayquery()"
     },
     {
@@ -17790,7 +17900,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "categorypiechart_categorypiechart",
-      "community": 5,
+      "community": 384,
       "norm_label": "categorypiechart.tsx"
     },
     {
@@ -17800,7 +17910,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "categorypiechart_categorypiechart_props",
-      "community": 5,
+      "community": 384,
       "norm_label": "props"
     },
     {
@@ -17810,7 +17920,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "categorypiechart_categorypiechart_categorypiechart",
-      "community": 5,
+      "community": 384,
       "norm_label": "categorypiechart()"
     },
     {
@@ -17820,7 +17930,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "daycategorytimemodal_daycategorytimemodal",
-      "community": 5,
+      "community": 384,
       "norm_label": "daycategorytimemodal.tsx"
     },
     {
@@ -17830,7 +17940,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "daycategorytimemodal_daycategorytimemodal_props",
-      "community": 5,
+      "community": 384,
       "norm_label": "props"
     },
     {
@@ -17840,7 +17950,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "daycategorytimemodal_daycategorytimemodal_daycategorytimemodal",
-      "community": 5,
+      "community": 384,
       "norm_label": "daycategorytimemodal()"
     },
     {
@@ -18150,7 +18260,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "weeklyplanner_weeklyplanner_formateventlabel",
-      "community": 393,
+      "community": 58,
       "norm_label": "formateventlabel()"
     },
     {
@@ -18220,7 +18330,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usecurrentroutineeventsuggestion",
-      "community": 0,
+      "community": 41,
       "norm_label": "usecurrentroutineeventsuggestion.ts"
     },
     {
@@ -18230,7 +18340,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "hooks_usecurrentroutineeventsuggestion_usecurrentroutineeventsuggestion",
-      "community": 0,
+      "community": 41,
       "norm_label": "usecurrentroutineeventsuggestion()"
     },
     {
@@ -18240,7 +18350,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useupcomingroutineeventsuggestion",
-      "community": 0,
+      "community": 41,
       "norm_label": "useupcomingroutineeventsuggestion.ts"
     },
     {
@@ -18250,7 +18360,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "hooks_useupcomingroutineeventsuggestion_useupcomingroutineeventsuggestion",
-      "community": 0,
+      "community": 41,
       "norm_label": "useupcomingroutineeventsuggestion()"
     },
     {
@@ -18300,7 +18410,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "hooks_useweeklyroutine_useactiveweeklyroutinequery",
-      "community": 0,
+      "community": 41,
       "norm_label": "useactiveweeklyroutinequery()"
     },
     {
@@ -18480,7 +18590,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_weekly_routine_types",
-      "community": 0,
+      "community": 72,
       "norm_label": "weekly-routine.types.ts"
     },
     {
@@ -18490,7 +18600,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_weekly_routine_types_dayofweek",
-      "community": 0,
+      "community": 41,
       "norm_label": "dayofweek"
     },
     {
@@ -18500,7 +18610,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutineactivity",
-      "community": 0,
+      "community": 41,
       "norm_label": "weeklyroutineactivity"
     },
     {
@@ -18510,7 +18620,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutinedayschedule",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutinedayschedule"
     },
     {
@@ -18520,7 +18630,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutine",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutine"
     },
     {
@@ -18530,7 +18640,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutinecollection",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutinecollection"
     },
     {
@@ -18540,7 +18650,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutineinput",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutineinput"
     },
     {
@@ -18550,7 +18660,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutineeditinput",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutineeditinput"
     },
     {
@@ -18560,7 +18670,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutineactivityinput",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutineactivityinput"
     },
     {
@@ -18570,7 +18680,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutineactivityeditinput",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutineactivityeditinput"
     },
     {
@@ -18580,7 +18690,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "types_weekly_routine_types_weeklyroutineactivitybatchinput",
-      "community": 0,
+      "community": 72,
       "norm_label": "weeklyroutineactivitybatchinput"
     },
     {
@@ -18590,7 +18700,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "types_weekly_routine_types_timeblock",
-      "community": 0,
+      "community": 72,
       "norm_label": "timeblock"
     },
     {
@@ -18600,7 +18710,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "types_weekly_routine_types_plannerevent",
-      "community": 0,
+      "community": 41,
       "norm_label": "plannerevent"
     },
     {
@@ -18610,7 +18720,7 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "types_weekly_routine_types_plannerslot",
-      "community": 0,
+      "community": 72,
       "norm_label": "plannerslot"
     },
     {
@@ -18660,7 +18770,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "utils_planner_utils_timetominutes",
-      "community": 0,
+      "community": 41,
       "norm_label": "timetominutes()"
     },
     {
@@ -18770,7 +18880,7 @@
       "source_location": "L116",
       "_origin": "ast",
       "id": "utils_planner_utils_formatblocktime",
-      "community": 0,
+      "community": 450,
       "norm_label": "formatblocktime()"
     },
     {
@@ -18780,7 +18890,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "utils_planner_utils_formateventtime",
-      "community": 0,
+      "community": 450,
       "norm_label": "formateventtime()"
     },
     {
@@ -18870,7 +18980,7 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "utils_planner_utils_getcategorytimefromroutineactivities",
-      "community": 5,
+      "community": 384,
       "norm_label": "getcategorytimefromroutineactivities()"
     },
     {
@@ -18880,7 +18990,7 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "utils_planner_utils_buildcategorypiegradient",
-      "community": 5,
+      "community": 384,
       "norm_label": "buildcategorypiegradient()"
     },
     {
@@ -18890,7 +19000,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_test",
-      "community": 0,
+      "community": 41,
       "norm_label": "routine-suggestion.utils.test.ts"
     },
     {
@@ -18900,7 +19010,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_test_activity",
-      "community": 0,
+      "community": 41,
       "norm_label": "activity()"
     },
     {
@@ -18910,7 +19020,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils",
-      "community": 0,
+      "community": 41,
       "norm_label": "routine-suggestion.utils.ts"
     },
     {
@@ -18920,7 +19030,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_days_by_js_index",
-      "community": 0,
+      "community": 41,
       "norm_label": "days_by_js_index"
     },
     {
@@ -18930,7 +19040,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_getdayofweekfordate",
-      "community": 0,
+      "community": 41,
       "norm_label": "getdayofweekfordate()"
     },
     {
@@ -18940,7 +19050,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_getcurrentdayofweek",
-      "community": 0,
+      "community": 450,
       "norm_label": "getcurrentdayofweek()"
     },
     {
@@ -18950,7 +19060,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_findcurrentroutineactivity",
-      "community": 0,
+      "community": 41,
       "norm_label": "findcurrentroutineactivity()"
     },
     {
@@ -18960,7 +19070,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_findupcomingroutineactivity",
-      "community": 0,
+      "community": 41,
       "norm_label": "findupcomingroutineactivity()"
     },
     {
@@ -18970,7 +19080,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_routinenowstatus",
-      "community": 0,
+      "community": 41,
       "norm_label": "routinenowstatus"
     },
     {
@@ -18980,7 +19090,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_getroutinenowstatus",
-      "community": 0,
+      "community": 41,
       "norm_label": "getroutinenowstatus()"
     },
     {
@@ -18990,7 +19100,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_routineactivitywindow",
-      "community": 0,
+      "community": 41,
       "norm_label": "routineactivitywindow"
     },
     {
@@ -19000,7 +19110,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_findroutineactivitypivotindex",
-      "community": 0,
+      "community": 41,
       "norm_label": "findroutineactivitypivotindex()"
     },
     {
@@ -19010,7 +19120,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_getroutineactivitywindow",
-      "community": 0,
+      "community": 41,
       "norm_label": "getroutineactivitywindow()"
     },
     {
@@ -19020,7 +19130,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "applayout_applayout",
-      "community": 38,
+      "community": 396,
       "norm_label": "applayout.tsx"
     },
     {
@@ -19030,7 +19140,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "applayout_applayout_readsidebarcollapsedpreference",
-      "community": 38,
+      "community": 396,
       "norm_label": "readsidebarcollapsedpreference()"
     },
     {
@@ -19040,7 +19150,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "applayout_applayout_applayoutshell",
-      "community": 38,
+      "community": 396,
       "norm_label": "applayoutshell()"
     },
     {
@@ -19050,7 +19160,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "applayout_applayout_applayout",
-      "community": 38,
+      "community": 396,
       "norm_label": "applayout()"
     },
     {
@@ -19220,7 +19330,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "notespage_notespage",
-      "community": 418,
+      "community": 18,
       "norm_label": "notespage.tsx"
     },
     {
@@ -19230,7 +19340,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "notespage_notespage_notespage",
-      "community": 418,
+      "community": 18,
       "norm_label": "notespage()"
     },
     {
@@ -19670,7 +19780,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "todaypage_todaypage",
-      "community": 468,
+      "community": 23,
       "norm_label": "todaypage.tsx"
     },
     {
@@ -19680,7 +19790,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "todaypage_todaypage_gettodaylabel",
-      "community": 468,
+      "community": 23,
       "norm_label": "gettodaylabel()"
     },
     {
@@ -19690,7 +19800,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "todaypage_todaypage_todaypage",
-      "community": 468,
+      "community": 23,
       "norm_label": "todaypage()"
     },
     {
@@ -22210,7 +22320,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialogprovider",
-      "community": 423,
+      "community": 406,
       "norm_label": "confirmdialogprovider.tsx"
     },
     {
@@ -22220,7 +22330,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialogprovider_initialstate",
-      "community": 423,
+      "community": 406,
       "norm_label": "initialstate"
     },
     {
@@ -22230,7 +22340,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialogprovider_confirmdialogcontextvalue",
-      "community": 423,
+      "community": 406,
       "norm_label": "confirmdialogcontextvalue"
     },
     {
@@ -22240,7 +22350,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialogprovider_confirmdialogcontext",
-      "community": 423,
+      "community": 406,
       "norm_label": "confirmdialogcontext"
     },
     {
@@ -22250,7 +22360,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialogprovider_confirmdialogprovider",
-      "community": 423,
+      "community": 406,
       "norm_label": "confirmdialogprovider()"
     },
     {
@@ -23690,7 +23800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "switch_switch",
-      "community": 42,
+      "community": 433,
       "norm_label": "switch.tsx"
     },
     {
@@ -23700,7 +23810,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "switch_switch_springtransition",
-      "community": 42,
+      "community": 433,
       "norm_label": "springtransition"
     },
     {
@@ -23710,7 +23820,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "switch_switch_switchprops",
-      "community": 42,
+      "community": 433,
       "norm_label": "switchprops"
     },
     {
@@ -23720,7 +23830,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "switch_switch_switch",
-      "community": 42,
+      "community": 433,
       "norm_label": "switch()"
     },
     {
@@ -29150,7 +29260,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_status",
-      "community": 494,
+      "community": 448,
       "norm_label": "status.md"
     },
     {
@@ -29370,7 +29480,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements",
-      "community": 494,
+      "community": 448,
       "norm_label": "activities-module-improvements.md"
     },
     {
@@ -29540,7 +29650,7 @@
       "source_location": "L714",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_5_activitydetailpage_layout_2_columnas_desktop_sticky_bar_mobile",
-      "community": 497,
+      "community": 468,
       "norm_label": "mejora 5 \u2014 `activitydetailpage`: layout 2 columnas desktop + sticky bar mobile"
     },
     {
@@ -29550,7 +29660,7 @@
       "source_location": "L716",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_5_1_activitydetailpage_tsx",
-      "community": 497,
+      "community": 468,
       "norm_label": "5.1 \u2014 `activitydetailpage.tsx`"
     },
     {
@@ -29560,7 +29670,7 @@
       "source_location": "L875",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_5_2_activitydetailpage_module_scss",
-      "community": 497,
+      "community": 468,
       "norm_label": "5.2 \u2014 `activitydetailpage.module.scss`"
     },
     {
@@ -29590,7 +29700,7 @@
       "source_location": "L1093",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_criterios_de_aceptaci\u00f3n",
-      "community": 485,
+      "community": 442,
       "norm_label": "criterios de aceptacion"
     },
     {
@@ -29600,7 +29710,7 @@
       "source_location": "L1095",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_1_2",
-      "community": 485,
+      "community": 442,
       "norm_label": "mejora 1 + 2"
     },
     {
@@ -29610,7 +29720,7 @@
       "source_location": "L1102",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_3",
-      "community": 485,
+      "community": 442,
       "norm_label": "mejora 3"
     },
     {
@@ -29620,7 +29730,7 @@
       "source_location": "L1111",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_4",
-      "community": 485,
+      "community": 442,
       "norm_label": "mejora 4"
     },
     {
@@ -29630,7 +29740,7 @@
       "source_location": "L1118",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_5",
-      "community": 485,
+      "community": 442,
       "norm_label": "mejora 5"
     },
     {
@@ -29640,7 +29750,7 @@
       "source_location": "L1126",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_general",
-      "community": 485,
+      "community": 442,
       "norm_label": "general"
     },
     {
@@ -30370,7 +30480,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements",
-      "community": 494,
+      "community": 448,
       "norm_label": "layout-improvements.md"
     },
     {
@@ -30420,7 +30530,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_problemas_identificados",
-      "community": 432,
+      "community": 447,
       "norm_label": "problemas identificados"
     },
     {
@@ -30430,7 +30540,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p1_sidebar_demasiado_ancha_240px_fija",
-      "community": 432,
+      "community": 447,
       "norm_label": "p1 \u2014 sidebar demasiado ancha (240px fija)"
     },
     {
@@ -30440,7 +30550,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p2_max_width_1400px_con_margin_0_auto_en_main",
-      "community": 432,
+      "community": 447,
       "norm_label": "p2 \u2014 `max-width: 1400px` con `margin: 0 auto` en `.main`"
     },
     {
@@ -30450,7 +30560,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p3_topbar_ocupa_demasiada_altura_vertical",
-      "community": 432,
+      "community": 447,
       "norm_label": "p3 \u2014 topbar ocupa demasiada altura vertical"
     },
     {
@@ -30460,7 +30570,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p4_doble_sistema_de_navegaci\u00f3n_redundante_en_desktop",
-      "community": 432,
+      "community": 447,
       "norm_label": "p4 \u2014 doble sistema de navegacion redundante en desktop"
     },
     {
@@ -30470,7 +30580,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p5_padding_acumulado_entre_main_y_p\u00e1ginas_internas",
-      "community": 432,
+      "community": 447,
       "norm_label": "p5 \u2014 padding acumulado entre `.main` y paginas internas"
     },
     {
@@ -30690,7 +30800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements",
-      "community": 494,
+      "community": 448,
       "norm_label": "todos-module-improvements.md"
     },
     {
@@ -30780,7 +30890,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2_tododrawer_panel_lateral_en_desktop_drawer_en_mobile",
-      "community": 447,
+      "community": 423,
       "norm_label": "mejora 2 \u2014 `tododrawer`: panel lateral en desktop, drawer en mobile"
     },
     {
@@ -30790,7 +30900,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_1_notebooklist_tsx_detectar_viewport_layout_con_panel",
-      "community": 447,
+      "community": 423,
       "norm_label": "2.1 \u2014 `notebooklist.tsx`: detectar viewport + layout con panel"
     },
     {
@@ -30800,7 +30910,7 @@
       "source_location": "L201",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_2_notebooklist_module_scss_layout_2_columnas",
-      "community": 447,
+      "community": 423,
       "norm_label": "2.2 \u2014 `notebooklist.module.scss`: layout 2 columnas"
     },
     {
@@ -30810,7 +30920,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_3_tododrawer_tsx_a\u00f1adir_prop_aspanel_modo_panel",
-      "community": 447,
+      "community": 423,
       "norm_label": "2.3 \u2014 `tododrawer.tsx`: anadir prop `aspanel` + modo panel"
     },
     {
@@ -30820,7 +30930,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_4_tododrawer_module_scss_estilos_del_panel_lateral",
-      "community": 447,
+      "community": 423,
       "norm_label": "2.4 \u2014 `tododrawer.module.scss`: estilos del panel lateral"
     },
     {
@@ -30920,7 +31030,7 @@
       "source_location": "L734",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_criterios_de_aceptaci\u00f3n",
-      "community": 433,
+      "community": 88,
       "norm_label": "criterios de aceptacion"
     },
     {
@@ -30930,7 +31040,7 @@
       "source_location": "L736",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_1",
-      "community": 433,
+      "community": 88,
       "norm_label": "mejora 1"
     },
     {
@@ -30940,7 +31050,7 @@
       "source_location": "L742",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2",
-      "community": 433,
+      "community": 88,
       "norm_label": "mejora 2"
     },
     {
@@ -30950,7 +31060,7 @@
       "source_location": "L752",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_3",
-      "community": 433,
+      "community": 88,
       "norm_label": "mejora 3"
     },
     {
@@ -30960,7 +31070,7 @@
       "source_location": "L761",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_4",
-      "community": 433,
+      "community": 88,
       "norm_label": "mejora 4"
     },
     {
@@ -30970,7 +31080,7 @@
       "source_location": "L769",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_general",
-      "community": 433,
+      "community": 88,
       "norm_label": "general"
     }
   ],
@@ -42661,9 +42771,9 @@
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "habitdaycard_habitdaycard",
-      "target": "habitdaycard_habitdaycard_daystatus",
-      "confidence_score": 1.0
+      "target": "habitdaycard_habitdaycard_daystatus"
     },
     {
       "relation": "contains",
@@ -42671,9 +42781,9 @@
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
       "source_location": "L31",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "habitdaycard_habitdaycard",
-      "target": "habitdaycard_habitdaycard_getdaystatus",
-      "confidence_score": 1.0
+      "target": "habitdaycard_habitdaycard_getdaystatus"
     },
     {
       "relation": "contains",
@@ -42684,6 +42794,16 @@
       "confidence_score": 1.0,
       "source": "habitdaycard_habitdaycard",
       "target": "habitdaycard_habitdaycard_habitdaycard"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
+      "source_location": "L40",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "habitdaycard_habitdaycard",
+      "target": "habitdaycard_habitdaycard_iscompletedpath"
     },
     {
       "relation": "contains",
@@ -42701,9 +42821,9 @@
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
       "source_location": "L24",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "habitdaycard_habitdaycard",
-      "target": "habitdaycard_habitdaycard_weekday_short",
-      "confidence_score": 1.0
+      "target": "habitdaycard_habitdaycard_weekday_short"
     },
     {
       "relation": "contains",
@@ -42711,9 +42831,9 @@
       "source_file": "src/features/habits/components/HabitDayCard/HabitDayCard.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "habitdaycard_habitdaycard",
-      "target": "habitdaycard_habitdaycard_weekdayshort",
-      "confidence_score": 1.0
+      "target": "habitdaycard_habitdaycard_weekdayshort"
     },
     {
       "relation": "re_exports",
@@ -42872,6 +42992,28 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "src/features/habits/components/HabitDayCell/HabitDayCell.tsx",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "habitdaycell_habitdaycell_habitdaycell",
+      "target": "utils_habit_progress_utils_followuphasnotes"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/habits/components/HabitDayCell/HabitDayCell.tsx",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "habitdaycell_habitdaycell_habitdaycell",
+      "target": "utils_habit_progress_utils_getdayringprogress"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/habits/components/HabitDayCell/HabitDayCell.tsx",
       "source_location": "L30",
       "weight": 1.0,
       "source": "habitdaycell_habitdaycell_habitdaycell",
@@ -42898,6 +43040,48 @@
       "confidence_score": 1.0,
       "source": "habitdaycell_index",
       "target": "habitdaycell_habitdaycell_habitdaycell"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitDayMarker/HabitDayMarker.tsx",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "habitdaymarker_habitdaymarker",
+      "target": "habitdaymarker_habitdaymarker_habitdaymarker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitDayMarker/HabitDayMarker.tsx",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "habitdaymarker_habitdaymarker",
+      "target": "habitdaymarker_habitdaymarker_props",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitDayMarker/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "habitdaymarker_index",
+      "target": "habitdaymarker_habitdaymarker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitDayMarker/index.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "habitdaymarker_index",
+      "target": "habitdaymarker_habitdaymarker_habitdaymarker",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -43066,6 +43250,17 @@
       "weight": 1.0,
       "source": "habitfollowupform_habitfollowupform_habitfollowupform",
       "target": "utils_habit_progress_utils_formatprogresslabel"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/habits/components/HabitFollowUpForm/HabitFollowUpForm.tsx",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "habitfollowupform_habitfollowupform_habitfollowupform",
+      "target": "utils_habit_progress_utils_getcurrentprogressvalue"
     },
     {
       "relation": "calls",
@@ -44055,6 +44250,17 @@
     {
       "relation": "calls",
       "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/habits/components/HabitsWidget/HabitsWidget.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "habitswidget_habitswidget_getlast7days",
+      "target": "utils_habit_type_utils_formatlocaldatetoymd"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/habits/components/HabitsWidget/HabitsWidget.tsx",
       "source_location": "L22",
@@ -44084,6 +44290,17 @@
       "weight": 1.0,
       "source": "habitswidget_habitswidget_habitswidget",
       "target": "hooks_usehabits_usehabitmydayquery"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/habits/components/HabitsWidget/HabitsWidget.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "habitswidget_habitswidget_habitswidget",
+      "target": "utils_habit_type_utils_gettodaystring"
     },
     {
       "relation": "re_exports",
@@ -44267,12 +44484,12 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "features/habits/hooks/useHabitFollowUps.ts",
-      "source_location": "L18",
+      "source_file": "src/features/habits/hooks/useHabitFollowUps.ts",
+      "source_location": "L17",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "hooks_usehabitfollowups",
-      "target": "hooks_usehabitfollowups_patchmydaycache"
+      "target": "hooks_usehabitfollowups_invalidateafterfollowupchange"
     },
     {
       "relation": "contains",
@@ -45302,9 +45519,9 @@
       "source_file": "src/features/habits/pages/HabitMyDayPage.tsx",
       "source_location": "L176",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_habitmydaypage",
-      "target": "pages_habitmydaypage_empty_follow_up_map",
-      "confidence_score": 1.0
+      "target": "pages_habitmydaypage_empty_follow_up_map"
     },
     {
       "relation": "contains",
@@ -46036,6 +46253,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/habits/utils/habit-progress.utils.ts",
+      "source_location": "L88",
+      "weight": 1.0,
+      "source": "utils_habit_progress_utils",
+      "target": "utils_habit_progress_utils_followuphasnotes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-progress.utils.ts",
       "source_location": "L28",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -46051,6 +46278,16 @@
       "confidence_score": 1.0,
       "source": "utils_habit_progress_utils",
       "target": "utils_habit_progress_utils_getcurrentprogressvalue"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-progress.utils.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "utils_habit_progress_utils",
+      "target": "utils_habit_progress_utils_getdayringprogress",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -46205,6 +46442,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/habits/utils/habit-progress.utils.ts",
+      "source_location": "L83",
+      "weight": 1.0,
+      "source": "utils_habit_progress_utils_getdayringprogress",
+      "target": "utils_habit_progress_utils_getprogressratio",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-progress.utils.ts",
       "source_location": "L57",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -46231,6 +46479,16 @@
       "confidence_score": 1.0,
       "source": "utils_habit_type_utils",
       "target": "utils_habit_type_utils_adddaystostring"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-type.utils.ts",
+      "source_location": "L24",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_type_utils",
+      "target": "utils_habit_type_utils_formatlocaldatetoymd"
     },
     {
       "relation": "contains",
@@ -46293,6 +46551,60 @@
       "target": "utils_habit_type_utils_habit_type_labels"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-type.utils.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_type_utils",
+      "target": "utils_habit_type_utils_pad2"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-type.utils.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_type_utils_formatlocaldatetoymd",
+      "target": "utils_habit_type_utils_pad2"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-type.utils.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_type_utils_gettodaystring",
+      "target": "utils_habit_type_utils_formatlocaldatetoymd"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-type.utils.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_type_utils_getyesterdaystring",
+      "target": "utils_habit_type_utils_formatlocaldatetoymd"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "source": "utils_habit_week_utils_getmonthdaysforweek",
+      "target": "utils_habit_type_utils_adddaystostring"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "INFERRED",
@@ -46302,6 +46614,26 @@
       "weight": 1.0,
       "source": "utils_habit_week_utils_getweekend",
       "target": "utils_habit_type_utils_adddaystostring"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L38",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_week_utils",
+      "target": "utils_habit_week_utils_buildday"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L110",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_week_utils",
+      "target": "utils_habit_week_utils_getfollowupqueryrange"
     },
     {
       "relation": "contains",
@@ -46319,9 +46651,9 @@
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
       "source_location": "L61",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_habit_week_utils",
-      "target": "utils_habit_week_utils_getmonthrange",
-      "confidence_score": 1.0
+      "target": "utils_habit_week_utils_getmonthrange"
     },
     {
       "relation": "contains",
@@ -46388,11 +46720,33 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_week_utils_getmonthdaysforweek",
+      "target": "utils_habit_week_utils_pad2"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_habit_week_utils_getmonthrange",
-      "target": "utils_habit_week_utils_pad2",
-      "confidence_score": 1.0
+      "target": "utils_habit_week_utils_pad2"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L116",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_week_utils_getfollowupqueryrange",
+      "target": "utils_habit_week_utils_getweekend"
     },
     {
       "relation": "calls",
@@ -46404,6 +46758,28 @@
       "confidence_score": 1.0,
       "source": "utils_habit_week_utils_getmonthdaysforweek",
       "target": "utils_habit_week_utils_getweekend"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_week_utils_getmonthdaysforweek",
+      "target": "utils_habit_week_utils_buildday"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/utils/habit-week.utils.ts",
+      "source_location": "L115",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_habit_week_utils_getfollowupqueryrange",
+      "target": "utils_habit_week_utils_getmonthrange"
     },
     {
       "relation": "re_exports",
@@ -67600,5 +67976,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "bbd14512cd8135ce09dad6c06d19420553ec47df"
+  "built_at_commit": "19f1edca030068fd5da797186d43a8e8dfd60ff0"
 }

@@ -37,7 +37,7 @@ export function HabitMyDayPage() {
   )
 
   const { data, isLoading } = useHabitMyDayQuery(focusDate)
-  const { data: followUpGroups } = useHabitFollowUpsInDatesQuery(
+  const { data: followUpGroups, isPending: isFollowUpsPending } = useHabitFollowUpsInDatesQuery(
     followUpRange.from,
     followUpRange.to,
   )
@@ -63,7 +63,7 @@ export function HabitMyDayPage() {
           difficulty: fu.difficulty,
           count: fu.count,
           time: fu.time,
-          notes: null,
+          notes: fu.notes,
           story: null,
           archived: false,
         })
@@ -141,41 +141,49 @@ export function HabitMyDayPage() {
         </div>
       </header>
 
-      <div className={styles.listHeader} aria-hidden>
-        <div className={styles.listHeaderIdentity} />
-        <div className={styles.listHeaderDays}>
-          {monthDays.map((day) => (
-            <span
-              key={day.date}
-              className={[
-                styles.listHeaderDay,
-                day.isInWeek ? styles.listHeaderDayInWeek : styles.listHeaderDayMonthOnly,
-                day.isOutsideMonth ? styles.listHeaderDayOutsideMonth : '',
-                day.isToday ? styles.listHeaderDayToday : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <span className={styles.listHeaderDayLabel}>{day.label.slice(0, 3)}</span>
-              <span className={styles.listHeaderDayNumber}>{day.dayNumber}</span>
-            </span>
-          ))}
+      {isFollowUpsPending ? (
+        <div className={styles.center} aria-busy="true" aria-live="polite">
+          <Spinner />
         </div>
-      </div>
+      ) : (
+        <>
+          <div className={styles.listHeader} aria-hidden>
+            <div className={styles.listHeaderIdentity} />
+            <div className={styles.listHeaderDays}>
+              {monthDays.map((day) => (
+                <span
+                  key={day.date}
+                  className={[
+                    styles.listHeaderDay,
+                    day.isInWeek ? styles.listHeaderDayInWeek : styles.listHeaderDayMonthOnly,
+                    day.isOutsideMonth ? styles.listHeaderDayOutsideMonth : '',
+                    day.isToday ? styles.listHeaderDayToday : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  <span className={styles.listHeaderDayLabel}>{day.label.slice(0, 3)}</span>
+                  <span className={styles.listHeaderDayNumber}>{day.dayNumber}</span>
+                </span>
+              ))}
+            </div>
+          </div>
 
-      <ul className={styles.list}>
-        {data.map((entry) => (
-          <li key={entry.habit.id}>
-            <HabitDayCard
-              entry={entry}
-              date={focusDate}
-              days={monthDays}
-              followUpByDate={followUpsByHabit.get(entry.habit.id) ?? EMPTY_FOLLOW_UP_MAP}
-              canRegister={canRegister}
-            />
-          </li>
-        ))}
-      </ul>
+          <ul className={styles.list}>
+            {data.map((entry) => (
+              <li key={entry.habit.id}>
+                <HabitDayCard
+                  entry={entry}
+                  date={focusDate}
+                  days={monthDays}
+                  followUpByDate={followUpsByHabit.get(entry.habit.id) ?? EMPTY_FOLLOW_UP_MAP}
+                  canRegister={canRegister}
+                />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   )
 }

@@ -11,8 +11,8 @@ import type { Habit, HabitFollowUp } from '@/features/habits/types/habit.types'
 import { formatMeasureDisplay } from '@/features/habits/utils/habit-measure-form.utils'
 import {
   formatProgressLabel,
+  getCurrentProgressValue,
   getHabitDailyGoal,
-  getProgressRatio,
   getRemainingToGoal,
   isGoalMet,
   isPartialFollowUp,
@@ -26,6 +26,8 @@ type Props = {
   onSuccess?: () => void
 }
 
+const DEFAULT_INCREMENT = 1
+
 export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: Props) {
   const { confirm } = useConfirmDialog()
   const addMutation = useAddHabitFollowUpMutation()
@@ -36,7 +38,7 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
   const isAccomplished = existingFollowUp?.isAccomplished ?? false
   const isPartial = existingFollowUp ? isPartialFollowUp(habit, existingFollowUp) : false
 
-  const [increment, setIncrement] = useState('')
+  const [increment, setIncrement] = useState(String(DEFAULT_INCREMENT))
   const [difficulty, setDifficulty] = useState<number | null>(existingFollowUp?.difficulty ?? 2)
   const [notes, setNotes] = useState<string>(existingFollowUp?.notes ?? '')
   const [incrementError, setIncrementError] = useState<string | null>(null)
@@ -47,6 +49,7 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
   const goal = getHabitDailyGoal(habit)
   const hasDailyGoal = goal > 0
   const remaining = getRemainingToGoal(habit, existingFollowUp)
+  const currentValue = getCurrentProgressValue(habit, existingFollowUp)
 
   function parseIncrement(): number | null {
     const trimmed = increment.trim()
@@ -54,6 +57,17 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
     const value = Number(trimmed)
     if (!Number.isFinite(value) || value <= 0) return null
     return value
+  }
+
+  function setIncrementValue(next: number) {
+    const clamped = Math.max(1, Math.floor(next))
+    setIncrement(String(clamped))
+    if (incrementError) setIncrementError(null)
+  }
+
+  function adjustIncrement(delta: number) {
+    const current = parseIncrement() ?? DEFAULT_INCREMENT
+    setIncrementValue(current + delta)
   }
 
   function buildQuantifiedFields(amount: number): Record<string, unknown> {
@@ -71,7 +85,7 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
       },
       {
         onSuccess: (data) => {
-          setIncrement('')
+          setIncrement(String(DEFAULT_INCREMENT))
           if (options?.closeOnAccomplish === false && !data.isAccomplished) return
           onSuccess?.()
         },
@@ -133,14 +147,17 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
     addFollowUp({ isFailed: true })
   }
 
-  const currentProgress =
-    existingFollowUp && isQuantified
-      ? formatProgressLabel(habit, existingFollowUp, measureLabel)
-      : null
-  const progressRatio =
-    existingFollowUp && isQuantified ? getProgressRatio(habit, existingFollowUp) : null
-
   const parsedIncrement = parseIncrement()
+  const amountPreview = parsedIncrement ?? 0
+  const projectedValue = currentValue + amountPreview
+  const currentRatio = hasDailyGoal ? Math.min(currentValue / goal, 1) : 0
+  const projectedRatio = hasDailyGoal ? Math.min(projectedValue / goal, 1) : 0
+  const unitShort = habit.habitType === 'time' ? 'min' : measureLabel
+
+  const progressLabel = existingFollowUp
+    ? formatProgressLabel(habit, existingFollowUp, measureLabel)
+    : `0 / ${goal} ${unitShort}`
+
   const wouldCompleteWithIncrement =
     parsedIncrement !== null && isGoalMet(habit, existingFollowUp, parsedIncrement)
 
@@ -156,6 +173,9 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
   const incrementFieldLabel = isPartial
     ? `Sumar ahora (${incrementUnitLabel})`
     : `Cuánto registras (${incrementUnitLabel})`
+
+  const canAdjustDown = (parseIncrement() ?? DEFAULT_INCREMENT) > 1
+  const stepperDisabled = !hasDailyGoal || isMutating
 
   return (
     <div className={styles.root}>
@@ -176,14 +196,37 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
         </p>
       ) : null}
 
-      {isQuantified && currentProgress ? (
+      {isQuantified && hasDailyGoal ? (
         <div className={styles.progressBanner}>
-          <span className={styles.progressLabel}>Progreso de hoy</span>
-          <span className={styles.progressValue}>{currentProgress}</span>
-          {progressRatio !== null && goal > 0 ? (
-            <div className={styles.progressBar} aria-hidden>
-              <div className={styles.progressFill} style={{ width: `${progressRatio * 100}%` }} />
-            </div>
+          <div className={styles.progressHeader}>
+            <span className={styles.progressLabel}>Progreso de hoy</span>
+            <span className={styles.progressValue}>{progressLabel}</span>
+          </div>
+          <div
+            className={styles.progressBar}
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={goal}
+            aria-valuenow={currentValue}
+            aria-valuetext={`${currentValue} de ${goal} ${unitShort}`}
+            aria-label="Progreso hacia la meta diaria"
+          >
+            <div
+              className={styles.progressFillProjected}
+              style={{ width: `${projectedRatio * 100}%` }}
+              aria-hidden
+            />
+            <div
+              className={styles.progressFill}
+              style={{ width: `${currentRatio * 100}%` }}
+              aria-hidden
+            />
+          </div>
+          {!isAccomplished && amountPreview > 0 ? (
+            <p className={styles.progressPreview} aria-live="polite">
+              Al sumar: <strong>{projectedValue} / {goal} {unitShort}</strong>
+              {wouldCompleteWithIncrement ? ' · Meta completada' : null}
+            </p>
           ) : null}
         </div>
       ) : null}
@@ -193,21 +236,45 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
           <label className={styles.label} htmlFor="habit-follow-up-increment">
             {incrementFieldLabel}
           </label>
-          <Input
-            id="habit-follow-up-increment"
-            type="number"
-            min={1}
-            value={increment}
-            onChange={(e) => {
-              setIncrement(e.target.value)
-              if (incrementError) setIncrementError(null)
-            }}
-            placeholder={remaining !== null && remaining > 0 ? `Ej. ${Math.min(remaining, 10)}` : 'Ej. 20'}
-            hasError={Boolean(incrementError)}
-            disabled={!hasDailyGoal || isMutating}
-          />
+          <div className={styles.stepper}>
+            <button
+              type="button"
+              className={styles.stepBtn}
+              onClick={() => adjustIncrement(-1)}
+              disabled={stepperDisabled || !canAdjustDown}
+              aria-label={`Restar 1 ${incrementUnitLabel}`}
+            >
+              −
+            </button>
+            <div className={styles.stepperField}>
+              <Input
+                id="habit-follow-up-increment"
+                type="number"
+                min={1}
+                inputMode="numeric"
+                value={increment}
+                onChange={(e) => {
+                  setIncrement(e.target.value)
+                  if (incrementError) setIncrementError(null)
+                }}
+                className={styles.stepperInput}
+                hasError={Boolean(incrementError)}
+                disabled={stepperDisabled}
+                aria-describedby={incrementError ? 'habit-follow-up-increment-error' : undefined}
+              />
+            </div>
+            <button
+              type="button"
+              className={styles.stepBtn}
+              onClick={() => adjustIncrement(1)}
+              disabled={stepperDisabled}
+              aria-label={`Sumar 1 ${incrementUnitLabel}`}
+            >
+              +
+            </button>
+          </div>
           {incrementError ? (
-            <p className={styles.fieldError} role="alert">
+            <p id="habit-follow-up-increment-error" className={styles.fieldError} role="alert">
               {incrementError}
             </p>
           ) : null}

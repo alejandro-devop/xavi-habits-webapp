@@ -21,7 +21,8 @@
     background: color-mix(in srgb, var(--color-primary) 13%, transparent);
   }
 
-  @include lg {
+  /* Mes completo solo en desktop ancho; tablet/iPad se quedan en semana */
+  @include xl {
     flex-direction: row;
     align-items: stretch;
     gap: 0;
@@ -36,7 +37,7 @@
   min-width: 0;
   padding: 0.625rem 0.75rem;
 
-  @include lg {
+  @include xl {
     flex: 0 0 13.5rem;
     flex-direction: column;
     align-items: flex-start;
@@ -110,8 +111,8 @@
   flex: 1 1 0;
 }
 
-/* Desktop: mes completo; ocultar días de otro mes */
-@include lg {
+/* Desktop ancho: mes completo; ocultar días de otro mes */
+@include xl {
   .outOfWeek {
     display: flex;
     flex: 1 1 0;
@@ -146,7 +147,7 @@
   text-transform: uppercase;
   opacity: 0.7;
 
-  @include lg {
+  @include xl {
     display: none;
   }
 }
@@ -157,6 +158,10 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+}
+
+.marker {
+  color: var(--color-text-muted);
 }
 
 .connector {
@@ -177,30 +182,19 @@
 .connectorEndsAtWeek {
   display: none;
 
-  @include lg {
+  @include xl {
     display: block;
   }
 }
 
 .dayNumber {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.625rem;
-  height: 1.625rem;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  background: var(--color-surface-raised, color-mix(in srgb, var(--color-text) 5%, transparent));
+  width: 1.375rem;
+  height: 1.375rem;
   font-size: 0.6875rem;
-  font-weight: 600;
-  color: inherit;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 
-  @include lg {
-    width: 1.5rem;
-    height: 1.5rem;
+  @include xl {
+    width: 1.25rem;
+    height: 1.25rem;
     font-size: 0.625rem;
   }
 }
@@ -234,38 +228,58 @@
   }
 }
 
-.status--accomplished .dayNumber {
-  background: #22c55e;
-  color: #fff;
-  border-color: #4ade80;
-  font-weight: 700;
-  box-shadow:
-    0 0 5px color-mix(in srgb, #22c55e 55%, transparent),
-    0 0 10px color-mix(in srgb, #4ade80 30%, transparent);
+.status--accomplished {
+  color: #22c55e;
+
+  .dayNumber {
+    background: #22c55e;
+    color: #fff;
+    border-color: #4ade80;
+    font-weight: 700;
+    box-shadow:
+      0 0 5px color-mix(in srgb, #22c55e 55%, transparent),
+      0 0 10px color-mix(in srgb, #4ade80 30%, transparent);
+  }
 }
 
-.status--failed .dayNumber {
-  background: #ef4444;
-  color: #fff;
-  border-color: #f87171;
-  font-weight: 700;
-  box-shadow:
-    0 0 5px color-mix(in srgb, #ef4444 50%, transparent),
-    0 0 10px color-mix(in srgb, #f87171 28%, transparent);
+.status--failed {
+  color: #ef4444;
+
+  .dayNumber {
+    background: #ef4444;
+    color: #fff;
+    border-color: #f87171;
+    font-weight: 700;
+    box-shadow:
+      0 0 5px color-mix(in srgb, #ef4444 50%, transparent),
+      0 0 10px color-mix(in srgb, #f87171 28%, transparent);
+  }
 }
 
-.status--lifeline .dayNumber {
-  background: var(--color-surface-raised);
+.status--lifeline {
   color: var(--color-text-secondary);
-  border-color: var(--color-border);
+
+  .dayNumber {
+    background: var(--color-surface-raised);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border);
+  }
 }
 
-.status--partial .dayNumber {
-  background: #f59e0b;
-  color: #fff;
-  border-color: #fbbf24;
-  font-weight: 700;
-  box-shadow:
-    0 0 4px color-mix(in srgb, #f59e0b 45%, transparent),
-    0 0 8px color-mix(in srgb, #fbbf24 25%, transparent);
+.status--partial {
+  color: #f59e0b;
+
+  .dayNumber {
+    background: color-mix(in srgb, #f59e0b 18%, var(--color-surface-raised, transparent));
+    color: var(--color-text);
+    border-color: color-mix(in srgb, #f59e0b 35%, transparent);
+    font-weight: 700;
+  }
+}
+
+/* Quantified partial: progress lives in the ring; keep the center calm */
+.quantified.status--partial .dayNumber {
+  background: var(--color-surface-raised, color-mix(in srgb, var(--color-text) 5%, transparent));
+  color: var(--color-text);
+  box-shadow: none;
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  getFollowUpQueryRange,
   getMonthDaysForWeek,
   getMonthRange,
   getMyDayFocusDate,
@@ -23,7 +24,7 @@ describe('habit-week.utils', () => {
     expect(getMyDayFocusDate('2026-07-20', '2026-07-30')).toBe('2026-07-20')
   })
 
-  it('getMonthDaysForWeek marks selected week days', () => {
+  it('getMonthDaysForWeek includes spillover days when week crosses months', () => {
     const days = getMonthDaysForWeek(2026, 7, '2026-07-27', '2026-07-30')
     const inWeek = days.filter((d) => d.isInWeek).map((d) => d.date)
     expect(inWeek).toEqual([
@@ -32,12 +33,23 @@ describe('habit-week.utils', () => {
       '2026-07-29',
       '2026-07-30',
       '2026-07-31',
+      '2026-08-01',
+      '2026-08-02',
     ])
+    expect(days.find((d) => d.date === '2026-08-01')?.isOutsideMonth).toBe(true)
     expect(days.find((d) => d.date === '2026-07-30')?.isToday).toBe(true)
+    expect(days.find((d) => d.date === '2026-07-30')?.isOutsideMonth).toBe(false)
   })
 
   it('getMonthRange returns first and last day of month', () => {
     expect(getMonthRange(2026, 7)).toEqual({ from: '2026-07-01', to: '2026-07-31' })
     expect(getMonthRange(2026, 2)).toEqual({ from: '2026-02-01', to: '2026-02-28' })
+  })
+
+  it('getFollowUpQueryRange extends month range with week spillover', () => {
+    expect(getFollowUpQueryRange(2026, 7, '2026-07-27')).toEqual({
+      from: '2026-07-01',
+      to: '2026-08-02',
+    })
   })
 })

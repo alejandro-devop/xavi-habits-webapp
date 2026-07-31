@@ -165,6 +165,10 @@
   }
 }
 
+.listHeaderDayOutsideMonth {
+  display: none;
+}
+
 .listHeaderDayToday {
   color: var(--color-text);
 }

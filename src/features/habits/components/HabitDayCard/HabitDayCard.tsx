@@ -37,6 +37,10 @@ function getDayStatus(habit: HabitMyDayEntry['habit'], followUp: HabitFollowUp |
   return 'empty'
 }
 
+function isCompletedPath(status: DayStatus): boolean {
+  return status === 'accomplished'
+}
+
 export function HabitDayCard({
   entry,
   date,
@@ -64,6 +68,11 @@ export function HabitDayCard({
     setFormOpen(true)
   }
 
+  const dayStatuses = days.map((day) => {
+    const dayFollowUp = followUpByDate.get(day.date) ?? (day.date === date ? followUp : null)
+    return getDayStatus(habit, dayFollowUp ?? undefined)
+  })
+
   return (
     <div className={styles.row}>
       <div className={styles.identity}>
@@ -86,18 +95,30 @@ export function HabitDayCard({
       </div>
 
       <div className={styles.days} role="group" aria-label={`Días de ${habit.name}`}>
-        {days.map((day) => {
+        {days.map((day, index) => {
           const dayFollowUp = followUpByDate.get(day.date) ?? (day.date === date ? followUp : null)
-          const status = getDayStatus(habit, dayFollowUp ?? undefined)
+          const status = dayStatuses[index] ?? 'empty'
+          const nextStatus = dayStatuses[index + 1]
+          const nextDay = days[index + 1]
+          const connectsToNext =
+            isCompletedPath(status) &&
+            nextStatus != null &&
+            isCompletedPath(nextStatus)
+
           const dayEditable =
             canRegister &&
             day.date <= today &&
             (habit.startDate == null || day.date >= habit.startDate)
 
-          const className = [
+          const slotClass = [
+            styles.daySlot,
+            day.isInWeek ? styles.inWeek : styles.outOfWeek,
+            day.isOutsideMonth ? styles.outsideMonth : '',
+          ].join(' ')
+
+          const cellClass = [
             styles.dayCell,
             styles[`status--${status}`],
-            day.isInWeek ? styles.inWeek : styles.outOfWeek,
             day.isToday ? styles.today : '',
             day.isFuture ? styles.future : '',
             dayEditable ? styles.interactive : '',
@@ -105,31 +126,57 @@ export function HabitDayCard({
             .filter(Boolean)
             .join(' ')
 
-          const content = (
-            <>
+          const cell = dayEditable ? (
+            <button
+              type="button"
+              className={cellClass}
+              title={day.date}
+              aria-label={`${day.label} ${day.dayNumber} — ${status}`}
+              onClick={() => openForm(day.date, dayFollowUp)}
+            >
               <span className={styles.dayLabelMobile}>{weekdayShort(day.date)}</span>
-              <span className={styles.dayNumber}>{day.dayNumber}</span>
-            </>
+              <span className={styles.circleWrap}>
+                {connectsToNext ? (
+                  <span
+                    className={[
+                      styles.connector,
+                      nextDay && !nextDay.isInWeek ? styles.connectorEndsAtWeek : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    aria-hidden
+                  />
+                ) : null}
+                <span className={styles.dayNumber}>{day.dayNumber}</span>
+              </span>
+            </button>
+          ) : (
+            <div
+              className={cellClass}
+              title={day.date}
+              aria-label={`${day.label} ${day.dayNumber} — ${status}`}
+            >
+              <span className={styles.dayLabelMobile}>{weekdayShort(day.date)}</span>
+              <span className={styles.circleWrap}>
+                {connectsToNext ? (
+                  <span
+                    className={[
+                      styles.connector,
+                      nextDay && !nextDay.isInWeek ? styles.connectorEndsAtWeek : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    aria-hidden
+                  />
+                ) : null}
+                <span className={styles.dayNumber}>{day.dayNumber}</span>
+              </span>
+            </div>
           )
 
-          if (dayEditable) {
-            return (
-              <button
-                key={day.date}
-                type="button"
-                className={className}
-                title={day.date}
-                aria-label={`${day.label} ${day.dayNumber} — ${status}`}
-                onClick={() => openForm(day.date, dayFollowUp)}
-              >
-                {content}
-              </button>
-            )
-          }
-
           return (
-            <div key={day.date} className={className} title={day.date} aria-label={`${day.label} ${day.dayNumber} — ${status}`}>
-              {content}
+            <div key={day.date} className={slotClass}>
+              {cell}
             </div>
           )
         })}

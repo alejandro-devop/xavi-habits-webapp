@@ -9,8 +9,8 @@ import { EmptyState } from '@/shared/ui/EmptyState'
 import { Spinner } from '@/shared/ui/Spinner'
 import { getMondayOfWeek, getTodayString } from '@/features/habits/utils/habit-type.utils'
 import {
+  getFollowUpQueryRange,
   getMonthDaysForWeek,
-  getMonthRange,
   getMyDayFocusDate,
   getWeekEnd,
   getYearMonthFromDate,
@@ -27,14 +27,20 @@ export function HabitMyDayPage() {
   const weekEnd = getWeekEnd(weekStart)
 
   const { year, month } = useMemo(() => getYearMonthFromDate(weekStart), [weekStart])
-  const monthRange = useMemo(() => getMonthRange(year, month), [year, month])
+  const followUpRange = useMemo(
+    () => getFollowUpQueryRange(year, month, weekStart),
+    [year, month, weekStart],
+  )
   const monthDays = useMemo(
     () => getMonthDaysForWeek(year, month, weekStart, today),
     [year, month, weekStart, today],
   )
 
   const { data, isLoading } = useHabitMyDayQuery(focusDate)
-  const { data: followUpGroups } = useHabitFollowUpsInDatesQuery(monthRange.from, monthRange.to)
+  const { data: followUpGroups } = useHabitFollowUpsInDatesQuery(
+    followUpRange.from,
+    followUpRange.to,
+  )
 
   const followUpsByHabit = useMemo(() => {
     const byHabit = new Map<string, Map<string, HabitFollowUp>>()
@@ -144,6 +150,7 @@ export function HabitMyDayPage() {
               className={[
                 styles.listHeaderDay,
                 day.isInWeek ? styles.listHeaderDayInWeek : styles.listHeaderDayMonthOnly,
+                day.isOutsideMonth ? styles.listHeaderDayOutsideMonth : '',
                 day.isToday ? styles.listHeaderDayToday : '',
               ]
                 .filter(Boolean)

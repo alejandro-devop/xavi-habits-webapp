@@ -13,11 +13,11 @@
     background: color-mix(in srgb, var(--color-primary) 7%, transparent);
   }
 
-  &:hover .dayCell::before {
+  &:hover .daySlot::before {
     background: color-mix(in srgb, var(--color-primary) 9%, transparent);
   }
 
-  &:hover .dayCell:nth-child(even)::before {
+  &:hover .daySlot:nth-child(even)::before {
     background: color-mix(in srgb, var(--color-primary) 13%, transparent);
   }
 
@@ -82,24 +82,13 @@
   width: 100%;
 }
 
-.dayCell {
+.daySlot {
   position: relative;
   display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.15rem;
-  margin: 0;
-  padding: 0.35rem 0;
   min-width: 0;
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-  font: inherit;
-  line-height: 1;
   z-index: 0;
 
-  /* Guía de columna (tenue) — todas las columnas, altura completa de la fila */
+  /* Guía de columna (tenue) */
   &::before {
     content: '';
     position: absolute;
@@ -115,23 +104,43 @@
   }
 }
 
-/* Mobile + tablet: solo la semana seleccionada */
+/* Mobile + tablet: solo la semana seleccionada (incluye desborde de mes) */
 .inWeek {
   display: flex;
   flex: 1 1 0;
 }
 
-/* Desktop: mes completo */
+/* Desktop: mes completo; ocultar días de otro mes */
 @include lg {
   .outOfWeek {
     display: flex;
     flex: 1 1 0;
   }
+
+  .outsideMonth {
+    display: none;
+  }
+}
+
+.dayCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.35rem 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  line-height: 1;
 }
 
 .dayLabelMobile {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   font-size: 0.5625rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -139,6 +148,37 @@
 
   @include lg {
     display: none;
+  }
+}
+
+.circleWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.connector {
+  position: absolute;
+  left: 50%;
+  width: 100%;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow:
+    0 0 4px color-mix(in srgb, #22c55e 55%, transparent),
+    0 0 8px color-mix(in srgb, #4ade80 35%, transparent);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* En mobile/tablet no prolongar el path hacia días ocultos fuera de semana */
+.connectorEndsAtWeek {
+  display: none;
+
+  @include lg {
+    display: block;
   }
 }
 
@@ -156,7 +196,7 @@
   font-size: 0.6875rem;
   font-weight: 600;
   color: inherit;
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 
   @include lg {
     width: 1.5rem;
@@ -195,15 +235,23 @@
 }
 
 .status--accomplished .dayNumber {
-  background: var(--color-success-subtle, #dcfce7);
-  color: var(--color-success-text, #166534);
-  border-color: color-mix(in srgb, var(--color-success-text, #166534) 35%, transparent);
+  background: #22c55e;
+  color: #fff;
+  border-color: #4ade80;
+  font-weight: 700;
+  box-shadow:
+    0 0 5px color-mix(in srgb, #22c55e 55%, transparent),
+    0 0 10px color-mix(in srgb, #4ade80 30%, transparent);
 }
 
 .status--failed .dayNumber {
-  background: var(--color-danger-subtle, #fee2e2);
-  color: var(--color-danger-text, #991b1b);
-  border-color: color-mix(in srgb, var(--color-danger-text, #991b1b) 35%, transparent);
+  background: #ef4444;
+  color: #fff;
+  border-color: #f87171;
+  font-weight: 700;
+  box-shadow:
+    0 0 5px color-mix(in srgb, #ef4444 50%, transparent),
+    0 0 10px color-mix(in srgb, #f87171 28%, transparent);
 }
 
 .status--lifeline .dayNumber {
@@ -213,7 +261,11 @@
 }
 
 .status--partial .dayNumber {
-  background: var(--color-warning-subtle, #fef3c7);
-  color: var(--color-warning-text, #92400e);
-  border-color: color-mix(in srgb, var(--color-warning-text, #92400e) 35%, transparent);
+  background: #f59e0b;
+  color: #fff;
+  border-color: #fbbf24;
+  font-weight: 700;
+  box-shadow:
+    0 0 4px color-mix(in srgb, #f59e0b 45%, transparent),
+    0 0 8px color-mix(in srgb, #fbbf24 25%, transparent);
 }

@@ -132,6 +132,7 @@ export function HabitWeekSelector({ weekStart, onWeekChange }: HabitWeekSelector
                 day.isInWeek ? styles.inWeek : '',
                 day.isToday ? styles.today : '',
                 day.isFuture ? styles.future : '',
+                day.isOutsideMonth ? styles.outsideMonth : '',
               ]
                 .filter(Boolean)
                 .join(' ')}

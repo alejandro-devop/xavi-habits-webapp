@@ -1,6 +1,5 @@
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { useAddHabitFollowUpMutation } from '@/features/habits/hooks/useHabitFollowUps'
-import { Button } from '@/shared/ui/Button'
 import styles from './HabitLifelineButton.module.scss'
 
 type Props = {
@@ -26,17 +25,18 @@ export function HabitLifelineButton({ habitId, date, lifelinesRemaining }: Props
   }
 
   return (
-    <div className={styles.root}>
-      <Button
-        variant="secondary"
-        size="sm"
-        disabled={disabled}
-        onClick={handleClick}
-        isLoading={mutation.isPending}
-        title={disabled ? 'Sin salvavidas esta semana' : undefined}
-      >
-        🛡 Salvavidas ({lifelinesRemaining})
-      </Button>
-    </div>
+    <button
+      type="button"
+      className={styles.root}
+      disabled={disabled || mutation.isPending}
+      onClick={handleClick}
+      title={disabled ? 'Sin salvavidas esta semana' : `Salvavidas (${lifelinesRemaining})`}
+      aria-label={disabled ? 'Sin salvavidas esta semana' : `Usar salvavidas, quedan ${lifelinesRemaining}`}
+    >
+      <span className={styles.icon} aria-hidden>
+        🛡
+      </span>
+      <span className={styles.count}>{lifelinesRemaining}</span>
+    </button>
   )
 }

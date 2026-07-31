@@ -1,3 +1,5 @@
+@use '@/app/styles/mixins/breakpoints' as *;
+
 .root {
   display: flex;
   flex-direction: column;
@@ -23,6 +25,12 @@
   text-transform: capitalize;
   margin: 0;
   line-height: 1.2;
+}
+
+.futureHint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
 }
 
 .summaryBar {
@@ -93,26 +101,93 @@
   &::before { background: var(--color-border); }
 }
 
+.listHeader {
+  display: none;
+
+  @include lg {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    padding: 0;
+    border-bottom: none;
+  }
+}
+
+.listHeaderIdentity {
+  flex: 0 0 13.5rem;
+  padding: 0.5rem 0.875rem 0.5rem 0.25rem;
+}
+
+.listHeaderDays {
+  display: flex;
+  flex: 1;
+  gap: 0;
+  min-width: 0;
+}
+
+.listHeaderDay {
+  position: relative;
+  display: none;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0.35rem 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  z-index: 0;
+
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    inset: 0;
+    background: color-mix(in srgb, var(--color-text) 2.25%, transparent);
+  }
+
+  &:nth-child(even)::before {
+    background: color-mix(in srgb, var(--color-text) 4.5%, transparent);
+  }
+}
+
+.listHeaderDayInWeek {
+  display: flex;
+  color: var(--color-primary);
+}
+
+.listHeaderDayMonthOnly {
+  @include lg {
+    display: flex;
+  }
+}
+
+.listHeaderDayToday {
+  color: var(--color-text);
+}
+
+.listHeaderDayLabel {
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+}
+
+.listHeaderDayNumber {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(0, 350px));
-  justify-content: start;
-  gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 
   > li {
-    max-width: 350px;
     width: 100%;
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    justify-content: stretch;
-
-    > li {
-      max-width: none;
-    }
   }
 }

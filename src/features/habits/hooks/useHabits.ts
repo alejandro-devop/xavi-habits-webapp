@@ -10,6 +10,7 @@ import { selectIsAuthenticated } from '@/features/auth/store/auth.selectors'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { habitKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
+import { getTodayString } from '@/features/habits/utils/habit-type.utils'
 
 function useHabitQueryGuard() {
   const isReady = useAuthBootstrap().status === 'ready'
@@ -130,7 +131,7 @@ export function useCompleteHabitMutation() {
   return useMutation({
     mutationFn: (id: string) => habitsApi.completeHabit(id),
     onSuccess: () => {
-      const today = new Date().toISOString().split('T')[0]
+      const today = getTodayString()
       void queryClient.invalidateQueries({ queryKey: habitKeys.all })
       void queryClient.invalidateQueries({ queryKey: habitKeys.myDay(today) })
       toast.success('¡Hábito completado!')

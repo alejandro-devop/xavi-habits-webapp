@@ -2,185 +2,137 @@ import { useState } from 'react'
 import { HabitStreakBadge } from '@/features/habits/components/HabitStreakBadge'
 import { HabitLifelineButton } from '@/features/habits/components/HabitLifelineButton'
 import { HabitFollowUpForm } from '@/features/habits/components/HabitFollowUpForm'
-import { HabitPurposeBanner } from '@/features/habits/components/HabitPurposeBanner'
-import { useHabitWeekViewQuery } from '@/features/habits/hooks/useHabits'
-import { getMondayOfWeek } from '@/features/habits/utils/habit-type.utils'
+import { getTodayString } from '@/features/habits/utils/habit-type.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Modal } from '@/shared/ui/Modal'
-import { Button } from '@/shared/ui/Button'
-import type { HabitMyDayEntry } from '@/features/habits/types/habit.types'
-import {
-  formatProgressLabel,
-  getHabitDailyGoal,
-  getProgressRatio,
-  isPartialFollowUp,
-} from '@/features/habits/utils/habit-progress.utils'
-import { formatMeasureDisplay } from '@/features/habits/utils/habit-measure-form.utils'
+import type { HabitFollowUp, HabitMyDayEntry } from '@/features/habits/types/habit.types'
+import type { HabitWeekBarDay } from '@/features/habits/utils/habit-week.utils'
+import { isPartialFollowUp } from '@/features/habits/utils/habit-progress.utils'
 import styles from './HabitDayCard.module.scss'
 
 type Props = {
   entry: HabitMyDayEntry
   date: string
+  days: HabitWeekBarDay[]
+  followUpByDate: Map<string, HabitFollowUp>
+  /** Si es false (semana futura), no se pueden registrar follow-ups. */
+  canRegister?: boolean
 }
 
-const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
+type DayStatus = 'empty' | 'accomplished' | 'failed' | 'lifeline' | 'partial'
 
-export function HabitDayCard({ entry, date }: Props) {
+const WEEKDAY_SHORT = ['D', 'L', 'M', 'X', 'J', 'V', 'S']
+
+function weekdayShort(date: string): string {
+  const day = new Date(date + 'T12:00:00').getDay()
+  return WEEKDAY_SHORT[day] ?? ''
+}
+
+function getDayStatus(habit: HabitMyDayEntry['habit'], followUp: HabitFollowUp | undefined): DayStatus {
+  if (!followUp) return 'empty'
+  if (followUp.isLifeline) return 'lifeline'
+  if (followUp.isFailed) return 'failed'
+  if (followUp.isAccomplished) return 'accomplished'
+  if (isPartialFollowUp(habit, followUp)) return 'partial'
+  return 'empty'
+}
+
+export function HabitDayCard({
+  entry,
+  date,
+  days,
+  followUpByDate,
+  canRegister = true,
+}: Props) {
   const { habit, followUp, lifelinesRemaining } = entry
   const [formOpen, setFormOpen] = useState(false)
+  const [formDate, setFormDate] = useState(date)
+  const [formFollowUp, setFormFollowUp] = useState<HabitFollowUp | null | undefined>(followUp)
 
-  const weekStart = getMondayOfWeek(date)
-  const { data: weekView } = useHabitWeekViewQuery(habit.id, weekStart)
-
+  const today = getTodayString()
   const hasFollowUp = followUp !== null
-  const isPartial = followUp ? isPartialFollowUp(habit, followUp) : false
-  const dailyGoal = getHabitDailyGoal(habit)
-  const todayProgressRatio =
-    followUp && habit.habitType !== 'boolean' && dailyGoal > 0
-      ? getProgressRatio(habit, followUp)
-      : null
   const showLifeline =
+    canRegister &&
     habit.weeklyLifelines > 0 &&
     (!hasFollowUp || (followUp?.isAccomplished && !followUp?.isLifeline))
 
-  function renderStatus() {
-    if (!followUp) return null
-
-    if (followUp.isLifeline) {
-      return <span className={[styles.badge, styles.lifeline].join(' ')}>Salvavidas</span>
-    }
-    if (followUp.isFailed) {
-      return <span className={[styles.badge, styles.failed].join(' ')}>Fallido</span>
-    }
-    if (followUp.isAccomplished) {
-      const value =
-        habit.habitType === 'count' && followUp.count != null
-          ? ` · ${followUp.count} ${formatMeasureDisplay(habit.measure)}`
-          : habit.habitType === 'time' && followUp.time != null
-            ? ` · ${followUp.time} min`
-            : ''
-      return (
-        <span className={[styles.badge, styles.accomplished].join(' ')}>
-          Logrado{value}
-        </span>
-      )
-    }
-    if (isPartial) {
-      return (
-        <span className={[styles.badge, styles.partial].join(' ')}>
-          {formatProgressLabel(habit, followUp, formatMeasureDisplay(habit.measure))}
-        </span>
-      )
-    }
-    return null
+  function openForm(targetDate: string, targetFollowUp: HabitFollowUp | null | undefined) {
+    if (!canRegister || targetDate > today) return
+    if (habit.startDate != null && targetDate < habit.startDate) return
+    setFormDate(targetDate)
+    setFormFollowUp(targetFollowUp)
+    setFormOpen(true)
   }
 
-  const progress =
-    habit.periodDays > 0 ? Math.min(habit.streak / habit.periodDays, 1) : null
-
-  const showPurposeBanner =
-    entry.habit.purpose != null && entry.habit.purpose.placement !== 'pool'
-
   return (
-    <div className={styles.card}>
-      {showPurposeBanner ? (
-        <HabitPurposeBanner purpose={entry.habit.purpose} habitId={entry.habit.id} />
-      ) : null}
-      <div className={styles.content}>
-      <div className={styles.header}>
+    <div className={styles.row}>
+      <div className={styles.identity}>
         <div className={styles.meta}>
           {habit.icon ? (
             <AppIcon name={habit.icon} size="sm" className={styles.icon} />
           ) : null}
           <span className={styles.name}>{habit.name}</span>
         </div>
-        <HabitStreakBadge streak={habit.streak} />
-      </div>
-
-      {todayProgressRatio !== null && (
-        <div className={styles.dailyProgressGroup}>
-          <span className={styles.progressLabel}>
-            Hoy: {followUp ? formatProgressLabel(habit, followUp, formatMeasureDisplay(habit.measure)) : ''}
-          </span>
-          <div className={styles.progressBar} aria-hidden>
-            <div
-              className={styles.progressFill}
-              style={{ width: `${todayProgressRatio * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
-
-      {progress !== null && (
-        <div className={styles.progressGroup}>
-          <span className={styles.progressLabel}>
-            {habit.streak}/{habit.periodDays} días
-          </span>
-          <div
-            className={styles.progressBar}
-            aria-label={`${habit.streak}/${habit.periodDays} días`}
-          >
-            <div className={styles.progressFill} style={{ width: `${progress * 100}%` }} />
-          </div>
-        </div>
-      )}
-
-      {weekView && (
-        <div className={styles.weekStrip}>
-          {weekView.days.map((day) => {
-            const d = new Date(day.date + 'T12:00:00Z')
-            const label = DAY_LABELS[d.getUTCDay() === 0 ? 6 : d.getUTCDay() - 1]
-            const isToday = day.date === date
-            const dayIsPartial =
-              day.followUp != null && isPartialFollowUp(habit, day.followUp)
-            const dotStatus = dayIsPartial ? 'partial' : day.status
-            return (
-              <div
-                key={day.date}
-                className={[
-                  styles.weekDot,
-                  styles[`dot--${dotStatus}`],
-                  isToday ? styles['dot--today'] : '',
-                ].join(' ')}
-                title={day.date}
-              >
-                <span className={styles.dotLabel}>{label}</span>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      <div className={styles.footer}>
-        <div className={styles.statusRow}>
-          {renderStatus()}
-          {showLifeline && (
+        <div className={styles.identityAside}>
+          <HabitStreakBadge streak={habit.streak} />
+          {showLifeline ? (
             <HabitLifelineButton
               habitId={habit.id}
               date={date}
               lifelinesRemaining={lifelinesRemaining}
             />
-          )}
+          ) : null}
         </div>
-
-        {!hasFollowUp && (
-          <Button variant="primary" size="sm" onClick={() => setFormOpen(true)}>
-            Registrar
-          </Button>
-        )}
-
-        {isPartial && (
-          <Button variant="primary" size="sm" onClick={() => setFormOpen(true)}>
-            Sumar
-          </Button>
-        )}
-
-        {hasFollowUp && !isPartial && (
-          <Button variant="ghost" size="sm" onClick={() => setFormOpen(true)}>
-            Editar
-          </Button>
-        )}
       </div>
+
+      <div className={styles.days} role="group" aria-label={`Días de ${habit.name}`}>
+        {days.map((day) => {
+          const dayFollowUp = followUpByDate.get(day.date) ?? (day.date === date ? followUp : null)
+          const status = getDayStatus(habit, dayFollowUp ?? undefined)
+          const dayEditable =
+            canRegister &&
+            day.date <= today &&
+            (habit.startDate == null || day.date >= habit.startDate)
+
+          const className = [
+            styles.dayCell,
+            styles[`status--${status}`],
+            day.isInWeek ? styles.inWeek : styles.outOfWeek,
+            day.isToday ? styles.today : '',
+            day.isFuture ? styles.future : '',
+            dayEditable ? styles.interactive : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+
+          const content = (
+            <>
+              <span className={styles.dayLabelMobile}>{weekdayShort(day.date)}</span>
+              <span className={styles.dayNumber}>{day.dayNumber}</span>
+            </>
+          )
+
+          if (dayEditable) {
+            return (
+              <button
+                key={day.date}
+                type="button"
+                className={className}
+                title={day.date}
+                aria-label={`${day.label} ${day.dayNumber} — ${status}`}
+                onClick={() => openForm(day.date, dayFollowUp)}
+              >
+                {content}
+              </button>
+            )
+          }
+
+          return (
+            <div key={day.date} className={className} title={day.date} aria-label={`${day.label} ${day.dayNumber} — ${status}`}>
+              {content}
+            </div>
+          )
+        })}
       </div>
 
       <Modal
@@ -191,8 +143,8 @@ export function HabitDayCard({ entry, date }: Props) {
       >
         <HabitFollowUpForm
           habit={habit}
-          date={date}
-          existingFollowUp={followUp ?? undefined}
+          date={formDate}
+          existingFollowUp={formFollowUp ?? undefined}
           onSuccess={() => setFormOpen(false)}
         />
       </Modal>

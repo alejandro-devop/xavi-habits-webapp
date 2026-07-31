@@ -16,8 +16,6 @@ export function HabitWeekViewPage() {
 
   const { data, isLoading } = useHabitWeekViewQuery(id, weekStart)
 
-  const disableNext = weekStart >= currentWeekStart
-
   function handlePrev() {
     setWeekStart((prev) => addDaysToString(prev, -7))
   }
@@ -50,7 +48,6 @@ export function HabitWeekViewPage() {
         weekStart={weekStart}
         onPrev={handlePrev}
         onNext={handleNext}
-        disableNext={disableNext}
       />
 
       <HabitLifelinesIndicator used={lifelinesUsed} total={habit.weeklyLifelines} />

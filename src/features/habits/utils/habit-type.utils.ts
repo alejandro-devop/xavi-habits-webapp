@@ -16,14 +16,23 @@ export function getHabitTypeLabel(type: HabitType): string {
   return HABIT_TYPE_LABELS[type]
 }
 
+function pad2(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+/** YYYY-MM-DD en zona local (no UTC). */
+export function formatLocalDateToYmd(date: Date): string {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`
+}
+
 export function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return formatLocalDateToYmd(new Date())
 }
 
 export function getYesterdayString(): string {
   const d = new Date()
-  d.setUTCDate(d.getUTCDate() - 1)
-  return d.toISOString().split('T')[0]
+  d.setDate(d.getDate() - 1)
+  return formatLocalDateToYmd(d)
 }
 
 export function addDaysToString(dateStr: string, days: number): string {

@@ -1,10 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as followUpsApi from '@/features/habits/api/habit-follow-ups.api'
 import type {
-  HabitFollowUp,
   HabitFollowUpAddInput,
   HabitFollowUpEditInput,
-  HabitMyDayEntry,
 } from '@/features/habits/types/habit.types'
 import { habitKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
@@ -15,17 +13,30 @@ type FollowUpMutationContext = {
   weekStart?: string
 }
 
-function patchMyDayCache(
+/** Invalida todo lo que depende del log (racha incluida en habitMyDay / detail / list). */
+function invalidateAfterFollowUpChange(
   queryClient: ReturnType<typeof useQueryClient>,
-  date: string,
   habitId: string,
-  followUp: HabitFollowUp,
 ) {
-  queryClient.setQueryData<HabitMyDayEntry[]>(habitKeys.myDay(date), (old) => {
-    if (!old) return old
-    return old.map((entry) =>
-      entry.habit.id === habitId ? { ...entry, followUp } : entry,
-    )
+  void queryClient.invalidateQueries({
+    queryKey: [...habitKeys.all, 'myDay'],
+    refetchType: 'all',
+  })
+  void queryClient.invalidateQueries({
+    queryKey: habitKeys.detail(habitId),
+    refetchType: 'all',
+  })
+  void queryClient.invalidateQueries({
+    queryKey: [...habitKeys.all, 'list'],
+    refetchType: 'all',
+  })
+  void queryClient.invalidateQueries({
+    queryKey: [...habitKeys.all, 'weekView', habitId],
+    refetchType: 'all',
+  })
+  void queryClient.invalidateQueries({
+    queryKey: [...habitKeys.all, 'calendar'],
+    refetchType: 'all',
   })
 }
 
@@ -34,20 +45,8 @@ export function useAddHabitFollowUpMutation() {
   const toast = useToast()
   return useMutation({
     mutationFn: (input: HabitFollowUpAddInput) => followUpsApi.addHabitFollowUp(input),
-    onSuccess: (data, variables) => {
-      const date = variables.date ?? new Date().toISOString().split('T')[0]
-      // Actualización inmediata del cache para reflejar el cambio en la UI sin esperar el refetch
-      patchMyDayCache(queryClient, date, variables.habitId, data)
-      void queryClient.invalidateQueries({ queryKey: habitKeys.myDay(date), refetchType: 'all' })
-      void queryClient.invalidateQueries({ queryKey: habitKeys.detail(variables.habitId), refetchType: 'all' })
-      void queryClient.invalidateQueries({
-        queryKey: [...habitKeys.all, 'weekView', variables.habitId],
-        refetchType: 'all',
-      })
-      void queryClient.invalidateQueries({
-        queryKey: [...habitKeys.all, 'calendar'],
-        refetchType: 'all',
-      })
+    onSuccess: (_data, variables) => {
+      invalidateAfterFollowUpChange(queryClient, variables.habitId)
     },
     onError: () => {
       toast.error('Error al registrar el log')
@@ -65,20 +64,8 @@ export function useUpdateHabitFollowUpMutation() {
       input: HabitFollowUpEditInput
       context: FollowUpMutationContext
     }) => followUpsApi.updateHabitFollowUp(input),
-    onSuccess: (data, { context }) => {
-      const date = context.date ?? new Date().toISOString().split('T')[0]
-      // Actualización inmediata del cache
-      patchMyDayCache(queryClient, date, context.habitId, data)
-      void queryClient.invalidateQueries({ queryKey: habitKeys.myDay(date), refetchType: 'all' })
-      void queryClient.invalidateQueries({ queryKey: habitKeys.detail(context.habitId), refetchType: 'all' })
-      void queryClient.invalidateQueries({
-        queryKey: [...habitKeys.all, 'weekView', context.habitId],
-        refetchType: 'all',
-      })
-      void queryClient.invalidateQueries({
-        queryKey: [...habitKeys.all, 'calendar'],
-        refetchType: 'all',
-      })
+    onSuccess: (_data, { context }) => {
+      invalidateAfterFollowUpChange(queryClient, context.habitId)
     },
     onError: () => {
       toast.error('Error al actualizar el log')
@@ -93,17 +80,7 @@ export function useRemoveHabitFollowUpMutation() {
     mutationFn: ({ id }: { id: string; context: FollowUpMutationContext }) =>
       followUpsApi.removeHabitFollowUp(id),
     onSuccess: (_data, { context }) => {
-      const date = context.date ?? new Date().toISOString().split('T')[0]
-      void queryClient.invalidateQueries({ queryKey: habitKeys.myDay(date), refetchType: 'all' })
-      void queryClient.invalidateQueries({ queryKey: habitKeys.detail(context.habitId), refetchType: 'all' })
-      void queryClient.invalidateQueries({
-        queryKey: [...habitKeys.all, 'weekView', context.habitId],
-        refetchType: 'all',
-      })
-      void queryClient.invalidateQueries({
-        queryKey: [...habitKeys.all, 'calendar'],
-        refetchType: 'all',
-      })
+      invalidateAfterFollowUpChange(queryClient, context.habitId)
     },
     onError: () => {
       toast.error('Error al eliminar el log')

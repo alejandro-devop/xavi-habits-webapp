@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { useHabitMyDayQuery, useHabitFollowUpsInDatesQuery } from '@/features/habits/hooks/useHabits'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
+import { formatLocalDateToYmd, getTodayString } from '@/features/habits/utils/habit-type.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Spinner } from '@/shared/ui/Spinner'
 import styles from './HabitsWidget.module.scss'
@@ -12,13 +13,13 @@ function getLast7Days(): string[] {
   for (let i = 6; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
-    days.push(d.toISOString().split('T')[0])
+    days.push(formatLocalDateToYmd(d))
   }
   return days
 }
 
 export function HabitsWidget() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getTodayString()
   const last7 = getLast7Days()
   const from = last7[0]
   const to = last7[last7.length - 1]

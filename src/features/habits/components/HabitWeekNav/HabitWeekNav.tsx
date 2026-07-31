@@ -4,10 +4,10 @@ type Props = {
   weekStart: string
   onPrev: () => void
   onNext: () => void
-  disableNext: boolean
+  disableNext?: boolean
 }
 
-export function HabitWeekNav({ weekStart, onPrev, onNext, disableNext }: Props) {
+export function HabitWeekNav({ weekStart, onPrev, onNext, disableNext = false }: Props) {
   return (
     <div className={styles.root}>
       <button className={styles.navBtn} onClick={onPrev} aria-label="Semana anterior">

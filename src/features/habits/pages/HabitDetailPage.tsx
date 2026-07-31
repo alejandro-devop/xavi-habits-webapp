@@ -182,7 +182,6 @@ export function HabitDetailPage() {
               weekStart={weekStart}
               onPrev={() => setWeekStart((w) => addDaysToString(w, -7))}
               onNext={() => setWeekStart((w) => addDaysToString(w, 7))}
-              disableNext={weekStart >= thisWeekStart}
             />
             {weekView ? (
               <HabitWeekGrid

@@ -115,6 +115,13 @@ export const learningKeys = {
   },
 }
 
+export const appIdeaKeys = {
+  all: ['app-ideas'] as const,
+  lists: () => [...appIdeaKeys.all, 'list'] as const,
+  list: (filters: ListFilters = {}) => [...appIdeaKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...appIdeaKeys.all, 'detail', id] as const,
+}
+
 export const sleepKeys = {
   all: ['sleep'] as const,
   list: (filters: ListFilters = {}) => [...sleepKeys.all, 'list', filters] as const,

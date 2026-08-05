@@ -2,6 +2,7 @@ import { activitiesPaths } from '@/features/activities/routes/activities-paths'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { habitsPaths } from '@/features/habits'
 import { learningPaths } from '@/features/learning'
+import { appIdeasPaths } from '@/features/app-ideas'
 import { settingsPaths } from '@/features/settings'
 import { sleepPaths } from '@/features/sleep'
 import { weeklyRoutinePaths } from '@/features/weekly-routine'
@@ -14,6 +15,7 @@ export const appSidebarItems: SidebarNavItem[] = [
   { to: '/app/todos', label: 'Tareas', icon: 'clipboard' },
   { to: '/app/notes', label: 'Notas', icon: 'file-lines' },
   { to: learningPaths.root, label: 'Learning', icon: 'graduation-cap' },
+  { to: appIdeasPaths.root, label: 'Ideas', icon: 'lightbulb' },
   { to: habitsPaths.myDay, label: 'Hábitos', icon: 'fire' },
   { to: sleepPaths.root, label: 'Sueño', icon: 'moon' },
   { to: weeklyRoutinePaths.root, label: 'Rutina', icon: 'calendar-week' },
@@ -56,6 +58,13 @@ export function createCommandActions(handlers: {
       icon: 'graduation-cap',
       keywords: ['learning', 'conocimiento', 'notas', 'apuntes', 'buscar'],
       onSelect: () => handlers.navigate(learningPaths.root),
+    },
+    {
+      id: 'go-app-ideas',
+      label: 'Ir a Ideas de apps',
+      icon: 'lightbulb',
+      keywords: ['ideas', 'apps', 'productos', 'markdown', 'conceptos'],
+      onSelect: () => handlers.navigate(appIdeasPaths.root),
     },
     {
       id: 'go-weekly-routine',

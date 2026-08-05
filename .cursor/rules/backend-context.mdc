@@ -21,6 +21,7 @@ alwaysApply: true
 | Cursos | `course/` | (feature `courses`) |
 | **Todos** | `todo/` | `docs/todos-domain.md` |
 | **Learning Notes** | `learning-note/` | `docs/learning-domain.md` |
+| **App Ideas** | `app-idea/` | `docs/app-ideas-domain.md` |
 
 ## Todos (pendiente de UI)
 

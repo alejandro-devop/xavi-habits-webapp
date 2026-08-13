@@ -935,8 +935,8 @@
     "semantic_hash": ""
   },
   "src/features/auth/providers/AuthBootstrapProvider.tsx": {
-    "mtime": 1779320914.9779387,
-    "ast_hash": "a3ec710795cef2d4a2828bb1d98ec2d8",
+    "mtime": 1786629714.209967,
+    "ast_hash": "dec2341a96eb33768a7cb589e90e5742",
     "semantic_hash": ""
   },
   "src/features/auth/providers/auth-bootstrap.context.ts": {
@@ -955,8 +955,8 @@
     "semantic_hash": ""
   },
   "src/features/auth/router/ProtectedRoute.tsx": {
-    "mtime": 1779320916.1955988,
-    "ast_hash": "22c972dff94249d6e006790a655356ff",
+    "mtime": 1786629437.7337527,
+    "ast_hash": "52e67aa93c3f5c9439e713cb9ffee8cb",
     "semantic_hash": ""
   },
   "src/features/auth/router/VerifyAccountGuard.tsx": {
@@ -975,8 +975,8 @@
     "semantic_hash": ""
   },
   "src/features/auth/router/guards.test.tsx": {
-    "mtime": 1779323752.6890779,
-    "ast_hash": "1482717b20a77114228f5e91637a2ba0",
+    "mtime": 1786629580.1830833,
+    "ast_hash": "9626c41de998092bb21018ce53e5da67",
     "semantic_hash": ""
   },
   "src/features/auth/store/auth.selectors.ts": {
@@ -985,13 +985,13 @@
     "semantic_hash": ""
   },
   "src/features/auth/store/auth.store.test.ts": {
-    "mtime": 1779320875.0040355,
-    "ast_hash": "d8c20902573116a2fc21d7a12ed51864",
+    "mtime": 1786629567.9338586,
+    "ast_hash": "b6af245ae585ee1eb2316bb5f851bc8d",
     "semantic_hash": ""
   },
   "src/features/auth/store/auth.store.ts": {
-    "mtime": 1779315648.0851908,
-    "ast_hash": "3425a918482bf4696b9e4ef772decc8e",
+    "mtime": 1786629720.3310583,
+    "ast_hash": "4a74ceaf2b4768351328f778346b05cc",
     "semantic_hash": ""
   },
   "src/features/auth/types/auth.types.ts": {
@@ -2085,8 +2085,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/AppLayout.tsx": {
-    "mtime": 1786628947.8589578,
-    "ast_hash": "a037aba4272e86d4e0b5ccf2ed6e4ad9",
+    "mtime": 1786629521.9281924,
+    "ast_hash": "dcdfcca2af3e3527e3d5791f13b6a3e6",
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.test.ts": {
@@ -2830,8 +2830,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/Modal/Modal.tsx": {
-    "mtime": 1779329140.3380992,
-    "ast_hash": "595b768cc7526c11b0985b17e95675c7",
+    "mtime": 1786629386.736685,
+    "ast_hash": "18eb6a2fc258370f56252aba249080df",
     "semantic_hash": ""
   },
   "src/shared/ui/Modal/index.ts": {
@@ -3255,8 +3255,8 @@
     "semantic_hash": ""
   },
   "docs/auth-flow.md": {
-    "mtime": 1779323755.5757277,
-    "ast_hash": "dfefb843d1b42e9ba20497f8d4d4ac79",
+    "mtime": 1786629958.249238,
+    "ast_hash": "c56518f22fd98aa27f82f72067b99904",
     "semantic_hash": ""
   },
   "docs/design-system-agent-guide.md": {
@@ -3702,6 +3702,26 @@
   "src/shared/ui/ConnectionIndicator/index.ts": {
     "mtime": 1786628939.7822433,
     "ast_hash": "242c3e6bd818a59741121445e8758b26",
+    "semantic_hash": ""
+  },
+  "src/features/auth/components/SessionExpiredModal/SessionExpiredModal.test.tsx": {
+    "mtime": 1786629607.1024113,
+    "ast_hash": "ce98b1dccdebbc342e7e4d5a51f1734e",
+    "semantic_hash": ""
+  },
+  "src/features/auth/components/SessionExpiredModal/SessionExpiredModal.tsx": {
+    "mtime": 1786629508.3289359,
+    "ast_hash": "8be442785d68d1cb4204f5ad6168ce5f",
+    "semantic_hash": ""
+  },
+  "src/features/auth/components/SessionExpiredModal/index.ts": {
+    "mtime": 1786629515.1785917,
+    "ast_hash": "1579190c94b4992694785e8a5dfe7ba6",
+    "semantic_hash": ""
+  },
+  "src/features/auth/hooks/useReauthMutation.ts": {
+    "mtime": 1786629459.8093226,
+    "ast_hash": "d30396ce6c44ac182caf5272dacec753",
     "semantic_hash": ""
   }
 }

@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/query-client.ts": {
-    "mtime": 1779315666.6402407,
-    "ast_hash": "b83a9f730d061e77303547090bec30dc",
+    "mtime": 1786630679.5363753,
+    "ast_hash": "0c8d0f713c5e730dc2611ccd01f9cffe",
     "semantic_hash": ""
   },
   "src/app/providers/query-persist.ts": {
@@ -2085,8 +2085,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/AppLayout.tsx": {
-    "mtime": 1786629521.9281924,
-    "ast_hash": "dcdfcca2af3e3527e3d5791f13b6a3e6",
+    "mtime": 1786630772.1797888,
+    "ast_hash": "a60ca59cc33764a3737b7e41a6016e57",
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.test.ts": {
@@ -3722,6 +3722,26 @@
   "src/features/auth/hooks/useReauthMutation.ts": {
     "mtime": 1786629459.8093226,
     "ast_hash": "d30396ce6c44ac182caf5272dacec753",
+    "semantic_hash": ""
+  },
+  "src/shared/hooks/useRetryStatus.test.tsx": {
+    "mtime": 1786631297.5768912,
+    "ast_hash": "bfef1dbdae9b57946e11f5526ed54429",
+    "semantic_hash": ""
+  },
+  "src/shared/hooks/useRetryStatus.ts": {
+    "mtime": 1786631355.250805,
+    "ast_hash": "167f3f73744cc2e3c447da5596c976f8",
+    "semantic_hash": ""
+  },
+  "src/shared/ui/RetryNotice/RetryNotice.tsx": {
+    "mtime": 1786630750.309817,
+    "ast_hash": "ed6dec3ac2b3ca68eafaab7f15d63ab8",
+    "semantic_hash": ""
+  },
+  "src/shared/ui/RetryNotice/index.ts": {
+    "mtime": 1786630763.9734197,
+    "ast_hash": "87ffd6047761baf1a0bfc320a395f401",
     "semantic_hash": ""
   }
 }

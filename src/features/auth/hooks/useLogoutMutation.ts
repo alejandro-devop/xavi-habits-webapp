@@ -5,6 +5,7 @@ import { authPaths } from '@/features/auth/router/auth-paths'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { clearPendingEmail } from '@/features/auth/utils/pending-email'
 import { queryClient } from '@/app/providers/query-client'
+import { queryPersister } from '@/app/providers/query-persist'
 
 export function useLogoutMutation() {
   const navigate = useNavigate()
@@ -25,6 +26,11 @@ export function useLogoutMutation() {
       clearSession()
       clearPendingEmail()
       queryClient.clear()
+      // `clear()` sólo vacía la caché en memoria; el persister recién la
+      // escribiría vacía tras su throttle. Si el usuario cierra la pestaña
+      // antes, los datos de la sesión anterior quedan en localStorage y se
+      // hidratan al siguiente login. Se borra explícitamente.
+      void queryPersister.removeClient()
       navigate(authPaths.login, { replace: true })
     },
   })

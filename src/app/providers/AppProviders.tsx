@@ -18,6 +18,10 @@ export function AppProviders({ children }: AppProvidersProps) {
       persistOptions={{
         persister: queryPersister,
         buster: queryPersistBuster,
+        // Explícito y alineado con el gcTime de query-client.ts: si maxAge
+        // superara al gcTime, se hidratarían queries que la caché en memoria
+        // ya descartó.
+        maxAge: 1000 * 60 * 60 * 24,
       }}
     >
       <ThemeProvider>

@@ -101,6 +101,7 @@
   --color-border-strong: color-mix(in srgb, var(--color-border) 180%, transparent);
   --color-error-subtle: color-mix(in srgb, var(--color-danger) 12%, transparent);
   --color-success-subtle: color-mix(in srgb, var(--color-success) 12%, transparent);
+  --color-warning-subtle: color-mix(in srgb, var(--color-warning) 14%, transparent);
 }
 
 [data-theme='dark'] {

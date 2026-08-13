@@ -12,6 +12,7 @@ import {
 } from '@/layouts/AppLayout/app-nav.config'
 import { Button } from '@/shared/ui/Button'
 import { CommandPaletteProvider } from '@/shared/ui/CommandPalette'
+import { ConnectionIndicator } from '@/shared/ui/ConnectionIndicator'
 import { Drawer } from '@/shared/ui/Drawer'
 import { Sidebar } from '@/shared/ui/Sidebar'
 import { ThemeToggle } from '@/shared/ui/ThemeToggle'
@@ -100,7 +101,12 @@ function AppLayoutShell() {
             }
             title="Xavi"
             titleClassName={styles.topbarBrand}
-            actions={<ThemeToggle />}
+            actions={
+              <div className={styles.topbarActions}>
+                <ConnectionIndicator />
+                <ThemeToggle />
+              </div>
+            }
           />
           <main className={styles.main}>
             <Outlet />

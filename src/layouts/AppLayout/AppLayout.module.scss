@@ -25,6 +25,12 @@
   }
 }
 
+.topbarActions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
 .main {
   flex: 1;
   padding: $spacing-md;

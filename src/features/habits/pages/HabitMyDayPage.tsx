@@ -8,6 +8,7 @@ import { HabitWeekSelector } from '@/features/habits/components/HabitWeekSelecto
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Spinner } from '@/shared/ui/Spinner'
 import { getMondayOfWeek, getTodayString } from '@/features/habits/utils/habit-type.utils'
+import { sortMyDayEntries } from '@/features/habits/utils/habit-order.utils'
 import {
   getFollowUpQueryRange,
   getMonthDaysForWeek,
@@ -37,6 +38,7 @@ export function HabitMyDayPage() {
   )
 
   const { data, isLoading } = useHabitMyDayQuery(focusDate)
+  const entries = useMemo(() => (data ? sortMyDayEntries(data) : []), [data])
   const { data: followUpGroups, isPending: isFollowUpsPending } = useHabitFollowUpsInDatesQuery(
     followUpRange.from,
     followUpRange.to,
@@ -83,7 +85,7 @@ export function HabitMyDayPage() {
     )
   }
 
-  if (!data || data.length === 0) {
+  if (entries.length === 0) {
     return (
       <div className={styles.root}>
         <HabitWeekSelector weekStart={weekStart} onWeekChange={setWeekStart} />
@@ -99,9 +101,11 @@ export function HabitMyDayPage() {
     )
   }
 
-  const total = data.length
-  const accomplished = data.filter((e) => e.followUp?.isAccomplished || e.followUp?.isLifeline).length
-  const failed = data.filter((e) => e.followUp?.isFailed).length
+  const total = entries.length
+  const accomplished = entries.filter(
+    (e) => e.followUp?.isAccomplished || e.followUp?.isLifeline,
+  ).length
+  const failed = entries.filter((e) => e.followUp?.isFailed).length
   const pending = total - accomplished - failed
 
   const pctAccomplished = total > 0 ? (accomplished / total) * 100 : 0
@@ -170,7 +174,7 @@ export function HabitMyDayPage() {
           </div>
 
           <ul className={styles.list}>
-            {data.map((entry) => (
+            {entries.map((entry) => (
               <li key={entry.habit.id}>
                 <HabitDayCard
                   entry={entry}

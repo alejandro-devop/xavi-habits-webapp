@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { useHabitMyDayQuery, useHabitFollowUpsInDatesQuery } from '@/features/habits/hooks/useHabits'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import { formatLocalDateToYmd, getTodayString } from '@/features/habits/utils/habit-type.utils'
+import { sortMyDayEntries } from '@/features/habits/utils/habit-order.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Spinner } from '@/shared/ui/Spinner'
 import styles from './HabitsWidget.module.scss'
@@ -27,10 +28,12 @@ export function HabitsWidget() {
   const { data, isLoading } = useHabitMyDayQuery(today)
   const { data: weekData } = useHabitFollowUpsInDatesQuery(from, to)
 
-  const total = data?.length ?? 0
-  const accomplished =
-    data?.filter((e) => e.followUp?.isAccomplished || e.followUp?.isLifeline).length ?? 0
-  const failed = data?.filter((e) => e.followUp?.isFailed).length ?? 0
+  const entries = data ? sortMyDayEntries(data) : []
+  const total = entries.length
+  const accomplished = entries.filter(
+    (e) => e.followUp?.isAccomplished || e.followUp?.isLifeline,
+  ).length
+  const failed = entries.filter((e) => e.followUp?.isFailed).length
   const pending = total - accomplished - failed
 
   const pctAccomplished = total > 0 ? (accomplished / total) * 100 : 0
@@ -80,7 +83,7 @@ export function HabitsWidget() {
           </div>
 
           <ul className={styles.list}>
-            {data!.slice(0, 6).map((entry) => {
+            {entries.slice(0, 6).map((entry) => {
               const { habit, followUp } = entry
               const isAccomplished = followUp?.isAccomplished || followUp?.isLifeline
               const isFailed = followUp?.isFailed
@@ -107,8 +110,8 @@ export function HabitsWidget() {
             })}
           </ul>
 
-          {data!.length > 6 && (
-            <p className={styles.more}>+{data!.length - 6} más</p>
+          {entries.length > 6 && (
+            <p className={styles.more}>+{entries.length - 6} más</p>
           )}
 
           {/* 7-day strip */}

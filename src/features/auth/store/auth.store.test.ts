@@ -135,4 +135,63 @@ describe('auth.store', () => {
     expect(state.refreshToken).toBeNull()
     expect(state.user).toBeNull()
   })
+
+  describe('expiración de sesión', () => {
+    const login = () =>
+      useAuthStore.getState().setSession({
+        accessToken: 'access',
+        accessExpiresAt: 1,
+        refreshToken: 'refresh',
+        user: {
+          id: 1,
+          email: 'user@example.com',
+          name: 'Jane',
+          isAccountVerified: true,
+        },
+      })
+
+    it('expireSession descarta los tokens pero conserva el usuario', () => {
+      login()
+      useAuthStore.getState().expireSession()
+
+      const state = useAuthStore.getState()
+      expect(state.accessToken).toBeNull()
+      expect(state.refreshToken).toBeNull()
+      expect(state.sessionExpired).toBe(true)
+      // El correo se conserva para precargarlo en el modal de reingreso.
+      expect(state.user?.email).toBe('user@example.com')
+      expect(selectIsAuthenticated(state)).toBe(false)
+    })
+
+    it('setSession limpia la marca de expiración al reingresar', () => {
+      login()
+      useAuthStore.getState().expireSession()
+      login()
+
+      expect(useAuthStore.getState().sessionExpired).toBe(false)
+    })
+
+    it('updateAccessToken limpia la marca tras un refresh exitoso', () => {
+      login()
+      useAuthStore.getState().expireSession()
+
+      useAuthStore.getState().updateAccessToken({
+        accessToken: 'nuevo',
+        accessExpiresAt: 2,
+        refreshToken: 'nuevo-refresh',
+      })
+
+      expect(useAuthStore.getState().sessionExpired).toBe(false)
+    })
+
+    it('clearSession borra también la marca y el usuario', () => {
+      login()
+      useAuthStore.getState().expireSession()
+      useAuthStore.getState().clearSession()
+
+      const state = useAuthStore.getState()
+      expect(state.sessionExpired).toBe(false)
+      expect(state.user).toBeNull()
+    })
+  })
 })

@@ -150,6 +150,36 @@ describe('auth guards', () => {
     expect(screen.getByText('Verify form content')).toBeInTheDocument()
   })
 
+  it('ProtectedRoute mantiene la pantalla cuando la sesión expiró', () => {
+    useAuthStore.getState().setSession({
+      accessToken: 'access',
+      accessExpiresAt: Date.now() + 60_000,
+      refreshToken: 'refresh',
+      user: {
+        id: 1,
+        email: 'user@example.com',
+        name: 'Jane',
+        isAccountVerified: true,
+      },
+    })
+    useAuthStore.getState().expireSession()
+
+    render(
+      <MemoryRouter initialEntries={['/app/today']}>
+        <Routes>
+          <Route path="/auth/login" element={<div>Login page</div>} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/app/today" element={<ProtectedTarget />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    // No se expulsa: el modal de reingreso se muestra encima del contenido.
+    expect(screen.getByText('Protected content')).toBeInTheDocument()
+    expect(screen.queryByText('Login page')).not.toBeInTheDocument()
+  })
+
   it('VerifyEmailRoute redirects to login without session or guest context', () => {
     render(
       <MemoryRouter initialEntries={[authPaths.verifyEmail]}>

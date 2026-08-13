@@ -90,6 +90,45 @@ describe('refreshSession', () => {
     expect(useAuthStore.getState().refreshToken).toBe('refresh-new')
   })
 
+  it('marca la sesión como expirada cuando el refresh falla', async () => {
+    useAuthStore.setState({
+      accessToken: 'old-access',
+      accessExpiresAt: now + 30_000,
+      refreshToken: 'refresh-old',
+      sessionExpired: false,
+      user: {
+        id: 1,
+        email: 'user@example.com',
+        name: 'Jane',
+        isAccountVerified: true,
+      },
+    })
+
+    vi.mocked(authApi.refresh).mockRejectedValue(new Error('refresh token vencido'))
+
+    await expect(refreshSession()).resolves.toBeNull()
+
+    const state = useAuthStore.getState()
+    expect(state.accessToken).toBeNull()
+    expect(state.refreshToken).toBeNull()
+    // Expiración, no logout: se conserva el usuario para el modal de reingreso.
+    expect(state.sessionExpired).toBe(true)
+    expect(state.user?.email).toBe('user@example.com')
+  })
+
+  it('no marca expiración si nunca hubo refreshToken', async () => {
+    useAuthStore.setState({
+      accessToken: 'old-access',
+      accessExpiresAt: now + 30_000,
+      refreshToken: null,
+      sessionExpired: false,
+      user: null,
+    })
+
+    await expect(refreshSession()).resolves.toBeNull()
+    expect(useAuthStore.getState().sessionExpired).toBe(false)
+  })
+
   it('deduplicates concurrent refresh calls', async () => {
     useAuthStore.setState({
       accessToken: 'old-access',

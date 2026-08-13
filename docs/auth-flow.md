@@ -21,7 +21,7 @@ Redirects: `/auth` → login · `/app` → today.
 | Guard | Ubicación | Comportamiento |
 |-------|-----------|----------------|
 | `AuthBootstrapProvider` | App global | `loading` hasta hidratar Zustand y refrescar/perfil |
-| `ProtectedRoute` | `/app/*` | Sin sesión → `/auth/login` |
+| `ProtectedRoute` | `/app/*` | Sin sesión → `/auth/login`; sesión **caducada** → mantiene la pantalla y deja que `SessionExpiredModal` pida reingresar |
 | `GuestRoute` | `/auth/*` | Verificado → `/app/today`; no verificado → `/auth/verify-email` (excepto si ya estás en esa ruta) |
 | `VerifyEmailRoute` | `/auth/verify-email` | Sin sesión ni email pendiente → `/auth/login` |
 | `PublicHomeRoute` | `/` | Sesión verificada → `/app/today`; no verificada → verify-email |
@@ -34,9 +34,35 @@ Los guards esperan `authStatus === 'ready'` y muestran `PageLoader` para evitar 
 1. Al cargar la app, tras `persist.onFinishHydration`, si hay `refreshToken` se llama `getValidAccessToken()`.
 2. Si el access expira en menos de 60 s, `POST /api/auth/refresh` (rotación de refresh token).
 3. Con token válido, `GET /api/auth/profile` actualiza `user` en Zustand.
-4. Si refresh o sesión fallan → `clearSession()`.
+4. Si refresh o sesión fallan → `expireSession()`.
 
 Detalle técnico: `features/auth/services/token.service.ts`.
+
+## Caducidad de sesión
+
+`clearSession()` y `expireSession()` no son lo mismo:
+
+| | `clearSession()` | `expireSession()` |
+|---|---|---|
+| Cuándo | Logout deliberado | El refresh falla estando dentro |
+| Tokens | Se borran | Se borran |
+| `user` | Se borra | **Se conserva** (para precargar el correo) |
+| `sessionExpired` | `false` | `true` |
+| Efecto en UI | Redirect a `/auth/login` | Se mantiene la pantalla + `SessionExpiredModal` |
+
+Al caducar no se expulsa al usuario: `SessionExpiredModal` (montado en
+`AppLayout`) pide volver a entrar por encima de la pantalla actual. Al
+reingresar sigue justo donde estaba; con la caché de queries persistida, lo que
+tenía en pantalla nunca desapareció.
+
+El modal no es descartable (`Modal` acepta `dismissible={false}`): sin sesión,
+cerrarlo dejaría la app sin poder cargar ni guardar nada.
+
+Si reingresa **otro** usuario, `useReauthMutation` limpia la caché de queries;
+si es el mismo, sólo invalida para refrescar lo que quedó viejo.
+
+`sessionExpired` no se persiste: al recargar, `AuthBootstrapProvider` reintenta
+revalidar el `refreshToken` guardado y vuelve a marcarlo si falla.
 
 ## Flujos de pantalla
 

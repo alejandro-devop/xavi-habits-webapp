@@ -16,16 +16,21 @@ export function AuthBootstrapProvider({ children }: AuthBootstrapProviderProps) 
   const [status, setStatus] = useState<AuthBootstrapStatus>('loading')
 
   const runBootstrap = useCallback(async () => {
-    const { refreshToken, clearSession, updateUser } = useAuthStore.getState()
+    const { refreshToken, expireSession, updateUser } = useAuthStore.getState()
 
+    // Sin refreshToken no hay sesión que recuperar ni que caducar.
     if (!refreshToken) {
       return
     }
 
+    // A partir de aquí había una sesión guardada. Si no se puede revalidar es
+    // una caducidad, no un logout: se marca como tal para que el usuario reciba
+    // el modal de reingreso sobre su pantalla (con la caché persistida ya hay
+    // contenido que mostrar) en vez de aterrizar en la página de login.
     try {
       const token = await getValidAccessToken()
       if (!token) {
-        clearSession()
+        expireSession()
         return
       }
 
@@ -34,11 +39,11 @@ export function AuthBootstrapProvider({ children }: AuthBootstrapProviderProps) 
         updateUser(profile.user)
       } catch (error) {
         if (error instanceof ApiClientError && error.isAuthError) {
-          clearSession()
+          expireSession()
         }
       }
     } catch {
-      clearSession()
+      expireSession()
     }
   }, [])
 

@@ -15,6 +15,12 @@ type ModalProps = {
   children?: ReactNode
   footer?: ReactNode
   size?: 'sm' | 'md' | 'lg'
+  /**
+   * `false` quita el botón de cerrar, el Escape y el clic en el overlay. Para
+   * modales que exigen una decisión: descartarlos dejaría a la app en un
+   * estado inservible (p. ej. sesión expirada, sin token para nada).
+   */
+  dismissible?: boolean
 }
 
 export function Modal({
@@ -25,6 +31,7 @@ export function Modal({
   children,
   footer,
   size = 'md',
+  dismissible = true,
 }: ModalProps) {
   const titleId = useId()
   const descriptionId = useId()
@@ -35,7 +42,7 @@ export function Modal({
   useFocusTrap(panelRef, open)
 
   useEffect(() => {
-    if (!open) return
+    if (!open || !dismissible) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
@@ -43,7 +50,7 @@ export function Modal({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [open, onClose])
+  }, [open, onClose, dismissible])
 
   if (typeof document === 'undefined') return null
 
@@ -57,7 +64,7 @@ export function Modal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={prefersReducedMotion ? { duration: 0 } : transitions.fast}
-          onClick={onClose}
+          onClick={dismissible ? onClose : undefined}
         >
           <motion.div
             ref={panelRef}
@@ -73,9 +80,11 @@ export function Modal({
             transition={prefersReducedMotion ? { duration: 0 } : transitions.normal}
             onClick={(e) => e.stopPropagation()}
           >
-            <button type="button" className={styles.close} onClick={onClose} aria-label="Cerrar">
-              ×
-            </button>
+            {dismissible ? (
+              <button type="button" className={styles.close} onClick={onClose} aria-label="Cerrar">
+                ×
+              </button>
+            ) : null}
             <header className={styles.header}>
               <h2 id={titleId} className={styles.title}>
                 {title}

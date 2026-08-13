@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router'
 import { RunningActivityWidget } from '@/features/activities/components/RunningActivityWidget'
 import { LogoutButton } from '@/features/auth/components/LogoutButton/LogoutButton'
+import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredModal'
 import { useLogoutMutation } from '@/features/auth/hooks/useLogoutMutation'
 import { selectAuthUser } from '@/features/auth/store/auth.selectors'
 import { useAuthStore } from '@/features/auth/store/auth.store'
@@ -114,6 +115,8 @@ function AppLayoutShell() {
         </div>
 
         <RunningActivityWidget />
+
+        <SessionExpiredModal />
 
         <Drawer
           open={mobileNavOpen}

@@ -14,6 +14,7 @@ import {
 import { Button } from '@/shared/ui/Button'
 import { CommandPaletteProvider } from '@/shared/ui/CommandPalette'
 import { ConnectionIndicator } from '@/shared/ui/ConnectionIndicator'
+import { RetryNotice } from '@/shared/ui/RetryNotice'
 import { Drawer } from '@/shared/ui/Drawer'
 import { Sidebar } from '@/shared/ui/Sidebar'
 import { ThemeToggle } from '@/shared/ui/ThemeToggle'
@@ -116,6 +117,7 @@ function AppLayoutShell() {
 
         <RunningActivityWidget />
 
+        <RetryNotice />
         <SessionExpiredModal />
 
         <Drawer

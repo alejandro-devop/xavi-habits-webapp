@@ -1125,8 +1125,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayCard/HabitDayCard.tsx": {
-    "mtime": 1785465062.8520095,
-    "ast_hash": "ae8e8b152c2aa8df7a6ba438ed500e59",
+    "mtime": 1785516594.4847708,
+    "ast_hash": "918809649cb9fe020bc71ff8d678edd8",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayCard/index.ts": {
@@ -1135,8 +1135,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayCell/HabitDayCell.tsx": {
-    "mtime": 1785465071.811983,
-    "ast_hash": "2bcf63e17c2344a80588302e0fa46c92",
+    "mtime": 1785516594.4848123,
+    "ast_hash": "004fcc33b50e15b5dcc0157272f067bd",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayCell/index.ts": {
@@ -1155,7 +1155,7 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFollowUpForm/HabitFollowUpForm.tsx": {
-    "mtime": 1785464737.4099348,
+    "mtime": 1785516594.7108185,
     "ast_hash": "d20e42da81e635be14a1cb02ad164f24",
     "semantic_hash": ""
   },
@@ -1325,8 +1325,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitsWidget/HabitsWidget.tsx": {
-    "mtime": 1785463350.3635206,
-    "ast_hash": "ce00b710a4a6815dcd5121828e5f29e6",
+    "mtime": 1786625022.6043077,
+    "ast_hash": "8a846545c74d2b746c17401d4eb8dd63",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitsWidget/index.ts": {
@@ -1365,7 +1365,7 @@
     "semantic_hash": ""
   },
   "src/features/habits/graphql/habits.graphql.ts": {
-    "mtime": 1785464975.8644493,
+    "mtime": 1785516594.4846377,
     "ast_hash": "3dc39e41e39c6fd6851a98d7aad395e1",
     "semantic_hash": ""
   },
@@ -1425,8 +1425,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitMyDayPage.tsx": {
-    "mtime": 1785464982.6884625,
-    "ast_hash": "26d4c2089c6682211436bd36a1e6ad9d",
+    "mtime": 1786625022.60484,
+    "ast_hash": "06a329d63b002abaf6d4ad8da4033398",
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitPersonaPage.tsx": {
@@ -1480,7 +1480,7 @@
     "semantic_hash": ""
   },
   "src/features/habits/types/habit.types.ts": {
-    "mtime": 1785464978.6153114,
+    "mtime": 1785516594.4847898,
     "ast_hash": "2aadb7b5b6536f205e61e8a914df27b6",
     "semantic_hash": ""
   },
@@ -1505,7 +1505,7 @@
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-progress.utils.ts": {
-    "mtime": 1785464982.8035364,
+    "mtime": 1785516594.484631,
     "ast_hash": "3d9fd395a2fb43368025bd594a8793bd",
     "semantic_hash": ""
   },
@@ -3560,13 +3560,23 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayMarker/HabitDayMarker.tsx": {
-    "mtime": 1785465095.827506,
-    "ast_hash": "e26c29d3a303e621fcd38f2f44b4d86f",
+    "mtime": 1785516594.4845047,
+    "ast_hash": "40593b56676b4f55518a11a08b170816",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayMarker/index.ts": {
-    "mtime": 1785464995.4421077,
+    "mtime": 1785516594.4844463,
     "ast_hash": "40a1b554fca187e43628c79b19cadbf3",
+    "semantic_hash": ""
+  },
+  "src/features/habits/utils/habit-order.utils.test.ts": {
+    "mtime": 1786624872.978379,
+    "ast_hash": "b97c2a27c91c616f227134c1769bfc30",
+    "semantic_hash": ""
+  },
+  "src/features/habits/utils/habit-order.utils.ts": {
+    "mtime": 1786624818.8014576,
+    "ast_hash": "89c2c0ee7d6b265ac8410ba4fb65ec7b",
     "semantic_hash": ""
   }
 }

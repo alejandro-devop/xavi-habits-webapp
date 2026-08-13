@@ -40,8 +40,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/AppProviders.tsx": {
-    "mtime": 1779334393.7523298,
-    "ast_hash": "ce8493ae6c623aff294b6af3b9d093c3",
+    "mtime": 1786628479.7172425,
+    "ast_hash": "4672b37fb95301e5ae05b19f7964a47d",
     "semantic_hash": ""
   },
   "src/app/providers/query-client.ts": {
@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/query-persist.ts": {
-    "mtime": 1779313137.8154354,
-    "ast_hash": "56725a9ba3b273d970a7f603160e8312",
+    "mtime": 1786628475.2090425,
+    "ast_hash": "ebe4444dfae683293036b4a58d37b96c",
     "semantic_hash": ""
   },
   "src/app/router/index.tsx": {
@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "src/app/router/routes.tsx": {
-    "mtime": 1784937285.0053332,
-    "ast_hash": "091af7f5cf4af7fab65ae2e15c295b3f",
+    "mtime": 1786625189.7098534,
+    "ast_hash": "4df8cd9667af811ec94c23f8ad50b7df",
     "semantic_hash": ""
   },
   "src/features/activities/api/activities.api.ts": {
@@ -910,8 +910,8 @@
     "semantic_hash": ""
   },
   "src/features/auth/hooks/useLogoutMutation.ts": {
-    "mtime": 1779320736.3639586,
-    "ast_hash": "4b0dd034823d414f8beb545a340e0435",
+    "mtime": 1786628490.0816724,
+    "ast_hash": "7b84e5c7574eeab32b5dcedc9e2323b4",
     "semantic_hash": ""
   },
   "src/features/auth/hooks/useProfileQuery.ts": {
@@ -1325,7 +1325,7 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitsWidget/HabitsWidget.tsx": {
-    "mtime": 1786625022.6043077,
+    "mtime": 1786625189.7866478,
     "ast_hash": "8a846545c74d2b746c17401d4eb8dd63",
     "semantic_hash": ""
   },
@@ -1425,7 +1425,7 @@
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitMyDayPage.tsx": {
-    "mtime": 1786625022.60484,
+    "mtime": 1786625189.7874093,
     "ast_hash": "06a329d63b002abaf6d4ad8da4033398",
     "semantic_hash": ""
   },
@@ -2095,8 +2095,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.ts": {
-    "mtime": 1784937285.0152855,
-    "ast_hash": "07526bb2acc0d9fa19adfca55f7d91d7",
+    "mtime": 1786625189.7225196,
+    "ast_hash": "ec041cc3e0ab191361fe3caf86c158ae",
     "semantic_hash": ""
   },
   "src/layouts/AuthLayout/AuthLayout.tsx": {
@@ -2285,8 +2285,8 @@
     "semantic_hash": ""
   },
   "src/shared/api/query-keys.ts": {
-    "mtime": 1784937285.023035,
-    "ast_hash": "73cd9c08514ebaea3e4e6ca33daa4b1b",
+    "mtime": 1786625189.7265332,
+    "ast_hash": "221dc4a0dc7dafda5c1a37025ef56cb7",
     "semantic_hash": ""
   },
   "src/shared/api/rest-client.test.ts": {
@@ -3230,8 +3230,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1784937285.0035844,
-    "ast_hash": "3057b52b082ead67e0db405edde9d56d",
+    "mtime": 1786625189.6949852,
+    "ast_hash": "4741fbb51e953e425f1d9aacaaada2bd",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -3570,13 +3570,113 @@
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-order.utils.test.ts": {
-    "mtime": 1786624872.978379,
+    "mtime": 1786625189.7880862,
     "ast_hash": "b97c2a27c91c616f227134c1769bfc30",
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-order.utils.ts": {
-    "mtime": 1786624818.8014576,
+    "mtime": 1786625189.7885253,
     "ast_hash": "89c2c0ee7d6b265ac8410ba4fb65ec7b",
+    "semantic_hash": ""
+  },
+  "src/app/providers/query-persist.test.ts": {
+    "mtime": 1786628506.0092683,
+    "ast_hash": "dde93be83c7d94481b008e92cf2fc338",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/api/app-ideas.api.ts": {
+    "mtime": 1786625189.7105997,
+    "ast_hash": "ea8c5a1711f770b11647a6d263063538",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeaCard/AppIdeaCard.test.tsx": {
+    "mtime": 1786625189.7115028,
+    "ast_hash": "44672dd4b196a4c3493f241ea2d5b963",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeaCard/AppIdeaCard.tsx": {
+    "mtime": 1786625189.7119057,
+    "ast_hash": "be7148cd858d1a0908633fa2a5f28893",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeaCard/index.ts": {
+    "mtime": 1786625189.712335,
+    "ast_hash": "139d8b5d4dbd3ecbcb6f5304a4489ce9",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeaEditor/AppIdeaEditor.tsx": {
+    "mtime": 1786625189.7132726,
+    "ast_hash": "f86e43ca89373925529d281265985a68",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeaEditor/index.ts": {
+    "mtime": 1786625189.7136145,
+    "ast_hash": "8e2cbb995b1930867712e569359d4d2d",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeasFilters/AppIdeasFilters.tsx": {
+    "mtime": 1786625189.714522,
+    "ast_hash": "2662c954688b9e6ec24698112168557e",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeasFilters/index.ts": {
+    "mtime": 1786625189.7149966,
+    "ast_hash": "fc7fa3d20f622146fe3589ff9123a52a",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeasModuleLayout/AppIdeasModuleLayout.tsx": {
+    "mtime": 1786625189.7158005,
+    "ast_hash": "4fcd67bc083d3f8d7ce823748fd30203",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/components/AppIdeasModuleLayout/index.ts": {
+    "mtime": 1786625189.7161188,
+    "ast_hash": "35569b521fd41b42d1f3c48c527f4d0a",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/graphql/app-ideas.graphql.ts": {
+    "mtime": 1786625189.7167535,
+    "ast_hash": "75e3284c5d1ecea6b89cc2009b52a955",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/hooks/useAppIdeas.ts": {
+    "mtime": 1786625189.7173824,
+    "ast_hash": "df62f36eed5d4cdaf35340c7e7daff08",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/index.ts": {
+    "mtime": 1786625189.7177513,
+    "ast_hash": "f98d4fcd22cceee33f3f6f610f3fc7b1",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/routes/app-ideas-paths.ts": {
+    "mtime": 1786625189.718313,
+    "ast_hash": "068f2eb63e75f92d23dffe81cab7c073",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/routes/app-ideas.routes.tsx": {
+    "mtime": 1786625189.718774,
+    "ast_hash": "b9d6fe500894f08356158c728768fbc2",
+    "semantic_hash": ""
+  },
+  "src/features/app-ideas/types/app-idea.types.ts": {
+    "mtime": 1786625189.7194672,
+    "ast_hash": "ee97d03a68dbc9fb8344aac744244458",
+    "semantic_hash": ""
+  },
+  "src/pages/app/AppIdeaEditorPage/AppIdeaEditorPage.tsx": {
+    "mtime": 1786625189.7240787,
+    "ast_hash": "3322bceb9365c01c95daeb996665b9f8",
+    "semantic_hash": ""
+  },
+  "src/pages/app/AppIdeasPage/AppIdeasPage.tsx": {
+    "mtime": 1786625189.7252429,
+    "ast_hash": "2fa85673d461c4b9e187d860e585c4a3",
+    "semantic_hash": ""
+  },
+  "docs/app-ideas-domain.md": {
+    "mtime": 1786625189.695595,
+    "ast_hash": "ff430457399d9907134e6c800dbaa6d7",
     "semantic_hash": ""
   }
 }

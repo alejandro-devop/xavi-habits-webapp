@@ -2085,8 +2085,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/AppLayout.tsx": {
-    "mtime": 1782242377.9116452,
-    "ast_hash": "303896fcbdb6f9d8b045514fd82c1eeb",
+    "mtime": 1786628947.8589578,
+    "ast_hash": "a037aba4272e86d4e0b5ccf2ed6e4ad9",
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.test.ts": {
@@ -3677,6 +3677,31 @@
   "docs/app-ideas-domain.md": {
     "mtime": 1786625189.695595,
     "ast_hash": "ff430457399d9907134e6c800dbaa6d7",
+    "semantic_hash": ""
+  },
+  "src/shared/hooks/useConnectionStatus.test.tsx": {
+    "mtime": 1786628976.9348538,
+    "ast_hash": "8a4ca3cc4fdde39e599c8911bad18967",
+    "semantic_hash": ""
+  },
+  "src/shared/hooks/useConnectionStatus.ts": {
+    "mtime": 1786628904.0118601,
+    "ast_hash": "8e8e24316bea9530c425e11d6a95072d",
+    "semantic_hash": ""
+  },
+  "src/shared/ui/ConnectionIndicator/ConnectionIndicator.test.tsx": {
+    "mtime": 1786629002.3413439,
+    "ast_hash": "17ef806a9e4eeefa28344aed6ad14698",
+    "semantic_hash": ""
+  },
+  "src/shared/ui/ConnectionIndicator/ConnectionIndicator.tsx": {
+    "mtime": 1786628926.5690978,
+    "ast_hash": "1494f0b4c1a14d59c77a23f03a17ac86",
+    "semantic_hash": ""
+  },
+  "src/shared/ui/ConnectionIndicator/index.ts": {
+    "mtime": 1786628939.7822433,
+    "ast_hash": "242c3e6bd818a59741121445e8758b26",
     "semantic_hash": ""
   }
 }

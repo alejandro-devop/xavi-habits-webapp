@@ -9,8 +9,18 @@ function normalizeSearchText(value: string): string {
   return stripDiacritics(value.trim().toLowerCase())
 }
 
+/**
+ * Searchable text per entry, computed once and reused on every keystroke.
+ * With a catalog of ~450 entries, rebuilding it on each key was the whole cost
+ * of filtering. Keyed by the entry object, so custom catalogs also benefit.
+ */
+const haystackCache = new WeakMap<AppIconEntry, string>()
+
 function buildHaystack(entry: AppIconEntry): string {
-  return normalizeSearchText(
+  const cached = haystackCache.get(entry)
+  if (cached !== undefined) return cached
+
+  const haystack = normalizeSearchText(
     [
       entry.name,
       entry.label,
@@ -19,6 +29,8 @@ function buildHaystack(entry: AppIconEntry): string {
       ...entry.keywords,
     ].join(' '),
   )
+  haystackCache.set(entry, haystack)
+  return haystack
 }
 
 export function isPickerIcon(entry: AppIconEntry): boolean {

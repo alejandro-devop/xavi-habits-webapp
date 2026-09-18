@@ -60,7 +60,7 @@
     "semantic_hash": ""
   },
   "src/app/router/routes.tsx": {
-    "mtime": 1789708757.1140206,
+    "mtime": 1789696614.9415405,
     "ast_hash": "4df8cd9667af811ec94c23f8ad50b7df",
     "semantic_hash": ""
   },
@@ -1050,8 +1050,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/CreateHabitCategoryStep/CreateHabitCategoryStep.tsx": {
-    "mtime": 1789708074.5344756,
-    "ast_hash": "228e84b2b29ec055fb7b840bac1758aa",
+    "mtime": 1789696614.9595406,
+    "ast_hash": "be5515e4cfb17cddc8bd81e217534ca1",
     "semantic_hash": ""
   },
   "src/features/habits/components/CreateHabitCategoryStep/index.ts": {
@@ -1060,8 +1060,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/CreateHabitMeasureStep/CreateHabitMeasureStep.tsx": {
-    "mtime": 1789708074.5334754,
-    "ast_hash": "fa6703565746507b2a46eb6da79dacba",
+    "mtime": 1789696614.9595406,
+    "ast_hash": "fe74144758f0ed2bec790f92958580fd",
     "semantic_hash": ""
   },
   "src/features/habits/components/CreateHabitMeasureStep/index.ts": {
@@ -1150,8 +1150,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitFormModal.tsx": {
-    "mtime": 1789708312.7595825,
-    "ast_hash": "a0f8c2972fe6b1979a6b20d7dbd86a37",
+    "mtime": 1789696614.9615407,
+    "ast_hash": "3dc91407c53ae39a4e054e857e634947",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/index.ts": {
@@ -1480,8 +1480,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-form.utils.ts": {
-    "mtime": 1789707808.9637938,
-    "ast_hash": "95d17562e0fc3ea2375ccde2ca4736f9",
+    "mtime": 1789696614.9665406,
+    "ast_hash": "23b3dafbbbba630d42174f9f9b80db04",
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-measure-form.utils.ts": {
@@ -2955,8 +2955,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/SteppedModal/SteppedModal.tsx": {
-    "mtime": 1789707914.883527,
-    "ast_hash": "6a6d5d2f44c10196aca8058632406c47",
+    "mtime": 1789696614.9915407,
+    "ast_hash": "2cacd3ea30fe9da00a8ac97f83634292",
     "semantic_hash": ""
   },
   "src/shared/ui/SteppedModal/index.ts": {
@@ -3962,66 +3962,6 @@
   "docs/remodel/assets/05-wizard-habito.html": {
     "mtime": 1789706147.8556552,
     "ast_hash": "d3d77962f4b99225b60e03a8cd367b7f",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx": {
-    "mtime": 1789708713.161301,
-    "ast_hash": "9a42dbba3f359035130dc3c0c87f23c8",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitEditForm.tsx": {
-    "mtime": 1789708307.1181388,
-    "ast_hash": "d76c3ff16aa3bd0886f976f1593548a9",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx": {
-    "mtime": 1789708432.778789,
-    "ast_hash": "7c137683305733e775801ce121a09304",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx": {
-    "mtime": 1789708185.1557853,
-    "ast_hash": "eaa1c055aa62e1192d0332eabb471cc6",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx": {
-    "mtime": 1789708157.5956483,
-    "ast_hash": "f7b1d98934198ff47d07fce9f9cc2704",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx": {
-    "mtime": 1789708030.78332,
-    "ast_hash": "4e340784d91369627082cea3eee33688",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx": {
-    "mtime": 1789708582.1426632,
-    "ast_hash": "10ab061f2d5a5086077e3f66b510b306",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx": {
-    "mtime": 1789708044.683703,
-    "ast_hash": "e4b8f3151c29f43f5d5358730739c066",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx": {
-    "mtime": 1789708102.7465923,
-    "ast_hash": "3c71f488028c83dda2cc9edfaffb9100",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx": {
-    "mtime": 1789708201.6305459,
-    "ast_hash": "4606b86fe2e958c250492273d9a514e7",
-    "semantic_hash": ""
-  },
-  "src/features/habits/data/habit-templates.ts": {
-    "mtime": 1789707794.1438797,
-    "ast_hash": "9e3a87d2d1f727193517a8ebd3658359",
-    "semantic_hash": ""
-  },
-  "src/features/habits/utils/habit-form.utils.test.ts": {
-    "mtime": 1789707847.848569,
-    "ast_hash": "36fb59cada243e93bd864ba14b1f04e5",
     "semantic_hash": ""
   }
 }

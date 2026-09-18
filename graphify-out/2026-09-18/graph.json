@@ -720,7 +720,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "providers_query_client_getretrydelay",
-      "community": 84,
+      "community": 199,
       "norm_label": "getretrydelay()"
     },
     {
@@ -2980,7 +2980,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_createfollowuprootstep",
-      "community": 496,
+      "community": 35,
       "norm_label": "createfollowuprootstep()"
     },
     {
@@ -3020,7 +3020,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "dayremainingwidget_dayremainingwidget",
-      "community": 433,
+      "community": 5,
       "norm_label": "dayremainingwidget.tsx"
     },
     {
@@ -3030,7 +3030,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "dayremainingwidget_dayremainingwidget_formatdaystartlabel",
-      "community": 433,
+      "community": 5,
       "norm_label": "formatdaystartlabel()"
     },
     {
@@ -3040,7 +3040,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "dayremainingwidget_dayremainingwidget_dayremainingwidgetprops",
-      "community": 433,
+      "community": 5,
       "norm_label": "dayremainingwidgetprops"
     },
     {
@@ -3050,7 +3050,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "dayremainingwidget_dayremainingwidget_dayremainingwidget",
-      "community": 433,
+      "community": 5,
       "norm_label": "dayremainingwidget()"
     },
     {
@@ -3300,7 +3300,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "editfollowupmodal_editfollowupmodal",
-      "community": 496,
+      "community": 47,
       "norm_label": "editfollowupmodal.tsx"
     },
     {
@@ -3310,7 +3310,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "editfollowupmodal_editfollowupmodal_editfollowupmodalprops",
-      "community": 496,
+      "community": 47,
       "norm_label": "editfollowupmodalprops"
     },
     {
@@ -3320,7 +3320,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "editfollowupmodal_editfollowupmodal_editfollowupmodal",
-      "community": 496,
+      "community": 47,
       "norm_label": "editfollowupmodal()"
     },
     {
@@ -3330,7 +3330,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "editfollowupmodal_index",
-      "community": 496,
+      "community": 47,
       "norm_label": "index.ts"
     },
     {
@@ -3390,7 +3390,7 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "finishactivitymodal_finishactivitymodal_suggestioncard",
-      "community": 468,
+      "community": 450,
       "norm_label": "suggestioncard()"
     },
     {
@@ -3510,7 +3510,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "runningactivitytimer_runningactivitytimer",
-      "community": 545,
+      "community": 425,
       "norm_label": "runningactivitytimer.tsx"
     },
     {
@@ -3520,7 +3520,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "runningactivitytimer_runningactivitytimer_runningactivitytimerprops",
-      "community": 545,
+      "community": 425,
       "norm_label": "runningactivitytimerprops"
     },
     {
@@ -3530,7 +3530,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "runningactivitytimer_runningactivitytimer_runningactivitytimer",
-      "community": 545,
+      "community": 425,
       "norm_label": "runningactivitytimer()"
     },
     {
@@ -3540,7 +3540,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "runningactivitytimer_index",
-      "community": 545,
+      "community": 425,
       "norm_label": "index.ts"
     },
     {
@@ -4050,7 +4050,7 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivitypendingtodosquery",
-      "community": 23,
+      "community": 43,
       "norm_label": "useactivitypendingtodosquery()"
     },
     {
@@ -4110,7 +4110,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useactivitycategories",
-      "community": 324,
+      "community": 23,
       "norm_label": "useactivitycategories.ts"
     },
     {
@@ -4140,7 +4140,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_usecreateactivitycategorymutation",
-      "community": 324,
+      "community": 23,
       "norm_label": "usecreateactivitycategorymutation()"
     },
     {
@@ -4150,7 +4150,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_useupdateactivitycategorymutation",
-      "community": 324,
+      "community": 23,
       "norm_label": "useupdateactivitycategorymutation()"
     },
     {
@@ -4160,7 +4160,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_usedeleteactivitycategorymutation",
-      "community": 324,
+      "community": 23,
       "norm_label": "usedeleteactivitycategorymutation()"
     },
     {
@@ -4210,7 +4210,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_invalidatefollowupqueries",
-      "community": 33,
+      "community": 462,
       "norm_label": "invalidatefollowupqueries()"
     },
     {
@@ -4250,7 +4250,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_useactivityfollowupsindatesquery",
-      "community": 23,
+      "community": 33,
       "norm_label": "useactivityfollowupsindatesquery()"
     },
     {
@@ -4360,7 +4360,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useremainingdaytimer",
-      "community": 433,
+      "community": 5,
       "norm_label": "useremainingdaytimer.ts"
     },
     {
@@ -4370,7 +4370,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "hooks_useremainingdaytimer_useremainingdaytimer",
-      "community": 433,
+      "community": 5,
       "norm_label": "useremainingdaytimer()"
     },
     {
@@ -5790,7 +5790,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "utils_activity_day_metrics_utils_formatdurationfromms",
-      "community": 6,
+      "community": 5,
       "norm_label": "formatdurationfromms()"
     },
     {
@@ -5800,7 +5800,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "utils_activity_day_metrics_utils_formatdurationfromminutes",
-      "community": 4,
+      "community": 5,
       "norm_label": "formatdurationfromminutes()"
     },
     {
@@ -5980,7 +5980,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_activity_filters",
-      "community": 20,
+      "community": 43,
       "norm_label": "activity-filters.ts"
     },
     {
@@ -5990,7 +5990,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "utils_activity_filters_default_activity_filters",
-      "community": 20,
+      "community": 43,
       "norm_label": "default_activity_filters"
     },
     {
@@ -6000,7 +6000,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "utils_activity_filters_serializeactivityfilters",
-      "community": 20,
+      "community": 43,
       "norm_label": "serializeactivityfilters()"
     },
     {
@@ -6020,7 +6020,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "utils_activity_filters_filteractivitiesbysearch",
-      "community": 20,
+      "community": 43,
       "norm_label": "filteractivitiesbysearch()"
     },
     {
@@ -6070,7 +6070,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "utils_activity_followup_form_validatestartactivityform",
-      "community": 33,
+      "community": 25,
       "norm_label": "validatestartactivityform()"
     },
     {
@@ -6190,7 +6190,7 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "utils_activity_followup_form_followuptoeditformvalues",
-      "community": 496,
+      "community": 47,
       "norm_label": "followuptoeditformvalues()"
     },
     {
@@ -6220,7 +6220,7 @@
       "source_location": "L205",
       "_origin": "ast",
       "id": "utils_activity_followup_form_emptyeditfollowupformvalues",
-      "community": 6,
+      "community": 33,
       "norm_label": "emptyeditfollowupformvalues()"
     },
     {
@@ -6460,7 +6460,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "utils_activity_time_utils_formatdatetoymd",
-      "community": 5,
+      "community": 6,
       "norm_label": "formatdatetoymd()"
     },
     {
@@ -6480,7 +6480,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getmondayofweek",
-      "community": 6,
+      "community": 462,
       "norm_label": "getmondayofweek()"
     },
     {
@@ -6490,7 +6490,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getweekdaysfordate",
-      "community": 6,
+      "community": 462,
       "norm_label": "getweekdaysfordate()"
     },
     {
@@ -6500,7 +6500,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getmonthdaysfordate",
-      "community": 6,
+      "community": 33,
       "norm_label": "getmonthdaysfordate()"
     },
     {
@@ -6510,7 +6510,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getyearmonthfromdate",
-      "community": 414,
+      "community": 6,
       "norm_label": "getyearmonthfromdate()"
     },
     {
@@ -6530,7 +6530,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "utils_activity_time_utils_cannavigatetonextmonth",
-      "community": 414,
+      "community": 6,
       "norm_label": "cannavigatetonextmonth()"
     },
     {
@@ -6550,7 +6550,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getcurrentweekrange",
-      "community": 33,
+      "community": 462,
       "norm_label": "getcurrentweekrange()"
     },
     {
@@ -6580,7 +6580,7 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "utils_activity_time_utils_parsetimetominutes",
-      "community": 496,
+      "community": 6,
       "norm_label": "parsetimetominutes()"
     },
     {
@@ -6630,7 +6630,7 @@
       "source_location": "L168",
       "_origin": "ast",
       "id": "utils_activity_time_utils_normalizetimefordisplay",
-      "community": 496,
+      "community": 47,
       "norm_label": "normalizetimefordisplay()"
     },
     {
@@ -6740,7 +6740,7 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "utils_activity_time_utils_formattimerange",
-      "community": 496,
+      "community": 47,
       "norm_label": "formattimerange()"
     },
     {
@@ -6760,7 +6760,7 @@
       "source_location": "L269",
       "_origin": "ast",
       "id": "utils_activity_time_utils_calculateendtime",
-      "community": 496,
+      "community": 6,
       "norm_label": "calculateendtime()"
     },
     {
@@ -6780,7 +6780,7 @@
       "source_location": "L284",
       "_origin": "ast",
       "id": "utils_activity_time_utils_sortfollowupsbystarttimeasc",
-      "community": 47,
+      "community": 6,
       "norm_label": "sortfollowupsbystarttimeasc()"
     },
     {
@@ -6830,7 +6830,7 @@
       "source_location": "L334",
       "_origin": "ast",
       "id": "utils_activity_time_utils_buildfreeslotid",
-      "community": 25,
+      "community": 6,
       "norm_label": "buildfreeslotid()"
     },
     {
@@ -6840,7 +6840,7 @@
       "source_location": "L340",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getfreeslotsbetweenfollowups",
-      "community": 25,
+      "community": 6,
       "norm_label": "getfreeslotsbetweenfollowups()"
     },
     {
@@ -7240,7 +7240,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "hooks_useappideas_useauthready",
-      "community": 23,
+      "community": 36,
       "norm_label": "useauthready()"
     },
     {
@@ -8300,7 +8300,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "router_verifyemailroute",
-      "community": 23,
+      "community": 64,
       "norm_label": "verifyemailroute.tsx"
     },
     {
@@ -8310,7 +8310,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "router_verifyemailroute_verifylocationstate",
-      "community": 23,
+      "community": 64,
       "norm_label": "verifylocationstate"
     },
     {
@@ -8320,7 +8320,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "router_verifyemailroute_verifyemailroute",
-      "community": 23,
+      "community": 64,
       "norm_label": "verifyemailroute()"
     },
     {
@@ -8450,7 +8450,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "store_auth_store",
-      "community": 557,
+      "community": 37,
       "norm_label": "auth.store.ts"
     },
     {
@@ -8460,7 +8460,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "store_auth_store_authstate",
-      "community": 557,
+      "community": 37,
       "norm_label": "authstate"
     },
     {
@@ -8470,7 +8470,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "store_auth_store_initialsession",
-      "community": 557,
+      "community": 37,
       "norm_label": "initialsession"
     },
     {
@@ -8480,7 +8480,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "store_auth_store_useauthstore",
-      "community": 23,
+      "community": 37,
       "norm_label": "useauthstore"
     },
     {
@@ -9220,7 +9220,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitcategorystep_createhabitcategorystep",
-      "community": 517,
+      "community": 60,
       "norm_label": "createhabitcategorystep.tsx"
     },
     {
@@ -9230,17 +9230,17 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "createhabitcategorystep_createhabitcategorystep_props",
-      "community": 517,
+      "community": 60,
       "norm_label": "props"
     },
     {
       "label": "CreateHabitCategoryStep()",
       "file_type": "code",
       "source_file": "src/features/habits/components/CreateHabitCategoryStep/CreateHabitCategoryStep.tsx",
-      "source_location": "L16",
+      "source_location": "L12",
       "_origin": "ast",
       "id": "createhabitcategorystep_createhabitcategorystep_createhabitcategorystep",
-      "community": 517,
+      "community": 60,
       "norm_label": "createhabitcategorystep()"
     },
     {
@@ -9250,7 +9250,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitcategorystep_index",
-      "community": 517,
+      "community": 60,
       "norm_label": "index.ts"
     },
     {
@@ -9277,7 +9277,7 @@
       "label": "CreateHabitMeasureStep()",
       "file_type": "code",
       "source_file": "src/features/habits/components/CreateHabitMeasureStep/CreateHabitMeasureStep.tsx",
-      "source_location": "L15",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "createhabitmeasurestep_createhabitmeasurestep_createhabitmeasurestep",
       "community": 426,
@@ -9380,7 +9380,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitcard_habitcard",
-      "community": 505,
+      "community": 524,
       "norm_label": "habitcard.tsx"
     },
     {
@@ -9390,7 +9390,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "habitcard_habitcard_props",
-      "community": 505,
+      "community": 524,
       "norm_label": "props"
     },
     {
@@ -9400,7 +9400,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "habitcard_habitcard_habitcard",
-      "community": 505,
+      "community": 524,
       "norm_label": "habitcard()"
     },
     {
@@ -9580,7 +9580,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell",
-      "community": 379,
+      "community": 542,
       "norm_label": "habitdaycell.tsx"
     },
     {
@@ -9590,7 +9590,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_day_labels",
-      "community": 379,
+      "community": 542,
       "norm_label": "day_labels"
     },
     {
@@ -9600,7 +9600,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_props",
-      "community": 379,
+      "community": 542,
       "norm_label": "props"
     },
     {
@@ -9610,7 +9610,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_habitdaycell",
-      "community": 379,
+      "community": 542,
       "norm_label": "habitdaycell()"
     },
     {
@@ -9620,7 +9620,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdaycell_index",
-      "community": 379,
+      "community": 542,
       "norm_label": "index.ts"
     },
     {
@@ -9780,7 +9780,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow",
-      "community": 429,
+      "community": 539,
       "norm_label": "habitdayrow.tsx"
     },
     {
@@ -9790,7 +9790,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_habitdayrowprops",
-      "community": 429,
+      "community": 539,
       "norm_label": "habitdayrowprops"
     },
     {
@@ -9800,7 +9800,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_getmicrocopy",
-      "community": 429,
+      "community": 539,
       "norm_label": "getmicrocopy()"
     },
     {
@@ -9820,7 +9820,7 @@
       "source_location": "L310",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_toggleprogressring",
-      "community": 429,
+      "community": 539,
       "norm_label": "toggleprogressring()"
     },
     {
@@ -9960,7 +9960,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitfollowupform_habitfollowupform",
-      "community": 379,
+      "community": 442,
       "norm_label": "habitfollowupform.tsx"
     },
     {
@@ -9970,7 +9970,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "habitfollowupform_habitfollowupform_props",
-      "community": 379,
+      "community": 442,
       "norm_label": "props"
     },
     {
@@ -9990,178 +9990,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitfollowupform_index",
-      "community": 379,
+      "community": 442,
       "norm_label": "index.ts"
-    },
-    {
-      "label": "HabitCreateWizard.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitcreatewizard",
-      "community": 59,
-      "norm_label": "habitcreatewizard.tsx"
-    },
-    {
-      "label": "WizardStep",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L27",
-      "_origin": "ast",
-      "id": "habitformmodal_habitcreatewizard_wizardstep",
-      "community": 59,
-      "norm_label": "wizardstep"
-    },
-    {
-      "label": "STEP_META",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L29",
-      "_origin": "ast",
-      "id": "habitformmodal_habitcreatewizard_step_meta",
-      "community": 59,
-      "norm_label": "step_meta"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L44",
-      "_origin": "ast",
-      "id": "habitformmodal_habitcreatewizard_props",
-      "community": 59,
-      "norm_label": "props"
-    },
-    {
-      "label": "HabitCreateWizard()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "community": 505,
-      "norm_label": "habitcreatewizard()"
-    },
-    {
-      "label": "HabitEditForm.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habiteditform",
-      "community": 59,
-      "norm_label": "habiteditform.tsx"
-    },
-    {
-      "label": "HABIT_TYPE_OPTIONS",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L37",
-      "_origin": "ast",
-      "id": "habitformmodal_habiteditform_habit_type_options",
-      "community": 59,
-      "norm_label": "habit_type_options"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L43",
-      "_origin": "ast",
-      "id": "habitformmodal_habiteditform_props",
-      "community": 59,
-      "norm_label": "props"
-    },
-    {
-      "label": "HabitEditForm()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L50",
-      "_origin": "ast",
-      "id": "habitformmodal_habiteditform_habiteditform",
-      "community": 505,
-      "norm_label": "habiteditform()"
-    },
-    {
-      "label": "HabitFormModal.test.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test",
-      "community": 31,
-      "norm_label": "habitformmodal.test.tsx"
-    },
-    {
-      "label": "createMutate",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L8",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test_createmutate",
-      "community": 31,
-      "norm_label": "createmutate"
-    },
-    {
-      "label": "updateMutate",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L9",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test_updatemutate",
-      "community": 31,
-      "norm_label": "updatemutate"
-    },
-    {
-      "label": "measures",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L11",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test_measures",
-      "community": 31,
-      "norm_label": "measures"
-    },
-    {
-      "label": "categories",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test_categories",
-      "community": 31,
-      "norm_label": "categories"
-    },
-    {
-      "label": "buildHabit()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L47",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test_buildhabit",
-      "community": 31,
-      "norm_label": "buildhabit()"
-    },
-    {
-      "label": "lastCreatePayload()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L79",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test_lastcreatepayload",
-      "community": 31,
-      "norm_label": "lastcreatepayload()"
-    },
-    {
-      "label": "goToStep3()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L83",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformmodal_test_gotostep3",
-      "community": 31,
-      "norm_label": "gotostep3()"
     },
     {
       "label": "HabitFormModal.tsx",
@@ -10170,378 +10000,68 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitformmodal_habitformmodal",
-      "community": 505,
+      "community": 4,
       "norm_label": "habitformmodal.tsx"
     },
     {
       "label": "HabitFormModalProps",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
-      "source_location": "L5",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "habitformmodal_habitformmodal_habitformmodalprops",
-      "community": 505,
+      "community": 4,
       "norm_label": "habitformmodalprops"
+    },
+    {
+      "label": "HABIT_TYPE_OPTIONS",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "habitformmodal_habitformmodal_habit_type_options",
+      "community": 4,
+      "norm_label": "habit_type_options"
+    },
+    {
+      "label": "NewCategoryButton()",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "habitformmodal_habitformmodal_newcategorybutton",
+      "community": 4,
+      "norm_label": "newcategorybutton()"
+    },
+    {
+      "label": "NewPurposeButton()",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L70",
+      "_origin": "ast",
+      "id": "habitformmodal_habitformmodal_newpurposebutton",
+      "community": 4,
+      "norm_label": "newpurposebutton()"
+    },
+    {
+      "label": "NewMeasureButton()",
+      "file_type": "code",
+      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L100",
+      "_origin": "ast",
+      "id": "habitformmodal_habitformmodal_newmeasurebutton",
+      "community": 4,
+      "norm_label": "newmeasurebutton()"
     },
     {
       "label": "HabitFormModal()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
-      "source_location": "L14",
+      "source_location": "L127",
       "_origin": "ast",
       "id": "habitformmodal_habitformmodal_habitformmodal",
-      "community": 505,
+      "community": 1,
       "norm_label": "habitformmodal()"
-    },
-    {
-      "label": "HabitFormStepButtons.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformstepbuttons",
-      "community": 59,
-      "norm_label": "habitformstepbuttons.tsx"
-    },
-    {
-      "label": "NewCategoryButtonProps",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformstepbuttons_newcategorybuttonprops",
-      "community": 59,
-      "norm_label": "newcategorybuttonprops"
-    },
-    {
-      "label": "NewCategoryButton()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L18",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformstepbuttons_newcategorybutton",
-      "community": 59,
-      "norm_label": "newcategorybutton()"
-    },
-    {
-      "label": "NewPurposeButtonProps",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L44",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformstepbuttons_newpurposebuttonprops",
-      "community": 59,
-      "norm_label": "newpurposebuttonprops"
-    },
-    {
-      "label": "NewPurposeButton()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L53",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformstepbuttons_newpurposebutton",
-      "community": 59,
-      "norm_label": "newpurposebutton()"
-    },
-    {
-      "label": "NewMeasureButtonProps",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L81",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformstepbuttons_newmeasurebuttonprops",
-      "community": 59,
-      "norm_label": "newmeasurebuttonprops"
-    },
-    {
-      "label": "NewMeasureButton()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L89",
-      "_origin": "ast",
-      "id": "habitformmodal_habitformstepbuttons_newmeasurebutton",
-      "community": 59,
-      "norm_label": "newmeasurebutton()"
-    },
-    {
-      "label": "HabitIntentionSentence.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitintentionsentence",
-      "community": 59,
-      "norm_label": "habitintentionsentence.tsx"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L6",
-      "_origin": "ast",
-      "id": "habitformmodal_habitintentionsentence_props",
-      "community": 59,
-      "norm_label": "props"
-    },
-    {
-      "label": "slotWidth()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L13",
-      "_origin": "ast",
-      "id": "habitformmodal_habitintentionsentence_slotwidth",
-      "community": 59,
-      "norm_label": "slotwidth()"
-    },
-    {
-      "label": "AnchorSlotProps",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L18",
-      "_origin": "ast",
-      "id": "habitformmodal_habitintentionsentence_anchorslotprops",
-      "community": 59,
-      "norm_label": "anchorslotprops"
-    },
-    {
-      "label": "AnchorSlot()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L28",
-      "_origin": "ast",
-      "id": "habitformmodal_habitintentionsentence_anchorslot",
-      "community": 59,
-      "norm_label": "anchorslot()"
-    },
-    {
-      "label": "HabitIntentionSentence()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L99",
-      "_origin": "ast",
-      "id": "habitformmodal_habitintentionsentence_habitintentionsentence",
-      "community": 59,
-      "norm_label": "habitintentionsentence()"
-    },
-    {
-      "label": "HabitWizardControls.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardcontrols",
-      "community": 59,
-      "norm_label": "habitwizardcontrols.tsx"
-    },
-    {
-      "label": "OptionCardProps",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L5",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardcontrols_optioncardprops",
-      "community": 59,
-      "norm_label": "optioncardprops"
-    },
-    {
-      "label": "OptionCard()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L18",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardcontrols_optioncard",
-      "community": 59,
-      "norm_label": "optioncard()"
-    },
-    {
-      "label": "ChipProps",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L54",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardcontrols_chipprops",
-      "community": 59,
-      "norm_label": "chipprops"
-    },
-    {
-      "label": "Chip()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L62",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardcontrols_chip",
-      "community": 59,
-      "norm_label": "chip()"
-    },
-    {
-      "label": "HabitWizardPreview.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardpreview",
-      "community": 59,
-      "norm_label": "habitwizardpreview.tsx"
-    },
-    {
-      "label": "WEEK_DAYS",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L7",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardpreview_week_days",
-      "community": 59,
-      "norm_label": "week_days"
-    },
-    {
-      "label": "PreviewProps",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L9",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardpreview_previewprops",
-      "community": 59,
-      "norm_label": "previewprops"
-    },
-    {
-      "label": "previewMicrocopy()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L25",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardpreview_previewmicrocopy",
-      "community": 59,
-      "norm_label": "previewmicrocopy()"
-    },
-    {
-      "label": "PreviewCapsule()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardpreview_previewcapsule",
-      "community": 59,
-      "norm_label": "previewcapsule()"
-    },
-    {
-      "label": "HabitWizardPreview()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L54",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardpreview_habitwizardpreview",
-      "community": 59,
-      "norm_label": "habitwizardpreview()"
-    },
-    {
-      "label": "HabitWizardPreviewStrip()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L120",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardpreview_habitwizardpreviewstrip",
-      "community": 59,
-      "norm_label": "habitwizardpreviewstrip()"
-    },
-    {
-      "label": "HabitWizardStep1.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep1",
-      "community": 59,
-      "norm_label": "habitwizardstep1.tsx"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L11",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep1_props",
-      "community": 59,
-      "norm_label": "props"
-    },
-    {
-      "label": "HabitWizardStep1()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep1_habitwizardstep1",
-      "community": 59,
-      "norm_label": "habitwizardstep1()"
-    },
-    {
-      "label": "HabitWizardStep2.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep2",
-      "community": 59,
-      "norm_label": "habitwizardstep2.tsx"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L13",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep2_props",
-      "community": 59,
-      "norm_label": "props"
-    },
-    {
-      "label": "HabitWizardStep2()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L30",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep2_habitwizardstep2",
-      "community": 59,
-      "norm_label": "habitwizardstep2()"
-    },
-    {
-      "label": "HabitWizardStep3.tsx",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep3",
-      "community": 59,
-      "norm_label": "habitwizardstep3.tsx"
-    },
-    {
-      "label": "LIFELINE_OPTIONS",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L11",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep3_lifeline_options",
-      "community": 59,
-      "norm_label": "lifeline_options"
-    },
-    {
-      "label": "Props",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L18",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep3_props",
-      "community": 59,
-      "norm_label": "props"
-    },
-    {
-      "label": "HabitWizardStep3()",
-      "file_type": "code",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L31",
-      "_origin": "ast",
-      "id": "habitformmodal_habitwizardstep3_habitwizardstep3",
-      "community": 59,
-      "norm_label": "habitwizardstep3()"
     },
     {
       "label": "index.ts",
@@ -10560,7 +10080,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton",
-      "community": 429,
+      "community": 433,
       "norm_label": "habitlifelinebutton.tsx"
     },
     {
@@ -10570,7 +10090,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton_props",
-      "community": 429,
+      "community": 433,
       "norm_label": "props"
     },
     {
@@ -10580,7 +10100,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton_habitlifelinebutton",
-      "community": 429,
+      "community": 433,
       "norm_label": "habitlifelinebutton()"
     },
     {
@@ -10590,7 +10110,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitlifelinebutton_index",
-      "community": 429,
+      "community": 433,
       "norm_label": "index.ts"
     },
     {
@@ -10690,7 +10210,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard",
-      "community": 88,
+      "community": 524,
       "norm_label": "habitlistcard.tsx"
     },
     {
@@ -10700,7 +10220,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard_habitlistcardprops",
-      "community": 88,
+      "community": 524,
       "norm_label": "habitlistcardprops"
     },
     {
@@ -10710,7 +10230,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard_habitlistcard",
-      "community": 88,
+      "community": 524,
       "norm_label": "habitlistcard()"
     },
     {
@@ -10720,7 +10240,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitlistcard_index",
-      "community": 88,
+      "community": 524,
       "norm_label": "index.ts"
     },
     {
@@ -11400,7 +10920,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitweekselector_habitweekselector",
-      "community": 540,
+      "community": 391,
       "norm_label": "habitweekselector.tsx"
     },
     {
@@ -11410,7 +10930,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "habitweekselector_habitweekselector_habitweekselectorprops",
-      "community": 540,
+      "community": 391,
       "norm_label": "habitweekselectorprops"
     },
     {
@@ -11420,7 +10940,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "habitweekselector_habitweekselector_habitweekselector",
-      "community": 540,
+      "community": 391,
       "norm_label": "habitweekselector()"
     },
     {
@@ -11430,7 +10950,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitweekselector_index",
-      "community": 540,
+      "community": 391,
       "norm_label": "index.ts"
     },
     {
@@ -11540,7 +11060,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitswidget_habitswidget",
-      "community": 391,
+      "community": 406,
       "norm_label": "habitswidget.tsx"
     },
     {
@@ -11550,7 +11070,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "habitswidget_habitswidget_day_letters",
-      "community": 391,
+      "community": 406,
       "norm_label": "day_letters"
     },
     {
@@ -11560,7 +11080,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "habitswidget_habitswidget_getlast7days",
-      "community": 391,
+      "community": 406,
       "norm_label": "getlast7days()"
     },
     {
@@ -11570,7 +11090,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "habitswidget_habitswidget_habitswidget",
-      "community": 391,
+      "community": 406,
       "norm_label": "habitswidget()"
     },
     {
@@ -11580,7 +11100,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitswidget_index",
-      "community": 391,
+      "community": 406,
       "norm_label": "index.ts"
     },
     {
@@ -11622,46 +11142,6 @@
       "id": "personacolumn_index",
       "community": 123,
       "norm_label": "index.ts"
-    },
-    {
-      "label": "habit-templates.ts",
-      "file_type": "code",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "data_habit_templates",
-      "community": 524,
-      "norm_label": "habit-templates.ts"
-    },
-    {
-      "label": "HabitTemplateValues",
-      "file_type": "code",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L14",
-      "_origin": "ast",
-      "id": "data_habit_templates_habittemplatevalues",
-      "community": 524,
-      "norm_label": "habittemplatevalues"
-    },
-    {
-      "label": "HabitTemplate",
-      "file_type": "code",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "data_habit_templates_habittemplate",
-      "community": 524,
-      "norm_label": "habittemplate"
-    },
-    {
-      "label": "HABIT_TEMPLATES",
-      "file_type": "code",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L31",
-      "_origin": "ast",
-      "id": "data_habit_templates_habit_templates",
-      "community": 524,
-      "norm_label": "habit_templates"
     },
     {
       "label": "habit-categories.graphql.ts",
@@ -11770,7 +11250,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "hooks_usehabitcategories_usehabitcategoryqueryguard",
-      "community": 23,
+      "community": 60,
       "norm_label": "usehabitcategoryqueryguard()"
     },
     {
@@ -11930,7 +11410,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_usehabitpurposequeryguard",
-      "community": 23,
+      "community": 39,
       "norm_label": "usehabitpurposequeryguard()"
     },
     {
@@ -11950,7 +11430,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_usehabitpurposesquery",
-      "community": 505,
+      "community": 39,
       "norm_label": "usehabitpurposesquery()"
     },
     {
@@ -12060,7 +11540,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitcategoriesquery",
-      "community": 505,
+      "community": 1,
       "norm_label": "usehabitcategoriesquery()"
     },
     {
@@ -12070,7 +11550,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitmeasuresquery",
-      "community": 505,
+      "community": 1,
       "norm_label": "usehabitmeasuresquery()"
     },
     {
@@ -12080,7 +11560,7 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "hooks_usehabits_usecreatehabitmutation",
-      "community": 505,
+      "community": 1,
       "norm_label": "usecreatehabitmutation()"
     },
     {
@@ -12090,7 +11570,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "hooks_usehabits_useupdatehabitmutation",
-      "community": 505,
+      "community": 1,
       "norm_label": "useupdatehabitmutation()"
     },
     {
@@ -12110,7 +11590,7 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "hooks_usehabits_usecompletehabitmutation",
-      "community": 88,
+      "community": 524,
       "norm_label": "usecompletehabitmutation()"
     },
     {
@@ -12180,7 +11660,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitdetailpage",
-      "community": 1,
+      "community": 391,
       "norm_label": "habitdetailpage.tsx"
     },
     {
@@ -12190,7 +11670,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "pages_habitdetailpage_goback",
-      "community": 1,
+      "community": 391,
       "norm_label": "goback()"
     },
     {
@@ -12210,7 +11690,7 @@
       "source_location": "L221",
       "_origin": "ast",
       "id": "pages_habitdetailpage_habithistorytab",
-      "community": 1,
+      "community": 391,
       "norm_label": "habithistorytab()"
     },
     {
@@ -12340,7 +11820,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitweekviewpage",
-      "community": 1,
+      "community": 391,
       "norm_label": "habitweekviewpage.tsx"
     },
     {
@@ -12350,7 +11830,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "pages_habitweekviewpage_habitweekviewpage",
-      "community": 1,
+      "community": 391,
       "norm_label": "habitweekviewpage()"
     },
     {
@@ -12430,7 +11910,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitslistpage",
-      "community": 1,
+      "community": 555,
       "norm_label": "habitslistpage.tsx"
     },
     {
@@ -12440,7 +11920,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "pages_habitslistpage_empty_follow_up_map",
-      "community": 1,
+      "community": 555,
       "norm_label": "empty_follow_up_map"
     },
     {
@@ -12450,7 +11930,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "pages_habitslistpage_readstoredview",
-      "community": 1,
+      "community": 555,
       "norm_label": "readstoredview()"
     },
     {
@@ -12910,7 +12390,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils",
-      "community": 89,
+      "community": 78,
       "norm_label": "habit-date-format.utils.ts"
     },
     {
@@ -12920,7 +12400,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils_todate",
-      "community": 89,
+      "community": 78,
       "norm_label": "todate()"
     },
     {
@@ -12930,7 +12410,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils_capitalize",
-      "community": 89,
+      "community": 78,
       "norm_label": "capitalize()"
     },
     {
@@ -12940,7 +12420,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils_withoutweekdaycomma",
-      "community": 89,
+      "community": 78,
       "norm_label": "withoutweekdaycomma()"
     },
     {
@@ -12950,7 +12430,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils_formatweekrange",
-      "community": 89,
+      "community": 78,
       "norm_label": "formatweekrange()"
     },
     {
@@ -12960,7 +12440,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils_formatweekeyebrow",
-      "community": 89,
+      "community": 78,
       "norm_label": "formatweekeyebrow()"
     },
     {
@@ -12970,7 +12450,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils_formatlongdate",
-      "community": 89,
+      "community": 78,
       "norm_label": "formatlongdate()"
     },
     {
@@ -12980,7 +12460,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "utils_habit_date_format_utils_formatdayforlabel",
-      "community": 89,
+      "community": 78,
       "norm_label": "formatdayforlabel()"
     },
     {
@@ -13024,26 +12504,6 @@
       "norm_label": "getdifficultyemoji()"
     },
     {
-      "label": "habit-form.utils.test.ts",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.test.ts",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_test",
-      "community": 558,
-      "norm_label": "habit-form.utils.test.ts"
-    },
-    {
-      "label": "intention()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.test.ts",
-      "source_location": "L17",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_test_intention",
-      "community": 558,
-      "norm_label": "intention()"
-    },
-    {
       "label": "habit-form.utils.ts",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-form.utils.ts",
@@ -13057,7 +12517,7 @@
       "label": "HabitFormValues",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L11",
+      "source_location": "L3",
       "_origin": "ast",
       "id": "utils_habit_form_utils_habitformvalues",
       "community": 100,
@@ -13067,7 +12527,7 @@
       "label": "defaultFormValues()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L29",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "utils_habit_form_utils_defaultformvalues",
       "community": 100,
@@ -13077,7 +12537,7 @@
       "label": "buildHabitCreatePayload()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L70",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "utils_habit_form_utils_buildhabitcreatepayload",
       "community": 100,
@@ -13087,151 +12547,11 @@
       "label": "buildHabitEditPayload()",
       "file_type": "code",
       "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L98",
+      "source_location": "L90",
       "_origin": "ast",
       "id": "utils_habit_form_utils_buildhabiteditpayload",
       "community": 100,
       "norm_label": "buildhabiteditpayload()"
-    },
-    {
-      "label": "HabitIntention",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L133",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_habitintention",
-      "community": 100,
-      "norm_label": "habitintention"
-    },
-    {
-      "label": "EMPTY_INTENTION",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L142",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_empty_intention",
-      "community": 100,
-      "norm_label": "empty_intention"
-    },
-    {
-      "label": "INTENTION_ANCHORS",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L145",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_intention_anchors",
-      "community": 100,
-      "norm_label": "intention_anchors"
-    },
-    {
-      "label": "composeIntention()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L164",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_composeintention",
-      "community": 100,
-      "norm_label": "composeintention()"
-    },
-    {
-      "label": "parseIntention()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L182",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_parseintention",
-      "community": 100,
-      "norm_label": "parseintention()"
-    },
-    {
-      "label": "HabitDescriptionMode",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L232",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_habitdescriptionmode",
-      "community": 100,
-      "norm_label": "habitdescriptionmode"
-    },
-    {
-      "label": "HabitDescriptionState",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L234",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_habitdescriptionstate",
-      "community": 100,
-      "norm_label": "habitdescriptionstate"
-    },
-    {
-      "label": "readDescription()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L244",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_readdescription",
-      "community": 100,
-      "norm_label": "readdescription()"
-    },
-    {
-      "label": "writeDescription()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L251",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_writedescription",
-      "community": 100,
-      "norm_label": "writedescription()"
-    },
-    {
-      "label": "proposeIntentionAction()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L260",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_proposeintentionaction",
-      "community": 100,
-      "norm_label": "proposeintentionaction()"
-    },
-    {
-      "label": "normalizeNameForMatch()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L283",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_normalizenameformatch",
-      "community": 100,
-      "norm_label": "normalizenameformatch()"
-    },
-    {
-      "label": "findByName()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L292",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_findbyname",
-      "community": 100,
-      "norm_label": "findbyname()"
-    },
-    {
-      "label": "HabitTemplateApplication",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L302",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_habittemplateapplication",
-      "community": 100,
-      "norm_label": "habittemplateapplication"
-    },
-    {
-      "label": "applyHabitTemplate()",
-      "file_type": "code",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L319",
-      "_origin": "ast",
-      "id": "utils_habit_form_utils_applyhabittemplate",
-      "community": 100,
-      "norm_label": "applyhabittemplate()"
     },
     {
       "label": "habit-list.utils.test.ts",
@@ -13430,7 +12750,7 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "utils_habit_list_utils_gethabitintent",
-      "community": 88,
+      "community": 524,
       "norm_label": "gethabitintent()"
     },
     {
@@ -13440,7 +12760,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "utils_habit_list_utils_gethabitfrequencylabel",
-      "community": 88,
+      "community": 524,
       "norm_label": "gethabitfrequencylabel()"
     },
     {
@@ -13520,7 +12840,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "utils_habit_measure_form_utils_formatmeasuredisplay",
-      "community": 505,
+      "community": 539,
       "norm_label": "formatmeasuredisplay()"
     },
     {
@@ -13560,7 +12880,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_habit_order_utils",
-      "community": 391,
+      "community": 406,
       "norm_label": "habit-order.utils.ts"
     },
     {
@@ -13570,7 +12890,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "utils_habit_order_utils_comparehabits",
-      "community": 391,
+      "community": 406,
       "norm_label": "comparehabits()"
     },
     {
@@ -13580,7 +12900,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utils_habit_order_utils_sortmydayentries",
-      "community": 391,
+      "community": 406,
       "norm_label": "sortmydayentries()"
     },
     {
@@ -13690,7 +13010,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "utils_habit_progress_utils_followuphasnotes",
-      "community": 379,
+      "community": 542,
       "norm_label": "followuphasnotes()"
     },
     {
@@ -13730,7 +13050,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "utils_habit_progress_utils_countcovereddays",
-      "community": 88,
+      "community": 524,
       "norm_label": "countcovereddays()"
     },
     {
@@ -13950,7 +13270,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "utils_habit_type_utils_gettodaystring",
-      "community": 1,
+      "community": 391,
       "norm_label": "gettodaystring()"
     },
     {
@@ -14050,7 +13370,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getisoweeknumber",
-      "community": 89,
+      "community": 78,
       "norm_label": "getisoweeknumber()"
     },
     {
@@ -14920,7 +14240,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "notecapture_notecapture",
-      "community": 541,
+      "community": 508,
       "norm_label": "notecapture.tsx"
     },
     {
@@ -14930,7 +14250,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "notecapture_notecapture_tag_colors",
-      "community": 541,
+      "community": 508,
       "norm_label": "tag_colors"
     },
     {
@@ -14940,7 +14260,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "notecapture_notecapture_sanitizetagname",
-      "community": 541,
+      "community": 508,
       "norm_label": "sanitizetagname()"
     },
     {
@@ -14950,7 +14270,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "notecapture_notecapture_props",
-      "community": 541,
+      "community": 508,
       "norm_label": "props"
     },
     {
@@ -14970,7 +14290,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "notecard_notecard",
-      "community": 542,
+      "community": 508,
       "norm_label": "notecard.tsx"
     },
     {
@@ -14980,7 +14300,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "notecard_notecard_tag_colors",
-      "community": 542,
+      "community": 508,
       "norm_label": "tag_colors"
     },
     {
@@ -14990,7 +14310,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "notecard_notecard_sanitizetagname",
-      "community": 542,
+      "community": 508,
       "norm_label": "sanitizetagname()"
     },
     {
@@ -15000,7 +14320,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "notecard_notecard_props",
-      "community": 542,
+      "community": 508,
       "norm_label": "props"
     },
     {
@@ -15120,7 +14440,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "hooks_usenotes_useauthready",
-      "community": 23,
+      "community": 508,
       "norm_label": "useauthready()"
     },
     {
@@ -16260,7 +15580,7 @@
       "source_location": "L352",
       "_origin": "ast",
       "id": "hooks_usequarters_useweekscheduleslotsquery",
-      "community": 27,
+      "community": 412,
       "norm_label": "useweekscheduleslotsquery()"
     },
     {
@@ -17030,7 +16350,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "sleepcalendar_sleepcalendar",
-      "community": 497,
+      "community": 374,
       "norm_label": "sleepcalendar.tsx"
     },
     {
@@ -17040,7 +16360,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "sleepcalendar_sleepcalendar_sleepcalendarprops",
-      "community": 497,
+      "community": 374,
       "norm_label": "sleepcalendarprops"
     },
     {
@@ -17050,7 +16370,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "sleepcalendar_sleepcalendar_weekdays",
-      "community": 497,
+      "community": 374,
       "norm_label": "weekdays"
     },
     {
@@ -17060,7 +16380,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "sleepcalendar_sleepcalendar_firstweekdayoffset",
-      "community": 497,
+      "community": 374,
       "norm_label": "firstweekdayoffset()"
     },
     {
@@ -17070,7 +16390,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "sleepcalendar_sleepcalendar_sleepcalendar",
-      "community": 497,
+      "community": 374,
       "norm_label": "sleepcalendar()"
     },
     {
@@ -17170,7 +16490,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "sleepform_sleepform_buildinitialvalues",
-      "community": 375,
+      "community": 31,
       "norm_label": "buildinitialvalues()"
     },
     {
@@ -17330,7 +16650,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "sleeplogmodal_sleeplogmodal_buildinitial",
-      "community": 375,
+      "community": 31,
       "norm_label": "buildinitial()"
     },
     {
@@ -17350,7 +16670,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "sleeplogmodal_sleeplogmodal_step1day",
-      "community": 375,
+      "community": 31,
       "norm_label": "step1day()"
     },
     {
@@ -17360,7 +16680,7 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "sleeplogmodal_sleeplogmodal_step1footer",
-      "community": 468,
+      "community": 4,
       "norm_label": "step1footer()"
     },
     {
@@ -17380,7 +16700,7 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "sleeplogmodal_sleeplogmodal_step2footer",
-      "community": 468,
+      "community": 4,
       "norm_label": "step2footer()"
     },
     {
@@ -17420,7 +16740,7 @@
       "source_location": "L335",
       "_origin": "ast",
       "id": "sleeplogmodal_sleeplogmodal_step3footer",
-      "community": 468,
+      "community": 4,
       "norm_label": "step3footer()"
     },
     {
@@ -17520,7 +16840,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "sleeptimeline_sleeptimeline_formatshortdate",
-      "community": 374,
+      "community": 31,
       "norm_label": "formatshortdate()"
     },
     {
@@ -18170,7 +17490,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_sleep_utils",
-      "community": 413,
+      "community": 31,
       "norm_label": "sleep.utils.ts"
     },
     {
@@ -18190,7 +17510,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utils_sleep_utils_isototime",
-      "community": 375,
+      "community": 31,
       "norm_label": "isototime()"
     },
     {
@@ -18220,7 +17540,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "utils_sleep_utils_gettodaydate",
-      "community": 375,
+      "community": 31,
       "norm_label": "gettodaydate()"
     },
     {
@@ -18230,7 +17550,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "utils_sleep_utils_sleepdatetoinputvalue",
-      "community": 375,
+      "community": 31,
       "norm_label": "sleepdatetoinputvalue()"
     },
     {
@@ -18240,7 +17560,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "utils_sleep_utils_sleep_quality_labels",
-      "community": 413,
+      "community": 31,
       "norm_label": "sleep_quality_labels"
     },
     {
@@ -18250,7 +17570,7 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "utils_sleep_utils_mood_on_waking_labels",
-      "community": 413,
+      "community": 31,
       "norm_label": "mood_on_waking_labels"
     },
     {
@@ -18260,7 +17580,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "utils_sleep_utils_formatsleepquality",
-      "community": 413,
+      "community": 31,
       "norm_label": "formatsleepquality()"
     },
     {
@@ -18270,7 +17590,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "utils_sleep_utils_formatmoodonwaking",
-      "community": 413,
+      "community": 31,
       "norm_label": "formatmoodonwaking()"
     },
     {
@@ -18280,7 +17600,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "utils_sleep_utils_sleep_quality_options",
-      "community": 413,
+      "community": 31,
       "norm_label": "sleep_quality_options"
     },
     {
@@ -18290,7 +17610,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "utils_sleep_utils_mood_on_waking_options",
-      "community": 413,
+      "community": 31,
       "norm_label": "mood_on_waking_options"
     },
     {
@@ -19280,7 +18600,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tododrawer_tododrawer",
-      "community": 552,
+      "community": 18,
       "norm_label": "tododrawer.tsx"
     },
     {
@@ -19290,7 +18610,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "tododrawer_tododrawer_props",
-      "community": 552,
+      "community": 18,
       "norm_label": "props"
     },
     {
@@ -19300,7 +18620,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "tododrawer_tododrawer_descriptioneditorprops",
-      "community": 552,
+      "community": 18,
       "norm_label": "descriptioneditorprops"
     },
     {
@@ -19310,7 +18630,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "tododrawer_tododrawer_tododescriptioneditor",
-      "community": 552,
+      "community": 18,
       "norm_label": "tododescriptioneditor()"
     },
     {
@@ -19320,7 +18640,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "tododrawer_tododrawer_tododrawer",
-      "community": 508,
+      "community": 18,
       "norm_label": "tododrawer()"
     },
     {
@@ -19510,7 +18830,7 @@
       "source_location": "L435",
       "_origin": "ast",
       "id": "todossettings_todossettings_todossettings",
-      "community": 418,
+      "community": 540,
       "norm_label": "todossettings()"
     },
     {
@@ -19580,7 +18900,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "hooks_usetodos_useauthready",
-      "community": 23,
+      "community": 540,
       "norm_label": "useauthready()"
     },
     {
@@ -19710,7 +19030,7 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "hooks_usetodos_usetodotagsquery",
-      "community": 508,
+      "community": 540,
       "norm_label": "usetodotagsquery()"
     },
     {
@@ -19720,7 +19040,7 @@
       "source_location": "L179",
       "_origin": "ast",
       "id": "hooks_usetodos_usetodofoldersquery",
-      "community": 418,
+      "community": 540,
       "norm_label": "usetodofoldersquery()"
     },
     {
@@ -19860,7 +19180,7 @@
       "source_location": "L550",
       "_origin": "ast",
       "id": "hooks_usetodos_usetododailytemplatesquery",
-      "community": 418,
+      "community": 540,
       "norm_label": "usetododailytemplatesquery()"
     },
     {
@@ -20420,7 +19740,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "categorypiechart_categorypiechart",
-      "community": 4,
+      "community": 5,
       "norm_label": "categorypiechart.tsx"
     },
     {
@@ -20430,7 +19750,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "categorypiechart_categorypiechart_props",
-      "community": 4,
+      "community": 5,
       "norm_label": "props"
     },
     {
@@ -20440,7 +19760,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "categorypiechart_categorypiechart_categorypiechart",
-      "community": 4,
+      "community": 5,
       "norm_label": "categorypiechart()"
     },
     {
@@ -20450,7 +19770,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "daycategorytimemodal_daycategorytimemodal",
-      "community": 4,
+      "community": 5,
       "norm_label": "daycategorytimemodal.tsx"
     },
     {
@@ -20460,7 +19780,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "daycategorytimemodal_daycategorytimemodal_props",
-      "community": 4,
+      "community": 5,
       "norm_label": "props"
     },
     {
@@ -20470,7 +19790,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "daycategorytimemodal_daycategorytimemodal_daycategorytimemodal",
-      "community": 4,
+      "community": 5,
       "norm_label": "daycategorytimemodal()"
     },
     {
@@ -20520,7 +19840,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "routineeventmodal_routineeventmodal",
-      "community": 0,
+      "community": 497,
       "norm_label": "routineeventmodal.tsx"
     },
     {
@@ -20530,7 +19850,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "routineeventmodal_routineeventmodal_routineeventformvalues",
-      "community": 0,
+      "community": 497,
       "norm_label": "routineeventformvalues"
     },
     {
@@ -20540,7 +19860,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "routineeventmodal_routineeventmodal_props",
-      "community": 0,
+      "community": 497,
       "norm_label": "props"
     },
     {
@@ -20550,7 +19870,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "routineeventmodal_routineeventmodal_day_options",
-      "community": 0,
+      "community": 497,
       "norm_label": "day_options"
     },
     {
@@ -20560,7 +19880,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "routineeventmodal_routineeventmodal_rootstepprops",
-      "community": 0,
+      "community": 497,
       "norm_label": "rootstepprops"
     },
     {
@@ -20720,7 +20040,7 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "routinelist_routinelist_routinelist",
-      "community": 551,
+      "community": 433,
       "norm_label": "routinelist()"
     },
     {
@@ -20750,7 +20070,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "weeklyplanner_weeklyplanner_getactivitiesforday",
-      "community": 393,
+      "community": 0,
       "norm_label": "getactivitiesforday()"
     },
     {
@@ -20830,7 +20150,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "src_features_weekly_routine_components_weeklyplanner_weeklyplanner_tsx_weeklyplanner_weeklyplanner_weeklyplanner",
-      "community": 393,
+      "community": 0,
       "norm_label": "weeklyplanner()"
     },
     {
@@ -21120,7 +20440,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_weekly_routine_types_dayofweek",
-      "community": 72,
+      "community": 41,
       "norm_label": "dayofweek"
     },
     {
@@ -21230,7 +20550,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "types_weekly_routine_types_plannerevent",
-      "community": 72,
+      "community": 41,
       "norm_label": "plannerevent"
     },
     {
@@ -21290,7 +20610,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "utils_planner_utils_timetominutes",
-      "community": 41,
+      "community": 0,
       "norm_label": "timetominutes()"
     },
     {
@@ -21330,7 +20650,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "utils_planner_utils_getordereddays",
-      "community": 393,
+      "community": 0,
       "norm_label": "getordereddays()"
     },
     {
@@ -21340,7 +20660,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "utils_planner_utils_generatetimeblocks",
-      "community": 393,
+      "community": 0,
       "norm_label": "generatetimeblocks()"
     },
     {
@@ -21500,7 +20820,7 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "utils_planner_utils_getcategorytimefromroutineactivities",
-      "community": 4,
+      "community": 5,
       "norm_label": "getcategorytimefromroutineactivities()"
     },
     {
@@ -21510,7 +20830,7 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "utils_planner_utils_buildcategorypiegradient",
-      "community": 4,
+      "community": 5,
       "norm_label": "buildcategorypiegradient()"
     },
     {
@@ -21650,7 +20970,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "applayout_applayout",
-      "community": 37,
+      "community": 2,
       "norm_label": "applayout.tsx"
     },
     {
@@ -21660,7 +20980,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "applayout_applayout_readsidebarcollapsedpreference",
-      "community": 37,
+      "community": 2,
       "norm_label": "readsidebarcollapsedpreference()"
     },
     {
@@ -21690,7 +21010,7 @@
       "source_location": "L212",
       "_origin": "ast",
       "id": "applayout_applayout_applayout",
-      "community": 37,
+      "community": 2,
       "norm_label": "applayout()"
     },
     {
@@ -21800,7 +21120,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "authlayout_authlayout",
-      "community": 42,
+      "community": 95,
       "norm_label": "authlayout.tsx"
     },
     {
@@ -21810,7 +21130,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "authlayout_authlayout_highlights",
-      "community": 42,
+      "community": 95,
       "norm_label": "highlights"
     },
     {
@@ -21820,7 +21140,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "authlayout_authlayout_authlayout",
-      "community": 42,
+      "community": 95,
       "norm_label": "authlayout()"
     },
     {
@@ -21970,7 +21290,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "notespage_notespage",
-      "community": 508,
+      "community": 540,
       "norm_label": "notespage.tsx"
     },
     {
@@ -21980,7 +21300,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "notespage_notespage_notespage",
-      "community": 508,
+      "community": 540,
       "norm_label": "notespage()"
     },
     {
@@ -24480,7 +23800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "motion_usereducedmotionpreference",
-      "community": 42,
+      "community": 95,
       "norm_label": "usereducedmotionpreference.ts"
     },
     {
@@ -24490,7 +23810,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "motion_usereducedmotionpreference_getreducedmotionpreference",
-      "community": 42,
+      "community": 95,
       "norm_label": "getreducedmotionpreference()"
     },
     {
@@ -24500,7 +23820,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "motion_usereducedmotionpreference_usereducedmotionpreference",
-      "community": 42,
+      "community": 95,
       "norm_label": "usereducedmotionpreference()"
     },
     {
@@ -25280,7 +24600,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialog_test",
-      "community": 505,
+      "community": 433,
       "norm_label": "confirmdialog.test.tsx"
     },
     {
@@ -25290,7 +24610,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialog_test_trigger",
-      "community": 505,
+      "community": 433,
       "norm_label": "trigger()"
     },
     {
@@ -25360,7 +24680,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialogprovider_useconfirmdialog",
-      "community": 505,
+      "community": 433,
       "norm_label": "useconfirmdialog()"
     },
     {
@@ -26830,7 +26150,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal",
-      "community": 406,
+      "community": 42,
       "norm_label": "steppedmodal.tsx"
     },
     {
@@ -26840,7 +26160,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_modalstepconfig",
-      "community": 406,
+      "community": 42,
       "norm_label": "modalstepconfig"
     },
     {
@@ -26850,7 +26170,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_modalstepcontextvalue",
-      "community": 406,
+      "community": 42,
       "norm_label": "modalstepcontextvalue"
     },
     {
@@ -26860,7 +26180,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_modalstepcontext",
-      "community": 406,
+      "community": 42,
       "norm_label": "modalstepcontext"
     },
     {
@@ -26870,7 +26190,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_usemodalstep",
-      "community": 468,
+      "community": 4,
       "norm_label": "usemodalstep()"
     },
     {
@@ -26880,7 +26200,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_slidevariants",
-      "community": 406,
+      "community": 42,
       "norm_label": "slidevariants"
     },
     {
@@ -26890,14 +26210,14 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_steppedmodalprops",
-      "community": 406,
+      "community": 42,
       "norm_label": "steppedmodalprops"
     },
     {
       "label": "SteppedModal()",
       "file_type": "code",
       "source_file": "src/shared/ui/SteppedModal/SteppedModal.tsx",
-      "source_location": "L75",
+      "source_location": "L64",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_steppedmodal",
       "community": 42,
@@ -26910,7 +26230,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "steppedmodal_index",
-      "community": 406,
+      "community": 42,
       "norm_label": "index.ts"
     },
     {
@@ -26930,7 +26250,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "switch_switch",
-      "community": 546,
+      "community": 95,
       "norm_label": "switch.tsx"
     },
     {
@@ -26940,7 +26260,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "switch_switch_springtransition",
-      "community": 546,
+      "community": 95,
       "norm_label": "springtransition"
     },
     {
@@ -26950,7 +26270,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "switch_switch_switchprops",
-      "community": 546,
+      "community": 95,
       "norm_label": "switchprops"
     },
     {
@@ -26960,7 +26280,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "switch_switch_switch",
-      "community": 546,
+      "community": 95,
       "norm_label": "switch()"
     },
     {
@@ -33430,7 +32750,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "up_comming_work_status_layout_improvements_md",
-      "community": 555,
+      "community": 394,
       "norm_label": "layout-improvements.md"
     },
     {
@@ -33440,7 +32760,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "up_comming_work_status_desv\u00edos_respecto_al_spec",
-      "community": 555,
+      "community": 394,
       "norm_label": "desvios respecto al spec"
     },
     {
@@ -33450,7 +32770,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "up_comming_work_status_archivos_tocados_2026_06_23",
-      "community": 555,
+      "community": 394,
       "norm_label": "archivos tocados (2026-06-23)"
     },
     {
@@ -33460,7 +32780,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "up_comming_work_status_verificaci\u00f3n_pendiente_manual",
-      "community": 555,
+      "community": 394,
       "norm_label": "verificacion pendiente (manual)"
     },
     {
@@ -33760,7 +33080,7 @@
       "source_location": "L609",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_4_activitycategoriespanel_grid_responsive_tarjeta",
-      "community": 173,
+      "community": 507,
       "norm_label": "mejora 4 \u2014 `activitycategoriespanel`: grid responsive + tarjeta \"+\""
     },
     {
@@ -33770,7 +33090,7 @@
       "source_location": "L611",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_4_1_activitycategoriespanel_module_scss",
-      "community": 173,
+      "community": 507,
       "norm_label": "4.1 \u2014 `activitycategoriespanel.module.scss`"
     },
     {
@@ -33780,7 +33100,7 @@
       "source_location": "L634",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_4_2_tarjeta_integrada_en_el_grid",
-      "community": 173,
+      "community": 507,
       "norm_label": "4.2 \u2014 tarjeta \"+\" integrada en el grid"
     },
     {
@@ -33840,7 +33160,7 @@
       "source_location": "L1093",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_criterios_de_aceptaci\u00f3n",
-      "community": 173,
+      "community": 545,
       "norm_label": "criterios de aceptacion"
     },
     {
@@ -33850,7 +33170,7 @@
       "source_location": "L1095",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_1_2",
-      "community": 173,
+      "community": 545,
       "norm_label": "mejora 1 + 2"
     },
     {
@@ -33860,7 +33180,7 @@
       "source_location": "L1102",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_3",
-      "community": 173,
+      "community": 545,
       "norm_label": "mejora 3"
     },
     {
@@ -33870,7 +33190,7 @@
       "source_location": "L1111",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_4",
-      "community": 173,
+      "community": 545,
       "norm_label": "mejora 4"
     },
     {
@@ -33880,7 +33200,7 @@
       "source_location": "L1118",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_5",
-      "community": 173,
+      "community": 545,
       "norm_label": "mejora 5"
     },
     {
@@ -33890,7 +33210,7 @@
       "source_location": "L1126",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_general",
-      "community": 173,
+      "community": 545,
       "norm_label": "general"
     },
     {
@@ -35030,7 +34350,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2_tododrawer_panel_lateral_en_desktop_drawer_en_mobile",
-      "community": 507,
+      "community": 376,
       "norm_label": "mejora 2 \u2014 `tododrawer`: panel lateral en desktop, drawer en mobile"
     },
     {
@@ -35040,7 +34360,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_1_notebooklist_tsx_detectar_viewport_layout_con_panel",
-      "community": 507,
+      "community": 376,
       "norm_label": "2.1 \u2014 `notebooklist.tsx`: detectar viewport + layout con panel"
     },
     {
@@ -35050,7 +34370,7 @@
       "source_location": "L201",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_2_notebooklist_module_scss_layout_2_columnas",
-      "community": 507,
+      "community": 376,
       "norm_label": "2.2 \u2014 `notebooklist.module.scss`: layout 2 columnas"
     },
     {
@@ -35060,7 +34380,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_3_tododrawer_tsx_a\u00f1adir_prop_aspanel_modo_panel",
-      "community": 507,
+      "community": 376,
       "norm_label": "2.3 \u2014 `tododrawer.tsx`: anadir prop `aspanel` + modo panel"
     },
     {
@@ -35070,7 +34390,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_4_tododrawer_module_scss_estilos_del_panel_lateral",
-      "community": 507,
+      "community": 376,
       "norm_label": "2.4 \u2014 `tododrawer.module.scss`: estilos del panel lateral"
     },
     {
@@ -35170,7 +34490,7 @@
       "source_location": "L734",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_criterios_de_aceptaci\u00f3n",
-      "community": 442,
+      "community": 376,
       "norm_label": "criterios de aceptacion"
     },
     {
@@ -35180,7 +34500,7 @@
       "source_location": "L736",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_1",
-      "community": 442,
+      "community": 376,
       "norm_label": "mejora 1"
     },
     {
@@ -35190,7 +34510,7 @@
       "source_location": "L742",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2",
-      "community": 442,
+      "community": 376,
       "norm_label": "mejora 2"
     },
     {
@@ -35200,7 +34520,7 @@
       "source_location": "L752",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_3",
-      "community": 442,
+      "community": 376,
       "norm_label": "mejora 3"
     },
     {
@@ -35210,7 +34530,7 @@
       "source_location": "L761",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_4",
-      "community": 442,
+      "community": 376,
       "norm_label": "mejora 4"
     },
     {
@@ -35220,7 +34540,7 @@
       "source_location": "L769",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_general",
-      "community": 442,
+      "community": 376,
       "norm_label": "general"
     }
   ],
@@ -48564,494 +47884,12 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L46",
+      "source_file": "features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L31",
       "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L44",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitcreatewizard_props",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L29",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitcreatewizard_step_meta",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L27",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitcreatewizard_wizardstep",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardpreview",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardpreview_habitwizardpreview",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L21",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardpreview_habitwizardpreviewstrip",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardstep1",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L22",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardstep1_habitwizardstep1",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L23",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardstep2",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L23",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardstep2_habitwizardstep2",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardstep3",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard",
-      "target": "habitformmodal_habitwizardstep3_habitwizardstep3",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
-      "source_location": "L2",
-      "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "habitformmodal_habitformmodal",
-      "target": "habitformmodal_habitcreatewizard",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L64",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "target": "confirmdialog_confirmdialogprovider_useconfirmdialog"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L62",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "target": "hooks_usehabitpurposes_usehabitpurposesquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L63",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "target": "hooks_usehabits_usecreatehabitmutation"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L60",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "target": "hooks_usehabits_usehabitcategoriesquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L61",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "target": "hooks_usehabits_usehabitmeasuresquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L91",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "target": "utils_habit_form_utils_proposeintentionaction"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx",
-      "source_location": "L89",
-      "weight": 1.0,
-      "source": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "target": "utils_habit_measure_form_utils_formatmeasuredisplay"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
-      "source_location": "L2",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal",
-      "target": "habitformmodal_habitcreatewizard_habitcreatewizard",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habiteditform_habit_type_options",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L50",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habiteditform_habiteditform",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L43",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habiteditform_props",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L32",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habitformstepbuttons",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L32",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habitformstepbuttons_newcategorybutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L32",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habitformstepbuttons_newmeasurebutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L32",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habitformstepbuttons_newpurposebutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L33",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habitintentionsentence",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L33",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform",
-      "target": "habitformmodal_habitintentionsentence_habitintentionsentence",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal",
-      "target": "habitformmodal_habiteditform",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L62",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform_habiteditform",
-      "target": "confirmdialog_confirmdialogprovider_useconfirmdialog"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L60",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform_habiteditform",
-      "target": "hooks_usehabitpurposes_usehabitpurposesquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L58",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform_habiteditform",
-      "target": "hooks_usehabits_usehabitcategoriesquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L59",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform_habiteditform",
-      "target": "hooks_usehabits_usehabitmeasuresquery"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L61",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform_habiteditform",
-      "target": "hooks_usehabits_useupdatehabitmutation"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitEditForm.tsx",
-      "source_location": "L79",
-      "weight": 1.0,
-      "source": "habitformmodal_habiteditform_habiteditform",
-      "target": "utils_habit_measure_form_utils_formatmeasuredisplay"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal",
-      "target": "habitformmodal_habiteditform_habiteditform",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L47",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal_test",
-      "target": "habitformmodal_habitformmodal_test_buildhabit",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L12",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal_test",
-      "target": "habitformmodal_habitformmodal_test_categories",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal_test",
-      "target": "habitformmodal_habitformmodal_test_createmutate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L83",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal_test",
-      "target": "habitformmodal_habitformmodal_test_gotostep3",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L79",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal_test",
-      "target": "habitformmodal_habitformmodal_test_lastcreatepayload",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L11",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal_test",
-      "target": "habitformmodal_habitformmodal_test_measures",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformmodal_test",
-      "target": "habitformmodal_habitformmodal_test_updatemutate",
-      "confidence_score": 1.0
+      "target": "habitformmodal_habitformmodal_habit_type_options"
     },
     {
       "relation": "contains",
@@ -49072,6 +47910,69 @@
       "confidence_score": 1.0,
       "source": "habitformmodal_habitformmodal",
       "target": "habitformmodal_habitformmodal_habitformmodalprops"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L38",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "habitformmodal_habitformmodal",
+      "target": "habitformmodal_habitformmodal_newcategorybutton"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L100",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "habitformmodal_habitformmodal",
+      "target": "habitformmodal_habitformmodal_newmeasurebutton"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "habitformmodal_habitformmodal",
+      "target": "habitformmodal_habitformmodal_newpurposebutton"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "habitformmodal_habitformmodal_newcategorybutton",
+      "target": "steppedmodal_steppedmodal_usemodalstep"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "habitformmodal_habitformmodal_newpurposebutton",
+      "target": "steppedmodal_steppedmodal_usemodalstep"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/habits/components/HabitFormModal/HabitFormModal.tsx",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "habitformmodal_habitformmodal_newmeasurebutton",
+      "target": "steppedmodal_steppedmodal_usemodalstep"
     },
     {
       "relation": "calls",
@@ -49138,506 +48039,6 @@
       "weight": 1.0,
       "source": "habitformmodal_habitformmodal_habitformmodal",
       "target": "utils_habit_measure_form_utils_formatmeasuredisplay"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L18",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons",
-      "target": "habitformmodal_habitformstepbuttons_newcategorybutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons",
-      "target": "habitformmodal_habitformstepbuttons_newcategorybuttonprops",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L89",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons",
-      "target": "habitformmodal_habitformstepbuttons_newmeasurebutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L81",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons",
-      "target": "habitformmodal_habitformstepbuttons_newmeasurebuttonprops",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L53",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons",
-      "target": "habitformmodal_habitformstepbuttons_newpurposebutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L44",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons",
-      "target": "habitformmodal_habitformstepbuttons_newpurposebuttonprops",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep2",
-      "target": "habitformmodal_habitformstepbuttons",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitformstepbuttons",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L24",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons_newcategorybutton",
-      "target": "steppedmodal_steppedmodal_usemodalstep"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep2",
-      "target": "habitformmodal_habitformstepbuttons_newcategorybutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L60",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons_newpurposebutton",
-      "target": "steppedmodal_steppedmodal_usemodalstep"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitformstepbuttons_newpurposebutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx",
-      "source_location": "L95",
-      "weight": 1.0,
-      "source": "habitformmodal_habitformstepbuttons_newmeasurebutton",
-      "target": "steppedmodal_steppedmodal_usemodalstep"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep2",
-      "target": "habitformmodal_habitformstepbuttons_newmeasurebutton",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L28",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence",
-      "target": "habitformmodal_habitintentionsentence_anchorslot",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L18",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence",
-      "target": "habitformmodal_habitintentionsentence_anchorslotprops",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L99",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence",
-      "target": "habitformmodal_habitintentionsentence_habitintentionsentence",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence",
-      "target": "habitformmodal_habitintentionsentence_props",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L13",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence",
-      "target": "habitformmodal_habitintentionsentence_slotwidth",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitintentionsentence",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L39",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence_anchorslot",
-      "target": "habitformmodal_habitintentionsentence_slotwidth",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L111",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence_habitintentionsentence",
-      "target": "habitformmodal_habitintentionsentence_slotwidth",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/features/habits/components/HabitFormModal/HabitIntentionSentence.tsx",
-      "source_location": "L33",
-      "weight": 1.0,
-      "source": "habitformmodal_habitintentionsentence_anchorslot",
-      "target": "hooks_useclickoutside_useclickoutside"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitintentionsentence_habitintentionsentence",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L62",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardcontrols",
-      "target": "habitformmodal_habitwizardcontrols_chip",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L54",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardcontrols",
-      "target": "habitformmodal_habitwizardcontrols_chipprops",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L18",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardcontrols",
-      "target": "habitformmodal_habitwizardcontrols_optioncard",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardControls.tsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardcontrols",
-      "target": "habitformmodal_habitwizardcontrols_optioncardprops",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep1",
-      "target": "habitformmodal_habitwizardcontrols",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep2",
-      "target": "habitformmodal_habitwizardcontrols",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitwizardcontrols",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L8",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep1",
-      "target": "habitformmodal_habitwizardcontrols_optioncard",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L10",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep2",
-      "target": "habitformmodal_habitwizardcontrols_optioncard",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitwizardcontrols_chip",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L54",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardpreview",
-      "target": "habitformmodal_habitwizardpreview_habitwizardpreview",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L120",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardpreview",
-      "target": "habitformmodal_habitwizardpreview_habitwizardpreviewstrip",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L46",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardpreview",
-      "target": "habitformmodal_habitwizardpreview_previewcapsule",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L25",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardpreview",
-      "target": "habitformmodal_habitwizardpreview_previewmicrocopy",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L9",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardpreview",
-      "target": "habitformmodal_habitwizardpreview_previewprops",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardpreview",
-      "target": "habitformmodal_habitwizardpreview_week_days",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardPreview.tsx",
-      "source_location": "L79",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardpreview_habitwizardpreview",
-      "target": "habitformmodal_habitwizardpreview_previewmicrocopy",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep1",
-      "target": "habitformmodal_habitwizardstep1_habitwizardstep1",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L11",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep1",
-      "target": "habitformmodal_habitwizardstep1_props",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L30",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep2",
-      "target": "habitformmodal_habitwizardstep2_habitwizardstep2",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L13",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep2",
-      "target": "habitformmodal_habitwizardstep2_props",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L31",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitwizardstep3_habitwizardstep3",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L11",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitwizardstep3_lifeline_options",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L18",
-      "weight": 1.0,
-      "source": "habitformmodal_habitwizardstep3",
-      "target": "habitformmodal_habitwizardstep3_props",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -50863,47 +49264,6 @@
       "confidence_score": 1.0,
       "source": "personacolumn_index",
       "target": "personacolumn_personacolumn_personacolumn"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L31",
-      "weight": 1.0,
-      "source": "data_habit_templates",
-      "target": "data_habit_templates_habit_templates",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "data_habit_templates",
-      "target": "data_habit_templates_habittemplate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L14",
-      "weight": 1.0,
-      "source": "data_habit_templates",
-      "target": "data_habit_templates_habittemplatevalues",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "inherits",
-      "context": "type",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/data/habit-templates.ts",
-      "source_location": "L19",
-      "weight": 1.0,
-      "source": "data_habit_templates_habittemplate",
-      "target": "data_habit_templates_habittemplatevalues",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -53028,26 +51388,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.test.ts",
-      "source_location": "L17",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils_test",
-      "target": "utils_habit_form_utils_test_intention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L319",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_applyhabittemplate",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "features/habits/utils/habit-form.utils.ts",
       "source_location": "L57",
       "weight": 1.0,
@@ -53068,62 +51408,12 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L164",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_composeintention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "features/habits/utils/habit-form.utils.ts",
       "source_location": "L20",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "utils_habit_form_utils",
       "target": "utils_habit_form_utils_defaultformvalues"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L142",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_empty_intention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L292",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_findbyname",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L232",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_habitdescriptionmode",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L234",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_habitdescriptionstate",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -53136,86 +51426,6 @@
       "target": "utils_habit_form_utils_habitformvalues"
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L133",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_habitintention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L302",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_habittemplateapplication",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L145",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_intention_anchors",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L283",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_normalizenameformatch",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L182",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_parseintention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L260",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_proposeintentionaction",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L244",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_readdescription",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L251",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils",
-      "target": "utils_habit_form_utils_writedescription",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -53225,61 +51435,6 @@
       "confidence_score": 1.0,
       "source": "utils_habit_form_utils_buildhabiteditpayload",
       "target": "utils_habit_form_utils_buildhabitcreatepayload"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L227",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils_parseintention",
-      "target": "utils_habit_form_utils_composeintention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L252",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils_writedescription",
-      "target": "utils_habit_form_utils_composeintention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L245",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils_readdescription",
-      "target": "utils_habit_form_utils_parseintention",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L297",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils_findbyname",
-      "target": "utils_habit_form_utils_normalizenameformatch",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/features/habits/utils/habit-form.utils.ts",
-      "source_location": "L324",
-      "weight": 1.0,
-      "source": "utils_habit_form_utils_applyhabittemplate",
-      "target": "utils_habit_form_utils_findbyname",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -65011,9 +63166,9 @@
       "source_file": "src/layouts/AppLayout/AppLayout.tsx",
       "source_location": "L48",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "applayout_applayout",
-      "target": "applayout_applayout_commandpalettetrigger"
+      "target": "applayout_applayout_commandpalettetrigger",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -65042,9 +63197,9 @@
       "source_file": "src/layouts/AppLayout/app-breadcrumbs.ts",
       "source_location": "L10",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "applayout_app_breadcrumbs",
-      "target": "applayout_app_breadcrumbs_isunder"
+      "target": "applayout_app_breadcrumbs_isunder",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -65052,9 +63207,9 @@
       "source_file": "src/layouts/AppLayout/app-breadcrumbs.ts",
       "source_location": "L5",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "applayout_app_breadcrumbs",
-      "target": "applayout_app_breadcrumbs_modulerootof"
+      "target": "applayout_app_breadcrumbs_modulerootof",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -65062,9 +63217,9 @@
       "source_file": "src/layouts/AppLayout/app-breadcrumbs.ts",
       "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "applayout_app_breadcrumbs",
-      "target": "applayout_app_breadcrumbs_resolvebreadcrumbs"
+      "target": "applayout_app_breadcrumbs_resolvebreadcrumbs",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -65073,9 +63228,9 @@
       "source_file": "src/layouts/AppLayout/app-breadcrumbs.ts",
       "source_location": "L23",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "applayout_app_breadcrumbs_resolvebreadcrumbs",
-      "target": "applayout_app_breadcrumbs_modulerootof"
+      "target": "applayout_app_breadcrumbs_modulerootof",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -65083,9 +63238,9 @@
       "source_file": "src/layouts/AppLayout/app-nav.config.ts",
       "source_location": "L17",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "applayout_app_nav_config",
-      "target": "applayout_app_nav_config_appnavitem"
+      "target": "applayout_app_nav_config_appnavitem",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -68356,9 +66511,9 @@
       "source_file": "src/shared/ui/ConfirmDialog/ConfirmDialogProvider.tsx",
       "source_location": "L29",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "confirmdialog_confirmdialogprovider",
-      "target": "confirmdialog_confirmdialogprovider_confirmdialogproviderprops"
+      "target": "confirmdialog_confirmdialogprovider_confirmdialogproviderprops",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -69066,9 +67221,9 @@
       "source_file": "src/shared/ui/Sidebar/Sidebar.test.tsx",
       "source_location": "L6",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "sidebar_sidebar_test",
-      "target": "sidebar_sidebar_test_items"
+      "target": "sidebar_sidebar_test_items",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -69076,9 +67231,9 @@
       "source_file": "src/shared/ui/Sidebar/Sidebar.tsx",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "sidebar_sidebar",
-      "target": "sidebar_sidebar_groupitems"
+      "target": "sidebar_sidebar_groupitems",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -69096,9 +67251,9 @@
       "source_file": "src/shared/ui/Sidebar/Sidebar.tsx",
       "source_location": "L31",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "sidebar_sidebar",
-      "target": "sidebar_sidebar_sidebargroup"
+      "target": "sidebar_sidebar_sidebargroup",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -69127,9 +67282,9 @@
       "source_file": "src/shared/ui/Sidebar/Sidebar.tsx",
       "source_location": "L61",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "sidebar_sidebar_sidebar",
-      "target": "sidebar_sidebar_groupitems"
+      "target": "sidebar_sidebar_groupitems",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -69707,9 +67862,9 @@
       "source_file": "src/shared/ui/Toast/ToastViewport.tsx",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "toast_toastviewport",
-      "target": "toast_toastviewport_toastviewportprops"
+      "target": "toast_toastviewport_toastviewportprops",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -74699,9 +72854,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec",
-      "target": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito"
+      "target": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74709,9 +72864,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L125",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
-      "target": "remodel_05_wizard_habito_spec_criterios_de_aceptaci\u00f3n"
+      "target": "remodel_05_wizard_habito_spec_criterios_de_aceptaci\u00f3n",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74719,9 +72874,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L118",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
-      "target": "remodel_05_wizard_habito_spec_datos"
+      "target": "remodel_05_wizard_habito_spec_datos",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74729,9 +72884,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L27",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
-      "target": "remodel_05_wizard_habito_spec_dise\u00f1o"
+      "target": "remodel_05_wizard_habito_spec_dise\u00f1o",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74739,9 +72894,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L12",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
-      "target": "remodel_05_wizard_habito_spec_fuera_de_alcance"
+      "target": "remodel_05_wizard_habito_spec_fuera_de_alcance",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74749,9 +72904,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L145",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
-      "target": "remodel_05_wizard_habito_spec_notas_para_el_constructor"
+      "target": "remodel_05_wizard_habito_spec_notas_para_el_constructor",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74759,9 +72914,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L6",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
-      "target": "remodel_05_wizard_habito_spec_objetivo"
+      "target": "remodel_05_wizard_habito_spec_objetivo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74769,9 +72924,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_spec_fase_6_el_wizard_de_crear_h\u00e1bito",
-      "target": "remodel_05_wizard_habito_spec_pantallas_y_rutas"
+      "target": "remodel_05_wizard_habito_spec_pantallas_y_rutas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74779,9 +72934,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L95",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_dise\u00f1o",
-      "target": "remodel_05_wizard_habito_spec_d\u00f3nde_se_guarda_la_intenci\u00f3n"
+      "target": "remodel_05_wizard_habito_spec_d\u00f3nde_se_guarda_la_intenci\u00f3n",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74789,9 +72944,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L114",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_dise\u00f1o",
-      "target": "remodel_05_wizard_habito_spec_m\u00f3vil"
+      "target": "remodel_05_wizard_habito_spec_m\u00f3vil",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74799,9 +72954,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L29",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_dise\u00f1o",
-      "target": "remodel_05_wizard_habito_spec_paso_1_qu\u00e9_quieres_cambiar"
+      "target": "remodel_05_wizard_habito_spec_paso_1_qu\u00e9_quieres_cambiar",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74809,9 +72964,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L40",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_dise\u00f1o",
-      "target": "remodel_05_wizard_habito_spec_paso_2_c\u00f3mo_sabr\u00e1s_que_lo_cumpliste"
+      "target": "remodel_05_wizard_habito_spec_paso_2_c\u00f3mo_sabr\u00e1s_que_lo_cumpliste",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74819,9 +72974,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L56",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_dise\u00f1o",
-      "target": "remodel_05_wizard_habito_spec_paso_3_cu\u00e1ndo_lo_vas_a_hacer"
+      "target": "remodel_05_wizard_habito_spec_paso_3_cu\u00e1ndo_lo_vas_a_hacer",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74829,9 +72984,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L82",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_dise\u00f1o",
-      "target": "remodel_05_wizard_habito_spec_plantillas"
+      "target": "remodel_05_wizard_habito_spec_plantillas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -74839,9 +72994,9 @@
       "source_file": "docs/remodel/05-wizard-habito.spec.md",
       "source_location": "L106",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "remodel_05_wizard_habito_spec_dise\u00f1o",
-      "target": "remodel_05_wizard_habito_spec_vista_previa_en_vivo"
+      "target": "remodel_05_wizard_habito_spec_vista_previa_en_vivo",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -77025,5 +75180,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "670ab41cbb3e1ecddd0a88ab29ee44bf33722593"
+  "built_at_commit": "9d836fdcdb954d427ee53e8579eca21b70f14ad5"
 }

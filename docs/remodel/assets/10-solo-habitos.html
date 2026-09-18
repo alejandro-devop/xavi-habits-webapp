@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Solo hábitos — el chasis reducido</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --violet-text:#5b21b6;
+    --amber:#f59e0b; --rose:#e11d48;
+    --canvas:#fafcfb;
+    --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-1:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.78);
+    --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+  .note + .note{margin-top:8px}
+
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(120px)}
+  .o1{width:50%;aspect-ratio:1;background:rgba(78,222,163,.28);top:-24%;left:4%}
+  .o2{width:44%;aspect-ratio:1;background:rgba(210,187,255,.3);top:2%;right:-12%}
+  .o3{width:52%;aspect-ratio:1;background:rgba(224,242,254,.75);bottom:-32%;left:26%}
+  .shell{position:relative;z-index:1;display:flex;min-height:620px}
+
+  /* ── lateral viejo (marco 1) ── */
+  .side{width:186px;flex:0 0 auto;padding:16px 12px;background:rgba(255,255,255,.5);border-right:1px solid var(--edge);backdrop-filter:blur(26px)}
+  .lock{display:flex;align-items:center;gap:9px;padding:4px 8px 16px}
+  .ring{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--mint);position:relative;flex:0 0 auto}
+  .ring::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--mint)}
+  .brand{font-weight:700;font-size:15px;letter-spacing:-.02em}
+  .grp{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);padding:12px 8px 5px}
+  .nav{display:flex;flex-direction:column;gap:1px}
+  .nv{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:12px;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft)}
+  .nv i{width:15px;text-align:center;font-style:normal;opacity:.65;font-size:12px}
+  .nv.on{background:#fff;color:var(--mint-text);font-weight:600;box-shadow:0 8px 20px -10px rgba(16,185,129,.45)}
+  .nv.doomed{position:relative}
+  .nv.doomed span{text-decoration:line-through;text-decoration-color:rgba(225,29,72,.55);text-decoration-thickness:1.5px}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  /* ── barra superior vieja ── */
+  .top{height:52px;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--edge);background:rgba(255,255,255,.42);backdrop-filter:blur(20px)}
+  .crumb{font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft)}
+  .crumb b{color:var(--ink);font-weight:600}
+  .topright{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim)}
+  .kbd{font-family:'Inter',sans-serif;font-size:10px;padding:1px 5px;border-radius:5px;background:rgba(15,23,42,.06);color:var(--ink-soft)}
+  .circle{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.7);border:1px solid var(--edge);display:grid;place-items:center;font-size:12px;color:var(--ink-soft)}
+  .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--mint),#c4b5fd);display:grid;place-items:center;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:700}
+
+  /* ── barra del módulo ── */
+  .modbar{margin:14px 16px 0;padding:7px 10px;border-radius:999px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(22px);box-shadow:var(--sh-1);display:flex;align-items:center;gap:14px}
+  .modbar .lock2{display:flex;align-items:center;gap:8px;padding-left:4px}
+  .pills{display:flex;gap:3px;align-items:center}
+  .pill{padding:7px 13px;border-radius:999px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+  .pill.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 20px -9px rgba(16,185,129,.4)}
+  .pill.menu::after{content:' ▾';opacity:.5}
+
+  .body{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .card{padding:14px 16px;border-radius:20px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(18px);box-shadow:var(--sh-1)}
+  .ghostrow{height:12px;border-radius:999px;background:rgba(15,23,42,.06)}
+  .ghostrow.w1{width:62%} .ghostrow.w2{width:38%} .ghostrow.w3{width:80%}
+  .stack{display:flex;flex-direction:column;gap:9px}
+
+  /* ── marcas de crítica ── */
+  .mark{position:absolute;z-index:3;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;line-height:1.45;padding:7px 10px;border-radius:12px;background:rgba(225,29,72,.95);color:#fff;box-shadow:0 10px 26px -10px rgba(225,29,72,.7);max-width:210px}
+  .mark.good{background:rgba(5,150,105,.95);box-shadow:0 10px 26px -10px rgba(5,150,105,.7)}
+  .bracket{position:absolute;z-index:2;border:2px dashed rgba(225,29,72,.6);border-radius:14px;pointer-events:none}
+  .bracket.good{border-color:rgba(5,150,105,.6)}
+
+  /* ── tabla de lo que se va ── */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .listcard{padding:16px 18px;border-radius:22px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .listcard h3{margin:0 0 3px;font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .listcard p.sub{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin:0 0 12px}
+  .row{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px solid rgba(15,23,42,.06);font-family:'Inter',sans-serif;font-size:12.5px}
+  .row:first-of-type{border-top:0}
+  .row .nm{flex:1;min-width:0}
+  .row .ln{font-size:11px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .tag{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .tag.out{background:rgba(225,29,72,.12);color:#9f1239}
+  .tag.in{background:rgba(16,185,129,.15);color:#047857}
+
+  /* ── móvil y oscuro ── */
+  .pair{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+  .phone{width:375px;height:600px;border-radius:38px;padding:10px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6);flex:0 0 auto}
+  .screen{position:relative;overflow:hidden;width:100%;height:100%;border-radius:30px;background:var(--canvas)}
+  .mbar{position:relative;z-index:1;margin:12px 10px 0;padding:7px 9px;border-radius:999px;background:var(--glass-2);border:1px solid var(--edge);display:flex;align-items:center;gap:8px}
+  .mpills{position:relative;z-index:1;display:flex;gap:4px;padding:10px 10px 0;overflow:hidden}
+  .mbody{position:relative;z-index:1;padding:12px 10px;display:flex;flex-direction:column;gap:9px}
+  .dark{flex:1;min-width:420px;border-radius:24px;overflow:hidden;background:#0b1220;box-shadow:0 20px 60px -20px rgba(15,23,42,.5);position:relative;isolation:isolate}
+  .dark .orb{opacity:.34}
+  .dark .modbar{background:rgba(30,41,59,.72);border-color:rgba(148,163,184,.18)}
+  .dark .pill{color:#cbd5e1}
+  .dark .pill.on{background:rgba(16,185,129,.16);color:#6ee7b7;box-shadow:none}
+  .dark .brand{color:#e2e8f0}
+  .dark .card{background:rgba(30,41,59,.6);border-color:rgba(148,163,184,.16)}
+  .dark .ghostrow{background:rgba(148,163,184,.16)}
+  .dark .circle,.dark .chip{background:rgba(30,41,59,.7);border-color:rgba(148,163,184,.18);color:#cbd5e1}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <p class="caption">1 · Hoy — tres cromos apilados diciendo lo mismo</p>
+  <div class="frame">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="shell">
+      <aside class="side">
+        <div class="lock"><span class="ring"></span><span class="brand">Xavi</span></div>
+        <div class="grp">Día a día</div>
+        <div class="nav">
+          <div class="nv doomed"><i>⌂</i><span>Hoy</span></div>
+          <div class="nv on"><i>🔥</i><span>Hábitos</span></div>
+          <div class="nv doomed"><i>☑</i><span>Tareas</span></div>
+          <div class="nv doomed"><i>▦</i><span>Rutina</span></div>
+          <div class="nv doomed"><i>≣</i><span>Actividades</span></div>
+          <div class="nv doomed"><i>☾</i><span>Sueño</span></div>
+        </div>
+        <div class="grp">Pensar</div>
+        <div class="nav">
+          <div class="nv doomed"><i>▤</i><span>Notas</span></div>
+          <div class="nv doomed"><i>◈</i><span>Learning</span></div>
+          <div class="nv doomed"><i>◌</i><span>Ideas</span></div>
+          <div class="nv doomed"><i>▩</i><span>Quarters</span></div>
+          <div class="nv doomed"><i>◇</i><span>Proyectos</span></div>
+        </div>
+        <div class="grp">Sistema</div>
+        <div class="nav">
+          <div class="nv doomed"><i>⚙</i><span>Ajustes</span></div>
+          <div class="nv doomed"><i>⌕</i><span>Testing Hall</span></div>
+        </div>
+      </aside>
+      <div class="main">
+        <div class="top">
+          <div class="circle">‹</div>
+          <span class="crumb">Hábitos · <b>Mi día</b></span>
+          <div class="topright">
+            <span class="chip">Buscar o ir a… <span class="kbd">⌘K</span></span>
+            <span class="circle">◐</span>
+          </div>
+        </div>
+        <div class="modbar">
+          <span class="lock2"><span class="ring"></span><span class="brand">Xavi</span></span>
+          <div class="pills">
+            <span class="pill on">Mi día</span>
+            <span class="pill">Mis hábitos</span>
+            <span class="pill">Archivados</span>
+            <span class="pill menu">Ajustes</span>
+          </div>
+        </div>
+        <div class="body">
+          <div class="card stack"><div class="ghostrow w1"></div><div class="ghostrow w3"></div></div>
+          <div class="card stack"><div class="ghostrow w2"></div><div class="ghostrow w1"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bracket" style="left:196px;top:8px;right:16px;height:110px"></div>
+    <div class="mark" style="right:24px;top:128px;max-width:240px">Dos barras a 8 px una de otra: la miga de pan dice «Hábitos · Mi día» y las píldoras repiten las mismas secciones, con la marca otra vez</div>
+    <div class="mark" style="left:14px;top:548px;max-width:168px">Once destinos que esta app ya no es</div>
+  </div>
+  <p class="note"><b>No es un problema de estilo, es de estructura.</b> El lateral guarda las secciones de Hábitos para alimentar la miga de pan, y la barra del módulo pinta esas mismas secciones como píldoras. La misma lista, dibujada dos veces, una encima de la otra — más la marca repetida. Con un solo módulo dentro, el lateral no navega a ningún sitio: solo ocupa 186 px y promete once pantallas que ya no van a existir.</p>
+
+  <p class="caption">2 · La propuesta — una sola barra, y el contenido gana la pantalla</p>
+  <div class="frame">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="shell">
+      <div class="main">
+        <div class="modbar" style="margin:16px 20px 0">
+          <span class="lock2"><span class="ring"></span><span class="brand">Xavi</span></span>
+          <div class="pills">
+            <span class="pill on">Mi día</span>
+            <span class="pill">Mis hábitos</span>
+            <span class="pill">Archivados</span>
+            <span class="pill menu">Ajustes</span>
+          </div>
+          <div class="topright" style="margin-left:auto">
+            <span class="chip">Buscar <span class="kbd">⌘K</span></span>
+            <span class="circle">◐</span>
+            <span class="avatar">A</span>
+          </div>
+        </div>
+        <div class="body" style="padding:18px 20px">
+          <div class="card stack"><div class="ghostrow w1"></div><div class="ghostrow w3"></div><div class="ghostrow w2"></div></div>
+          <div class="card stack"><div class="ghostrow w3"></div><div class="ghostrow w1"></div></div>
+          <div class="card stack"><div class="ghostrow w2"></div><div class="ghostrow w3"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bracket good" style="left:16px;top:16px;right:16px;height:50px"></div>
+    <div class="mark good" style="right:18px;top:78px;max-width:250px">Una barra: marca, secciones, buscar, tema y tu ficha. Lo que sobrevive de la superior se muda aquí.</div>
+  </div>
+  <p class="note"><b>La barra del módulo ya era una barra de aplicación completa</b> — marca, píldoras de sección y el menú de Ajustes. Solo le faltaba lo poco que valía la pena rescatar de la superior: el buscador con <span class="kbd">⌘K</span>, el conmutador de tema y la ficha de usuario con «cerrar sesión». Se lo damos y el lateral y la barra superior desaparecen enteros.</p>
+  <p class="note"><b>La miga de pan se va con ellos.</b> Tenía sentido cuando había trece módulos y hacía falta decir en cuál estabas. Con uno solo, la píldora encendida ya lo dice.</p>
+
+  <p class="caption">3 · Qué se queda y qué se va</p>
+  <div class="cols">
+    <div class="listcard">
+      <h3>Se queda</h3>
+      <p class="sub">Lo que esta app es</p>
+      <div class="row"><span class="nm">Hábitos</span><span class="ln">16.722 líneas</span><span class="tag in">se queda</span></div>
+      <div class="row"><span class="nm">Entrar y salir · verificar cuenta</span><span class="ln">2.617</span><span class="tag in">se queda</span></div>
+      <div class="row"><span class="nm">Ajustes de cuenta</span><span class="ln">108</span><span class="tag in">se queda</span></div>
+      <div class="row"><span class="nm">Tema claro / oscuro</span><span class="ln">173</span><span class="tag in">se queda</span></div>
+      <p class="note" style="margin-top:14px">Ajustes deja de ser una entrada del lateral y pasa al menú de tu ficha, arriba a la derecha, junto a «cerrar sesión».</p>
+    </div>
+    <div class="listcard">
+      <h3>Se va</h3>
+      <p class="sub">Once módulos · unas 26.000 líneas · lo guarda git</p>
+      <div class="row"><span class="nm">Actividades <span class="ln">· seguimiento, standups</span></span><span class="ln">12.809</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Tareas</span><span class="ln">3.629</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Rutina semanal</span><span class="ln">2.573</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Sueño</span><span class="ln">2.512</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Quarters y Proyectos</span><span class="ln">2.413</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Learning</span><span class="ln">927</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Ideas de app</span><span class="ln">745</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Notas</span><span class="ln">665</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Hoy <span class="ln">· resumía a los demás</span></span><span class="ln">254</span><span class="tag out">fuera</span></div>
+      <div class="row"><span class="nm">Testing Hall</span><span class="ln">—</span><span class="tag out">fuera</span></div>
+    </div>
+  </div>
+  <p class="note"><b>Las direcciones viejas no se quedan rotas.</b> Entrar ahora lleva a <b>Mi día</b> en vez de a «Hoy», y cualquier <code>/app/&lt;lo-que-sea&gt;</code> que ya no exista cae en la página de «no encontrado» que ya tenemos. Nadie aterriza en una pantalla en blanco.</p>
+  <p class="note"><b>Lo que hay que mirar con lupa al construir:</b> qué de <code>shared/</code> se queda huérfano cuando se van once módulos —y borrarlo también—, y si alguno de ellos era el único que usaba una dependencia del <code>package.json</code>. Ahí es donde de verdad baja el bundle de 2 MB.</p>
+
+  <p class="caption">4 · Móvil y tema oscuro</p>
+  <div class="pair">
+    <div class="phone">
+      <div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="mbar">
+          <span class="ring"></span><span class="brand">Xavi</span>
+          <div class="topright" style="margin-left:auto"><span class="circle" style="width:26px;height:26px">⌕</span><span class="avatar" style="width:26px;height:26px;font-size:11px">A</span></div>
+        </div>
+        <div class="mpills">
+          <span class="pill on">Mi día</span>
+          <span class="pill">Mis hábitos</span>
+          <span class="pill">Archiv…</span>
+        </div>
+        <div class="mbody">
+          <div class="card stack"><div class="ghostrow w1"></div><div class="ghostrow w3"></div></div>
+          <div class="card stack"><div class="ghostrow w2"></div><div class="ghostrow w1"></div></div>
+          <div class="card stack"><div class="ghostrow w3"></div><div class="ghostrow w2"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dark">
+      <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+      <div class="shell">
+        <div class="main">
+          <div class="modbar" style="margin:16px 18px 0">
+            <span class="lock2"><span class="ring"></span><span class="brand">Xavi</span></span>
+            <div class="pills">
+              <span class="pill on">Mi día</span>
+              <span class="pill">Mis hábitos</span>
+              <span class="pill">Archivados</span>
+              <span class="pill menu">Ajustes</span>
+            </div>
+            <div class="topright" style="margin-left:auto">
+              <span class="chip">Buscar <span class="kbd">⌘K</span></span>
+              <span class="circle">◐</span>
+              <span class="avatar">A</span>
+            </div>
+          </div>
+          <div class="body" style="padding:18px">
+            <div class="card stack"><div class="ghostrow w1"></div><div class="ghostrow w3"></div></div>
+            <div class="card stack"><div class="ghostrow w2"></div><div class="ghostrow w1"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="note">En móvil la barra se parte en dos alturas: marca y ficha arriba, píldoras debajo con desplazamiento lateral. Es lo que ya hace hoy la barra del módulo — <b>no hay que inventar nada nuevo</b>, solo dejar de apilarle encima otras dos barras. El menú de hamburguesa desaparece: sin lateral no hay nada que desplegar.</p>
+
+  <p class="note" style="margin-top:34px"><b>Lo que hay que decidir antes de escribir la spec:</b> (a) si el buscador <span class="kbd">⌘K</span> se queda —hoy busca en los once módulos que se van, así que habría que recortarlo a hábitos o quitarlo—; (b) si «Testing Hall» era tuyo y lo quieres conservar en alguna parte; (c) si la portada pública de la app (<code>/</code>) sigue teniendo sentido tal como está.</p>
+
+</div>
+</body>
+</html>

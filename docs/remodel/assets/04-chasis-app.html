@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chasis de la app — propuesta Aura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --amber:#f59e0b; --amber-deep:#b45309;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-1:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.78);
+    --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+    --apple:#007aff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:34px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:10px 0 0;line-height:1.6}
+  .note b{color:#334155}
+  .bad{color:#93000a}
+
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate;height:660px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(120px)}
+  .o1{width:50%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-22%;left:6%}
+  .o2{width:46%;aspect-ratio:1;background:rgba(210,187,255,.34);top:4%;right:-14%}
+  .o3{width:55%;aspect-ratio:1;background:rgba(224,242,254,.8);bottom:-30%;left:24%}
+  .shell{position:relative;z-index:1;height:100%;display:flex}
+
+  /* ---------- barra lateral ---------- */
+  .side{width:236px;flex:0 0 auto;padding:18px 14px;display:flex;flex-direction:column;gap:6px;
+        background:rgba(255,255,255,.5);backdrop-filter:blur(26px);border-right:1px solid var(--edge)}
+  .side.col{width:70px;align-items:center;padding:18px 10px}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;font-weight:700;font-size:17px;letter-spacing:-.02em}
+  .side.col .brand{padding:6px 0 14px}
+  .side.col .brand span{display:none}
+  .navsec{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);padding:12px 10px 6px}
+  .side.col .navsec{display:none}
+  .nl{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:14px;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;white-space:nowrap}
+  .nl .ic{width:20px;text-align:center;flex:0 0 auto}
+  .nl:hover{background:rgba(255,255,255,.55)}
+  .nl.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 22px -8px rgba(16,185,129,.35)}
+  .side.col .nl{justify-content:center;padding:11px 0;width:46px}
+  .side.col .nl em{display:none}
+  .sidefoot{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+  .me{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:14px;background:rgba(255,255,255,.5);border:1px solid var(--edge)}
+  .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#a7f3d0,#c4b5fd);flex:0 0 auto}
+  .me .t{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;line-height:1.2}
+  .me .s{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim)}
+  .side.col .me{justify-content:center;padding:6px} .side.col .me div{display:none}
+
+  /* ---------- zona de contenido ---------- */
+  .body{flex:1;min-width:0;display:flex;flex-direction:column}
+  .top{height:60px;flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:0 22px;
+       background:rgba(250,252,251,.66);backdrop-filter:blur(26px);border-bottom:1px solid rgba(255,255,255,.6)}
+  .collapse{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.55);border:1px solid var(--edge);color:var(--ink-soft);cursor:pointer}
+  .crumb{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-dim)}
+  .crumb b{color:var(--ink);font-weight:600}
+  .spacer{flex:1}
+  .cmd{display:flex;align-items:center;gap:9px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.5);border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-dim);min-width:190px}
+  .kbd{margin-left:auto;font-size:10.5px;padding:2px 6px;border-radius:6px;background:rgba(15,23,42,.06);font-weight:600}
+  .rnd{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.5);border:1px solid var(--edge);color:var(--ink-soft)}
+
+  .content{flex:1;overflow:auto;padding:0}
+  .modbar{position:sticky;top:0;z-index:4;padding:12px 22px;display:flex;align-items:center;gap:12px;background:rgba(250,252,251,.5);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.5)}
+  .pills{display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.55);border:1px solid var(--edge)}
+  .pills a{padding:7px 14px;border-radius:999px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none}
+  .pills a.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 22px -8px rgba(16,185,129,.3)}
+  .cta{display:inline-flex;align-items:center;gap:7px;border:0;padding:9px 17px;border-radius:999px;cursor:pointer;color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;background:linear-gradient(135deg,var(--mint),var(--mint-deep));box-shadow:0 8px 24px -4px rgba(16,185,129,.42)}
+  .inner{padding:20px 22px 30px;display:flex;flex-direction:column;gap:16px}
+  h1{margin:0;font-size:25px;font-weight:700;letter-spacing:-.02em}
+  .eyebrow{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text);margin:0 0 5px}
+  .cards{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px}
+  .c{position:relative;overflow:hidden;padding:17px;border-radius:24px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .cl{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px}
+  .cv{font-family:'Inter',sans-serif;font-size:27px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  .cs{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin-top:6px}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:20px;background:var(--glass-1);border:1px solid var(--edge);backdrop-filter:blur(18px)}
+  .capi{width:36px;height:36px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.75);border:1px solid var(--edge);font-size:17px}
+  .rn{font-size:14px;font-weight:600}
+  .rm{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft)}
+  .tog{margin-left:auto;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--mint),var(--mint-deep));display:grid;place-items:center;color:#fff;box-shadow:0 6px 16px -5px rgba(16,185,129,.5)}
+
+  /* ---------- versión "antes" ---------- */
+  .old .side{background:#fff;backdrop-filter:none;border-right:1px solid rgba(15,23,42,.1)}
+  .old .nl.on{background:rgba(0,122,255,.1);color:var(--apple);box-shadow:none;border-radius:10px}
+  .old .nl{border-radius:10px}
+  .old .top{background:#fff;backdrop-filter:none;border-bottom:1px solid rgba(15,23,42,.1)}
+  .old .cmd,.old .rnd,.old .collapse,.old .me{background:#f5f5f7;border-color:rgba(15,23,42,.08);border-radius:10px}
+  .old .aurora{display:none}
+  .old .frame{background:#f5f5f7}
+
+  .dark{--canvas:#0b1220;--ink:#eef2ff;--ink-soft:#a8b3c7;--ink-dim:#64748b;--mint-text:#4edea3;
+        --glass-1:rgba(255,255,255,.055);--glass-2:rgba(22,30,47,.7);--edge:rgba(255,255,255,.11)}
+  .dark .o1{background:rgba(16,185,129,.2)} .dark .o2{background:rgba(124,58,237,.26)} .dark .o3{background:rgba(30,58,95,.7)}
+  .dark .side{background:rgba(255,255,255,.04)}
+  .dark .top,.dark .modbar{background:rgba(11,18,32,.6)}
+  .dark .nl.on,.dark .pills a.on{background:rgba(255,255,255,.1)}
+  .dark .cmd,.dark .rnd,.dark .collapse,.dark .me,.dark .capi,.dark .pills{background:rgba(255,255,255,.06)}
+  .dark .kbd{background:rgba(255,255,255,.1)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<p class="caption">1 · Así se ve ahora — dos apps apiladas</p>
+<div class="frame old" style="height:400px">
+  <div class="shell">
+    <aside class="side">
+      <div class="brand"><span style="width:22px;height:22px;border-radius:50%;background:var(--apple);display:inline-block"></span><span>Xavi</span></div>
+      <a class="nl" href="#"><span class="ic">📅</span><em>Hoy</em></a>
+      <a class="nl on" href="#"><span class="ic">🔁</span><em>Hábitos</em></a>
+      <a class="nl" href="#"><span class="ic">✅</span><em>Tareas</em></a>
+      <a class="nl" href="#"><span class="ic">📝</span><em>Notas</em></a>
+      <div class="sidefoot"><div class="me"><span class="av"></span><div><div class="t">Alejandro</div><div class="s">Cuenta</div></div></div></div>
+    </aside>
+    <div class="body">
+      <div class="top">
+        <span class="collapse">☰</span><span class="crumb"><b>Hábitos</b></span>
+        <span class="spacer"></span><span class="cmd">🔍 Buscar <span class="kbd">⌘K</span></span><span class="rnd">🌗</span>
+      </div>
+      <div class="content">
+        <div class="modbar" style="background:rgba(250,252,251,.5)">
+          <span class="pills"><a class="on" href="#">Mi día</a><a href="#">Mis hábitos</a><a href="#">Archivados</a><a href="#">Ajustes</a></span>
+          <span class="spacer"></span><button class="cta">＋ Nuevo hábito</button>
+        </div>
+        <div class="inner" style="background:linear-gradient(180deg,rgba(78,222,163,.16),transparent 60%)">
+          <div><p class="eyebrow">Semana 38</p><h1>Miércoles 17 de septiembre</h1></div>
+          <div class="row"><span class="capi">🧘</span><div><div class="rn">Meditación matutina</div><div class="rm">15 min al despertar</div></div><span class="tog">✓</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="note"><b class="bad">El problema:</b> el cascarón —lateral blanco, barra superior blanca, acento azul `#007AFF`, esquinas de 10px— es de la app vieja. Dentro vive el módulo nuevo, de vidrio, mint y píldoras. Dos identidades pegadas, y la costura se ve justo donde empieza el contenido.</p>
+
+<p class="caption">2 · La propuesta — un solo cascarón</p>
+<div class="frame">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="12.5" stroke="rgba(15,23,42,.1)" stroke-width="3"/>
+          <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#g)"/>
+          <defs><linearGradient id="g" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#10b981"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+        </svg><span>Xavi</span>
+      </div>
+      <div class="navsec">Día a día</div>
+      <a class="nl" href="#"><span class="ic">📅</span><em>Hoy</em></a>
+      <a class="nl on" href="#"><span class="ic">🔁</span><em>Hábitos</em></a>
+      <a class="nl" href="#"><span class="ic">✅</span><em>Tareas</em></a>
+      <div class="navsec">Pensar</div>
+      <a class="nl" href="#"><span class="ic">📝</span><em>Notas</em></a>
+      <a class="nl" href="#"><span class="ic">🎓</span><em>Aprendizaje</em></a>
+      <a class="nl" href="#"><span class="ic">🎯</span><em>Trimestres</em></a>
+      <div class="sidefoot">
+        <a class="nl" href="#"><span class="ic">⚙️</span><em>Ajustes</em></a>
+        <div class="me"><span class="av"></span><div><div class="t">Alejandro</div><div class="s">Ver cuenta</div></div></div>
+      </div>
+    </aside>
+    <div class="body">
+      <div class="top">
+        <span class="collapse">☰</span>
+        <span class="crumb"><b>Hábitos</b> · Mi día</span>
+        <span class="spacer"></span>
+        <span class="cmd">🔍 Buscar o ir a… <span class="kbd">⌘K</span></span>
+        <span class="rnd">🌗</span><span class="rnd">🔔</span>
+      </div>
+      <div class="content">
+        <div class="modbar">
+          <span class="pills"><a class="on" href="#">Mi día</a><a href="#">Mis hábitos</a><a href="#">Archivados</a><a href="#">Ajustes</a></span>
+          <span class="spacer"></span><button class="cta">＋ Nuevo hábito</button>
+        </div>
+        <div class="inner">
+          <div><p class="eyebrow">Semana 38 · 15–21 sep</p><h1>Miércoles 17 de septiembre</h1></div>
+          <div class="cards">
+            <div class="c"><p class="cl">Tu día</p><div class="cv">72%</div><p class="cs">5 logrados · 1 salvavidas · 2 pendientes</p></div>
+            <div class="c"><p class="cl">Racha media</p><div class="cv">14<span style="font-size:14px;color:var(--ink-soft)"> días</span></div><p class="cs">4 pasan de 10 seguidos</p></div>
+            <div class="c"><p class="cl">Hábito estrella</p><div style="font-size:15px;font-weight:700;margin-top:2px">🧘 Meditación</div><p class="cs">racha de 32 días</p></div>
+          </div>
+          <div class="row"><span class="capi">🧘</span><div><div class="rn">Meditación matutina</div><div class="rm">15 min al despertar · 🔥 32</div></div><span class="tog">✓</span></div>
+          <div class="row"><span class="capi">💧</span><div><div class="rn">Beber 2,5 L de agua</div><div class="rm">1,5 de 2,5 L hoy · 🔥 3</div></div><span class="tog" style="background:rgba(255,255,255,.6);color:var(--ink-dim);box-shadow:none;border:1px solid var(--edge)"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="note"><b>Qué cambia:</b> el lateral y la barra superior pasan a vidrio sobre el mismo lienzo aurora, el acento azul se vuelve mint, los radios se alinean, y el paleta de comandos y los conmutadores adoptan la forma de píldora. <b>La barra del módulo deja de competir</b>: se apoya en la superior en vez de repetirla, y la miga de pan de arriba dice dónde estás (<i>Hábitos · Mi día</i>) mientras las píldoras solo cambian de sección. Añado también agrupado en el lateral —<i>Día a día</i> / <i>Pensar</i>— porque siete enlaces planos no tienen jerarquía.</p>
+
+<p class="caption">3 · Lateral plegado y tema oscuro</p>
+<div class="frame dark" style="height:520px">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="shell">
+    <aside class="side col">
+      <div class="brand">
+        <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="12.5" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+          <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#g3)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#g3)"/>
+          <defs><linearGradient id="g3" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#4edea3"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+        </svg><span>Xavi</span>
+      </div>
+      <a class="nl" href="#"><span class="ic">📅</span><em>Hoy</em></a>
+      <a class="nl on" href="#"><span class="ic">🔁</span><em>Hábitos</em></a>
+      <a class="nl" href="#"><span class="ic">✅</span><em>Tareas</em></a>
+      <a class="nl" href="#"><span class="ic">📝</span><em>Notas</em></a>
+      <a class="nl" href="#"><span class="ic">🎓</span><em>Aprendizaje</em></a>
+      <div class="sidefoot"><div class="me"><span class="av"></span><div></div></div></div>
+    </aside>
+    <div class="body">
+      <div class="top">
+        <span class="collapse">☰</span><span class="crumb"><b>Hábitos</b> · Mi día</span>
+        <span class="spacer"></span><span class="cmd">🔍 Buscar o ir a… <span class="kbd">⌘K</span></span><span class="rnd">🌗</span>
+      </div>
+      <div class="content">
+        <div class="modbar">
+          <span class="pills"><a class="on" href="#">Mi día</a><a href="#">Mis hábitos</a><a href="#">Archivados</a><a href="#">Ajustes</a></span>
+          <span class="spacer"></span><button class="cta">＋ Nuevo hábito</button>
+        </div>
+        <div class="inner">
+          <div><p class="eyebrow">Semana 38 · 15–21 sep</p><h1>Miércoles 17 de septiembre</h1></div>
+          <div class="cards">
+            <div class="c"><p class="cl">Tu día</p><div class="cv">72%</div><p class="cs">5 logrados · 1 salvavidas · 2 pendientes</p></div>
+            <div class="c"><p class="cl">Racha media</p><div class="cv">14<span style="font-size:14px;color:var(--ink-soft)"> días</span></div><p class="cs">4 pasan de 10 seguidos</p></div>
+            <div class="c"><p class="cl">Hábito estrella</p><div style="font-size:15px;font-weight:700;margin-top:2px">🧘 Meditación</div><p class="cs">racha de 32 días</p></div>
+          </div>
+          <div class="row"><span class="capi">🧘</span><div><div class="rn">Meditación matutina</div><div class="rm">15 min al despertar · 🔥 32</div></div><span class="tog">✓</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

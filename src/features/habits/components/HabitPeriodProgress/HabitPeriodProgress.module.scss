@@ -26,3 +26,37 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+.fillAvoid {
+  background: var(--aura-ring-to, var(--color-primary));
+}
+
+.stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.stackedLabels {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-family: var(--font-label, inherit);
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+}
+
+.caption {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  flex-shrink: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

@@ -17,6 +17,7 @@ import {
 } from '@/features/habits/utils/habit-date-format.utils'
 import { sortMyDayEntries } from '@/features/habits/utils/habit-order.utils'
 import {
+  buildFollowUpsByHabit,
   countEntriesByCategory,
   filterEntriesByCategory,
 } from '@/features/habits/utils/habit-stats.utils'
@@ -69,35 +70,10 @@ export function HabitMyDayPage() {
   )
   const { data: categories = [] } = useHabitCategoriesQuery()
 
-  const followUpsByHabit = useMemo(() => {
-    const byHabit = new Map<string, Map<string, HabitFollowUp>>()
-    if (!followUpGroups) return byHabit
-
-    for (const group of followUpGroups) {
-      for (const fu of group.followUps) {
-        let byDate = byHabit.get(fu.habitId)
-        if (!byDate) {
-          byDate = new Map()
-          byHabit.set(fu.habitId, byDate)
-        }
-        byDate.set(fu.date, {
-          id: fu.id,
-          date: fu.date,
-          habitId: fu.habitId,
-          isAccomplished: fu.isAccomplished,
-          isFailed: fu.isFailed,
-          isLifeline: fu.isLifeline,
-          difficulty: fu.difficulty,
-          count: fu.count,
-          time: fu.time,
-          notes: fu.notes,
-          story: null,
-          archived: false,
-        })
-      }
-    }
-    return byHabit
-  }, [followUpGroups])
+  const followUpsByHabit = useMemo(
+    () => buildFollowUpsByHabit(followUpGroups),
+    [followUpGroups],
+  )
 
   const categoryCounts = useMemo(() => countEntriesByCategory(entries), [entries])
   const visibleEntries = useMemo(

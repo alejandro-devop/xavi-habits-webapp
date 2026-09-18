@@ -23,3 +23,14 @@
   color: var(--color-success-text, #166534);
   background: var(--color-success-subtle, #dcfce7);
 }
+
+/* Mantener / Evitar: el par se distingue por color, no solo por texto. */
+.keep {
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+.avoid {
+  color: var(--aura-ring-to, var(--color-primary));
+  background: color-mix(in srgb, var(--aura-ring-to, var(--color-primary)) 14%, transparent);
+}

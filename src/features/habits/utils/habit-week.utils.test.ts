@@ -4,6 +4,8 @@ import {
   getMonthDaysForWeek,
   getMonthRange,
   getMyDayFocusDate,
+  getRecentDays,
+  getVisibleDays,
   getWeekDays,
   getWeekEnd,
   isFutureWeek,
@@ -80,5 +82,31 @@ describe('habit-week.utils', () => {
     expect(days).toHaveLength(7)
     expect(days.at(-1)?.date).toBe('2026-08-02')
     expect(days.every((d) => d.isOutsideMonth === false)).toBe(true)
+  })
+})
+
+describe('ventana de días recientes', () => {
+  it('getRecentDays devuelve los N días que terminan hoy, en orden', () => {
+    const days = getRecentDays(14, '2026-09-17', '2026-09-17')
+    expect(days).toHaveLength(14)
+    expect(days[0]?.date).toBe('2026-09-04')
+    expect(days.at(-1)?.date).toBe('2026-09-17')
+    expect(days.at(-1)?.isToday).toBe(true)
+    expect(days.some((d) => d.isFuture)).toBe(false)
+  })
+
+  it('getVisibleDays recorta al pintar: los datos cargados no cambian', () => {
+    const days = getRecentDays(14, '2026-09-17', '2026-09-17')
+    const compact = getVisibleDays(days, 7)
+
+    expect(days).toHaveLength(14)
+    expect(compact).toHaveLength(7)
+    expect(compact[0]?.date).toBe('2026-09-11')
+    expect(compact.at(-1)?.date).toBe('2026-09-17')
+  })
+
+  it('getVisibleDays devuelve la ventana entera si cabe', () => {
+    const days = getRecentDays(7, '2026-09-17', '2026-09-17')
+    expect(getVisibleDays(days, 14)).toHaveLength(7)
   })
 })

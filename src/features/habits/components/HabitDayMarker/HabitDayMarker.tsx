@@ -4,13 +4,22 @@ import {
   DIFFICULTY_EMOJIS,
   DIFFICULTY_LABELS,
 } from '@/features/habits/utils/habit-difficulty.utils'
+import type { HabitDayVisualStatus } from '@/features/habits/utils/habit-progress.utils'
 import styles from './HabitDayMarker.module.scss'
 
 const RING_RADIUS = 15.5
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
 
-/** Estado del día que pinta el marcador cuando se usa en modo "chip". */
-export type HabitDayMarkerStatus = 'empty' | 'accomplished' | 'failed' | 'lifeline' | 'partial'
+/** Estado del día que pinta el marcador cuando se colorea por estado. */
+export type HabitDayMarkerStatus = HabitDayVisualStatus
+
+/**
+ * Forma del marcador coloreado por estado:
+ * - `chip`: círculo con el número del día — la tira semanal de Mi Día.
+ * - `bar`: barra fina sin número — la tira de 14/7 días de Mis Hábitos, donde
+ *   los círculos no caben. Mismo color, mismo significado, otra silueta.
+ */
+export type HabitDayMarkerShape = 'chip' | 'bar'
 
 const STATUS_CLASS: Record<HabitDayMarkerStatus, string> = {
   empty: styles.statusEmpty,
@@ -42,6 +51,7 @@ type Props = {
    * (logrado, fallado, salvavidas, parcial) en lugar de dejárselo al padre.
    */
   status?: HabitDayMarkerStatus
+  shape?: HabitDayMarkerShape
   isToday?: boolean
   isFuture?: boolean
   className?: string
@@ -54,18 +64,20 @@ export function HabitDayMarker({
   hasNotes = false,
   difficulty = null,
   status,
+  shape = 'chip',
   isToday = false,
   isFuture = false,
   className,
   dayNumberClassName,
 }: Props) {
   const isChip = status !== undefined
+  const isBar = isChip && shape === 'bar'
   // En modo chip el progreso se pinta con un conic-gradient dentro del propio
   // círculo: el anillo SVG sobraría encima.
   const showRing = !isChip && progress !== null && progress > 0
   const clamped = progress !== null ? Math.min(Math.max(progress, 0), 1) : 0
   const dash = clamped * RING_CIRCUMFERENCE
-  const showMood = isHeavyishDifficulty(difficulty)
+  const showMood = !isBar && isHeavyishDifficulty(difficulty)
   const moodEmoji = showMood ? DIFFICULTY_EMOJIS[difficulty] : null
   const moodLabel = showMood ? DIFFICULTY_LABELS[difficulty] : null
   const glyph = status ? STATUS_GLYPH[status] : undefined
@@ -73,6 +85,7 @@ export function HabitDayMarker({
   const markerClass = [
     styles.marker,
     isChip ? styles.chip : '',
+    isBar ? styles.bar : '',
     status ? STATUS_CLASS[status] : '',
     isToday ? styles.today : '',
     isFuture ? styles.future : '',
@@ -115,7 +128,7 @@ export function HabitDayMarker({
         className={[styles.dayNumber, dayNumberClassName].filter(Boolean).join(' ')}
         style={dayNumberStyle}
       >
-        {glyph ? <AppIcon name={glyph} size="2xs" decorative /> : dayNumber}
+        {isBar ? null : glyph ? <AppIcon name={glyph} size="2xs" decorative /> : dayNumber}
       </span>
       {showMood && moodEmoji ? (
         <span
@@ -126,7 +139,7 @@ export function HabitDayMarker({
           {moodEmoji}
         </span>
       ) : null}
-      {hasNotes ? (
+      {hasNotes && !isBar ? (
         <span className={styles.notesBadge} title="Con notas" aria-label="Con notas">
           <AppIcon name="comments" size="2xs" decorative />
         </span>

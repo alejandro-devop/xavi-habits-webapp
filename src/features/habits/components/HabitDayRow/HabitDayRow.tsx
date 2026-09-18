@@ -16,7 +16,8 @@ import {
   getCurrentProgressValue,
   getDayRingProgress,
   getHabitDailyGoal,
-  isPartialFollowUp,
+  getHabitDayStatus,
+  HABIT_DAY_STATUS_LABELS,
 } from '@/features/habits/utils/habit-progress.utils'
 import type { HabitWeekBarDay } from '@/features/habits/utils/habit-week.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -24,16 +25,6 @@ import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { IconButton } from '@/shared/ui/IconButton'
 import { Popover } from '@/shared/ui/Popover'
 import styles from './HabitDayRow.module.scss'
-
-type DayStatus = 'empty' | 'accomplished' | 'failed' | 'lifeline' | 'partial'
-
-const STATUS_LABELS: Record<DayStatus, string> = {
-  empty: 'sin registrar',
-  accomplished: 'logrado',
-  failed: 'fallado',
-  lifeline: 'con salvavidas',
-  partial: 'a medias',
-}
 
 type HabitDayRowProps = {
   entry: HabitMyDayEntry
@@ -45,18 +36,6 @@ type HabitDayRowProps = {
   /** `false` en semanas futuras: los controles se ven, pero deshabilitados. */
   canRegister: boolean
   onOpenRegister: (date: string, followUp: HabitFollowUp | null) => void
-}
-
-function getDayStatus(
-  habit: HabitMyDayEntry['habit'],
-  followUp: HabitFollowUp | null | undefined,
-): DayStatus {
-  if (!followUp) return 'empty'
-  if (followUp.isLifeline) return 'lifeline'
-  if (followUp.isFailed) return 'failed'
-  if (followUp.isAccomplished) return 'accomplished'
-  if (isPartialFollowUp(habit, followUp)) return 'partial'
-  return 'empty'
 }
 
 /** Frecuencia o medida, la línea pequeña bajo el nombre. */
@@ -97,7 +76,7 @@ export function HabitDayRow({
 
   const isQuantified = habit.habitType === 'count' || habit.habitType === 'time'
   const focusFollowUp = followUpByDate.get(focusDate) ?? followUp
-  const focusStatus = getDayStatus(habit, focusFollowUp)
+  const focusStatus = getHabitDayStatus(habit, focusFollowUp)
   const focusDayLabel = formatDayForLabel(focusDate)
   const isMutating = addMutation.isPending || removeMutation.isPending || isSpendingLifeline
 
@@ -250,9 +229,9 @@ export function HabitDayRow({
       <div className={styles.days} role="group" aria-label={`Semana de ${habit.name}`}>
         {days.map((day) => {
           const dayFollowUp = followUpByDate.get(day.date) ?? (day.date === focusDate ? followUp : null)
-          const status = getDayStatus(habit, dayFollowUp)
+          const status = getHabitDayStatus(habit, dayFollowUp)
           const editable = isDayEditable(day)
-          const label = `${editable ? 'Registrar' : 'Ver'} ${habit.name}, ${formatDayForLabel(day.date)} — ${STATUS_LABELS[status]}`
+          const label = `${editable ? 'Registrar' : 'Ver'} ${habit.name}, ${formatDayForLabel(day.date)} — ${HABIT_DAY_STATUS_LABELS[status]}`
 
           const marker = (
             <HabitDayMarker

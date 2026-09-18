@@ -1,4 +1,8 @@
-import type { HabitMyDayEntry } from '@/features/habits/types/habit.types'
+import type {
+  HabitFollowUp,
+  HabitFollowUpsDateGroup,
+  HabitMyDayEntry,
+} from '@/features/habits/types/habit.types'
 
 /**
  * Derivados puros de "Mi Día". Todo se calcula en cliente sobre lo que ya
@@ -137,4 +141,41 @@ export function filterEntriesByCategory(
 ): HabitMyDayEntry[] {
   if (categoryId === null) return entries
   return entries.filter((entry) => entry.habit.categoryId === categoryId)
+}
+
+/**
+ * Índice `habitId → fecha → follow-up` a partir de los grupos por fecha que
+ * devuelve `habitFollowUpsInDates`. Lo comparten Mi Día y Mis Hábitos: las dos
+ * pantallas pintan tiras de días con la misma fuente.
+ */
+export function buildFollowUpsByHabit(
+  groups: HabitFollowUpsDateGroup[] | undefined,
+): Map<string, Map<string, HabitFollowUp>> {
+  const byHabit = new Map<string, Map<string, HabitFollowUp>>()
+  if (!groups) return byHabit
+
+  for (const group of groups) {
+    for (const fu of group.followUps) {
+      let byDate = byHabit.get(fu.habitId)
+      if (!byDate) {
+        byDate = new Map()
+        byHabit.set(fu.habitId, byDate)
+      }
+      byDate.set(fu.date, {
+        id: fu.id,
+        date: fu.date,
+        habitId: fu.habitId,
+        isAccomplished: fu.isAccomplished,
+        isFailed: fu.isFailed,
+        isLifeline: fu.isLifeline,
+        difficulty: fu.difficulty,
+        count: fu.count,
+        time: fu.time,
+        notes: fu.notes,
+        story: null,
+        archived: false,
+      })
+    }
+  }
+  return byHabit
 }

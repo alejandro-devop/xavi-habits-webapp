@@ -88,3 +88,34 @@ export function getDayRingProgress(
 export function followUpHasNotes(followUp: HabitFollowUp | null | undefined): boolean {
   return Boolean(followUp?.notes?.trim())
 }
+
+/**
+ * Estado visual de un día. Vive aquí —y no en cada pantalla— para que Mi Día y
+ * Mis Hábitos pinten exactamente la misma semántica de color.
+ */
+export type HabitDayVisualStatus = 'empty' | 'accomplished' | 'failed' | 'lifeline' | 'partial'
+
+export const HABIT_DAY_STATUS_LABELS: Record<HabitDayVisualStatus, string> = {
+  empty: 'sin registrar',
+  accomplished: 'logrado',
+  failed: 'fallado',
+  lifeline: 'con salvavidas',
+  partial: 'a medias',
+}
+
+export function getHabitDayStatus(
+  habit: Habit,
+  followUp: HabitFollowUp | null | undefined,
+): HabitDayVisualStatus {
+  if (!followUp) return 'empty'
+  if (followUp.isLifeline) return 'lifeline'
+  if (followUp.isFailed) return 'failed'
+  if (followUp.isAccomplished) return 'accomplished'
+  if (isPartialFollowUp(habit, followUp)) return 'partial'
+  return 'empty'
+}
+
+/** Días cubiertos (logrados o con salvavidas) dentro de una ventana ya recortada. */
+export function countCoveredDays(statuses: HabitDayVisualStatus[]): number {
+  return statuses.filter((status) => status === 'accomplished' || status === 'lifeline').length
+}

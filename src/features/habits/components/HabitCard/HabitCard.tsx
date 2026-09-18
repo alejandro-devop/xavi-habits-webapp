@@ -107,7 +107,7 @@ export function HabitCard({ habit, onEdit }: Props) {
           </div>
           {habit.periodDays > 0 && (
             <div className={styles.progress}>
-              <HabitPeriodProgress streak={habit.streak} periodDays={habit.periodDays} />
+              <HabitPeriodProgress value={habit.streak} periodDays={habit.periodDays} />
             </div>
           )}
         </div>

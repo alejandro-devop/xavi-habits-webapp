@@ -150,3 +150,29 @@ export function getFollowUpQueryRange(
     to: weekEnd > monthRange.to ? weekEnd : monthRange.to,
   }
 }
+
+/**
+ * Los `count` días que terminan en `endDate` (incluido), en orden cronológico.
+ * Es la ventana de la tira de "Mis Hábitos": se pide siempre igual (14 días),
+ * sea cual sea el ancho de la pantalla.
+ */
+export function getRecentDays(
+  count: number,
+  endDate: string = getTodayString(),
+  today: string = getTodayString(),
+): HabitWeekBarDay[] {
+  const safeCount = Math.max(0, count)
+  const start = addDaysToString(endDate, -(safeCount - 1))
+  return Array.from({ length: safeCount }, (_, index) =>
+    buildDay(addDaysToString(start, index), start, endDate, today, false),
+  )
+}
+
+/**
+ * Recorte **al pintar**, no al consultar: en móvil se ven los últimos 7 días de
+ * los 14 cargados. Cambiar el ancho no cambia ningún dato.
+ */
+export function getVisibleDays(days: HabitWeekBarDay[], visibleCount: number): HabitWeekBarDay[] {
+  if (visibleCount >= days.length) return days
+  return days.slice(days.length - visibleCount)
+}

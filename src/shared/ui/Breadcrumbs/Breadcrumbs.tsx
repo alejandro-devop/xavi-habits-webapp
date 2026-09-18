@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import styles from './Breadcrumbs.module.scss'
 
@@ -9,9 +10,11 @@ export type BreadcrumbItem = {
 type BreadcrumbsProps = {
   items: BreadcrumbItem[]
   className?: string
+  /** Separador entre niveles. Por defecto `/`; el cromo Aura usa `·`. */
+  separator?: ReactNode
 }
 
-export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
+export function Breadcrumbs({ items, className, separator = '/' }: BreadcrumbsProps) {
   if (items.length === 0) return null
 
   return (
@@ -23,7 +26,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
             <li key={`${item.label}-${index}`} className={styles.item}>
               {index > 0 ? (
                 <span className={styles.separator} aria-hidden>
-                  /
+                  {separator}
                 </span>
               ) : null}
               {isLast || !item.to ? (

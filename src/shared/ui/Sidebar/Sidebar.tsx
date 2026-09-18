@@ -9,6 +9,12 @@ export type SidebarNavItem = {
   label: string
   icon?: AppIconName | string
   end?: boolean
+  /**
+   * Encabezado bajo el que se agrupa el enlace. Los elementos sin `group` se
+   * pintan sueltos arriba, como antes. Plegado, el encabezado desaparece y el
+   * grupo se separa con un filete.
+   */
+  group?: string
 }
 
 type SidebarProps = {
@@ -18,6 +24,29 @@ type SidebarProps = {
   collapsed?: boolean
   onToggleCollapse?: () => void
   className?: string
+  /** Ámbito del design system para el cromo (p. ej. `'aura'`). */
+  ds?: string
+}
+
+type SidebarGroup = {
+  label?: string
+  items: SidebarNavItem[]
+}
+
+/** Agrupa conservando el orden del config: no reordena ni pierde elementos. */
+function groupItems(items: SidebarNavItem[]): SidebarGroup[] {
+  const groups: SidebarGroup[] = []
+
+  for (const item of items) {
+    const last = groups[groups.length - 1]
+    if (last && last.label === item.group) {
+      last.items.push(item)
+    } else {
+      groups.push({ label: item.group, items: [item] })
+    }
+  }
+
+  return groups
 }
 
 export function Sidebar({
@@ -27,26 +56,48 @@ export function Sidebar({
   collapsed = false,
   onToggleCollapse,
   className,
+  ds,
 }: SidebarProps) {
+  const groups = groupItems(items)
+
   return (
     <aside
       className={[styles.sidebar, collapsed ? styles.collapsed : '', className]
         .filter(Boolean)
         .join(' ')}
+      data-ds={ds}
       aria-label="Navegación principal"
     >
       {brand ? <div className={styles.brand}>{brand}</div> : null}
       <nav className={styles.nav}>
-        {items.map((item) => (
-          <AppNavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            icon={item.icon}
-            collapsed={collapsed}
+        {groups.map((group, index) => (
+          <div
+            key={group.label ?? `group-${index}`}
+            className={[
+              styles.group,
+              // El último grupo (Ajustes y compañía) se ancla al pie.
+              index === groups.length - 1 && groups.length > 1 ? styles.groupTrailing : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
-            {item.label}
-          </AppNavLink>
+            {group.label ? (
+              <div className={styles.groupLabel} aria-hidden={collapsed || undefined}>
+                {group.label}
+              </div>
+            ) : null}
+            {group.items.map((item) => (
+              <AppNavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                icon={item.icon}
+                collapsed={collapsed}
+              >
+                {item.label}
+              </AppNavLink>
+            ))}
+          </div>
         ))}
       </nav>
       {footer ? <div className={styles.footer}>{footer}</div> : null}

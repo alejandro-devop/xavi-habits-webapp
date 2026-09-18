@@ -1,6 +1,6 @@
 import { Link, Outlet, useLocation } from 'react-router'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
-import { AuraRing, AuroraCanvas } from '@/shared/ui'
+import { AuraRing } from '@/shared/ui'
 import { AppNavLink } from '@/shared/ui/NavLink'
 import { Popover } from '@/shared/ui/Popover'
 import styles from './HabitsModuleLayout.module.scss'
@@ -41,8 +41,8 @@ export function HabitsModuleLayout() {
 
   return (
     <div className={styles.root} data-ds="aura">
-      <AuroraCanvas fixed={false} className={styles.canvas} />
-
+      {/* El lienzo aurora lo monta `AppLayout` una sola vez, detrás de todo:
+          pintarlo también aquí superponía dos lienzos. */}
       <header className={styles.bar}>
         <div className={styles.barInner}>
           <Link to={habitsPaths.myDay} className={styles.lockup}>

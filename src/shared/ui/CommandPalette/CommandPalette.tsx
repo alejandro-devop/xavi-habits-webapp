@@ -9,9 +9,11 @@ type CommandPaletteProps = {
   open: boolean
   onClose: () => void
   actions: CommandAction[]
+  /** Ámbito del design system para el portal (p. ej. `'aura'`). */
+  ds?: string
 }
 
-export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) {
+export function CommandPalette({ open, onClose, actions, ds }: CommandPaletteProps) {
   const [query, setQuery] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
   const listRef = useRef<HTMLUListElement>(null)
@@ -64,6 +66,7 @@ export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) 
       title="Paleta de comandos"
       description="Busca una acción o usa las flechas y Enter."
       size="md"
+      ds={ds}
     >
       <div onKeyDown={handleKeyDown}>
         <Input

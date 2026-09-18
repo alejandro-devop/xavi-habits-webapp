@@ -12,14 +12,23 @@ const ROLE_BY_VARIANT = {
   error: 'alert',
 } as const
 
-export function ToastViewport() {
+type ToastViewportProps = {
+  /** Ámbito del design system para el portal (p. ej. `'aura'`). */
+  ds?: string
+}
+
+export function ToastViewport({ ds }: ToastViewportProps) {
   const { toasts, position, dismiss } = useToastContext()
   const prefersReducedMotion = useReducedMotionPreference()
 
   if (typeof document === 'undefined') return null
 
   return createPortal(
-    <div className={[styles.viewport, styles[position]].join(' ')} aria-live="polite">
+    <div
+      className={[styles.viewport, styles[position]].join(' ')}
+      data-ds={ds}
+      aria-live="polite"
+    >
       <AnimatePresence initial={false}>
         {toasts.map((toast) => (
           <motion.div

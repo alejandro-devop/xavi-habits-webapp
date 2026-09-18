@@ -4,6 +4,14 @@
 .root {
   min-height: 100vh;
   display: flex;
+  position: relative;
+  // El lienzo aurora vive en z-index 0 dentro de este contexto; aislarlo evita
+  // que compita con los portales (modales, cajones), que cuelgan de <body>.
+  isolation: isolate;
+}
+
+.aurora {
+  z-index: 0;
 }
 
 .mainColumn {
@@ -11,11 +19,46 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5625rem;
+}
+
+.lockupText {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .menuBtn {
   @include lg {
     display: none;
+  }
+}
+
+/* El plegado se dispara desde la barra superior, como en la maqueta. */
+.collapseBtn {
+  display: none;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--nav-link-hover-bg, var(--color-surface));
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  @include lg {
+    display: grid;
   }
 }
 
@@ -25,10 +68,69 @@
   }
 }
 
+/* En móvil la miga se recorta al último nivel: no hay sitio para la ruta. */
+.topbarCrumbs {
+  @media (max-width: #{$breakpoint-lg - 1}) {
+    li:not(:last-child) {
+      display: none;
+    }
+  }
+}
+
 .topbarActions {
   display: flex;
   align-items: center;
   gap: $spacing-sm;
+}
+
+.cmdTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 12rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--nav-link-hover-bg, var(--color-surface));
+  color: var(--color-text-muted);
+  font-family: var(--nav-link-font-family, inherit);
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  @media (max-width: #{$breakpoint-lg - 1}) {
+    min-width: 0;
+    width: 2.125rem;
+    height: 2.125rem;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+  }
+}
+
+.cmdLabel {
+  white-space: nowrap;
+
+  @media (max-width: #{$breakpoint-lg - 1}) {
+    display: none;
+  }
+}
+
+.cmdKbd {
+  margin-left: auto;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  font-family: var(--nav-link-font-family, inherit);
+  font-size: 0.65rem;
+  font-weight: 600;
+
+  @media (max-width: #{$breakpoint-lg - 1}) {
+    display: none;
+  }
 }
 
 .main {
@@ -50,22 +152,43 @@
   }
 }
 
+/* Ficha de usuario del pie: cápsula de vidrio con avatar en degradado. */
 .sidebarUserArea {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs, 0.25rem);
-  align-items: flex-start;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--nav-link-radius, var(--radius-md));
+  background: var(--nav-link-hover-bg, transparent);
 }
 
 .sidebarUserAreaCollapsed {
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.375rem;
+}
+
+.avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 50%;
+  background: var(--aura-avatar-bg, var(--color-primary));
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
 .userEmail {
-  font-size: 0.85rem;
-  color: $color-muted;
-  max-width: 10rem;
+  flex: 1;
+  min-width: 0;
+  font-family: var(--nav-link-font-family, inherit);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -79,4 +202,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.mobileNavGroup {
+  padding: 0.75rem 0.625rem 0.25rem;
+  font-family: var(--sidebar-group-font-family, inherit);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }

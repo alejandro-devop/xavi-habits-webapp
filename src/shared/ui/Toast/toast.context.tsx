@@ -27,9 +27,11 @@ function nextToastId() {
 type ToastProviderProps = {
   children: ReactNode
   position?: ToastPosition
+  /** Ámbito del design system para el portal de los avisos (p. ej. `'aura'`). */
+  ds?: string
 }
 
-export function ToastProvider({ children, position = 'top-right' }: ToastProviderProps) {
+export function ToastProvider({ children, position = 'top-right', ds }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
   const dismiss = useCallback((id: string) => {
@@ -63,7 +65,7 @@ export function ToastProvider({ children, position = 'top-right' }: ToastProvide
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <ToastViewport />
+      <ToastViewport ds={ds} />
     </ToastContext.Provider>
   )
 }

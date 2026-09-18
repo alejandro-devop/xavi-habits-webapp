@@ -2,8 +2,8 @@
 
 .root {
   // La barra del módulo se pega justo debajo de la Topbar de la app, que es
-  // sticky a 0. Medido en el navegador: 45.8px de alto + 1px de borde.
-  --habits-bar-offset: 2.875rem;
+  // sticky a 0. La altura sale del token, no de una medida a mano.
+  --habits-bar-offset: var(--topbar-height);
 
   position: relative;
   isolation: isolate;
@@ -11,10 +11,6 @@
   // Que el lienzo llegue al fondo de la pantalla aunque la página sea corta
   // (vacíos, errores): si no, el aurora queda como una banda a media altura.
   min-height: calc(100dvh - 6rem);
-}
-
-.canvas {
-  border-radius: var(--radius-xl);
 }
 
 .bar {

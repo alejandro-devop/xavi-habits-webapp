@@ -52,6 +52,10 @@
   --layout-max-width: 960px;
   --auth-form-max-width: 400px;
 
+  // Alto del cromo superior. La Topbar lo usa como altura y las barras sticky
+  // de los módulos como offset, para que nadie vuelva a medirlo a mano.
+  --topbar-height: 3.75rem;
+
   --paper-bg: #{$color-paper-bg};
   --paper-line: #{$color-paper-line};
   --paper-margin: #{$color-paper-margin};
@@ -224,6 +228,27 @@
   // El --color-surface de Aura es casi transparente (0.45): sin este enganche
   // el texto de la página se lee a través de los menús del Popover.
   --popover-bg: var(--color-glass);
+
+  // ── Cromo de la app (barra lateral y barra superior) ───────────────────────
+  --sidebar-bg: var(--aura-glass-1);
+  --sidebar-border: var(--color-glass-border);
+  --sidebar-blur: 26px;
+  --sidebar-collapsed-width: 4.375rem;
+  --sidebar-group-font-family: var(--font-label);
+
+  --topbar-bg: rgba(250, 252, 251, 0.66);
+  --topbar-border: var(--color-glass-border);
+  --topbar-blur: 26px;
+
+  --nav-link-radius: 14px;
+  --nav-link-font-family: var(--font-label);
+  --nav-link-active-bg: #ffffff;
+  --nav-link-active-color: var(--color-primary);
+  --nav-link-active-weight: 600;
+  --nav-link-active-shadow: 0 8px 22px -8px rgba(16, 185, 129, 0.35);
+  --nav-link-hover-bg: rgba(255, 255, 255, 0.55);
+
+  --aura-avatar-bg: linear-gradient(135deg, #a7f3d0, #c4b5fd);
 }
 
 [data-theme='dark'] [data-ds='aura'] {
@@ -258,4 +283,12 @@
   --aura-ring-track: rgba(255, 255, 255, 0.14);
   --aura-ring-from: #4edea3;
   --aura-ring-to: #a78bfa;
+
+  --sidebar-bg: rgba(255, 255, 255, 0.04);
+  --topbar-bg: rgba(11, 18, 32, 0.6);
+  --nav-link-active-bg: rgba(255, 255, 255, 0.1);
+  --nav-link-active-shadow: 0 8px 22px -10px rgba(78, 222, 163, 0.45);
+  --nav-link-hover-bg: rgba(255, 255, 255, 0.06);
+
+  --aura-avatar-bg: linear-gradient(135deg, #4edea3, #a78bfa);
 }

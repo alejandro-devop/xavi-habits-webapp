@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crear hábito — propuesta Aura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --violet-soft:#8b5cf6; --amber:#f59e0b; --amber-deep:#b45309;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-1:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.8);
+    --edge:rgba(255,255,255,.72); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1180px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:34px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:10px 0 0;line-height:1.6}
+  .note b{color:#334155}
+
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(120px)}
+  .o1{width:50%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-24%;left:-6%}
+  .o2{width:46%;aspect-ratio:1;background:rgba(210,187,255,.34);top:2%;right:-14%}
+  .o3{width:55%;aspect-ratio:1;background:rgba(224,242,254,.8);bottom:-30%;left:24%}
+  .scrim{position:absolute;inset:0;z-index:1;background:rgba(15,23,42,.14)}
+
+  /* ---------- el modal ---------- */
+  .wiz{position:relative;z-index:2;margin:26px auto;max-width:900px;display:grid;grid-template-columns:1fr 292px;
+       background:var(--glass-2);backdrop-filter:blur(32px);border:1px solid var(--edge);border-radius:30px;
+       box-shadow:0 20px 60px -14px rgba(15,23,42,.24), inset 0 1px 1px rgba(255,255,255,.9);overflow:hidden}
+  .left{padding:24px 26px;display:flex;flex-direction:column;gap:18px;min-width:0}
+  .wizhead{display:flex;align-items:flex-start;gap:14px}
+  .steps{display:flex;align-items:center;gap:7px;flex:1}
+  .sd{flex:1;height:4px;border-radius:999px;background:rgba(15,23,42,.09)}
+  .sd.on{background:linear-gradient(90deg,var(--mint),var(--mint-deep))}
+  .sd.now{background:linear-gradient(90deg,var(--mint),rgba(16,185,129,.25))}
+  .stepn{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim);white-space:nowrap}
+  .x{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.55);border:1px solid var(--edge);color:var(--ink-soft);cursor:pointer;flex:0 0 auto}
+  h2{margin:0;font-size:23px;font-weight:700;letter-spacing:-.02em}
+  .sub{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-soft);margin:6px 0 0;line-height:1.5}
+
+  /* opciones grandes */
+  .opts{display:grid;gap:10px}
+  .opts.two{grid-template-columns:1fr 1fr}
+  .opt{display:flex;gap:13px;align-items:flex-start;padding:15px;border-radius:20px;background:rgba(255,255,255,.5);border:1px solid var(--edge);cursor:pointer}
+  .opt:hover{background:rgba(255,255,255,.72)}
+  .opt.on{background:#fff;border-color:rgba(16,185,129,.42);box-shadow:0 10px 26px -10px rgba(16,185,129,.4)}
+  .opt.on.vi{border-color:rgba(124,58,237,.42);box-shadow:0 10px 26px -10px rgba(124,58,237,.35)}
+  .oi{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:19px;flex:0 0 auto;background:rgba(16,185,129,.12)}
+  .opt.vi .oi{background:rgba(124,58,237,.12)}
+  .ot{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .oe{font-family:'Inter',sans-serif;font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.45}
+  .oex{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);margin-top:6px;font-style:italic}
+
+  /* plantillas */
+  .tpls{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .tpl{padding:13px;border-radius:18px;background:rgba(255,255,255,.5);border:1px solid var(--edge);text-align:center;cursor:pointer}
+  .tpl:hover{background:#fff;border-color:rgba(16,185,129,.35)}
+  .tpl .e{font-size:22px}
+  .tpl .n{font-size:12.5px;font-weight:600;margin-top:6px;line-height:1.3}
+  .tpl .m{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:3px}
+
+  /* campos */
+  .lab{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:7px}
+  .well{padding:12px 15px;border-radius:16px;background:rgba(255,255,255,.5);border:1px solid var(--edge);box-shadow:inset 0 2px 4px rgba(15,23,42,.03);font-size:14.5px}
+  .well.dim{color:var(--ink-dim)}
+  .inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .chip{padding:9px 15px;border-radius:999px;background:rgba(255,255,255,.5);border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .chip.on{background:#fff;color:var(--mint-text);border-color:rgba(16,185,129,.4);box-shadow:0 8px 20px -8px rgba(16,185,129,.35)}
+  .chip.vi.on{color:#5a00c6;border-color:rgba(124,58,237,.4)}
+  .hint{display:flex;gap:9px;align-items:flex-start;padding:11px 14px;border-radius:16px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.18);font-family:'Inter',sans-serif;font-size:12px;color:var(--mint-text);line-height:1.5}
+  .hint.vi{background:rgba(124,58,237,.07);border-color:rgba(124,58,237,.18);color:#5a00c6}
+  .adv{padding:13px 16px;border-radius:18px;background:rgba(255,255,255,.4);border:1px dashed rgba(15,23,42,.14);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);display:flex;align-items:center;gap:9px;cursor:pointer}
+
+  /* frase de intención */
+  .sentence{padding:17px;border-radius:20px;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.16);font-size:15.5px;line-height:2.1}
+  .slot{display:inline-block;padding:5px 13px;border-radius:999px;background:#fff;border:1px solid rgba(124,58,237,.3);font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:#5a00c6;cursor:pointer}
+  .slot.empty{color:var(--ink-dim);border-style:dashed;border-color:rgba(15,23,42,.2);background:rgba(255,255,255,.55)}
+
+  /* pie */
+  .foot{margin-top:auto;display:flex;align-items:center;gap:10px;padding-top:6px}
+  .ghost{padding:11px 19px;border-radius:999px;background:rgba(255,255,255,.55);border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .cta{margin-left:auto;display:inline-flex;align-items:center;gap:8px;border:0;padding:12px 24px;border-radius:999px;cursor:pointer;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--mint),var(--mint-deep));box-shadow:0 8px 24px -4px rgba(16,185,129,.45), inset 0 1px 0 rgba(255,255,255,.35)}
+  .skip{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--mint-text);cursor:pointer}
+
+  /* ---------- panel de vista previa ---------- */
+  .right{padding:24px 20px;background:linear-gradient(170deg,rgba(255,255,255,.44),rgba(255,255,255,.14));border-left:1px solid rgba(255,255,255,.66);display:flex;flex-direction:column;gap:14px}
+  .pvl{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+  .pvrow{display:flex;align-items:center;gap:11px;padding:13px;border-radius:20px;background:var(--glass-1);border:1px solid var(--edge);box-shadow:var(--sh-1)}
+  .pvcap{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:18px;background:rgba(255,255,255,.8);border:1px solid var(--edge);box-shadow:inset 0 0 0 2px rgba(16,185,129,.2);flex:0 0 auto}
+  .pvn{font-size:13.5px;font-weight:600;line-height:1.25}
+  .pvm{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-soft);margin-top:2px}
+  .pvtog{margin-left:auto;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.6);border:1px solid var(--edge);flex:0 0 auto}
+  .pvdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:2px}
+  .pvd{height:24px;border-radius:8px;background:rgba(15,23,42,.055);display:grid;place-items:center;font-family:'Inter',sans-serif;font-size:9.5px;color:var(--ink-dim)}
+  .pvnote{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft);line-height:1.55;padding:12px;border-radius:16px;background:rgba(255,255,255,.4);border:1px solid var(--edge)}
+  .pvnote b{color:var(--ink)}
+  .checklist{display:flex;flex-direction:column;gap:7px;margin-top:auto}
+  .ck{display:flex;align-items:center;gap:8px;font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft)}
+  .ck i{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:9px;background:rgba(15,23,42,.08);color:var(--ink-dim);font-style:normal;flex:0 0 auto}
+  .ck.done i{background:var(--mint);color:#fff}
+  .ck.done{color:var(--ink)}
+
+  /* móvil */
+  .phone{width:370px;height:720px;border-radius:34px;margin:0 auto}
+  .phone .wiz{position:absolute;inset:auto 0 0 0;margin:0;max-width:none;grid-template-columns:1fr;border-radius:28px 28px 0 0;max-height:92%}
+  .phone .right{display:none}
+  .phone .left{padding:18px 18px 20px;gap:14px}
+  .phone h2{font-size:19px}
+  .phone .opts.two{grid-template-columns:1fr}
+  .phone .tpls{grid-template-columns:repeat(2,1fr)}
+  .phone .mpv{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.55);border:1px solid var(--edge)}
+
+  .dark{--canvas:#0b1220;--ink:#eef2ff;--ink-soft:#a8b3c7;--ink-dim:#64748b;--mint-text:#4edea3;
+        --glass-1:rgba(255,255,255,.055);--glass-2:rgba(22,30,47,.82);--edge:rgba(255,255,255,.12)}
+  .dark .o1{background:rgba(16,185,129,.2)} .dark .o2{background:rgba(124,58,237,.26)} .dark .o3{background:rgba(30,58,95,.7)}
+  .dark .opt,.dark .tpl,.dark .well,.dark .chip,.dark .ghost,.dark .x,.dark .pvcap,.dark .pvtog{background:rgba(255,255,255,.06)}
+  .dark .opt.on,.dark .chip.on,.dark .slot{background:rgba(255,255,255,.12)}
+  .dark .pvd,.dark .sd{background:rgba(255,255,255,.09)}
+  .dark .right{background:rgba(255,255,255,.03)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ========== PASO 1 ========== -->
+<p class="caption">Paso 1 de 3 — Qué quieres cambiar</p>
+<div class="frame" style="height:660px">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="scrim"></div>
+  <div class="wiz">
+    <div class="left">
+      <div class="wizhead">
+        <div class="steps"><span class="sd now"></span><span class="sd"></span><span class="sd"></span></div>
+        <span class="stepn">Paso 1 de 3</span>
+        <span class="x">✕</span>
+      </div>
+      <div>
+        <h2>¿Qué quieres cambiar?</h2>
+        <p class="sub">Empieza por algo pequeño que puedas hacer mañana mismo.</p>
+      </div>
+
+      <div class="opts two">
+        <div class="opt on">
+          <span class="oi">🌱</span>
+          <div><div class="ot">Construir algo nuevo</div>
+            <div class="oe">Algo que quieres hacer más a menudo.</div>
+            <div class="oex">Meditar, leer, salir a caminar</div></div>
+        </div>
+        <div class="opt vi">
+          <span class="oi">🚫</span>
+          <div><div class="ot">Dejar algo atrás</div>
+            <div class="oe">Algo que quieres hacer menos, o nada.</div>
+            <div class="oex">Redes por la mañana, azúcar, fumar</div></div>
+        </div>
+      </div>
+
+      <div>
+        <span class="lab">Elige un punto de partida, o escríbelo tú</span>
+        <div class="tpls">
+          <div class="tpl"><div class="e">🧘</div><div class="n">Meditar</div><div class="m">15 min · diario</div></div>
+          <div class="tpl"><div class="e">💧</div><div class="n">Beber agua</div><div class="m">2 L · con medida</div></div>
+          <div class="tpl"><div class="e">📖</div><div class="n">Leer</div><div class="m">20 min · diario</div></div>
+          <div class="tpl"><div class="e">🚶</div><div class="n">Caminar</div><div class="m">8.000 pasos</div></div>
+          <div class="tpl"><div class="e">🏋️</div><div class="n">Entrenar</div><div class="m">3× semana</div></div>
+          <div class="tpl"><div class="e">✍️</div><div class="n">Escribir</div><div class="m">1 página · diario</div></div>
+        </div>
+      </div>
+
+      <div>
+        <span class="lab">O dale un nombre</span>
+        <div class="inline">
+          <span class="well dim" style="flex:1">Ej. Meditación matutina</span>
+          <span class="chip">🧘 Icono</span><span class="chip">🎨 Color</span>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span class="ghost">Cancelar</span>
+        <button class="cta">Siguiente →</button>
+      </div>
+    </div>
+
+    <aside class="right">
+      <span class="pvl">Así se verá en Mi día</span>
+      <div class="pvrow">
+        <span class="pvcap">🧘</span>
+        <div style="min-width:0"><div class="pvn">Meditación matutina</div><div class="pvm">Aún sin frecuencia</div></div>
+        <span class="pvtog"></span>
+      </div>
+      <div class="pvdays"><span class="pvd">L</span><span class="pvd">M</span><span class="pvd">X</span><span class="pvd">J</span><span class="pvd">V</span><span class="pvd">S</span><span class="pvd">D</span></div>
+      <p class="pvnote">Se actualiza mientras rellenas. <b>Nada se guarda hasta el último paso.</b></p>
+      <div class="checklist">
+        <span class="ck done"><i>✓</i>Qué quieres cambiar</span>
+        <span class="ck"><i>2</i>Cómo se mide</span>
+        <span class="ck"><i>3</i>Cuándo y con qué margen</span>
+      </div>
+    </aside>
+  </div>
+</div>
+<p class="note"><b>La idea:</b> nadie llega sabiendo qué es un «hábito booleano». Se empieza por la única pregunta que cualquiera entiende —construir o dejar— y por una galería de puntos de partida que rellena tipo, icono, medida y objetivo de una vez. El experto escribe el nombre y sigue.</p>
+
+<!-- ========== PASO 2 ========== -->
+<p class="caption">Paso 2 de 3 — Cómo se mide (aquí muere la jerga)</p>
+<div class="frame" style="height:660px">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="scrim"></div>
+  <div class="wiz">
+    <div class="left">
+      <div class="wizhead">
+        <div class="steps"><span class="sd on"></span><span class="sd now"></span><span class="sd"></span></div>
+        <span class="stepn">Paso 2 de 3</span><span class="x">✕</span>
+      </div>
+      <div>
+        <h2>¿Cómo sabrás que lo cumpliste?</h2>
+        <p class="sub">Elige la forma que menos te haga pensar al final del día.</p>
+      </div>
+
+      <div class="opts">
+        <div class="opt on">
+          <span class="oi">✓</span>
+          <div><div class="ot">Lo hice o no lo hice</div>
+            <div class="oe">Un toque y listo. La forma más simple, y la que mejor funciona al principio.</div>
+            <div class="oex">Meditar · Hacer la cama · Llamar a mamá</div></div>
+        </div>
+        <div class="opt">
+          <span class="oi">#</span>
+          <div><div class="ot">Cuento cuánto</div>
+            <div class="oe">Apuntas una cantidad y hay un objetivo diario.</div>
+            <div class="oex">2,5 litros de agua · 8.000 pasos · 30 páginas</div></div>
+        </div>
+        <div class="opt">
+          <span class="oi">⏱</span>
+          <div><div class="ot">Mido el tiempo</div>
+            <div class="oe">Apuntas minutos y hay un objetivo diario.</div>
+            <div class="oex">30 min de guitarra · 45 min de estudio</div></div>
+        </div>
+      </div>
+
+      <div class="hint">💡 <span>Puedes cambiarlo más adelante sin perder el historial. Si dudas, quédate con <b>lo hice o no lo hice</b>.</span></div>
+
+      <div class="adv">⚙️ Ajustes avanzados — categoría, fechas de inicio y fin, ocultar de la interfaz <span style="margin-left:auto">▾</span></div>
+
+      <div class="foot">
+        <span class="ghost">← Atrás</span>
+        <button class="cta">Siguiente →</button>
+      </div>
+    </div>
+
+    <aside class="right">
+      <span class="pvl">Así se verá en Mi día</span>
+      <div class="pvrow">
+        <span class="pvcap">🧘</span>
+        <div style="min-width:0"><div class="pvn">Meditación matutina</div><div class="pvm">Un toque para marcar</div></div>
+        <span class="pvtog"></span>
+      </div>
+      <div class="pvdays"><span class="pvd">L</span><span class="pvd">M</span><span class="pvd">X</span><span class="pvd">J</span><span class="pvd">V</span><span class="pvd">S</span><span class="pvd">D</span></div>
+      <p class="pvnote">Con <b>cuento cuánto</b> aparecería un anillo que se llena según la cantidad del día.</p>
+      <div class="checklist">
+        <span class="ck done"><i>✓</i>Qué quieres cambiar</span>
+        <span class="ck done"><i>✓</i>Cómo se mide</span>
+        <span class="ck"><i>3</i>Cuándo y con qué margen</span>
+      </div>
+    </aside>
+  </div>
+</div>
+<p class="note"><b>Lo que desaparece:</b> el desplegable «Sí / No · Contador · Tiempo». Nadie sabe qué significa sin probarlo. Cada opción se explica con lo que hace y con tres ejemplos reales, y el panel de la derecha enseña el resultado. Lo que hoy se pregunta en la misma pantalla —categoría, fechas, ocultar— se pliega en <b>Ajustes avanzados</b>: el que sabe lo abre, el que no, ni se entera.</p>
+
+<!-- ========== PASO 3 ========== -->
+<p class="caption">Paso 3 de 3 — Cuándo, con qué margen, y para qué</p>
+<div class="frame" style="height:700px">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="scrim"></div>
+  <div class="wiz">
+    <div class="left">
+      <div class="wizhead">
+        <div class="steps"><span class="sd on"></span><span class="sd on"></span><span class="sd now"></span></div>
+        <span class="stepn">Paso 3 de 3</span><span class="x">✕</span>
+      </div>
+      <div>
+        <h2>¿Cuándo lo vas a hacer?</h2>
+        <p class="sub">Un plan concreto se cumple mucho más que una buena intención.</p>
+      </div>
+
+      <div class="sentence">
+        Cuando <span class="slot">me levante</span>, haré <span class="slot">15 minutos de meditación</span><br />
+        en <span class="slot empty">¿dónde?</span>
+      </div>
+
+      <div>
+        <span class="lab">¿Cuántos días puedes fallar sin romper la racha?</span>
+        <div class="inline">
+          <span class="chip vi">Ninguno</span><span class="chip vi on">1 al mes</span><span class="chip vi">2</span><span class="chip vi">3</span>
+        </div>
+        <div class="hint vi" style="margin-top:10px">♥ <span>Son tus <b>salvavidas</b>. Un mal día no borra tres semanas de trabajo: gastas uno y la racha sigue viva.</span></div>
+      </div>
+
+      <div>
+        <span class="lab">¿A quién te acerca este hábito? <span style="font-weight:500;color:var(--ink-dim)">— opcional, puedes decidirlo más adelante</span></span>
+        <div class="inline">
+          <span class="chip on">🕊️ Alguien sereno</span><span class="chip">💪 Alguien constante</span><span class="chip">🧠 Alguien despierto</span><span class="chip">＋ Otro</span>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span class="ghost">← Atrás</span>
+        <span class="skip">Omitir y crear</span>
+        <button class="cta">Crear hábito ✓</button>
+      </div>
+    </div>
+
+    <aside class="right">
+      <span class="pvl">Así se verá en Mi día</span>
+      <div class="pvrow">
+        <span class="pvcap">🧘</span>
+        <div style="min-width:0"><div class="pvn">Meditación matutina</div><div class="pvm">15 min al levantarme · ♥ 1</div></div>
+        <span class="pvtog"></span>
+      </div>
+      <div class="pvdays"><span class="pvd">L</span><span class="pvd">M</span><span class="pvd">X</span><span class="pvd">J</span><span class="pvd">V</span><span class="pvd">S</span><span class="pvd">D</span></div>
+      <p class="pvnote">Al marcarlo verás: <b>«Un día más siendo alguien sereno.»</b></p>
+      <div class="checklist">
+        <span class="ck done"><i>✓</i>Qué quieres cambiar</span>
+        <span class="ck done"><i>✓</i>Cómo se mide</span>
+        <span class="ck done"><i>✓</i>Cuándo y con qué margen</span>
+      </div>
+    </aside>
+  </div>
+</div>
+<p class="note"><b>Los tres cambios de fondo:</b> «salvavidas: 0» deja de ser un número sin contexto y pasa a ser una pregunta en tu idioma con su explicación. El propósito deja de ser una hoja en blanco y pasa a ser <b>elegir entre tarjetas</b>, opcional y aplazable. Y aparece la <b>frase de intención</b> —«cuando X, haré Y en Z»—, que es de las pocas intervenciones de cambio de conducta con evidencia sólida detrás, y que además se rellena en diez segundos.</p>
+
+<!-- ========== MÓVIL ========== -->
+<p class="caption">Móvil — hoja inferior, tema oscuro</p>
+<div class="frame phone dark">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="scrim"></div>
+  <div class="wiz">
+    <div class="left">
+      <div class="wizhead">
+        <div class="steps"><span class="sd on"></span><span class="sd now"></span><span class="sd"></span></div>
+        <span class="stepn">2 de 3</span><span class="x">✕</span>
+      </div>
+      <div><h2>¿Cómo sabrás que lo cumpliste?</h2></div>
+      <div class="mpv">
+        <span class="pvcap" style="width:32px;height:32px;font-size:15px;border-radius:11px">🧘</span>
+        <div><div class="pvn">Meditación matutina</div><div class="pvm">Vista previa en vivo</div></div>
+      </div>
+      <div class="opts">
+        <div class="opt on"><span class="oi">✓</span><div><div class="ot">Lo hice o no lo hice</div><div class="oe">Un toque y listo.</div><div class="oex">Meditar · Hacer la cama</div></div></div>
+        <div class="opt"><span class="oi">#</span><div><div class="ot">Cuento cuánto</div><div class="oe">Una cantidad y un objetivo.</div><div class="oex">2,5 L de agua · 8.000 pasos</div></div></div>
+        <div class="opt"><span class="oi">⏱</span><div><div class="ot">Mido el tiempo</div><div class="oe">Minutos y un objetivo.</div><div class="oex">30 min de guitarra</div></div></div>
+      </div>
+      <div class="adv">⚙️ Ajustes avanzados <span style="margin-left:auto">▾</span></div>
+      <div class="foot"><span class="ghost">←</span><button class="cta" style="flex:1;justify-content:center">Siguiente</button></div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

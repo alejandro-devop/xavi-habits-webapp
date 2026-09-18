@@ -21,6 +21,12 @@ type ModalProps = {
    * estado inservible (p. ej. sesión expirada, sin token para nada).
    */
   dismissible?: boolean
+  /**
+   * Ámbito del design system para el portal (p. ej. `'aura'`). El panel se
+   * monta en `document.body`, fuera del árbol que lleva `data-ds`, así que sin
+   * esto heredaría los tokens de `:root` en lugar de los del ámbito que lo abre.
+   */
+  ds?: string
 }
 
 export function Modal({
@@ -32,6 +38,7 @@ export function Modal({
   footer,
   size = 'md',
   dismissible = true,
+  ds,
 }: ModalProps) {
   const titleId = useId()
   const descriptionId = useId()
@@ -59,6 +66,7 @@ export function Modal({
       {open ? (
         <motion.div
           className={styles.overlay}
+          data-ds={ds}
           role="presentation"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

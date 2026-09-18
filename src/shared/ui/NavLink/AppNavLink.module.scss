@@ -3,9 +3,12 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0.75rem;
-  border-radius: var(--radius-md);
+  // Enganches con fallback al valor de siempre: fuera del ámbito Aura el
+  // enlace se pinta exactamente igual que antes.
+  border-radius: var(--nav-link-radius, var(--radius-md));
   text-decoration: none;
   color: var(--color-text-secondary);
+  font-family: var(--nav-link-font-family, inherit);
   font-size: 0.9rem;
   font-weight: 500;
   transition:
@@ -14,7 +17,7 @@
 
   &:hover {
     color: var(--color-text);
-    background: color-mix(in srgb, var(--color-text) 6%, transparent);
+    background: var(--nav-link-hover-bg, color-mix(in srgb, var(--color-text) 6%, transparent));
   }
 
   &:focus-visible {
@@ -24,8 +27,10 @@
 }
 
 .active {
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--nav-link-active-color, var(--color-primary));
+  background: var(--nav-link-active-bg, color-mix(in srgb, var(--color-primary) 12%, transparent));
+  box-shadow: var(--nav-link-active-shadow, none);
+  font-weight: var(--nav-link-active-weight, 500);
 }
 
 .collapsed .label {

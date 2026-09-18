@@ -7,6 +7,12 @@ export type AuroraCanvasProps = {
    */
   fixed?: boolean
   className?: string
+  /**
+   * Ámbito del design system (p. ej. `'aura'`) cuando el lienzo se monta fuera
+   * de un subárbol que ya lo lleve: sin esto los orbes usan los valores de
+   * respaldo claros y el tema oscuro queda lavado.
+   */
+  ds?: string
 }
 
 /**
@@ -15,13 +21,13 @@ export type AuroraCanvasProps = {
  * Los colores salen de `--aurora-orb-*`, que el ámbito `[data-ds='aura']`
  * re-mapea en claro y oscuro.
  */
-export function AuroraCanvas({ fixed = true, className }: AuroraCanvasProps) {
+export function AuroraCanvas({ fixed = true, className, ds }: AuroraCanvasProps) {
   const rootClass = [styles.canvas, fixed ? styles.fixed : styles.absolute, className]
     .filter(Boolean)
     .join(' ')
 
   return (
-    <div className={rootClass} aria-hidden="true">
+    <div className={rootClass} data-ds={ds} aria-hidden="true">
       <span className={[styles.orb, styles.orb1].join(' ')} />
       <span className={[styles.orb, styles.orb2].join(' ')} />
       <span className={[styles.orb, styles.orb3].join(' ')} />

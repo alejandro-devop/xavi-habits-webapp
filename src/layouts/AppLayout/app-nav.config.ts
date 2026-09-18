@@ -9,20 +9,54 @@ import { weeklyRoutinePaths } from '@/features/weekly-routine'
 import type { SidebarNavItem } from '@/shared/ui/Sidebar'
 import type { CommandAction } from '@/shared/ui/CommandPalette'
 
-export const appSidebarItems: SidebarNavItem[] = [
-  { to: authPaths.today, label: 'Hoy', icon: 'home', end: true },
-  { to: activitiesPaths.root, label: 'Actividades', icon: 'list-check' },
-  { to: '/app/todos', label: 'Tareas', icon: 'clipboard' },
-  { to: '/app/notes', label: 'Notas', icon: 'file-lines' },
-  { to: learningPaths.root, label: 'Learning', icon: 'graduation-cap' },
-  { to: appIdeasPaths.root, label: 'Ideas', icon: 'lightbulb' },
-  { to: habitsPaths.myDay, label: 'Hábitos', icon: 'fire' },
-  { to: sleepPaths.root, label: 'Sueño', icon: 'moon' },
-  { to: weeklyRoutinePaths.root, label: 'Rutina', icon: 'calendar-week' },
-  { to: '/app/quarters', label: 'Quarters', icon: 'calendar-days' },
-  { to: '/app/projects', label: 'Proyectos', icon: 'diagram-project' },
-  { to: settingsPaths.root, label: 'Ajustes', icon: 'gear' },
-  { to: authPaths.testingHall, label: 'Testing Hall', icon: 'search' },
+/**
+ * Elemento del menú principal. Extiende el del `Sidebar` con lo que solo la app
+ * sabe: el grupo bajo el que se pinta y las secciones internas del módulo, que
+ * alimentan la miga de pan de la barra superior.
+ */
+export type AppNavItem = SidebarNavItem & {
+  group: string
+  sections?: { to: string; label: string }[]
+}
+
+const DAY_TO_DAY = 'Día a día'
+const THINKING = 'Pensar'
+const SYSTEM = 'Sistema'
+
+/**
+ * Agrupado visual: los destinos no cambian, solo el orden y el encabezado bajo
+ * el que se pintan. El `Sidebar` agrupa elementos consecutivos con el mismo
+ * `group`, así que el orden de esta lista es el orden de los grupos.
+ */
+export const appSidebarItems: AppNavItem[] = [
+  { to: authPaths.today, label: 'Hoy', icon: 'home', end: true, group: DAY_TO_DAY },
+  {
+    to: habitsPaths.myDay,
+    label: 'Hábitos',
+    icon: 'fire',
+    group: DAY_TO_DAY,
+    sections: [
+      { to: habitsPaths.myDay, label: 'Mi día' },
+      { to: habitsPaths.list, label: 'Mis hábitos' },
+      { to: habitsPaths.archived, label: 'Archivados' },
+      { to: habitsPaths.categories, label: 'Categorías' },
+      { to: habitsPaths.measures, label: 'Medidas' },
+      { to: habitsPaths.persona, label: 'Mi Persona' },
+    ],
+  },
+  { to: '/app/todos', label: 'Tareas', icon: 'clipboard', group: DAY_TO_DAY },
+  { to: weeklyRoutinePaths.root, label: 'Rutina', icon: 'calendar-week', group: DAY_TO_DAY },
+  { to: activitiesPaths.root, label: 'Actividades', icon: 'list-check', group: DAY_TO_DAY },
+  { to: sleepPaths.root, label: 'Sueño', icon: 'moon', group: DAY_TO_DAY },
+
+  { to: '/app/notes', label: 'Notas', icon: 'file-lines', group: THINKING },
+  { to: learningPaths.root, label: 'Learning', icon: 'graduation-cap', group: THINKING },
+  { to: appIdeasPaths.root, label: 'Ideas', icon: 'lightbulb', group: THINKING },
+  { to: '/app/quarters', label: 'Quarters', icon: 'calendar-days', group: THINKING },
+  { to: '/app/projects', label: 'Proyectos', icon: 'diagram-project', group: THINKING },
+
+  { to: settingsPaths.root, label: 'Ajustes', icon: 'gear', group: SYSTEM },
+  { to: authPaths.testingHall, label: 'Testing Hall', icon: 'search', group: SYSTEM },
 ]
 
 export function createCommandActions(handlers: {

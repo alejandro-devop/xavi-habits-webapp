@@ -25,8 +25,11 @@ export function AppProviders({ children }: AppProvidersProps) {
       }}
     >
       <ThemeProvider>
-        <ToastProvider>
-          <ConfirmDialogProvider>
+        {/* Avisos y confirmaciones son cromo global y se montan en portales:
+            sin `ds` heredarían los tokens de `:root` y saldrían en azul Apple
+            aunque los dispare un módulo ya migrado a Aura. */}
+        <ToastProvider ds="aura">
+          <ConfirmDialogProvider ds="aura">
             <AuthBootstrapProvider>{children}</AuthBootstrapProvider>
           </ConfirmDialogProvider>
         </ToastProvider>

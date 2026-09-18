@@ -3,11 +3,15 @@
 .sidebar {
   display: none;
   flex-direction: column;
-  width: 14rem;
-  padding: var(--spacing-md);
-  border-right: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-glass-surface, var(--color-surface)) 75%, transparent);
-  backdrop-filter: blur(var(--blur-md, 12px));
+  width: 14.75rem;
+  padding: var(--spacing-md) 0.875rem;
+  border-right: 1px solid var(--sidebar-border, var(--color-border));
+  background: var(
+    --sidebar-bg,
+    color-mix(in srgb, var(--color-glass-surface, var(--color-surface)) 75%, transparent)
+  );
+  backdrop-filter: blur(var(--sidebar-blur, var(--blur-md, 12px)));
+  -webkit-backdrop-filter: blur(var(--sidebar-blur, var(--blur-md, 12px)));
   position: sticky;
   top: 0;
   align-self: flex-start;
@@ -15,6 +19,9 @@
   max-height: 100dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
+  // Por encima del lienzo aurora (z-index 0) y de la columna principal (1),
+  // para que los tooltips del modo plegado no queden debajo del contenido.
+  z-index: 2;
 
   @include lg {
     display: flex;
@@ -22,7 +29,7 @@
 }
 
 .collapsed {
-  width: 2.75rem;
+  width: var(--sidebar-collapsed-width, 2.75rem);
   padding: var(--spacing-sm) 0.35rem;
   align-items: center;
   overflow: visible;
@@ -36,8 +43,10 @@
 }
 
 .collapsed .brand {
-  display: none;
-  margin-bottom: 0;
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-md);
+  padding: 0;
 }
 
 .nav {
@@ -45,19 +54,58 @@
   flex-direction: column;
   gap: 0.25rem;
   flex: 1;
+  width: 100%;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.groupTrailing {
+  margin-top: auto;
+  padding-top: var(--spacing-sm);
+}
+
+.groupLabel {
+  padding: 0.75rem 0.625rem 0.25rem;
+  font-family: var(--sidebar-group-font-family, inherit);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.collapsed .groupLabel {
+  display: none;
+}
+
+// Plegado no hay texto que separe los grupos: lo hace un filete fino.
+.collapsed .group + .group {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--sidebar-border, var(--color-border));
+}
+
+.collapsed .groupTrailing {
+  width: 100%;
+  align-items: center;
 }
 
 .footer {
   margin-top: auto;
   padding-top: var(--spacing-md);
+  width: 100%;
 }
 
 .collapseBtn {
   margin-top: var(--spacing-sm);
   align-self: center;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  border-radius: var(--nav-link-radius, var(--radius-md));
+  background: var(--nav-link-hover-bg, var(--color-surface));
   padding: 0.25rem 0.5rem;
   cursor: pointer;
   color: var(--color-text-muted);

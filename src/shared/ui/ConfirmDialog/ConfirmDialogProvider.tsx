@@ -26,7 +26,13 @@ type ConfirmDialogContextValue = {
 
 const ConfirmDialogContext = createContext<ConfirmDialogContextValue | null>(null)
 
-export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
+type ConfirmDialogProviderProps = {
+  children: ReactNode
+  /** Ámbito del design system para el portal del diálogo (p. ej. `'aura'`). */
+  ds?: string
+}
+
+export function ConfirmDialogProvider({ children, ds }: ConfirmDialogProviderProps) {
   const [state, setState] = useState<ConfirmDialogState>(initialState)
 
   const close = useCallback((result: boolean) => {
@@ -77,6 +83,7 @@ export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
         title={state.title}
         description={state.description}
         size="sm"
+        ds={ds}
         footer={
           <>
             <Button

@@ -4,10 +4,14 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: 0.4rem var(--spacing-md);
-  border-bottom: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
-  backdrop-filter: blur(var(--blur-sm, 8px));
+  // Altura fija desde el token: las barras sticky de los módulos se anclan a
+  // `--topbar-height` en vez de medirla a mano.
+  height: var(--topbar-height, 3.75rem);
+  padding: 0 var(--spacing-md);
+  border-bottom: 1px solid var(--topbar-border, var(--color-border));
+  background: var(--topbar-bg, color-mix(in srgb, var(--color-surface) 85%, transparent));
+  backdrop-filter: blur(var(--topbar-blur, var(--blur-sm, 8px)));
+  -webkit-backdrop-filter: blur(var(--topbar-blur, var(--blur-sm, 8px)));
   position: sticky;
   top: 0;
   z-index: 200;

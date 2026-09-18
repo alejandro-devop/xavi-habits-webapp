@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Panel del hábito — propuesta Aura</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --violet-text:#5b21b6;
+    --amber:#f59e0b; --rose:#e11d48;
+    --canvas:#fafcfb; --surface:#fcfcfb;
+    --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-1:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.78);
+    --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+    --grid:rgba(15,23,42,.07); --axis:#94a3b8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:10px 0 0;line-height:1.65;max-width:980px}
+  .note b{color:#334155}
+
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(120px)}
+  .o1{width:50%;aspect-ratio:1;background:rgba(78,222,163,.28);top:-24%;left:4%}
+  .o2{width:44%;aspect-ratio:1;background:rgba(210,187,255,.3);top:2%;right:-12%}
+  .o3{width:52%;aspect-ratio:1;background:rgba(224,242,254,.75);bottom:-32%;left:26%}
+  .shell{position:relative;z-index:1}
+  .inner{padding:22px 24px 28px;display:flex;flex-direction:column;gap:16px}
+
+  .eyebrow{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text);margin:0 0 5px}
+  h1{margin:0;font-size:25px;font-weight:700;letter-spacing:-.025em}
+  .sec{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-dim);margin:4px 0 0}
+
+  .head{display:flex;align-items:flex-start;gap:14px}
+  .hicon{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;background:rgba(255,255,255,.75);border:1px solid var(--edge);font-size:22px;flex:0 0 auto}
+  .pillbar{display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(255,255,255,.55);border:1px solid var(--edge);margin-left:auto;flex:0 0 auto}
+  .pillbar button{border:0;background:none;padding:7px 13px;border-radius:999px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .pillbar button.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 20px -8px rgba(16,185,129,.35)}
+
+  /* ── la lectura: el panel dice en palabras lo que muestra ── */
+  .reading{padding:16px 20px;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.86),rgba(236,253,245,.7));border:1px solid var(--edge);backdrop-filter:blur(20px)}
+  .reading p{margin:0;font-size:16px;line-height:1.55;font-weight:500}
+  .reading b{font-weight:700}
+  .up{color:#047857} .down{color:#9f1239}
+
+  /* ── fichas ── */
+  .tiles{display:grid;grid-template-columns:1.35fr repeat(4,1fr);gap:12px}
+  .tile{padding:15px 16px;border-radius:20px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(18px);box-shadow:var(--sh-1)}
+  .tl{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 8px}
+  .tv{font-family:'Inter',sans-serif;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.02em}
+  .tile.hero .tv{font-size:42px}
+  .ts{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);margin-top:6px;display:flex;align-items:center;gap:5px}
+  .delta{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+  .delta.pos{background:rgba(16,185,129,.14);color:#047857}
+  .delta.neg{background:rgba(225,29,72,.12);color:#9f1239}
+
+  /* ── gráficos ── */
+  .charts{display:grid;grid-template-columns:1.55fr 1fr;gap:12px}
+  .panel{padding:17px 18px 14px;border-radius:22px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .ptitle{font-size:14.5px;font-weight:700;margin:0;letter-spacing:-.01em}
+  .psub{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin:4px 0 12px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .gridline{stroke:var(--grid);stroke-width:1}
+  .axis-t{font-family:'Inter',sans-serif;font-size:9.5px;fill:var(--ink-dim)}
+  .val-t{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;fill:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .annot{font-family:'Inter',sans-serif;font-size:10px;font-weight:600}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft)}
+  .lg{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  .tipdemo{position:absolute;padding:9px 11px;border-radius:12px;background:rgba(15,23,42,.92);color:#fff;font-family:'Inter',sans-serif;font-size:11px;line-height:1.5;box-shadow:0 10px 26px -10px rgba(15,23,42,.6);pointer-events:none}
+  .tipdemo b{display:block;font-size:11.5px;margin-bottom:3px}
+
+  /* ── mapa del año ── */
+  .heat{display:flex;gap:3px;align-items:flex-start}
+  .hcol{display:flex;flex-direction:column;gap:3px}
+  .cell{width:11px;height:11px;border-radius:3px;background:rgba(15,23,42,.06)}
+
+  /* ── móvil ── */
+  .phone{width:375px;height:700px;border-radius:38px;padding:10px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6);flex:0 0 auto}
+  .screen{position:relative;overflow:hidden;width:100%;height:100%;border-radius:30px;background:var(--canvas)}
+  .mscroll{position:relative;z-index:1;padding:16px 14px;display:flex;flex-direction:column;gap:11px}
+  .mtiles{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .flexrow{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+
+  /* ── antes ── */
+  .old{background:#f5f5f7}
+  .old .aurora{display:none}
+  .oldcard{background:#fff;border:1px solid rgba(15,23,42,.1);border-radius:12px;padding:14px;text-align:center}
+  .oldrow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .oldv{font-size:20px;font-weight:700;font-family:'Inter',sans-serif}
+  .oldl{font-size:11px;color:#64748b;font-family:'Inter',sans-serif;margin-top:4px}
+
+  /* ── oscuro ── */
+  .dark{--canvas:#0b1220;--surface:#161e2f;--ink:#eef2ff;--ink-soft:#a8b3c7;--ink-dim:#64748b;--mint-text:#4edea3;
+        --mint:#0c8f65;--amber:#c67f05;--rose:#d63350;--violet:#7350d8;
+        --glass-1:rgba(255,255,255,.055);--glass-2:rgba(22,30,47,.72);--edge:rgba(255,255,255,.11);
+        --grid:rgba(255,255,255,.08)}
+  .dark .o1{background:rgba(16,185,129,.18)} .dark .o2{background:rgba(124,58,237,.24)} .dark .o3{background:rgba(30,58,95,.65)}
+  .dark .reading{background:linear-gradient(135deg,rgba(30,41,59,.8),rgba(6,78,59,.45))}
+  .dark .hicon,.dark .pillbar{background:rgba(255,255,255,.06)}
+  .dark .pillbar button.on{background:rgba(255,255,255,.12)}
+  .dark .cell{background:rgba(255,255,255,.07)}
+  .dark .delta.pos{background:rgba(16,185,129,.2);color:#6ee7b7}
+  .dark .delta.neg{background:rgba(225,29,72,.2);color:#fda4af}
+  .dark .up{color:#6ee7b7} .dark .down{color:#fda4af}
+</style>
+</head>
+<body>
+<div class="page">
+
+<p class="caption">1 · Así es hoy — cinco números y dos rejillas</p>
+<div class="frame old" style="padding:20px">
+  <div class="oldrow">
+    <div class="oldcard"><div class="oldv">12 días</div><div class="oldl">Racha actual</div></div>
+    <div class="oldcard"><div class="oldv">21 días</div><div class="oldl">Racha máxima</div></div>
+    <div class="oldcard"><div class="oldv">3</div><div class="oldl">Reinicios</div></div>
+    <div class="oldcard"><div class="oldv">40%</div><div class="oldl">Progreso</div></div>
+    <div class="oldcard"><div class="oldv">148</div><div class="oldl">Días totales</div></div>
+  </div>
+  <p class="note" style="margin-top:14px">Debajo, dos pestañas: la semana y el mapa del año. Y ya.</p>
+</div>
+<p class="note"><b>Qué falta.</b> Los cinco números dicen <b>dónde estás</b>, pero ninguno dice <b>hacia dónde vas</b>: no hay tendencia, no hay comparación con el periodo anterior, y no hay forma de ver que los domingos se te cae. «Reinicios: 3» es un dato sin historia — no dice cuándo, ni por qué, ni si estás mejor ahora. Y «Progreso 40%» mide la racha contra <code>periodDays</code>, que casi nadie sabe qué es.</p>
+
+<p class="caption">2 · El panel — escritorio</p>
+<div class="frame">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="shell"><div class="inner">
+
+    <div class="head">
+      <div class="hicon">🧘</div>
+      <div>
+        <p class="eyebrow">Hábito · construir</p>
+        <h1>Meditar</h1>
+      </div>
+      <div class="pillbar">
+        <button>30 días</button><button class="on">90 días</button><button>1 año</button><button>Todo</button>
+      </div>
+    </div>
+
+    <div class="reading">
+      <p>Vas <b class="up">mejor que el mes pasado</b> — cumpliste 8 de cada 10 días frente a 6. La caída de mediados de agosto ya está remontada. Donde se te cae: <b class="down">los domingos</b>, que llevas al 29%.</p>
+    </div>
+
+    <div class="tiles">
+      <div class="tile hero">
+        <p class="tl">Racha actual</p>
+        <div class="tv">12<span style="font-size:18px;font-weight:600;color:var(--ink-soft)"> días</span></div>
+        <div class="ts"><span class="delta pos">▲ 9</span> tu récord son 21</div>
+      </div>
+      <div class="tile">
+        <p class="tl">Cumplimiento 30 d</p>
+        <div class="tv">80%</div>
+        <div class="ts"><span class="delta pos">▲ 20 pts</span> vs. 30 previos</div>
+      </div>
+      <div class="tile">
+        <p class="tl">Días cumplidos</p>
+        <div class="tv">148</div>
+        <div class="ts">desde el 20 de abril</div>
+      </div>
+      <div class="tile">
+        <p class="tl">Salvavidas usados</p>
+        <div class="tv">1<span style="font-size:16px;font-weight:600;color:var(--ink-soft)"> / 2</span></div>
+        <div class="ts">esta semana</div>
+      </div>
+      <div class="tile">
+        <p class="tl">Veces que recaíste</p>
+        <div class="tv">3</div>
+        <div class="ts">la última, hace 34 días</div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <!-- ── tendencia: subidas y bajadas ── -->
+      <div class="panel" style="position:relative">
+        <p class="ptitle">Cumplimiento semana a semana</p>
+        <p class="psub">Porcentaje de días cumplidos en cada una de las últimas 12 semanas</p>
+        <svg viewBox="0 0 640 176" role="img" aria-label="Cumplimiento semanal: sube de 43% a 86%, cae al 29% en la semana 8 y remonta hasta el 93%.">
+          <line class="gridline" x1="34" y1="16" x2="624" y2="16"/>
+          <line class="gridline" x1="34" y1="51" x2="624" y2="51"/>
+          <line class="gridline" x1="34" y1="86" x2="624" y2="86"/>
+          <line class="gridline" x1="34" y1="121" x2="624" y2="121"/>
+          <line class="gridline" x1="34" y1="156" x2="624" y2="156" style="stroke:rgba(15,23,42,.16)"/>
+          <text class="axis-t" x="28" y="19" text-anchor="end">100%</text>
+          <text class="axis-t" x="28" y="89" text-anchor="end">50%</text>
+          <text class="axis-t" x="28" y="159" text-anchor="end">0%</text>
+
+          <defs><linearGradient id="fadeA" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--mint)" stop-opacity=".26"/>
+            <stop offset="100%" stop-color="var(--mint)" stop-opacity="0"/>
+          </linearGradient></defs>
+          <path d="M34,95.8 L87.6,76.2 L141.2,56.6 L194.7,35.6 L248.3,35.6 L301.9,56.6 L355.5,95.8 L409.1,115.4 L462.7,76.2 L516.3,56.6 L569.8,35.6 L623.4,25.8 L623.4,156 L34,156 Z" fill="url(#fadeA)"/>
+          <path d="M34,95.8 L87.6,76.2 L141.2,56.6 L194.7,35.6 L248.3,35.6 L301.9,56.6 L355.5,95.8 L409.1,115.4 L462.7,76.2 L516.3,56.6 L569.8,35.6 L623.4,25.8"
+                fill="none" stroke="var(--mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- la bajada, anotada -->
+          <circle cx="409.1" cy="115.4" r="5" fill="var(--rose)" stroke="var(--surface)" stroke-width="2"/>
+          <text class="annot" x="409.1" y="136" text-anchor="middle" fill="var(--rose)">▼ el bajón · 29%</text>
+          <!-- el punto actual, siempre etiquetado -->
+          <circle cx="623.4" cy="25.8" r="5" fill="var(--mint)" stroke="var(--surface)" stroke-width="2"/>
+          <text class="val-t" x="623.4" y="16" text-anchor="end" style="fill:var(--mint-text)">93% esta semana</text>
+          <circle cx="194.7" cy="35.6" r="4" fill="var(--mint)" stroke="var(--surface)" stroke-width="2"/>
+
+          <text class="axis-t" x="34" y="170">hace 12 sem</text>
+          <text class="axis-t" x="409.1" y="170" text-anchor="middle">ago</text>
+          <text class="axis-t" x="624" y="170" text-anchor="end">hoy</text>
+        </svg>
+        <div class="tipdemo" style="left:352px;top:92px">
+          <b>Semana del 11 al 17 de agosto</b>
+          2 de 7 días · 29% · 1 salvavidas<br/>Dificultad media: 4 de 5
+        </div>
+      </div>
+
+      <!-- ── dónde se cae ── -->
+      <div class="panel">
+        <p class="ptitle">Dónde se te cae</p>
+        <p class="psub">Cumplimiento por día de la semana, últimos 90 días</p>
+        <svg viewBox="0 0 340 176" role="img" aria-label="Cumplimiento por día: lunes 86%, martes 79%, miércoles 86%, jueves 71%, viernes 64%, sábado 50%, domingo 29%.">
+          <g>
+            <rect x="14" y="36" width="34" height="120" rx="4" fill="var(--mint)" opacity=".92"/>
+            <rect x="60" y="45" width="34" height="111" rx="4" fill="var(--mint)" opacity=".82"/>
+            <rect x="106" y="36" width="34" height="120" rx="4" fill="var(--mint)" opacity=".92"/>
+            <rect x="152" y="57" width="34" height="99" rx="4" fill="var(--mint)" opacity=".7"/>
+            <rect x="198" y="66" width="34" height="90" rx="4" fill="var(--mint)" opacity=".6"/>
+            <rect x="244" y="86" width="34" height="70" rx="4" fill="var(--mint)" opacity=".46"/>
+            <rect x="290" y="115" width="34" height="41" rx="4" fill="var(--rose)" opacity=".85"/>
+          </g>
+          <line class="gridline" x1="10" y1="156" x2="330" y2="156" style="stroke:rgba(15,23,42,.16)"/>
+          <text class="val-t" x="31" y="30" text-anchor="middle">86%</text>
+          <text class="val-t" x="77" y="39" text-anchor="middle">79%</text>
+          <text class="val-t" x="123" y="30" text-anchor="middle">86%</text>
+          <text class="val-t" x="169" y="51" text-anchor="middle">71%</text>
+          <text class="val-t" x="215" y="60" text-anchor="middle">64%</text>
+          <text class="val-t" x="261" y="80" text-anchor="middle">50%</text>
+          <text class="val-t" x="307" y="109" text-anchor="middle" style="fill:var(--rose)">29%</text>
+          <text class="axis-t" x="31" y="170" text-anchor="middle">L</text>
+          <text class="axis-t" x="77" y="170" text-anchor="middle">M</text>
+          <text class="axis-t" x="123" y="170" text-anchor="middle">X</text>
+          <text class="axis-t" x="169" y="170" text-anchor="middle">J</text>
+          <text class="axis-t" x="215" y="170" text-anchor="middle">V</text>
+          <text class="axis-t" x="261" y="170" text-anchor="middle">S</text>
+          <text class="axis-t" x="307" y="170" text-anchor="middle">D</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="charts">
+      <!-- ── historia de rachas ── -->
+      <div class="panel">
+        <p class="ptitle">Tus rachas, una a una</p>
+        <p class="psub">Cada barra es una racha completa. Los huecos son las veces que se rompió.</p>
+        <svg viewBox="0 0 640 132" role="img" aria-label="Seis rachas: 5, 12, 3, 21, 8 y la actual de 12 días.">
+          <line class="gridline" x1="14" y1="104" x2="626" y2="104" style="stroke:rgba(15,23,42,.16)"/>
+          <rect x="18"  y="74" width="70" height="30" rx="4" fill="var(--mint)" opacity=".5"/>
+          <rect x="112" y="44" width="70" height="60" rx="4" fill="var(--mint)" opacity=".62"/>
+          <rect x="206" y="86" width="70" height="18" rx="4" fill="var(--mint)" opacity=".42"/>
+          <rect x="300" y="20" width="70" height="84" rx="4" fill="var(--violet)" opacity=".62"/>
+          <rect x="394" y="62" width="70" height="42" rx="4" fill="var(--mint)" opacity=".55"/>
+          <rect x="488" y="44" width="70" height="60" rx="4" fill="var(--mint)"/>
+          <text class="val-t" x="53"  y="68" text-anchor="middle">5</text>
+          <text class="val-t" x="147" y="38" text-anchor="middle">12</text>
+          <text class="val-t" x="241" y="80" text-anchor="middle">3</text>
+          <text class="val-t" x="335" y="14" text-anchor="middle" style="fill:var(--violet-text)">21 · récord</text>
+          <text class="val-t" x="429" y="56" text-anchor="middle">8</text>
+          <text class="val-t" x="523" y="38" text-anchor="middle" style="fill:var(--mint-text)">12 · en curso</text>
+          <text class="axis-t" x="53"  y="120" text-anchor="middle">abr</text>
+          <text class="axis-t" x="147" y="120" text-anchor="middle">may</text>
+          <text class="axis-t" x="241" y="120" text-anchor="middle">jun</text>
+          <text class="axis-t" x="335" y="120" text-anchor="middle">jun–jul</text>
+          <text class="axis-t" x="429" y="120" text-anchor="middle">ago</text>
+          <text class="axis-t" x="523" y="120" text-anchor="middle">sep</text>
+        </svg>
+      </div>
+
+      <!-- ── el mapa ── -->
+      <div class="panel">
+        <p class="ptitle">El mapa de los 90 días</p>
+        <p class="psub">Una celda por día. Cada columna es una semana.</p>
+        <div class="heat" id="heat"></div>
+        <div class="legend">
+          <span class="lg"><i class="sw" style="background:var(--mint)"></i> Cumplido</span>
+          <span class="lg"><i class="sw" style="background:var(--amber)"></i> Salvavidas</span>
+          <span class="lg"><i class="sw" style="background:var(--rose)"></i> Fallado</span>
+          <span class="lg"><i class="sw" style="background:rgba(15,23,42,.1)"></i> Sin registro</span>
+        </div>
+      </div>
+    </div>
+
+  </div></div>
+</div>
+<p class="note"><b>La lectura, arriba del todo.</b> Un panel que solo enseña gráficos obliga a interpretarlos. Esa frase es el panel diciendo en palabras qué ve: si vas mejor o peor que el periodo anterior y dónde está el punto flaco. Se compone con reglas, no se inventa: si no hay datos suficientes, no se escribe.</p>
+<p class="note"><b>Por qué estas formas.</b> La tendencia semanal es una línea porque la pregunta es <i>cómo cambia</i> — y es donde se ven las subidas y bajadas que pediste, con el bajón anotado en vez de dejado a la vista del que mire. Los días de la semana son barras porque la pregunta es <i>cuál es peor</i>, y ahí el color es una rampa de un solo tono, con el peor día en rojo porque es un estado, no una categoría. Las rachas son barras independientes: cada una es un episodio con principio y fin, y el récord se distingue con violeta.</p>
+<p class="note"><b>Tres reglas que cumple y conviene no romper al construir:</b> nunca dos ejes verticales en un mismo gráfico — la dificultad va en su propio panel, no montada sobre el cumplimiento. Todas las cifras llevan <b>etiqueta visible</b>, porque el validador avisó de que mint y ámbar no llegan a 3:1 sobre el vidrio claro. Y los colores de estado (cumplido, salvavidas, fallado) van siempre con su etiqueta en la leyenda, nunca solo con el color.</p>
+
+<p class="caption">3 · Cuando el hábito tiene cantidad u objetivo</p>
+<div class="frame">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o3"></div></div>
+  <div class="shell"><div class="inner">
+    <div class="charts">
+      <div class="panel">
+        <p class="ptitle">Cuánto, frente a tu objetivo</p>
+        <p class="psub">Litros de agua por día · objetivo 2,5 · últimas 3 semanas</p>
+        <svg viewBox="0 0 640 150" role="img" aria-label="Cantidad diaria frente al objetivo de 2,5 litros: la mayoría de días por encima, cuatro por debajo.">
+          <line x1="14" y1="46" x2="626" y2="46" stroke="var(--violet)" stroke-width="2" stroke-dasharray="5 4" opacity=".65"/>
+          <text class="annot" x="626" y="40" text-anchor="end" fill="var(--violet-text)">objetivo 2,5 L</text>
+          <g>
+            <rect x="18" y="36" width="20" height="82" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="46" y="58" width="20" height="60" rx="4" fill="var(--rose)" opacity=".7"/>
+            <rect x="74" y="28" width="20" height="90" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="102" y="40" width="20" height="78" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="130" y="20" width="20" height="98" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="158" y="66" width="20" height="52" rx="4" fill="var(--rose)" opacity=".7"/>
+            <rect x="186" y="44" width="20" height="74" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="214" y="32" width="20" height="86" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="242" y="38" width="20" height="80" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="270" y="72" width="20" height="46" rx="4" fill="var(--rose)" opacity=".7"/>
+            <rect x="298" y="26" width="20" height="92" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="326" y="34" width="20" height="84" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="354" y="42" width="20" height="76" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="382" y="24" width="20" height="94" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="410" y="60" width="20" height="58" rx="4" fill="var(--rose)" opacity=".7"/>
+            <rect x="438" y="30" width="20" height="88" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="466" y="36" width="20" height="82" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="494" y="22" width="20" height="96" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="522" y="40" width="20" height="78" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="550" y="28" width="20" height="90" rx="4" fill="var(--mint)" opacity=".85"/>
+            <rect x="578" y="18" width="20" height="100" rx="4" fill="var(--mint)" opacity=".85"/>
+          </g>
+          <line class="gridline" x1="14" y1="118" x2="626" y2="118" style="stroke:rgba(15,23,42,.16)"/>
+          <text class="axis-t" x="18" y="134">hace 3 semanas</text>
+          <text class="axis-t" x="598" y="134" text-anchor="end">hoy</text>
+          <text class="val-t" x="588" y="12" text-anchor="middle">3,1</text>
+        </svg>
+        <div class="legend">
+          <span class="lg"><i class="sw" style="background:var(--mint)"></i> Llegaste al objetivo</span>
+          <span class="lg"><i class="sw" style="background:var(--rose)"></i> Te quedaste corto</span>
+          <span class="lg"><i class="sw" style="background:var(--violet);height:3px;border-radius:2px"></i> Objetivo</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="ptitle">Cómo se te hizo</p>
+        <p class="psub">Dificultad media que registraste, por semana. Su propio panel: nunca montada sobre el cumplimiento.</p>
+        <svg viewBox="0 0 340 150" role="img" aria-label="Dificultad media por semana: baja de 4,2 a 2,1 en doce semanas.">
+          <line class="gridline" x1="26" y1="20" x2="330" y2="20"/>
+          <line class="gridline" x1="26" y1="62" x2="330" y2="62"/>
+          <line class="gridline" x1="26" y1="104" x2="330" y2="104" style="stroke:rgba(15,23,42,.16)"/>
+          <text class="axis-t" x="20" y="23" text-anchor="end">5</text>
+          <text class="axis-t" x="20" y="65" text-anchor="end">3</text>
+          <text class="axis-t" x="20" y="107" text-anchor="end">1</text>
+          <path d="M34,29 L61,33 L88,46 L115,50 L142,42 L169,25 L196,33 L223,54 L250,67 L277,79 L304,84 L330,88"
+                fill="none" stroke="var(--violet)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="330" cy="88" r="5" fill="var(--violet)" stroke="var(--surface)" stroke-width="2"/>
+          <text class="val-t" x="322" y="80" text-anchor="end" style="fill:var(--violet-text)">2,1</text>
+          <circle cx="169" cy="25" r="4" fill="var(--violet)" stroke="var(--surface)" stroke-width="2"/>
+          <text class="annot" x="169" y="17" text-anchor="middle" fill="var(--violet-text)">4,6 · lo más duro</text>
+          <text class="axis-t" x="34" y="122">hace 12 sem</text>
+          <text class="axis-t" x="330" y="122" text-anchor="end">hoy</text>
+        </svg>
+        <p class="note" style="margin-top:8px">Cada vez te cuesta menos: de 4,2 a 2,1 en tres meses.</p>
+      </div>
+    </div>
+  </div></div>
+</div>
+<p class="note"><b>Estos dos paneles no siempre existen.</b> «Cuánto» solo aparece si el hábito es de contador o de tiempo — en uno de «lo hice o no lo hice» no hay cantidad que dibujar. «Cómo se te hizo» solo si has registrado dificultad alguna vez. Un panel vacío con un gráfico de ceros es peor que no tener el panel.</p>
+
+<p class="caption">4 · Móvil y tema oscuro</p>
+<div class="flexrow">
+  <div class="phone">
+    <div class="screen">
+      <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div></div>
+      <div class="mscroll">
+        <div class="head">
+          <div class="hicon" style="width:38px;height:38px;font-size:18px">🧘</div>
+          <div><p class="eyebrow" style="font-size:10px">Hábito</p><h1 style="font-size:20px">Meditar</h1></div>
+        </div>
+        <div class="pillbar" style="margin:0"><button>30 d</button><button class="on">90 d</button><button>1 año</button><button>Todo</button></div>
+        <div class="reading"><p style="font-size:14px">Vas <b class="up">mejor que el mes pasado</b>. Donde se te cae: <b class="down">los domingos</b>.</p></div>
+        <div class="mtiles">
+          <div class="tile"><p class="tl">Racha</p><div class="tv">12</div><div class="ts"><span class="delta pos">▲ 9</span></div></div>
+          <div class="tile"><p class="tl">Cumplim. 30 d</p><div class="tv">80%</div><div class="ts"><span class="delta pos">▲ 20</span></div></div>
+          <div class="tile"><p class="tl">Días</p><div class="tv">148</div></div>
+          <div class="tile"><p class="tl">Recaídas</p><div class="tv">3</div></div>
+        </div>
+        <div class="panel">
+          <p class="ptitle" style="font-size:13px">Semana a semana</p>
+          <svg viewBox="0 0 300 110" role="img" aria-label="Cumplimiento semanal en móvil: sube hasta 86%, cae al 29% y remonta al 93%.">
+            <line class="gridline" x1="6" y1="14" x2="294" y2="14"/>
+            <line class="gridline" x1="6" y1="56" x2="294" y2="56"/>
+            <line class="gridline" x1="6" y1="98" x2="294" y2="98" style="stroke:rgba(15,23,42,.16)"/>
+            <path d="M8,56 L34,48 L60,38 L86,26 L112,26 L138,38 L164,56 L190,68 L216,48 L242,38 L268,26 L292,20 L292,98 L8,98 Z" fill="url(#fadeA)"/>
+            <path d="M8,56 L34,48 L60,38 L86,26 L112,26 L138,38 L164,56 L190,68 L216,48 L242,38 L268,26 L292,20"
+                  fill="none" stroke="var(--mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="190" cy="68" r="4" fill="var(--rose)" stroke="var(--surface)" stroke-width="2"/>
+            <circle cx="292" cy="20" r="4" fill="var(--mint)" stroke="var(--surface)" stroke-width="2"/>
+            <text class="val-t" x="290" y="12" text-anchor="end" style="fill:var(--mint-text)">93%</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame dark" style="flex:1;min-width:460px">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="shell"><div class="inner">
+      <div class="head">
+        <div class="hicon">🧘</div>
+        <div><p class="eyebrow">Hábito · construir</p><h1>Meditar</h1></div>
+      </div>
+      <div class="reading"><p>Vas <b class="up">mejor que el mes pasado</b>. Donde se te cae: <b class="down">los domingos</b>, al 29%.</p></div>
+      <div class="tiles" style="grid-template-columns:1.3fr 1fr 1fr">
+        <div class="tile hero"><p class="tl">Racha actual</p><div class="tv">12</div><div class="ts"><span class="delta pos">▲ 9</span> récord 21</div></div>
+        <div class="tile"><p class="tl">Cumplim. 30 d</p><div class="tv">80%</div><div class="ts"><span class="delta pos">▲ 20 pts</span></div></div>
+        <div class="tile"><p class="tl">Recaídas</p><div class="tv">3</div><div class="ts">hace 34 días</div></div>
+      </div>
+      <div class="panel">
+        <p class="ptitle">Cumplimiento semana a semana</p>
+        <svg viewBox="0 0 560 140" role="img" aria-label="Cumplimiento semanal en tema oscuro: sube hasta 86%, cae al 29% y remonta al 93%.">
+          <line class="gridline" x1="30" y1="14" x2="548" y2="14"/>
+          <line class="gridline" x1="30" y1="62" x2="548" y2="62"/>
+          <line class="gridline" x1="30" y1="110" x2="548" y2="110" style="stroke:rgba(255,255,255,.18)"/>
+          <text class="axis-t" x="24" y="17" text-anchor="end">100%</text>
+          <text class="axis-t" x="24" y="113" text-anchor="end">0%</text>
+          <defs><linearGradient id="fadeD" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--mint)" stop-opacity=".4"/>
+            <stop offset="100%" stop-color="var(--mint)" stop-opacity="0"/>
+          </linearGradient></defs>
+          <path d="M32,68 L79,54 L126,41 L173,27 L220,27 L267,41 L314,68 L361,81 L408,54 L455,41 L502,27 L546,21 L546,110 L32,110 Z" fill="url(#fadeD)"/>
+          <path d="M32,68 L79,54 L126,41 L173,27 L220,27 L267,41 L314,68 L361,81 L408,54 L455,41 L502,27 L546,21"
+                fill="none" stroke="var(--mint)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="361" cy="81" r="5" fill="var(--rose)" stroke="var(--surface)" stroke-width="2"/>
+          <text class="annot" x="361" y="99" text-anchor="middle" fill="var(--rose)">▼ 29%</text>
+          <circle cx="546" cy="21" r="5" fill="var(--mint)" stroke="var(--surface)" stroke-width="2"/>
+          <text class="val-t" x="540" y="13" text-anchor="end" style="fill:var(--mint-text)">93%</text>
+        </svg>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<p class="note" style="margin-top:30px"><b>Lo que hay que decidir antes de escribir la spec:</b> (a) si el panel <b>sustituye</b> a la pantalla de detalle actual o convive con ella como una pestaña más junto a «Semana» e «Historial»; (b) si el rango por defecto son 90 días o 30 — 90 da tendencia pero un hábito nuevo lo verá casi vacío; (c) si la tira de «Veces que recaíste» se queda, sabiendo que es el único número del panel que habla de fallo — está redactado en frío y sin culpa, pero es el que más fácil se lee como reproche.</p>
+
+<script>
+  // El mapa: 90 días, una columna por semana. Datos de ejemplo con una racha
+  // rota a mediados para que se vea cómo pinta cada estado.
+  const heat = document.getElementById('heat');
+  const COLORS = {done:'var(--mint)', life:'var(--amber)', fail:'var(--rose)', none:''};
+  let seed = 7;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  for (let w = 0; w < 13; w++) {
+    const col = document.createElement('div');
+    col.className = 'hcol';
+    for (let d = 0; d < 7; d++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      const idx = w * 7 + d;
+      const slump = idx > 44 && idx < 58;          // el bajón de agosto
+      const r = rnd();
+      let state = 'none';
+      if (idx < 90) {
+        if (slump) state = r < 0.25 ? 'done' : r < 0.4 ? 'life' : 'fail';
+        else state = r < 0.82 ? 'done' : r < 0.9 ? 'life' : 'fail';
+      }
+      if (state !== 'none') {
+        cell.style.background = COLORS[state];
+        cell.style.opacity = state === 'done' ? 0.9 : 0.8;
+      }
+      col.appendChild(cell);
+    }
+    heat.appendChild(col);
+  }
+</script>
+</body>
+</html>

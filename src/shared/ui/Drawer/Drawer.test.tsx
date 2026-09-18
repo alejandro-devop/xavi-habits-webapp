@@ -16,4 +16,25 @@ describe('Drawer', () => {
     await user.keyboard('{Escape}')
     expect(onClose).toHaveBeenCalled()
   })
+
+  it('propaga el ámbito del design system al portal', () => {
+    render(
+      <Drawer open onClose={vi.fn()} title="Panel" ds="aura">
+        <p>Contenido</p>
+      </Drawer>,
+    )
+
+    const dialog = document.querySelector('[role="dialog"]')
+    expect(dialog?.closest('[data-ds="aura"]')).not.toBeNull()
+  })
+
+  it('sin ámbito no añade el atributo', () => {
+    render(
+      <Drawer open onClose={vi.fn()} title="Panel">
+        <p>Contenido</p>
+      </Drawer>,
+    )
+
+    expect(document.querySelector('[data-ds]')).toBeNull()
+  })
 })

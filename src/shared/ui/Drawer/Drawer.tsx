@@ -9,12 +9,21 @@ import styles from './Drawer.module.scss'
 
 export type DrawerSide = 'left' | 'right' | 'bottom'
 export type DrawerVariant = 'default' | 'notebook'
+export type DrawerSize = 'sm' | 'md'
 
 type DrawerProps = {
   open: boolean
   onClose: () => void
   side?: DrawerSide
   variant?: DrawerVariant
+  /** Ancho del panel lateral: `md` (por defecto) o `sm` (~400px). */
+  size?: DrawerSize
+  /**
+   * Ámbito del design system para el portal (p. ej. `'aura'`). El panel se
+   * monta en `document.body`, fuera del árbol que lleva `data-ds`, así que sin
+   * esto heredaría los tokens de `:root` en lugar de los del módulo que lo abre.
+   */
+  ds?: string
   title: string
   description?: string
   children?: ReactNode
@@ -32,6 +41,8 @@ export function Drawer({
   onClose,
   side = 'right',
   variant = 'default',
+  size = 'md',
+  ds,
   title,
   description,
   children,
@@ -63,6 +74,7 @@ export function Drawer({
       {open ? (
         <motion.div
           className={styles.overlay}
+          data-ds={ds}
           role="presentation"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -76,7 +88,14 @@ export function Drawer({
             aria-modal="true"
             aria-labelledby={titleId}
             aria-describedby={description ? descriptionId : undefined}
-            className={[styles.panel, styles[side], variant === 'notebook' ? styles.notebook : ''].join(' ')}
+            className={[
+              styles.panel,
+              styles[side],
+              size === 'sm' ? styles.sizeSm : '',
+              variant === 'notebook' ? styles.notebook : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             initial={prefersReducedMotion ? false : 'hidden'}
             animate={prefersReducedMotion ? undefined : 'visible'}
             exit={prefersReducedMotion ? undefined : 'hidden'}

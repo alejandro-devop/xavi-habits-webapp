@@ -78,3 +78,63 @@
   pointer-events: none;
   line-height: 0;
 }
+
+/* ── Modo chip ──────────────────────────────────────────────────────────────
+   Marcador autónomo de la semana en curso: el color del estado vive aquí y no
+   en el CSS del padre. Los estados salen de los tokens del ámbito Aura.       */
+.chip {
+  width: 1.625rem;
+  height: 1.625rem;
+
+  .dayNumber {
+    width: 100%;
+    height: 100%;
+    border: 1px solid transparent;
+    background: color-mix(in srgb, var(--color-text) 4.5%, transparent);
+    color: var(--color-text-muted);
+    font-family: var(--font-label, inherit);
+    font-size: 0.625rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.chip.statusEmpty .dayNumber {
+  color: var(--color-text-muted);
+}
+
+.chip.statusAccomplished .dayNumber {
+  background: var(--aura-cta-bg, var(--color-success));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 16%, transparent);
+}
+
+.chip.statusFailed .dayNumber {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-danger) 28%, transparent);
+  color: var(--color-danger);
+}
+
+.chip.statusLifeline .dayNumber {
+  background: color-mix(in srgb, var(--aura-ring-to, var(--color-primary)) 16%, transparent);
+  border-color: color-mix(in srgb, var(--aura-ring-to, var(--color-primary)) 32%, transparent);
+  color: var(--aura-ring-to, var(--color-primary));
+}
+
+.chip.statusPartial .dayNumber {
+  background: conic-gradient(
+    var(--color-success) 0 var(--marker-progress, 0%),
+    color-mix(in srgb, var(--color-text) 7%, transparent) var(--marker-progress, 0%) 100%
+  );
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.chip.today .dayNumber {
+  border-color: color-mix(in srgb, var(--color-text) 38%, transparent);
+}
+
+.chip.future {
+  opacity: 0.4;
+}

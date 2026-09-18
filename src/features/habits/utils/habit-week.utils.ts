@@ -24,6 +24,23 @@ export function getWeekEnd(weekStart: string): string {
   return addDaysToString(weekStart, 6)
 }
 
+/**
+ * Número de semana ISO-8601 (la semana empieza en lunes y la semana 1 es la
+ * que contiene el primer jueves del año). Es el que pinta el cintillo.
+ */
+export function getIsoWeekNumber(date: string): number {
+  const [y, m, d] = date.split('-').map(Number)
+  const target = new Date(Date.UTC(y ?? 0, (m ?? 1) - 1, d ?? 1))
+  // Mover al jueves de la misma semana ISO.
+  const dayOfWeek = (target.getUTCDay() + 6) % 7
+  target.setUTCDate(target.getUTCDate() - dayOfWeek + 3)
+  const firstThursday = new Date(Date.UTC(target.getUTCFullYear(), 0, 4))
+  const firstDayOfWeek = (firstThursday.getUTCDay() + 6) % 7
+  firstThursday.setUTCDate(firstThursday.getUTCDate() - firstDayOfWeek + 3)
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000
+  return 1 + Math.round((target.getTime() - firstThursday.getTime()) / msPerWeek)
+}
+
 export function isFutureWeek(weekStart: string, today: string = getTodayString()): boolean {
   return weekStart > getMondayOfWeek(today)
 }
@@ -54,6 +71,20 @@ function buildDay(
     isFuture: date > today,
     isOutsideMonth,
   }
+}
+
+/**
+ * Los 7 días de la semana seleccionada, de lunes a domingo. Es lo que pinta la
+ * tira de "Mi Día": ahí el mes entero no aporta nada (vive en el calendario).
+ */
+export function getWeekDays(
+  weekStart: string,
+  today: string = getTodayString(),
+): HabitWeekBarDay[] {
+  const weekEnd = getWeekEnd(weekStart)
+  return Array.from({ length: 7 }, (_, index) =>
+    buildDay(addDaysToString(weekStart, index), weekStart, weekEnd, today, false),
+  )
 }
 
 /**

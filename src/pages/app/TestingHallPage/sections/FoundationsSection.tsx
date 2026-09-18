@@ -1,4 +1,4 @@
-import { AuroraCanvas, Section } from '@/shared/ui'
+import { AuraRing, AuroraCanvas, Section } from '@/shared/ui'
 import styles from '../TestingHallPage.module.scss'
 
 const COLORS = [
@@ -83,12 +83,14 @@ export function FoundationsSection() {
       </Section>
 
       <Section
-        title="Aurora canvas"
-        description="Fondo decorativo del ámbito Aura (aria-hidden). Los orbes leen --aurora-orb-*, que [data-ds='aura'] re-mapea en claro y oscuro."
+        title="Aurora canvas y anillo"
+        description="Fondo y marca del ámbito Aura, ambos aria-hidden. Los orbes leen --aurora-orb-* y el anillo --aura-ring-*, que [data-ds='aura'] re-mapea en claro y oscuro."
       >
         <div className={styles.auroraDemo} data-ds="aura">
           <AuroraCanvas fixed={false} />
-          <p className={styles.auroraDemoLabel}>AuroraCanvas — contenido por encima del lienzo</p>
+          <p className={styles.auroraDemoLabel}>
+            <AuraRing /> AuraRing sobre AuroraCanvas
+          </p>
         </div>
       </Section>
     </Section>

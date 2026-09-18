@@ -1,12 +1,15 @@
 import { useId } from 'react'
 
-type AuraRingProps = {
+export type AuraRingProps = {
   size?: number
 }
 
 /**
- * Anillo Aura: arco con degradado mint → violeta sobre una pista tenue.
- * Decorativo; la marca la aporta el texto contiguo.
+ * Anillo Aura: la marca del lenguaje visual nuevo. Lo usan el umbral de auth y
+ * el chasis de cada módulo migrado, siempre junto al nombre de la app.
+ *
+ * Arco con degradado mint → violeta sobre una pista tenue. Decorativo: la marca
+ * la aporta el texto contiguo, por eso va `aria-hidden`.
  */
 export function AuraRing({ size = 30 }: AuraRingProps) {
   const gradientId = useId()

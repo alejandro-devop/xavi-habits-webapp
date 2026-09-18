@@ -1,0 +1,73 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.25rem;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  flex: 0 0 auto;
+  padding: 0.5625rem 0.9375rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-full);
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.chipActive {
+  background: var(--color-glass);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+  color: var(--color-primary);
+  box-shadow: 0 8px 24px -6px color-mix(in srgb, var(--color-primary) 30%, transparent);
+
+  .count {
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: var(--color-primary);
+  }
+}
+
+.chipIcon {
+  flex-shrink: 0;
+}
+
+.count {
+  padding: 0.0625rem 0.4375rem;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

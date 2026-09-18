@@ -3,8 +3,7 @@ import { Link, Outlet } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { reducedTransition, transitions } from '@/shared/motion/transitions'
 import { useReducedMotionPreference } from '@/shared/motion/useReducedMotionPreference'
-import { AuroraCanvas } from '@/shared/ui'
-import { AuraRing } from './AuraLockup'
+import { AuraRing, AuroraCanvas } from '@/shared/ui'
 import styles from './AuthLayout.module.scss'
 
 const HIGHLIGHTS = [

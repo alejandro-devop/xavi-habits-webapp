@@ -4,6 +4,7 @@ import {
   getMonthDaysForWeek,
   getMonthRange,
   getMyDayFocusDate,
+  getWeekDays,
   getWeekEnd,
   isFutureWeek,
 } from '@/features/habits/utils/habit-week.utils'
@@ -51,5 +52,33 @@ describe('habit-week.utils', () => {
       from: '2026-07-01',
       to: '2026-08-02',
     })
+  })
+
+  it('getWeekDays returns the seven days of the selected week', () => {
+    const days = getWeekDays('2026-09-14', '2026-09-16')
+    expect(days.map((d) => d.date)).toEqual([
+      '2026-09-14',
+      '2026-09-15',
+      '2026-09-16',
+      '2026-09-17',
+      '2026-09-18',
+      '2026-09-19',
+      '2026-09-20',
+    ])
+    expect(days.every((d) => d.isInWeek)).toBe(true)
+    expect(days.find((d) => d.date === '2026-09-16')?.isToday).toBe(true)
+    expect(days.filter((d) => d.isFuture).map((d) => d.date)).toEqual([
+      '2026-09-17',
+      '2026-09-18',
+      '2026-09-19',
+      '2026-09-20',
+    ])
+  })
+
+  it('getWeekDays keeps the seven days when the week crosses a month', () => {
+    const days = getWeekDays('2026-07-27', '2026-07-30')
+    expect(days).toHaveLength(7)
+    expect(days.at(-1)?.date).toBe('2026-08-02')
+    expect(days.every((d) => d.isOutsideMonth === false)).toBe(true)
   })
 })

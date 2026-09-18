@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hábitos · Mis Hábitos — propuesta Aura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --violet-soft:#8b5cf6; --amber:#f59e0b; --amber-deep:#b45309;
+    --danger:#ba1a1a;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-1:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.78);
+    --edge:rgba(255,255,255,.7);
+    --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1240px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:34px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:10px 0 0;line-height:1.6}
+  .note b{color:#334155}
+
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate}
+  .frame.desk{height:880px}
+  .frame.phone{width:360px;height:700px;border-radius:34px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(120px)}
+  .o1{width:55%;aspect-ratio:1;background:rgba(78,222,163,.32);top:-22%;left:-12%}
+  .o2{width:50%;aspect-ratio:1;background:rgba(210,187,255,.36);top:6%;right:-16%}
+  .o3{width:60%;aspect-ratio:1;background:rgba(224,242,254,.8);bottom:-28%;left:20%}
+  .scroll{position:relative;z-index:1;height:100%;overflow:auto}
+
+  .topbar{position:sticky;top:0;z-index:5;background:rgba(250,252,251,.72);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.65)}
+  .topin{max-width:1120px;margin:0 auto;height:66px;padding:0 26px;display:flex;align-items:center;gap:18px}
+  .lockup{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.02em;font-size:17px}
+  .navpills{display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px;background:rgba(255,255,255,.5);backdrop-filter:blur(16px);margin-left:6px}
+  .np{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);padding:8px 14px;border-radius:999px;text-decoration:none}
+  .np.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 24px -6px rgba(16,185,129,.22)}
+  .spacer{flex:1}
+  .iconbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.5);border:1px solid var(--edge);color:var(--ink-soft)}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a7f3d0,#c4b5fd);border:2px solid rgba(255,255,255,.9)}
+  .main{max-width:1120px;margin:0 auto;padding:26px 26px 40px;display:flex;flex-direction:column;gap:20px}
+
+  h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .eyebrow{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text);margin:0 0 6px}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  /* barra de herramientas */
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .search{flex:1;min-width:220px;max-width:340px;display:flex;align-items:center;gap:9px;padding:11px 16px;border-radius:999px;background:rgba(255,255,255,.5);border:1px solid var(--edge);backdrop-filter:blur(18px);font-size:14px;color:var(--ink-dim)}
+  .sel{display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:999px;background:var(--glass-1);border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .viewtog{display:flex;gap:3px;padding:4px;border-radius:999px;background:rgba(255,255,255,.5);border:1px solid var(--edge)}
+  .viewtog span{padding:7px 13px;border-radius:999px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .viewtog span.on{background:#fff;color:var(--mint-text);box-shadow:0 6px 18px -6px rgba(16,185,129,.28)}
+  .cta{margin-left:auto;display:inline-flex;align-items:center;gap:8px;border:0;padding:11px 20px;border-radius:999px;cursor:pointer;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--mint),var(--mint-deep));box-shadow:0 8px 24px -4px rgba(16,185,129,.42), inset 0 1px 0 rgba(255,255,255,.35)}
+
+  /* secciones por categoría */
+  .sect{display:flex;flex-direction:column;gap:12px}
+  .secthead{display:flex;align-items:center;gap:10px}
+  .sectname{font-family:'Inter',sans-serif;font-size:13px;font-weight:700;letter-spacing:.02em}
+  .sectcount{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(15,23,42,.06);color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .sectline{flex:1;height:1px;background:linear-gradient(90deg,rgba(15,23,42,.10),transparent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(324px,1fr));gap:14px}
+
+  /* tarjeta de hábito */
+  .hc{position:relative;overflow:hidden;padding:18px;border-radius:24px;background:var(--glass-1);border:1px solid var(--edge);backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .hc .halo{position:absolute;width:130px;height:130px;border-radius:50%;filter:blur(40px);right:-42px;top:-46px;pointer-events:none}
+  .hc.c-mint .halo{background:rgba(16,185,129,.26)}
+  .hc.c-violet .halo{background:rgba(124,58,237,.24)}
+  .hc.c-amber .halo{background:rgba(245,158,11,.26)}
+  .hc.c-sky .halo{background:rgba(56,189,248,.26)}
+  .hcTop{display:flex;align-items:flex-start;gap:12px}
+  .cap{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:20px;flex:0 0 auto;background:rgba(255,255,255,.8);border:1px solid var(--edge)}
+  .c-mint .cap{box-shadow:inset 0 0 0 2px rgba(16,185,129,.22)}
+  .c-violet .cap{box-shadow:inset 0 0 0 2px rgba(124,58,237,.22)}
+  .c-amber .cap{box-shadow:inset 0 0 0 2px rgba(245,158,11,.24)}
+  .c-sky .cap{box-shadow:inset 0 0 0 2px rgba(56,189,248,.24)}
+  .hcName{font-size:16px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .hcDesc{font-family:'Inter',sans-serif;font-size:12px;color:var(--ink-soft);margin:3px 0 0;line-height:1.45}
+  .kebab{margin-left:auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--ink-dim);background:transparent;border:0;cursor:pointer;flex:0 0 auto}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}
+  .b{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:rgba(15,23,42,.05);color:var(--ink-soft)}
+  .b.keep{background:rgba(16,185,129,.13);color:var(--mint-text)}
+  .b.avoid{background:rgba(124,58,237,.13);color:#5a00c6}
+  .b.streak{background:rgba(245,158,11,.14);color:var(--amber-deep);font-variant-numeric:tabular-nums}
+  .b.paused{background:rgba(15,23,42,.07);color:var(--ink-dim)}
+  .spark{display:flex;gap:3px;margin-top:14px;align-items:flex-end}
+  .spark i{flex:1;height:22px;border-radius:5px;background:rgba(15,23,42,.06)}
+  .spark i.ok{background:var(--mint)}
+  .spark i.pa{background:rgba(16,185,129,.45)}
+  .spark i.no{background:rgba(186,26,26,.28)}
+  .spark i.lf{background:rgba(124,58,237,.45)}
+  .sparkLbl{display:flex;justify-content:space-between;font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:6px}
+  .prog{margin-top:12px}
+  .track{height:6px;border-radius:999px;background:rgba(15,23,42,.07);overflow:hidden}
+  .track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),var(--mint-deep))}
+  .track.vi i{background:linear-gradient(90deg,var(--violet-soft),var(--violet))}
+  .progLbl{display:flex;justify-content:space-between;font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);margin-top:6px;font-variant-numeric:tabular-nums}
+
+  /* móvil */
+  .phone .topin{height:58px;padding:0 16px;gap:10px}
+  .phone .navpills,.phone .iconbtn{display:none}
+  .phone .main{padding:16px 16px 26px;gap:14px}
+  .phone h1{font-size:22px}
+  .phone .grid{grid-template-columns:1fr}
+  .phone .toolbar .sel,.phone .viewtog{display:none}
+  .phone .search{max-width:none}
+  .phone .cta{position:fixed;right:18px;bottom:18px;margin:0;width:52px;height:52px;padding:0;justify-content:center;z-index:9}
+  .phone .cta span{display:none}
+
+  /* oscuro */
+  .dark{--canvas:#0b1220;--ink:#eef2ff;--ink-soft:#a8b3c7;--ink-dim:#64748b;--mint-text:#4edea3;
+        --glass-1:rgba(255,255,255,.055);--glass-2:rgba(22,30,47,.7);--edge:rgba(255,255,255,.11)}
+  .dark .o1{background:rgba(16,185,129,.2)} .dark .o2{background:rgba(124,58,237,.26)} .dark .o3{background:rgba(30,58,95,.7)}
+  .dark .topbar{background:rgba(11,18,32,.7);border-bottom-color:rgba(255,255,255,.08)}
+  .dark .np.on,.dark .viewtog span.on{background:rgba(255,255,255,.1)}
+  .dark .cap{background:rgba(255,255,255,.07)}
+  .dark .b,.dark .sectcount,.dark .track,.dark .spark i{background:rgba(255,255,255,.08)}
+  .dark .search{background:rgba(255,255,255,.05)}
+  .dark .spark i.ok{background:#4edea3} .dark .spark i.no{background:rgba(255,120,120,.4)}
+  .dark .spark i.pa{background:rgba(78,222,163,.45)} .dark .spark i.lf{background:rgba(167,139,250,.5)}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;align-items:start;justify-items:center}
+</style>
+</head>
+<body>
+<div class="page">
+
+<p class="caption">1 · Escritorio — Hábitos › Mis hábitos</p>
+<div class="frame desk">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="scroll">
+
+    <div class="topbar"><div class="topin">
+      <span class="lockup">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="12.5" stroke="rgba(15,23,42,.1)" stroke-width="3"/>
+          <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#g)"/>
+          <defs><linearGradient id="g" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#10b981"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+        </svg>Xavi</span>
+      <nav class="navpills">
+        <a class="np" href="#">Mi día</a><a class="np on" href="#">Mis hábitos</a>
+        <a class="np" href="#">Archivados</a><a class="np" href="#">Ajustes</a>
+      </nav>
+      <span class="spacer"></span><span class="iconbtn">🔍</span><span class="iconbtn">🔔</span><span class="avatar"></span>
+    </div></div>
+
+    <div class="main">
+      <div class="head">
+        <div><p class="eyebrow">9 activos · 3 categorías</p><h1>Mis hábitos</h1></div>
+      </div>
+
+      <div class="toolbar">
+        <span class="search">🔍 Buscar por nombre…</span>
+        <span class="sel">Ordenar: racha ▾</span>
+        <span class="sel">Categoría: todas ▾</span>
+        <span class="viewtog"><span class="on">Tarjetas</span><span>Tabla</span></span>
+        <button class="cta">＋ <span>Nuevo hábito</span></button>
+      </div>
+
+      <div class="sect">
+        <div class="secthead"><span class="sectname">🧠 Mente</span><span class="sectcount">3</span><span class="sectline"></span></div>
+        <div class="grid">
+
+          <article class="hc c-mint"><div class="halo"></div>
+            <div class="hcTop">
+              <span class="cap">🧘</span>
+              <div style="min-width:0;flex:1">
+                <p class="hcName">Meditación matutina</p>
+                <p class="hcDesc">15 min al despertar, antes del móvil</p>
+              </div>
+              <button class="kebab">⋯</button>
+            </div>
+            <div class="badges"><span class="b keep">Mantener</span><span class="b">Diario</span><span class="b streak">🔥 32 días</span></div>
+            <div class="spark">
+              <i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i>
+              <i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i>
+            </div>
+            <div class="sparkLbl"><span>Últimos 14 días</span><span>14 / 14</span></div>
+            <div class="prog"><div class="track"><i style="width:100%"></i></div>
+              <div class="progLbl"><span>Periodo de 30 días</span><span>30 / 30</span></div></div>
+          </article>
+
+          <article class="hc c-sky"><div class="halo"></div>
+            <div class="hcTop">
+              <span class="cap">📓</span>
+              <div style="min-width:0;flex:1">
+                <p class="hcName">Diario de gratitud</p>
+                <p class="hcDesc">Tres cosas del día, antes de dormir</p>
+              </div>
+              <button class="kebab">⋯</button>
+            </div>
+            <div class="badges"><span class="b keep">Mantener</span><span class="b">5× semana</span><span class="b streak">🔥 12 días</span><span class="b">♥ 2 salvavidas</span></div>
+            <div class="spark">
+              <i class="ok"></i><i class="ok"></i><i></i><i class="ok"></i><i class="ok"></i><i class="lf"></i><i class="ok"></i>
+              <i class="ok"></i><i class="no"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="lf"></i><i class="ok"></i>
+            </div>
+            <div class="sparkLbl"><span>Últimos 14 días</span><span>11 / 14</span></div>
+            <div class="prog"><div class="track"><i style="width:62%"></i></div>
+              <div class="progLbl"><span>Periodo de 30 días</span><span>19 / 30</span></div></div>
+          </article>
+
+          <article class="hc c-violet"><div class="halo"></div>
+            <div class="hcTop">
+              <span class="cap">📵</span>
+              <div style="min-width:0;flex:1">
+                <p class="hcName">Nada de redes antes de las 10</p>
+                <p class="hcDesc">La primera hora del día es mía</p>
+              </div>
+              <button class="kebab">⋯</button>
+            </div>
+            <div class="badges"><span class="b avoid">Evitar</span><span class="b">Diario</span><span class="b streak">🔥 6 días</span><span class="b">2 reinicios</span></div>
+            <div class="spark">
+              <i class="no"></i><i class="ok"></i><i class="ok"></i><i class="no"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i>
+              <i class="no"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i>
+            </div>
+            <div class="sparkLbl"><span>Últimos 14 días</span><span>11 / 14</span></div>
+            <div class="prog"><div class="track vi"><i style="width:20%"></i></div>
+              <div class="progLbl"><span>Periodo de 30 días</span><span>6 / 30</span></div></div>
+          </article>
+
+        </div>
+      </div>
+
+      <div class="sect">
+        <div class="secthead"><span class="sectname">🌿 Cuerpo</span><span class="sectcount">4</span><span class="sectline"></span></div>
+        <div class="grid">
+
+          <article class="hc c-amber"><div class="halo"></div>
+            <div class="hcTop">
+              <span class="cap">💧</span>
+              <div style="min-width:0;flex:1">
+                <p class="hcName">Beber 2,5 L de agua</p>
+                <p class="hcDesc">Medida: litros · objetivo diario 2,5</p>
+              </div>
+              <button class="kebab">⋯</button>
+            </div>
+            <div class="badges"><span class="b keep">Mantener</span><span class="b">Con medida</span><span class="b streak">🔥 3 días</span></div>
+            <div class="spark">
+              <i class="ok"></i><i class="pa"></i><i class="no"></i><i class="ok"></i><i class="ok"></i><i class="pa"></i><i class="ok"></i>
+              <i class="no"></i><i class="ok"></i><i class="pa"></i><i class="ok"></i><i class="ok"></i><i class="no"></i><i class="pa"></i>
+            </div>
+            <div class="sparkLbl"><span>Últimos 14 días</span><span>7 completos · 4 parciales</span></div>
+            <div class="prog"><div class="track"><i style="width:37%"></i></div>
+              <div class="progLbl"><span>Periodo de 30 días</span><span>11 / 30</span></div></div>
+          </article>
+
+          <article class="hc c-mint"><div class="halo"></div>
+            <div class="hcTop">
+              <span class="cap">🚶</span>
+              <div style="min-width:0;flex:1">
+                <p class="hcName">Caminar 8.000 pasos</p>
+                <p class="hcDesc">Medida: pasos · al aire libre si se puede</p>
+              </div>
+              <button class="kebab">⋯</button>
+            </div>
+            <div class="badges"><span class="b paused">En pausa</span><span class="b">Con medida</span><span class="b">Desde el 2 sep</span></div>
+            <div class="spark">
+              <i class="ok"></i><i class="no"></i><i class="ok"></i><i class="no"></i><i class="ok"></i><i></i><i></i>
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <div class="sparkLbl"><span>Últimos 14 días</span><span>3 / 14</span></div>
+            <div class="prog"><div class="track"><i style="width:10%"></i></div>
+              <div class="progLbl"><span>Periodo de 30 días</span><span>3 / 30</span></div></div>
+          </article>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="note"><b>Lo que cambia respecto a hoy:</b> la lista agrupada de tiras pasa a rejilla de tarjetas de vidrio con el color del hábito como halo (hoy es un borde izquierdo); aparecen buscador, orden y filtro de categoría, que hoy no existen; cada tarjeta lleva una <b>tira de los últimos 14 días</b> para que la lista diga cómo vas, no solo qué tienes; y el progreso del periodo se ve siempre, no solo en el detalle. Los hábitos de <b>evitar</b> se distinguen en violeta de los de <b>mantener</b> en mint.</p>
+
+<p class="caption">2 · Móvil (oscuro) y vista de tabla</p>
+<div class="grid2">
+  <div class="frame phone dark">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="scroll">
+      <div class="topbar"><div class="topin">
+        <span class="lockup">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="12.5" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+            <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#g2)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="16" cy="16" r="4.4" fill="url(#g2)"/>
+            <defs><linearGradient id="g2" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#4edea3"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+          </svg>Mis hábitos</span>
+        <span class="spacer"></span><span class="avatar"></span>
+      </div></div>
+      <div class="main">
+        <div class="head"><div><p class="eyebrow">9 activos</p><h1>Mis hábitos</h1></div></div>
+        <div class="toolbar"><span class="search">🔍 Buscar por nombre…</span></div>
+        <div class="sect">
+          <div class="secthead"><span class="sectname">🧠 Mente</span><span class="sectcount">3</span><span class="sectline"></span></div>
+          <div class="grid">
+            <article class="hc c-mint"><div class="halo"></div>
+              <div class="hcTop"><span class="cap">🧘</span>
+                <div style="min-width:0;flex:1"><p class="hcName">Meditación matutina</p><p class="hcDesc">15 min al despertar</p></div>
+                <button class="kebab">⋯</button></div>
+              <div class="badges"><span class="b keep">Mantener</span><span class="b streak">🔥 32</span></div>
+              <div class="spark"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></div>
+              <div class="sparkLbl"><span>Últimos 7 días</span><span>7 / 7</span></div>
+            </article>
+            <article class="hc c-violet"><div class="halo"></div>
+              <div class="hcTop"><span class="cap">📵</span>
+                <div style="min-width:0;flex:1"><p class="hcName">Nada de redes antes de las 10</p><p class="hcDesc">La primera hora es mía</p></div>
+                <button class="kebab">⋯</button></div>
+              <div class="badges"><span class="b avoid">Evitar</span><span class="b streak">🔥 6</span></div>
+              <div class="spark"><i class="no"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i><i class="ok"></i></div>
+              <div class="sparkLbl"><span>Últimos 7 días</span><span>6 / 7</span></div>
+            </article>
+          </div>
+        </div>
+        <button class="cta">＋<span>Nuevo</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame" style="height:480px">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="scroll"><div class="main" style="padding:22px">
+      <div class="toolbar"><span class="viewtog"><span>Tarjetas</span><span class="on">Tabla</span></span></div>
+      <div style="background:var(--glass-1);border:1px solid var(--edge);border-radius:22px;backdrop-filter:blur(20px);overflow:hidden">
+        <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr .7fr .6fr;gap:10px;padding:12px 18px;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim);border-bottom:1px solid rgba(255,255,255,.6)">
+          <span>Hábito</span><span>Tipo</span><span>Frecuencia</span><span>Racha</span><span>Periodo</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr .7fr .6fr;gap:10px;padding:14px 18px;align-items:center;border-bottom:1px solid rgba(255,255,255,.45)">
+          <span style="display:flex;align-items:center;gap:10px"><span style="font-size:17px">🧘</span><b style="font-size:14px;font-weight:600">Meditación matutina</b></span>
+          <span><span class="b keep">Mantener</span></span>
+          <span style="font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft)">Diario</span>
+          <span class="b streak">🔥 32</span>
+          <span style="font-family:'Inter',sans-serif;font-size:12.5px;font-variant-numeric:tabular-nums">30/30</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr .7fr .6fr;gap:10px;padding:14px 18px;align-items:center;border-bottom:1px solid rgba(255,255,255,.45)">
+          <span style="display:flex;align-items:center;gap:10px"><span style="font-size:17px">💧</span><b style="font-size:14px;font-weight:600">Beber 2,5 L de agua</b></span>
+          <span><span class="b keep">Mantener</span></span>
+          <span style="font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft)">Con medida</span>
+          <span class="b streak">🔥 3</span>
+          <span style="font-family:'Inter',sans-serif;font-size:12.5px;font-variant-numeric:tabular-nums">11/30</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr .7fr .6fr;gap:10px;padding:14px 18px;align-items:center">
+          <span style="display:flex;align-items:center;gap:10px"><span style="font-size:17px">📵</span><b style="font-size:14px;font-weight:600">Nada de redes antes de las 10</b></span>
+          <span><span class="b avoid">Evitar</span></span>
+          <span style="font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft)">Diario</span>
+          <span class="b streak">🔥 6</span>
+          <span style="font-family:'Inter',sans-serif;font-size:12.5px;font-variant-numeric:tabular-nums">6/30</span>
+        </div>
+      </div>
+      <p class="note" style="margin-top:14px">La vista de tabla es opcional y reutiliza el <code>Table</code> que ya existe en <code>shared/ui</code>. Útil cuando tienes muchos hábitos y quieres comparar rachas de un vistazo.</p>
+    </div></div>
+  </div>
+</div>
+<p class="note"><b>Izquierda:</b> móvil en oscuro — una columna, el buscador se queda, orden y filtro pasan al menú, y el CTA se vuelve botón flotante. <b>Derecha:</b> el conmutador Tarjetas / Tabla.</p>
+
+</div>
+</body>
+</html>

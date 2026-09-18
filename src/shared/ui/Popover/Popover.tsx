@@ -13,6 +13,11 @@ type PopoverProps = {
   content: ReactNode
   placement?: PopoverPlacement
   disabled?: boolean
+  /**
+   * Nombre accesible del disparador. Imprescindible cuando el `trigger` es solo
+   * un icono: el envoltorio es quien recibe el foco, no el icono de dentro.
+   */
+  triggerLabel?: string
 }
 
 export function Popover({
@@ -20,6 +25,7 @@ export function Popover({
   content,
   placement = 'bottom-start',
   disabled = false,
+  triggerLabel,
 }: PopoverProps) {
   const id = useId()
   const rootRef = useRef<HTMLDivElement>(null)
@@ -41,6 +47,7 @@ export function Popover({
           }
         }}
         role="button"
+        aria-label={triggerLabel}
         tabIndex={disabled ? -1 : 0}
         aria-expanded={open}
         aria-controls={`${id}-popover`}

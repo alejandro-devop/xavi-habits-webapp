@@ -264,8 +264,10 @@
 .auroraDemoLabel {
   position: relative;
   z-index: 1;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   height: 100%;
   font-size: 0.8125rem;
   color: var(--color-text-secondary);

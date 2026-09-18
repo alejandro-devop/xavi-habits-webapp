@@ -1,1 +1,1 @@
-export { Drawer, type DrawerSide } from '@/shared/ui/Drawer/Drawer'
+export { Drawer, type DrawerSide, type DrawerSize } from '@/shared/ui/Drawer/Drawer'

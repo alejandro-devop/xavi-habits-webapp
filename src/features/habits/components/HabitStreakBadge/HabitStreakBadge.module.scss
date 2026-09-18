@@ -2,6 +2,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -14,6 +16,16 @@
 }
 
 .active {
-  color: var(--color-warning-text, #92400e);
-  background: var(--color-warning-subtle, #fef3c7);
+  // Sin --color-warning-text el ámbar quedaba marrón sobre fondo oscuro:
+  // mezclarlo con el color de texto lo mantiene legible en claro y en oscuro.
+  color: var(--color-warning-text, color-mix(in srgb, var(--color-warning) 65%, var(--color-text)));
+  background: var(--color-warning-subtle, color-mix(in srgb, var(--color-warning) 14%, transparent));
+}
+
+.flame {
+  flex-shrink: 0;
+}
+
+.value {
+  font-weight: 700;
 }

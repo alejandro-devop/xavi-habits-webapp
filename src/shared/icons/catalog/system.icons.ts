@@ -7,6 +7,7 @@ import {
   faCheck,
   faChevronRight,
   faCirclePlay,
+  faEllipsis,
   faEnvelope,
   faEye,
   faEyeSlash,
@@ -51,5 +52,6 @@ export const systemIcons = [
   { name: 'chevron-right', label: 'Chevron derecha', category: 'other', icon: faChevronRight, keywords: ['next', 'forward'], showInPicker: false },
   { name: 'calendar-week', label: 'Semana', category: 'productivity', icon: faCalendarWeek, keywords: ['rutina', 'semanal', 'schedule'], showInPicker: false },
   { name: 'circle-play', label: 'Reproducir', category: 'other', icon: faCirclePlay, keywords: ['start', 'activar'], showInPicker: false },
+  { name: 'ellipsis', label: 'Más opciones', category: 'other', icon: faEllipsis, keywords: ['menu', 'kebab', 'acciones', 'más'], showInPicker: false },
   { name: 'layer-group', label: 'Capas', category: 'other', icon: faLayerGroup, keywords: ['stack', 'grupo'], showInPicker: false },
 ] as const satisfies readonly AppIconEntry[]

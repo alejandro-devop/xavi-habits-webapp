@@ -220,6 +220,10 @@
   --input-focus-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14), var(--aura-well-inset);
 
   --form-label-font-family: var(--font-label);
+
+  // El --color-surface de Aura es casi transparente (0.45): sin este enganche
+  // el texto de la página se lee a través de los menús del Popover.
+  --popover-bg: var(--color-glass);
 }
 
 [data-theme='dark'] [data-ds='aura'] {

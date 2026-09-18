@@ -6,13 +6,17 @@ import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
 import styles from './CreateHabitMeasureStep.module.scss'
 
-type Props = { onCreated: (measureId: string) => void }
+type Props = {
+  onCreated: (measureId: string) => void
+  /** Nombre sugerido por quien abre el paso (p. ej. una plantilla). */
+  initialName?: string
+}
 
-export function CreateHabitMeasureStep({ onCreated }: Props) {
+export function CreateHabitMeasureStep({ onCreated, initialName = '' }: Props) {
   const { pop } = useModalStep()
   const createMutation = useCreateHabitMeasureMutation()
 
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialName)
   const [abbreviation, setAbbreviation] = useState('')
   const [nameError, setNameError] = useState<string | null>(null)
 

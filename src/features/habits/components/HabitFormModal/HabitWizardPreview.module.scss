@@ -1,0 +1,159 @@
+.label {
+  color: var(--color-text-muted);
+  font-family: var(--font-label, inherit);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6875rem;
+  padding: 0.8125rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: var(--aura-glass-1, var(--color-surface));
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.8125rem;
+  background: var(--color-glass);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--habit-preview-color, var(--color-primary)) 24%, transparent);
+  color: var(--habit-preview-color, var(--color-text));
+  font-size: 1rem;
+}
+
+.identity {
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.84375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0.125rem 0 0;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.65625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toggle {
+  flex: 0 0 auto;
+  width: 1.875rem;
+  height: 1.875rem;
+  margin-left: auto;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 50%;
+  background: var(--color-glass);
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day {
+  display: grid;
+  place-items: center;
+  height: 1.5rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text-muted);
+  font-family: var(--font-label, inherit);
+  font-size: 0.59375rem;
+}
+
+.note {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-glass) 55%, transparent);
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.71875rem;
+  line-height: 1.55;
+
+  strong {
+    color: var(--color-text);
+  }
+}
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4375rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  list-style: none;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.71875rem;
+}
+
+.checkDone {
+  color: var(--color-text);
+}
+
+.bullet {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text-muted);
+  font-size: 0.5625rem;
+  font-style: normal;
+}
+
+.bulletDone {
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
+// ── Tira compacta de móvil ──────────────────────────────────────────────────
+
+.compact {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1rem;
+  background: var(--aura-glass-1, var(--color-surface));
+}
+
+.compactCapsule {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6875rem;
+  font-size: 0.875rem;
+}

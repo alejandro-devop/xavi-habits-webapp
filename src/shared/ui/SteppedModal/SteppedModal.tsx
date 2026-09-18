@@ -58,7 +58,18 @@ export type SteppedModalProps = {
   description?: string
   children: ReactNode
   footer?: ReactNode
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  /**
+   * Ámbito del design system para el portal (p. ej. `'aura'`). El panel se
+   * monta en `document.body`, fuera del árbol que lleva `data-ds`, así que sin
+   * esto heredaría los tokens de `:root` en lugar de los del ámbito que lo abre.
+   */
+  ds?: string
+  /**
+   * En móvil el panel se ancla abajo como hoja inferior, hasta el 92% de alto.
+   * Opt-in: el resto de modales con pasos sigue centrado.
+   */
+  mobileSheet?: boolean
 }
 
 export function SteppedModal({
@@ -69,6 +80,8 @@ export function SteppedModal({
   children,
   footer,
   size = 'md',
+  ds,
+  mobileSheet = false,
 }: SteppedModalProps) {
   const titleId = useId()
   const descriptionId = useId()
@@ -128,7 +141,8 @@ export function SteppedModal({
       {open ? (
         <ModalStepContext.Provider value={{ push, pop }}>
           <motion.div
-            className={styles.overlay}
+            className={[styles.overlay, mobileSheet ? styles.overlaySheet : ''].join(' ')}
+            data-ds={ds}
             role="presentation"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -142,7 +156,9 @@ export function SteppedModal({
               aria-modal="true"
               aria-labelledby={titleId}
               aria-describedby={currentDescription ? descriptionId : undefined}
-              className={[styles.panel, styles[size]].join(' ')}
+              className={[styles.panel, styles[size], mobileSheet ? styles.panelSheet : ''].join(
+                ' ',
+              )}
               variants={prefersReducedMotion ? undefined : scaleIn}
               initial="hidden"
               animate="visible"

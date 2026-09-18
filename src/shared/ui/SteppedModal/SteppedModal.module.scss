@@ -1,5 +1,7 @@
 // Mirrors Modal.module.scss but adds step navigation styles
 
+@use '@/app/styles/tokens/breakpoints' as *;
+
 .overlay {
   position: fixed;
   inset: 0;
@@ -28,6 +30,25 @@
 .sm  { max-width: 24rem; }
 .md  { max-width: 32rem; }
 .lg  { max-width: 40rem; }
+.xl  { max-width: 56.25rem; }
+
+// ─── Hoja inferior en móvil (opt-in con `mobileSheet`) ───────────────────────
+
+.overlaySheet {
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    align-items: flex-end;
+    padding: 0;
+  }
+}
+
+.panelSheet {
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    max-height: 92vh;
+    border-bottom: none;
+    border-radius: 1.75rem 1.75rem 0 0;
+    padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom, 0px));
+  }
+}
 
 // ─── Header row (back button + title + close) ────────────────────────────────��
 

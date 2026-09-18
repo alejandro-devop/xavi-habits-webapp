@@ -7,13 +7,17 @@ import { IconPicker } from '@/shared/ui/IconPicker'
 import { Input } from '@/shared/ui/Input'
 import styles from './CreateHabitCategoryStep.module.scss'
 
-type Props = { onCreated: (categoryId: string) => void }
+type Props = {
+  onCreated: (categoryId: string) => void
+  /** Nombre sugerido por quien abre el paso (p. ej. una plantilla). */
+  initialName?: string
+}
 
-export function CreateHabitCategoryStep({ onCreated }: Props) {
+export function CreateHabitCategoryStep({ onCreated, initialName = '' }: Props) {
   const { pop } = useModalStep()
   const createMutation = useCreateHabitCategoryMutation()
 
-  const [name, setName] = useState('')
+  const [name, setName] = useState(initialName)
   const [icon, setIcon] = useState<string | null>(null)
   const [color, setColor] = useState<string | null>(null)
   const [nameError, setNameError] = useState<string | null>(null)

@@ -8,6 +8,7 @@ Fases pedidas y todavía sin render aprobado. El circuito no cambia: **render �
 | ✅ Publicada | **Fase 8 — Un catálogo de iconos que alcance** | `07-catalogo-iconos.spec.md` | — |
 | ✅ Publicada | **Fase 9 — El color del hábito viene puesto** | `08-color-inicial-habito.spec.md` | — |
 | ✅ Publicada | **Fase 10 — El panel del hábito** | `09-panel-habito.spec.md` | `assets/09-panel-habito.html` |
+| ✅ Publicada | **Fase 11 — Una app de hábitos, y nada más** | `10-solo-habitos.spec.md` | `assets/10-solo-habitos.html` |
 
 Se construyen **de una en una**: aunque tocan archivos distintos, cada constructor mide lint y tests contra una línea base, y dos a la vez se contaminan las medidas.
 
@@ -23,10 +24,11 @@ Las tres preguntas que el render dejaba abiertas, cerradas en la spec:
 
 - **Nada del área autenticada se ha probado en vivo.** Las fases 7, 8, 9 y 10 se verificaron en arneses aislados: ni yo ni los constructores introdujimos credenciales. Sin ver: el hito real en Mi Día, «Ahora no», Mi Persona con datos de verdad, el selector de iconos en el wizard, el paso 1 a 375 px, y el cableado de las dos consultas del panel con sus estados de carga y error.
 - **`docs/habits-implementation-plan.md` sigue documentando `HabitStatsBanner`** (líneas ~1336 y ~1420), que ya no existe.
-- **El bundle es un único chunk de 2 MB** y Vite avisa en cada build. El catálogo de iconos le sumó un 13 %. La palanca no es podar iconos: es sacar el `IconPicker` a un chunk perezoso.
-- **`HabitPurposeCard` y `HabitPurposeForm` quedaron huérfanos** al quitar el kanban de Mi Persona.
+- **El bundle sigue siendo un único chunk**, ahora de 1,1 MB (era 2,1). La fase 11 se llevó nueve dependencias; lo que queda por hacer es sacar el `IconPicker` a un chunk perezoso.
 - **`habit.category` no llega en la consulta de hábitos**, así que en Mi Persona las identidades se proponen solo por el nombre del hábito.
-- **La rueda de color del sistema sigue** en las categorías (`CreateHabitCategoryStep`, `HabitCategoryForm`) y en `features/activities`. La fase 9 la quitó solo de los hábitos, que era su alcance.
+- **La rueda de color del sistema sigue** en las categorías (`CreateHabitCategoryStep`, `HabitCategoryForm`). La fase 9 la quitó solo de los hábitos, que era su alcance.
+- **`features/settings` no está migrado a Aura.** Es la única pantalla que queda con la pinta vieja, y tiene su propio ámbito para que no herede los tokens.
+- **La portada pública (`/`)** sigue vendiendo una app que hace de todo.
 - **En oscuro, menta y ámbar** quedan por encima de la banda de luminosidad ideal (siguen legibles: el contraste pasa). Arreglarlo de verdad pide guardar el *nombre* del color en vez del hex, que es cambio de datos.
 
 ---

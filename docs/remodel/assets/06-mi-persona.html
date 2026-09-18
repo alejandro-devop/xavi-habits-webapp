@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mi Persona — la identidad se gana · propuesta Aura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --violet-soft:#f3eeff; --violet-text:#5b21b6;
+    --amber:#f59e0b; --amber-deep:#b45309;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-1:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.78);
+    --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+    --apple:#007aff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:10px 0 0;line-height:1.65;max-width:960px}
+  .note b{color:#334155}
+  .bad{color:#93000a}
+  .good{color:#065f46}
+
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(120px)}
+  .o1{width:50%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-22%;left:6%}
+  .o2{width:46%;aspect-ratio:1;background:rgba(210,187,255,.34);top:4%;right:-14%}
+  .o3{width:55%;aspect-ratio:1;background:rgba(224,242,254,.8);bottom:-30%;left:24%}
+  .shell{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
+  .inner{padding:24px 26px 30px;display:flex;flex-direction:column;gap:18px}
+
+  h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.2}
+  .eyebrow{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text);margin:0 0 6px}
+  .eyebrow.v{color:var(--violet-text)}
+  .lead{font-family:'Inter',sans-serif;font-size:13.5px;color:var(--ink-soft);margin:8px 0 0;line-height:1.6;max-width:620px}
+  .sec{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-dim);margin:6px 0 -6px}
+
+  .card{position:relative;overflow:hidden;padding:18px;border-radius:24px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:20px;background:var(--glass-1);border:1px solid var(--edge);backdrop-filter:blur(18px)}
+  .capi{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.75);border:1px solid var(--edge);font-size:18px;flex:0 0 auto}
+  .cta{display:inline-flex;align-items:center;gap:7px;border:0;padding:10px 18px;border-radius:999px;cursor:pointer;color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;background:linear-gradient(135deg,var(--mint),var(--mint-deep));box-shadow:0 8px 24px -4px rgba(16,185,129,.42)}
+  .cta.v{background:linear-gradient(135deg,#8b5cf6,var(--violet));box-shadow:0 8px 24px -4px rgba(124,58,237,.42)}
+  .ghost{display:inline-flex;align-items:center;gap:7px;padding:10px 16px;border-radius:999px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);background:rgba(255,255,255,.5);border:1px solid var(--edge)}
+  .link{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--violet-text);text-decoration:none;border-bottom:1px solid rgba(124,58,237,.3);cursor:pointer}
+
+  /* ---------- el retrato ---------- */
+  .portrait{padding:24px 26px;border-radius:26px;background:linear-gradient(135deg,rgba(255,255,255,.86),rgba(243,238,255,.7));border:1px solid var(--edge);backdrop-filter:blur(22px);box-shadow:var(--sh-1)}
+  .portrait p{margin:0;font-size:21px;line-height:1.55;font-weight:500;letter-spacing:-.01em}
+  .portrait b{font-weight:700;background:linear-gradient(180deg,transparent 62%,rgba(16,185,129,.28) 62%);padding:0 2px}
+  .portrait .src{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin-top:14px;display:flex;align-items:center;gap:7px}
+
+  /* ---------- rasgos ---------- */
+  .traits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .trait{padding:17px;border-radius:22px;background:var(--glass-2);border:1px solid var(--edge);backdrop-filter:blur(20px);box-shadow:var(--sh-1);display:flex;flex-direction:column;gap:9px;min-height:172px}
+  .trait .tag{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;align-self:flex-start}
+  .tag.won{background:rgba(16,185,129,.14);color:var(--mint-text)}
+  .tag.prop{background:rgba(124,58,237,.14);color:var(--violet-text)}
+  .tag.way{background:rgba(15,23,42,.06);color:var(--ink-soft)}
+  .trait h3{margin:0;font-size:17px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+  .ev{font-family:'Inter',sans-serif;font-size:12px;color:var(--ink-soft);line-height:1.55;margin:0}
+  .ev em{font-style:normal;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+  .trait footer{margin-top:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .chip{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);background:rgba(255,255,255,.7);border:1px solid var(--edge);padding:5px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:5px}
+  .mini{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;padding:7px 13px;border-radius:999px;cursor:pointer;border:1px solid var(--edge)}
+  .mini.solid{background:linear-gradient(135deg,#8b5cf6,var(--violet));color:#fff;border:0;box-shadow:0 6px 16px -6px rgba(124,58,237,.5)}
+  .mini.flat{background:rgba(255,255,255,.55);color:var(--ink-soft)}
+  .trait.proposed{background:linear-gradient(135deg,rgba(243,238,255,.9),rgba(255,255,255,.8));border-color:rgba(124,58,237,.22);box-shadow:0 14px 34px -16px rgba(124,58,237,.45)}
+  .trait.wayto{background:rgba(255,255,255,.45)}
+  .bar{height:7px;border-radius:999px;background:rgba(15,23,42,.08);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),var(--mint-deep))}
+
+  /* ---------- compromisos ---------- */
+  .commit{display:flex;align-items:center;gap:13px;padding:13px 16px;border-radius:20px;background:var(--glass-1);border:1px solid var(--edge)}
+  .commit p{margin:0;font-size:14px;line-height:1.5}
+  .commit p b{font-weight:700;color:var(--violet-text)}
+  .commit .hint{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);margin-top:3px}
+
+  /* ---------- el hito ---------- */
+  .moment{position:relative;overflow:hidden;padding:26px 28px;border-radius:26px;border:1px solid rgba(124,58,237,.22);
+          background:linear-gradient(135deg,rgba(243,238,255,.95),rgba(255,255,255,.88));box-shadow:0 22px 50px -22px rgba(124,58,237,.5)}
+  .moment .spark{position:absolute;width:210px;height:210px;border-radius:50%;filter:blur(70px);background:rgba(167,139,250,.45);top:-90px;right:-40px;pointer-events:none}
+  .moment h2{margin:0;font-size:24px;font-weight:700;letter-spacing:-.025em;line-height:1.3;position:relative}
+  .moment .ask{font-family:'Inter',sans-serif;font-size:14px;color:var(--ink-soft);line-height:1.6;margin:11px 0 0;max-width:560px;position:relative}
+  .opts{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;position:relative}
+  .opt{padding:13px 20px;border-radius:999px;background:#fff;border:1.5px solid rgba(124,58,237,.2);font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px -10px rgba(124,58,237,.5)}
+  .opt:hover{border-color:var(--violet)}
+  .opt.pick{background:linear-gradient(135deg,#8b5cf6,var(--violet));color:#fff;border-color:transparent}
+  .escape{display:flex;gap:16px;align-items:center;margin-top:16px;position:relative}
+  .escape a{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid rgba(71,85,105,.25);cursor:pointer}
+  .micro{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin-top:14px;position:relative}
+
+  .done{padding:22px 26px;border-radius:26px;border:1px solid rgba(16,185,129,.22);background:linear-gradient(135deg,rgba(209,250,229,.75),rgba(255,255,255,.9));box-shadow:0 18px 40px -20px rgba(16,185,129,.45)}
+  .done h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .done p{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-soft);margin:9px 0 0;line-height:1.6}
+  .preview{margin-top:14px;padding:13px 16px;border-radius:18px;background:rgba(255,255,255,.75);border:1px solid var(--edge);font-size:15px;font-weight:600}
+
+  /* ---------- dos columnas de la regla ---------- */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .ruleframe{border-radius:24px;overflow:hidden;padding:20px;border:1px solid var(--edge);background:var(--glass-2);box-shadow:var(--sh-1)}
+  .ruleframe.no{border-color:rgba(147,0,10,.2);background:linear-gradient(135deg,rgba(254,226,226,.55),rgba(255,255,255,.85))}
+  .ruleframe.si{border-color:rgba(16,185,129,.22);background:linear-gradient(135deg,rgba(209,250,229,.45),rgba(255,255,255,.85))}
+  .rhead{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0 0 13px;display:flex;align-items:center;gap:7px}
+
+  /* ---------- móvil ---------- */
+  .phone{width:375px;height:660px;border-radius:38px;padding:10px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6);flex:0 0 auto}
+  .screen{position:relative;overflow:hidden;width:100%;height:100%;border-radius:30px;background:var(--canvas);isolation:isolate}
+  .msheet{position:absolute;left:0;right:0;bottom:0;border-radius:28px 28px 30px 30px;padding:22px 20px 26px;
+          background:linear-gradient(180deg,rgba(243,238,255,.98),rgba(255,255,255,.99));border-top:1px solid rgba(124,58,237,.18);box-shadow:0 -18px 44px -20px rgba(124,58,237,.5);z-index:3}
+  .grab{width:38px;height:4px;border-radius:999px;background:rgba(15,23,42,.14);margin:0 auto 16px}
+  .msheet h2{margin:0;font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1.3}
+  .msheet .ask{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-soft);line-height:1.55;margin:10px 0 0}
+  .mopts{display:flex;flex-direction:column;gap:9px;margin-top:17px}
+  .mopt{padding:14px 16px;border-radius:18px;background:#fff;border:1.5px solid rgba(124,58,237,.18);font-size:15px;font-weight:600;text-align:center}
+  .mdim{position:absolute;inset:0;background:rgba(15,23,42,.28);z-index:2}
+  .mtop{padding:18px 18px 0;position:relative;z-index:1}
+  .flexrow{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+
+  /* ---------- versión "antes" ---------- */
+  .old{background:#f5f5f7}
+  .old .aurora{display:none}
+  .kan{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .kcol{background:#fff;border:1px solid rgba(15,23,42,.1);border-radius:12px;padding:14px;min-height:230px}
+  .kcol h3{margin:0 0 12px;font-size:13px;font-weight:600;display:flex;justify-content:space-between;color:#334155}
+  .kcard{background:#f5f5f7;border:1px solid rgba(15,23,42,.08);border-radius:10px;padding:11px 12px;font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:8px;color:#334155}
+  .kempty{font-family:'Inter',sans-serif;font-size:12px;color:#94a3b8;text-align:center;padding:26px 0;border:1px dashed rgba(15,23,42,.14);border-radius:10px}
+  .oldbtn{background:var(--apple);color:#fff;border:0;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif}
+
+  /* ---------- oscuro ---------- */
+  .dark{--canvas:#0b1220;--ink:#eef2ff;--ink-soft:#a8b3c7;--ink-dim:#64748b;--mint-text:#4edea3;--violet-text:#c4b5fd;
+        --glass-1:rgba(255,255,255,.055);--glass-2:rgba(22,30,47,.7);--edge:rgba(255,255,255,.11)}
+  .dark .o1{background:rgba(16,185,129,.2)} .dark .o2{background:rgba(124,58,237,.26)} .dark .o3{background:rgba(30,58,95,.7)}
+  .dark .portrait{background:linear-gradient(135deg,rgba(30,41,59,.8),rgba(49,32,86,.6))}
+  .dark .portrait b{background:linear-gradient(180deg,transparent 62%,rgba(16,185,129,.34) 62%)}
+  .dark .trait.proposed{background:linear-gradient(135deg,rgba(60,42,99,.72),rgba(22,30,47,.8));border-color:rgba(167,139,250,.28)}
+  .dark .trait.wayto{background:rgba(255,255,255,.04)}
+  .dark .chip,.dark .capi,.dark .mini.flat{background:rgba(255,255,255,.07)}
+  .dark .bar{background:rgba(255,255,255,.1)}
+  .dark .moment{background:linear-gradient(135deg,rgba(60,42,99,.8),rgba(22,30,47,.85));border-color:rgba(167,139,250,.26)}
+  .dark .opt{background:rgba(255,255,255,.07);color:var(--ink);border-color:rgba(167,139,250,.28)}
+</style>
+</head>
+<body>
+<div class="page">
+
+<p class="caption">1 · Así es hoy — un tablero que hay que administrar</p>
+<div class="frame old" style="padding:22px">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <h1 style="font-size:20px">Mi Persona Ideal</h1>
+      <p class="lead" style="margin-top:4px">Define quién quieres ser y qué quieres evitar.</p>
+    </div>
+    <button class="oldbtn">Nuevo propósito</button>
+  </div>
+  <div class="kan">
+    <div class="kcol"><h3>Sin asignar <span style="color:#94a3b8">0</span></h3><div class="kempty">Arrastra propósitos aquí</div></div>
+    <div class="kcol"><h3>Lo que quiero <span style="color:#94a3b8">2</span></h3>
+      <div class="kcard">🧘 Ser una persona serena</div>
+      <div class="kcard">📚 Ser alguien culto</div>
+    </div>
+    <div class="kcol"><h3>Lo que no quiero <span style="color:#94a3b8">0</span></h3><div class="kempty">Arrastra propósitos aquí</div></div>
+  </div>
+</div>
+<p class="note"><b>Por qué no funcionó.</b> Se pide al crear el hábito, que es el momento administrativo con la paciencia ya gastada. Es una <b>hoja en blanco</b>: redactar en frío quién quieres ser es caro; reconocerte en algo que te proponen es barato. Y una vez escrito <b class="bad">no vuelve a aparecer nunca</b> — así que la conducta se extingue. El arrastre entre columnas es trabajo de oficina: ordena datos, no cambia a nadie.</p>
+
+<p class="caption">2 · El hito — donde de verdad ocurre la fase 7</p>
+<div class="frame" style="padding:26px">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="shell">
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="row" style="opacity:.75">
+        <div class="capi">🧘</div>
+        <div><div style="font-size:14px;font-weight:600">Meditar</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:var(--ink-soft)">15 min · completado hace un momento</div></div>
+        <div style="margin-left:auto;width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--mint),var(--mint-deep));display:grid;place-items:center;color:#fff">✓</div>
+      </div>
+
+      <div class="moment">
+        <div class="spark"></div>
+        <p class="eyebrow v" style="position:relative">Séptimo día seguido</p>
+        <h2>Siete mañanas seguidas meditando.<br />Eso ya no es intención: es evidencia.</h2>
+        <p class="ask">Alguien que hace esto siete días seguidos se está volviendo algo. <b>¿Cuál de estas te suena a ti?</b></p>
+        <div class="opts">
+          <button class="opt">Alguien sereno</button>
+          <button class="opt">Alguien que se cuida</button>
+          <button class="opt">Alguien que empieza el día en calma</button>
+        </div>
+        <div class="escape">
+          <a>✏️ Escribir la mía</a>
+          <a>Ahora no</a>
+        </div>
+        <p class="micro">Un toque y listo. Puedes cambiarlo o quitarlo cuando quieras — esto no es un contrato.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+<p class="note"><b>Esta es la inversión completa.</b> No se pregunta al crear el hábito, se pregunta <b>cuando ya hay pruebas</b> y en el momento de mayor orgullo: justo después de marcarlo. No es una hoja en blanco, son <b>tres frases para reconocerse</b> — la app las propone a partir del hábito, la racha y el tipo de meta. «Ahora no» no penaliza nada y vuelve a ofrecerse en el siguiente hito.</p>
+<p class="note"><b>Los cuatro hitos que disparan la pregunta:</b> el 7º día seguido · un récord de racha roto · el primer día del mes («llevas 3 meses con esto») · la vuelta después de abandonar («volviste, eso también dice algo»). Nunca dos hitos el mismo día, y como mucho <b>uno por semana</b>: si esto aparece a diario deja de ser un hito y pasa a ser ruido.</p>
+
+<p class="caption">3 · Al confirmar — y dónde reaparece después</p>
+<div class="flexrow">
+  <div class="frame" style="flex:1;min-width:420px;padding:24px">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o3"></div></div>
+    <div class="shell"><div class="done">
+      <h2>✓ Guardado: alguien sereno</h2>
+      <p>Lo escribiste tú al reconocerlo, no al inventarlo. A partir de mañana lo verás <b>al empezar</b> y <b>al cumplir</b>, en una sola línea:</p>
+      <div class="preview">🧘 Un día más siendo <b style="color:var(--violet-text)">alguien sereno</b>.</div>
+      <p style="margin-top:12px">Y vivirá en <b>Mi Persona</b> con la prueba que lo ganó: 7 días seguidos, del 11 al 17 de septiembre.</p>
+    </div></div>
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div></div>
+      <div class="mtop">
+        <p class="eyebrow">Jueves 18</p>
+        <h1 style="font-size:22px">Mi Día</h1>
+        <div class="row" style="margin-top:14px"><div class="capi">🧘</div>
+          <div><div style="font-size:14px;font-weight:600">Meditar</div>
+          <div style="font-family:Inter,sans-serif;font-size:11px;color:var(--ink-soft)">15 min</div></div>
+          <div style="margin-left:auto;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--mint),var(--mint-deep));display:grid;place-items:center;color:#fff">✓</div>
+        </div>
+      </div>
+      <div class="mdim"></div>
+      <div class="msheet">
+        <div class="grab"></div>
+        <p class="eyebrow v">Séptimo día seguido</p>
+        <h2>Siete mañanas seguidas meditando.</h2>
+        <p class="ask">Eso ya no es intención, es evidencia. ¿Cuál de estas te suena a ti?</p>
+        <div class="mopts">
+          <div class="mopt">Alguien sereno</div>
+          <div class="mopt">Alguien que se cuida</div>
+          <div class="mopt">Alguien que empieza en calma</div>
+        </div>
+        <div class="escape" style="justify-content:center;margin-top:15px"><a>✏️ Escribir la mía</a><a>Ahora no</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="note">En móvil es una <b>hoja inferior</b>, no un modal a pantalla completa: se descarta deslizando hacia abajo, que es la salida más barata que existe. Las opciones pasan a columna para que se puedan tocar con el pulgar.</p>
+
+<p class="caption">4 · Mi Persona — el espejo, no el formulario</p>
+<div class="frame">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="shell"><div class="inner">
+
+    <div>
+      <p class="eyebrow">Mi Persona</p>
+      <h1>Esto es lo que dicen tus últimos 90 días</h1>
+      <p class="lead">No lo escribiste tú en un formulario: lo escribieron tus registros. Confirma lo que te suene verdad y descarta lo que no.</p>
+    </div>
+
+    <div class="portrait">
+      <p>Alguien <b>sereno</b> que medita casi todas las mañanas, que <b>lee</b> antes de dormir y que lleva <b>18 días</b> sin tocar el móvil al despertar.</p>
+      <div class="src">📊 Compuesto con 214 registros entre el 20 de junio y el 18 de septiembre</div>
+    </div>
+
+    <p class="sec">Rasgos ganados</p>
+    <div class="traits">
+      <div class="trait">
+        <span class="tag won">✓ Ganado</span>
+        <h3>🧘 Alguien sereno</h3>
+        <p class="ev">Lo ganaste el <em>12 de agosto</em>, al séptimo día seguido. Desde entonces: <em>34 días</em> meditando y un récord de <em>21</em>.</p>
+        <footer><span class="chip">🧘 Meditar</span><span class="chip">racha 12</span></footer>
+      </div>
+
+      <div class="trait proposed">
+        <span class="tag prop">✦ Propuesto</span>
+        <h3>💪 Alguien fuerte</h3>
+        <p class="ev">Llevas <em>7 entrenamientos</em> seguidos y rompiste tu récord anterior de 5. La app te lo propone; tú decides si es verdad.</p>
+        <footer><button class="mini solid">Sí, soy eso</button><button class="mini flat">No me suena</button></footer>
+      </div>
+
+      <div class="trait wayto">
+        <span class="tag way">◷ En camino</span>
+        <h3>🌙 Alguien que duerme a su hora</h3>
+        <p class="ev">Cuatro de los últimos siete días. <em>Faltan 3</em> para que esto se convierta en un rasgo que puedas reclamar.</p>
+        <div class="bar"><i style="width:57%"></i></div>
+        <footer><span class="chip">🌙 Dormir a mi hora</span></footer>
+      </div>
+    </div>
+
+    <p class="sec">Mis compromisos</p>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div class="commit">
+        <div class="capi">🧘</div>
+        <div style="flex:1">
+          <p>Cuando <b>me levante</b>, haré <b>15 minutos de meditación</b> en <b>el salón</b>.</p>
+          <div class="hint">Cumplido 34 de los últimos 40 días</div>
+        </div>
+        <a class="link">Editar</a>
+      </div>
+      <div class="commit">
+        <div class="capi">💪</div>
+        <div style="flex:1">
+          <p>Cuando <b>cierre el portátil</b>, haré <b>30 minutos de gimnasio</b> en <b>el garaje</b>.</p>
+          <div class="hint">Cumplido 7 de los últimos 7 días</div>
+        </div>
+        <a class="link">Editar</a>
+      </div>
+      <div class="commit" style="opacity:.7">
+        <div class="capi">📚</div>
+        <div style="flex:1">
+          <p style="color:var(--ink-soft);font-weight:500">Leer todavía no tiene un momento fijo del día.</p>
+          <div class="hint">Los hábitos con un ancla concreta se cumplen mucho más</div>
+        </div>
+        <a class="link">Ponerle uno</a>
+      </div>
+    </div>
+
+    <p class="sec">Lo que dejo atrás</p>
+    <div class="row">
+      <div class="capi">📱</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600">Redes por la mañana</div>
+        <div style="font-family:Inter,sans-serif;font-size:11.5px;color:var(--ink-soft)"><b style="color:var(--ink)">18 días</b> sin caer · tu mejor marca fueron 23</div>
+      </div>
+      <span class="chip">🚫 Evitar</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;padding-top:6px">
+      <span style="font-family:Inter,sans-serif;font-size:12px;color:var(--ink-dim)">Tienes 4 propósitos que escribiste antes y ningún hábito ha llegado a ganar.</span>
+      <a class="link">Verlos</a>
+    </div>
+
+  </div></div>
+</div>
+<p class="note"><b>Qué desaparece:</b> las tres columnas, el arrastre y el botón «Nuevo propósito» como acción principal. Escribir un propósito a mano sigue siendo posible, pero deja de ser la puerta de entrada y pasa a ser la salida de emergencia. <b>Qué aparece:</b> el retrato compuesto con los registros, los rasgos con <b>la prueba que los ganó</b>, los compromisos de la fase 6 en un sitio donde se pueden releer, y el «en camino» que convierte la pantalla en algo que da ganas de volver a mirar.</p>
+<p class="note"><b>Sin tocar el backend.</b> Un rasgo ganado es un <code>HabitPurpose</code> con <code>placement: 'want'</code> enlazado por <code>habit.purposeId</code>; lo que dejas atrás es <code>'avoid'</code>; y los propósitos huérfanos son el <code>'pool'</code>, que deja de tener columna propia y pasa a esa línea discreta del final. La fecha y la prueba que lo ganaron van en <code>description</code> con un formato estable, igual que hicimos con la frase de intención en la fase 6.</p>
+
+<p class="caption">5 · La regla innegociable — al fallar, ni una palabra de identidad</p>
+<div class="duo">
+  <div class="ruleframe no">
+    <p class="rhead bad">✕ Lo que no hacemos nunca</p>
+    <div class="row" style="background:rgba(255,255,255,.7)">
+      <div class="capi">🧘</div>
+      <div><div style="font-size:14px;font-weight:600">Meditar</div>
+        <div style="font-family:Inter,sans-serif;font-size:11.5px;color:#93000a">Hoy no meditaste. Querías ser <b>alguien sereno</b>…</div></div>
+    </div>
+    <p class="note" style="margin-top:12px">Recordarle a alguien su identidad justo cuando acaba de fallar convierte el propósito en <b class="bad">una vara de medir</b>. La culpa es el mejor predictor de abandono que hay: el usuario no deja el hábito, deja la app.</p>
+  </div>
+  <div class="ruleframe si">
+    <p class="rhead good">✓ Lo que sí</p>
+    <div class="row" style="background:rgba(255,255,255,.7)">
+      <div class="capi">🧘</div>
+      <div><div style="font-size:14px;font-weight:600">Meditar</div>
+        <div style="font-family:Inter,sans-serif;font-size:11.5px;color:var(--ink-soft)">Un mal día no borra 34. Te queda <b style="color:var(--ink)">1 salvavidas</b> esta semana.</div></div>
+      <div style="margin-left:auto"><span class="chip">🛟 Usarlo</span></div>
+    </div>
+    <p class="note" style="margin-top:12px">El día fallado habla de <b>la racha</b>, nunca de quién eres. La identidad aparece <b>al empezar</b> y <b>al lograr</b> — en los dos momentos en que empuja — y calla en el tercero.</p>
+  </div>
+</div>
+
+<p class="caption">6 · Tema oscuro</p>
+<div class="frame dark">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="shell"><div class="inner">
+    <div>
+      <p class="eyebrow">Mi Persona</p>
+      <h1>Esto es lo que dicen tus últimos 90 días</h1>
+    </div>
+    <div class="portrait">
+      <p>Alguien <b>sereno</b> que medita casi todas las mañanas, que <b>lee</b> antes de dormir y que lleva <b>18 días</b> sin tocar el móvil al despertar.</p>
+      <div class="src">📊 Compuesto con 214 registros entre el 20 de junio y el 18 de septiembre</div>
+    </div>
+    <div class="traits">
+      <div class="trait">
+        <span class="tag won">✓ Ganado</span>
+        <h3>🧘 Alguien sereno</h3>
+        <p class="ev">Lo ganaste el <em>12 de agosto</em>, al séptimo día seguido. <em>34 días</em> meditando.</p>
+        <footer><span class="chip">🧘 Meditar</span></footer>
+      </div>
+      <div class="trait proposed">
+        <span class="tag prop">✦ Propuesto</span>
+        <h3>💪 Alguien fuerte</h3>
+        <p class="ev">Llevas <em>7 entrenamientos</em> seguidos y rompiste tu récord de 5.</p>
+        <footer><button class="mini solid">Sí, soy eso</button><button class="mini flat">No me suena</button></footer>
+      </div>
+      <div class="trait wayto">
+        <span class="tag way">◷ En camino</span>
+        <h3>🌙 Alguien que duerme a su hora</h3>
+        <p class="ev">Cuatro de los últimos siete días. <em>Faltan 3</em>.</p>
+        <div class="bar"><i style="width:57%"></i></div>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<p class="note" style="margin-top:34px"><b>Lo que hay que decidir antes de escribir la spec:</b> (a) si el hito se pregunta <b>dentro de Mi Día</b>, justo bajo el hábito recién marcado, o como hoja/modal que interrumpe; (b) si los rasgos se proponen <b>por hábito</b> (uno por hábito, que es lo que soporta <code>purposeId</code> hoy) o si un rasgo puede sostenerse en varios hábitos, que necesitaría backend; (c) si «Mi Persona» conserva la creación manual de propósitos o se retira del todo en el piloto.</p>
+
+</div>
+</body>
+</html>

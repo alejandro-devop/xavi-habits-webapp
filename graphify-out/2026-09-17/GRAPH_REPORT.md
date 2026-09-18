@@ -1,16 +1,16 @@
 # Graph Report - xavi-habits-webapp  (2026-09-17)
 
 ## Corpus Check
-- 767 files · ~197,183 words
+- 778 files · ~204,037 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3359 nodes · 3830 edges · 538 communities (411 shown, 127 thin omitted)
-- Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 688 edges (avg confidence: 0.8)
+- 3425 nodes · 3910 edges · 557 communities (427 shown, 130 thin omitted)
+- Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 702 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `633dadf3`
+- Built from commit: `1f528133`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -352,11 +352,29 @@
 - [[_COMMUNITY_Community 528|Community 528]]
 - [[_COMMUNITY_Community 529|Community 529]]
 - [[_COMMUNITY_Community 530|Community 530]]
+- [[_COMMUNITY_Community 538|Community 538]]
+- [[_COMMUNITY_Community 539|Community 539]]
+- [[_COMMUNITY_Community 540|Community 540]]
+- [[_COMMUNITY_Community 541|Community 541]]
+- [[_COMMUNITY_Community 542|Community 542]]
+- [[_COMMUNITY_Community 543|Community 543]]
+- [[_COMMUNITY_Community 544|Community 544]]
+- [[_COMMUNITY_Community 545|Community 545]]
+- [[_COMMUNITY_Community 546|Community 546]]
+- [[_COMMUNITY_Community 547|Community 547]]
+- [[_COMMUNITY_Community 548|Community 548]]
+- [[_COMMUNITY_Community 549|Community 549]]
+- [[_COMMUNITY_Community 550|Community 550]]
+- [[_COMMUNITY_Community 551|Community 551]]
+- [[_COMMUNITY_Community 553|Community 553]]
+- [[_COMMUNITY_Community 554|Community 554]]
+- [[_COMMUNITY_Community 555|Community 555]]
+- [[_COMMUNITY_Community 556|Community 556]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useToast()` - 95 edges
 2. `useAuthStore` - 35 edges
-3. `useConfirmDialog()` - 31 edges
+3. `useConfirmDialog()` - 32 edges
 4. `useAuthBootstrap()` - 26 edges
 5. `StandupPage()` - 21 edges
 6. `useModalStep()` - 21 edges
@@ -366,29 +384,29 @@
 10. `ActivityTrackingPage()` - 17 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `getHourLabel()` --calls--> `normalizeTimeForDisplay()`  [INFERRED]
-  src/features/activities/components/DayStoryWidget/DayStoryWidget.tsx → src/features/activities/utils/activity-time.utils.ts
+- `ActivityPickerStep()` --calls--> `useModalStep()`  [INFERRED]
+  src/features/activities/components/FinishActivityModal/FinishActivityModal.tsx → src/shared/ui/SteppedModal/SteppedModal.tsx
+- `SuggestionCard()` --calls--> `formatEventTime()`  [INFERRED]
+  src/features/activities/components/FinishActivityModal/FinishActivityModal.tsx → src/features/weekly-routine/utils/planner.utils.ts
+- `WhatsNextStep()` --calls--> `useModalStep()`  [INFERRED]
+  src/features/activities/components/FinishActivityModal/FinishActivityModal.tsx → src/shared/ui/SteppedModal/SteppedModal.tsx
+- `WidgetBar()` --calls--> `useElapsedTimer()`  [INFERRED]
+  src/features/activities/components/RunningActivityWidget/RunningActivityWidget.tsx → src/features/activities/hooks/useElapsedTimer.ts
 - `TodoPickerStep()` --calls--> `useModalStep()`  [INFERRED]
   src/features/activities/components/StartActivityModal/StartActivityModal.tsx → src/shared/ui/SteppedModal/SteppedModal.tsx
-- `StartActivityRootStep()` --calls--> `useModalStep()`  [INFERRED]
-  src/features/activities/components/StartActivityModal/StartActivityModal.tsx → src/shared/ui/SteppedModal/SteppedModal.tsx
-- `useCreateActivityCategoryMutation()` --calls--> `useToast()`  [INFERRED]
-  src/features/activities/hooks/useActivityCategories.ts → src/shared/ui/Toast/useToast.ts
-- `useUpdateActivityCategoryMutation()` --calls--> `useToast()`  [INFERRED]
-  src/features/activities/hooks/useActivityCategories.ts → src/shared/ui/Toast/useToast.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (538 total, 127 thin omitted)
+## Communities (557 total, 130 thin omitted)
 
 ### Community 0 - "Weeklyplanner Planner"
-Cohesion: 0.13
-Nodes (26): ActivityTimelineUpcomingEntry(), Props, SuggestionCard(), RoutineEventModal(), RoutineEventRootStep(), ALL_DAYS, buildDurationOptions(), buildStartTimeOptions() (+18 more)
+Cohesion: 0.18
+Nodes (16): RoutineEventModal(), ALL_DAYS, buildDurationOptions(), clampEventDuration(), DAY_LABELS, DAY_LABELS_FULL, getBlockIndex(), getRowStart() (+8 more)
 
 ### Community 1 - "Habitcontributiongrid Usehabits"
-Cohesion: 0.18
-Nodes (15): HabitFormModal(), useCreateHabitMutation(), useDeleteHabitMutation(), useHabitCategoriesQuery(), useHabitMeasuresQuery(), useHabitMyDayQuery(), useHabitQuery(), useHabitQueryGuard() (+7 more)
+Cohesion: 0.13
+Nodes (20): HabitFormModal(), useCreateHabitMutation(), useDeleteHabitMutation(), useHabitCategoriesQuery(), useHabitFollowUpsInDatesQuery(), useHabitMeasuresQuery(), useHabitMyDayQuery(), useHabitQuery() (+12 more)
 
 ### Community 2 - "Sections Commandpaletteprovider"
 Cohesion: 0.06
@@ -399,16 +417,16 @@ Cohesion: 0.22
 Nodes (4): ActivityCategoriesPanel(), FormMode, emptyCategoryFormValues(), formValuesToInput()
 
 ### Community 4 - "Finishactivitymodal Startactivitymodal"
-Cohesion: 0.14
-Nodes (15): ActivityPickerStep(), ActivityPickerStepProps, FinishActivityModal(), FinishActivityModalProps, FinishActivityRootStep(), RootStepProps, WhatsNextStep(), WhatsNextStepProps (+7 more)
+Cohesion: 0.16
+Nodes (12): CreateCategoryStep(), CreateCategoryStepProps, FinishActivityRootStep(), HABIT_TYPE_OPTIONS, HabitFormModalProps, NewCategoryButton(), NewMeasureButton(), NewPurposeButton() (+4 more)
 
 ### Community 5 - "Activity Metrics"
-Cohesion: 0.19
-Nodes (19): DayUsageWidget(), DayUsageWidgetProps, DayUsageMetrics, DayUsageMetricsOptions, formatDayEndLabel(), getDayElapsedPercentage(), getDayEndDateTime(), getDayStartDateTime() (+11 more)
+Cohesion: 0.13
+Nodes (23): DayRemainingWidget(), DayRemainingWidgetProps, formatDayStartLabel(), DayUsageWidget(), DayUsageWidgetProps, useRemainingDayTimer(), DayUsageMetrics, DayUsageMetricsOptions (+15 more)
 
 ### Community 6 - "Activity Time"
-Cohesion: 0.13
-Nodes (27): formatDurationFromMs(), emptyEditFollowUpFormValues(), finishFormFromSession(), buildFreeSlotId(), buildTimelineItems(), calculateDurationMinutes(), canNavigateToNextMonth(), formatElapsedHHMMSS() (+19 more)
+Cohesion: 0.14
+Nodes (26): finishFormFromSession(), buildFreeSlotId(), buildTimelineItems(), calculateDurationMinutes(), calculateEndTime(), canNavigateToNextMonth(), formatElapsedHHMMSS(), getCurrentLocalTime() (+18 more)
 
 ### Community 8 - "Habit Routes"
 Cohesion: 0.10
@@ -419,8 +437,8 @@ Cohesion: 0.09
 Nodes (17): ActivityCard(), ActivityCardProps, ActivityPickerField(), ActivityPickerFieldProps, ActivityTimeTrackingPlaceholder(), ActivityTimeTrackingPlaceholderProps, CreateActivityStep(), CreateActivityStepProps (+9 more)
 
 ### Community 10 - "Feedback Apperrorboundary"
-Cohesion: 0.06
-Nodes (20): renderIndicator(), AppErrorBoundary, AppErrorBoundaryProps, AppErrorBoundaryState, ErrorFallback(), ErrorFallbackProps, PageLoader(), PageLoaderProps (+12 more)
+Cohesion: 0.05
+Nodes (24): renderIndicator(), AppErrorBoundary, AppErrorBoundaryProps, AppErrorBoundaryState, ErrorFallback(), ErrorFallbackProps, PageLoader(), PageLoaderProps (+16 more)
 
 ### Community 11 - "Weekly Routine"
 Cohesion: 0.08
@@ -431,8 +449,8 @@ Cohesion: 0.08
 Nodes (25): DayOfWeek, ObjectiveAddInput, ObjectiveEditInput, ObjectiveStatus, Project, ProjectAddInput, ProjectEditInput, ProjectMember (+17 more)
 
 ### Community 13 - "Usetodos Todossettings"
-Cohesion: 0.06
-Nodes (29): DailyPoolView(), QC, useAddSubtaskMutation(), useAuthReady(), useCreateTodoDailyTemplateMutation(), useEditSubtaskMutation(), useRemoveSubtaskMutation(), useRemoveTodoFolderMutation() (+21 more)
+Cohesion: 0.12
+Nodes (10): QC, useCreateTodoDailyTemplateMutation(), useRemoveTodoFolderMutation(), useRemoveTodoTagMutation(), useUpdateTodoDailyTemplateMutation(), useUpdateTodoFolderMutation(), useUpdateTodoTagMutation(), FolderRow() (+2 more)
 
 ### Community 14 - "Rest Auth"
 Cohesion: 0.13
@@ -446,29 +464,25 @@ Nodes (13): useAddWeeklyRoutineActivitiesBatchMutation(), useAddWeeklyRoutineAct
 Cohesion: 0.09
 Nodes (14): ApiClientError, ApiNetworkError, ApiTimeoutError, AUTH_ERROR_MESSAGES, AuthRequiredError, classifyGraphQLErrors(), extractValidationErrors(), GraphQLClientError (+6 more)
 
-### Community 17 - "Todos Addsubtask"
-Cohesion: 0.08
-Nodes (3): completeTodo(), maybeCompleteLinkedTodo(), UseRunningSessionFinishActionsOptions
-
 ### Community 18 - "Notecapture Notecard"
-Cohesion: 0.08
-Nodes (18): DailyPoolItem(), DAY_NAMES, ItemProps, Props, useCreateNote(), useCreateTodoMutation(), useCreateTodoTagMutation(), useRemoveTodoMutation() (+10 more)
+Cohesion: 0.16
+Nodes (8): useRemoveTodoMutation(), useUpdateTodoMutation(), NotebookList(), Props, useTodoDraft(), DescriptionEditorProps, Props, TodoDrawer()
 
 ### Community 19 - "Todo Todocollection"
 Cohesion: 0.09
 Nodes (21): Todo, TodoCollection, TodoDailyTemplate, TodoDailyTemplateEditInput, TodoDailyTemplateInput, TodoEditInput, TodoFilters, TodoFolder (+13 more)
 
 ### Community 20 - "Activities Activity"
-Cohesion: 0.12
-Nodes (10): ActivitiesData, ActivityAddData, ActivityCompleteData, ActivityData, ActivityEditData, ActivityPendingTodo, ActivityPendingTodosData, ActivityRemoveData (+2 more)
+Cohesion: 0.10
+Nodes (12): ActivitiesData, ActivityAddData, ActivityCompleteData, ActivityData, ActivityEditData, ActivityPendingTodo, ActivityPendingTodosData, ActivityRemoveData (+4 more)
 
 ### Community 21 - "Notebooklist Tododrawer"
 Cohesion: 0.12
 Nodes (15): Componentes, Criterios de aceptación, Datos, Diseño, Fuentes, Fuera de alcance, Iconos de campo, Layout (+7 more)
 
 ### Community 22 - "Loginform Resetpasswordform"
-Cohesion: 0.13
-Nodes (8): ForgotPasswordForm(), useForgotPasswordMutation(), useRegisterMutation(), useResetPasswordMutation(), RegisterForm(), ResetLocationState, ResetPasswordForm(), getAuthErrorMessage()
+Cohesion: 0.09
+Nodes (12): ForgotPasswordForm(), useForgotPasswordMutation(), useLoginMutation(), useRegisterMutation(), useResetPasswordMutation(), ICON_PROPS, LoginForm(), LoginLocationState (+4 more)
 
 ### Community 23 - "Router Todaypage"
 Cohesion: 0.12
@@ -479,20 +493,20 @@ Cohesion: 0.12
 Nodes (12): useRemoveTodoDailyTemplateMutation(), ColorPickerProps, DAY_LABELS, DAY_ORDER, FOLDER_COLORS, FolderRowProps, PRIORITY_LABELS, TAG_COLORS (+4 more)
 
 ### Community 25 - "Activity Followup"
-Cohesion: 0.19
-Nodes (14): editFormToInput(), finishFormToInput(), finishOpenFollowUpToEditInput(), isTodayOrFutureDateTime(), logPastDurationTotal(), logPastFormToInput(), openFollowUpToRunningSession(), startFormToFollowUpStartInput() (+6 more)
+Cohesion: 0.17
+Nodes (16): useActivityDayFollowUpsQuery(), editFormToInput(), finishFormToInput(), finishOpenFollowUpToEditInput(), isTodayOrFutureDateTime(), logPastDurationTotal(), logPastFormToInput(), openFollowUpToRunningSession() (+8 more)
 
 ### Community 26 - "Activity Activityprioritybadge"
 Cohesion: 0.12
 Nodes (14): ActivityPriorityBadge(), ActivityPriorityBadgeProps, PRIORITY_VARIANT, ActivityStatusBadge(), ActivityStatusBadgeProps, STATUS_VARIANT, ACTIVITY_PRIORITIES, ACTIVITY_STATUSES (+6 more)
 
 ### Community 27 - "Usequarters Quarterspage"
-Cohesion: 0.05
-Nodes (47): ActiveQuarterHub(), Props, AddProjectToQuarterModal(), Props, useActiveQuarterQuery(), useAddObjectiveMutation(), useAddProjectToQuarterMutation(), useAuthReady() (+39 more)
+Cohesion: 0.12
+Nodes (22): ActiveQuarterHub(), Props, AddProjectToQuarterModal(), Props, useActiveQuarterQuery(), useAddProjectToQuarterMutation(), useAuthReady(), useCompleteQuarterMutation() (+14 more)
 
 ### Community 28 - "Logpastactivitymodal Editfollowupmodal"
-Cohesion: 0.22
-Nodes (11): clampTotal(), DurationHoursMinutesFields(), DurationHoursMinutesFieldsProps, clampFreeSlotFormToSlot(), emptyFreeSlotFormValues(), freeSlotDurationTotal(), freeSlotFormToInput(), validateFreeSlotForm() (+3 more)
+Cohesion: 0.15
+Nodes (15): CreateFollowUpFromFreeSlotModal(), CreateFollowUpFromFreeSlotModalProps, CreateFollowUpRootStep(), RootStepProps, clampTotal(), DurationHoursMinutesFields(), DurationHoursMinutesFieldsProps, clampFreeSlotFormToSlot() (+7 more)
 
 ### Community 29 - "Activity Followup"
 Cohesion: 0.12
@@ -511,24 +525,24 @@ Cohesion: 0.13
 Nodes (7): ActivityDayFollowUpsData, ActivityFollowUpAddData, ActivityFollowUpEditData, ActivityFollowUpRemoveData, ActivityFollowUpsInDatesData, ActivityFollowUpStartData, ActivityOpenFollowUpData
 
 ### Community 33 - "Useactivityfollowups Runningactivitywidget"
-Cohesion: 0.13
-Nodes (22): ActivitiesWidget(), InvalidateFollowUpOptions, invalidateFollowUpQueries(), useActivityDayFollowUpsQuery(), useActivityFollowUpsInDatesQuery(), useActivityOpenFollowUpQuery(), useCreateActivityFollowUpMutation(), useDeleteActivityFollowUpMutation() (+14 more)
+Cohesion: 0.16
+Nodes (15): InvalidateFollowUpOptions, useActivityFollowUpsInDatesQuery(), useActivityOpenFollowUpQuery(), useCreateActivityFollowUpMutation(), useDeleteActivityFollowUpMutation(), useStartActivityFollowUpMutation(), useUpdateActivityFollowUpMutation(), useRunningSessionFinishActions() (+7 more)
 
 ### Community 34 - "Quartercard Format"
 Cohesion: 0.15
 Nodes (12): useActivateQuarterMutation(), Props, QuarterCard(), STATUS_LABEL, STATUS_VARIANT, formatDateRange(), formatShortDate(), MONTH_YEAR (+4 more)
 
 ### Community 35 - "Activityfollowuptimelineentry Activityfreeslotblock"
-Cohesion: 0.13
-Nodes (11): ActivityFollowUpTimelineEntry(), ActivityFollowUpTimelineEntryProps, ActivityFreeSlotBlock(), ActivityFreeSlotBlockProps, ActivityFreeSlotTimelineEntry(), ActivityFreeSlotTimelineEntryProps, CreateFollowUpFromFreeSlotModal(), CreateFollowUpFromFreeSlotModalProps (+3 more)
+Cohesion: 0.19
+Nodes (8): ActivityFollowUpTimelineEntry(), ActivityFollowUpTimelineEntryProps, ActivityFreeSlotBlock(), ActivityFreeSlotBlockProps, ActivityFreeSlotTimelineEntry(), ActivityFreeSlotTimelineEntryProps, formatFollowUpTimeLabel(), getTimelineItemHeight()
 
 ### Community 36 - "Durationhoursminutesfields Activity"
 Cohesion: 0.11
 Nodes (13): AppIdeaEditor(), Props, AppIdeaEditorPage(), AppIdeasPage(), addIdeaToBaseLists(), isBaseListFilters(), ListSnapshot, useAppIdea() (+5 more)
 
 ### Community 37 - "Habitfollowupform Habitlifelinebutton"
-Cohesion: 0.15
-Nodes (9): AppLayoutShell(), useLogoutMutation(), useReauthMutation(), LogoutButton(), SessionExpiredDialog(), SessionExpiredModal(), AuthState, initialSession (+1 more)
+Cohesion: 0.13
+Nodes (11): AppLayoutShell(), useLogoutMutation(), useReauthMutation(), LogoutButton(), SessionExpiredDialog(), SessionExpiredModal(), AuthState, initialSession (+3 more)
 
 ### Community 38 - "Themetoggle Themeprovider"
 Cohesion: 0.14
@@ -551,8 +565,8 @@ Cohesion: 0.28
 Nodes (6): Drawer(), useBodyScrollLock(), useFocusTrap(), Modal(), ModalProps, SteppedModal()
 
 ### Community 43 - "Sessionlinkedtodo Subtasklist"
-Cohesion: 0.15
-Nodes (11): useActivitiesQuery(), useActivityPendingTodosQuery(), useActivityQuery(), useCompleteActivityMutation(), useDeleteActivityMutation(), useUpdateActivityMutation(), ActivitiesListPage(), ActivityDetailPage() (+3 more)
+Cohesion: 0.22
+Nodes (9): useActivitiesQuery(), useActivityPendingTodosQuery(), useActivityQuery(), useCompleteActivityMutation(), useDeleteActivityMutation(), useUpdateActivityMutation(), ActivitiesListPage(), ActivityDetailPage() (+1 more)
 
 ### Community 44 - "Activity Categories"
 Cohesion: 0.18
@@ -563,8 +577,8 @@ Cohesion: 0.22
 Nodes (9): Button(), ButtonAsButtonProps, ButtonAsLinkProps, ButtonCommonProps, ButtonProps, ButtonSize, ButtonVariant, isLinkButton() (+1 more)
 
 ### Community 47 - "Daystorywidget Buildstoryentries"
-Cohesion: 0.25
-Nodes (8): buildStoryEntries(), DayStoryWidget(), DayStoryWidgetProps, EntryItem(), EntryItemProps, formatDuration(), getHourLabel(), StoryEntry
+Cohesion: 0.22
+Nodes (10): buildStoryEntries(), DayStoryWidget(), DayStoryWidgetProps, EntryItem(), EntryItemProps, formatDuration(), getHourLabel(), StoryEntry (+2 more)
 
 ### Community 48 - "Tabs Context"
 Cohesion: 0.22
@@ -642,10 +656,6 @@ Nodes (13): 1. Orientarte con graphify (antes de leer código), 2. Leer las regl
 Cohesion: 0.29
 Nodes (3): LABELS, PRIORITIES, Props
 
-### Community 68 - "Providers Appproviders"
-Cohesion: 0.18
-Nodes (7): HabitWeekSelector(), HabitWeekSelectorProps, useHabitFollowUpsInDatesQuery(), HabitCalendarPage(), HabitHistoryTab(), HabitWeekViewPage(), getTodayString()
-
 ### Community 69 - "Verifyemailroute Pending"
 Cohesion: 0.06
 Nodes (34): 1. Contexto y alcance, 2. Requerimientos de negocio, 3.1 Qué existe y está bien, 3.2 Qué existe pero tiene conflictos, 3.3 Qué no existe, 3. Estado actual del backend, 4. Preguntas de afinamiento, 5. Plan de implementación (+26 more)
@@ -671,7 +681,7 @@ Cohesion: 0.40
 Nodes (4): ALL_PLACEMENTS, HabitPurposeCard(), HabitPurposeCardProps, PLACEMENT_LABELS
 
 ### Community 77 - "Projectformmodal Usequarters"
-Cohesion: 0.18
+Cohesion: 0.17
 Nodes (4): HabitCategoryTally, HabitDayTotals, HabitStarSummary, HabitStreakSummary
 
 ### Community 78 - "Weekscheduleslotmodal Usequarters"
@@ -715,12 +725,12 @@ Cohesion: 0.40
 Nodes (3): mockActivity, toastError, toastSuccess
 
 ### Community 88 - "Quarterformmodal Usequarters"
-Cohesion: 0.25
-Nodes (4): useLoginMutation(), ICON_PROPS, LoginForm(), LoginLocationState
+Cohesion: 0.15
+Nodes (11): countBy(), countHabitsByCategory(), countHabitsByPurpose(), EMPTY_HABIT_LIST_FILTERS, HABIT_SORT_OPTIONS, HabitIntent, HabitListFilters, HabitSortKey (+3 more)
 
 ### Community 89 - "Sessionlogmodal Usequarters"
-Cohesion: 0.25
-Nodes (12): HabitMyDayPage(), addDaysToString(), buildDay(), getFollowUpQueryRange(), getMonthDaysForWeek(), getMonthRange(), getMyDayFocusDate(), getWeekDays() (+4 more)
+Cohesion: 0.24
+Nodes (13): HabitMyDayPage(), addDaysToString(), buildDay(), getFollowUpQueryRange(), getMonthDaysForWeek(), getMonthRange(), getMyDayFocusDate(), getRecentDays() (+5 more)
 
 ### Community 90 - "Iconbutton Iconbuttonprops"
 Cohesion: 0.40
@@ -803,8 +813,8 @@ Cohesion: 0.60
 Nodes (3): HabitsModuleLayout(), pillClassName(), SETTINGS_LINKS
 
 ### Community 173 - "Activitytrackingpage Tracking"
-Cohesion: 0.07
-Nodes (27): 1.1 — `ActivitiesModuleLayout.tsx`, 1.2 — `ActivitiesModuleLayout.module.scss`, 2.1 — `ActivitiesModuleNav.tsx`, 2.2 — `ActivitiesModuleNav.module.scss`, 3.1 — Eliminar header redundante + reorganizar JSX, 3.2 — `ActivityTrackingPage.module.scss`, 4.1 — `ActivityCategoriesPanel.module.scss`, 4.2 — Tarjeta "+" integrada en el grid (+19 more)
+Cohesion: 0.10
+Nodes (21): 1.1 — `ActivitiesModuleLayout.tsx`, 1.2 — `ActivitiesModuleLayout.module.scss`, 2.1 — `ActivitiesModuleNav.tsx`, 2.2 — `ActivitiesModuleNav.module.scss`, 3.1 — Eliminar header redundante + reorganizar JSX, 3.2 — `ActivityTrackingPage.module.scss`, 4.1 — `ActivityCategoriesPanel.module.scss`, 4.2 — Tarjeta "+" integrada en el grid (+13 more)
 
 ### Community 183 - "Store Auth"
 Cohesion: 0.08
@@ -827,8 +837,8 @@ Cohesion: 0.09
 Nodes (21): Dominio Actividades — Xavi Habits Web, Estructura, Filtros del listado, Flujo UX, Formulario de actividad, Free slots (Fase 6.4), GraphQL — actividades, GraphQL — categorías (+13 more)
 
 ### Community 324 - "Main"
-Cohesion: 0.15
-Nodes (22): useAuthReady(), useCarryOverStandupItemsMutation(), useCloseStandupDayMutation(), useCreateStandupItemMutation(), useCreateStandupMemberMutation(), useCreateTodoFromStandupItemMutation(), useDeleteStandupItemMutation(), useDeleteStandupMemberMutation() (+14 more)
+Cohesion: 0.19
+Nodes (19): useAuthReady(), useCarryOverStandupItemsMutation(), useCloseStandupDayMutation(), useCreateStandupItemMutation(), useCreateStandupMemberMutation(), useCreateTodoFromStandupItemMutation(), useDeleteStandupItemMutation(), useDeleteStandupMemberMutation() (+11 more)
 
 ### Community 368 - "Community 368"
 Cohesion: 0.10
@@ -859,8 +869,8 @@ Cohesion: 0.18
 Nodes (9): PADDING, SleepBarChart(), SleepBarChartProps, SleepDayDetailProps, SleepMonthViewProps, formatShortDate(), SHORT_MONTHS, SleepTimeline() (+1 more)
 
 ### Community 375 - "Community 375"
-Cohesion: 0.16
-Nodes (13): DAY_OPTIONS, formatShortDate(), getOffsetDate(), MOOD_OPTIONS, pad2(), QUALITY_OPTIONS, SleepLogModal(), SleepLogModalProps (+5 more)
+Cohesion: 0.19
+Nodes (11): DAY_OPTIONS, formatShortDate(), getOffsetDate(), MOOD_OPTIONS, pad2(), QUALITY_OPTIONS, SleepLogModal(), SleepLogModalProps (+3 more)
 
 ### Community 376 - "Community 376"
 Cohesion: 0.12
@@ -875,8 +885,8 @@ Cohesion: 0.12
 Nodes (15): Backend, Campos `Todo`, Convenciones de implementación, Dominio Todos — Xavi Habits Web, Enums, Estado en habits-web, Estructura prevista, GraphQL — carpetas (implementado en backend) (+7 more)
 
 ### Community 379 - "Community 379"
-Cohesion: 0.05
-Nodes (39): getCellClass(), DAY_LABELS, HabitDayCell(), Props, DayStatus, getDayStatus(), getMicrocopy(), HabitDayRow() (+31 more)
+Cohesion: 0.24
+Nodes (15): getCellClass(), HabitFollowUpForm(), Props, formatProgressLabel(), getCurrentProgressValue(), getDayRingProgress(), getFollowUpProgressValue(), getHabitDailyGoal() (+7 more)
 
 ### Community 380 - "Community 380"
 Cohesion: 0.16
@@ -923,12 +933,12 @@ Cohesion: 0.17
 Nodes (12): scripts, audit, build, dev, format, format:check, lint, lint:fix (+4 more)
 
 ### Community 393 - "Community 393"
-Cohesion: 0.14
-Nodes (14): ActivityFollowUpCard(), ActivityFollowUpCardProps, Props, WeeklyPlanner(), formatDurationMinutes(), generateTimeBlocks(), getOrderedDays(), EventBlock() (+6 more)
+Cohesion: 0.21
+Nodes (10): Props, WeeklyPlanner(), generateTimeBlocks(), getOrderedDays(), EventBlock(), EventBlockProps, getActivitiesForDay(), getCategoryColor() (+2 more)
 
 ### Community 394 - "Community 394"
-Cohesion: 0.17
-Nodes (12): activities-module-improvements.md, Contexto actual del código, Convenciones para actualizar este archivo, habits-module-improvements.md, Nota post-revert, Notas de diseño, Orden de implementación, Orden recomendado del spec (+4 more)
+Cohesion: 0.10
+Nodes (21): activities-module-improvements.md, Archivos tocados (2026-06-23), Contexto actual del código, Convenciones para actualizar este archivo, Desvíos respecto al spec, Desvíos respecto al spec, habit-month-view-and-difficulty-picker.md, habits-module-improvements.md (+13 more)
 
 ### Community 395 - "Community 395"
 Cohesion: 0.29
@@ -939,8 +949,8 @@ Cohesion: 0.53
 Nodes (4): AppIdeaCard(), Props, statusBadgeVariant(), toSnippet()
 
 ### Community 397 - "Community 397"
-Cohesion: 0.18
-Nodes (6): Archivos clave, Arquitectura del layout actual, Contexto del proyecto, Layout Improvements — xavi-habits-web, Orden de implementación recomendado, Variables CSS relevantes
+Cohesion: 0.17
+Nodes (12): Archivos clave, Arquitectura del layout actual, Contexto del proyecto, Layout Improvements — xavi-habits-web, Orden de implementación recomendado, P1 — Sidebar demasiado ancha (240px fija), P2 — `max-width: 1400px` con `margin: 0 auto` en `.main`, P3 — Topbar ocupa demasiada altura vertical (+4 more)
 
 ### Community 398 - "Community 398"
 Cohesion: 0.20
@@ -995,12 +1005,12 @@ Cohesion: 0.25
 Nodes (8): Archivos a crear, Archivos a modificar, `CreateHabitCategoryStep`, Criterio de done, Fase 10 — Frontend: HabitFormModal multi-paso (SteppedModal), Implementación de `HabitFormModal`, Pasos del formulario, Qué cambia
 
 ### Community 411 - "Community 411"
-Cohesion: 0.32
-Nodes (5): useCreateHabitMeasureMutation(), useRemoveHabitMeasureMutation(), useUpdateHabitMeasureMutation(), FormMode, HabitMeasuresPage()
+Cohesion: 0.21
+Nodes (7): CreateHabitMeasureStep(), Props, useCreateHabitMeasureMutation(), useRemoveHabitMeasureMutation(), useUpdateHabitMeasureMutation(), FormMode, HabitMeasuresPage()
 
 ### Community 412 - "Community 412"
-Cohesion: 0.50
-Nodes (3): Props, DAY_LABELS, DAYS
+Cohesion: 0.29
+Nodes (6): useDeleteWeekScheduleSlotMutation(), Props, WeeklyPlanner(), getCurrentWeekStart(), DAY_LABELS, DAYS
 
 ### Community 413 - "Community 413"
 Cohesion: 0.36
@@ -1047,8 +1057,8 @@ Cohesion: 0.33
 Nodes (6): Archivos a crear, Archivos a modificar, Backend GraphQL ya disponible, Criterio de done, Descripción de cada pieza, Fase 9 — Frontend: Gestión de categorías de hábitos
 
 ### Community 425 - "Community 425"
-Cohesion: 0.14
-Nodes (10): RunningBadge(), ActivityTimelineNowEntry(), ActivityTimelineNowEntryProps, RunningSessionCard(), useCurrentTimeMarker(), ElapsedFormat, useElapsedTimer(), RunningActivityTimer() (+2 more)
+Cohesion: 0.25
+Nodes (6): RunningBadge(), RunningSessionCard(), ElapsedFormat, useElapsedTimer(), RunningActivityTimer(), RunningActivityTimerProps
 
 ### Community 427 - "Community 427"
 Cohesion: 0.33
@@ -1059,12 +1069,12 @@ Cohesion: 0.33
 Nodes (5): For /graphify explain, For /graphify path, graphify reference: query, path, explain, Step 0 — Constrained query expansion (REQUIRED before traversal), Step 1 — Traversal
 
 ### Community 429 - "Community 429"
-Cohesion: 0.40
-Nodes (4): DayRemainingWidget(), DayRemainingWidgetProps, formatDayStartLabel(), useRemainingDayTimer()
+Cohesion: 0.18
+Nodes (9): getMicrocopy(), HabitDayRow(), HabitDayRowProps, FollowUpMutationContext, useAddHabitFollowUpMutation(), useRemoveHabitFollowUpMutation(), useUpdateHabitFollowUpMutation(), SpendLifelineArgs (+1 more)
 
 ### Community 430 - "Community 430"
-Cohesion: 0.32
-Nodes (6): HabitDayMarker(), HabitDayMarkerStatus, isHeavyishDifficulty(), Props, STATUS_CLASS, STATUS_GLYPH
+Cohesion: 0.28
+Nodes (7): HabitDayMarker(), HabitDayMarkerShape, HabitDayMarkerStatus, isHeavyishDifficulty(), Props, STATUS_CLASS, STATUS_GLYPH
 
 ### Community 431 - "Community 431"
 Cohesion: 0.53
@@ -1075,8 +1085,8 @@ Cohesion: 0.50
 Nodes (3): DAY_LABELS, HabitContributionGrid(), Props
 
 ### Community 433 - "Community 433"
-Cohesion: 0.16
-Nodes (10): Trigger(), ConfirmDialogContext, ConfirmDialogContextValue, initialState, useConfirmDialog(), formatTime(), HeroCard(), Props (+2 more)
+Cohesion: 0.17
+Nodes (8): Trigger(), ConfirmDialogContext, ConfirmDialogContextValue, initialState, useConfirmDialog(), HabitLifelineButton(), Props, RoutineList()
 
 ### Community 435 - "Community 435"
 Cohesion: 0.25
@@ -1127,8 +1137,12 @@ Cohesion: 0.40
 Nodes (4): AppIcon(), AppIconProps, AppIconSize, SIZE_CLASS
 
 ### Community 447 - "Community 447"
-Cohesion: 0.33
-Nodes (6): P1 — Sidebar demasiado ancha (240px fija), P2 — `max-width: 1400px` con `margin: 0 auto` en `.main`, P3 — Topbar ocupa demasiada altura vertical, P4 — Doble sistema de navegación redundante en desktop, P5 — Padding acumulado entre `.main` y páginas internas, Problemas identificados
+Cohesion: 0.14
+Nodes (13): Barra lateral, Barra superior, Criterios de aceptación, Datos, Diseño, El límite del ámbito — la decisión central, Fuera de alcance, Móvil (+5 more)
+
+### Community 448 - "Community 448"
+Cohesion: 0.18
+Nodes (9): useAddSubtaskMutation(), useEditSubtaskMutation(), useRemoveSubtaskMutation(), useTodoQuery(), SessionLinkedTodo(), SessionLinkedTodoProps, SubtaskRow(), Props (+1 more)
 
 ### Community 450 - "Community 450"
 Cohesion: 0.47
@@ -1163,8 +1177,12 @@ Cohesion: 0.47
 Nodes (3): TimeSpinner(), TimeSpinnerProps, TimeUnit
 
 ### Community 462 - "Community 462"
-Cohesion: 0.67
-Nodes (3): invalidateActivityFollowUpQueries(), InvalidateFollowUpOptions, toFollowUpDateKey()
+Cohesion: 0.19
+Nodes (12): invalidateFollowUpQueries(), emptyEditFollowUpFormValues(), formatDateToYmd(), getCurrentLocalDate(), getCurrentWeekRange(), getMondayOfWeek(), getMonthDaysForDate(), getWeekDaysForDate() (+4 more)
+
+### Community 468 - "Community 468"
+Cohesion: 0.22
+Nodes (8): ActivityPickerStep(), ActivityPickerStepProps, FinishActivityModal(), FinishActivityModalProps, RootStepProps, SuggestionCard(), WhatsNextStep(), WhatsNextStepProps
 
 ### Community 485 - "Community 485"
 Cohesion: 0.29
@@ -1183,16 +1201,16 @@ Cohesion: 0.50
 Nodes (3): StandupKanbanCard(), StandupKanbanCardProps, STATUS_CARD_CLASS
 
 ### Community 496 - "Community 496"
-Cohesion: 0.15
-Nodes (13): CreateFollowUpRootStep(), EditFollowUpModal(), EditFollowUpModalProps, LogPastActivityModal(), LogPastActivityModalProps, LogPastActivityRootStep(), RootStepProps, emptyLogPastActivityFormValues() (+5 more)
+Cohesion: 0.33
+Nodes (5): LogPastActivityModal(), LogPastActivityModalProps, LogPastActivityRootStep(), RootStepProps, emptyLogPastActivityFormValues()
 
 ### Community 497 - "Community 497"
-Cohesion: 0.40
-Nodes (4): DAY_OPTIONS, Props, RootStepProps, RoutineEventFormValues
+Cohesion: 0.17
+Nodes (13): ActivityTimelineUpcomingEntry(), Props, DAY_OPTIONS, Props, RootStepProps, RoutineEventFormValues, RoutineEventRootStep(), buildStartTimeOptions() (+5 more)
 
 ### Community 508 - "Community 508"
-Cohesion: 0.14
-Nodes (9): QC, useAuthReady(), useNotes(), useRemoveNote(), useUpdateNote(), NoteCard(), Props, TAG_COLORS (+1 more)
+Cohesion: 0.11
+Nodes (13): QC, useAuthReady(), useCreateNote(), useNotes(), useRemoveNote(), useUpdateNote(), useCreateTodoTagMutation(), NoteCapture() (+5 more)
 
 ### Community 509 - "Community 509"
 Cohesion: 0.50
@@ -1203,16 +1221,16 @@ Cohesion: 0.40
 Nodes (5): Criterios de aceptación, General, Mejora 1, Mejora 2, Mejora 3
 
 ### Community 516 - "Community 516"
-Cohesion: 0.40
-Nodes (5): Desvíos respecto al spec, habit-month-view-and-difficulty-picker.md, Orden recomendado del spec, Parte 1 — HabitDifficultyPicker, Parte 2 — HabitMonthView
+Cohesion: 0.28
+Nodes (5): ActivitiesWidget(), ActivityFollowUpCard(), ActivityFollowUpCardProps, formatDurationMinutes(), formatEventLabel()
 
 ### Community 517 - "Community 517"
-Cohesion: 0.50
-Nodes (4): Archivos tocados (2026-06-23), Desvíos respecto al spec, layout-improvements.md, Verificación pendiente (manual)
+Cohesion: 0.22
+Nodes (5): HabitFollowUpDrawer(), HabitFollowUpDrawerProps, Listener, Probe(), useMediaQuery()
 
 ### Community 524 - "Community 524"
-Cohesion: 0.50
-Nodes (3): HabitCard(), Props, useCompleteHabitMutation()
+Cohesion: 0.20
+Nodes (8): HabitCard(), Props, HabitListCard(), HabitListCardProps, useCompleteHabitMutation(), getHabitFrequencyLabel(), getHabitIntent(), countCoveredDays()
 
 ### Community 526 - "Community 526"
 Cohesion: 0.50
@@ -1222,25 +1240,85 @@ Nodes (3): EMPTY_FOLLOW_UP_MAP, RegisterTarget, WEEKDAY_INITIALS
 Cohesion: 0.50
 Nodes (3): Tooltip(), TooltipPlacement, TooltipProps
 
+### Community 529 - "Community 529"
+Cohesion: 0.22
+Nodes (8): useAddObjectiveMutation(), useRemoveObjectiveMutation(), useUpdateObjectiveMutation(), AddObjectiveForm(), OBJECTIVE_STATUS_LABEL, OBJECTIVE_STATUS_NEXT, ObjectiveItem(), Props
+
+### Community 538 - "Community 538"
+Cohesion: 0.25
+Nodes (7): DailyPoolItem(), DailyPoolView(), DAY_NAMES, ItemProps, Props, useCreateTodoMutation(), useTodoDailyTemplatesByDayQuery()
+
+### Community 539 - "Community 539"
+Cohesion: 0.29
+Nodes (4): buildMeasureCreatePayload(), buildMeasureEditPayload(), defaultMeasureFormValues(), formatMeasureDisplay()
+
+### Community 540 - "Community 540"
+Cohesion: 0.38
+Nodes (6): useAuthReady(), useTodoDailyTemplatesQuery(), useTodoFoldersQuery(), useTodoTagsQuery(), NotesPage(), TodosSettings()
+
+### Community 541 - "Community 541"
+Cohesion: 0.40
+Nodes (3): ActivityTimelineNowEntry(), ActivityTimelineNowEntryProps, useCurrentTimeMarker()
+
+### Community 542 - "Community 542"
+Cohesion: 0.40
+Nodes (4): DAY_LABELS, HabitDayCell(), Props, followUpHasNotes()
+
+### Community 543 - "Community 543"
+Cohesion: 0.33
+Nodes (5): useCreateProjectMutation(), useUpdateProjectMutation(), ProjectFormModal(), Props, STATUS_OPTIONS
+
+### Community 544 - "Community 544"
+Cohesion: 0.33
+Nodes (5): useCreateWeekScheduleSlotMutation(), useUpdateWeekScheduleSlotMutation(), DAY_LABELS, Props, WeekScheduleSlotModal()
+
+### Community 545 - "Community 545"
+Cohesion: 0.33
+Nodes (6): Criterios de aceptación, General, Mejora 1 + 2, Mejora 3, Mejora 4, Mejora 5
+
+### Community 546 - "Community 546"
+Cohesion: 0.50
+Nodes (3): EditFollowUpModal(), EditFollowUpModalProps, followUpToEditFormValues()
+
+### Community 547 - "Community 547"
+Cohesion: 0.60
+Nodes (3): HabitsListToolbar(), HabitsListToolbarProps, HabitsListView
+
+### Community 548 - "Community 548"
+Cohesion: 0.40
+Nodes (4): useCreateQuarterMutation(), useUpdateQuarterMutation(), Props, QuarterFormModal()
+
+### Community 549 - "Community 549"
+Cohesion: 0.50
+Nodes (3): useTodosQuery(), PRIORITY_LABEL, TodosWidget()
+
+### Community 551 - "Community 551"
+Cohesion: 0.60
+Nodes (4): formatTime(), HeroCard(), Props, RoutineRow()
+
+### Community 554 - "Community 554"
+Cohesion: 0.50
+Nodes (3): emptyForm(), STATUS_BADGE, STATUS_OPTIONS
+
 ## Knowledge Gaps
-- **1330 isolated node(s):** `name`, `private`, `version`, `type`, `packageManager` (+1325 more)
+- **1356 isolated node(s):** `name`, `private`, `version`, `type`, `packageManager` (+1351 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **127 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **130 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useToast()` connect `Main` to `Habitcontributiongrid Usehabits`, `Sections Commandpaletteprovider`, `Activity Activitypickerfield`, `Community 524`, `Usetodos Todossettings`, `Useweeklyroutine Toast`, `Notecapture Notecard`, `Router Todaypage`, `Todossettings Usetodos`, `Usequarters Quarterspage`, `Community 411`, `Useactivityfollowups Runningactivitywidget`, `Quartercard Format`, `Durationhoursminutesfields Activity`, `Createhabitpurposestep Usehabitpurposes`, `Sessionlinkedtodo Subtasklist`, `Toast Context`, `Usehabitcategories Habitcategoriespage`, `Notebooktabs Usetodos`, `Community 452`, `Confirmdialogprovider Confirmdialog`, `Community 379`, `Community 508`?**
-  _High betweenness centrality (0.058) - this node is a cross-community bridge._
-- **Why does `useModalStep()` connect `Finishactivitymodal Startactivitymodal` to `Community 448`, `Weeklyplanner Planner`, `Community 421`, `Createhabitpurposestep Usehabitpurposes`, `Activity Activitypickerfield`, `Community 496`, `Community 402`, `Community 468`, `Community 375`, `Community 507`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **Why does `getCurrentLocalDate()` connect `Useactivityfollowups Runningactivitywidget` to `Community 496`, `Main`, `Activity Metrics`, `Activity Time`?**
-  _High betweenness centrality (0.021) - this node is a cross-community bridge._
+- **Why does `useToast()` connect `Main` to `Habitcontributiongrid Usehabits`, `Sections Commandpaletteprovider`, `Activity Activitypickerfield`, `Community 524`, `Usetodos Todossettings`, `Useweeklyroutine Toast`, `Community 529`, `Notecapture Notecard`, `Router Todaypage`, `Todossettings Usetodos`, `Community 538`, `Usequarters Quarterspage`, `Community 411`, `Community 412`, `Community 543`, `Community 544`, `Useactivityfollowups Runningactivitywidget`, `Quartercard Format`, `Durationhoursminutesfields Activity`, `Community 548`, `Createhabitpurposestep Usehabitpurposes`, `Sessionlinkedtodo Subtasklist`, `Community 429`, `Toast Context`, `Usehabitcategories Habitcategoriespage`, `Community 448`, `Notebooktabs Usetodos`, `Community 452`, `Confirmdialogprovider Confirmdialog`, `Community 508`?**
+  _High betweenness centrality (0.062) - this node is a cross-community bridge._
+- **Why does `useModalStep()` connect `Finishactivitymodal Startactivitymodal` to `Community 421`, `Createhabitpurposestep Usehabitpurposes`, `Activity Activitypickerfield`, `Community 496`, `Community 497`, `Community 402`, `Community 411`, `Community 468`, `Community 507`, `Logpastactivitymodal Editfollowupmodal`?**
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **Why does `useConfirmDialog()` connect `Community 433` to `Habitcontributiongrid Usehabits`, `Sections Commandpaletteprovider`, `Icons Icon`, `Community 524`, `Usetodos Todossettings`, `Useweeklyroutine Toast`, `Notecapture Notecard`, `Todossettings Usetodos`, `Community 411`, `Usequarters Quarterspage`, `Community 412`, `Useactivityfollowups Runningactivitywidget`, `Durationhoursminutesfields Activity`, `Createhabitpurposestep Usehabitpurposes`, `Sessionlinkedtodo Subtasklist`, `Community 429`, `Usehabitcategories Habitcategoriespage`, `Main`, `Confirmdialogprovider Confirmdialog`, `Community 505`, `Community 379`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
 - **Are the 94 inferred relationships involving `useToast()` (e.g. with `useCompleteActivityMutation()` and `useCreateActivityMutation()`) actually correct?**
   _`useToast()` has 94 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 34 inferred relationships involving `useAuthStore` (e.g. with `AppLayoutShell()` and `useActivitiesQuery()`) actually correct?**
   _`useAuthStore` has 34 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 30 inferred relationships involving `useConfirmDialog()` (e.g. with `ActiveQuarterHub()` and `ActivityCategoriesPanel()`) actually correct?**
-  _`useConfirmDialog()` has 30 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 31 inferred relationships involving `useConfirmDialog()` (e.g. with `ActiveQuarterHub()` and `ActivityCategoriesPanel()`) actually correct?**
+  _`useConfirmDialog()` has 31 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 25 inferred relationships involving `useAuthBootstrap()` (e.g. with `useActivitiesQuery()` and `useActivityPendingTodosQuery()`) actually correct?**
   _`useAuthBootstrap()` has 25 INFERRED edges - model-reasoned connections that need verification._

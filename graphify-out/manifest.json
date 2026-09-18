@@ -35,8 +35,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/AppProviders.tsx": {
-    "mtime": 1789696614.9405406,
-    "ast_hash": "4672b37fb95301e5ae05b19f7964a47d",
+    "mtime": 1789706565.5088217,
+    "ast_hash": "fb1539284254e5051c826e61b64bdfc0",
     "semantic_hash": ""
   },
   "src/app/providers/query-client.ts": {
@@ -1300,8 +1300,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitsModuleLayout/HabitsModuleLayout.tsx": {
-    "mtime": 1789704142.4188273,
-    "ast_hash": "bbbbc1509011028406d6cf73ce6e8c77",
+    "mtime": 1789706685.7589011,
+    "ast_hash": "7c2d5c2efe7973fdcaeb85884f7da74f",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitsModuleLayout/index.ts": {
@@ -1410,8 +1410,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitMyDayPage.tsx": {
-    "mtime": 1789705139.8709002,
-    "ast_hash": "31b85c563416fe290ffc09f358dfbb14",
+    "mtime": 1789706633.0122976,
+    "ast_hash": "00cdfccf0aecc25f16486d521eca9caa",
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitPersonaPage.tsx": {
@@ -1430,8 +1430,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitsListPage.tsx": {
-    "mtime": 1789705407.2565467,
-    "ast_hash": "900fcd3e1580a9f98382d389e491f0f2",
+    "mtime": 1789706626.9103444,
+    "ast_hash": "895a453c3969290f04b32a74680a2f01",
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitsModuleLayout.tsx": {
@@ -2070,8 +2070,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/AppLayout.tsx": {
-    "mtime": 1789696614.9795408,
-    "ast_hash": "a60ca59cc33764a3737b7e41a6016e57",
+    "mtime": 1789706645.3002043,
+    "ast_hash": "c3ebfcc98ed429121ba50789fec12bf0",
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.test.ts": {
@@ -2080,8 +2080,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.ts": {
-    "mtime": 1789696614.9795408,
-    "ast_hash": "ec041cc3e0ab191361fe3caf86c158ae",
+    "mtime": 1789706600.1425505,
+    "ast_hash": "de38254755a1e9358633dfae18ddb0de",
     "semantic_hash": ""
   },
   "src/layouts/AuthLayout/AuthLayout.tsx": {
@@ -2580,8 +2580,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/Breadcrumbs/Breadcrumbs.tsx": {
-    "mtime": 1789696614.9865408,
-    "ast_hash": "95b3e3648f90622f6fee5e2fd956d3b2",
+    "mtime": 1789706522.3101676,
+    "ast_hash": "4d9ec2689e06e700bbbff9598036b558",
     "semantic_hash": ""
   },
   "src/shared/ui/Breadcrumbs/index.ts": {
@@ -2635,13 +2635,13 @@
     "semantic_hash": ""
   },
   "src/shared/ui/CommandPalette/CommandPalette.tsx": {
-    "mtime": 1789696614.9865408,
-    "ast_hash": "2909ac6411f165556f148652c29e4669",
+    "mtime": 1789706549.6429477,
+    "ast_hash": "33b6e2bb832a7ff230625df90ef5f1e5",
     "semantic_hash": ""
   },
   "src/shared/ui/CommandPalette/CommandPaletteProvider.tsx": {
-    "mtime": 1789696614.9865408,
-    "ast_hash": "12af0797625725592f5ddb53499f5767",
+    "mtime": 1789706549.6429477,
+    "ast_hash": "94116c962820baefc3cad8d3bb68a34d",
     "semantic_hash": ""
   },
   "src/shared/ui/CommandPalette/command-palette.types.ts": {
@@ -2660,8 +2660,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/ConfirmDialog/ConfirmDialogProvider.tsx": {
-    "mtime": 1789696614.9875407,
-    "ast_hash": "c01eebff3d451e00d0c832a63cb14d06",
+    "mtime": 1789706549.6429477,
+    "ast_hash": "fbfe764ee883eff5dea3a47131f97346",
     "semantic_hash": ""
   },
   "src/shared/ui/ConfirmDialog/confirm-dialog.types.ts": {
@@ -2815,8 +2815,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/Modal/Modal.tsx": {
-    "mtime": 1789696614.9895408,
-    "ast_hash": "18eb6a2fc258370f56252aba249080df",
+    "mtime": 1789706549.6419477,
+    "ast_hash": "751b6d22de53f416ef9ab5dbfff61a79",
     "semantic_hash": ""
   },
   "src/shared/ui/Modal/index.ts": {
@@ -2915,8 +2915,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/Sidebar/Sidebar.tsx": {
-    "mtime": 1789696614.9905407,
-    "ast_hash": "92bf167706ca959270220fe088768639",
+    "mtime": 1789706468.6416104,
+    "ast_hash": "da1f592a1a729697c7e97e1db0666d52",
     "semantic_hash": ""
   },
   "src/shared/ui/Sidebar/index.ts": {
@@ -3065,8 +3065,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/Toast/ToastViewport.tsx": {
-    "mtime": 1789696614.9925408,
-    "ast_hash": "9a50fc63efd506670edc6b817ce3bf6d",
+    "mtime": 1789706549.6429477,
+    "ast_hash": "1e3f2141e649ac9130df02463d27d84d",
     "semantic_hash": ""
   },
   "src/shared/ui/Toast/index.ts": {
@@ -3075,8 +3075,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/Toast/toast.context.tsx": {
-    "mtime": 1789696614.9925408,
-    "ast_hash": "4cce6d4bd18d840e62be3945263fa99a",
+    "mtime": 1789706549.6429477,
+    "ast_hash": "fcce52bb610884aebaf3d8f7b9cd7415",
     "semantic_hash": ""
   },
   "src/shared/ui/Toast/toast.types.ts": {
@@ -3100,8 +3100,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/Topbar/Topbar.tsx": {
-    "mtime": 1789696614.9935408,
-    "ast_hash": "181ed3fa1965a842cbe5b257bfb2fc8a",
+    "mtime": 1789706501.6523364,
+    "ast_hash": "015eeb490035dd140011c8baf54d0188",
     "semantic_hash": ""
   },
   "src/shared/ui/Topbar/index.ts": {
@@ -3735,8 +3735,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/AuroraCanvas/AuroraCanvas.tsx": {
-    "mtime": 1789700369.4388435,
-    "ast_hash": "9cd8e9330a384fd398332748e3525d0c",
+    "mtime": 1789706529.8611066,
+    "ast_hash": "6e030725dc02ca7b0e991bf124e8b77f",
     "semantic_hash": ""
   },
   "src/shared/ui/AuroraCanvas/index.ts": {
@@ -3937,6 +3937,31 @@
   "docs/remodel/assets/04-chasis-app.html": {
     "mtime": 1789705427.147999,
     "ast_hash": "05c7ca9d883c05c04c8b1a3e9176361c",
+    "semantic_hash": ""
+  },
+  "src/layouts/AppLayout/app-breadcrumbs.test.ts": {
+    "mtime": 1789706614.693438,
+    "ast_hash": "6f0c391547e341bcd662ab0f3dc170ea",
+    "semantic_hash": ""
+  },
+  "src/layouts/AppLayout/app-breadcrumbs.ts": {
+    "mtime": 1789706609.2624798,
+    "ast_hash": "40a1d062060011f1ca8df17b2867458d",
+    "semantic_hash": ""
+  },
+  "src/shared/ui/Sidebar/Sidebar.test.tsx": {
+    "mtime": 1789706899.0283897,
+    "ast_hash": "43c32b687602b9fff516962a7190a0f0",
+    "semantic_hash": ""
+  },
+  "docs/remodel/05-wizard-habito.spec.md": {
+    "mtime": 1789706219.7089014,
+    "ast_hash": "92f18d5cf6fa08122401f571d5b856cf",
+    "semantic_hash": ""
+  },
+  "docs/remodel/assets/05-wizard-habito.html": {
+    "mtime": 1789706147.8556552,
+    "ast_hash": "d3d77962f4b99225b60e03a8cd367b7f",
     "semantic_hash": ""
   }
 }

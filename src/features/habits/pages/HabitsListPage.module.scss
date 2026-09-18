@@ -44,7 +44,12 @@
 
 /* ── CTA ─────────────────────────────────────────────────────────────────── */
 
-.cta {
+/* El elemento fijo es este contenedor, nunca el propio Button.
+   Button renderiza <motion.span><button/></motion.span> y al pulsar aplica un
+   transform al span; un transform convierte al span en bloque contenedor de
+   sus descendientes fijos, así que el botón se reanclaba al span y saltaba de
+   sitio en cuanto lo tocabas. */
+.ctaDock {
   flex: 0 0 auto;
   margin-left: auto;
 
@@ -52,8 +57,14 @@
   @media (max-width: 767px) {
     position: fixed;
     right: 1.125rem;
-    bottom: 1.125rem;
+    bottom: max(1.125rem, env(safe-area-inset-bottom, 0px));
     z-index: 30;
+    margin-left: 0;
+  }
+}
+
+.cta {
+  @media (max-width: 767px) {
     width: 3.25rem;
     height: 3.25rem;
     padding: 0;

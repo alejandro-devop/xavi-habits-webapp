@@ -102,9 +102,11 @@ export function HabitMyDayPage() {
   )
 
   const newHabitButton = (
-    <Button className={styles.cta} onClick={() => setCreateOpen(true)} leftIcon={<AppIcon name="plus" size="xs" decorative />}>
-      <span className={styles.ctaLabel}>Nuevo hábito</span>
-    </Button>
+    <div className={styles.ctaDock}>
+      <Button className={styles.cta} onClick={() => setCreateOpen(true)} leftIcon={<AppIcon name="plus" size="xs" decorative />}>
+        <span className={styles.ctaLabel}>Nuevo hábito</span>
+      </Button>
+    </div>
   )
 
   if (isLoading) {

@@ -131,13 +131,15 @@ export function HabitsListPage() {
   }
 
   const newHabitButton = (
-    <Button
-      className={styles.cta}
-      onClick={handleCreate}
-      leftIcon={<AppIcon name="plus" size="xs" decorative />}
-    >
-      <span className={styles.ctaLabel}>Nuevo hábito</span>
-    </Button>
+    <div className={styles.ctaDock}>
+      <Button
+        className={styles.cta}
+        onClick={handleCreate}
+        leftIcon={<AppIcon name="plus" size="xs" decorative />}
+      >
+        <span className={styles.ctaLabel}>Nuevo hábito</span>
+      </Button>
+    </div>
   )
 
   const header = (

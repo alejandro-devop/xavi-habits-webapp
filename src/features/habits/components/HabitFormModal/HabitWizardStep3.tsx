@@ -3,7 +3,6 @@ import type { HabitFormValues, HabitIntention } from '@/features/habits/utils/ha
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { FormField } from '@/shared/ui/FormField'
 import { Textarea } from '@/shared/ui/Textarea'
-import { NewPurposeButton } from './HabitFormStepButtons'
 import { Chip } from './HabitWizardControls'
 import { HabitIntentionSentence } from './HabitIntentionSentence'
 import styles from './HabitCreateWizard.module.scss'
@@ -122,15 +121,12 @@ export function HabitWizardStep3({
               {purpose.name}
             </Chip>
           ))}
-          <NewPurposeButton
-            disabled={disabled}
-            shouldAvoid={values.shouldAvoid}
-            className={styles.chip}
-            onCreated={(id) => patch({ purposeId: id })}
-          >
-            ＋ Otro
-          </NewPurposeButton>
         </div>
+        {/* Fase 7: aquí ya no se crea nada. La app propone una identidad
+            cuando hay pruebas, no cuando hay un formulario delante. */}
+        <p className={styles.hint}>
+          La app te propondrá uno cuando lleves unos días. No hace falta que lo decidas ahora.
+        </p>
       </div>
     </>
   )

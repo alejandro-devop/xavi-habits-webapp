@@ -1,39 +1,48 @@
-import { Link } from 'react-router'
-import { AppIcon } from '@/shared/ui/AppIcon'
-import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import type { HabitPurpose } from '@/features/habits/types/habit-purpose.types'
+import {
+  composeIdentityLine,
+  composeSetbackLine,
+  getIdentityVisibility,
+} from '@/features/habits/utils/habit-identity.utils'
+import type { HabitDayVisualStatus } from '@/features/habits/utils/habit-progress.utils'
+import { AppIcon } from '@/shared/ui/AppIcon'
 import styles from './HabitPurposeBanner.module.scss'
 
-type Props = {
+export type HabitPurposeBannerProps = {
   purpose: HabitPurpose | null | undefined
-  habitId: string
+  /** Estado del día que se está mirando. Es lo que decide qué se dice. */
+  status: HabitDayVisualStatus
+  /** Días acumulados del hábito: «un mal día no borra 34». */
+  days: number
+  lifelinesRemaining: number
 }
 
-const PLACEMENT_LABEL: Record<'want' | 'avoid', string> = {
-  want: 'Para ser:',
-  avoid: 'Para dejar de ser:',
-}
+/**
+ * La línea de identidad, y **la regla innegociable** en un solo sitio.
+ *
+ * El propósito aparece al empezar y al lograr. Nunca al fallar: un día fallado
+ * o con salvavidas gastado habla de la racha y del salvavidas y de nada más —
+ * ni el nombre, ni el icono, ni la línea. La culpa es el mejor predictor de
+ * abandono que hay: quien se siente juzgado no deja el hábito, deja la app.
+ */
+export function HabitPurposeBanner({
+  purpose,
+  status,
+  days,
+  lifelinesRemaining,
+}: HabitPurposeBannerProps) {
+  const tone = getIdentityVisibility(status)
 
-export function HabitPurposeBanner({ purpose }: Props) {
-  if (purpose && purpose.placement !== 'pool') {
-    const label = PLACEMENT_LABEL[purpose.placement]
-    return (
-      <div className={styles.banner}>
-        {purpose.icon ? (
-          <AppIcon name={purpose.icon} size="xs" className={styles.icon} />
-        ) : null}
-        <span className={styles.context}>{label}</span>
-        <span className={styles.name}>{purpose.name}</span>
-      </div>
-    )
+  if (tone === 'hidden') {
+    return <p className={styles.setback}>{composeSetbackLine(days, lifelinesRemaining)}</p>
   }
 
+  if (!purpose || purpose.placement === 'pool') return null
+
   return (
-    <div className={styles.cta}>
-      <span className={styles.ctaText}>¿Por qué haces este hábito?</span>
-      <Link to={habitsPaths.persona} className={styles.ctaLink}>
-        Asignar propósito
-      </Link>
-    </div>
+    <p className={[styles.line, tone === 'done' ? styles.lineDone : ''].filter(Boolean).join(' ')}>
+      {purpose.icon ? <AppIcon name={purpose.icon} size="2xs" decorative /> : null}
+      <span className={styles.lineText}>{composeIdentityLine(purpose.name, tone)}</span>
+    </p>
   )
 }

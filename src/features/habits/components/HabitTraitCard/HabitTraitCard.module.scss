@@ -1,0 +1,125 @@
+.trait {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5625rem;
+  min-height: 10.75rem;
+  padding: 1.0625rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.375rem;
+  background: var(--color-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Propuesto: acento violeta, es el que pide una respuesta. */
+.proposed {
+  border-color: color-mix(in srgb, var(--color-focus-ring) 55%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-focus-ring) 18%, var(--color-glass)),
+    var(--color-glass)
+  );
+  box-shadow: 0 14px 34px -16px color-mix(in srgb, var(--color-focus-ring) 90%, transparent);
+}
+
+/* En camino: atenuado. Todavía no es tuyo. */
+.wayto {
+  background: color-mix(in srgb, var(--color-glass) 60%, transparent);
+}
+
+.tag {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.25rem 0.5625rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-label, inherit);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tag_won {
+  background: color-mix(in srgb, var(--color-success) 16%, transparent);
+  color: var(--color-primary);
+}
+
+.tag_proposed {
+  background: color-mix(in srgb, var(--color-focus-ring) 28%, transparent);
+  color: var(--aura-ring-to);
+}
+
+.tag_wayto {
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  color: var(--color-text-secondary);
+}
+
+.name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.evidence {
+  margin: 0;
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+/* Lo que escribió el usuario. Intacto, incluidos sus saltos de línea. */
+.freeText {
+  margin: 0;
+  padding: 0.5rem 0.6875rem;
+  border-left: 2px solid var(--color-glass-border);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+}
+
+.bar {
+  height: 0.4375rem;
+  border-radius: var(--radius-full);
+  background: var(--aura-ring-track);
+  overflow: hidden;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-full);
+    background: linear-gradient(90deg, var(--aura-ring-from), var(--color-success));
+  }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.3125rem 0.625rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-glass) 70%, transparent);
+  font-family: var(--font-label, inherit);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}

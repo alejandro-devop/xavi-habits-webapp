@@ -10,6 +10,7 @@ import {
   useUpdateHabitMutation,
 } from '@/features/habits/hooks/useHabits'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
+import { getIdentityVisibility } from '@/features/habits/utils/habit-identity.utils'
 import type { HabitPurpose } from '@/features/habits/types/habit-purpose.types'
 import type { Habit, HabitCategory, HabitFollowUp } from '@/features/habits/types/habit.types'
 import { formatDayForLabel } from '@/features/habits/utils/habit-date-format.utils'
@@ -66,6 +67,11 @@ export function HabitListCard({
   // El único número que sale de la ventana visible, y por eso la etiqueta dice
   // de qué ventana habla. La racha y el periodo vienen del hábito.
   const covered = countCoveredDays(statuses)
+
+  // La regla innegociable, también fuera de Mi Día: con el día fallado o el
+  // salvavidas gastado, la tarjeta no dice ni una palabra de identidad.
+  // El último día de la ventana es el más reciente. Ver `HabitPurposeBanner`.
+  const identityTone = getIdentityVisibility(statuses.at(-1) ?? 'empty')
 
   const haloStyle = habit.color
     ? ({ '--habit-halo-color': habit.color } as CSSProperties)
@@ -148,7 +154,7 @@ export function HabitListCard({
             {habit.name}
           </button>
           {habit.description ? <p className={styles.description}>{habit.description}</p> : null}
-          {purpose ? (
+          {purpose && identityTone !== 'hidden' ? (
             <p className={styles.purpose}>
               <AppIcon name={purpose.icon ?? 'star'} size="2xs" decorative />
               Te acerca a: {purpose.name}

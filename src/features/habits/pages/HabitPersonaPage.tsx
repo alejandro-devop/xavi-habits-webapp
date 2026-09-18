@@ -1,195 +1,440 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router'
+import { CreateHabitPurposeStep } from '@/features/habits/components/CreateHabitPurposeStep'
+import { HabitTraitCard } from '@/features/habits/components/HabitTraitCard'
+import { useHabitIdentityClaim } from '@/features/habits/hooks/useHabitIdentityClaim'
 import {
-  DndContext,
-  DragOverlay,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
-} from '@dnd-kit/core'
-import type { HabitPurpose, HabitPurposePlacement } from '@/features/habits/types/habit-purpose.types'
-import type { HabitPurposeInput } from '@/features/habits/types/habit-purpose.types'
+  useHabitFollowUpsInDatesQuery,
+  useHabitsQuery,
+  useUpdateHabitMutation,
+} from '@/features/habits/hooks/useHabits'
 import {
   useHabitPurposesQuery,
-  useCreateHabitPurposeMutation,
-  useUpdateHabitPurposeMutation,
   useRemoveHabitPurposeMutation,
 } from '@/features/habits/hooks/useHabitPurposes'
-import { HabitPurposeCard } from '@/features/habits/components/HabitPurposeCard'
-import { HabitPurposeForm } from '@/features/habits/components/HabitPurposeForm'
-import { PersonaColumn } from '@/features/habits/components/PersonaColumn'
+import { habitsPaths } from '@/features/habits/routes/habits-paths'
+import {
+  getDismissedSuggestionIds,
+  useHabitIdentityStore,
+} from '@/features/habits/store/habit-identity.store'
+import type { Habit } from '@/features/habits/types/habit.types'
+import { getIdentitySuggestions } from '@/features/habits/data/identity-suggestions'
+import { parseIntention } from '@/features/habits/utils/habit-form.utils'
+import {
+  buildPersonaView,
+  composeTraitProgressLine,
+  formatEvidenceSentence,
+  PORTRAIT_HONEST_LINE,
+  readPurposeDescription,
+  type HabitMilestoneKind,
+} from '@/features/habits/utils/habit-identity.utils'
+import { addDaysToString, getTodayString } from '@/features/habits/utils/habit-type.utils'
+import { buildFollowUpsByHabit } from '@/features/habits/utils/habit-stats.utils'
 import { Alert } from '@/shared/ui/Alert'
+import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
-import { Modal } from '@/shared/ui/Modal'
+import { EmptyState } from '@/shared/ui/EmptyState'
+import { Select } from '@/shared/ui/Select'
 import { Skeleton } from '@/shared/ui/Skeleton'
+import { SteppedModal } from '@/shared/ui/SteppedModal'
 import styles from './HabitPersonaPage.module.scss'
 
+/** Ventana con la que se mide el cumplimiento reciente de los compromisos. */
+const COMMITMENT_WINDOW_DAYS = 30
+/** Ventana corta del estado «en camino». */
+const WAYTO_WINDOW_DAYS = 7
+
 export function HabitPersonaPage() {
-  const { data: purposes = [], isLoading, isError, error, refetch } = useHabitPurposesQuery()
-  const createMutation = useCreateHabitPurposeMutation()
-  const updateMutation = useUpdateHabitPurposeMutation()
-  const removeMutation = useRemoveHabitPurposeMutation()
+  const today = getTodayString()
+  const windowStart = addDaysToString(today, -(COMMITMENT_WINDOW_DAYS - 1))
+  const waytoStart = addDaysToString(today, -(WAYTO_WINDOW_DAYS - 1))
+
+  const purposesQuery = useHabitPurposesQuery()
+  const habitsQuery = useHabitsQuery({ isActive: true })
+  const followUpsQuery = useHabitFollowUpsInDatesQuery(windowStart, today)
+
+  const dismissedSuggestions = useHabitIdentityStore((state) => state.dismissedSuggestions)
+  const dismissSuggestion = useHabitIdentityStore((state) => state.dismissSuggestion)
+
+  const claim = useHabitIdentityClaim()
+  const updateHabit = useUpdateHabitMutation()
+  const removePurpose = useRemoveHabitPurposeMutation()
   const { confirm } = useConfirmDialog()
 
-  const [editingPurpose, setEditingPurpose] = useState<HabitPurpose | null>(null)
-  const [isCreating, setIsCreating] = useState(false)
-  const [activeId, setActiveId] = useState<string | null>(null)
+  const [showOrphans, setShowOrphans] = useState(false)
+  const [isWritingPurpose, setIsWritingPurpose] = useState(false)
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+  const purposes = useMemo(() => purposesQuery.data ?? [], [purposesQuery.data])
+  const habits = useMemo(() => habitsQuery.data?.habits ?? [], [habitsQuery.data])
 
-  const pool = purposes.filter((p) => p.placement === 'pool')
-  const want = purposes.filter((p) => p.placement === 'want')
-  const avoid = purposes.filter((p) => p.placement === 'avoid')
+  const followUpsByHabit = useMemo(
+    () => buildFollowUpsByHabit(followUpsQuery.data),
+    [followUpsQuery.data],
+  )
 
-  const activePurpose = activeId ? purposes.find((p) => p.id === activeId) ?? null : null
+  /** Días cumplidos por hábito dentro de una ventana. Cliente puro. */
+  const countAccomplished = useMemo(() => {
+    return (habitId: string, from: string): number => {
+      const byDate = followUpsByHabit.get(habitId)
+      if (!byDate) return 0
+      let total = 0
+      for (const followUp of byDate.values()) {
+        if (followUp.date < from) continue
+        if (followUp.isAccomplished || followUp.isLifeline) total += 1
+      }
+      return total
+    }
+  }, [followUpsByHabit])
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string)
+  const persona = useMemo(
+    () =>
+      buildPersonaView({
+        habits,
+        purposes,
+        accomplishedLastWeek: new Map(
+          habits.map((habit) => [habit.id, countAccomplished(habit.id, waytoStart)]),
+        ),
+        today,
+      }),
+    [habits, purposes, countAccomplished, waytoStart, today],
+  )
+
+  const commitments = useMemo(
+    () =>
+      habits
+        .filter((habit) => !habit.shouldAvoid)
+        .map((habit) => ({
+          habit,
+          intention: parseIntention(habit.description),
+          done: countAccomplished(habit.id, windowStart),
+        })),
+    [habits, countAccomplished, windowStart],
+  )
+
+  const isLoading = purposesQuery.isLoading || habitsQuery.isLoading
+  const isError = purposesQuery.isError || habitsQuery.isError
+
+  function handleConfirmTrait(habit: Habit, milestone: HabitMilestoneKind) {
+    const suggestion = suggestFor(habit)
+    claim.mutate({ habit, milestone, name: suggestion.name, icon: suggestion.icon, today })
   }
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    setActiveId(null)
-    if (!over || !activeId) return
-    const currentPurpose = purposes.find((p) => p.id === active.id)
-    if (!currentPurpose) return
-    const newPlacement = over.id as HabitPurposePlacement
-    if (newPlacement === currentPurpose.placement) return
-    updateMutation.mutate({ id: currentPurpose.id, placement: newPlacement })
+  function suggestFor(habit: Habit) {
+    return getIdentitySuggestions({
+      habitName: habit.name,
+      categoryName: habit.category?.name,
+      shouldAvoid: habit.shouldAvoid,
+      excludeIds: getDismissedSuggestionIds(dismissedSuggestions, habit.id),
+    })[0]
   }
 
-  const handleCreate = (values: HabitPurposeInput) => {
-    createMutation.mutate(
-      { ...values, placement: 'pool' },
-      { onSuccess: () => setIsCreating(false) },
-    )
-  }
-
-  const handleEdit = (values: HabitPurposeInput) => {
-    if (!editingPurpose) return
-    updateMutation.mutate(
-      { id: editingPurpose.id, ...values },
-      { onSuccess: () => setEditingPurpose(null) },
-    )
-  }
-
-  const handleMove = (id: string, placement: HabitPurposePlacement) => {
-    updateMutation.mutate({ id, placement })
-  }
-
-  const handleDelete = async (id: string) => {
-    const purpose = purposes.find((p) => p.id === id)
-    const confirmed = await confirm({
+  async function handleRemovePurpose(id: string, name: string) {
+    const ok = await confirm({
       title: 'Eliminar propósito',
-      description: `¿Eliminar "${purpose?.name ?? 'este propósito'}"?`,
+      description: `¿Eliminar "${name}"? Se borra el texto que escribiste.`,
       confirmLabel: 'Eliminar',
       cancelLabel: 'Cancelar',
       variant: 'danger',
     })
-    if (!confirmed) return
-    removeMutation.mutate(id)
+    if (!ok) return
+    removePurpose.mutate(id)
   }
 
-  return (
-    <section className={styles.page}>
-      <div className={styles.toolbar}>
-        <div>
-          <h2 className={styles.heading}>Mi Persona Ideal</h2>
-          <p className={styles.lead}>Define quién quieres ser y qué quieres evitar.</p>
-        </div>
-        <Button type="button" onClick={() => setIsCreating(true)} disabled={isLoading}>
-          Nuevo propósito
-        </Button>
-      </div>
+  const header = (
+    <header className={styles.head}>
+      <p className={styles.eyebrow}>Mi Persona</p>
+      <h1 className={styles.title}>Esto es lo que dicen tus registros</h1>
+      <p className={styles.lead}>
+        No lo escribiste tú en un formulario: lo escribieron tus registros. Confirma lo que te suene
+        verdad y descarta lo que no.
+      </p>
+    </header>
+  )
 
-      {isError ? (
-        <Alert variant="danger" title="No se pudieron cargar los propósitos">
-          {error instanceof Error ? error.message : 'Error desconocido'}
-          <Button type="button" variant="ghost" size="sm" onClick={() => void refetch()}>
+  if (isLoading) {
+    return (
+      <div className={styles.root}>
+        {header}
+        <div className={styles.traits} aria-busy="true">
+          {[0, 1, 2].map((index) => (
+            <Skeleton key={index} height={172} radius="1.375rem" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    const error = purposesQuery.error ?? habitsQuery.error
+    return (
+      <div className={styles.root}>
+        {header}
+        <Alert variant="danger" title="No pudimos componer tu retrato">
+          <p className={styles.errorText}>
+            {error instanceof Error ? error.message : 'Revisa tu conexión e inténtalo otra vez.'}
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              void purposesQuery.refetch()
+              void habitsQuery.refetch()
+            }}
+          >
             Reintentar
           </Button>
         </Alert>
+      </div>
+    )
+  }
+
+  if (habits.length === 0) {
+    return (
+      <div className={styles.root}>
+        {header}
+        <EmptyState
+          title="Todavía no hay registros que leer"
+          description="Marca un hábito unos días y esta pantalla empezará a decirte quién eres."
+          action={<Button to={habitsPaths.myDay}>Ir a Mi Día</Button>}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.root}>
+      {header}
+
+      {/* 1 · El retrato */}
+      <section className={styles.portrait} aria-label="Tu retrato">
+        {persona.portrait ? (
+          <>
+            <p className={styles.portraitLead}>{persona.portrait.lead}</p>
+            <p className={styles.portraitSupport}>{persona.portrait.support}</p>
+            <p className={styles.portraitSource}>
+              <AppIcon name="chart-line" size="2xs" decorative />
+              {persona.portrait.source}
+            </p>
+          </>
+        ) : (
+          <p className={styles.portraitHonest}>{PORTRAIT_HONEST_LINE}</p>
+        )}
+      </section>
+
+      {/* 2 · Rasgos */}
+      <p className={styles.section}>Rasgos</p>
+      <div className={styles.traits}>
+        {persona.won.map(({ purpose, habit, note }) => (
+          <HabitTraitCard
+            key={purpose.id}
+            state="won"
+            name={purpose.name}
+            icon={purpose.icon}
+            evidence={formatEvidenceSentence(note.evidence)}
+            freeText={note.freeText}
+            chips={[
+              { icon: habit.icon, label: habit.name },
+              { label: habit.shouldAvoid ? `${habit.streak} sin caer` : `racha ${habit.streak}` },
+            ]}
+          />
+        ))}
+
+        {persona.claimable.map(({ habit, milestone }) => {
+          const suggestion = suggestFor(habit)
+          return (
+            <HabitTraitCard
+              key={habit.id}
+              state="proposed"
+              name={suggestion.name}
+              icon={suggestion.icon}
+              evidence={`Llevas ${habit.streak} días seguidos con ${habit.name}. La app te lo propone; tú decides si es verdad.`}
+              chips={[{ icon: habit.icon, label: habit.name }]}
+              isBusy={claim.isPending}
+              onConfirm={() => handleConfirmTrait(habit, milestone)}
+              onDismiss={() => dismissSuggestion(habit.id, suggestion.id)}
+            />
+          )
+        })}
+
+        {persona.wayto.map(({ habit, progress }) => (
+          <HabitTraitCard
+            key={habit.id}
+            state="wayto"
+            name={suggestFor(habit).name}
+            icon={suggestFor(habit).icon}
+            evidence={composeTraitProgressLine(progress)}
+            progress={progress}
+            chips={[{ icon: habit.icon, label: habit.name }]}
+          />
+        ))}
+      </div>
+
+      {/* 3 · Mis compromisos */}
+      <p className={styles.section}>Mis compromisos</p>
+      <div className={styles.commitments}>
+        {commitments.map(({ habit, intention, done }) => (
+          <div
+            key={habit.id}
+            className={[styles.commitment, intention ? '' : styles.commitmentMuted]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <span className={styles.capsule}>
+              <AppIcon name={habit.icon ?? 'seedling'} size="sm" decorative />
+            </span>
+            <div className={styles.commitmentText}>
+              {intention ? (
+                <>
+                  <p className={styles.commitmentSentence}>
+                    {intention.anchor ? (
+                      <>
+                        Cuando <strong>{intention.anchor}</strong>, haré{' '}
+                      </>
+                    ) : (
+                      'Haré '
+                    )}
+                    <strong>{intention.action}</strong>
+                    {intention.place ? (
+                      <>
+                        {' '}
+                        en <strong>{intention.place}</strong>
+                      </>
+                    ) : null}
+                    .
+                  </p>
+                  <p className={styles.commitmentHint}>
+                    Cumplido {done} de los últimos {COMMITMENT_WINDOW_DAYS} días
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className={styles.commitmentSentence}>
+                    {habit.name} todavía no tiene un momento fijo del día.
+                  </p>
+                  <p className={styles.commitmentHint}>
+                    Los hábitos con un ancla concreta se cumplen mucho más
+                  </p>
+                </>
+              )}
+            </div>
+            <Link className={styles.link} to={habitsPaths.edit(habit.id)}>
+              {intention ? 'Editar' : 'Ponerle uno'}
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {/* 4 · Lo que dejo atrás */}
+      {persona.avoidHabits.length > 0 ? (
+        <>
+          <p className={styles.section}>Lo que dejo atrás</p>
+          <div className={styles.commitments}>
+            {persona.avoidHabits.map((habit) => (
+              <div key={habit.id} className={styles.commitment}>
+                <span className={styles.capsule}>
+                  <AppIcon name={habit.icon ?? 'seedling'} size="sm" decorative />
+                </span>
+                <div className={styles.commitmentText}>
+                  <p className={styles.commitmentSentence}>{habit.name}</p>
+                  <p className={styles.commitmentHint}>
+                    <strong>{habit.streak} días</strong> sin caer · tu mejor marca{' '}
+                    {habit.maxStreak > 0 ? `fueron ${habit.maxStreak}` : 'está por llegar'}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : null}
 
-      {isLoading ? (
-        <div className={styles.loadingGrid}>
-          {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} height={40} radius="var(--radius-md)" />
-          ))}
+      {/* 5 · Al pie, discreto */}
+      <div className={styles.footer}>
+        <span className={styles.footerText}>
+          {persona.orphanPurposes.length > 0
+            ? `Tienes ${persona.orphanPurposes.length} propósito${
+                persona.orphanPurposes.length === 1 ? ' que escribiste' : 's que escribiste'
+              } antes y ningún hábito ha llegado a ganar.`
+            : 'Todos tus propósitos están sostenidos por un hábito.'}
+        </span>
+        {persona.orphanPurposes.length > 0 ? (
+          <button
+            type="button"
+            className={styles.link}
+            onClick={() => setShowOrphans((value) => !value)}
+            aria-expanded={showOrphans}
+          >
+            {showOrphans ? 'Ocultarlos' : 'Verlos'}
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={styles.link}
+          onClick={() => setIsWritingPurpose(true)}
+        >
+          Escribir un propósito a mano
+        </button>
+      </div>
+
+      {showOrphans ? (
+        <div className={styles.orphans}>
+          {persona.orphanPurposes.map((purpose) => {
+            const note = readPurposeDescription(purpose.description)
+            return (
+              <div key={purpose.id} className={styles.orphan}>
+                <div className={styles.commitmentText}>
+                  <p className={styles.commitmentSentence}>
+                    {purpose.icon ? <AppIcon name={purpose.icon} size="xs" decorative /> : null}{' '}
+                    {purpose.name}
+                  </p>
+                  {note.freeText ? (
+                    <p className={styles.orphanText}>{note.freeText}</p>
+                  ) : null}
+                </div>
+
+                <div className={styles.orphanSelect}>
+                  <Select
+                    id={`link-${purpose.id}`}
+                    label="Enlazar a un hábito"
+                    placeholder="Elegir hábito…"
+                    value=""
+                    disabled={updateHabit.isPending}
+                    options={habits
+                      .filter((habit) => habit.purposeId == null)
+                      .map((habit) => ({ value: habit.id, label: habit.name }))}
+                    onChange={(habitId) => {
+                      if (!habitId) return
+                      updateHabit.mutate({ id: habitId, purposeId: purpose.id })
+                    }}
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void handleRemovePurpose(purpose.id, purpose.name)}
+                  disabled={removePurpose.isPending}
+                >
+                  Eliminar
+                </Button>
+              </div>
+            )
+          })}
         </div>
       ) : null}
 
-      {!isLoading && !isError ? (
-        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className={styles.threeColumns}>
-            <PersonaColumn
-              title="Sin asignar"
-              placement="pool"
-              purposes={pool}
-              onEdit={(p) => setEditingPurpose(p)}
-              onDelete={(id) => void handleDelete(id)}
-              onMove={handleMove}
-            />
-            <PersonaColumn
-              title="Lo que quiero"
-              placement="want"
-              purposes={want}
-              onEdit={(p) => setEditingPurpose(p)}
-              onDelete={(id) => void handleDelete(id)}
-              onMove={handleMove}
-            />
-            <PersonaColumn
-              title="Lo que no quiero"
-              placement="avoid"
-              purposes={avoid}
-              onEdit={(p) => setEditingPurpose(p)}
-              onDelete={(id) => void handleDelete(id)}
-              onMove={handleMove}
-            />
-          </div>
-
-          <DragOverlay>
-            {activePurpose ? (
-              <HabitPurposeCard
-                purpose={activePurpose}
-                onEdit={() => {}}
-                onDelete={() => {}}
-                onMove={() => {}}
-                dragging
-              />
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      ) : null}
-
-      <Modal
-        open={isCreating}
-        onClose={() => { if (!createMutation.isPending) setIsCreating(false) }}
-        title="Nuevo propósito"
+      <SteppedModal
+        open={isWritingPurpose}
+        onClose={() => setIsWritingPurpose(false)}
+        title="Escribir un propósito"
+        description="La salida de emergencia: si ya sabes quién quieres ser, escríbelo tú."
+        ds="aura"
         size="md"
+        mobileSheet
       >
-        <HabitPurposeForm
-          onSubmit={handleCreate}
-          onCancel={() => setIsCreating(false)}
-          loading={createMutation.isPending}
-        />
-      </Modal>
-
-      <Modal
-        open={editingPurpose !== null}
-        onClose={() => { if (!updateMutation.isPending) setEditingPurpose(null) }}
-        title="Editar propósito"
-        size="md"
-      >
-        <HabitPurposeForm
-          initial={editingPurpose ?? undefined}
-          onSubmit={handleEdit}
-          onCancel={() => setEditingPurpose(null)}
-          loading={updateMutation.isPending}
-        />
-      </Modal>
-    </section>
+        <CreateHabitPurposeStep placement="want" onCreated={() => setIsWritingPurpose(false)} />
+      </SteppedModal>
+    </div>
   )
 }

@@ -1,46 +1,263 @@
-.page {
+/* Mi Persona: el espejo con pruebas. Fuera columnas, fuera arrastre. */
+
+.root {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.125rem;
 }
 
-.toolbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+/* ── Encabezado ──────────────────────────────────────────────────────────── */
+
+.head {
+  min-width: 0;
 }
 
-.heading {
-  margin: 0 0 0.25rem;
-  font-size: 1.125rem;
+.eyebrow {
+  margin: 0 0 0.375rem;
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.375rem;
   font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--color-text);
+
+  @media (min-width: 900px) {
+    font-size: 1.75rem;
+  }
 }
 
 .lead {
+  max-width: 39rem;
+  margin: 0.5rem 0 0;
+  font-family: var(--font-label, inherit);
+  font-size: 0.84375rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.errorText {
+  margin: 0 0 0.75rem;
+}
+
+/* ── 1 · El retrato ──────────────────────────────────────────────────────── */
+
+.portrait {
+  padding: 1.5rem 1.625rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.625rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-glass),
+    color-mix(in srgb, var(--color-focus-ring) 14%, var(--color-glass))
+  );
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: var(--shadow-sm);
+}
+
+.portraitLead {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 1.1875rem;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+
+  @media (min-width: 900px) {
+    font-size: 1.3125rem;
+  }
+}
+
+.portraitSupport {
+  margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.portraitSource {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  margin: 0.875rem 0 0;
+  font-family: var(--font-label, inherit);
+  font-size: 0.71875rem;
   color: var(--color-text-muted);
 }
 
-.loadingGrid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.portraitHonest {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
 }
 
-.threeColumns {
+/* ── Títulos de sección ──────────────────────────────────────────────────── */
+
+.section {
+  margin: 0.375rem 0 -0.375rem;
+  font-family: var(--font-label, inherit);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ── 2 · Rasgos ──────────────────────────────────────────────────────────── */
+
+.traits {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1rem;
-  align-items: flex-start;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
 
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr 1fr;
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  @media (min-width: 1000px) {
+    grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* ── 3 · Compromisos y 4 · Lo que dejo atrás ─────────────────────────────── */
+
+.commitments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5625rem;
+}
+
+.commitment {
+  display: flex;
+  align-items: center;
+  gap: 0.8125rem;
+  padding: 0.8125rem 1rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.commitmentMuted {
+  opacity: 0.72;
+}
+
+.capsule {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.375rem;
+  height: 2.375rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.8125rem;
+  background: color-mix(in srgb, var(--color-glass) 75%, transparent);
+  color: var(--color-primary);
+}
+
+.commitmentText {
+  flex: 1;
+  min-width: 0;
+}
+
+.commitmentSentence {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-text);
+
+  strong {
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+}
+
+.commitmentHint {
+  margin: 0.1875rem 0 0;
+  font-family: var(--font-label, inherit);
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+
+  strong {
+    color: var(--color-text);
+  }
+}
+
+/* ── 5 · Al pie, discreto ────────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  padding-top: 0.375rem;
+}
+
+.footerText {
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.link {
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+  background: none;
+  color: var(--color-primary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 3px;
+  }
+}
+
+.orphans {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5625rem;
+}
+
+.orphan {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.8125rem 1rem;
+  border: 1px dashed var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--color-glass) 55%, transparent);
+}
+
+.orphanText {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+}
+
+.orphanSelect {
+  flex: 0 1 15rem;
+  min-width: 11rem;
 }

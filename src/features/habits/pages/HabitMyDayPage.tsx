@@ -3,8 +3,10 @@ import { HabitCategoryFilter } from '@/features/habits/components/HabitCategoryF
 import { HabitDayRow } from '@/features/habits/components/HabitDayRow'
 import { HabitFollowUpDrawer } from '@/features/habits/components/HabitFollowUpDrawer'
 import { HabitFormModal } from '@/features/habits/components/HabitFormModal'
+import { HabitIdentityMoment } from '@/features/habits/components/HabitIdentityMoment'
 import { HabitMyDayMetrics } from '@/features/habits/components/HabitMyDayMetrics'
 import { HabitWeekSelector } from '@/features/habits/components/HabitWeekSelector'
+import { useHabitIdentityMoment } from '@/features/habits/hooks/useHabitIdentityMoment'
 import {
   useHabitCategoriesQuery,
   useHabitFollowUpsInDatesQuery,
@@ -34,6 +36,7 @@ import { Button } from '@/shared/ui/Button'
 import { Card } from '@/shared/ui/Card'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { Skeleton } from '@/shared/ui/Skeleton'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import styles from './HabitMyDayPage.module.scss'
 
 const EMPTY_FOLLOW_UP_MAP = new Map<string, HabitFollowUp>()
@@ -84,6 +87,42 @@ export function HabitMyDayPage() {
   const registerEntry = registerTarget
     ? (entries.find((entry) => entry.habit.id === registerTarget.habitId) ?? null)
     : null
+
+  // El hito no interrumpe: en escritorio va incrustado bajo la fila del hábito
+  // que lo dispara; en móvil es una hoja inferior que se descarta deslizando.
+  const identity = useHabitIdentityMoment(entries, focusDate, today)
+  const isCompact = useMediaQuery('(max-width: 599px)')
+
+  function renderIdentityMoment(habitId: string) {
+    if (identity.saved?.habit.id === habitId) {
+      return (
+        <HabitIdentityMoment
+          habit={identity.saved.habit}
+          milestone={identity.saved.milestone}
+          onChoose={identity.choose}
+          onDismiss={identity.dismiss}
+          savedName={identity.saved.name}
+          savedIcon={identity.saved.icon}
+          presentation={isCompact ? 'sheet' : 'inline'}
+        />
+      )
+    }
+
+    if (identity.moment?.habit.id !== habitId) return null
+
+    return (
+      <HabitIdentityMoment
+        habit={identity.moment.habit}
+        milestone={identity.moment.milestone}
+        categoryName={identity.moment.habit.category?.name}
+        dismissedSuggestionIds={identity.dismissedSuggestionIds}
+        onChoose={identity.choose}
+        onDismiss={identity.dismiss}
+        isSaving={identity.isSaving}
+        presentation={isCompact ? 'sheet' : 'inline'}
+      />
+    )
+  }
 
   const header = (
     <header className={styles.head}>
@@ -224,6 +263,7 @@ export function HabitMyDayPage() {
                     setRegisterTarget({ habitId: entry.habit.id, date, followUp })
                   }
                 />
+                {renderIdentityMoment(entry.habit.id)}
               </li>
             ))}
           </ul>

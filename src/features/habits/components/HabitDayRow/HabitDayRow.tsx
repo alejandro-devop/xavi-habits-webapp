@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router'
 import { HabitDayMarker } from '@/features/habits/components/HabitDayMarker'
+import { HabitPurposeBanner } from '@/features/habits/components/HabitPurposeBanner'
 import { HabitStreakBadge } from '@/features/habits/components/HabitStreakBadge'
 import {
   useAddHabitFollowUpMutation,
@@ -223,6 +224,15 @@ export function HabitDayRow({
               </span>
             ) : null}
           </p>
+
+          {/* Al empezar y al lograr sale la identidad; al fallar, solo la racha
+              y el salvavidas. La decisión vive entera en el banner. */}
+          <HabitPurposeBanner
+            purpose={habit.purpose}
+            status={focusStatus}
+            days={habit.days}
+            lifelinesRemaining={lifelinesRemaining}
+          />
         </div>
       </div>
 

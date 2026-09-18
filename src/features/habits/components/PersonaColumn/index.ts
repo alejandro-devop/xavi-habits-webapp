@@ -1,1 +1,0 @@
-export { PersonaColumn } from './PersonaColumn'

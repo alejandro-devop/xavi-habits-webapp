@@ -1990,7 +1990,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "activityfollowupcard_activityfollowupcard",
-      "community": 393,
+      "community": 35,
       "norm_label": "activityfollowupcard.tsx"
     },
     {
@@ -2000,7 +2000,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "activityfollowupcard_activityfollowupcard_activityfollowupcardprops",
-      "community": 393,
+      "community": 35,
       "norm_label": "activityfollowupcardprops"
     },
     {
@@ -2010,7 +2010,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "activityfollowupcard_activityfollowupcard_activityfollowupcard",
-      "community": 393,
+      "community": 35,
       "norm_label": "activityfollowupcard()"
     },
     {
@@ -2020,7 +2020,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "activityfollowupcard_index",
-      "community": 393,
+      "community": 35,
       "norm_label": "index.ts"
     },
     {
@@ -2950,7 +2950,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal",
-      "community": 496,
+      "community": 35,
       "norm_label": "createfollowupfromfreeslotmodal.tsx"
     },
     {
@@ -2960,7 +2960,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodalprops",
-      "community": 496,
+      "community": 35,
       "norm_label": "createfollowupfromfreeslotmodalprops"
     },
     {
@@ -2970,7 +2970,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_rootstepprops",
-      "community": 496,
+      "community": 35,
       "norm_label": "rootstepprops"
     },
     {
@@ -2980,7 +2980,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_createfollowuprootstep",
-      "community": 496,
+      "community": 6,
       "norm_label": "createfollowuprootstep()"
     },
     {
@@ -2990,7 +2990,7 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal_createfollowupfromfreeslotmodal",
-      "community": 496,
+      "community": 35,
       "norm_label": "createfollowupfromfreeslotmodal()"
     },
     {
@@ -3000,7 +3000,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createfollowupfromfreeslotmodal_index",
-      "community": 496,
+      "community": 35,
       "norm_label": "index.ts"
     },
     {
@@ -4210,7 +4210,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_invalidatefollowupqueries",
-      "community": 462,
+      "community": 33,
       "norm_label": "invalidatefollowupqueries()"
     },
     {
@@ -4240,7 +4240,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_useactivitydayfollowupsquery",
-      "community": 25,
+      "community": 33,
       "norm_label": "useactivitydayfollowupsquery()"
     },
     {
@@ -4720,7 +4720,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_standuppage",
-      "community": 324,
+      "community": 433,
       "norm_label": "standuppage.tsx"
     },
     {
@@ -4730,7 +4730,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "pages_standuppage_status_options",
-      "community": 324,
+      "community": 433,
       "norm_label": "status_options"
     },
     {
@@ -4740,7 +4740,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "pages_standuppage_status_badge",
-      "community": 324,
+      "community": 433,
       "norm_label": "status_badge"
     },
     {
@@ -4750,7 +4750,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "pages_standuppage_emptyform",
-      "community": 324,
+      "community": 433,
       "norm_label": "emptyform()"
     },
     {
@@ -6160,7 +6160,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "utils_activity_followup_form_finishformfromsession",
-      "community": 462,
+      "community": 6,
       "norm_label": "finishformfromsession()"
     },
     {
@@ -6220,7 +6220,7 @@
       "source_location": "L205",
       "_origin": "ast",
       "id": "utils_activity_followup_form_emptyeditfollowupformvalues",
-      "community": 462,
+      "community": 33,
       "norm_label": "emptyeditfollowupformvalues()"
     },
     {
@@ -6330,7 +6330,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form",
-      "community": 496,
+      "community": 28,
       "norm_label": "activity-free-slot-form.ts"
     },
     {
@@ -6340,7 +6340,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_emptyfreeslotformvalues",
-      "community": 496,
+      "community": 28,
       "norm_label": "emptyfreeslotformvalues()"
     },
     {
@@ -6350,7 +6350,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_freeslotdurationtotal",
-      "community": 496,
+      "community": 28,
       "norm_label": "freeslotdurationtotal()"
     },
     {
@@ -6360,7 +6360,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_clampfreeslotformtoslot",
-      "community": 496,
+      "community": 28,
       "norm_label": "clampfreeslotformtoslot()"
     },
     {
@@ -6370,7 +6370,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_validatefreeslotform",
-      "community": 496,
+      "community": 28,
       "norm_label": "validatefreeslotform()"
     },
     {
@@ -6380,7 +6380,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "utils_activity_free_slot_form_freeslotformtoinput",
-      "community": 496,
+      "community": 28,
       "norm_label": "freeslotformtoinput()"
     },
     {
@@ -6440,7 +6440,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getcurrentlocaldate",
-      "community": 462,
+      "community": 33,
       "norm_label": "getcurrentlocaldate()"
     },
     {
@@ -6460,7 +6460,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "utils_activity_time_utils_formatdatetoymd",
-      "community": 462,
+      "community": 5,
       "norm_label": "formatdatetoymd()"
     },
     {
@@ -6480,7 +6480,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getmondayofweek",
-      "community": 462,
+      "community": 33,
       "norm_label": "getmondayofweek()"
     },
     {
@@ -6490,7 +6490,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getweekdaysfordate",
-      "community": 462,
+      "community": 33,
       "norm_label": "getweekdaysfordate()"
     },
     {
@@ -6500,7 +6500,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getmonthdaysfordate",
-      "community": 462,
+      "community": 33,
       "norm_label": "getmonthdaysfordate()"
     },
     {
@@ -6510,7 +6510,7 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getyearmonthfromdate",
-      "community": 414,
+      "community": 6,
       "norm_label": "getyearmonthfromdate()"
     },
     {
@@ -6530,7 +6530,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "utils_activity_time_utils_cannavigatetonextmonth",
-      "community": 414,
+      "community": 6,
       "norm_label": "cannavigatetonextmonth()"
     },
     {
@@ -6550,7 +6550,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "utils_activity_time_utils_getcurrentweekrange",
-      "community": 462,
+      "community": 33,
       "norm_label": "getcurrentweekrange()"
     },
     {
@@ -6560,7 +6560,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "utils_activity_time_utils_isfuturedate",
-      "community": 25,
+      "community": 33,
       "norm_label": "isfuturedate()"
     },
     {
@@ -6570,7 +6570,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "utils_activity_time_utils_istoday",
-      "community": 33,
+      "community": 25,
       "norm_label": "istoday()"
     },
     {
@@ -6630,7 +6630,7 @@
       "source_location": "L168",
       "_origin": "ast",
       "id": "utils_activity_time_utils_normalizetimefordisplay",
-      "community": 47,
+      "community": 6,
       "norm_label": "normalizetimefordisplay()"
     },
     {
@@ -6640,7 +6640,7 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "utils_activity_time_utils_isotolocaldate",
-      "community": 462,
+      "community": 6,
       "norm_label": "isotolocaldate()"
     },
     {
@@ -6680,7 +6680,7 @@
       "source_location": "L203",
       "_origin": "ast",
       "id": "utils_activity_time_utils_formatdurationminutes",
-      "community": 393,
+      "community": 35,
       "norm_label": "formatdurationminutes()"
     },
     {
@@ -6700,7 +6700,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "utils_activity_time_utils_hoursminutestototalminutes",
-      "community": 496,
+      "community": 28,
       "norm_label": "hoursminutestototalminutes()"
     },
     {
@@ -6740,7 +6740,7 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "utils_activity_time_utils_formattimerange",
-      "community": 47,
+      "community": 6,
       "norm_label": "formattimerange()"
     },
     {
@@ -6750,7 +6750,7 @@
       "source_location": "L262",
       "_origin": "ast",
       "id": "utils_activity_time_utils_calculatedurationminutes",
-      "community": 462,
+      "community": 6,
       "norm_label": "calculatedurationminutes()"
     },
     {
@@ -9260,7 +9260,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitmeasurestep_createhabitmeasurestep",
-      "community": 426,
+      "community": 411,
       "norm_label": "createhabitmeasurestep.tsx"
     },
     {
@@ -9270,7 +9270,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "createhabitmeasurestep_createhabitmeasurestep_props",
-      "community": 426,
+      "community": 411,
       "norm_label": "props"
     },
     {
@@ -9280,7 +9280,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "createhabitmeasurestep_createhabitmeasurestep_createhabitmeasurestep",
-      "community": 426,
+      "community": 411,
       "norm_label": "createhabitmeasurestep()"
     },
     {
@@ -9290,7 +9290,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitmeasurestep_index",
-      "community": 426,
+      "community": 411,
       "norm_label": "index.ts"
     },
     {
@@ -10457,7 +10457,7 @@
       "label": "Props",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L11",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "habitformmodal_habitwizardstep1_props",
       "community": 59,
@@ -10467,7 +10467,7 @@
       "label": "HabitWizardStep1()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
-      "source_location": "L19",
+      "source_location": "L25",
       "_origin": "ast",
       "id": "habitformmodal_habitwizardstep1_habitwizardstep1",
       "community": 59,
@@ -10497,7 +10497,7 @@
       "label": "HabitWizardStep2()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
-      "source_location": "L30",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "habitformmodal_habitwizardstep2_habitwizardstep2",
       "community": 59,
@@ -10517,7 +10517,7 @@
       "label": "LIFELINE_OPTIONS",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L10",
+      "source_location": "L11",
       "_origin": "ast",
       "id": "habitformmodal_habitwizardstep3_lifeline_options",
       "community": 59,
@@ -10527,7 +10527,7 @@
       "label": "Props",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L17",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "habitformmodal_habitwizardstep3_props",
       "community": 59,
@@ -10537,7 +10537,7 @@
       "label": "HabitWizardStep3()",
       "file_type": "code",
       "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx",
-      "source_location": "L30",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "habitformmodal_habitwizardstep3_habitwizardstep3",
       "community": 59,
@@ -13150,7 +13150,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils",
-      "community": 539,
+      "community": 3,
       "norm_label": "habit-category-form.utils.ts"
     },
     {
@@ -13160,7 +13160,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils_defaultcategoryformvalues",
-      "community": 60,
+      "community": 3,
       "norm_label": "defaultcategoryformvalues()"
     },
     {
@@ -13170,7 +13170,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils_categorytoformvalues",
-      "community": 539,
+      "community": 3,
       "norm_label": "categorytoformvalues()"
     },
     {
@@ -13180,7 +13180,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils_validatecategoryform",
-      "community": 539,
+      "community": 3,
       "norm_label": "validatecategoryform()"
     },
     {
@@ -13190,7 +13190,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils_buildcategorycreatepayload",
-      "community": 539,
+      "community": 3,
       "norm_label": "buildcategorycreatepayload()"
     },
     {
@@ -13200,7 +13200,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils_buildcategoryeditpayload",
-      "community": 539,
+      "community": 3,
       "norm_label": "buildcategoryeditpayload()"
     },
     {
@@ -13210,7 +13210,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils_nextcategoryorderindex",
-      "community": 539,
+      "community": 3,
       "norm_label": "nextcategoryorderindex()"
     },
     {
@@ -16480,7 +16480,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "addprojecttoquartermodal_addprojecttoquartermodal",
-      "community": 517,
+      "community": 27,
       "norm_label": "addprojecttoquartermodal.tsx"
     },
     {
@@ -16490,7 +16490,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "addprojecttoquartermodal_addprojecttoquartermodal_props",
-      "community": 517,
+      "community": 27,
       "norm_label": "props"
     },
     {
@@ -16500,7 +16500,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "addprojecttoquartermodal_addprojecttoquartermodal_addprojecttoquartermodal",
-      "community": 517,
+      "community": 27,
       "norm_label": "addprojecttoquartermodal()"
     },
     {
@@ -16630,7 +16630,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "projectformmodal_projectformmodal",
-      "community": 27,
+      "community": 426,
       "norm_label": "projectformmodal.tsx"
     },
     {
@@ -16640,7 +16640,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "projectformmodal_projectformmodal_status_options",
-      "community": 27,
+      "community": 426,
       "norm_label": "status_options"
     },
     {
@@ -16650,7 +16650,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "projectformmodal_projectformmodal_props",
-      "community": 27,
+      "community": 426,
       "norm_label": "props"
     },
     {
@@ -16660,7 +16660,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "projectformmodal_projectformmodal_projectformmodal",
-      "community": 27,
+      "community": 426,
       "norm_label": "projectformmodal()"
     },
     {
@@ -16900,7 +16900,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "hooks_usequarters_useprojectsquery",
-      "community": 517,
+      "community": 27,
       "norm_label": "useprojectsquery()"
     },
     {
@@ -16970,7 +16970,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "hooks_usequarters_usecreateprojectmutation",
-      "community": 27,
+      "community": 426,
       "norm_label": "usecreateprojectmutation()"
     },
     {
@@ -16980,7 +16980,7 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "hooks_usequarters_useupdateprojectmutation",
-      "community": 27,
+      "community": 426,
       "norm_label": "useupdateprojectmutation()"
     },
     {
@@ -16990,7 +16990,7 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "hooks_usequarters_useremoveprojectmutation",
-      "community": 517,
+      "community": 27,
       "norm_label": "useremoveprojectmutation()"
     },
     {
@@ -17070,7 +17070,7 @@
       "source_location": "L249",
       "_origin": "ast",
       "id": "hooks_usequarters_useaddprojecttoquartermutation",
-      "community": 517,
+      "community": 27,
       "norm_label": "useaddprojecttoquartermutation()"
     },
     {
@@ -17130,7 +17130,7 @@
       "source_location": "L352",
       "_origin": "ast",
       "id": "hooks_usequarters_useweekscheduleslotsquery",
-      "community": 412,
+      "community": 27,
       "norm_label": "useweekscheduleslotsquery()"
     },
     {
@@ -21750,7 +21750,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "hooks_useupcomingroutineeventsuggestion_useupcomingroutineeventsuggestion",
-      "community": 33,
+      "community": 41,
       "norm_label": "useupcomingroutineeventsuggestion()"
     },
     {
@@ -21990,7 +21990,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "types_weekly_routine_types_dayofweek",
-      "community": 72,
+      "community": 41,
       "norm_label": "dayofweek"
     },
     {
@@ -22210,7 +22210,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "utils_planner_utils_generatetimeblocks",
-      "community": 0,
+      "community": 393,
       "norm_label": "generatetimeblocks()"
     },
     {
@@ -22440,7 +22440,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "utils_routine_suggestion_utils_getcurrentdayofweek",
-      "community": 41,
+      "community": 450,
       "norm_label": "getcurrentdayofweek()"
     },
     {
@@ -22860,7 +22860,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "projectspage_projectspage",
-      "community": 517,
+      "community": 27,
       "norm_label": "projectspage.tsx"
     },
     {
@@ -22870,7 +22870,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "projectspage_projectspage_projectspage",
-      "community": 517,
+      "community": 27,
       "norm_label": "projectspage()"
     },
     {
@@ -23290,7 +23290,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "todaypage_todaypage",
-      "community": 446,
+      "community": 37,
       "norm_label": "todaypage.tsx"
     },
     {
@@ -23300,7 +23300,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "todaypage_todaypage_gettodaylabel",
-      "community": 446,
+      "community": 37,
       "norm_label": "gettodaylabel()"
     },
     {
@@ -23310,7 +23310,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "todaypage_todaypage_todaypage",
-      "community": 446,
+      "community": 37,
       "norm_label": "todaypage()"
     },
     {
@@ -24577,7 +24577,7 @@
       "label": "catalogIcons",
       "file_type": "code",
       "source_file": "src/shared/icons/app-icons.ts",
-      "source_location": "L20",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "icons_app_icons_catalogicons",
       "community": 79,
@@ -24587,7 +24587,7 @@
       "label": "appIcons",
       "file_type": "code",
       "source_file": "src/shared/icons/app-icons.ts",
-      "source_location": "L35",
+      "source_location": "L37",
       "_origin": "ast",
       "id": "icons_app_icons_appicons",
       "community": 79,
@@ -24597,7 +24597,7 @@
       "label": "AppIconName",
       "file_type": "code",
       "source_file": "src/shared/icons/app-icons.ts",
-      "source_location": "L37",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "icons_app_icons_appiconname",
       "community": 79,
@@ -24607,7 +24607,7 @@
       "label": "appIconMap",
       "file_type": "code",
       "source_file": "src/shared/icons/app-icons.ts",
-      "source_location": "L39",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "icons_app_icons_appiconmap",
       "community": 79,
@@ -24617,11 +24617,41 @@
       "label": "iconNameAliases",
       "file_type": "code",
       "source_file": "src/shared/icons/app-icons.ts",
-      "source_location": "L44",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "icons_app_icons_iconnamealiases",
       "community": 79,
       "norm_label": "iconnamealiases"
+    },
+    {
+      "label": "catalog-integrity.test.ts",
+      "file_type": "code",
+      "source_file": "src/shared/icons/catalog-integrity.test.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "icons_catalog_integrity_test",
+      "community": 442,
+      "norm_label": "catalog-integrity.test.ts"
+    },
+    {
+      "label": "PICKABLE_CATEGORIES",
+      "file_type": "code",
+      "source_file": "src/shared/icons/catalog-integrity.test.ts",
+      "source_location": "L8",
+      "_origin": "ast",
+      "id": "icons_catalog_integrity_test_pickable_categories",
+      "community": 442,
+      "norm_label": "pickable_categories"
+    },
+    {
+      "label": "pickerIcons",
+      "file_type": "code",
+      "source_file": "src/shared/icons/catalog-integrity.test.ts",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "icons_catalog_integrity_test_pickericons",
+      "community": 442,
+      "norm_label": "pickericons"
     },
     {
       "label": "entertainment.icons.ts",
@@ -24714,6 +24744,16 @@
       "norm_label": "productivity.icons.ts"
     },
     {
+      "label": "social.icons.ts",
+      "file_type": "code",
+      "source_file": "src/shared/icons/catalog/social.icons.ts",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "catalog_social_icons",
+      "community": 446,
+      "norm_label": "social.icons.ts"
+    },
+    {
       "label": "study.icons.ts",
       "file_type": "code",
       "source_file": "src/shared/icons/catalog/study.icons.ts",
@@ -24760,7 +24800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "icons_categories",
-      "community": 433,
+      "community": 3,
       "norm_label": "categories.ts"
     },
     {
@@ -24770,7 +24810,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "icons_categories_app_icon_category_labels",
-      "community": 433,
+      "community": 3,
       "norm_label": "app_icon_category_labels"
     },
     {
@@ -24780,7 +24820,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "icons_categories_app_icon_category_order",
-      "community": 433,
+      "community": 3,
       "norm_label": "app_icon_category_order"
     },
     {
@@ -24790,7 +24830,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "icons_categories_getcategorylabel",
-      "community": 433,
+      "community": 3,
       "norm_label": "getcategorylabel()"
     },
     {
@@ -24810,7 +24850,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "icons_icon_search",
-      "community": 442,
+      "community": 3,
       "norm_label": "icon-search.ts"
     },
     {
@@ -24820,7 +24860,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "icons_icon_search_stripdiacritics",
-      "community": 442,
+      "community": 3,
       "norm_label": "stripdiacritics()"
     },
     {
@@ -24830,47 +24870,57 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "icons_icon_search_normalizesearchtext",
-      "community": 442,
+      "community": 3,
       "norm_label": "normalizesearchtext()"
+    },
+    {
+      "label": "haystackCache",
+      "file_type": "code",
+      "source_file": "src/shared/icons/icon-search.ts",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "icons_icon_search_haystackcache",
+      "community": 3,
+      "norm_label": "haystackcache"
     },
     {
       "label": "buildHaystack()",
       "file_type": "code",
       "source_file": "src/shared/icons/icon-search.ts",
-      "source_location": "L12",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "icons_icon_search_buildhaystack",
-      "community": 442,
+      "community": 3,
       "norm_label": "buildhaystack()"
     },
     {
       "label": "isPickerIcon()",
       "file_type": "code",
       "source_file": "src/shared/icons/icon-search.ts",
-      "source_location": "L24",
+      "source_location": "L36",
       "_origin": "ast",
       "id": "icons_icon_search_ispickericon",
-      "community": 442,
+      "community": 3,
       "norm_label": "ispickericon()"
     },
     {
       "label": "filterAppIcons()",
       "file_type": "code",
       "source_file": "src/shared/icons/icon-search.ts",
-      "source_location": "L28",
+      "source_location": "L40",
       "_origin": "ast",
       "id": "icons_icon_search_filterappicons",
-      "community": 442,
+      "community": 3,
       "norm_label": "filterappicons()"
     },
     {
       "label": "groupIconsByCategory()",
       "file_type": "code",
       "source_file": "src/shared/icons/icon-search.ts",
-      "source_location": "L44",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "icons_icon_search_groupiconsbycategory",
-      "community": 442,
+      "community": 3,
       "norm_label": "groupiconsbycategory()"
     },
     {
@@ -24890,7 +24940,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "icons_icon_utils",
-      "community": 452,
+      "community": 3,
       "norm_label": "icon-utils.ts"
     },
     {
@@ -24900,7 +24950,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "icons_icon_utils_tostorediconname",
-      "community": 452,
+      "community": 3,
       "norm_label": "tostorediconname()"
     },
     {
@@ -24910,7 +24960,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "icons_icon_utils_cameltokebab",
-      "community": 452,
+      "community": 3,
       "norm_label": "cameltokebab()"
     },
     {
@@ -24920,7 +24970,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "icons_icon_utils_normalizeiconname",
-      "community": 452,
+      "community": 3,
       "norm_label": "normalizeiconname()"
     },
     {
@@ -24930,7 +24980,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "icons_icon_utils_geticonbyname",
-      "community": 452,
+      "community": 3,
       "norm_label": "geticonbyname()"
     },
     {
@@ -24940,7 +24990,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "icons_icon_utils_isappiconname",
-      "community": 452,
+      "community": 3,
       "norm_label": "isappiconname()"
     },
     {
@@ -25530,7 +25580,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "appicon_appicon",
-      "community": 543,
+      "community": 3,
       "norm_label": "appicon.tsx"
     },
     {
@@ -25540,7 +25590,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "appicon_appicon_appiconsize",
-      "community": 543,
+      "community": 3,
       "norm_label": "appiconsize"
     },
     {
@@ -25550,7 +25600,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "appicon_appicon_size_class",
-      "community": 543,
+      "community": 3,
       "norm_label": "size_class"
     },
     {
@@ -25560,7 +25610,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "appicon_appicon_appiconprops",
-      "community": 543,
+      "community": 3,
       "norm_label": "appiconprops"
     },
     {
@@ -25570,7 +25620,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "appicon_appicon_appicon",
-      "community": 543,
+      "community": 3,
       "norm_label": "appicon()"
     },
     {
@@ -26750,7 +26800,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "iconpicker_iconpicker",
-      "community": 433,
+      "community": 3,
       "norm_label": "iconpicker.tsx"
     },
     {
@@ -26760,7 +26810,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "iconpicker_iconpicker_iconpickerprops",
-      "community": 433,
+      "community": 3,
       "norm_label": "iconpickerprops"
     },
     {
@@ -26770,7 +26820,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "iconpicker_iconpicker_icongridcells",
-      "community": 433,
+      "community": 3,
       "norm_label": "icongridcells()"
     },
     {
@@ -26780,7 +26830,7 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "iconpicker_iconpicker_iconpicker",
-      "community": 433,
+      "community": 3,
       "norm_label": "iconpicker()"
     },
     {
@@ -50503,6 +50553,17 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "habitformmodal_habitwizardstep1",
+      "target": "habitformmodal_habitformstepbuttons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx",
       "source_location": "L9",
       "weight": 1.0,
@@ -50531,6 +50592,17 @@
       "weight": 1.0,
       "source": "habitformmodal_habitformstepbuttons_newcategorybutton",
       "target": "steppedmodal_steppedmodal_usemodalstep"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "habitformmodal_habitwizardstep1",
+      "target": "habitformmodal_habitformstepbuttons_newcategorybutton",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -69829,6 +69901,26 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/shared/icons/catalog-integrity.test.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "icons_catalog_integrity_test",
+      "target": "icons_catalog_integrity_test_pickable_categories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/shared/icons/catalog-integrity.test.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "icons_catalog_integrity_test",
+      "target": "icons_catalog_integrity_test_pickericons",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "shared/icons/categories.ts",
       "source_location": "L3",
       "weight": 1.0,
@@ -69907,6 +69999,16 @@
       "confidence_score": 1.0,
       "source": "icons_icon_search",
       "target": "icons_icon_search_groupiconsbycategory"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/shared/icons/icon-search.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "icons_icon_search",
+      "target": "icons_icon_search_haystackcache",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -80056,5 +80158,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "f7a9d11692cd2badef49e2cc95f5f7fc1a52fc1c"
+  "built_at_commit": "c9454314a026d8631ba0d20c8e687c0c2c1aaed9"
 }

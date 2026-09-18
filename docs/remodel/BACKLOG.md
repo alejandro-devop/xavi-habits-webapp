@@ -7,7 +7,7 @@ Fases pedidas y todavía sin render aprobado. El circuito no cambia: **render �
 | ✅ Publicada | **Fase 7 — Mi Persona: la identidad se gana** | `06-mi-persona.spec.md` | `assets/06-mi-persona.html` |
 | ✅ Publicada | **Fase 8 — Un catálogo de iconos que alcance** | `07-catalogo-iconos.spec.md` | — |
 | ✅ Publicada | **Fase 9 — El color del hábito viene puesto** | `08-color-inicial-habito.spec.md` | — |
-| 🔨 En construcción | **Fase 10 — El panel del hábito** | `09-panel-habito.spec.md` | `assets/09-panel-habito.html` |
+| ✅ Publicada | **Fase 10 — El panel del hábito** | `09-panel-habito.spec.md` | `assets/09-panel-habito.html` |
 
 Se construyen **de una en una**: aunque tocan archivos distintos, cada constructor mide lint y tests contra una línea base, y dos a la vez se contaminan las medidas.
 
@@ -21,6 +21,8 @@ Las tres preguntas que el render dejaba abiertas, cerradas en la spec:
 
 ## Deuda anotada, sin hacer
 
+- **Nada del área autenticada se ha probado en vivo.** Las fases 7, 8, 9 y 10 se verificaron en arneses aislados: ni yo ni los constructores introdujimos credenciales. Sin ver: el hito real en Mi Día, «Ahora no», Mi Persona con datos de verdad, el selector de iconos en el wizard, el paso 1 a 375 px, y el cableado de las dos consultas del panel con sus estados de carga y error.
+- **`docs/habits-implementation-plan.md` sigue documentando `HabitStatsBanner`** (líneas ~1336 y ~1420), que ya no existe.
 - **El bundle es un único chunk de 2 MB** y Vite avisa en cada build. El catálogo de iconos le sumó un 13 %. La palanca no es podar iconos: es sacar el `IconPicker` a un chunk perezoso.
 - **`HabitPurposeCard` y `HabitPurposeForm` quedaron huérfanos** al quitar el kanban de Mi Persona.
 - **`habit.category` no llega en la consulta de hábitos**, así que en Mi Persona las identidades se proponen solo por el nombre del hábito.

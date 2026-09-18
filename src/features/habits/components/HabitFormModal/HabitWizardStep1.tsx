@@ -1,10 +1,13 @@
 import type { HabitTemplate } from '@/features/habits/data/habit-templates'
 import { HABIT_TEMPLATES } from '@/features/habits/data/habit-templates'
+import type { HabitCategory } from '@/features/habits/types/habit.types'
 import type { HabitFormValues } from '@/features/habits/utils/habit-form.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { FormField } from '@/shared/ui/FormField'
 import { IconPicker } from '@/shared/ui/IconPicker'
 import { Input } from '@/shared/ui/Input'
+import { Select } from '@/shared/ui/Select'
+import { NewCategoryButton } from './HabitFormStepButtons'
 import { OptionCard } from './HabitWizardControls'
 import styles from './HabitCreateWizard.module.scss'
 
@@ -13,10 +16,26 @@ type Props = {
   patch: (partial: Partial<HabitFormValues>) => void
   nameError: string | null
   disabled: boolean
+  categories: HabitCategory[]
+  /** Nombre que sugiere la plantilla y que el usuario todavía no tiene. */
+  pendingCategoryName: string | null
   onApplyTemplate: (template: HabitTemplate) => void
 }
 
-export function HabitWizardStep1({ values, patch, nameError, disabled, onApplyTemplate }: Props) {
+export function HabitWizardStep1({
+  values,
+  patch,
+  nameError,
+  disabled,
+  categories,
+  pendingCategoryName,
+  onApplyTemplate,
+}: Props) {
+  const categoryOptions = [
+    { value: '', label: 'Sin categoría' },
+    ...categories.map((c) => ({ value: c.id, label: c.name })),
+  ]
+
   return (
     <>
       <div className={[styles.options, styles.optionsTwo].join(' ')}>
@@ -94,6 +113,33 @@ export function HabitWizardStep1({ values, patch, nameError, disabled, onApplyTe
             disabled={disabled}
           />
         </div>
+      </div>
+
+      {/*
+        La categoría vivía plegada en «Ajustes avanzados» del paso 2 y era muy
+        fácil pasarla por alto creando el primer hábito. Sube aquí, junto al
+        nombre, que es donde se la busca. Sigue siendo opcional.
+      */}
+      <div className={styles.field}>
+        <Select
+          id="habit-category"
+          label="Categoría"
+          options={categoryOptions}
+          value={values.categoryId}
+          onChange={(v) => patch({ categoryId: v })}
+          disabled={disabled}
+        />
+        {pendingCategoryName ? (
+          <p className={styles.suggestion}>
+            La plantilla sugiere «{pendingCategoryName}» y todavía no la tienes.
+          </p>
+        ) : null}
+        <NewCategoryButton
+          disabled={disabled}
+          initialName={pendingCategoryName ?? undefined}
+          label={pendingCategoryName ? `+ Crear «${pendingCategoryName}»` : '+ Nueva categoría'}
+          onCreated={(id) => patch({ categoryId: id })}
+        />
       </div>
     </>
   )

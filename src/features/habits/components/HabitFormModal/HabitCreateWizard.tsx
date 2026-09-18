@@ -182,6 +182,8 @@ export function HabitCreateWizard({ open, onClose }: Props) {
         patch={patch}
         nameError={nameError}
         disabled={isMutating}
+        categories={categories}
+        pendingCategoryName={pendingCategoryName}
         onApplyTemplate={(template) => void handleApplyTemplate(template)}
       />
     ) : step === 2 ? (
@@ -189,11 +191,9 @@ export function HabitCreateWizard({ open, onClose }: Props) {
         values={values}
         patch={patch}
         disabled={isMutating}
-        categories={categories}
         measures={measures}
         measureLabel={measureLabel}
         pendingMeasureName={pendingMeasureName}
-        pendingCategoryName={pendingCategoryName}
         advancedOpen={advancedOpen}
         onToggleAdvanced={() => setAdvancedOpen((prev) => !prev)}
         descriptionMode={descriptionMode}

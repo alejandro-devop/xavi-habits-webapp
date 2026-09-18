@@ -4,6 +4,7 @@ import { AppIcon } from '@/shared/ui/AppIcon'
 import { FormField } from '@/shared/ui/FormField'
 import { Textarea } from '@/shared/ui/Textarea'
 import { Chip } from './HabitWizardControls'
+import { NewPurposeButton } from './HabitFormStepButtons'
 import { HabitIntentionSentence } from './HabitIntentionSentence'
 import styles from './HabitCreateWizard.module.scss'
 
@@ -100,32 +101,48 @@ export function HabitWizardStep3({
 
       <div className={styles.field}>
         <span className={styles.label} id="habit-purpose-label">
-          ¿A quién te acerca este hábito?{' '}
+          ¿A qué te acerca este hábito?{' '}
           <span className={styles.labelHint}>— opcional, puedes decidirlo más adelante</span>
         </span>
-        <div className={styles.inline} role="group" aria-labelledby="habit-purpose-label">
-          {purposes.map((purpose) => (
-            <Chip
-              key={purpose.id}
-              selected={values.purposeId === purpose.id}
-              disabled={disabled}
-              onClick={() =>
-                patch({ purposeId: values.purposeId === purpose.id ? null : purpose.id })
-              }
-            >
-              {purpose.icon ? (
-                <span className={styles.chipIcon} aria-hidden="true">
-                  <AppIcon name={purpose.icon} size="sm" />
-                </span>
-              ) : null}
-              {purpose.name}
-            </Chip>
-          ))}
-        </div>
-        {/* Fase 7: aquí ya no se crea nada. La app propone una identidad
-            cuando hay pruebas, no cuando hay un formulario delante. */}
+
+        {purposes.length > 0 ? (
+          <div className={styles.inline} role="group" aria-labelledby="habit-purpose-label">
+            {purposes.map((purpose) => (
+              <Chip
+                key={purpose.id}
+                selected={values.purposeId === purpose.id}
+                disabled={disabled}
+                onClick={() =>
+                  patch({ purposeId: values.purposeId === purpose.id ? null : purpose.id })
+                }
+              >
+                {purpose.icon ? (
+                  <span className={styles.chipIcon} aria-hidden="true">
+                    <AppIcon name={purpose.icon} size="sm" />
+                  </span>
+                ) : null}
+                {purpose.name}
+              </Chip>
+            ))}
+          </div>
+        ) : null}
+
+        {/*
+          Fase 7: la app propone la identidad cuando hay pruebas, así que esto
+          dejó de ser la puerta de entrada. Pero quitar la creación del todo
+          dejaba el bloque hueco para quien todavía no tiene ninguno, y rompía
+          la simetría con categoría y medida, que sí se crean al vuelo. Sigue
+          aquí, en segundo plano: quien ya sabe el suyo puede escribirlo.
+        */}
         <p className={styles.hint}>
-          La app te propondrá uno cuando lleves unos días. No hace falta que lo decidas ahora.
+          La app te propondrá uno cuando lleves unos días — no hace falta que lo decidas ahora.{' '}
+          <NewPurposeButton
+            disabled={disabled}
+            shouldAvoid={values.shouldAvoid}
+            onCreated={(purposeId) => patch({ purposeId })}
+          >
+            {purposes.length > 0 ? '+ Crear otro' : '+ Crear uno ahora'}
+          </NewPurposeButton>
         </p>
       </div>
     </>

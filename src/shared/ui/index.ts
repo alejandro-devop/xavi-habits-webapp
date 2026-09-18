@@ -1,5 +1,6 @@
 export { Alert, type AlertVariant } from '@/shared/ui/Alert'
 export { AppIcon, type AppIconSize } from '@/shared/ui/AppIcon'
+export { AuroraCanvas, type AuroraCanvasProps } from '@/shared/ui/AuroraCanvas'
 export { Badge, type BadgeVariant } from '@/shared/ui/Badge'
 export { Breadcrumbs, type BreadcrumbItem } from '@/shared/ui/Breadcrumbs'
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from '@/shared/ui/Button'

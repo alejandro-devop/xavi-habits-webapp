@@ -2,34 +2,192 @@
 @use '@/app/styles/mixins' as *;
 
 .root {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  @include apple-background;
-}
-
-.header {
-  padding: $spacing-md $spacing-lg;
-  text-align: center;
-}
-
-.brand {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: $color-text;
-  text-decoration: none;
+  // El ámbito [data-ds='aura'] vive en este nodo: hay que consumir aquí
+  // --font-family y --color-bg para que el subárbol reciba la tipografía Aura.
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
 }
 
 .main {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: $spacing-md $spacing-lg $spacing-lg;
+  padding: $spacing-lg;
 }
 
 .card {
   @include glass-panel;
+  display: grid;
+  grid-template-columns: 0.85fr 1fr;
   width: 100%;
-  max-width: $auth-form-max-width;
+  max-width: 880px;
+  overflow: hidden;
+}
+
+// ── Panel izquierdo: atmósfera y marca ───────────────────────────────────────
+.brandside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.375rem;
+  padding: 2.375rem 2.125rem;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.15)
+  );
+  border-right: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--color-text);
+  text-decoration: none;
+  align-self: flex-start;
+  border-radius: var(--radius-md);
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.brandName {
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.claim {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+
+  em {
+    font-style: normal;
+    color: var(--color-primary);
+  }
+}
+
+.claimSub {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.highlights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.highlight {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-full);
+  background: var(--aura-glass-1);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
+  backdrop-filter: blur(var(--blur-lg));
+  -webkit-backdrop-filter: blur(var(--blur-lg));
+}
+
+.highlightDot {
+  flex: 0 0 auto;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.8125rem;
+}
+
+.mint {
+  background: rgba(16, 185, 129, 0.16);
+}
+
+.violet {
+  background: rgba(124, 58, 237, 0.14);
+}
+
+.amber {
+  background: rgba(245, 158, 11, 0.16);
+}
+
+.highlightText {
+  font-family: var(--font-label);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+// ── Panel derecho: formulario ────────────────────────────────────────────────
+.formside {
+  display: flex;
+  flex-direction: column;
+  padding: 2.375rem 2.25rem;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+// ── Móvil: una sola columna ──────────────────────────────────────────────────
+@media (max-width: 899px) {
+  .main {
+    padding: $spacing-md;
+  }
+
+  .card {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+
+  .brandside {
+    gap: 0.75rem;
+    padding: 1.625rem 1.5rem 0.5rem;
+    border-right: 0;
+    background: transparent;
+  }
+
+  .claim {
+    font-size: 1.375rem;
+  }
+
+  .highlights {
+    display: none;
+  }
+
+  .formside {
+    padding: 1rem 1.5rem 1.625rem;
+    background: transparent;
+  }
+}
+
+[data-theme='dark'] {
+  .brandside,
+  .formside {
+    background: transparent;
+  }
+
+  .brandside {
+    border-right-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .highlight {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+  }
 }

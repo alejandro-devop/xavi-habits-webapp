@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hábitos · Mi Día — propuesta Aura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --violet-soft:#8b5cf6; --amber:#f59e0b; --amber-deep:#b45309;
+    --danger:#ba1a1a;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-1:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.78);
+    --edge:rgba(255,255,255,.7);
+    --sh-1:0 8px 32px rgba(31,38,135,.05);
+    --sh-2:0 16px 48px -8px rgba(100,116,139,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1240px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:34px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:10px 0 0;line-height:1.6}
+  .note b{color:#334155}
+  code{font-family:'Inter',monospace;font-size:12px;background:rgba(15,23,42,.06);padding:1px 5px;border-radius:5px}
+  .num{font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums}
+
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate}
+  .frame.desk{height:900px}
+  .frame.phone{width:360px;height:720px;border-radius:34px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(120px)}
+  .o1{width:55%;aspect-ratio:1;background:rgba(78,222,163,.34);top:-22%;left:-12%}
+  .o2{width:50%;aspect-ratio:1;background:rgba(210,187,255,.38);top:6%;right:-16%}
+  .o3{width:60%;aspect-ratio:1;background:rgba(224,242,254,.8);bottom:-28%;left:20%}
+  .scroll{position:relative;z-index:1;height:100%;overflow:auto}
+
+  /* ---------- barra del módulo ---------- */
+  .topbar{position:sticky;top:0;z-index:5;background:rgba(250,252,251,.72);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.65)}
+  .topin{max-width:1120px;margin:0 auto;height:66px;padding:0 26px;display:flex;align-items:center;gap:18px}
+  .lockup{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.02em;font-size:17px}
+  .navpills{display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px;background:rgba(255,255,255,.5);backdrop-filter:blur(16px);margin-left:6px}
+  .np{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);padding:8px 14px;border-radius:999px;text-decoration:none}
+  .np.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 24px -6px rgba(16,185,129,.22)}
+  .spacer{flex:1}
+  .iconbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.5);border:1px solid var(--edge);color:var(--ink-soft)}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#a7f3d0,#c4b5fd);border:2px solid rgba(255,255,255,.9)}
+
+  .main{max-width:1120px;margin:0 auto;padding:26px 26px 40px;display:flex;flex-direction:column;gap:20px}
+
+  /* ---------- encabezado ---------- */
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em}
+  .eyebrow{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text);margin:0 0 6px}
+  .weeknav{display:flex;align-items:center;gap:2px;padding:5px;border-radius:999px;background:var(--glass-1);border:1px solid var(--edge);backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .weeknav button{border:0;background:transparent;width:32px;height:32px;border-radius:50%;color:var(--ink-soft);cursor:pointer;font-size:15px}
+  .weeknav .lbl{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;padding:0 10px;white-space:nowrap}
+
+  /* ---------- tarjetas héroe ---------- */
+  .hero{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:16px}
+  .card{background:var(--glass-2);backdrop-filter:blur(24px);border:1px solid var(--edge);border-radius:28px;box-shadow:var(--sh-1), inset 0 1px 1px rgba(255,255,255,.9);padding:22px;position:relative;overflow:hidden}
+  .card .bloom{position:absolute;width:150px;height:150px;border-radius:50%;filter:blur(38px);pointer-events:none}
+  .hero1 .bloom{background:rgba(110,251,190,.34);right:-40px;top:-40px}
+  .hero2 .bloom{background:rgba(255,185,95,.30);right:-34px;bottom:-40px}
+  .hero3 .bloom{background:rgba(210,187,255,.36);right:-34px;bottom:-40px}
+  .cardtitle{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 14px}
+  .ringrow{display:flex;align-items:center;gap:20px}
+  .bigring{position:relative;width:104px;height:104px;flex:0 0 auto}
+  .bigring .pc{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+  .pc .v{font-family:'Inter',sans-serif;font-size:27px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .pc .l{font-family:'Inter',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
+  .counters{display:flex;flex-direction:column;gap:9px;flex:1}
+  .ct{display:flex;align-items:center;gap:9px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--ink-soft)}
+  .ct b{font-size:15px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;min-width:16px}
+  .swatch{width:9px;height:9px;border-radius:50%}
+  .s-ok{background:var(--mint)} .s-no{background:rgba(186,26,26,.6)} .s-pd{background:rgba(15,23,42,.16)} .s-lf{background:var(--violet-soft)}
+  .bigstat{font-family:'Inter',sans-serif;font-size:42px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .bigsub{font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft);margin-top:6px}
+  .track{height:7px;border-radius:999px;background:rgba(15,23,42,.07);overflow:hidden;margin-top:16px}
+  .track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),var(--mint-deep))}
+  .track.am i{background:linear-gradient(90deg,#ffb95f,var(--amber))}
+  .starname{font-size:16px;font-weight:700;letter-spacing:-.01em;margin:8px 0 2px}
+
+  /* ---------- filtros ---------- */
+  .filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:9px 15px;border-radius:999px;background:var(--glass-1);border:1px solid var(--edge);backdrop-filter:blur(16px);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .chip .cnt{font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;background:rgba(15,23,42,.07);font-variant-numeric:tabular-nums}
+  .chip.on{background:#fff;color:var(--mint-text);border-color:rgba(16,185,129,.35);box-shadow:0 8px 24px -6px rgba(16,185,129,.25)}
+  .chip.on .cnt{background:rgba(16,185,129,.14);color:var(--mint-text)}
+  .cta{margin-left:auto;display:inline-flex;align-items:center;gap:8px;border:0;padding:11px 20px;border-radius:999px;cursor:pointer;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--mint),var(--mint-deep));box-shadow:0 8px 24px -4px rgba(16,185,129,.42), inset 0 1px 0 rgba(255,255,255,.35)}
+
+  /* ---------- filas de hábito ---------- */
+  .rows{display:flex;flex-direction:column;gap:10px}
+  .rowhead{display:grid;grid-template-columns:1fr 268px 78px 52px;gap:14px;padding:0 22px;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim)}
+  .rowhead .days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+  .row{display:grid;grid-template-columns:1fr 268px 78px 52px;gap:14px;align-items:center;padding:14px 22px;background:var(--glass-1);border:1px solid var(--edge);border-radius:22px;backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .idty{display:flex;align-items:center;gap:13px;min-width:0}
+  .cap{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:19px;flex:0 0 auto;background:rgba(255,255,255,.75);border:1px solid var(--edge)}
+  .cap.m{box-shadow:inset 0 0 0 2px rgba(16,185,129,.18)}
+  .cap.v{box-shadow:inset 0 0 0 2px rgba(124,58,237,.18)}
+  .cap.a{box-shadow:inset 0 0 0 2px rgba(245,158,11,.20)}
+  .nm{font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mt{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft);margin-top:2px;display:flex;align-items:center;gap:7px}
+  .tag{padding:1px 8px;border-radius:999px;background:rgba(15,23,42,.05);font-weight:600;font-size:10.5px}
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;justify-items:center}
+  .d{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:'Inter',sans-serif;font-size:10px;font-weight:600;color:var(--ink-dim);background:rgba(15,23,42,.045);border:1px solid transparent}
+  .d.ok{background:var(--mint);color:#fff;box-shadow:0 0 0 3px rgba(16,185,129,.14)}
+  .d.no{background:rgba(186,26,26,.12);color:#93000a;border-color:rgba(186,26,26,.25)}
+  .d.lf{background:rgba(124,58,237,.14);color:#5a00c6;border-color:rgba(124,58,237,.3)}
+  .d.pa{background:conic-gradient(var(--mint) 0 60%, rgba(15,23,42,.07) 60% 100%);color:var(--mint-text)}
+  .d.today{border-color:rgba(15,23,42,.35)}
+  .d.fut{opacity:.4}
+  .streak{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:999px;background:rgba(245,158,11,.13);color:var(--amber-deep);font-family:'Inter',sans-serif;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;justify-self:start}
+  .toggle{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;justify-self:end;background:rgba(255,255,255,.6);border:1px solid var(--edge);cursor:pointer}
+  .toggle.done{background:linear-gradient(135deg,var(--mint),var(--mint-deep));border-color:transparent;box-shadow:0 8px 20px -6px rgba(16,185,129,.5)}
+  .toggle.life{background:rgba(124,58,237,.14);border-color:rgba(124,58,237,.35)}
+  .lifedots{display:flex;gap:3px;margin-top:5px}
+  .lifedots i{width:6px;height:6px;border-radius:50%;background:rgba(124,58,237,.75)}
+  .lifedots i.off{background:rgba(15,23,42,.13)}
+  .hint{display:flex;align-items:center;gap:9px;justify-content:center;font-family:'Inter',sans-serif;font-size:12.5px;color:var(--ink-soft);padding:6px}
+
+  /* ---------- móvil ---------- */
+  .phone .main{padding:16px 16px 26px;gap:14px}
+  .phone .topin{height:58px;padding:0 16px;gap:10px}
+  .phone .navpills,.phone .iconbtn{display:none}
+  .phone h1{font-size:22px}
+  .phone .hero{grid-template-columns:1fr}
+  .phone .hero2,.phone .hero3{display:none}
+  .phone .card{padding:18px;border-radius:24px}
+  .phone .bigring{width:84px;height:84px}
+  .phone .pc .v{font-size:22px}
+  .phone .rowhead{display:none}
+  .phone .row{grid-template-columns:1fr auto;gap:10px;padding:14px 16px;row-gap:12px}
+  .phone .days{grid-column:1/-1;grid-template-columns:repeat(7,1fr);gap:5px;justify-items:stretch}
+  .phone .d{width:100%;height:30px;border-radius:12px}
+  .phone .streak{display:none}
+  .phone .filters{overflow:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .phone .cta{position:fixed;right:18px;bottom:18px;margin:0;width:52px;height:52px;padding:0;justify-content:center;z-index:9}
+  .phone .cta span{display:none}
+
+  /* ---------- oscuro ---------- */
+  .dark{--canvas:#0b1220;--ink:#eef2ff;--ink-soft:#a8b3c7;--ink-dim:#64748b;--mint-text:#4edea3;
+        --glass-1:rgba(255,255,255,.055);--glass-2:rgba(22,30,47,.7);--edge:rgba(255,255,255,.11)}
+  .dark .o1{background:rgba(16,185,129,.2)} .dark .o2{background:rgba(124,58,237,.26)} .dark .o3{background:rgba(30,58,95,.7)}
+  .dark .topbar{background:rgba(11,18,32,.7);border-bottom-color:rgba(255,255,255,.08)}
+  .dark .np.on{background:rgba(255,255,255,.1)}
+  .dark .cap,.dark .toggle{background:rgba(255,255,255,.07)}
+  .dark .chip.on{background:rgba(16,185,129,.16)}
+  .dark .d{background:rgba(255,255,255,.07)}
+  .dark .tag,.dark .chip .cnt{background:rgba(255,255,255,.09)}
+  .dark .track{background:rgba(255,255,255,.09)}
+
+  /* ---------- panel de registro ---------- */
+  .sheetwrap{position:relative;border-radius:24px;overflow:hidden;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);height:560px}
+  .sheet{position:absolute;right:0;top:0;bottom:0;width:400px;background:var(--glass-2);backdrop-filter:blur(32px);border-left:1px solid var(--edge);padding:26px;display:flex;flex-direction:column;gap:18px;box-shadow:-20px 0 60px -20px rgba(15,23,42,.2)}
+  .scrim{position:absolute;inset:0;background:rgba(15,23,42,.18);backdrop-filter:blur(2px)}
+  .seg{display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(15,23,42,.05)}
+  .seg div{flex:1;text-align:center;padding:9px;border-radius:999px;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .seg div.on{background:#fff;color:var(--mint-text);box-shadow:0 6px 18px -6px rgba(16,185,129,.3)}
+  .seg div.on.no{color:#93000a;box-shadow:0 6px 18px -6px rgba(186,26,26,.25)}
+  .seg div.on.lf{color:#5a00c6;box-shadow:0 6px 18px -6px rgba(124,58,237,.3)}
+  .lab{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:7px;display:block}
+  .well{padding:12px 15px;border-radius:16px;background:rgba(255,255,255,.5);border:1px solid var(--edge);box-shadow:inset 0 2px 4px rgba(15,23,42,.03);font-size:14px}
+  .diff{display:flex;gap:7px}
+  .diff i{flex:1;height:36px;border-radius:12px;background:rgba(255,255,255,.5);border:1px solid var(--edge);display:grid;place-items:center;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);font-style:normal}
+  .diff i.on{background:rgba(124,58,237,.14);border-color:rgba(124,58,237,.4);color:#5a00c6}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px;align-items:start}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ============ 1 · ESCRITORIO ============ -->
+<p class="caption">1 · Escritorio — Hábitos › Mi día</p>
+<div class="frame desk">
+  <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+  <div class="scroll">
+
+    <div class="topbar"><div class="topin">
+      <span class="lockup">
+        <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <circle cx="16" cy="16" r="12.5" stroke="rgba(15,23,42,.1)" stroke-width="3"/>
+          <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#lg)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="4.4" fill="url(#lg)"/>
+          <defs><linearGradient id="lg" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#10b981"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+        </svg>Xavi</span>
+      <nav class="navpills">
+        <a class="np on" href="#">Mi día</a><a class="np" href="#">Hábitos</a>
+        <a class="np" href="#">Calendario</a><a class="np" href="#">Archivados</a><a class="np" href="#">Ajustes</a>
+      </nav>
+      <span class="spacer"></span>
+      <span class="iconbtn">🔍</span><span class="iconbtn">🔔</span><span class="avatar"></span>
+    </div></div>
+
+    <div class="main">
+      <div class="head">
+        <div>
+          <p class="eyebrow">Semana 38 · 15–21 sep</p>
+          <h1>Miércoles 17 de septiembre</h1>
+        </div>
+        <div class="weeknav"><button>‹</button><span class="lbl">Esta semana</span><button>›</button></div>
+      </div>
+
+      <div class="hero">
+        <div class="card hero1"><div class="bloom"></div>
+          <p class="cardtitle">Tu día</p>
+          <div class="ringrow">
+            <div class="bigring">
+              <svg viewBox="0 0 120 120" width="104" height="104" aria-hidden="true">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(15,23,42,.08)" stroke-width="11"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="url(#rg)" stroke-width="11" stroke-linecap="round"
+                        stroke-dasharray="314" stroke-dashoffset="88" transform="rotate(-90 60 60)"/>
+                <defs><linearGradient id="rg" x1="0" y1="0" x2="120" y2="120"><stop stop-color="#10b981"/><stop offset="1" stop-color="#059669"/></linearGradient></defs>
+              </svg>
+              <span class="pc"><span class="v">72%</span><span class="l">del día</span></span>
+            </div>
+            <div class="counters">
+              <span class="ct"><i class="swatch s-ok"></i><b>5</b> logrados</span>
+              <span class="ct"><i class="swatch s-lf"></i><b>1</b> con salvavidas</span>
+              <span class="ct"><i class="swatch s-no"></i><b>1</b> fallado</span>
+              <span class="ct"><i class="swatch s-pd"></i><b>2</b> pendientes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card hero2"><div class="bloom"></div>
+          <p class="cardtitle">Racha media</p>
+          <div class="bigstat">14<span style="font-size:17px;font-weight:600;color:var(--ink-soft)"> días</span></div>
+          <p class="bigsub">🔥 4 hábitos pasan de 10 días seguidos</p>
+          <div class="track am"><i style="width:66%"></i></div>
+          <p class="bigsub">Meta: 21 días · 66%</p>
+        </div>
+
+        <div class="card hero3"><div class="bloom"></div>
+          <p class="cardtitle">Hábito estrella</p>
+          <p class="starname">🧘 Meditación matutina</p>
+          <p class="bigsub">30 de 30 días del mes</p>
+          <div class="track"><i style="width:100%"></i></div>
+          <p class="bigsub">Ancla de bienestar · racha de 32 días</p>
+        </div>
+      </div>
+
+      <div class="filters">
+        <span class="chip on">Todos <b class="cnt">9</b></span>
+        <span class="chip">🧠 Mente <b class="cnt">3</b></span>
+        <span class="chip">🌿 Cuerpo <b class="cnt">4</b></span>
+        <span class="chip">⚡ Productividad <b class="cnt">1</b></span>
+        <span class="chip">🌙 Descanso <b class="cnt">1</b></span>
+        <button class="cta">＋ <span>Nuevo hábito</span></button>
+      </div>
+
+      <div class="rows">
+        <div class="rowhead">
+          <span>Hábito</span>
+          <span class="days"><span>L 15</span><span>M 16</span><span>X 17</span><span>J 18</span><span>V 19</span><span>S 20</span><span>D 21</span></span>
+          <span>Racha</span><span></span>
+        </div>
+
+        <div class="row">
+          <div class="idty">
+            <span class="cap m">🧘</span>
+            <div style="min-width:0">
+              <div class="nm">Meditación matutina</div>
+              <div class="mt"><span class="tag">Mente</span> 15 min al despertar · diario</div>
+            </div>
+          </div>
+          <div class="days">
+            <span class="d ok">✓</span><span class="d ok">✓</span><span class="d ok today">✓</span>
+            <span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span>
+          </div>
+          <span class="streak">🔥 32</span>
+          <span class="toggle done">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+          </span>
+        </div>
+
+        <div class="row">
+          <div class="idty">
+            <span class="cap a">💧</span>
+            <div style="min-width:0">
+              <div class="nm">Beber 2,5 L de agua</div>
+              <div class="mt"><span class="tag">Cuerpo</span> medida · 1,5 de 2,5 L hoy</div>
+            </div>
+          </div>
+          <div class="days">
+            <span class="d ok">✓</span><span class="d no">✕</span><span class="d pa today">60</span>
+            <span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span>
+          </div>
+          <span class="streak">🔥 3</span>
+          <span class="toggle">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="rgba(15,23,42,.14)" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-dasharray="60" stroke-dashoffset="24" transform="rotate(-90 12 12)"/></svg>
+          </span>
+        </div>
+
+        <div class="row">
+          <div class="idty">
+            <span class="cap m">📓</span>
+            <div style="min-width:0">
+              <div class="nm">Diario de gratitud</div>
+              <div class="mt"><span class="tag">Mente</span> 5× por semana
+                <span class="lifedots" title="Salvavidas"><i></i><i></i><i class="off"></i></span>
+              </div>
+            </div>
+          </div>
+          <div class="days">
+            <span class="d ok">✓</span><span class="d ok">✓</span><span class="d lf today">♥</span>
+            <span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span>
+          </div>
+          <span class="streak">🔥 12</span>
+          <span class="toggle life">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#7c3aed" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7A4.3 4.3 0 0 1 12 8.2a4.3 4.3 0 0 1 7.5 2.6c0 5.1-7.5 9.7-7.5 9.7Z"/></svg>
+          </span>
+        </div>
+
+        <div class="row">
+          <div class="idty">
+            <span class="cap a">🚶</span>
+            <div style="min-width:0">
+              <div class="nm">Caminar 8.000 pasos</div>
+              <div class="mt"><span class="tag">Cuerpo</span> medida · sin registrar hoy</div>
+            </div>
+          </div>
+          <div class="days">
+            <span class="d no">✕</span><span class="d ok">✓</span><span class="d today">17</span>
+            <span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span>
+          </div>
+          <span class="streak">🔥 2</span>
+          <span class="toggle"></span>
+        </div>
+
+        <div class="row">
+          <div class="idty">
+            <span class="cap v">🌙</span>
+            <div style="min-width:0">
+              <div class="nm">Desconexión digital 22:00</div>
+              <div class="mt"><span class="tag">Descanso</span> diario · dificultad alta ayer</div>
+            </div>
+          </div>
+          <div class="days">
+            <span class="d ok">✓</span><span class="d ok">✓</span><span class="d today">17</span>
+            <span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span>
+          </div>
+          <span class="streak">🔥 8</span>
+          <span class="toggle"></span>
+        </div>
+      </div>
+
+      <p class="hint">✨ Pulsa el círculo para marcar el día · mantén pulsado para registrar medida, dificultad o nota</p>
+    </div>
+  </div>
+</div>
+<p class="note"><b>Lo que cambia respecto a hoy:</b> la barra apilada tricolor pasa a ser un anillo con contadores; aparecen tres tarjetas de métrica y el filtro por categoría (hoy no existe); los salvavidas dejan de ser un botón suelto y se vuelven puntos discretos en la fila; y la tira de días pasa de todo el mes a la semana en curso, con el mes completo en la pestaña Calendario.</p>
+
+<!-- ============ 2 · MÓVIL Y OSCURO ============ -->
+<p class="caption">2 · Móvil (claro) y panel de registro (escritorio)</p>
+<div class="grid2">
+
+  <div class="frame phone dark">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="scroll">
+      <div class="topbar"><div class="topin">
+        <span class="lockup">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <circle cx="16" cy="16" r="12.5" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+            <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#lg2)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="16" cy="16" r="4.4" fill="url(#lg2)"/>
+            <defs><linearGradient id="lg2" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#4edea3"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+          </svg>Mi día</span>
+        <span class="spacer"></span><span class="avatar"></span>
+      </div></div>
+      <div class="main">
+        <div class="head" style="align-items:center">
+          <div><p class="eyebrow">Semana 38</p><h1>Mié 17 sep</h1></div>
+          <div class="weeknav"><button>‹</button><span class="lbl">Hoy</span><button>›</button></div>
+        </div>
+        <div class="hero"><div class="card hero1"><div class="bloom"></div>
+          <div class="ringrow">
+            <div class="bigring">
+              <svg viewBox="0 0 120 120" width="84" height="84" aria-hidden="true">
+                <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="11"/>
+                <circle cx="60" cy="60" r="50" fill="none" stroke="#4edea3" stroke-width="11" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="88" transform="rotate(-90 60 60)"/>
+              </svg>
+              <span class="pc"><span class="v">72%</span><span class="l">del día</span></span>
+            </div>
+            <div class="counters">
+              <span class="ct"><i class="swatch s-ok"></i><b>5</b> logrados</span>
+              <span class="ct"><i class="swatch s-lf"></i><b>1</b> salvavidas</span>
+              <span class="ct"><i class="swatch s-pd"></i><b>2</b> pendientes</span>
+            </div>
+          </div>
+        </div></div>
+        <div class="filters">
+          <span class="chip on">Todos <b class="cnt">9</b></span><span class="chip">🧠 Mente</span><span class="chip">🌿 Cuerpo</span><span class="chip">⚡ Prod.</span>
+        </div>
+        <div class="rows">
+          <div class="row">
+            <div class="idty"><span class="cap m">🧘</span><div style="min-width:0"><div class="nm">Meditación matutina</div><div class="mt">15 min · 🔥 32</div></div></div>
+            <span class="toggle done"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+            <div class="days"><span class="d ok">✓</span><span class="d ok">✓</span><span class="d ok today">✓</span><span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span></div>
+          </div>
+          <div class="row">
+            <div class="idty"><span class="cap a">💧</span><div style="min-width:0"><div class="nm">Beber 2,5 L de agua</div><div class="mt">1,5 de 2,5 L · 🔥 3</div></div></div>
+            <span class="toggle"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="3"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="#4edea3" stroke-width="3" stroke-linecap="round" stroke-dasharray="60" stroke-dashoffset="24" transform="rotate(-90 12 12)"/></svg></span>
+            <div class="days"><span class="d ok">✓</span><span class="d no">✕</span><span class="d pa today">60</span><span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span></div>
+          </div>
+          <div class="row">
+            <div class="idty"><span class="cap m">📓</span><div style="min-width:0"><div class="nm">Diario de gratitud</div><div class="mt">5× semana · 🔥 12</div></div></div>
+            <span class="toggle life"><svg width="17" height="17" viewBox="0 0 24 24" fill="#a78bfa" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-9.7A4.3 4.3 0 0 1 12 8.2a4.3 4.3 0 0 1 7.5 2.6c0 5.1-7.5 9.7-7.5 9.7Z"/></svg></span>
+            <div class="days"><span class="d ok">✓</span><span class="d ok">✓</span><span class="d lf today">♥</span><span class="d fut">18</span><span class="d fut">19</span><span class="d fut">20</span><span class="d fut">21</span></div>
+          </div>
+        </div>
+        <button class="cta">＋<span>Nuevo</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheetwrap">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="scrim"></div>
+    <div class="sheet">
+      <div>
+        <p class="cardtitle" style="margin:0 0 6px">Miércoles 17 de septiembre</p>
+        <h1 style="font-size:21px">💧 Beber 2,5 L de agua</h1>
+      </div>
+      <div class="seg"><div class="on">Logrado</div><div>Fallado</div><div>Salvavidas</div></div>
+      <div>
+        <span class="lab">Cantidad registrada</span>
+        <div class="well">1,5 <span style="color:var(--ink-dim)">de 2,5 L</span></div>
+      </div>
+      <div>
+        <span class="lab">¿Cuánto te costó?</span>
+        <div class="diff"><i>Fácil</i><i class="on">Normal</i><i>Difícil</i></div>
+      </div>
+      <div>
+        <span class="lab">Nota del día (opcional)</span>
+        <div class="well" style="min-height:74px;color:var(--ink-dim);font-size:13.5px">Se me olvidó la botella en la oficina…</div>
+      </div>
+      <div style="margin-top:auto;display:flex;gap:10px">
+        <button class="cta" style="margin:0;flex:1;justify-content:center">Guardar</button>
+        <button class="chip" style="padding:11px 18px">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="note"><b>Izquierda:</b> móvil en tema oscuro — la tira semanal baja a una fila propia y el CTA se vuelve botón flotante. <b>Derecha:</b> el registro detallado pasa de modal centrado a <b>panel lateral de vidrio</b> (hoja inferior en móvil), para poder ver la lista mientras registras. Estado, medida, dificultad y nota en una sola pasada.</p>
+
+</div>
+</body>
+</html>

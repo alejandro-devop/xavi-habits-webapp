@@ -9,6 +9,8 @@ type FormFieldProps = {
   helperText?: string
   /** @deprecated Use helperText */
   hint?: string
+  /** Adorno decorativo a la izquierda del campo (marcar como aria-hidden). */
+  leftIcon?: ReactNode
   children?: ReactNode
 } & InputHTMLAttributes<HTMLInputElement>
 
@@ -18,6 +20,7 @@ export function FormField({
   error,
   helperText,
   hint,
+  leftIcon,
   children,
   className,
   ...inputProps
@@ -36,6 +39,7 @@ export function FormField({
         <Input
           id={id}
           className={className}
+          leftIcon={leftIcon}
           hasError={Boolean(error)}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}

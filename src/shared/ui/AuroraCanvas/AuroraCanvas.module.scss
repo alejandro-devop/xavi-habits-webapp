@@ -1,0 +1,53 @@
+.canvas {
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  // Acota el repintado al propio lienzo: sin esto el blur de los orbes
+  // invalida el área de toda la página en cada scroll.
+  contain: strict;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.orb {
+  position: absolute;
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  // Cada orbe en su propia capa de composición, para que el blur se rasterice
+  // una vez y el scroll de las pantallas largas (registro) no repinte.
+  // Ojo: NO usar will-change aquí. Combinado con filter: blur() mantiene viva
+  // una textura enorme (el blur expande la capa ~2x) y bloquea el compositor.
+  transform: translateZ(0);
+}
+
+.orb1 {
+  width: 55%;
+  top: -18%;
+  left: -10%;
+  background: var(--aurora-orb-1, rgba(78, 222, 163, 0.42));
+  filter: blur(110px);
+}
+
+.orb2 {
+  width: 50%;
+  top: 10%;
+  right: -14%;
+  background: var(--aurora-orb-2, rgba(210, 187, 255, 0.45));
+  filter: blur(140px);
+}
+
+.orb3 {
+  width: 60%;
+  bottom: -26%;
+  left: 18%;
+  background: var(--aurora-orb-3, rgba(224, 242, 254, 0.85));
+  filter: blur(140px);
+}

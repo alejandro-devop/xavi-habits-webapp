@@ -1,4 +1,3 @@
-@use '@/app/styles/variables' as *;
 @use '../../styles/auth-form' as *;
 
 .wrapper {
@@ -36,6 +35,6 @@
 
 .error {
   font-size: 0.8rem;
-  color: $color-error;
+  color: var(--color-danger);
   text-align: center;
 }

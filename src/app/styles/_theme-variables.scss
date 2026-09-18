@@ -143,3 +143,115 @@
     2px 2px 0 rgba(0, 0, 0, 0.2);
   --paper-texture-opacity: 0.035;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Ámbito "Aura" del design system.
+//
+// NO sustituye los tokens de :root: los re-mapea solo dentro del subárbol que
+// lleve [data-ds='aura']. El resto de la app sigue en la paleta Apple hasta que
+// su módulo se migre. En la fase final el atributo sube a <html> y este ámbito
+// se borra, quedando los valores en :root.
+// ─────────────────────────────────────────────────────────────────────────────
+[data-ds='aura'] {
+  // ── Tokens semánticos re-mapeados ──────────────────────────────────────────
+  --color-primary: #006c49; // texto/enlaces: #10b981 no pasa AA sobre vidrio claro
+  --color-primary-hover: #00553a;
+
+  --color-bg: #fafcfb;
+  --color-surface: rgba(255, 255, 255, 0.45);
+  --color-surface-elevated: #f4f7fb;
+
+  --color-text: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+
+  --color-glass: rgba(255, 255, 255, 0.78);
+  --color-glass-border: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(255, 255, 255, 0.7);
+
+  --color-success: #059669;
+  --color-danger: #ba1a1a;
+
+  --color-focus-ring: rgba(124, 58, 237, 0.45);
+
+  --shadow-glass:
+    0 16px 48px -8px rgba(100, 116, 139, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+
+  --blur-md: 32px;
+
+  --radius-md: 16px;
+  --radius-xl: 32px;
+
+  --font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  // ── Tokens nuevos del lenguaje Aura ────────────────────────────────────────
+  --aura-cta-bg: linear-gradient(135deg, #10b981, #059669);
+  --aura-cta-glow: 0 8px 24px -4px rgba(16, 185, 129, 0.42);
+  --aura-well-bg: rgba(255, 255, 255, 0.45);
+  --aura-well-inset: inset 0 2px 4px rgba(15, 23, 42, 0.03);
+  --aura-glass-1: rgba(255, 255, 255, 0.55);
+  --font-label: 'Inter', system-ui, sans-serif;
+
+  // Lienzo aurora
+  --aurora-orb-1: rgba(78, 222, 163, 0.42);
+  --aurora-orb-2: rgba(210, 187, 255, 0.45);
+  --aurora-orb-3: rgba(224, 242, 254, 0.85);
+
+  // Lockup del anillo
+  --aura-ring-track: rgba(15, 23, 42, 0.1);
+  --aura-ring-from: #10b981;
+  --aura-ring-to: #7c3aed;
+
+  // ── Enganches de los componentes de shared/ui ──────────────────────────────
+  // Cada uno tiene fallback al valor actual, así que fuera de este ámbito los
+  // componentes se renderizan exactamente igual que antes.
+  --button-radius: var(--radius-full);
+  --button-font-family: var(--font-label);
+  --button-primary-bg: var(--aura-cta-bg);
+  --button-primary-hover-bg: var(--aura-cta-bg);
+  --button-primary-shadow: var(--aura-cta-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  --button-primary-hover-shadow:
+    0 12px 28px -4px rgba(16, 185, 129, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  --button-primary-hover-transform: translateY(-2px);
+
+  --input-bg: var(--aura-well-bg);
+  --input-shadow: var(--aura-well-inset);
+  --input-focus-border: rgba(124, 58, 237, 0.6);
+  --input-focus-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14), var(--aura-well-inset);
+
+  --form-label-font-family: var(--font-label);
+}
+
+[data-theme='dark'] [data-ds='aura'] {
+  --color-primary: #4edea3;
+  --color-primary-hover: #6ee7b7;
+
+  --color-bg: #0b1220;
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-surface-elevated: #161e2f;
+
+  --color-text: #eef2ff;
+  --color-text-secondary: #a8b3c7;
+  --color-text-muted: #7c8aa5;
+
+  --color-glass: rgba(22, 30, 47, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
+  --color-border: rgba(255, 255, 255, 0.12);
+
+  --color-success: #4edea3;
+  --color-danger: #ffb4ab;
+
+  --shadow-glass: 0 16px 48px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+
+  --aura-well-bg: rgba(255, 255, 255, 0.06);
+  --aura-well-inset: inset 0 2px 4px rgba(0, 0, 0, 0.14);
+  --aura-glass-1: rgba(255, 255, 255, 0.06);
+
+  --aurora-orb-1: rgba(16, 185, 129, 0.24);
+  --aurora-orb-2: rgba(124, 58, 237, 0.3);
+  --aurora-orb-3: rgba(30, 58, 95, 0.75);
+
+  --aura-ring-track: rgba(255, 255, 255, 0.14);
+  --aura-ring-from: #4edea3;
+  --aura-ring-to: #a78bfa;
+}

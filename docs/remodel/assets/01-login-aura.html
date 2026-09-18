@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login "Umbral Aura" — propuesta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-deep:#059669; --mint-text:#006c49;
+    --violet:#7c3aed; --violet-soft:#8b5cf6;
+    --amber:#f59e0b;
+    --slate:#0f172a; --slate-soft:#3c4a42;
+    --canvas:#fafcfb;
+    --glass-1:rgba(255,255,255,.55);
+    --glass-2:rgba(255,255,255,.78);
+    --glass-edge:rgba(255,255,255,.72);
+    --well:rgba(255,255,255,.45);
+    --sh-1:0 8px 32px rgba(31,38,135,.05);
+    --sh-2:0 16px 48px -8px rgba(100,116,139,.14);
+    --ink:var(--slate); --ink-soft:#475569;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:28px 20px 60px}
+  .page{max-width:1180px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:34px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:8px 0 0;line-height:1.55}
+
+  /* ---------- frame (simula el viewport) ---------- */
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate}
+  .frame.desktop{height:620px}
+  .frame.phone{width:352px;height:640px;border-radius:34px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(110px)}
+  .o1{width:55%;aspect-ratio:1;background:rgba(78,222,163,.42);top:-18%;left:-10%}
+  .o2{width:50%;aspect-ratio:1;background:rgba(210,187,255,.45);top:10%;right:-14%}
+  .o3{width:60%;aspect-ratio:1;background:rgba(224,242,254,.85);bottom:-26%;left:18%}
+
+  /* ---------- glass card ---------- */
+  .shell{position:relative;z-index:1;height:100%;display:flex;align-items:center;justify-content:center;padding:28px}
+  .card{
+    width:100%;max-width:880px;display:grid;grid-template-columns:.85fr 1fr;
+    background:var(--glass-2);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);
+    border:1px solid var(--glass-edge);border-radius:32px;
+    box-shadow:var(--sh-2), inset 0 1px 1px rgba(255,255,255,.9);
+    overflow:hidden;
+  }
+  /* panel izquierdo: atmósfera + marca */
+  .brandside{padding:38px 34px;display:flex;flex-direction:column;gap:22px;background:linear-gradient(160deg,rgba(255,255,255,.5),rgba(255,255,255,.15));border-right:1px solid rgba(255,255,255,.6)}
+  .lockup{display:flex;align-items:center;gap:10px}
+  .lockup .name{font-size:19px;font-weight:700;letter-spacing:-.02em}
+  .claim{font-size:28px;line-height:1.18;font-weight:700;letter-spacing:-.02em;margin:0}
+  .claim em{font-style:normal;color:var(--mint-text)}
+  .sub{margin:0;font-size:14px;line-height:1.6;color:var(--ink-soft)}
+  .bullets{display:flex;flex-direction:column;gap:10px;margin-top:auto}
+  .bullet{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:999px;background:var(--glass-1);border:1px solid rgba(255,255,255,.65);backdrop-filter:blur(20px);box-shadow:var(--sh-1)}
+  .dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}
+  .dot.m{background:rgba(16,185,129,.16)} .dot.v{background:rgba(124,58,237,.14)} .dot.a{background:rgba(245,158,11,.16)}
+  .bullet span{font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--ink-soft)}
+
+  /* panel derecho: formulario */
+  .formside{padding:38px 36px;display:flex;flex-direction:column;gap:18px;background:rgba(255,255,255,.35)}
+  h1{margin:0;font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .lead{margin:6px 0 0;font-size:14px;color:var(--ink-soft)}
+  .field{display:flex;flex-direction:column;gap:7px}
+  label{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--slate-soft)}
+  .well{
+    display:flex;align-items:center;gap:10px;padding:13px 16px;border-radius:16px;
+    background:var(--well);border:1px solid rgba(255,255,255,.7);
+    box-shadow:inset 0 2px 4px rgba(15,23,42,.03);
+    font-size:15px;color:var(--ink);
+  }
+  .well.placeholder{color:#94a3b8}
+  .well.focus{border-color:rgba(124,58,237,.6);box-shadow:0 0 0 4px rgba(124,58,237,.14), inset 0 2px 4px rgba(15,23,42,.03);background:rgba(255,255,255,.7)}
+  .well.invalid{border-color:rgba(186,26,26,.55);box-shadow:0 0 0 4px rgba(186,26,26,.10)}
+  .well .ico{opacity:.5;flex:0 0 auto}
+  .fielderr{font-family:'Inter',sans-serif;font-size:12px;font-weight:500;color:#ba1a1a}
+  .rowend{display:flex;justify-content:flex-end;margin-top:-4px}
+  a.link{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--mint-text);text-decoration:none}
+  .cta{
+    border:0;width:100%;padding:15px 18px;border-radius:999px;cursor:pointer;
+    background:linear-gradient(135deg,var(--mint),var(--mint-deep));color:#fff;
+    font-family:'Inter',sans-serif;font-size:15px;font-weight:600;
+    box-shadow:0 8px 24px -4px rgba(16,185,129,.42), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .cta.loading{opacity:.9;display:flex;align-items:center;justify-content:center;gap:10px}
+  .spin{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .foot{text-align:center;font-size:13.5px;color:var(--ink-soft)}
+  .alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:16px;font-family:'Inter',sans-serif;font-size:13px;line-height:1.45;backdrop-filter:blur(20px)}
+  .alert.err{background:rgba(186,26,26,.10);border:1px solid rgba(186,26,26,.22);color:#93000a}
+  .alert.ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.28);color:#00422b}
+
+  /* ---------- móvil ---------- */
+  .phone .shell{padding:20px}
+  .phone .card{grid-template-columns:1fr;max-width:none;border-radius:28px}
+  .phone .brandside{padding:26px 24px 8px;border-right:0;gap:12px;background:transparent}
+  .phone .bullets{display:none}
+  .phone .claim{font-size:22px}
+  .phone .formside{padding:16px 24px 26px;background:transparent}
+  .phone h1{font-size:22px}
+
+  /* ---------- dark ---------- */
+  .dark{--canvas:#0b1220;--ink:#eef2ff;--ink-soft:#a8b3c7;--slate-soft:#c3ccdb;
+        --glass-1:rgba(255,255,255,.06);--glass-2:rgba(22,30,47,.72);--glass-edge:rgba(255,255,255,.12);
+        --well:rgba(255,255,255,.06);--mint-text:#4edea3;
+        --sh-2:0 16px 48px -8px rgba(0,0,0,.55)}
+  .dark .card{box-shadow:var(--sh-2), inset 0 1px 0 rgba(255,255,255,.09)}
+  .dark .o1{background:rgba(16,185,129,.24)} .dark .o2{background:rgba(124,58,237,.30)} .dark .o3{background:rgba(30,58,95,.75)}
+  .dark .formside,.dark .brandside{background:transparent}
+  .dark .well{border-color:rgba(255,255,255,.12)}
+  .dark .alert.err{background:rgba(255,84,84,.12);border-color:rgba(255,120,120,.3);color:#ffb4ab}
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(352px,1fr));gap:22px;justify-items:center}
+  @media (max-width:900px){.card{grid-template-columns:1fr}.frame.desktop{height:auto}.brandside{border-right:0}}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <p class="caption">1 · Escritorio — estado por defecto</p>
+  <div class="frame desktop">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="shell">
+      <div class="card">
+        <aside class="brandside">
+          <div class="lockup">
+            <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <circle cx="16" cy="16" r="12.5" stroke="rgba(15,23,42,.10)" stroke-width="3"/>
+              <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#g1)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="16" cy="16" r="4.4" fill="url(#g1)"/>
+              <defs><linearGradient id="g1" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#10b981"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+            </svg>
+            <span class="name">Xavi</span>
+          </div>
+          <h2 class="claim">Vuelve a tu ritmo,<br /><em>sin ruido.</em></h2>
+          <p class="sub">Tus hábitos, tus rachas y tus sesiones te esperan justo donde los dejaste.</p>
+          <div class="bullets">
+            <div class="bullet"><span class="dot m">🌿</span><span>Rachas que no castigan un mal día</span></div>
+            <div class="bullet"><span class="dot v">🫧</span><span>Sesiones de foco y respiración</span></div>
+            <div class="bullet"><span class="dot a">✨</span><span>Un resumen diario, no un tablero</span></div>
+          </div>
+        </aside>
+        <section class="formside">
+          <div>
+            <h1>Iniciar sesión</h1>
+            <p class="lead">Accede a tu cuenta de Xavi</p>
+          </div>
+          <div class="field">
+            <label for="a">Correo electrónico</label>
+            <div class="well placeholder" id="a"><svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="19" height="15" rx="3.5"/><path d="m3.5 7.2 7.3 5.2a2 2 0 0 0 2.4 0l7.3-5.2"/></svg>tu@correo.com</div>
+          </div>
+          <div class="field">
+            <label for="b">Contraseña</label>
+            <div class="well focus" id="b"><svg class="ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.25" y="10.25" width="15.5" height="10" rx="3.5"/><path d="M8.25 10.25V7.75a3.75 3.75 0 0 1 7.5 0v2.5"/></svg>••••••••••</div>
+          </div>
+          <div class="rowend"><a class="link" href="#">¿Olvidaste tu contraseña?</a></div>
+          <button class="cta">Entrar</button>
+          <p class="foot">¿No tienes cuenta? <a class="link" href="#">Regístrate</a></p>
+        </section>
+      </div>
+    </div>
+  </div>
+  <p class="note">El lienzo aurora (3 orbes difuminados, <code>pointer-events:none</code>) sustituye a <code>apple-background</code>. La tarjeta es vidrio nivel 2: <code>blur(32px)</code>, borde especular y luz interior superior. El panel izquierdo da contexto y evita que el formulario flote solo en 1280px.</p>
+
+  <p class="caption">2 · Estados — error de credenciales y envío en curso</p>
+  <div class="grid2">
+    <div class="frame phone">
+      <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+      <div class="shell"><div class="card">
+        <aside class="brandside">
+          <div class="lockup">
+            <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <circle cx="16" cy="16" r="12.5" stroke="rgba(15,23,42,.10)" stroke-width="3"/>
+              <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#g2)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="16" cy="16" r="4.4" fill="url(#g2)"/>
+              <defs><linearGradient id="g2" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#10b981"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+            </svg>
+            <span class="name">Xavi</span>
+          </div>
+          <h2 class="claim">Vuelve a tu ritmo.</h2>
+        </aside>
+        <section class="formside">
+          <h1>Iniciar sesión</h1>
+          <div class="alert err"><span>⚠️</span><span>Credenciales no válidas. Revisa el correo y la contraseña.</span></div>
+          <div class="field">
+            <label>Correo electrónico</label>
+            <div class="well">ana@correo.com</div>
+          </div>
+          <div class="field">
+            <label>Contraseña</label>
+            <div class="well invalid">••••••</div>
+            <span class="fielderr">La contraseña es obligatoria.</span>
+          </div>
+          <div class="rowend"><a class="link" href="#">¿Olvidaste tu contraseña?</a></div>
+          <button class="cta">Entrar</button>
+          <p class="foot">¿No tienes cuenta? <a class="link" href="#">Regístrate</a></p>
+        </section>
+      </div></div>
+    </div>
+
+    <div class="frame phone dark">
+      <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+      <div class="shell"><div class="card">
+        <aside class="brandside">
+          <div class="lockup">
+            <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <circle cx="16" cy="16" r="12.5" stroke="rgba(255,255,255,.14)" stroke-width="3"/>
+              <path d="M16 3.5a12.5 12.5 0 0 1 11.3 7.2" stroke="url(#g3)" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="16" cy="16" r="4.4" fill="url(#g3)"/>
+              <defs><linearGradient id="g3" x1="4" y1="4" x2="28" y2="28"><stop stop-color="#4edea3"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>
+            </svg>
+            <span class="name">Xavi</span>
+          </div>
+          <h2 class="claim">Vuelve a tu ritmo.</h2>
+        </aside>
+        <section class="formside">
+          <h1>Iniciar sesión</h1>
+          <div class="alert ok"><span>✅</span><span>Tu contraseña se actualizó. Ya puedes entrar.</span></div>
+          <div class="field">
+            <label>Correo electrónico</label>
+            <div class="well">ana@correo.com</div>
+          </div>
+          <div class="field">
+            <label>Contraseña</label>
+            <div class="well focus">••••••••••</div>
+          </div>
+          <div class="rowend"><a class="link" href="#">¿Olvidaste tu contraseña?</a></div>
+          <button class="cta loading"><span class="spin"></span>Entrando…</button>
+          <p class="foot">¿No tienes cuenta? <a class="link" href="#">Regístrate</a></p>
+        </section>
+      </div></div>
+    </div>
+  </div>
+  <p class="note">Izquierda: modo claro con error de API + error de campo. Derecha: modo oscuro (paleta Aura derivada, no existe en Stitch) con mensaje de éxito heredado de <code>location.state</code> y el botón en carga.</p>
+
+</div>
+</body>
+</html>

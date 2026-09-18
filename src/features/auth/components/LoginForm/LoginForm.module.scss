@@ -5,15 +5,12 @@
 }
 
 .forgot {
-  margin: 0;
+  margin: -0.25rem 0 0;
   text-align: right;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .link {
   @include auth-link;
-}
-
-.submit {
-  @include auth-button-primary;
+  font-weight: 600;
 }

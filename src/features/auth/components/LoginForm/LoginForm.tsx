@@ -12,6 +12,36 @@ type LoginLocationState = {
   message?: string
 }
 
+const ICON_PROPS = {
+  width: 17,
+  height: 17,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.5,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+} as const
+
+function MailIcon() {
+  return (
+    <svg {...ICON_PROPS}>
+      <rect x="2.5" y="4.5" width="19" height="15" rx="3.5" />
+      <path d="m3.5 7.2 7.3 5.2a2 2 0 0 0 2.4 0l7.3-5.2" />
+    </svg>
+  )
+}
+
+function LockIcon() {
+  return (
+    <svg {...ICON_PROPS}>
+      <rect x="4.25" y="10.25" width="15.5" height="10" rx="3.5" />
+      <path d="M8.25 10.25V7.75a3.75 3.75 0 0 1 7.5 0v2.5" />
+    </svg>
+  )
+}
+
 export function LoginForm() {
   const location = useLocation()
   const locationState = (location.state as LoginLocationState | null) ?? {}
@@ -71,6 +101,7 @@ export function LoginForm() {
           type="email"
           name="email"
           autoComplete="email"
+          leftIcon={<MailIcon />}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loginMutation.isPending}
@@ -83,6 +114,7 @@ export function LoginForm() {
           type="password"
           name="password"
           autoComplete="current-password"
+          leftIcon={<LockIcon />}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={loginMutation.isPending}

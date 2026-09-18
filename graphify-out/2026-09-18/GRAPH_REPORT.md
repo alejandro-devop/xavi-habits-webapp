@@ -1,11 +1,11 @@
 # Graph Report - xavi-habits-webapp  (2026-09-18)
 
 ## Corpus Check
-- 814 files · ~242,471 words
+- 814 files · ~242,539 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3671 nodes · 4245 edges · 563 communities (429 shown, 134 thin omitted)
+- 3671 nodes · 4245 edges · 560 communities (427 shown, 133 thin omitted)
 - Extraction: 82% EXTRACTED · 18% INFERRED · 0% AMBIGUOUS · INFERRED: 746 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -328,13 +328,11 @@
 - [[_COMMUNITY_Community 492|Community 492]]
 - [[_COMMUNITY_Community 493|Community 493]]
 - [[_COMMUNITY_Community 495|Community 495]]
-- [[_COMMUNITY_Community 496|Community 496]]
 - [[_COMMUNITY_Community 497|Community 497]]
 - [[_COMMUNITY_Community 498|Community 498]]
 - [[_COMMUNITY_Community 499|Community 499]]
 - [[_COMMUNITY_Community 504|Community 504]]
 - [[_COMMUNITY_Community 505|Community 505]]
-- [[_COMMUNITY_Community 507|Community 507]]
 - [[_COMMUNITY_Community 508|Community 508]]
 - [[_COMMUNITY_Community 509|Community 509]]
 - [[_COMMUNITY_Community 510|Community 510]]
@@ -345,7 +343,6 @@
 - [[_COMMUNITY_Community 517|Community 517]]
 - [[_COMMUNITY_Community 519|Community 519]]
 - [[_COMMUNITY_Community 524|Community 524]]
-- [[_COMMUNITY_Community 526|Community 526]]
 - [[_COMMUNITY_Community 527|Community 527]]
 - [[_COMMUNITY_Community 528|Community 528]]
 - [[_COMMUNITY_Community 529|Community 529]]
@@ -401,7 +398,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (563 total, 134 thin omitted)
+## Communities (560 total, 133 thin omitted)
 
 ### Community 0 - "Weeklyplanner Planner"
 Cohesion: 0.13
@@ -409,7 +406,7 @@ Nodes (19): WeeklyPlanner(), ALL_DAYS, DAY_LABELS, DAY_LABELS_FULL, formatEventE
 
 ### Community 1 - "Habitcontributiongrid Usehabits"
 Cohesion: 0.12
-Nodes (19): useDeleteHabitMutation(), useHabitCategoriesQuery(), useHabitFollowUpsInDatesQuery(), useHabitMyDayQuery(), useHabitQuery(), useHabitQueryGuard(), useHabitsQuery(), useHabitWeekViewQuery() (+11 more)
+Nodes (26): HabitCreateWizard(), HabitEditForm(), HabitFormModal(), HabitFormModalProps, useHabitPurposesQuery(), useCreateHabitMutation(), useDeleteHabitMutation(), useHabitCategoriesQuery() (+18 more)
 
 ### Community 2 - "Sections Commandpaletteprovider"
 Cohesion: 0.05
@@ -695,6 +692,10 @@ Nodes (4): ALL_PLACEMENTS, HabitPurposeCard(), HabitPurposeCardProps, PLACEMENT_
 Cohesion: 0.17
 Nodes (4): HabitCategoryTally, HabitDayTotals, HabitStarSummary, HabitStreakSummary
 
+### Community 78 - "Weekscheduleslotmodal Usequarters"
+Cohesion: 0.22
+Nodes (5): HabitFollowUpDrawer(), HabitFollowUpDrawerProps, Listener, Probe(), useMediaQuery()
+
 ### Community 79 - "Icons Appiconmap"
 Cohesion: 0.33
 Nodes (5): appIconMap, AppIconName, appIcons, catalogIcons, iconNameAliases
@@ -736,8 +737,8 @@ Cohesion: 0.15
 Nodes (11): countBy(), countHabitsByCategory(), countHabitsByPurpose(), EMPTY_HABIT_LIST_FILTERS, HABIT_SORT_OPTIONS, HabitIntent, HabitListFilters, HabitSortKey (+3 more)
 
 ### Community 89 - "Sessionlogmodal Usequarters"
-Cohesion: 0.14
-Nodes (17): DAY_LABELS, getCellClass(), HabitContributionGrid(), Props, getSnoozeUntil(), addDaysToString(), buildDay(), getFollowUpQueryRange() (+9 more)
+Cohesion: 0.12
+Nodes (25): EMPTY_FOLLOW_UP_MAP, HabitMyDayPage(), RegisterTarget, WEEKDAY_INITIALS, capitalize(), formatDayForLabel(), formatLongDate(), formatWeekEyebrow() (+17 more)
 
 ### Community 90 - "Iconbutton Iconbuttonprops"
 Cohesion: 0.40
@@ -900,8 +901,8 @@ Cohesion: 0.12
 Nodes (15): Backend, Campos `Todo`, Convenciones de implementación, Dominio Todos — Xavi Habits Web, Enums, Estado en habits-web, Estructura prevista, GraphQL — carpetas (implementado en backend) (+7 more)
 
 ### Community 379 - "Community 379"
-Cohesion: 0.17
-Nodes (18): DAY_LABELS, HabitDayCell(), Props, HabitFollowUpForm(), Props, followUpHasNotes(), formatProgressLabel(), getCurrentProgressValue() (+10 more)
+Cohesion: 0.13
+Nodes (22): DAY_LABELS, getCellClass(), HabitContributionGrid(), Props, DAY_LABELS, HabitDayCell(), Props, HabitFollowUpForm() (+14 more)
 
 ### Community 380 - "Community 380"
 Cohesion: 0.16
@@ -1030,10 +1031,6 @@ Nodes (7): useDeleteWeekScheduleSlotMutation(), useWeekScheduleSlotsQuery(), Pro
 ### Community 413 - "Community 413"
 Cohesion: 0.36
 Nodes (6): SleepForm(), SleepFormProps, Step2Times(), calcDurationMinutes(), formatSleepDuration(), timeToIso()
-
-### Community 414 - "Community 414"
-Cohesion: 0.27
-Nodes (10): HabitFollowUpDrawer(), HabitFollowUpDrawerProps, capitalize(), formatDayForLabel(), formatLongDate(), formatWeekEyebrow(), formatWeekRange(), toDate() (+2 more)
 
 ### Community 415 - "Community 415"
 Cohesion: 0.29
@@ -1203,21 +1200,13 @@ Nodes (3): LearningNoteCard(), Props, toSnippet()
 Cohesion: 0.50
 Nodes (3): StandupKanbanCard(), StandupKanbanCardProps, STATUS_CARD_CLASS
 
-### Community 496 - "Community 496"
-Cohesion: 0.33
-Nodes (4): ConfirmDialogContext, ConfirmDialogContextValue, ConfirmDialogProviderProps, initialState
-
 ### Community 497 - "Community 497"
 Cohesion: 0.31
 Nodes (6): HabitIdentityMoment(), HabitIdentityMomentProps, composeIdentityLine(), composeMomentAsk(), composeMomentHeadline(), lowerFirst()
 
 ### Community 505 - "Community 505"
-Cohesion: 0.14
-Nodes (18): ArchivedHabitCard(), Props, Trigger(), useConfirmDialog(), HabitCreateWizard(), HabitEditForm(), HabitFormModal(), HabitFormModalProps (+10 more)
-
-### Community 507 - "Community 507"
-Cohesion: 0.47
-Nodes (5): formatTime(), HeroCard(), Props, RoutineList(), RoutineRow()
+Cohesion: 0.12
+Nodes (13): ArchivedHabitCard(), Props, Trigger(), ConfirmDialogContext, ConfirmDialogContextValue, ConfirmDialogProviderProps, initialState, useConfirmDialog() (+5 more)
 
 ### Community 508 - "Community 508"
 Cohesion: 0.11
@@ -1234,10 +1223,6 @@ Nodes (4): useCreateSessionLogMutation(), useUpdateSessionLogMutation(), Props, 
 ### Community 524 - "Community 524"
 Cohesion: 0.67
 Nodes (3): HABIT_TEMPLATES, HabitTemplate, HabitTemplateValues
-
-### Community 526 - "Community 526"
-Cohesion: 0.50
-Nodes (3): EMPTY_FOLLOW_UP_MAP, RegisterTarget, WEEKDAY_INITIALS
 
 ### Community 527 - "Community 527"
 Cohesion: 0.14
@@ -1299,17 +1284,21 @@ Nodes (6): Criterios de aceptación, General, Mejora 1 + 2, Mejora 3, Mejora 4, 
 Cohesion: 0.22
 Nodes (9): DAY_OPTIONS, Props, RootStepProps, RoutineEventFormValues, RoutineEventModal(), RoutineEventRootStep(), buildDurationOptions(), buildStartTimeOptions() (+1 more)
 
+### Community 557 - "Community 557"
+Cohesion: 0.22
+Nodes (6): CreateHabitPurposeStep(), Props, useCreateHabitPurposeMutation(), useHabitPurposeQueryGuard(), useRemoveHabitPurposeMutation(), useUpdateHabitPurposeMutation()
+
 ## Knowledge Gaps
 - **1474 isolated node(s):** `name`, `private`, `version`, `type`, `packageManager` (+1469 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **134 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **133 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useToast()` connect `Useweeklyroutine Toast` to `Habitcontributiongrid Usehabits`, `Sections Commandpaletteprovider`, `Community 517`, `Activity Activitypickerfield`, `Usetodos Todossettings`, `Community 529`, `Notecapture Notecard`, `Router Todaypage`, `Todossettings Usetodos`, `Community 538`, `Usequarters Quarterspage`, `Community 411`, `Community 412`, `Community 544`, `Useactivityfollowups Runningactivitywidget`, `Quartercard Format`, `Durationhoursminutesfields Activity`, `Createhabitpurposestep Usehabitpurposes`, `Community 426`, `Sessionlinkedtodo Subtasklist`, `Community 429`, `Community 432`, `Toast Context`, `Usehabitcategories Habitcategoriespage`, `Community 448`, `Notebooktabs Usetodos`, `Main`, `Confirmdialogprovider Confirmdialog`, `Community 505`, `Community 508`?**
+- **Why does `useToast()` connect `Useweeklyroutine Toast` to `Habitcontributiongrid Usehabits`, `Sections Commandpaletteprovider`, `Community 517`, `Activity Activitypickerfield`, `Usetodos Todossettings`, `Community 529`, `Notecapture Notecard`, `Router Todaypage`, `Todossettings Usetodos`, `Community 538`, `Usequarters Quarterspage`, `Community 411`, `Community 412`, `Community 544`, `Useactivityfollowups Runningactivitywidget`, `Quartercard Format`, `Durationhoursminutesfields Activity`, `Createhabitpurposestep Usehabitpurposes`, `Community 426`, `Sessionlinkedtodo Subtasklist`, `Community 429`, `Community 557`, `Community 432`, `Toast Context`, `Usehabitcategories Habitcategoriespage`, `Community 448`, `Notebooktabs Usetodos`, `Main`, `Confirmdialogprovider Confirmdialog`, `Community 508`?**
   _High betweenness centrality (0.047) - this node is a cross-community bridge._
-- **Why does `useConfirmDialog()` connect `Community 505` to `Habitcontributiongrid Usehabits`, `Sections Commandpaletteprovider`, `Icons Icon`, `Usetodos Todossettings`, `Useweeklyroutine Toast`, `Notecapture Notecard`, `Todossettings Usetodos`, `Community 411`, `Community 412`, `Usequarters Quarterspage`, `Useactivityfollowups Runningactivitywidget`, `Durationhoursminutesfields Activity`, `Sessionlinkedtodo Subtasklist`, `Community 429`, `Community 432`, `Usehabitcategories Habitcategoriespage`, `Main`, `Confirmdialogprovider Confirmdialog`, `Community 496`, `Community 507`, `Community 379`?**
+- **Why does `useConfirmDialog()` connect `Community 505` to `Habitcontributiongrid Usehabits`, `Sections Commandpaletteprovider`, `Icons Icon`, `Usetodos Todossettings`, `Useweeklyroutine Toast`, `Notecapture Notecard`, `Todossettings Usetodos`, `Community 411`, `Community 412`, `Usequarters Quarterspage`, `Useactivityfollowups Runningactivitywidget`, `Durationhoursminutesfields Activity`, `Sessionlinkedtodo Subtasklist`, `Community 429`, `Community 432`, `Usehabitcategories Habitcategoriespage`, `Main`, `Confirmdialogprovider Confirmdialog`, `Community 379`?**
   _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **Why does `useModalStep()` connect `Community 402` to `Useactivityfollowups Runningactivitywidget`, `Community 423`, `Community 552`, `Activity Activitypickerfield`, `Community 555`, `Community 557`, `Daystorywidget Buildstoryentries`, `Community 563`, `Community 468`, `Community 406`, `Community 375`, `Popover Useclickoutside`?**
   _High betweenness centrality (0.033) - this node is a cross-community bridge._

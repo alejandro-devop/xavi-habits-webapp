@@ -7,7 +7,7 @@ import {
   useHabitWeekViewQuery,
   useUpdateHabitMutation,
 } from '@/features/habits/hooks/useHabits'
-import { HabitStatsBanner } from '@/features/habits/components/HabitStatsBanner'
+import { HabitPanel } from '@/features/habits/components/HabitPanel'
 import { HabitStatusBadge } from '@/features/habits/components/HabitStatusBadge'
 import { HabitTypeBadge } from '@/features/habits/components/HabitTypeBadge'
 import { HabitWeekGrid } from '@/features/habits/components/HabitWeekGrid'
@@ -16,6 +16,10 @@ import { HabitContributionGrid } from '@/features/habits/components/HabitContrib
 import { HabitFormModal } from '@/features/habits/components/HabitFormModal'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import { addDaysToString, getMondayOfWeek, getTodayString } from '@/features/habits/utils/habit-type.utils'
+import {
+  DEFAULT_HABIT_PANEL_RANGE,
+  type HabitPanelRange,
+} from '@/features/habits/utils/habit-panel.utils'
 import type { Habit, HabitFollowUp } from '@/features/habits/types/habit.types'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
@@ -42,7 +46,9 @@ export function HabitDetailPage() {
   const updateMutation = useUpdateHabitMutation()
   const deleteMutation = useDeleteHabitMutation()
   const [editOpen, setEditOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState('week')
+  const [activeTab, setActiveTab] = useState('panel')
+  // El rango del panel vive en la página y no se persiste.
+  const [panelRange, setPanelRange] = useState<HabitPanelRange>(DEFAULT_HABIT_PANEL_RANGE)
 
   const thisWeekStart = getMondayOfWeek(getTodayString())
   const [weekStart, setWeekStart] = useState(thisWeekStart)
@@ -168,13 +174,16 @@ export function HabitDetailPage() {
         </div>
       ) : null}
 
-      <HabitStatsBanner habit={habit} />
-
       <Tabs value={activeTab} onChange={setActiveTab}>
         <Tabs.List>
+          <Tabs.Tab value="panel">Panel</Tabs.Tab>
           <Tabs.Tab value="week">Esta semana</Tabs.Tab>
           <Tabs.Tab value="history">Historial completo</Tabs.Tab>
         </Tabs.List>
+
+        <Tabs.Panel value="panel">
+          <HabitPanel habit={habit} range={panelRange} onRangeChange={setPanelRange} />
+        </Tabs.Panel>
 
         <Tabs.Panel value="week">
           <div className={styles.weekPanel}>

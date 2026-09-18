@@ -58,8 +58,17 @@ export function useHabitWeekViewQuery(habitId: string | undefined, weekStart: st
   })
 }
 
-export function useHabitFollowUpsInDatesQuery(from: string, to: string) {
-  const enabled = useHabitQueryGuard()
+/**
+ * `options.enabled` deja apagar la consulta sin romper el orden de los hooks:
+ * el panel del hábito pide el tramo previo solo cuando existe.
+ */
+export function useHabitFollowUpsInDatesQuery(
+  from: string,
+  to: string,
+  options: { enabled?: boolean } = {},
+) {
+  const guard = useHabitQueryGuard()
+  const enabled = guard && (options.enabled ?? true)
   return useQuery({
     queryKey: habitKeys.calendar(from, to),
     enabled,

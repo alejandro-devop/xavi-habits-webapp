@@ -1,0 +1,70 @@
+@use '@/app/styles/mixins' as *;
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding-top: 1rem;
+  min-width: 0;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.toolbarHint {
+  margin: 0;
+  font-family: var(--font-label, var(--font-family));
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+// La lectura: el panel diciendo en palabras lo que enseña.
+.reading {
+  @include glass-panel;
+  padding: 0.875rem 1.125rem;
+}
+
+.readingText {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+
+  @include md {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  }
+}
+
+.chartsEven {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+
+  @include md {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}

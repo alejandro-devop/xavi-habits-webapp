@@ -1239,16 +1239,6 @@
     "ast_hash": "0120eb87d0845b1ad1c4ff1bd4f8437d",
     "semantic_hash": ""
   },
-  "src/features/habits/components/HabitStatsBanner/HabitStatsBanner.tsx": {
-    "mtime": 1789696614.9635406,
-    "ast_hash": "38a6ce8297dd2c1ff869aa2bb52aa27c",
-    "semantic_hash": ""
-  },
-  "src/features/habits/components/HabitStatsBanner/index.ts": {
-    "mtime": 1789696614.9635406,
-    "ast_hash": "b1121fb8c34a4221cec9b02ae6ce373d",
-    "semantic_hash": ""
-  },
   "src/features/habits/components/HabitStatusBadge/HabitStatusBadge.tsx": {
     "mtime": 1789705190.7267888,
     "ast_hash": "4528fa8c66dd6b1303cf31e79c717081",
@@ -1365,8 +1355,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/hooks/useHabits.ts": {
-    "mtime": 1789696614.9655406,
-    "ast_hash": "58c94420a1b76183d2fbc1d8b0464988",
+    "mtime": 1789746282.0120282,
+    "ast_hash": "8500d88231a98c59e0902be244d71cbb",
     "semantic_hash": ""
   },
   "src/features/habits/index.ts": {
@@ -1385,8 +1375,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitDetailPage.tsx": {
-    "mtime": 1789696614.9655406,
-    "ast_hash": "084b6eb11ffbe6c643c09b77539035f5",
+    "mtime": 1789746370.6561475,
+    "ast_hash": "2132f8a9b2b1207e4b35f7620f98b248",
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitFormPage.tsx": {
@@ -4085,8 +4075,8 @@
     "semantic_hash": ""
   },
   "docs/remodel/BACKLOG.md": {
-    "mtime": 1789731255.5118823,
-    "ast_hash": "f502ded726e06e7fa31d6d2ee33b68e7",
+    "mtime": 1789745599.1961982,
+    "ast_hash": "f6a7d931789eb77600444d65cbd0a112",
     "semantic_hash": ""
   },
   "docs/remodel/assets/06-mi-persona.html": {
@@ -4132,6 +4122,71 @@
   "src/features/habits/data/habit-colors.ts": {
     "mtime": 1789735915.5011437,
     "ast_hash": "807d8f1c47831820dfecb27e614e6edf",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/ChartPanel.tsx": {
+    "mtime": 1789746089.4367948,
+    "ast_hash": "d538ecac53035007e8e5b6faa2f05796",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitDifficultyChart.tsx": {
+    "mtime": 1789746233.007969,
+    "ast_hash": "fc8a16b85f018c32a275b9f8cf393555",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitGoalChart.tsx": {
+    "mtime": 1789746787.7512898,
+    "ast_hash": "9dee5b63fbef26d37d91ce540cfb8c8b",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitPanel.test.tsx": {
+    "mtime": 1789746501.640552,
+    "ast_hash": "0a0d9bb0ba60ad1534fe3ae275132099",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitPanel.tsx": {
+    "mtime": 1789746355.8211176,
+    "ast_hash": "23edea4205a0c4fa058e800bc769f2e9",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitPanelTiles.tsx": {
+    "mtime": 1789746383.293189,
+    "ast_hash": "9e5f981a760b1e68f22714be9d105097",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitStreakEpisodesChart.tsx": {
+    "mtime": 1789746821.4943671,
+    "ast_hash": "9660b59e0a6602992b73868e28ff47dc",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitWeekdayChart.tsx": {
+    "mtime": 1789746787.7512898,
+    "ast_hash": "13437bcf12850d80b06e621640828014",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/HabitWeeklyComplianceChart.tsx": {
+    "mtime": 1789746787.7512898,
+    "ast_hash": "b1455ad785e6360adaa86cb364d4c41d",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitPanel/index.ts": {
+    "mtime": 1789746360.8641238,
+    "ast_hash": "ad57f4d31e9ac1d0cd7c27962541eea3",
+    "semantic_hash": ""
+  },
+  "src/features/habits/utils/habit-panel.utils.test.ts": {
+    "mtime": 1789746036.6507306,
+    "ast_hash": "5317c873420704b47ef51a775ab0d19b",
+    "semantic_hash": ""
+  },
+  "src/features/habits/utils/habit-panel.utils.ts": {
+    "mtime": 1789746287.2660346,
+    "ast_hash": "3d95bb15d3bf36fa71f28e2844aa33ee",
+    "semantic_hash": ""
+  },
+  "docs/remodel/09-panel-habito.spec.md": {
+    "mtime": 1789745559.4081495,
+    "ast_hash": "2f27bba0b296ed48a004b7de08d2d0f4",
     "semantic_hash": ""
   }
 }

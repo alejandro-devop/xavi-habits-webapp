@@ -7,15 +7,17 @@ Fases pedidas y todavía sin render aprobado. El circuito no cambia: **render �
 | ✅ Publicada | **Fase 7 — Mi Persona: la identidad se gana** | `06-mi-persona.spec.md` | `assets/06-mi-persona.html` |
 | ✅ Publicada | **Fase 8 — Un catálogo de iconos que alcance** | `07-catalogo-iconos.spec.md` | — |
 | ✅ Publicada | **Fase 9 — El color del hábito viene puesto** | `08-color-inicial-habito.spec.md` | — |
-| 🎨 Render montado, esperando 3 decisiones | **Fase 10 — El panel del hábito** | pendiente | `assets/09-panel-habito.html` |
+| 🔨 En construcción | **Fase 10 — El panel del hábito** | `09-panel-habito.spec.md` | `assets/09-panel-habito.html` |
 
 Se construyen **de una en una**: aunque tocan archivos distintos, cada constructor mide lint y tests contra una línea base, y dos a la vez se contaminan las medidas.
 
-## Pendiente de decidir — fase 10
+## Decidido — fase 10
 
-1. ¿El panel **sustituye** la pantalla de detalle, o convive como pestaña junto a «Semana» e «Historial»?
-2. ¿Rango por defecto **90 días o 30**? 90 da tendencia; un hábito recién creado lo verá casi vacío.
-3. ¿Se queda la ficha **«Veces que recaíste»**? Es el único número del panel que habla de fallo.
+Las tres preguntas que el render dejaba abiertas, cerradas en la spec:
+
+1. **Convive.** Tercera pestaña, `Panel`, y es la que abre por defecto. Sustituir la pantalla de detalle obligaba a rehacer editar, archivar, restaurar y ocultar, que no tienen nada que ver con métricas.
+2. **90 días, recortados a la vida del hábito.** El reparo —un hábito nuevo lo ve vacío— no se arregla con 30 días, se arregla recortando el eje a `max(startDate, hoy − rango)`. «Todo» no entra: eso ya es la pestaña `Historial completo`.
+3. **Se queda, cambiada de lado.** No cuenta las recaídas: cuenta **las veces que volviste**. Mismo dato, leído por el lado que predice que sigas. El fallo se sigue viendo en la línea semanal, en el peor día y en los huecos entre rachas.
 
 ## Deuda anotada, sin hacer
 

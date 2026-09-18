@@ -5,6 +5,7 @@ import { GuestRoute } from '@/features/auth/router/GuestRoute'
 import { ProtectedRoute } from '@/features/auth/router/ProtectedRoute'
 import { VerifyEmailRoute } from '@/features/auth/router/VerifyEmailRoute'
 import { authPaths } from '@/features/auth/router/auth-paths'
+import { habitsPaths } from '@/features/habits'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 
 vi.mock('@/features/auth/providers/useAuthBootstrap', () => ({
@@ -31,11 +32,11 @@ describe('auth guards', () => {
 
   it('ProtectedRoute redirects to login when unauthenticated', () => {
     render(
-      <MemoryRouter initialEntries={['/app/today']}>
+      <MemoryRouter initialEntries={['/app/habits/my-day']}>
         <Routes>
           <Route path="/auth/login" element={<div>Login page</div>} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/app/today" element={<ProtectedTarget />} />
+            <Route path="/app/habits/my-day" element={<ProtectedTarget />} />
           </Route>
         </Routes>
       </MemoryRouter>,
@@ -58,10 +59,10 @@ describe('auth guards', () => {
     })
 
     render(
-      <MemoryRouter initialEntries={['/app/today']}>
+      <MemoryRouter initialEntries={['/app/habits/my-day']}>
         <Routes>
           <Route element={<ProtectedRoute />}>
-            <Route path="/app/today" element={<ProtectedTarget />} />
+            <Route path="/app/habits/my-day" element={<ProtectedTarget />} />
           </Route>
         </Routes>
       </MemoryRouter>,
@@ -70,7 +71,7 @@ describe('auth guards', () => {
     expect(screen.getByText('Protected content')).toBeInTheDocument()
   })
 
-  it('GuestRoute redirects verified users to today', () => {
+  it('GuestRoute redirects verified users to Mi día', () => {
     useAuthStore.getState().setSession({
       accessToken: 'access',
       accessExpiresAt: Date.now() + 60_000,
@@ -86,7 +87,7 @@ describe('auth guards', () => {
     render(
       <MemoryRouter initialEntries={['/auth/login']}>
         <Routes>
-          <Route path={authPaths.today} element={<div>Today page</div>} />
+          <Route path={habitsPaths.myDay} element={<div>Mi día page</div>} />
           <Route element={<GuestRoute />}>
             <Route path="/auth/login" element={<GuestTarget />} />
           </Route>
@@ -94,7 +95,7 @@ describe('auth guards', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByText('Today page')).toBeInTheDocument()
+    expect(screen.getByText('Mi día page')).toBeInTheDocument()
   })
 
   it('GuestRoute redirects unverified users from login to verify-email', () => {
@@ -165,11 +166,11 @@ describe('auth guards', () => {
     useAuthStore.getState().expireSession()
 
     render(
-      <MemoryRouter initialEntries={['/app/today']}>
+      <MemoryRouter initialEntries={['/app/habits/my-day']}>
         <Routes>
           <Route path="/auth/login" element={<div>Login page</div>} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/app/today" element={<ProtectedTarget />} />
+            <Route path="/app/habits/my-day" element={<ProtectedTarget />} />
           </Route>
         </Routes>
       </MemoryRouter>,

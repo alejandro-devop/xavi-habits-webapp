@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router'
 import { useAuthBootstrap } from '@/features/auth/providers/useAuthBootstrap'
 import { authPaths } from '@/features/auth/router/auth-paths'
+import { habitsPaths } from '@/features/habits'
 import {
   selectAuthUser,
   selectIsAccountVerified,
@@ -21,7 +22,7 @@ export function PublicHomeRoute() {
   }
 
   if (isAuthenticated && isAccountVerified) {
-    return <Navigate to={authPaths.today} replace />
+    return <Navigate to={habitsPaths.myDay} replace />
   }
 
   if (isAuthenticated && !isAccountVerified) {

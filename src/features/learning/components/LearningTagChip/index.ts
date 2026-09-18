@@ -1,1 +1,0 @@
-export { LearningTagChip } from './LearningTagChip'

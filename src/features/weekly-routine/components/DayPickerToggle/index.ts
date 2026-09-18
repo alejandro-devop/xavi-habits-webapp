@@ -1,1 +1,0 @@
-export { DayPickerToggle } from './DayPickerToggle'

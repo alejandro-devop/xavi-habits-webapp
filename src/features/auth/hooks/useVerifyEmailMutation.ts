@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import * as authApi from '@/features/auth/api/auth.api'
 import { authPaths } from '@/features/auth/router/auth-paths'
+import { habitsPaths } from '@/features/habits'
 import { useAuthStore } from '@/features/auth/store/auth.store'
 import { getValidAccessToken } from '@/features/auth/services/token.service'
 import { clearPendingEmail } from '@/features/auth/utils/pending-email'
@@ -33,7 +34,7 @@ export function useVerifyEmailMutation() {
           updateUser({ ...user, isAccountVerified: true })
         }
         clearPendingEmail()
-        navigate(authPaths.today, { replace: true })
+        navigate(habitsPaths.myDay, { replace: true })
         return
       }
       clearPendingEmail()

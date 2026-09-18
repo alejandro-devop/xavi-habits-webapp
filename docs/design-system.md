@@ -109,9 +109,6 @@ Las **variables CSS** se definen en `src/app/styles/_theme-variables.scss` y cam
 
 | Componente | Uso |
 |------------|-----|
-| `Sidebar` | Navegación lateral (colapsable en desktop) |
-| `Topbar` | Barra superior con breadcrumbs/acciones |
-| `Breadcrumbs` | Migas de pan |
 | `AppNavLink` | Enlace de nav con icono y estado activo |
 | `CommandPalette` | Paleta Spotlight (`⌘K` / `Ctrl+K`) |
 
@@ -120,7 +117,7 @@ Las **variables CSS** se definen en `src/app/styles/_theme-variables.scss` y cam
 | Componente | Uso |
 |------------|-----|
 | `PageHeader` | Título de página + acciones |
-| `Section` | Bloques documentados (Testing Hall) |
+| `Section` | Bloques documentados |
 | `ThemeToggle` | Tema light / dark / system |
 
 ```tsx
@@ -155,34 +152,23 @@ import { Container, Grid, GridItem, Stack, Inline } from '@/shared/layout'
 
 Variantes: `fadeIn`, `fadeUp`, `scaleIn`, `pageTransition`, `staggerContainer`, `staggerItem`.
 
-## Testing Hall
+## Testing Hall — retirado
 
-Ruta: **`/app/testinghall`** (protegida, cuenta verificada).
+El laboratorio visual vivía en `/app/testinghall` y **se borró en la fase 11**
+del rediseño, junto con los módulos que esta app dejó de tener. Sus secciones
+dependían de `Sidebar`, `Topbar`, `Breadcrumbs`, `MarkdownEditor` y
+`PaperSurface`, que también se fueron: conservarlo habría obligado a conservarlo
+todo.
 
-Secciones:
-
-1. Foundations — colores, tipografía, spacing, radius, shadows, blur  
-2. Buttons  
-3. Forms — Input, Textarea, Select, Checkbox, Switch, FormField  
-4. Advanced Forms — SearchSelect, IconPicker, AppIcon  
-5. Icons — catálogo por categorías, búsqueda, ejemplos de actividades, normalización `faBell → bell`  
-6. Feedback — Alert, Toast, ConfirmDialog, Spinner, Skeleton, EmptyState  
-7. Surfaces — Card, GlassPanel, DataCard, StatCard  
-8. Data display — Table, Badge  
-9. Overlay — Modal, Drawer, Popover, Tooltip  
-10. Navigation — Sidebar, Topbar, Breadcrumbs, AppNavLink, Tabs  
-11. Layout — Container, Grid, Stack, Inline, Divider  
-12. Motion  
-13. Productivity — CommandPalette (`⌘K` / `Ctrl+K`)  
-
-Nav sticky con anclas `#foundations`, `#buttons`, etc.
+**No mandes a nadie a verlo ahí, y no crees demos nuevas en él.** Para ver un
+componente en funcionamiento, el sitio es la propia app o su test. Si vuelve a
+hacer falta un laboratorio, se recupera de la historia de git.
 
 ## Reglas para nuevos componentes
 
 1. Carpeta en `shared/ui/<Name>/` o `shared/layout/<Name>/`
 2. Solo variables CSS `var(--*)` en modules
 3. Export en barrel `index.ts`
-4. Ejemplo en Testing Hall
 5. Test mínimo si hay interacción o a11y crítica
 
 ## Font Awesome (solo free solid)
@@ -209,7 +195,7 @@ Dependencias: `@fortawesome/fontawesome-svg-core`, `@fortawesome/free-solid-svg-
 ```
 
 3. Si el `iconName` de FA difiere del nombre almacenado, registrar alias en `iconNameAliases` (ej. `person-running` → `running`).
-4. Probar búsqueda en Testing Hall `#icons` y, si aplica, en `IconPicker`.
+4. Probar la búsqueda en el `IconPicker`.
 5. No usar Pro, Brands ni packs externos.
 
 ### Naming

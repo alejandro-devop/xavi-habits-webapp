@@ -1,1 +1,0 @@
-export { RunningActivityWidget } from './RunningActivityWidget'

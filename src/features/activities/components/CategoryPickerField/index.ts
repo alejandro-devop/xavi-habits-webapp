@@ -1,1 +1,0 @@
-export { CategoryPickerField } from './CategoryPickerField'

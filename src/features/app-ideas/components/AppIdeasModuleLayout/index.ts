@@ -1,1 +1,0 @@
-export { AppIdeasModuleLayout } from './AppIdeasModuleLayout'

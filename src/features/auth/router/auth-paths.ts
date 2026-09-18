@@ -5,8 +5,6 @@ export const authPaths = {
   verifyEmail: '/auth/verify-email',
   forgotPassword: '/auth/forgot-password',
   resetPassword: '/auth/reset-password',
-  today: '/app/today',
-  testingHall: '/app/testinghall',
 } as const
 
 export type AuthPath = (typeof authPaths)[keyof typeof authPaths]

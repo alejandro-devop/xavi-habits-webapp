@@ -1,5 +1,4 @@
 import type { RouteObject } from 'react-router'
-import { HabitsModuleLayout } from '@/features/habits/pages/HabitsModuleLayout'
 import { HabitMyDayPage } from '@/features/habits/pages/HabitMyDayPage'
 import { HabitsListPage } from '@/features/habits/pages/HabitsListPage'
 import { HabitsArchivedPage } from '@/features/habits/pages/HabitsArchivedPage'
@@ -13,7 +12,6 @@ import { HabitPersonaPage } from '@/features/habits/pages/HabitPersonaPage'
 
 export const habitsRoutes: RouteObject = {
   path: 'habits',
-  element: <HabitsModuleLayout />,
   children: [
     {
       index: true,

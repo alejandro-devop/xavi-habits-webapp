@@ -56,7 +56,7 @@ import { Button, Card, FormField } from '@/shared/ui'
 import { Container, Grid, GridItem, Stack, Inline } from '@/shared/layout'
 ```
 
-Flujo de decisión: ¿existe en `shared/ui` o `shared/layout`? → úsalo. ¿No? → ¿se compone con 2–3 existentes? → compón. ¿Tampoco? → propón el componente nuevo en `src/shared/ui/` con su `.module.scss`, su export en el barrel, su demo en Testing Hall y su test mínimo.
+Flujo de decisión: ¿existe en `shared/ui` o `shared/layout`? → úsalo. ¿No? → ¿se compone con 2–3 existentes? → compón. ¿Tampoco? → propón el componente nuevo en `src/shared/ui/` con su `.module.scss`, su export en el barrel y su test mínimo.
 
 **Nunca** (salvo que la spec lo pida explícitamente):
 

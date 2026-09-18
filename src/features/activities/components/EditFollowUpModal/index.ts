@@ -1,1 +1,0 @@
-export { EditFollowUpModal } from './EditFollowUpModal'

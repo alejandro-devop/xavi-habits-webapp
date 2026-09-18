@@ -22,7 +22,7 @@ Petición de UI
               ├─ SÍ → Componer (ej. Card + Stack + Button)
               │
               └─ NO → Proponer nuevo componente en shared/ui/
-                      + SCSS module + export + demo Testing Hall + test mínimo
+                      + SCSS module + export + test mínimo
 ```
 
 **Nunca** (salvo petición explícita del usuario):
@@ -76,9 +76,6 @@ import {
   Drawer,
   Popover,
   Tooltip,
-  Sidebar,
-  Topbar,
-  Breadcrumbs,
   AppNavLink,
   CommandPaletteProvider,
   useCommandPalette,
@@ -164,7 +161,7 @@ import { useTheme, ThemeProvider } from '@/features/theme'
 | Número simple + delta | `StatCard` | `DataCard` sobrecargado |
 | Separador de sección | `Divider` (`label` opcional) | `<hr>` sin estilo |
 | Título de página + acciones | `PageHeader` | `<h1>` suelto |
-| Bloque en docs / Testing Hall | `Section` | |
+| Bloque documentado | `Section` | |
 
 ### Datos tabulares
 
@@ -185,8 +182,7 @@ import { useTheme, ThemeProvider } from '@/features/theme'
 | Menú contextual anclado | `Popover` |
 | Ayuda breve en icono | `Tooltip` |
 | Varias vistas mismo contexto | `Tabs` + `Tabs.List` + `Tabs.Tab` + `Tabs.Panel` |
-| Nav lateral app | `Sidebar` + `AppNavLink` |
-| Barra superior app | `Topbar` + `Breadcrumbs` |
+| Barra de la app | `AppLayout` la pinta entera; no hay componente suelto |
 | Atajos / ir a… | `CommandPalette` (`⌘K` / `Ctrl+K`) |
 
 ### Layout de página
@@ -225,7 +221,7 @@ Solo si se cumple **al menos uno**:
 > No existe `[Nombre]` en el Design System.  
 > **Opciones:**  
 > A) Componer con `[Card + Stack + …]` (rápido, sin ampliar DS)  
-> B) Crear `shared/ui/[Nombre]/` (reutilizable, + demo en Testing Hall)  
+> B) Crear `shared/ui/[Nombre]/` (reutilizable)  
 > Recomiendo [A/B] porque …
 
 ### Ubicación según tipo
@@ -302,7 +298,7 @@ const reduce = useReducedMotionPreference()
 - [ ] ¿Form controls tienen `id`, `label`, `error` accesibles?
 - [ ] ¿Loading/disabled/empty states contemplados?
 - [ ] ¿Animaciones respetan reduced motion?
-- [ ] Si añadí patrón nuevo reusable → ¿lo documenté y lo mostré en Testing Hall?
+- [ ] Si añadí patrón nuevo reusable → ¿lo documenté aquí?
 
 ---
 
@@ -346,7 +342,6 @@ const reduce = useReducedMotionPreference()
 | Variables tema CSS | `src/app/styles/_theme-variables.scss` |
 | Motion | `src/shared/motion/` |
 | Tema app | `src/features/theme/` |
-| Laboratorio visual | `src/pages/app/TestingHallPage/` |
 | Convenciones proyecto | `docs/project-conventions.md` |
 
 ---
@@ -358,5 +353,4 @@ Al añadir un componente al Design System:
 1. Export en `src/shared/ui/index.ts` (o `shared/layout/index.ts`).
 2. Sección en `docs/design-system.md`.
 3. Entrada en la **matriz de decisión** de este archivo.
-4. Demo en `TestingHallPage/sections/`.
 5. Línea en `.cursor/rules/design-system.mdc` (tabla mapa rápido) si es muy usado.

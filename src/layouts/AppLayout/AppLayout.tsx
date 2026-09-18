@@ -1,50 +1,46 @@
-import { Fragment, useMemo, useState } from 'react'
-import { Outlet, useLocation, useNavigate } from 'react-router'
-import { RunningActivityWidget } from '@/features/activities/components/RunningActivityWidget'
-import { LogoutButton } from '@/features/auth/components/LogoutButton/LogoutButton'
+import { useMemo } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredModal'
 import { useLogoutMutation } from '@/features/auth/hooks/useLogoutMutation'
 import { selectAuthUser } from '@/features/auth/store/auth.selectors'
 import { useAuthStore } from '@/features/auth/store/auth.store'
+import { habitsPaths } from '@/features/habits/routes/habits-paths'
+import { settingsPaths } from '@/features/settings'
 import { useTheme } from '@/features/theme'
-import { resolveBreadcrumbs } from '@/layouts/AppLayout/app-breadcrumbs'
-import {
-  appSidebarItems,
-  createCommandActions,
-} from '@/layouts/AppLayout/app-nav.config'
+import { createCommandActions } from '@/layouts/AppLayout/app-nav.config'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { AuraRing } from '@/shared/ui/AuraRing'
 import { AuroraCanvas } from '@/shared/ui/AuroraCanvas'
-import { Button } from '@/shared/ui/Button'
 import { CommandPaletteProvider, useCommandPalette } from '@/shared/ui/CommandPalette'
 import { ConnectionIndicator } from '@/shared/ui/ConnectionIndicator'
-import { RetryNotice } from '@/shared/ui/RetryNotice'
-import { Drawer } from '@/shared/ui/Drawer'
-import { Sidebar } from '@/shared/ui/Sidebar'
-import { ThemeToggle } from '@/shared/ui/ThemeToggle'
-import { Topbar } from '@/shared/ui/Topbar'
 import { AppNavLink } from '@/shared/ui/NavLink'
+import { Popover } from '@/shared/ui/Popover'
+import { RetryNotice } from '@/shared/ui/RetryNotice'
+import { ThemeToggle } from '@/shared/ui/ThemeToggle'
 import styles from './AppLayout.module.scss'
 
-const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
-
 /**
- * El ámbito Aura vive en el cromo (lateral, barra superior, portales), no en el
- * contenedor del `<Outlet />`: los módulos sin migrar mezclan tokens con valores
- * a pelo y heredarlos los dejaría peor que ahora.
+ * El ámbito Aura vive en el cromo y en las páginas de hábitos. `features/settings`
+ * todavía no está migrado: re-mapearle los tokens lo dejaría peor que ahora.
  */
 const CHROME_DS = 'aura'
 
-function readSidebarCollapsedPreference(): boolean {
-  try {
-    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY)
-    return stored !== null ? stored === 'true' : true
-  } catch {
-    return true
-  }
+/**
+ * Categorías, Medidas y Mi Persona son ajustes **del módulo**, no destinos de
+ * uso diario: van agrupados en una sola píldora para que la barra respire. Los
+ * de la cuenta se llaman «Ajustes de cuenta» y viven en el menú de la ficha.
+ */
+const SETTINGS_LINKS = [
+  { to: habitsPaths.categories, label: 'Categorías' },
+  { to: habitsPaths.measures, label: 'Medidas' },
+  { to: habitsPaths.persona, label: 'Mi Persona' },
+] as const
+
+function pillClassName({ isActive }: { isActive: boolean }) {
+  return [styles.pill, isActive ? styles.pillActive : ''].filter(Boolean).join(' ')
 }
 
-/** Píldora de la barra superior que abre la paleta de comandos. */
+/** Píldora de la barra que abre la paleta de comandos. */
 function CommandPaletteTrigger() {
   const { open } = useCommandPalette()
 
@@ -56,7 +52,7 @@ function CommandPaletteTrigger() {
       aria-label="Buscar o ir a una sección"
     >
       <AppIcon name="search" size="sm" decorative />
-      <span className={styles.cmdLabel}>Buscar o ir a…</span>
+      <span className={styles.cmdLabel}>Buscar</span>
       <kbd className={styles.cmdKbd} aria-hidden>
         ⌘K
       </kbd>
@@ -70,20 +66,6 @@ function AppLayoutShell() {
   const user = useAuthStore(selectAuthUser)
   const { cyclePreference } = useTheme()
   const logoutMutation = useLogoutMutation()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsedPreference)
-  const [mobileNavOpen, setMobileNavOpen] = useState(false)
-
-  const toggleSidebarCollapse = () => {
-    setSidebarCollapsed((v) => {
-      const next = !v
-      try {
-        localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
-      } catch {
-        // ignore storage errors
-      }
-      return next
-    })
-  }
 
   const commandActions = useMemo(
     () =>
@@ -95,115 +77,107 @@ function AppLayoutShell() {
     [navigate, cyclePreference, logoutMutation],
   )
 
-  const breadcrumbs = useMemo(() => resolveBreadcrumbs(pathname), [pathname])
   const userInitial = user?.email?.trim().charAt(0).toUpperCase() ?? '·'
+  const isSettingsActive = SETTINGS_LINKS.some((link) => pathname.startsWith(link.to))
+  const contentDs = pathname.startsWith(settingsPaths.root) ? undefined : CHROME_DS
+
+  const settingsMenu = (
+    <ul className={styles.menu}>
+      {SETTINGS_LINKS.map((link) => (
+        <li key={link.to}>
+          <AppNavLink to={link.to} className={styles.menuItem}>
+            {link.label}
+          </AppNavLink>
+        </li>
+      ))}
+    </ul>
+  )
+
+  const userMenu = (
+    <div className={styles.userMenu}>
+      <span className={styles.userMenuName}>{user?.email ?? 'Tu cuenta'}</span>
+      <ul className={styles.menu}>
+        <li>
+          <AppNavLink to={settingsPaths.root} className={styles.menuItem}>
+            Ajustes de cuenta
+          </AppNavLink>
+        </li>
+        <li>
+          <button
+            type="button"
+            className={styles.menuButton}
+            disabled={logoutMutation.isPending}
+            onClick={() => logoutMutation.mutate()}
+          >
+            Cerrar sesión
+          </button>
+        </li>
+      </ul>
+    </div>
+  )
 
   return (
     <CommandPaletteProvider actions={commandActions} ds={CHROME_DS}>
       <div className={styles.root}>
         <AuroraCanvas ds={CHROME_DS} className={styles.aurora} />
 
-        <Sidebar
-          ds={CHROME_DS}
-          brand={
-            <span className={styles.lockup}>
-              <AuraRing size={24} />
-              {!sidebarCollapsed ? <span className={styles.lockupText}>Xavi</span> : null}
-            </span>
-          }
-          items={appSidebarItems}
-          collapsed={sidebarCollapsed}
-          footer={
-            <div
-              className={[
-                styles.sidebarUserArea,
-                sidebarCollapsed ? styles.sidebarUserAreaCollapsed : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              <span className={styles.avatar} aria-hidden>
-                {userInitial}
-              </span>
-              {!sidebarCollapsed && user ? (
-                <span className={styles.userEmail}>{user.email}</span>
-              ) : null}
-              <LogoutButton />
-            </div>
-          }
-        />
+        <header className={styles.bar} data-ds={CHROME_DS}>
+          <div className={styles.barInner}>
+            <Link to={habitsPaths.myDay} className={styles.lockup}>
+              <AuraRing size={26} />
+              <span className={styles.brand}>Xavi</span>
+            </Link>
 
-        <div className={styles.mainColumn}>
-          <Topbar
-            ds={CHROME_DS}
-            leading={
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={styles.menuBtn}
-                  onClick={() => setMobileNavOpen(true)}
-                  aria-label="Abrir menú"
-                >
-                  ☰
-                </Button>
-                <button
-                  type="button"
-                  className={styles.collapseBtn}
-                  onClick={toggleSidebarCollapse}
-                  aria-label={sidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'}
-                >
-                  <AppIcon name={sidebarCollapsed ? 'chevron-right' : 'arrow-left'} size="xs" decorative />
-                </button>
-              </>
-            }
-            breadcrumbs={breadcrumbs}
-            breadcrumbsClassName={styles.topbarCrumbs}
-            title="Xavi"
-            titleClassName={styles.topbarBrand}
-            actions={
-              <div className={styles.topbarActions}>
-                <CommandPaletteTrigger />
-                <ConnectionIndicator />
-                <ThemeToggle />
+            <nav className={styles.pills} aria-label="Secciones">
+              {/* Solo los destinos hacen scroll: el popover de Ajustes no puede
+                  vivir dentro de un contenedor con overflow o queda recortado. */}
+              <div className={styles.pillsScroll}>
+                <AppNavLink to={habitsPaths.myDay} className={pillClassName}>
+                  Mi día
+                </AppNavLink>
+                <AppNavLink to={habitsPaths.list} className={pillClassName}>
+                  Mis hábitos
+                </AppNavLink>
+                <AppNavLink to={habitsPaths.archived} className={pillClassName}>
+                  Archivados
+                </AppNavLink>
               </div>
-            }
-          />
-          <main className={styles.main}>
-            <Outlet />
-          </main>
-        </div>
+              <Popover
+                triggerLabel="Ajustes de hábitos"
+                trigger={
+                  <span className={pillClassName({ isActive: isSettingsActive })}>
+                    Ajustes
+                  </span>
+                }
+                content={settingsMenu}
+                placement="bottom-end"
+              />
+            </nav>
 
-        <RunningActivityWidget />
+            <div className={styles.barActions}>
+              <CommandPaletteTrigger />
+              <ConnectionIndicator />
+              <ThemeToggle />
+              <Popover
+                triggerLabel="Tu cuenta"
+                trigger={
+                  <span className={styles.avatar} aria-hidden>
+                    {userInitial}
+                  </span>
+                }
+                content={userMenu}
+                placement="bottom-end"
+              />
+            </div>
+          </div>
+        </header>
+
+        <main className={styles.content} data-ds={contentDs}>
+          <Outlet />
+        </main>
 
         <RetryNotice />
         <SessionExpiredModal />
-
-        <Drawer
-          open={mobileNavOpen}
-          onClose={() => setMobileNavOpen(false)}
-          side="left"
-          ds={CHROME_DS}
-          title="Menú"
-        >
-          <nav className={styles.mobileNav}>
-            {appSidebarItems.map((item, index) => (
-              <Fragment key={item.to}>
-                {item.group !== appSidebarItems[index - 1]?.group ? (
-                  <span className={styles.mobileNavGroup}>{item.group}</span>
-                ) : null}
-                <AppNavLink
-                  to={item.to}
-                  end={item.end}
-                  icon={item.icon}
-                  onClick={() => setMobileNavOpen(false)}
-                >
-                  {item.label}
-                </AppNavLink>
-              </Fragment>
-            ))}
-          </nav>
-        </Drawer>
       </div>
     </CommandPaletteProvider>
   )

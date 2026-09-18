@@ -336,21 +336,6 @@
   margin-right: 0.375rem;
 }
 
-.colorSwatch {
-  width: 2.25rem;
-  height: 2.25rem;
-  flex-shrink: 0;
-  padding: 0;
-  border: 1px solid var(--color-border);
-  border-radius: 0.625rem;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
 .colorField {
   display: flex;
   align-items: center;

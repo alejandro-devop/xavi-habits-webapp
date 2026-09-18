@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HabitFormModal } from '@/features/habits/components/HabitFormModal'
+import { HABIT_COLORS } from '@/features/habits/data/habit-colors'
 import type { Habit, HabitInput } from '@/features/habits/types/habit.types'
 import { renderWithProviders } from '@/test/render'
 
@@ -10,10 +11,13 @@ const updateMutate = vi.fn()
 
 const measures = [{ id: 'm-vasos', name: 'Vasos', abbreviation: 'vasos' }]
 const categories = [{ id: 'c-salud', name: 'Salud' }]
+/** Colores ya en uso, con el caso mixto que llega de verdad de la API. */
+const activeHabits = [{ color: '#10B981' }, { color: null }]
 
 vi.mock('@/features/habits/hooks/useHabits', () => ({
   useHabitCategoriesQuery: () => ({ data: categories }),
   useHabitMeasuresQuery: () => ({ data: measures }),
+  useHabitsQuery: () => ({ data: { habits: activeHabits, page: 1, limit: 50, total: 2 } }),
   useCreateHabitMutation: () => ({
     mutate: createMutate,
     reset: vi.fn(),
@@ -232,6 +236,64 @@ describe('HabitFormModal — crear', () => {
     renderWithProviders(<HabitFormModal mode="create" open onClose={vi.fn()} />)
     expect(screen.getByText('Nada se guarda hasta el último paso.')).toBeInTheDocument()
   })
+
+  it('el color llega ya puesto, y no es ninguno de los que ya se usan', () => {
+    renderWithProviders(<HabitFormModal mode="create" open onClose={vi.fn()} />)
+
+    const checked = screen
+      .getAllByRole('radio')
+      .filter((radio) => radio.getAttribute('aria-checked') === 'true')
+
+    expect(checked).toHaveLength(1)
+    // La menta (#10b981) ya está cogida, aunque venga en mayúsculas.
+    expect(checked[0].getAttribute('aria-label')).not.toBe('Menta')
+  })
+
+  it('guarda el color sorteado aunque nadie lo toque', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<HabitFormModal mode="create" open onClose={vi.fn()} />)
+
+    await goToStep3(user)
+    await user.click(screen.getByRole('button', { name: /Crear hábito/ }))
+
+    expect(HABIT_COLORS.map((c) => c.hex)).toContain(lastCreatePayload().color)
+  })
+
+  it('el color no parpadea mientras se escribe el nombre', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<HabitFormModal mode="create" open onClose={vi.fn()} />)
+
+    const selectedLabel = () =>
+      screen
+        .getAllByRole('radio')
+        .find((radio) => radio.getAttribute('aria-checked') === 'true')
+        ?.getAttribute('aria-label')
+
+    const before = selectedLabel()
+    await user.type(screen.getByLabelText('O dale un nombre'), 'Meditación matutina')
+
+    expect(selectedLabel()).toBe(before)
+  })
+
+  it('aplicar una plantilla sustituye el color sorteado por el suyo', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<HabitFormModal mode="create" open onClose={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /Beber agua/ }))
+    await user.click(screen.getByRole('button', { name: /Siguiente/ }))
+    await user.click(screen.getByRole('button', { name: /Siguiente/ }))
+    await user.click(screen.getByRole('button', { name: /Crear hábito/ }))
+
+    // El color de la plantilla «Beber agua».
+    expect(lastCreatePayload().color).toBe('#0ea5e9')
+  })
+
+  it('ya no queda ninguna rueda de color del sistema', () => {
+    const { container } = renderWithProviders(
+      <HabitFormModal mode="create" open onClose={vi.fn()} />,
+    )
+    expect(container.querySelector('input[type="color"]')).toBeNull()
+  })
 })
 
 describe('HabitFormModal — editar', () => {
@@ -279,5 +341,32 @@ describe('HabitFormModal — editar', () => {
 
     await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
     expect(updateMutate.mock.calls.at(-1)?.[0].description).toBe(legacy)
+  })
+
+  it('no le inventa un color a un hábito que no lo tiene', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<HabitFormModal mode="edit" habit={buildHabit()} open onClose={vi.fn()} />)
+
+    for (const radio of screen.getAllByRole('radio')) {
+      expect(radio.getAttribute('aria-checked')).toBe('false')
+    }
+
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    expect(updateMutate.mock.calls.at(-1)?.[0].color).toBeNull()
+  })
+
+  it('muestra marcado el color que ya tiene el hábito', () => {
+    renderWithProviders(
+      <HabitFormModal mode="edit" habit={buildHabit({ color: '#8B5CF6' })} open onClose={vi.fn()} />,
+    )
+
+    expect(screen.getByRole('radio', { name: 'Violeta' }).getAttribute('aria-checked')).toBe('true')
+  })
+
+  it('ya no queda ninguna rueda de color del sistema', () => {
+    const { container } = renderWithProviders(
+      <HabitFormModal mode="edit" habit={buildHabit()} open onClose={vi.fn()} />,
+    )
+    expect(container.querySelector('input[type="color"]')).toBeNull()
   })
 })

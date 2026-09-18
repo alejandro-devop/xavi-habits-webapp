@@ -1,6 +1,11 @@
 import { useState } from 'react'
+import { pickInitialHabitColor } from '@/features/habits/data/habit-colors'
 import type { HabitTemplate } from '@/features/habits/data/habit-templates'
-import { useHabitCategoriesQuery, useHabitMeasuresQuery } from '@/features/habits/hooks/useHabits'
+import {
+  useHabitCategoriesQuery,
+  useHabitMeasuresQuery,
+  useHabitsQuery,
+} from '@/features/habits/hooks/useHabits'
 import { useCreateHabitMutation } from '@/features/habits/hooks/useHabits'
 import { useHabitPurposesQuery } from '@/features/habits/hooks/useHabitPurposes'
 import { formatMeasureDisplay } from '@/features/habits/utils/habit-measure-form.utils'
@@ -44,8 +49,24 @@ const STEP_META: Record<WizardStep, { title: string; description: string }> = {
 type Props = { open: boolean; onClose: () => void }
 
 export function HabitCreateWizard({ open, onClose }: Props) {
+  // Los colores que ya están en uso. La lista activa es la misma que pide Mis
+  // Hábitos, así que casi siempre viene de la caché y no cuesta una petición.
+  const activeHabitsQuery = useHabitsQuery({ status: 'active' })
+  const usedColors = (activeHabitsQuery.data?.habits ?? []).map((habit) => habit.color)
+
+  /**
+   * El sorteo pasa por aquí y solo por aquí: dentro del estado inicial y del
+   * reset, nunca en el cuerpo del componente. Si `Math.random()` se colara en
+   * el render, el color parpadearía con cada tecla del nombre.
+   *
+   * `defaultFormValues` se queda pura: el color entra desde fuera.
+   */
+  function initialValues(): HabitFormValues {
+    return { ...defaultFormValues(), color: pickInitialHabitColor(usedColors) }
+  }
+
   const [step, setStep] = useState<WizardStep>(1)
-  const [values, setValues] = useState<HabitFormValues>(() => defaultFormValues())
+  const [values, setValues] = useState<HabitFormValues>(initialValues)
   const [nameError, setNameError] = useState<string | null>(null)
   const [intention, setIntention] = useState<HabitIntention>({ ...EMPTY_INTENTION })
   // Mientras nadie toque el hueco de la acción, se propone a partir del nombre.
@@ -65,7 +86,7 @@ export function HabitCreateWizard({ open, onClose }: Props) {
 
   function reset() {
     setStep(1)
-    setValues(defaultFormValues())
+    setValues(initialValues())
     setNameError(null)
     setIntention({ ...EMPTY_INTENTION })
     setActionTouched(false)

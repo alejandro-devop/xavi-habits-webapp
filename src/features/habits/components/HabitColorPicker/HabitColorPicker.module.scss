@@ -1,0 +1,68 @@
+@use '@/app/styles/tokens' as *;
+
+// Las ocho muestras. `flex-wrap` es la red de seguridad de los 375px: si no
+// caben en una fila bajan a la siguiente, nunca desbordan el formulario.
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.swatch {
+  position: relative;
+  width: 1.875rem;
+  height: 1.875rem;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
+  border-radius: var(--radius-full);
+  background: var(--habit-swatch);
+  cursor: pointer;
+  transition:
+    transform $duration-fast $ease-out,
+    box-shadow $duration-fast $ease-out;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (min-width: 25rem) {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+// El anillo separa la muestra del fondo con el color de la superficie, así que
+// se ve igual de nítido sobre vidrio claro y sobre vidrio oscuro.
+.swatchSelected {
+  box-shadow:
+    0 0 0 2px var(--color-surface),
+    0 0 0 4px var(--habit-swatch);
+}
+
+.check {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  // Los ocho tonos son medios: el blanco se lee en todos, y la sombra lo
+  // asegura sobre los más claros (ámbar, lima).
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%));
+
+  .swatchSelected & {
+    display: flex;
+  }
+}

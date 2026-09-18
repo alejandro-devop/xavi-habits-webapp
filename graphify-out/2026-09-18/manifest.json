@@ -2335,58 +2335,58 @@
     "semantic_hash": ""
   },
   "src/shared/icons/app-icons.ts": {
-    "mtime": 1789696614.9835408,
-    "ast_hash": "41a9261f9da4288fc4d832ba0dde5daf",
+    "mtime": 1789733926.5146186,
+    "ast_hash": "6a31d57761658f4a72c639c07c7d1af5",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/entertainment.icons.ts": {
-    "mtime": 1789696614.9835408,
-    "ast_hash": "0695afcf29f0888ab8ce41a89cb5294c",
+    "mtime": 1789733858.0186093,
+    "ast_hash": "8b093e5e56172ec31a307d6773302df5",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/finance.icons.ts": {
-    "mtime": 1789696614.9835408,
-    "ast_hash": "edf3d58e834afdc492a84b82b49a1e38",
+    "mtime": 1789733797.9365995,
+    "ast_hash": "04bd70e038e229404d668236942cb24e",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/fitness.icons.ts": {
-    "mtime": 1789696614.9835408,
-    "ast_hash": "c61e0dea7561f26401df55bea00a3849",
+    "mtime": 1789733589.37755,
+    "ast_hash": "fb98cfca10560b7b5f0cc01430216e40",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/health.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "7e65125f2229a60d069eacc3c3500e5a",
+    "mtime": 1789733653.016568,
+    "ast_hash": "ec00ef95720e2ee032ec232faeb5953e",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/home.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "92aafc7279297b8342bf4f1a57e4c574",
+    "mtime": 1789733688.9405768,
+    "ast_hash": "77d349508f2017487e380528a9fe2968",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/index.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "07367ae94bf09553ab86084ebe478c2e",
+    "mtime": 1789733908.0016165,
+    "ast_hash": "b2e30365d44648c86eaac774d2b179be",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/mindfulness.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "fb543d168029c237403f01a8ac4a753e",
+    "mtime": 1789733617.8315582,
+    "ast_hash": "85e45e22903fbb2e413954a119c4d2e6",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/pets.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "466690d8d4d924502fb18bfd20eae194",
+    "mtime": 1789733899.3696153,
+    "ast_hash": "133e6b0df1f5ea3f5b17f9a0276cf265",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/productivity.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "2f03d371a7c991db77bd03a37c1268f2",
+    "mtime": 1789733899.2946153,
+    "ast_hash": "eac6e4caf2ef2a27f72970d98f18a38a",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/study.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "37c27f7c2cbd1bfdce666778ad2fd1aa",
+    "mtime": 1789733719.659584,
+    "ast_hash": "a834f9a5c9c7efe3fb2376a1534b0677",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/system.icons.ts": {
@@ -2395,13 +2395,13 @@
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/technology.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "d6f1ea2d7942575a22e3ccf7cd935693",
+    "mtime": 1789733797.9385996,
+    "ast_hash": "f5cf7d5dec38d15116d4117406cb4199",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/work.icons.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "a32dfbe7ac8b967507aba722fe60beeb",
+    "mtime": 1789733745.4915895,
+    "ast_hash": "60ebc7ae42b40426508dc51d23653fde",
     "semantic_hash": ""
   },
   "src/shared/icons/categories.ts": {
@@ -2415,8 +2415,8 @@
     "semantic_hash": ""
   },
   "src/shared/icons/icon-search.ts": {
-    "mtime": 1789696614.9845407,
-    "ast_hash": "453ab793188b1938f56b3ae84c38ac54",
+    "mtime": 1789734024.9769754,
+    "ast_hash": "98baccf211665e5273f83bdf6c1c9ad6",
     "semantic_hash": ""
   },
   "src/shared/icons/icon-utils.test.ts": {
@@ -2745,8 +2745,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/IconPicker/IconPicker.test.tsx": {
-    "mtime": 1789696614.9885406,
-    "ast_hash": "03bdba85c0d5d35b6d7ffd8fd971a5d9",
+    "mtime": 1789734191.1005614,
+    "ast_hash": "715dda150e69b759908c997645c0ae6f",
     "semantic_hash": ""
   },
   "src/shared/ui/IconPicker/IconPicker.tsx": {
@@ -3955,18 +3955,18 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx": {
-    "mtime": 1789708713.161301,
-    "ast_hash": "9a42dbba3f359035130dc3c0c87f23c8",
+    "mtime": 1789735051.2465436,
+    "ast_hash": "e5f5dad02be4d3332eb5595f226f02f7",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitEditForm.tsx": {
-    "mtime": 1789708307.1181388,
-    "ast_hash": "d76c3ff16aa3bd0886f976f1593548a9",
+    "mtime": 1789735061.4715693,
+    "ast_hash": "f16d331628b7019d1ce45fd5d9c036c9",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx": {
-    "mtime": 1789708432.778789,
-    "ast_hash": "7c137683305733e775801ce121a09304",
+    "mtime": 1789735418.641335,
+    "ast_hash": "4d29b4fdfc6c68d0740208d52d7e642a",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx": {
@@ -3990,18 +3990,18 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx": {
-    "mtime": 1789708044.683703,
-    "ast_hash": "e4b8f3151c29f43f5d5358730739c066",
+    "mtime": 1789735017.7334573,
+    "ast_hash": "4fc37e8650873426bfebab2d6ee5636c",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx": {
-    "mtime": 1789708102.7465923,
-    "ast_hash": "3c71f488028c83dda2cc9edfaffb9100",
+    "mtime": 1789733667.4335716,
+    "ast_hash": "15775d20506508cd3099067bbfab1e02",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitWizardStep3.tsx": {
-    "mtime": 1789732073.1100707,
-    "ast_hash": "ff6bbfd39cc41e76539eba6cbf8f913d",
+    "mtime": 1789733544.6325355,
+    "ast_hash": "29cbe53e909f84bbe5e5a878339cc272",
     "semantic_hash": ""
   },
   "src/features/habits/data/habit-templates.ts": {
@@ -4092,6 +4092,46 @@
   "docs/remodel/assets/06-mi-persona.html": {
     "mtime": 1789730331.9090567,
     "ast_hash": "d9e9bc0d2ac94bf292c702e08dae6bca",
+    "semantic_hash": ""
+  },
+  "src/shared/icons/catalog-integrity.test.ts": {
+    "mtime": 1789733951.2566216,
+    "ast_hash": "360420d58a8fe5c92485b3632ccc2ad6",
+    "semantic_hash": ""
+  },
+  "src/shared/icons/catalog/social.icons.ts": {
+    "mtime": 1789733828.8056047,
+    "ast_hash": "7dc3bd2aa815d8ea6dfd109a053c0cd0",
+    "semantic_hash": ""
+  },
+  "docs/remodel/assets/09-panel-habito.html": {
+    "mtime": 1789734335.191622,
+    "ast_hash": "5e1a81b5552e971b51c461c8b8b834b7",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/HabitColorPicker.test.tsx": {
+    "mtime": 1789735418.641335,
+    "ast_hash": "ad3cdb95b9144f98c918421cebfaa8d9",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/HabitColorPicker.tsx": {
+    "mtime": 1789735580.11262,
+    "ast_hash": "21ccceca0c8f9e181b6ab7c717eb36c4",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/index.ts": {
+    "mtime": 1789734991.224387,
+    "ast_hash": "aa93d97efda54cfa754404e7693c2722",
+    "semantic_hash": ""
+  },
+  "src/features/habits/data/habit-colors.test.ts": {
+    "mtime": 1789735096.5896559,
+    "ast_hash": "9672ab2fdc3b92d652426bbe2b6cecc9",
+    "semantic_hash": ""
+  },
+  "src/features/habits/data/habit-colors.ts": {
+    "mtime": 1789735418.640335,
+    "ast_hash": "c9a59e0b9e739d96aaaa79d083a5aa46",
     "semantic_hash": ""
   }
 }

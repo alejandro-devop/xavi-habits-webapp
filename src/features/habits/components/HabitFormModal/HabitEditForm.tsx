@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import type { Habit } from '@/features/habits/types/habit.types'
+import { HabitColorPicker } from '@/features/habits/components/HabitColorPicker'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import { useHabitCategoriesQuery, useHabitMeasuresQuery } from '@/features/habits/hooks/useHabits'
 import { useUpdateHabitMutation } from '@/features/habits/hooks/useHabits'
@@ -295,27 +296,17 @@ export function HabitEditForm({ habit, open, onClose }: Props) {
           />
         </FormField>
 
+        {/*
+          Editar no recolorea: si el hábito no tiene color, aquí no aparece
+          ninguno seleccionado y sigue sin tenerlo hasta que su dueño elija.
+        */}
         <div className={styles.colorRow}>
-          <label className={styles.colorLabel} htmlFor="habit-color-picker">
-            Color
-          </label>
-          <div className={styles.colorInputs}>
-            <input
-              type="color"
-              id="habit-color-picker"
-              className={styles.colorSwatch}
-              value={values.color ?? '#10b981'}
-              onChange={(e) => patch({ color: e.target.value })}
-              disabled={isMutating}
-              aria-label="Selector de color"
-            />
-            <Input
-              value={values.color ?? ''}
-              onChange={(e) => patch({ color: e.target.value || null })}
-              placeholder="#10b981"
-              disabled={isMutating}
-            />
-          </div>
+          <span className={styles.colorLabel}>Color</span>
+          <HabitColorPicker
+            value={values.color}
+            onChange={(color) => patch({ color })}
+            disabled={isMutating}
+          />
         </div>
 
         <div className={styles.categoryField}>

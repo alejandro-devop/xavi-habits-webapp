@@ -1,5 +1,6 @@
 import type { HabitTemplate } from '@/features/habits/data/habit-templates'
 import { HABIT_TEMPLATES } from '@/features/habits/data/habit-templates'
+import { HabitColorPicker } from '@/features/habits/components/HabitColorPicker'
 import type { HabitCategory } from '@/features/habits/types/habit.types'
 import type { HabitFormValues } from '@/features/habits/utils/habit-form.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -96,15 +97,6 @@ export function HabitWizardStep1({
         </FormField>
 
         <div className={styles.colorField}>
-          <input
-            type="color"
-            id="habit-color-picker"
-            className={styles.colorSwatch}
-            value={values.color ?? '#10b981'}
-            onChange={(e) => patch({ color: e.target.value })}
-            disabled={disabled}
-            aria-label="Color del hábito"
-          />
           <IconPicker
             value={values.icon}
             onChange={(icon) => patch({ icon })}
@@ -113,6 +105,22 @@ export function HabitWizardStep1({
             disabled={disabled}
           />
         </div>
+      </div>
+
+      {/*
+        El color viene sorteado: aquí solo se cambia si no gusta. Ocho muestras
+        en su propia fila, que junto al nombre y al icono no cabían a 375px.
+      */}
+      <div className={styles.field}>
+        <span className={styles.label}>
+          Color <span className={styles.labelHint}>· ya te elegimos uno</span>
+        </span>
+        <HabitColorPicker
+          value={values.color}
+          onChange={(color) => patch({ color })}
+          disabled={disabled}
+          label="Color del hábito"
+        />
       </div>
 
       {/*

@@ -32,27 +32,6 @@
   color: var(--color-text-secondary);
 }
 
-.colorInputs {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.colorSwatch {
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.375rem;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
 .categoryField {
   display: flex;
   flex-direction: column;

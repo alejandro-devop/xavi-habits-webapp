@@ -3955,18 +3955,18 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx": {
-    "mtime": 1789733667.4335716,
-    "ast_hash": "b29ced4754798f37425adacab33fcf89",
+    "mtime": 1789735051.2465436,
+    "ast_hash": "e5f5dad02be4d3332eb5595f226f02f7",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitEditForm.tsx": {
-    "mtime": 1789708307.1181388,
-    "ast_hash": "d76c3ff16aa3bd0886f976f1593548a9",
+    "mtime": 1789735061.4715693,
+    "ast_hash": "f16d331628b7019d1ce45fd5d9c036c9",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx": {
-    "mtime": 1789708432.778789,
-    "ast_hash": "7c137683305733e775801ce121a09304",
+    "mtime": 1789736244.671565,
+    "ast_hash": "7300068dd6b8abbe2593c5226453830e",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitFormStepButtons.tsx": {
@@ -3990,8 +3990,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx": {
-    "mtime": 1789733650.5925672,
-    "ast_hash": "1872252da632446b92bb8b21b5c1865b",
+    "mtime": 1789735017.7334573,
+    "ast_hash": "4fc37e8650873426bfebab2d6ee5636c",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx": {
@@ -4107,6 +4107,31 @@
   "docs/remodel/assets/09-panel-habito.html": {
     "mtime": 1789734335.191622,
     "ast_hash": "5e1a81b5552e971b51c461c8b8b834b7",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/HabitColorPicker.test.tsx": {
+    "mtime": 1789736244.671565,
+    "ast_hash": "54556173a40487247ecd9980f5a40601",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/HabitColorPicker.tsx": {
+    "mtime": 1789735580.11262,
+    "ast_hash": "21ccceca0c8f9e181b6ab7c717eb36c4",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/index.ts": {
+    "mtime": 1789734991.224387,
+    "ast_hash": "aa93d97efda54cfa754404e7693c2722",
+    "semantic_hash": ""
+  },
+  "src/features/habits/data/habit-colors.test.ts": {
+    "mtime": 1789736236.6155214,
+    "ast_hash": "35a6b0490cdb233a13b9a04ceea40513",
+    "semantic_hash": ""
+  },
+  "src/features/habits/data/habit-colors.ts": {
+    "mtime": 1789735915.5011437,
+    "ast_hash": "807d8f1c47831820dfecb27e614e6edf",
     "semantic_hash": ""
   }
 }

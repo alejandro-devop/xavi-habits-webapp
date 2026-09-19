@@ -1,6 +1,6 @@
 # Vida — el plan
 
-> **Estado:** en ejecución. F0 entregada (`docs/features/FEAT-001-vida-cimientos.md`); F1 con render, a la espera de aprobación. El estado vivo está en `docs/features/BOARD.md`.
+> **Estado:** en ejecución. F0 entregada (`docs/features/FEAT-001-vida-cimientos.md`); F1 aprobada el 2026-09-19 (render `assets/05-vida-catalogo.html`; agrupado por categoría), en ejecución. El estado vivo está en `docs/features/BOARD.md`.
 > **Pedido por el usuario el 2026-09-18:** «Como siempre me soñé el módulo de actividades y follow-ups: es más como una plantilla de mi vida, donde planeo día a día lo que voy a hacer y puedo seguir la plantilla o registrar lo que se sale, y al final del día evaluar cómo me va. Con el tiempo el sistema entiende y me ayuda mejor a planear.»
 > **Regla de ejecución:** nada de esto se construye en la conversación donde se planeó. Se construye con los agentes (`forja` para las features, renders aprobados antes de cada pantalla, `xavi-builder` solo para rediseño puro).
 
@@ -101,7 +101,7 @@ Cada fase es una *feature* del protocolo `forja` (un dossier `FEAT-NNN`), con su
 
 ### F1 — El catálogo: las actividades de tu día a día
 
-*Render: sí, ligero. Se parece al wizard de hábitos, no a un gestor de proyectos.*
+*Render aprobado: `assets/05-vida-catalogo.html`. Decidido: **agrupado por categoría**; «ponerla en mi plantilla» con sus días también desde la hoja de crear; la duración estimada es opcional al crear y, si no se da, sale de los registros.*
 
 - Crear una actividad es **ponerle nombre y categoría**. Nada más obligatorio. La categoría le da el icono y el color (el API no tiene icono en la actividad, sí en la categoría).
 - **Puntos de partida** como los del wizard de hábitos: *Pasear a las mascotas, Organizar la casa, Lavarme los dientes, Bañarme, Cocinar, Leer, Descansar*… con su categoría sugerida. Un toque y existe.

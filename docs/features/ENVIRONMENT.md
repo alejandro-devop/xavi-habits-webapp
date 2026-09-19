@@ -68,18 +68,24 @@ backend: no se adivinan.
 /app/habits/:id            Detalle: Panel · Esta semana · Historial
 /app/habits/:id/edit  /app/habits/:id/week  /app/habits/:id/calendar
 /app/settings              Ajustes de cuenta (menú de la ficha de usuario)
-/app/vida/*                el módulo Vida — NO EXISTE AÚN; lo crea la feature F0
+/app/vida                  → redirige a /app/vida/hoy
+/app/vida/hoy              Vida · Hoy          (cascarón hasta F2/F3)
+/app/vida/plantilla        Vida · Plantilla    (cascarón hasta F4)
+/app/vida/revision         Vida · Revisión     (cascarón hasta F5)
+/app/vida/actividades      Vida · Actividades  (cascarón hasta F1)
 ```
 
-La fuente de verdad es `src/app/router/routes.tsx` y
-`src/features/habits/routes/habits-paths.ts`.
+La fuente de verdad es `src/app/router/routes.tsx`,
+`src/features/habits/routes/habits-paths.ts` y `src/features/vida/routes/vida-paths.ts`.
+Los módulos y sus secciones (píldoras y `⌘K`) salen de `appModules` en
+`src/layouts/AppLayout/app-nav.config.ts`: **una sola fuente**; no añadas destinos a mano.
 
 ## Áreas
 
 Valores válidos del campo `area:` de un dossier:
 
 - `features/habits`
-- `features/vida` — nuevo, lo abre F0
+- `features/vida` — el módulo Vida (rutas, páginas y capa de datos)
 - `features/auth`
 - `features/settings`
 - `features/theme`

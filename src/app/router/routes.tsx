@@ -9,6 +9,7 @@ import { AppLayout } from '@/layouts/AppLayout/AppLayout'
 import { PublicLayout } from '@/layouts/PublicLayout/PublicLayout'
 import { habitsRoutes, habitsPaths } from '@/features/habits'
 import { settingsRoutes } from '@/features/settings'
+import { vidaRoutes } from '@/features/vida'
 import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage/ForgotPasswordPage'
 import { LoginPage } from '@/pages/auth/LoginPage/LoginPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage/RegisterPage'
@@ -77,6 +78,7 @@ export const routes: RouteObject[] = [
             element: <VerifyAccountGuard />,
             children: [
               habitsRoutes,
+              vidaRoutes,
               settingsRoutes,
             ],
           },

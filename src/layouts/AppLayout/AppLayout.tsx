@@ -4,10 +4,13 @@ import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredMo
 import { useLogoutMutation } from '@/features/auth/hooks/useLogoutMutation'
 import { selectAuthUser } from '@/features/auth/store/auth.selectors'
 import { useAuthStore } from '@/features/auth/store/auth.store'
-import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import { settingsPaths } from '@/features/settings'
 import { useTheme } from '@/features/theme'
-import { createCommandActions } from '@/layouts/AppLayout/app-nav.config'
+import {
+  appModules,
+  createCommandActions,
+  findActiveModule,
+} from '@/layouts/AppLayout/app-nav.config'
 import { loadIconCatalog } from '@/shared/icons'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { AuraRing } from '@/shared/ui/AuraRing'
@@ -26,19 +29,17 @@ import styles from './AppLayout.module.scss'
  */
 const CHROME_DS = 'aura'
 
-/**
- * Categorías, Medidas y Mi Persona son ajustes **del módulo**, no destinos de
- * uso diario: van agrupados en una sola píldora para que la barra respire. Los
- * de la cuenta se llaman «Ajustes de cuenta» y viven en el menú de la ficha.
- */
-const SETTINGS_LINKS = [
-  { to: habitsPaths.categories, label: 'Categorías' },
-  { to: habitsPaths.measures, label: 'Medidas' },
-  { to: habitsPaths.persona, label: 'Mi Persona' },
-] as const
-
 function pillClassName({ isActive }: { isActive: boolean }) {
   return [styles.pill, isActive ? styles.pillActive : ''].filter(Boolean).join(' ')
+}
+
+/**
+ * La píldora de módulo no se enciende por coincidencia de URL —apunta a la
+ * portada del módulo, no a la sección en la que estás—, sino por el módulo
+ * activo.
+ */
+function modClassName(isActive: boolean) {
+  return [styles.mod, isActive ? styles.modActive : ''].filter(Boolean).join(' ')
 }
 
 /** Píldora de la barra que abre la paleta de comandos. */
@@ -86,12 +87,14 @@ function AppLayoutShell() {
   )
 
   const userInitial = user?.email?.trim().charAt(0).toUpperCase() ?? '·'
-  const isSettingsActive = SETTINGS_LINKS.some((link) => pathname.startsWith(link.to))
+  const activeModule = findActiveModule(pathname)
+  const moduleSettings = activeModule.settings ?? []
+  const isSettingsActive = moduleSettings.some((link) => pathname.startsWith(link.to))
   const contentDs = pathname.startsWith(settingsPaths.root) ? undefined : CHROME_DS
 
   const settingsMenu = (
     <ul className={styles.menu}>
-      {SETTINGS_LINKS.map((link) => (
+      {moduleSettings.map((link) => (
         <li key={link.to}>
           <AppNavLink to={link.to} className={styles.menuItem}>
             {link.label}
@@ -131,35 +134,45 @@ function AppLayoutShell() {
 
         <header className={styles.bar} data-ds={CHROME_DS}>
           <div className={styles.barInner}>
-            <Link to={habitsPaths.myDay} className={styles.lockup}>
+            <Link to={activeModule.home} className={styles.lockup}>
               <AuraRing size={26} />
               <span className={styles.brand}>Xavi</span>
             </Link>
+
+            <nav className={styles.mods} aria-label="Módulos">
+              {appModules.map((module) => (
+                <AppNavLink
+                  key={module.id}
+                  to={module.home}
+                  className={modClassName(module.id === activeModule.id)}
+                >
+                  {module.label}
+                </AppNavLink>
+              ))}
+            </nav>
 
             <nav className={styles.pills} aria-label="Secciones">
               {/* Solo los destinos hacen scroll: el popover de Ajustes no puede
                   vivir dentro de un contenedor con overflow o queda recortado. */}
               <div className={styles.pillsScroll}>
-                <AppNavLink to={habitsPaths.myDay} className={pillClassName}>
-                  Mi día
-                </AppNavLink>
-                <AppNavLink to={habitsPaths.list} className={pillClassName}>
-                  Mis hábitos
-                </AppNavLink>
-                <AppNavLink to={habitsPaths.archived} className={pillClassName}>
-                  Archivados
-                </AppNavLink>
+                {activeModule.sections.map((section) => (
+                  <AppNavLink key={section.id} to={section.to} className={pillClassName}>
+                    {section.label}
+                  </AppNavLink>
+                ))}
               </div>
-              <Popover
-                triggerLabel="Ajustes de hábitos"
-                trigger={
-                  <span className={pillClassName({ isActive: isSettingsActive })}>
-                    Ajustes
-                  </span>
-                }
-                content={settingsMenu}
-                placement="bottom-end"
-              />
+              {moduleSettings.length > 0 ? (
+                <Popover
+                  triggerLabel={`Ajustes de ${activeModule.label.toLowerCase()}`}
+                  trigger={
+                    <span className={pillClassName({ isActive: isSettingsActive })}>
+                      Ajustes
+                    </span>
+                  }
+                  content={settingsMenu}
+                  placement="bottom-end"
+                />
+              ) : null}
             </nav>
 
             <div className={styles.barActions}>

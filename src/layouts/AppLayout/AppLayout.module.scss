@@ -64,6 +64,48 @@
   letter-spacing: -0.02em;
 }
 
+/* ── El selector de módulo (Hábitos · Vida) ────────────────────────────────
+   Va pegado a la marca, arriba, también en móvil: es la pregunta «¿en qué
+   parte de mi vida estoy?», anterior a la de «¿qué sección?». Traducción a
+   tokens de `.mods/.mod/.mod.on` de `docs/vida/assets/03-vida-agenda.html`.
+   Comparte `order: 1` con el lockup: el orden del DOM los deja seguidos y la
+   fila de secciones (`order: 4`) cae debajo en móvil. */
+.mods {
+  order: 1;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.125rem;
+  margin-left: 0.375rem;
+  padding: 0.1875rem;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+}
+
+/* Doble clase: gana a `.link` de AppNavLink sin recurrir a !important. */
+.mod.mod {
+  flex-shrink: 0;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
+}
+
+.modActive.modActive {
+  background: var(--color-glass);
+  color: var(--color-text);
+  box-shadow: 0 4px 12px -6px color-mix(in srgb, var(--color-text) 25%, transparent);
+}
+
 /* En móvil las píldoras bajan a una segunda altura, a lo ancho de la barra. */
 .pills {
   order: 4;

@@ -1,7 +1,7 @@
 ---
 id: FEAT-001
 title: Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón
-status: planned
+status: building    # tajada 1 aceptada; quedan las tajadas 2 y 3
 architect: yes    # introduce un módulo nuevo entero: navegación con cambio de módulo (no existe hoy), rutas nuevas, y capas de datos nuevas que no hablan hoy entre sí. Ver razón completa en la sección 1.
 area: layouts, app/router, features/vida
 requested: 2026-09-19
@@ -110,7 +110,7 @@ queda para el recorrido real del usuario.
 **Slices:**
 | # | What it does | State |
 |---|---|---|
-| 1 | La píldora de módulo gana «Vida»; `/app/vida` y sus 4 rutas existen y renderizan cascarones con título; `⌘K` conoce los destinos de Vida | pending |
+| 1 | La píldora de módulo gana «Vida»; `/app/vida` y sus 4 rutas existen y renderizan cascarones con título; `⌘K` conoce los destinos de Vida | delivered (criterio 10 pendiente del recorrido del usuario) |
 | 2 | Capas de datos rescatadas de `79bece0` (actividades, categorías, follow-ups): GraphQL, api, hooks, tipos, query keys — con tests contra el esquema | pending |
 | 3 | Capas de datos nuevas (plan del día `activityDayPlan*` y Vida `vidaItems`/`vidaSuggestionsForDate`/`vidaTakenToday`/`vidaItem*`/`vidaMarkTakenToday`): GraphQL, api, hooks, tipos, query keys e invalidaciones — con tests contra el esquema | pending |
 
@@ -289,7 +289,7 @@ existe.
 **Slices, with paths:**
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
-| 1 | Píldora de módulo Hábitos · Vida; `/app/vida` + 4 rutas con título; `⌘K` con destinos de Vida; una sola descripción de módulos | crear `src/features/vida/{index.ts, routes/vida-paths.ts, routes/vida.routes.tsx, routes/vida.routes.test.tsx, pages/VidaHoyPage.tsx, pages/VidaPlantillaPage.tsx, pages/VidaRevisionPage.tsx, pages/VidaActividadesPage.tsx}`, `src/layouts/AppLayout/{app-nav.config.test.ts, AppLayout.test.tsx}`; modificar `src/app/router/routes.tsx:10-11,79-81`, `src/layouts/AppLayout/app-nav.config.ts`, `AppLayout.tsx:34-38,89,134-163`, `AppLayout.module.scss` | 1, 2, 3, 4, 5 (automatizables), 9, y deja listo el 10 (usuario) | pending |
+| 1 | Píldora de módulo Hábitos · Vida; `/app/vida` + 4 rutas con título; `⌘K` con destinos de Vida; una sola descripción de módulos | crear `src/features/vida/{index.ts, routes/vida-paths.ts, routes/vida.routes.tsx, routes/vida.routes.test.tsx, pages/VidaHoyPage.tsx, pages/VidaPlantillaPage.tsx, pages/VidaRevisionPage.tsx, pages/VidaActividadesPage.tsx}`, `src/layouts/AppLayout/{app-nav.config.test.ts, AppLayout.test.tsx}`; modificar `src/app/router/routes.tsx:10-11,79-81`, `src/layouts/AppLayout/app-nav.config.ts`, `AppLayout.tsx:34-38,89,134-163`, `AppLayout.module.scss` | 1, 2, 3, 4, 5 (automatizables), 9, y deja listo el 10 (usuario) | delivered |
 | 2 | Capa de datos rescatada: actividades, categorías, follow-ups — tipos al esquema real, `vidaKeys`, una sola invalidación, tests de hooks y de contrato | modificar `src/shared/api/query-keys.ts:32-50`; crear `src/features/vida/{types/activity.types.ts, types/activity-category.types.ts, types/activity-followup.types.ts, graphql/activities.graphql.ts, graphql/activity-categories.graphql.ts, graphql/activity-followups.graphql.ts, graphql/schema/activity.schema.graphql, graphql/contracts.test.ts, api/activities.api.ts, api/activity-categories.api.ts, api/activity-followups.api.ts, utils/activity-filters.ts, utils/vida-date.utils.ts, utils/vida-date.utils.test.ts, utils/invalidate-vida-queries.ts, hooks/useVidaQueryGuard.ts, hooks/useActivities.ts, hooks/useActivities.test.tsx, hooks/useActivityCategories.ts, hooks/useActivityCategories.test.tsx, hooks/useActivityFollowUps.ts, hooks/useActivityFollowUps.test.tsx}` | 6, 8 (parte de actividades/categorías/follow-ups), 9 | pending |
 | 3 | Capa de datos nueva: plan del día y plantilla Vida — tipos, GraphQL, api, hooks, keys, invalidaciones, tests de hooks y de contrato | modificar `src/shared/api/query-keys.ts` (`vidaKeys.dayPlan`, `vidaKeys.items`), `src/features/vida/utils/invalidate-vida-queries.ts`, `src/features/vida/graphql/contracts.test.ts`; crear `src/features/vida/{types/activity-day-plan.types.ts, types/vida-item.types.ts, graphql/activity-day-plan.graphql.ts, graphql/vida-items.graphql.ts, graphql/schema/activity-day-plan.schema.graphql, graphql/schema/vida.schema.graphql, api/activity-day-plan.api.ts, api/vida-items.api.ts, hooks/useActivityDayPlan.ts, hooks/useActivityDayPlan.test.tsx, hooks/useVidaItems.ts, hooks/useVidaItems.test.tsx}` | 7, 8 (resto), 9 | pending |
 
@@ -312,4 +312,263 @@ depende de nadie.
 
 ## 3. Construction — feature-builder
 
+*(la entrada del constructor se escribió por error bajo la sección 4; se ha
+movido aquí tal cual, sin tocar una palabra. Ver «desviaciones» en la sección 4.)*
+
+### Slice 1
+
+**Summary for the reviewer:** La barra única aprende a tener módulos: una sola
+descripción (`appModules` en `app-nav.config.ts`) alimenta la píldora «Hábitos ·
+Vida», las píldoras de sección, el popover de ajustes del módulo y `⌘K`; y
+`/app/vida` existe con cuatro cascarones de un título. Lo que más probablemente
+rompí es **la barra de hábitos**: sus tres píldoras, el popover «Ajustes» y el
+destino del lockup ya no están escritos a mano en `AppLayout.tsx`, salen de la
+tabla — si algún `to`, etiqueta o `triggerLabel` cambió sin querer, se nota ahí
+antes que en Vida. Segundo sospechoso: la fila superior de la barra en **móvil**,
+donde el grupo de módulos come ancho al lado de la marca.
+
+**What was built:**
+- `src/features/vida/routes/vida-paths.ts` — `vidaPaths` con `root/hoy/plantilla/revision/actividades` (slugs en español, sin acentos, decisión del arquitecto).
+- `src/features/vida/routes/vida.routes.tsx` — `vidaRoutes` (`path: 'vida'`), índice `<Navigate to="hoy" replace />` y las cuatro rutas.
+- `src/features/vida/pages/Vida{Hoy,Plantilla,Revision,Actividades}Page.tsx` — cada una `<PageHeader title="…" />` y nada más: sin hooks, sin `.module.scss`, sin una sola llamada a datos.
+- `src/features/vida/index.ts` — barril con `vidaPaths` y `vidaRoutes`, como el de hábitos.
+- `src/app/router/routes.tsx` — importa `vidaRoutes` y lo registra tras `habitsRoutes` dentro de `VerifyAccountGuard`. El redirect de `/app` sigue yendo a `habitsPaths.myDay`, intacto.
+- `src/layouts/AppLayout/app-nav.config.ts` — ahora es la **única** descripción de módulos: tipos `AppModule`/`AppModuleSection`/`AppModuleSettingsLink`, la constante `appModules` (Hábitos con sus 3 secciones + 3 ajustes de módulo; Vida con sus 4 secciones y sin ajustes), el helper `findActiveModule(pathname)` y un `createCommandActions` que **deriva** las acciones en vez de listarlas.
+- `src/layouts/AppLayout/AppLayout.tsx` — fuera `SETTINGS_LINKS`; `activeModule = findActiveModule(pathname)`; un `<nav aria-label="Módulos">` con una píldora por módulo entre el lockup y las secciones; las píldoras de sección y el popover de ajustes salen de `activeModule`; el lockup apunta a `activeModule.home`. Ficha de usuario, `ThemeToggle`, `ConnectionIndicator`, `CommandPaletteTrigger` y `contentDs` sin tocar — las páginas de Vida heredan el ámbito Aura por el mismo `data-ds` que hábitos.
+- `src/layouts/AppLayout/AppLayout.module.scss` — `.mods`, `.mod.mod`, `.modActive.modActive`, traducción a tokens de `.mods/.mod/.mod.on` del render `03-vida-agenda.html:38-40`. Comparten `order: 1` con el lockup para quedar pegadas a la marca también en móvil, con la fila de secciones (`order: 4`) debajo.
+- Tests nuevos: `src/layouts/AppLayout/app-nav.config.test.ts` (9), `src/layouts/AppLayout/AppLayout.test.tsx` (4), `src/features/vida/routes/vida.routes.test.tsx` (7).
+
+**Why this way:**
+- **La píldora de módulo no se enciende con `NavLink`.** Apunta a la portada del módulo (`/app/vida/hoy`), así que por coincidencia de URL se apagaría en `/app/vida/plantilla`. Se enciende comparando `module.id` con el módulo activo (`modClassName(boolean)`), no con el `isActive` del enlace. Es la desviación real respecto al plan, que decía «la misma técnica de `pillClassName`»: se conserva la técnica de componer clases, no la fuente del booleano.
+- **Los ajustes del módulo entran en `appModules` con `icon` y `keywords`**, no solo `{to,label}` como decía el plan. Sin eso, `go-habits-categories`/`measures`/`persona` habrían perdido su icono y sus palabras clave en `⌘K`, y el criterio 4 pide que nada de hábitos cambie. Los nueve ids y etiquetas de antes salen idénticos y en el mismo orden.
+- **`AppLayout.test.tsx` no monta `habitsRoutes` reales**, como sugería el plan, sino cascarones para los cuatro paths de hábitos que la barra enlaza (Vida sí monta `vidaRoutes` de verdad). Las páginas de hábitos disparan queries GraphQL; lo que se prueba aquí es la barra, y arrastrar la capa de datos solo añadía mocks y ruido. El recorrido completo hábitos→Vida→hábitos se prueba igual.
+- `findActiveModule` vive en `app-nav.config.ts` y no inline en el layout: la misma respuesta la van a querer los breadcrumbs o el título del documento más adelante, y así se prueba sin renderizar.
+
+**Verification:**
+- Línea base **antes** (sonda, `docs/features/probe.sh`): typecheck limpio · lint 14/0 · tests 2 fallos de 409 · build 816 kB.
+- `npx vitest run` de los tres archivos nuevos → `Test Files 3 passed (3) · Tests 17 passed (17)`.
+- `pnpm typecheck` → limpio (sin salida).
+- `pnpm lint` → `✖ 14 problems (14 errors, 0 warnings)` — los mismos 14 preexistentes; ninguno en archivos de esta tajada.
+- `pnpm test` → `Test Files 1 failed | 58 passed (59) · Tests 2 failed | 424 passed (426)`. Los 2 fallos son los de `SearchSelect` de siempre. 409 → 426 tests: +17, los nuevos.
+- `pnpm build` → `dist/assets/index-*.js 817.63 kB │ gzip: 250.64 kB` (línea base 816 / gzip 250): **+1,6 kB** por cuatro páginas de un título y la tabla de módulos. `app-icons` sigue en 620,20 kB perezoso e `IconPicker` en 4,64 kB: no se coló ningún icono al chunk inicial.
+- **Arnés temporal** (`harness-vida-bar.html` + `src/harness-vida-bar.tsx`, **borrados**; `git status` limpio de ellos): `AppLayout` con `MemoryRouter` en el 5173 del usuario. Visto en escritorio (800 px) con Vida activa: la píldora «Hábitos · Vida» junto a la marca, «Vida» en blanco con sombra y las cuatro secciones Hoy/Plantilla/Revisión/Actividades a su derecha, igual que el render. Visto en móvil (375 px) con Hábitos activo: fila de arriba marca + módulos + buscar/tema/ficha, fila de abajo Mi día/Mis hábitos/Archivados/Ajustes. `⌘K` abierto en móvil: Mi día, Mis hábitos, Archivados, Categorías, Medidas, Mi Persona, Hoy, Plantilla… con sus iconos.
+- `graphify update .` → 2395 nodos, 2556 aristas.
+
+**Criteria it closes:** (numerados como en la sección 1)
+1. **Píldora «Hábitos · Vida» en escritorio y móvil** — *parcial, como preveía el criterio*. Automatizable cerrado: `AppLayout.test.tsx` «ofrece los dos módulos y marca el activo» y la nav `Módulos` con ambos enlaces. Aspecto: comprobado en el arnés contra `03-vida-agenda.html` en las dos anchuras. **Queda pendiente de prueba manual** el aspecto con sesión real y tema oscuro.
+2. **Cambiar de módulo sin recargar** — cerrado: `AppLayout.test.tsx` «cambia a las secciones de Vida y vuelve a las de Hábitos» comprueba ida y vuelta (secciones exactas en cada sentido, `h1` de la página, y que el popover «Ajustes» desaparece en Vida y vuelve en Hábitos).
+3. **Las cinco rutas, solo un título** — cerrado: `vida.routes.test.tsx`, una por ruta, `/app/vida` aterriza en `/app/vida/hoy` (comprobado sobre `router.state.location.pathname`), y «las páginas de F0 no muestran nada más que el título» (un solo `heading`, ni botones ni listas).
+4. **Ficha, tema y `⌘K` de hábitos sin cambios** — cerrado en su parte automatizable: `app-nav.config.test.ts` fija los 9 ids/etiquetas de antes y su orden relativo, que `go-habits-*` y `go-settings` navegan a los mismos paths y que tema y salir no navegan; `AppLayout.test.tsx` abre la ficha, ve el correo, «Ajustes de cuenta» y que «Cerrar sesión» llama a la mutación, estando en Vida. El `triggerLabel` del popover sigue siendo literalmente `Ajustes de hábitos`.
+5. **`⌘K` con los cuatro destinos de Vida** — cerrado: `app-nav.config.test.ts` comprueba ids, etiquetas y que cada `onSelect` navega a su `vidaPaths.*`.
+9. **Línea base** — cerrado: medidas arriba, ninguna peor.
+10. **Recorrido real** — **pendiente del usuario**, no automatizable (todo `/app/*` está tras login). Pasos: entrar con sesión → estás en Mi día → pulsar «Vida» en la píldora junto a la marca → debes aterrizar en `/app/vida/hoy` con el título «Hoy» y las píldoras Hoy/Plantilla/Revisión/Actividades (sin «Ajustes») → recorrer las cuatro y comprobar que cada URL es `/app/vida/<slug>` y muestra su título → escribir `/app/vida` a mano y comprobar que redirige a `/app/vida/hoy` → pulsar «Hábitos» → vuelves a Mi día con Mi día/Mis hábitos/Archivados/Ajustes, el popover de Ajustes abre Categorías/Medidas/Mi Persona, `⌘K` lleva a los mismos sitios de siempre y el tema se cambia igual. Mirar también en móvil que la barra sigue partida en dos alturas.
+Los criterios 6, 7 y 8 son de las tajadas 2 y 3: **no se tocan aquí**.
+
+**Risks:**
+- La barra de hábitos pasó de literal a derivada: un error en `appModules` se ve en hábitos, no en Vida. Es lo primero que hay que mirar.
+- En móvil el grupo de módulos comparte la fila de arriba con marca, buscar, tema y ficha. A 375 px entra holgado (comprobado); con un tercer módulo o un idioma más largo esa fila se aprieta.
+- `findActiveModule` casa por prefijo: cualquier ruta futura que empiece por `/app/habits` o `/app/vida` cae en su módulo sola; una que no empiece por ninguno (hoy `/app/settings`) enciende Hábitos por defecto — es el comportamiento de antes, ahora explícito y con test.
+- `.mods` usa `color-mix` sobre `--color-text` y `--color-glass`: en tema oscuro debería leerse bien, pero eso solo lo confirma un ojo humano.
+- El `⌘K` creció de 9 a 13 acciones; la paleta no tiene agrupación por módulo. No es un fallo, pero se nota y en algún momento pedirá secciones.
+
+**Lo que vi de paso y no toqué:** `docs/features/ENVIRONMENT.md` ya anota `/app/vida/*` como «NO EXISTE AÚN; lo crea la feature F0» — queda desactualizado al aceptarse esta tajada, pero ese archivo no lo modifica un constructor. El `activityKeys` huérfano de `src/shared/api/query-keys.ts` y el rancio `docs/activities-domain.md` siguen ahí: son de la tajada 2 y del usuario, respectivamente.
+
+**Tree state:** sin commitear.
+
 ## 4. Review — feature-reviewer
+
+### Slice 1
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del
+constructor). Entorno: `docs/features/ENVIRONMENT.md` leído y no modificado;
+sonda ejecutada (web del usuario arriba en 5173, API responde). No se entró
+con credenciales en ningún momento.
+
+1. **Píldora «Hábitos · Vida» en escritorio y móvil, con el aspecto del
+   render** — **cumplido en su parte automatizable, aspecto verificado con
+   arnés**. `AppLayout.test.tsx` comprueba la nav «Módulos» con los dos
+   enlaces y el activo. Yo lo vi además con **mi propio arnés temporal**
+   (`review-bar.html` + `src/review-bar.tsx`, `AppLayout` real bajo
+   `AppProviders` + `MemoryRouter`, servido por el 5173 del usuario, **ya
+   borrado**): a 375 px la barra se parte en dos alturas (107 px de alto),
+   fila 1 = marca (x 16-83) + módulos (107-219) + acciones (247-359), fila 2 =
+   secciones a lo ancho; `scrollWidth` 375 = `innerWidth` 375, **sin scroll
+   horizontal**. «Vida» encendida, «Hoy» activa, sin píldora «Ajustes».
+   Pendiente del usuario: el aspecto con sesión real.
+2. **Cambiar de módulo sin recargar** — **cumplido**. `AppLayout.test.tsx`
+   («cambia a las secciones de Vida y vuelve a las de Hábitos») hace ida y
+   vuelta sobre el mismo árbol de React, sin recarga, comprobando secciones,
+   `h1` y la desaparición/reaparición del popover.
+3. **Las cinco rutas, cada una solo un título** — **cumplido**.
+   `vida.routes.test.tsx` (7 tests) las cubre y verifica que `/app/vida`
+   aterriza en `/app/vida/hoy`. Comprobado **por mí, aparte**, con
+   `matchRoutes` sobre el `routes` real: `/app/vida` → ruta índice,
+   `/app/vida/hoy` → `hoy`, y **`/app/vida/loquesea` → la ruta `*`**
+   (`NotFoundPage`), que es lo que se quería.
+4. **Ficha de usuario, `⌘K` de hábitos y tema sin cambios** — **cumplido**.
+   Comparé `createCommandActions` antes/después con
+   `git diff src/layouts/AppLayout/app-nav.config.ts`: los seis destinos de
+   hábitos salen ahora derivados de `appModules` con **los mismos ids
+   (`go-habits-my-day|list|archived|categories|measures|persona`), etiquetas,
+   iconos (`fire`, `list-check`, `box-archive`, `layer-group`,
+   `chart-simple`, `circle-user`), keywords y orden**, y detrás
+   `toggle-theme` · `go-settings` · `logout` intactos. El `triggerLabel` del
+   popover, antes literal `"Ajustes de hábitos"`, ahora es
+   `` `Ajustes de ${activeModule.label.toLowerCase()}` `` → misma cadena.
+   Verifiqué **renderizando** (arnés de test propio, ya borrado) que el
+   popover «Ajustes» de hábitos sigue con **Categorías · Medidas · Mi
+   Persona** apuntando a `/app/habits/categories|measures|persona` — eso no
+   lo cubría ningún test del constructor. El tema: en el arnés del navegador
+   pulsé el conmutador estando en Vida y pasó a oscuro correctamente.
+5. **`⌘K` con los cuatro destinos de Vida** — **cumplido**.
+   `app-nav.config.test.ts` fija `go-vida-hoy|plantilla|revision|actividades`,
+   sus etiquetas y que cada `onSelect` navega a su `vidaPaths.*`.
+9. **Línea base** — **cumplido, medido por mí entero**:
+   `pnpm typecheck` limpio · `pnpm lint` **14 errores / 0 warnings** (los
+   mismos preexistentes: `SteppedModal`, `Tabs`, `toast.context`,
+   `test/render`) · `pnpm test` **2 fallos de 426** y el único archivo rojo es
+   `SearchSelect.test.tsx`, el de siempre (409 → 426 = +17 tests nuevos, 0
+   fallos nuevos) · `pnpm build` `index-*.js` **817,63 kB (gzip 250,64)`
+   frente a 816 de base — **+1,6 kB**, con `app-icons` en 620,20 kB perezoso e
+   `IconPicker` en 4,64 kB: **ningún icono se coló al chunk inicial**.
+6, 7, 8. **No son de esta tajada** (capas de datos, tajadas 2 y 3).
+10. **Recorrido real — sigue PENDIENTE del usuario.** Todo `/app/*` está tras
+    login y ningún agente entra con credenciales. Los pasos están escritos
+    abajo, «Para el usuario». No lo doy por cerrado.
+
+**Qué rompió cerca** (cómo lo busqué, no solo el resultado):
+
+- **Quién más usa lo tocado.** `graphify explain "createCommandActions"` y
+  `graphify explain "AppLayout"` sobre el grafo — que refleja el estado
+  **anterior** al cambio, que es justo lo que quiero para «¿quién dependía de
+  esto?»: `createCommandActions` solo lo llama `buildActions()` dentro del
+  propio `AppLayout`. Confirmado abriendo los archivos y con búsqueda literal
+  de importadores: fuera de `AppLayout.tsx` solo lo importan los dos tests
+  nuevos, y `AppLayout` solo lo monta `src/app/router/routes.tsx`. Superficie
+  de impacto: la barra y la paleta, nada más.
+- **Lo que el constructor marcó como «lo que más probablemente rompí»** (la
+  barra de hábitos): ver criterio 4. Los seis destinos, los tres ajustes de
+  módulo y el `triggerLabel` quedan byte a byte iguales; lo comprobé en el
+  diff **y** renderizando el popover.
+- **Lo que vivía al lado en la misma pantalla.** `/app/settings` es el caso
+  raro: no empieza por `/app/habits` ni por `/app/vida`. Lo probé (arnés de
+  test propio, borrado): la barra sigue mostrando **Mi día · Mis hábitos ·
+  Archivados** + «Ajustes de hábitos» —igual que antes, por el fallback de
+  `findActiveModule` al primer módulo— y el `<main>` **sigue sin `data-ds`**,
+  o sea el ámbito Aura sigue desactivado en el contenido de ajustes de
+  cuenta. `contentDs` no se tocó en el diff.
+- **Ruta inexistente:** `/app/vida/loquesea` cae en `*` → «no encontrado».
+  Vida no tiene ruta `:id` que se la trague (hábitos sí tiene `:id`, por eso
+  allí el comportamiento es otro — preexistente, no cambia).
+- **Móvil y tema oscuro:** medidos en el navegador con el arnés (arriba). A
+  375 px no hay scroll horizontal y quedan ~28 px de holgura entre el grupo
+  de módulos y las acciones. En oscuro, el grupo de módulos se lee: pista
+  clara al 5 % sobre la barra oscura, píldora activa `rgba(30,37,54,.72)` con
+  texto `#E7EBF8` e inactiva `#A5B0C4`. El indicador de activo es **sutil en
+  oscuro** (chip más oscuro sobre pista más clara, al revés que en claro);
+  legible, pero es lo primero que miraría el usuario en el recorrido real.
+
+**Estados que nadie construye:**
+
+- **Vacío / carga / error / permisos:** **no aplican** a esta tajada. F0
+  entrega cuatro cascarones con un título y **cero llamadas a datos** (lo
+  verifiqué: las páginas solo montan `PageHeader`); el acceso ya lo resuelven
+  `ProtectedRoute` y `VerifyAccountGuard`, que no se tocaron.
+- **Móvil (375 px):** **construido y verificado** (arriba). No es un estado
+  que falte.
+- **Texto largo:** las etiquetas son fijas y en español, no hay entrada de
+  usuario. Pero sí queda un **hallazgo**: con ~28 px de holgura en la fila
+  superior a 375 px, un **tercer módulo** o una etiqueta más larga la parte en
+  otra altura. El constructor ya lo anotó como riesgo; lo confirmo con
+  números y lo dejo escrito para cuando llegue el tercer módulo.
+- **Tema oscuro:** verificado (arriba), con la salvedad del indicador sutil.
+
+**¿Duplica algo que ya existía?** (contra la sección 2) **No.**
+- **Una sola lista de rutas de Vida:** `vidaPaths` en
+  `src/features/vida/routes/vida-paths.ts`. Busqué literales `'/app/vida…'`
+  en todo `src/`: **cero** fuera de ese archivo.
+- **Un solo `data-ds="aura"` nuevo:** ninguno. Los únicos `data-ds` del repo
+  siguen siendo los preexistentes (`AppLayout`, `AuthLayout`, portales y
+  `AuroraCanvas`); las páginas de Vida heredan el ámbito del `<main>`.
+- **Una sola descripción de módulos:** se cumplió el encargo. En
+  `AppLayout.tsx` **no queda un solo destino de hábitos escrito a mano**
+  (`SETTINGS_LINKS` fuera, y ni `habitsPaths` ni `/app/habits` aparecen ya en
+  el archivo). Píldoras, popover, lockup y `⌘K` salen todos de `appModules`.
+- Nada de la lista «What NOT to create» de la sección 2 aparece: ni otro
+  cliente GraphQL, ni `src/pages/app/Vida*`, ni `.module.scss` en las páginas,
+  ni `EmptyState`/`Spinner`.
+
+**Las tres desviaciones declaradas por el constructor:**
+1. **Píldora de módulo encendida por módulo activo y no por `isActive` del
+   `NavLink`** — **razonable y correcta**. Apunta a la portada del módulo, así
+   que con `NavLink` se apagaría en `/app/vida/plantilla`. Mantiene la técnica
+   de composición de clases que pedía el plan y cambia solo la fuente del
+   booleano. Con test (`findActiveModule` por prefijo).
+2. **`icon` y `keywords` también en los ajustes del módulo**, no solo
+   `{to,label}` — **razonable y necesaria**: sin eso,
+   `go-habits-categories|measures|persona` habrían perdido icono y keywords
+   en `⌘K` y se habría roto el criterio 4. Es la desviación que **protege** un
+   criterio, no la que lo esquiva.
+3. **`AppLayout.test.tsx` con cascarones para las páginas de hábitos** —
+   **aceptable**, con una anotación: lo que se prueba es la barra y montar la
+   capa de datos de hábitos solo añadía mocks. Pero el cascarón dejó fuera el
+   **contenido** del popover de Ajustes; lo cubrí yo a mano en esta revisión y
+   pasa. Queda como sugerencia para la tajada 2 o para quien vuelva a tocar la
+   barra: un test que abra el popover y fije los tres enlaces.
+
+**Hallazgos que no devuelven la tajada** (no se toca nada, quedan escritos):
+- `AppModuleSection.icon` y `AppModuleSettingsLink.icon` están tipados
+  `AppIconName | string`. La unión con `string` anula la comprobación: un
+  nombre de icono mal escrito compila. Si `CommandAction['icon']` lo permite,
+  merece quedarse en `AppIconName` a secas.
+- El constructor escribió su entrada bajo el encabezado de la **sección 4**;
+  la he movido a la 3 sin cambiar una palabra. Nadie borró nada.
+- `docs/features/ENVIRONMENT.md` dice todavía que `/app/vida/*` «NO EXISTE
+  AÚN; lo crea la feature F0» y su tabla de rutas no lista las de Vida. Al
+  aceptarse esta tajada queda desactualizado. **No lo modifico** (el protocolo
+  me lo prohíbe): lo dejo señalado para el usuario.
+- `⌘K` pasó de 9 a 13 acciones sin agrupar por módulo. Se nota; no es un
+  fallo de esta tajada.
+
+**Verdict:** **accepted** — los siete criterios automatizables de la tajada
+(1, 2, 3, 4, 5, 9 y la parte comprobable del 10) se cumplen con evidencia
+propia, la línea base no empeora en ninguno de los cuatro comandos, no
+encontré ninguna regresión en hábitos, en `/app/settings` ni en la barra a 375
+px, y no se duplicó nada. El criterio 10 sigue **pendiente del recorrido
+manual del usuario**, como el propio criterio previó.
+
+**Para el usuario:**
+
+Desde ahora la barra de arriba de la app tiene, justo al lado del nombre
+«Xavi», un interruptor con dos nombres: **Hábitos** y **Vida**. Es la pregunta
+anterior a todas las demás —«¿en qué parte de mi vida estoy?»— y hasta hoy no
+existía: la app solo sabía vivir un módulo. Al pulsar «Vida» la fila de
+secciones de abajo cambia entera y aparecen las cuatro partes del nuevo
+módulo: **Hoy, Plantilla, Revisión y Actividades**. Al pulsar «Hábitos» vuelve
+todo exactamente como estaba, con Mi día, Mis hábitos, Archivados y el botón
+«Ajustes» con Categorías, Medidas y Mi Persona. El buscador `⌘K` también
+aprendió los cuatro destinos nuevos, sin perder ninguno de los de siempre.
+
+Lo que **todavía no** vas a encontrar: las cuatro pantallas de Vida están
+vacías a propósito, solo con su título. Esta fase es el terreno —que la app
+sepa que hay dos módulos y que las direcciones existan—; el contenido de cada
+pantalla llega en las fases siguientes. Nada de Hábitos cambia de
+comportamiento.
+
+**Para probarlo a mano** (hace falta tu sesión; los agentes no entran con
+credenciales):
+1. Entra en la app: aterrizas en **Mi día**, como siempre.
+2. Pulsa **Vida** en el interruptor junto a «Xavi». Debes acabar en
+   `/app/vida/hoy`, con el título **Hoy** y las píldoras Hoy · Plantilla ·
+   Revisión · Actividades (sin «Ajustes», que Vida todavía no tiene).
+3. Recorre las cuatro y comprueba que cada dirección es `/app/vida/<sección>`
+   y muestra su título.
+4. Escribe `/app/vida` a mano en la barra del navegador: debe llevarte a
+   `/app/vida/hoy`. Prueba también `/app/vida/cualquiercosa`: debe salir «no
+   encontrado».
+5. Pulsa **Hábitos**: vuelves a Mi día. Abre el botón «Ajustes» (Categorías ·
+   Medidas · Mi Persona), prueba `⌘K` y cambia el tema: todo igual que antes.
+6. Repite el paso 2 en el móvil y en **tema oscuro**: mira que la fila de
+   arriba siga cabiendo y que se vea con claridad **cuál de los dos módulos
+   está encendido** — en oscuro el contraste entre encendido y apagado es más
+   sutil que en claro.

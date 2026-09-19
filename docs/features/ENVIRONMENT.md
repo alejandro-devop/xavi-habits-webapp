@@ -1,0 +1,145 @@
+# Environment — lo que un agente no puede deducir del código
+
+Este archivo es de **este** proyecto (`xavi-habits-webapp`). Los agentes lo
+leen antes de tocar el navegador. Cuando algo deje de ser cierto, se corrige:
+un mapa viejo hace más daño que ninguno.
+
+No hay cadena de bugs en este repositorio (`docs/bugs/` no existe): este es el
+único mapa.
+
+## Dónde corre
+
+| Servicio | Dirección | Quién lo levanta |
+|---|---|---|
+| La web (Vite dev) | `http://localhost:5173` | **el usuario** — suele estar arriba todo el día |
+| La API (GraphQL + auth REST) | `https://xavi-api-wqpmywszuq-uc.a.run.app` | nadie: es `xavi-platform-node` desplegado en Cloud Run |
+
+La API vive en otro repositorio (`~/Developer/xavi-platform-node`, el esquema
+en `src/graphql/modules/`). **No se toca** desde aquí: ningún dossier de este
+repo pide cambios de backend.
+
+**Los agentes no levantan ni paran nada.** Si el 5173 no responde, va en el
+reporte y se sigue con lo que no dependa de él. Para mirar una pantalla se
+abre una pestaña con `preview_start {url: "http://localhost:5173"}` — es una
+pestaña, no arranca ningún servidor. Si de verdad no hay nada arriba,
+`preview_start {name: "xavi-habits-web"}` arranca uno desde
+`.claude/launch.json`; **como `autoPort` está activo, puede acabar en el 5174**
+y el probe lo dice.
+
+## Lo que NO se ejecuta
+
+- `pnpm dev` a mano desde Bash: se queda en primer plano y pisa el 5173 del usuario. Solo `preview_start`.
+- **`pkill`, `killall` o cualquier matanza amplia de procesos.** Ya pasó: un agente mató el servidor del usuario «limpiando el suyo». Si arrancaste algo, páralo por su `serverId` con `preview_stop`.
+- `pnpm format` (reescribe el repositorio entero). `pnpm format:check` ya falla en HEAD en los archivos del catálogo de iconos; no es tuyo.
+- `git stash`, `git checkout --`, `git reset`: nada que revierta el árbol.
+- `pnpm build` **sí** se puede correr: escribe en `dist/`, que el dev server no sirve. Úsalo para medir el paquete.
+
+## Cómo conseguir datos reales
+
+**Todo lo que importa está detrás del login, y los agentes no entran con
+credenciales, nunca.** Es el límite estructural de este proyecto: lo que
+está en `/app/*` se verifica con tests y arneses aislados, y el recorrido real
+lo hace el usuario al cerrar cada tajada. Escríbelo así en el reporte; no lo
+disimules.
+
+Lo que sí se ve sin sesión: `/` (portada), `/auth/login`, `/auth/register`,
+la página de «no encontrado» en cualquier ruta retirada, y **cualquier HTML de
+`docs/`** servido por Vite (`http://localhost:5173/docs/vida/assets/03-vida-agenda.html`
+abre un render). Para ver un componente con datos, la vía que funciona es un
+**arnés temporal** (un `.html` + un `.tsx` de entrada bajo `src/`) que renderiza
+el componente con datos sintéticos y `MemoryRouter`; se borra antes de
+reportar. Ya se ha hecho tres veces en este repo con buen resultado.
+
+Los identificadores de la API (`habit.id`, `activity.id`) son UUID del
+backend: no se adivinan.
+
+## Rutas o pantallas
+
+```
+/                          portada pública (redirige a /app si hay sesión)
+/auth/login  /auth/register  /auth/verify-email  /auth/forgot-password  /auth/reset-password
+/app                       → redirige a /app/habits/my-day
+/app/habits/my-day         Mi día
+/app/habits/list           Mis hábitos
+/app/habits/archived       Archivados
+/app/habits/categories     Categorías      (píldora «Ajustes» del módulo)
+/app/habits/measures       Medidas         (píldora «Ajustes» del módulo)
+/app/habits/persona        Mi Persona      (píldora «Ajustes» del módulo)
+/app/habits/:id            Detalle: Panel · Esta semana · Historial
+/app/habits/:id/edit  /app/habits/:id/week  /app/habits/:id/calendar
+/app/settings              Ajustes de cuenta (menú de la ficha de usuario)
+/app/vida/*                el módulo Vida — NO EXISTE AÚN; lo crea la feature F0
+```
+
+La fuente de verdad es `src/app/router/routes.tsx` y
+`src/features/habits/routes/habits-paths.ts`.
+
+## Áreas
+
+Valores válidos del campo `area:` de un dossier:
+
+- `features/habits`
+- `features/vida` — nuevo, lo abre F0
+- `features/auth`
+- `features/settings`
+- `features/theme`
+- `shared/ui`
+- `shared/icons`
+- `shared/api`
+- `layouts` — `AppLayout` es la barra única de la app
+- `app/router`
+
+## Comprobaciones que existen
+
+| Qué | Comando | Línea base hoy (2026-09-19) |
+|---|---|---|
+| Tipos | `pnpm typecheck` | limpio |
+| Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
+| Tests | `pnpm test` | **2 fallos de 409** (`SearchSelect` ×2, preexistentes) |
+| Paquete | `pnpm build` | chunk inicial **816 kB** (gzip 250) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+
+**La regla es «no peor que la línea base».** Los tres primeros se corren
+enteros antes de empezar y al terminar; el build al terminar. Un test que se
+va con su módulo baja el total y es correcto; un fallo nuevo o un error de
+lint nuevo no se acepta.
+
+Después de cambiar código: `graphify update .` (regla de `CLAUDE.md`).
+
+## Patrones vivos
+
+Para el `feature-architect`. El módulo de hábitos es la referencia de todo:
+
+- **Listado con filtros y tarjetas:** `src/features/habits/pages/HabitsListPage.tsx` + `components/HabitListCard/`.
+- **Formulario en pasos (wizard):** `src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx` y sus `HabitWizardStep1..3`. Plantillas de arranque en `data/habit-templates.ts`.
+- **Detalle con métricas derivadas en cliente:** `src/features/habits/pages/HabitDetailPage.tsx` + `components/HabitPanel/` (aritmética pura en `utils/habit-panel.utils.ts`, gráficos SVG a mano, tabla oculta obligatoria en `ChartPanel`).
+- **Capa de datos:** `src/features/habits/api/habits.api.ts`, `graphql/*.graphql.ts`, `hooks/useHabits.ts` con `habitKeys`. GraphQL con `graphqlRequest` (`src/shared/api/`); REST solo para auth.
+- **Selectores reutilizables:** `IconPickerLazy` (`src/shared/ui/IconPicker/`), `HabitColorPicker` (`src/features/habits/components/HabitColorPicker/`, paleta en `data/habit-colors.ts` — dos niveles, núcleo y extendidos).
+- **La barra de la app y las píldoras de módulo:** `src/layouts/AppLayout/AppLayout.tsx` + `app-nav.config.ts` (`createCommandActions` para `⌘K`).
+- **El módulo de actividades que existió** (12.800 líneas, borrado en la fase 11) sigue en git en `79bece0`: `git show 79bece0:src/features/activities/<ruta>`. De ahí se rescatan contratos GraphQL, hooks, `activity-time.utils.ts`, métricas del día y los modales de sesión. **No se restaura entero.**
+- **Lenguaje visual:** Aura — vidrio, mint `#10B981` + violeta `#7C3AED`, píldoras, ámbito `[data-ds='aura']`. Guías en `docs/design-system.md` y `docs/design-system-agent-guide.md`. Renders aprobados del módulo Vida en `docs/vida/assets/`.
+
+## Grafo del proyecto
+
+- Grafo: **sí** — `graphify-out/graph.json` (~1,6 MB). `graphify query/path/explain` antes de buscar a mano.
+- Hook post-commit: **no**. El grafo refleja el último `graphify update .`, no el working tree ni necesariamente HEAD. Lo que no se ha commiteado no aparece.
+
+## Trampas de este repositorio
+
+- **La API solo admite el origen `http://localhost:5173`** (CORS). Un servidor en el 5174 abre la app pero cualquier llamada a la API falla con CORS: no es un bug tuyo.
+- **`.env` no está versionado**; `.env.example` tiene la URL real de la API. Lee siempre `env.apiUrl` desde `src/app/config/env.ts`; nunca `import.meta.env` en una feature.
+- **Vite en dev acumula errores de HMR si se borran muchos archivos** bajo un servidor arrancado antes. Si ves 504 «Outdated Optimize Dep» o «Failed to reload», es el servidor viejo: repórtalo; el usuario lo reinicia.
+- **El barril de Font Awesome es un único módulo**: cualquier archivo que importe de `@fortawesome/free-solid-svg-icons` a pelo se lleva todos los iconos al chunk inicial. Los iconos del cromo se importan de uno en uno; el catálogo entra por `icon-registry.ts` en diferido. No rompas eso.
+- **Dos constructores a la vez se contaminan la línea base** de lint y tests. Una tajada a la vez.
+- **`Mi día` ya es de hábitos.** El día del módulo Vida se llama **«Hoy»**. No reutilices el nombre.
+- La regla de producto que manda en Vida y en hábitos: **nada de culpa.** Ni «desperdicio», ni «fallaste», ni recordar el propósito al fallar. Ver `docs/vida/PLAN.md` y `docs/remodel/06-mi-persona.spec.md`.
+
+## Sonda
+
+```
+bash docs/features/probe.sh
+```
+
+Distingue apagado (curl rc 7) de ocupado (rc 28), comprueba la web en 5173 y
+5174, la API (que no tiene `/health`: un 401 en `/api/auth/profile` y un 400 en
+`/graphql` sin sesión significan que responde), el estado del repo y si hay
+grafo. No arranca nada.

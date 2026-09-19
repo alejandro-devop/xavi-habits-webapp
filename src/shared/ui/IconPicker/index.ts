@@ -1,1 +1,1 @@
-export { IconPicker } from '@/shared/ui/IconPicker/IconPicker'
+export { IconPicker } from '@/shared/ui/IconPicker/IconPickerLazy'

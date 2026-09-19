@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   APP_ICON_CATEGORY_ORDER,
-  appIcons,
   filterAppIcons,
   getCategoryLabel,
   groupIconsByCategory,
   normalizeIconName,
 } from '@/shared/icons'
+// El catálogo completo se importa aquí, y solo aquí: es lo que ata las 850
+// entradas a este componente y, con él, al trozo perezoso.
+import { appIcons } from '@/shared/icons/app-icons'
 import type { AppIconEntry } from '@/shared/icons'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
@@ -14,7 +16,7 @@ import { Input } from '@/shared/ui/Input'
 import { Modal } from '@/shared/ui/Modal'
 import styles from './IconPicker.module.scss'
 
-type IconPickerProps = {
+export type IconPickerProps = {
   label?: string
   value?: string | null
   onChange: (iconName: string | null) => void

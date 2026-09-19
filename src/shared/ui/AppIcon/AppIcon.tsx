@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { getIconByName, type AppIconName } from '@/shared/icons'
+import type { AppIconName } from '@/shared/icons'
+import { useAppIcon } from '@/shared/icons/useAppIcon'
 import styles from './AppIcon.module.scss'
 
 export type AppIconSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
@@ -31,7 +32,9 @@ export function AppIcon({
   decorative = true,
   label,
 }: AppIconProps) {
-  const icon = getIconByName(name)
+  // El cromo sale en el primer render; un icono del catálogo perezoso puede
+  // tardar lo que tarde su trozo en llegar, y hasta entonces se pinta el hueco.
+  const { icon, pending } = useAppIcon(name)
   const sizeClass = SIZE_CLASS[size]
   const rootClass = [styles.root, sizeClass, className].filter(Boolean).join(' ')
   const a11yLabel = decorative ? undefined : (label ?? String(name))
@@ -39,7 +42,9 @@ export function AppIcon({
   if (!icon) {
     return (
       <span
-        className={[styles.fallback, sizeClass, className].filter(Boolean).join(' ')}
+        className={[styles.fallback, pending ? styles.fallbackPending : '', sizeClass, className]
+          .filter(Boolean)
+          .join(' ')}
         style={color ? { color } : undefined}
         role={decorative ? undefined : 'img'}
         aria-label={a11yLabel}

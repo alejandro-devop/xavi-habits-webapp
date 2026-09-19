@@ -1,5 +1,7 @@
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { appIconMap, iconNameAliases, type AppIconName } from '@/shared/icons/app-icons'
+import type { AppIconName } from '@/shared/icons/app-icons'
+import { iconNameAliases } from '@/shared/icons/icon-aliases'
+import { getRegisteredIcon, hasRegisteredIcon } from '@/shared/icons/icon-registry'
 
 /** Stored value for forms/API — uses app name, not raw FA `iconName`. */
 export function toStoredIconName(icon: IconDefinition, appName?: AppIconName): string {
@@ -34,12 +36,15 @@ export function normalizeIconName(input: string): string {
   return iconNameAliases[kebab] ?? kebab
 }
 
+/**
+ * El icono, si ya está en el registro. Devuelve `null` mientras el catálogo
+ * perezoso no haya llegado: en un componente usa `useAppIcon`, que además lo
+ * pide y vuelve a pintar cuando aterriza.
+ */
 export function getIconByName(name: string): IconDefinition | null {
-  const normalized = normalizeIconName(name) as AppIconName
-  return appIconMap.get(normalized) ?? null
+  return getRegisteredIcon(normalizeIconName(name))
 }
 
 export function isAppIconName(name: string): name is AppIconName {
-  const normalized = normalizeIconName(name)
-  return appIconMap.has(normalized as AppIconName)
+  return hasRegisteredIcon(normalizeIconName(name))
 }

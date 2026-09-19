@@ -66,6 +66,12 @@
   flex-shrink: 0;
 }
 
+// El icono todavía no ha llegado: ocupa su sitio sin gritar «roto».
+.fallbackPending {
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface));
+  border-style: none;
+}
+
 .fallback.size2xs {
   width: 0.625rem;
   height: 0.625rem;

@@ -1,30 +1,32 @@
-import {
-  faArrowLeft,
-  faArrowRight,
-  faArrowsLeftRight,
-  faBell,
-  faCalendarWeek,
-  faCheck,
-  faChevronRight,
-  faCirclePlay,
-  faEllipsis,
-  faEnvelope,
-  faEye,
-  faEyeSlash,
-  faFilter,
-  faGear,
-  faGripVertical,
-  faLayerGroup,
-  faLock,
-  faMagnifyingGlass,
-  faPlay,
-  faPlus,
-  faPowerOff,
-  faStar,
-  faTrash,
-  faUser,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons'
+// Los iconos del cromo se importan **uno a uno**, no por el barril de Font
+// Awesome: el barril es un solo módulo con los 1.422 iconos, y cualquier trozo
+// que lo toque se lleva todos los que use la app. Importándolos por separado,
+// el arranque carga estos y nada más; el catálogo entero llega aparte.
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft'
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight'
+import { faArrowsLeftRight } from '@fortawesome/free-solid-svg-icons/faArrowsLeftRight'
+import { faBell } from '@fortawesome/free-solid-svg-icons/faBell'
+import { faCalendarWeek } from '@fortawesome/free-solid-svg-icons/faCalendarWeek'
+import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck'
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight'
+import { faCirclePlay } from '@fortawesome/free-solid-svg-icons/faCirclePlay'
+import { faEllipsis } from '@fortawesome/free-solid-svg-icons/faEllipsis'
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons/faEnvelope'
+import { faEye } from '@fortawesome/free-solid-svg-icons/faEye'
+import { faEyeSlash } from '@fortawesome/free-solid-svg-icons/faEyeSlash'
+import { faFilter } from '@fortawesome/free-solid-svg-icons/faFilter'
+import { faGear } from '@fortawesome/free-solid-svg-icons/faGear'
+import { faGripVertical } from '@fortawesome/free-solid-svg-icons/faGripVertical'
+import { faLayerGroup } from '@fortawesome/free-solid-svg-icons/faLayerGroup'
+import { faLock } from '@fortawesome/free-solid-svg-icons/faLock'
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons/faMagnifyingGlass'
+import { faPlay } from '@fortawesome/free-solid-svg-icons/faPlay'
+import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus'
+import { faPowerOff } from '@fortawesome/free-solid-svg-icons/faPowerOff'
+import { faStar } from '@fortawesome/free-solid-svg-icons/faStar'
+import { faTrash } from '@fortawesome/free-solid-svg-icons/faTrash'
+import { faUser } from '@fortawesome/free-solid-svg-icons/faUser'
+import { faXmark } from '@fortawesome/free-solid-svg-icons/faXmark'
 import type { AppIconEntry } from '@/shared/icons/types'
 
 /** UI / actions — hidden from activity IconPicker by default. */

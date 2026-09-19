@@ -1,45 +1,80 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // La paleta de colores de hábito
 //
-// Ocho tonos, ni uno más. Son los que hacen que la rejilla de Mis Hábitos se
-// lea de un vistazo: suficientes para distinguir, pocos para que quepan en una
-// fila sin desplegar nada.
-//
-// El criterio que manda al elegirlos es que **cada uno se distinga sobre el
-// vidrio en tema claro y en oscuro**. Son tonos de saturación media: los muy
-// claros se disuelven en el vidrio claro y los muy oscuros desaparecen en el
-// oscuro. Un color bonito que no cumple eso no entra.
+// Diecisiete tonos en dos niveles. El criterio no es el gusto: es que dos
+// hábitos con color distinto se distingan de verdad, también para quien no ve
+// bien el rojo o el verde.
 //
 // Esto es un archivo de datos, no un componente: aquí no se importa React.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * `core` son los seis que la app puede repartir sola; `extended`, los once que
+ * solo se eligen a mano. La distinción no es decorativa: el sorteo depende de
+ * ella, así que vive en los datos y no en quien los pinta.
+ */
+export type HabitColorTier = 'core' | 'extended'
+
 export interface HabitColor {
   /** Identificador estable, no se traduce ni se muestra. */
   name: string
-  /** Lo que lee y escucha el usuario. */
+  /** Lo que lee y escucha el usuario. Obligatorio: es la pista que acompaña al color. */
   label: string
   /** Lo que se guarda en la API, siempre en minúsculas. */
   hex: string
+  /** `core` entra en el sorteo automático; `extended`, nunca. */
+  tier: HabitColorTier
 }
 
 /**
- * Seis, no ocho. La paleta se validó con el comprobador de contraste y
- * daltonismo comparando **todos los pares**, no solo los vecinos: con ocho
- * tonos siempre quedaban dos indistinguibles —índigo y violeta se separaban
- * ΔE 0,9 para quien no distingue el rojo, y coral y rosa ΔE 9,9 incluso con
- * visión normal—. Seis es el número en el que cada par se distingue de
- * verdad. Más colores que no se diferencian no son más colores.
+ * El núcleo: seis colores que pasan el validador entero en tema claro
+ * comparando **todos los pares**, no solo los vecinos. Son los mismos de la
+ * fase 9 y no cambian de hexadecimal: hay hábitos guardados con ellos.
  *
- * Ordenados por tono, para que la fila se lea como un arcoíris y no como un
- * saco.
+ * Seis es un techo, no un capricho: con los mismos hexadecimales sirviendo a
+ * tema claro y oscuro no caben más sin que algún par se vuelva indistinguible.
+ *
+ * Ordenados por tono, para que la fila se lea como un arcoíris y no como un saco.
  */
+export const HABIT_CORE_COLORS: readonly HabitColor[] = [
+  { name: 'mint', label: 'Menta', hex: '#10b981', tier: 'core' },
+  { name: 'olive', label: 'Oliva', hex: '#4d7c0f', tier: 'core' },
+  { name: 'amber', label: 'Ámbar', hex: '#f59e0b', tier: 'core' },
+  { name: 'crimson', label: 'Carmín', hex: '#e11d48', tier: 'core' },
+  { name: 'violet', label: 'Violeta', hex: '#8b5cf6', tier: 'core' },
+  { name: 'blue', label: 'Azul', hex: '#0284c7', tier: 'core' },
+] as const
+
+/**
+ * Los extendidos: once colores que **solo se eligen a mano**.
+ *
+ * Cada uno está a ΔE ≥ 15 en OKLab de cada color del núcleo —comprobado en el
+ * test, no supuesto—, así que nunca se confunde con uno que la app haya
+ * repartido sola. Entre ellos sí pueden parecerse (`#b46ca8` y `#e1808d` están
+ * a ΔE 11,2) y es deliberado: quien los elige los está mirando, y cada muestra
+ * se anuncia con su nombre en español.
+ *
+ * Salen de una búsqueda con el validador de paletas, no de una propuesta
+ * estética: no se sustituyen «porque quedan mejor».
+ */
+export const HABIT_EXTENDED_COLORS: readonly HabitColor[] = [
+  { name: 'cyan', label: 'Cian', hex: '#11bff0', tier: 'extended' },
+  { name: 'lavender', label: 'Lavanda', hex: '#99a7f9', tier: 'extended' },
+  { name: 'indigo', label: 'Añil', hex: '#2d3acc', tier: 'extended' },
+  { name: 'purple', label: 'Morado', hex: '#7017b6', tier: 'extended' },
+  { name: 'plum', label: 'Ciruela', hex: '#793974', tier: 'extended' },
+  { name: 'mauve', label: 'Malva', hex: '#b46ca8', tier: 'extended' },
+  { name: 'magenta', label: 'Magenta', hex: '#c02ca7', tier: 'extended' },
+  { name: 'fuchsia', label: 'Fucsia', hex: '#ff6ce2', tier: 'extended' },
+  { name: 'rose', label: 'Rosa palo', hex: '#e1808d', tier: 'extended' },
+  { name: 'cinnamon', label: 'Canela', hex: '#924b00', tier: 'extended' },
+  { name: 'bronze', label: 'Bronce', hex: '#af761e', tier: 'extended' },
+] as const
+
+/** La paleta completa, en el orden en que se muestra: primero el núcleo. */
 export const HABIT_COLORS: readonly HabitColor[] = [
-  { name: 'mint', label: 'Menta', hex: '#10b981' },
-  { name: 'olive', label: 'Oliva', hex: '#4d7c0f' },
-  { name: 'amber', label: 'Ámbar', hex: '#f59e0b' },
-  { name: 'crimson', label: 'Carmín', hex: '#e11d48' },
-  { name: 'violet', label: 'Violeta', hex: '#8b5cf6' },
-  { name: 'blue', label: 'Azul', hex: '#0284c7' },
+  ...HABIT_CORE_COLORS,
+  ...HABIT_EXTENDED_COLORS,
 ] as const
 
 /**
@@ -64,7 +99,11 @@ export function findHabitColor(value: string | null | undefined): HabitColor | n
 /**
  * Sortea el color con el que nace un hábito nuevo.
  *
- * Prefiere un color que el usuario **no** esté usando ya; solo cuando los ocho
+ * **Solo reparte entre los seis del núcleo.** Los extendidos se parecen entre
+ * sí a propósito, y dos hábitos a los que la app les pone el color sola tienen
+ * que distinguirse siempre: nadie los está mirando cuando se deciden.
+ *
+ * Prefiere un color que el usuario **no** esté usando ya; solo cuando los seis
  * están cogidos repite, y entonces elige entre los menos usados. Un sorteo
  * puramente aleatorio repite enseguida, y el objetivo era justo lo contrario.
  *
@@ -75,18 +114,18 @@ export function pickInitialHabitColor(
   usedColors: readonly (string | null)[],
   random: () => number = Math.random,
 ): string {
-  const counts = new Map<string, number>(HABIT_COLORS.map((color) => [color.hex, 0]))
+  const counts = new Map<string, number>(HABIT_CORE_COLORS.map((color) => [color.hex, 0]))
 
   for (const used of usedColors) {
     const normalized = normalizeHabitColor(used)
-    // Un color de fuera de la paleta no bloquea ninguna casilla: no es
-    // «ninguno de los ocho», así que no cuenta para nada.
+    // Un color de fuera del núcleo no bloquea ninguna casilla: no es «ninguno
+    // de los seis», así que no cuenta para nada. Un extendido tampoco.
     if (!normalized || !counts.has(normalized)) continue
     counts.set(normalized, (counts.get(normalized) ?? 0) + 1)
   }
 
   const minCount = Math.min(...counts.values())
-  const candidates = HABIT_COLORS.filter((color) => counts.get(color.hex) === minCount)
+  const candidates = HABIT_CORE_COLORS.filter((color) => counts.get(color.hex) === minCount)
 
   // `random()` devuelve [0, 1); el clamp es por si alguien inyecta un generador
   // que devuelva exactamente 1.

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { SessionExpiredModal } from '@/features/auth/components/SessionExpiredModal'
 import { useLogoutMutation } from '@/features/auth/hooks/useLogoutMutation'
@@ -8,6 +8,7 @@ import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import { settingsPaths } from '@/features/settings'
 import { useTheme } from '@/features/theme'
 import { createCommandActions } from '@/layouts/AppLayout/app-nav.config'
+import { loadIconCatalog } from '@/shared/icons'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { AuraRing } from '@/shared/ui/AuraRing'
 import { AuroraCanvas } from '@/shared/ui/AuroraCanvas'
@@ -66,6 +67,13 @@ function AppLayoutShell() {
   const user = useAuthStore(selectAuthUser)
   const { cyclePreference } = useTheme()
   const logoutMutation = useLogoutMutation()
+
+  // El catálogo de iconos viaja en su propio trozo. Se pide en cuanto la
+  // sesión entra —sin bloquear nada—, para que los iconos de los hábitos estén
+  // listos cuando llegue su respuesta y no aparezcan con un parpadeo.
+  useEffect(() => {
+    void loadIconCatalog()
+  }, [])
 
   const commandActions = useMemo(
     () =>

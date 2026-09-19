@@ -3,13 +3,15 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { IconPicker } from '@/shared/ui/IconPicker'
 
+// Lo que se importa aquí es la versión diferida —la que usa la app—: por eso
+// el disparador se espera con `findBy`, no se busca con `getBy`.
 describe('IconPicker', () => {
   it('normalizes selection to stored name bell', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
     render(<IconPicker value={null} onChange={onChange} />)
 
-    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+    await user.click(await screen.findByRole('button', { name: /elegir icono/i }))
     await user.click(screen.getByRole('option', { name: /campana/i }))
 
     expect(onChange).toHaveBeenCalledWith('bell')
@@ -19,7 +21,7 @@ describe('IconPicker', () => {
     const user = userEvent.setup()
     render(<IconPicker value={null} onChange={vi.fn()} />)
 
-    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+    await user.click(await screen.findByRole('button', { name: /elegir icono/i }))
     await user.type(screen.getByRole('searchbox', { name: /buscar icono/i }), 'gym')
 
     expect(screen.getByRole('option', { name: /pesas/i })).toBeTruthy()
@@ -30,7 +32,7 @@ describe('IconPicker', () => {
     const user = userEvent.setup()
     render(<IconPicker value={null} onChange={vi.fn()} />)
 
-    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+    await user.click(await screen.findByRole('button', { name: /elegir icono/i }))
 
     expect(screen.getByRole('heading', { name: 'Trabajo' })).toBeTruthy()
   })
@@ -39,7 +41,7 @@ describe('IconPicker', () => {
     const user = userEvent.setup()
     render(<IconPicker value={null} onChange={vi.fn()} />)
 
-    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+    await user.click(await screen.findByRole('button', { name: /elegir icono/i }))
 
     expect(screen.getByRole('heading', { name: 'Social' })).toBeTruthy()
     expect(screen.getByRole('option', { name: 'Familia' })).toBeTruthy()
@@ -49,10 +51,10 @@ describe('IconPicker', () => {
     const user = userEvent.setup()
     render(<IconPicker value={null} onChange={vi.fn()} />)
 
-    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+    await user.click(await screen.findByRole('button', { name: /elegir icono/i }))
 
     const options = screen.getAllByRole('option')
-    expect(options.length).toBeGreaterThan(380)
+    expect(options.length).toBeGreaterThan(840)
 
     const firstProductivity = options[0] as HTMLElement
     firstProductivity.focus()
@@ -75,7 +77,7 @@ describe('IconPicker', () => {
     const onChange = vi.fn()
     render(<IconPicker value={null} onChange={onChange} />)
 
-    await user.click(screen.getByRole('button', { name: /elegir icono/i }))
+    await user.click(await screen.findByRole('button', { name: /elegir icono/i }))
     await user.type(screen.getByRole('searchbox', { name: /buscar icono/i }), 'lavadora')
 
     const results = screen.getAllByRole('option')

@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
+import { appIcons } from '@/shared/icons/app-icons'
+import { registerIconCatalog } from '@/shared/icons/icon-registry'
+
+// En producción el catálogo llega en un trozo aparte; aquí no hay red que
+// esperar, así que se registra entero antes de que nadie renderice un icono.
+registerIconCatalog(appIcons)
 
 class IntersectionObserverMock implements IntersectionObserver {
   readonly root: Element | null = null

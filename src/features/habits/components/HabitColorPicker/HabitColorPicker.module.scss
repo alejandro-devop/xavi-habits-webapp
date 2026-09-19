@@ -1,6 +1,6 @@
 @use '@/app/styles/tokens' as *;
 
-// Las ocho muestras. `flex-wrap` es la red de seguridad de los 375px: si no
+// Las diecisiete muestras. `flex-wrap` es la red de seguridad de los 375px: si no
 // caben en una fila bajan a la siguiente, nunca desbordan el formulario.
 .root {
   display: flex;
@@ -58,8 +58,8 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  // Los ocho tonos son medios: el blanco se lee en todos, y la sombra lo
-  // asegura sobre los más claros (ámbar, lima).
+  // Los diecisiete tonos están en la banda clara: el blanco se lee en todos, y
+  // la sombra lo asegura sobre los más claros (ámbar, lavanda, cian).
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%));
 
   .swatchSelected & {

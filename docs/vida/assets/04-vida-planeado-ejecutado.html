@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — planeado y ejecutado</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#006c49; --violet:#7c3aed; --violet-text:#5b21b6;
+    --amber:#f59e0b; --rose:#e11d48; --sky:#0284c7;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-2:rgba(255,255,255,.78); --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+  .note + .note{margin-top:8px}
+
+  .row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  .phone{width:100%;max-width:375px;height:860px;border-radius:38px;padding:9px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6)}
+  .screen{position:relative;overflow:hidden;width:100%;height:100%;border-radius:30px;background:var(--canvas);isolation:isolate}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(100px)}
+  .o1{width:70%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-20%;left:-10%}
+  .o2{width:60%;aspect-ratio:1;background:rgba(210,187,255,.32);top:10%;right:-20%}
+  .o3{width:70%;aspect-ratio:1;background:rgba(224,242,254,.8);bottom:-30%;left:20%}
+  .z{position:relative;z-index:1}
+  .mbar{display:flex;align-items:center;gap:8px;padding:12px 12px 0}
+  .ring{width:20px;height:20px;border-radius:50%;border:2.5px solid var(--mint);position:relative;flex:0 0 auto}
+  .ring::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--mint)}
+  .brand{font-weight:700;font-size:14px;letter-spacing:-.02em}
+  .mods{display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(15,23,42,.05);margin-left:6px}
+  .mod{padding:4px 10px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft)}
+  .mod.on{background:#fff;color:var(--ink);box-shadow:0 4px 12px -6px rgba(15,23,42,.25)}
+  .avatar{margin-left:auto;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--mint),#c4b5fd);display:grid;place-items:center;color:#fff;font-family:'Inter',sans-serif;font-size:11px;font-weight:700}
+  .body{padding:10px 12px 12px}
+
+  /* tira de días: aquí se planea con antelación */
+  .days{display:flex;gap:4px;margin-bottom:10px}
+  .day{flex:1;padding:6px 2px 5px;border-radius:12px;text-align:center;background:rgba(255,255,255,.5);border:1px solid var(--edge)}
+  .day .w{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
+  .day .n{font-family:'Inter',sans-serif;font-size:13px;font-weight:700;margin-top:1px}
+  .day .s{margin:3px auto 0;width:16px;height:4px;border-radius:999px;background:rgba(15,23,42,.1)}
+  .day .s.done{background:var(--mint)} .day .s.part{background:linear-gradient(90deg,var(--mint) 60%,rgba(15,23,42,.12) 60%)} .day .s.plan{background:repeating-linear-gradient(90deg,rgba(16,185,129,.55) 0 3px,rgba(16,185,129,.2) 3px 6px)}
+  .day.on{background:#fff;border-color:rgba(16,185,129,.4);box-shadow:0 8px 20px -10px rgba(16,185,129,.45)}
+  .day.on .w{color:var(--mint-text)}
+  .day.today .n{color:var(--rose)}
+
+  .budget{padding:12px 13px 11px;border-radius:20px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);margin-bottom:10px}
+  .btop{display:flex;align-items:baseline;gap:8px}
+  .btop .d{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mint-text)}
+  .btop .left{margin-left:auto;font-family:'Inter',sans-serif;font-size:12px;color:var(--ink-soft)}
+  .btop .left b{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .track{height:12px;border-radius:999px;background:rgba(15,23,42,.06);overflow:hidden;display:flex;margin:9px 0 7px}
+  .track i{display:block;height:100%}
+  .track .nodata{background:rgba(15,23,42,.14)}
+  .track .done{background:var(--mint)}
+  .track .over{background:var(--amber)}
+  .track .extra{background:var(--sky)}
+  .track .plan{background:repeating-linear-gradient(135deg,rgba(16,185,129,.45) 0 4px,rgba(16,185,129,.2) 4px 8px)}
+  .track .miss{background:repeating-linear-gradient(135deg,rgba(15,23,42,.18) 0 4px,rgba(15,23,42,.06) 4px 8px)}
+  .track .free{background:transparent}
+  .track .nowmark{width:2px;background:var(--rose);margin:-2px 0}
+  .lg{display:flex;gap:9px;flex-wrap:wrap;font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-soft)}
+  .lg span{display:inline-flex;align-items:center;gap:5px}
+  .lg b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .sw{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .hint{margin:9px 0 0;padding-top:8px;border-top:1px dashed rgba(15,23,42,.1);font-size:12.5px;line-height:1.45;font-weight:500}
+  .hint b{font-weight:700}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .btn{padding:6px 10px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;border:1px solid var(--edge);background:rgba(255,255,255,.85);color:var(--ink-soft);white-space:nowrap}
+  .btn.go{background:var(--mint);color:#fff;border-color:transparent}
+  .btn.sm{padding:4px 8px;font-size:10.5px}
+
+  .agenda{position:relative;padding-left:44px}
+  .rail{position:absolute;left:36px;top:0;bottom:0;width:2px;background:rgba(15,23,42,.08)}
+  .slot{position:relative;margin-bottom:7px}
+  .slot .t{position:absolute;left:-44px;top:9px;width:30px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-13px;top:12px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid var(--ink-dim)}
+  .card{padding:9px 11px;border-radius:15px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);display:flex;align-items:center;gap:9px}
+  .card.plan{background:rgba(255,255,255,.5)}
+  .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+  .nm{font-weight:600;font-size:12.5px;letter-spacing:-.01em}
+  .meta{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:1px;display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+  .meta b{color:var(--ink-soft);font-weight:600}
+  .tag{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:999px;white-space:nowrap}
+  .tag.done{background:rgba(16,185,129,.15);color:#047857}
+  .tag.over{background:rgba(245,158,11,.18);color:#92400e}
+  .tag.short{background:rgba(16,185,129,.1);color:#047857}
+  .tag.late{background:rgba(124,58,237,.12);color:var(--violet-text)}
+  .tag.extra{background:rgba(2,132,199,.14);color:#075985}
+  .tag.miss{background:rgba(15,23,42,.07);color:var(--ink-soft)}
+  .tag.moved{background:rgba(124,58,237,.12);color:var(--violet-text)}
+  .tag.plan{background:rgba(15,23,42,.06);color:var(--ink-soft)}
+  .r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+  .slot.done .dot{background:var(--mint);border-color:var(--mint)}
+  .slot.extra .dot{border-style:dashed;border-color:var(--sky)} .slot.extra .card{border-style:dashed}
+  .slot.miss .card{opacity:.6;background:transparent;border-style:dashed} .slot.miss .nm{text-decoration:line-through;text-decoration-color:rgba(15,23,42,.35)}
+  .slot.ghost .card{opacity:.55;background:transparent;border-style:dashed}
+  .slot.ghost .dot{border-style:dashed}
+  /* la "sombra" del plan dentro de la card ejecutada */
+  .was{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:3px;display:flex;align-items:center;gap:5px}
+  .was .bar{position:relative;height:5px;width:80px;border-radius:999px;background:rgba(15,23,42,.08);overflow:hidden}
+  .was .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px}
+  .was .bar .p{background:rgba(15,23,42,.18)} .was .bar .q{background:var(--mint)} .was .bar .q.over{background:var(--amber)}
+  .free{position:relative;margin-bottom:7px;padding:9px 11px 10px;border-radius:15px;border:1.5px dashed rgba(16,185,129,.5);background:rgba(236,253,245,.5)}
+  .free .dot{position:absolute;left:-13px;top:12px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px dashed var(--mint)}
+  .free .h{display:flex;align-items:baseline;gap:6px;font-family:'Inter',sans-serif;font-size:11px;color:var(--mint-text);font-weight:700}
+  .free .h b{font-size:12.5px}
+  .free .h span{margin-left:auto;font-weight:600;color:var(--ink-dim)}
+  .fits{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+  .chipa{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:#fff;border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink);box-shadow:var(--sh-1)}
+  .chipa small{font-weight:600;color:var(--ink-dim)}
+  .chipa.more{background:transparent;border-style:dashed;color:var(--ink-dim)}
+  .nodata{position:relative;margin-bottom:7px;padding:8px 11px;border-radius:15px;border:1px dashed rgba(15,23,42,.14);font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);display:flex;justify-content:space-between;align-items:center}
+  .nodata .dot{position:absolute;left:-13px;top:11px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px dotted var(--ink-dim)}
+  .fold{position:relative;margin-bottom:7px;padding:7px 11px;border-radius:12px;background:rgba(15,23,42,.04);font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);display:flex;justify-content:space-between}
+  .fold b{font-weight:700;color:var(--ink)}
+  .end{position:relative;margin:4px 0 0;padding-top:8px;border-top:2px solid rgba(15,23,42,.1);font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);text-align:center}
+
+  /* la semana */
+  .wk{display:flex;flex-direction:column;gap:7px}
+  .wd{padding:10px 12px;border-radius:16px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);display:flex;align-items:center;gap:10px}
+  .wd .dn{width:44px;flex:0 0 auto}
+  .wd .dn .w{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim)}
+  .wd .dn .n{font-family:'Inter',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.02em}
+  .wd .mid{flex:1;min-width:0}
+  .wd .ttl{font-size:12.5px;font-weight:600}
+  .wd .sub{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+  .wd .bar{height:6px;border-radius:999px;background:rgba(15,23,42,.06);overflow:hidden;display:flex;margin-top:6px}
+  .wd .bar i{display:block;height:100%}
+  .wd.today{border-color:rgba(225,29,72,.35)}
+  .wd.today .dn .n{color:var(--rose)}
+  .wd.empty{background:rgba(255,255,255,.45);border-style:dashed}
+  .wd .btn{flex:0 0 auto}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <p class="caption">La misma agenda en tres estados: planeada · ejecutada con variaciones · la semana</p>
+  <div class="row3">
+
+    <!-- A · MAÑANA, PLANEADO -->
+    <div class="moment">
+      <div class="mtitle">A · Mañana, ya planeado<small>Sábado 19 · lo armaste el viernes por la noche</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="body">
+            <div class="days">
+              <div class="day"><div class="w">Jue</div><div class="n">17</div><div class="s done"></div></div>
+              <div class="day today"><div class="w">Vie</div><div class="n">18</div><div class="s part"></div></div>
+              <div class="day on"><div class="w">Sáb</div><div class="n">19</div><div class="s plan"></div></div>
+              <div class="day"><div class="w">Dom</div><div class="n">20</div><div class="s plan"></div></div>
+              <div class="day"><div class="w">Lun</div><div class="n">21</div><div class="s"></div></div>
+              <div class="day"><div class="w">Mar</div><div class="n">22</div><div class="s"></div></div>
+              <div class="day"><div class="w">Mié</div><div class="n">23</div><div class="s"></div></div>
+            </div>
+            <div class="budget">
+              <div class="btop"><span class="d">Sábado 19 · plan</span><span class="left">planeado <b>4h 20</b> de 16h 30</span></div>
+              <div class="track"><i class="plan" style="width:4%"></i><i class="free" style="width:3%"></i><i class="plan" style="width:6%"></i><i class="free" style="width:8%"></i><i class="plan" style="width:9%"></i><i class="free" style="width:14%"></i><i class="plan" style="width:6%"></i><i class="free" style="width:24%"></i><i class="plan" style="width:3%"></i><i class="free" style="width:13%"></i><i class="plan" style="width:3%"></i><i class="free" style="width:7%"></i></div>
+              <div class="lg"><span><i class="sw" style="background:repeating-linear-gradient(135deg,rgba(16,185,129,.45) 0 3px,rgba(16,185,129,.2) 3px 6px)"></i>planeado <b>4h 20</b> · 7 bloques</span><span><i class="sw" style="background:rgba(15,23,42,.06);border:1px dashed rgba(15,23,42,.2)"></i>libre <b>12h 10</b></span></div>
+              <p class="hint">Sábado suave: todo lo de tu plantilla está puesto. Te queda la tarde libre de 14:00 a 19:00.</p>
+              <div class="acts"><span class="btn sm">Copiar del sábado pasado</span><span class="btn sm">Vaciar y rehacer</span></div>
+            </div>
+            <div class="agenda"><div class="rail"></div>
+              <div class="slot"><span class="t">8:00</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(2,132,199,.14)">🚿</span><div><div class="nm">Bañarme</div><div class="meta">15 min</div></div></div></div>
+              <div class="slot"><span class="t">8:30</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear a las mascotas</div><div class="meta">40 min · <span class="tag plan">a tu ritmo real</span></div></div></div></div>
+              <div class="slot"><span class="t">9:30</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(16,185,129,.14)">🍳</span><div><div class="nm">Desayunar con calma</div><div class="meta">30 min · <span class="tag plan">movido aquí · antes 8:30</span></div></div></div></div>
+              <div class="slot"><span class="t">10:30</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(245,158,11,.16)">🛒</span><div><div class="nm">Compra de la semana</div><div class="meta">1h · <span class="tag plan">sueles tardar 55 min</span></div></div></div></div>
+              <div class="free"><span class="dot"></span><div class="h">Libre <b>11:30 – 13:00</b><span>1h 30</span></div><div class="fits"><span class="chipa">🧺 Lavadora <small>20m</small></span><span class="chipa">📖 Leer <small>30m</small></span><span class="chipa more">+</span></div></div>
+              <div class="slot"><span class="t">13:00</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(16,185,129,.14)">🥗</span><div><div class="nm">Cocinar tranquilo</div><div class="meta">1h</div></div></div></div>
+              <div class="free"><span class="dot"></span><div class="h">Libre <b>14:00 – 19:00</b><span>5h</span></div><div class="fits"><span class="chipa">🛋️ Descansar</span><span class="chipa">🚗 Salir</span><span class="chipa more">+</span></div></div>
+              <div class="slot"><span class="t">19:00</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear a las mascotas</div><div class="meta">30 min</div></div></div></div>
+              <div class="slot"><span class="t">21:30</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(16,185,129,.14)">📖</span><div><div class="nm">Leer un rato</div><div class="meta">30 min</div></div></div></div>
+              <div class="end">tu día termina a las 23:00</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- B · HOY, EJECUTADO CON VARIACIONES -->
+    <div class="moment">
+      <div class="mtitle">B · Hoy, casi terminado<small>Viernes 18 · 21:40 · lo que pasó, sobre lo que planeaste</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="body">
+            <div class="days">
+              <div class="day"><div class="w">Jue</div><div class="n">17</div><div class="s done"></div></div>
+              <div class="day on today"><div class="w">Vie</div><div class="n">18</div><div class="s part"></div></div>
+              <div class="day"><div class="w">Sáb</div><div class="n">19</div><div class="s plan"></div></div>
+              <div class="day"><div class="w">Dom</div><div class="n">20</div><div class="s plan"></div></div>
+              <div class="day"><div class="w">Lun</div><div class="n">21</div><div class="s"></div></div>
+              <div class="day"><div class="w">Mar</div><div class="n">22</div><div class="s"></div></div>
+              <div class="day"><div class="w">Mié</div><div class="n">23</div><div class="s"></div></div>
+            </div>
+            <div class="budget">
+              <div class="btop"><span class="d">Viernes 18 · 21:40</span><span class="left">te queda <b>1h 20</b></span></div>
+              <div class="track"><i class="nodata" style="width:3%"></i><i class="done" style="width:7%"></i><i class="over" style="width:2%"></i><i class="extra" style="width:3%"></i><i class="miss" style="width:2%"></i><i class="done" style="width:6%"></i><i class="over" style="width:2%"></i><i class="done" style="width:4%"></i><i class="free" style="width:14%"></i><i class="done" style="width:6%"></i><i class="nodata" style="width:16%"></i><i class="extra" style="width:8%"></i><i class="nodata" style="width:6%"></i><i class="done" style="width:4%"></i><i class="free" style="width:8%"></i><i class="nowmark"></i><i class="plan" style="width:3%"></i><i class="free" style="width:6%"></i></div>
+              <div class="lg"><span><i class="sw" style="background:var(--mint)"></i>seguido <b>4h 05</b></span><span><i class="sw" style="background:var(--amber)"></i>de más <b>29m</b></span><span><i class="sw" style="background:var(--sky)"></i>fuera del plan <b>1h 50</b></span><span><i class="sw" style="background:rgba(15,23,42,.14)"></i>sin dato <b>3h 55</b></span></div>
+              <p class="hint">Seguiste <b>6 de 7</b>. La casa se te fue <b>18 min</b>, la tarde se llenó de cosas que no estaban, y queda <b>leer</b> antes de cerrar.</p>
+            </div>
+            <div class="agenda"><div class="rail"></div>
+              <div class="slot done"><span class="t">7:00</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(2,132,199,.14)">🚿</span><div><div class="nm">Bañarme</div><div class="meta">7:04 – 7:18 <span class="tag done">✓ calcado</span></div></div></div></div>
+              <div class="slot done"><span class="t">7:30</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear a las mascotas</div><div class="meta">7:31 – 8:12 <span class="tag over">+11 min</span></div><div class="was"><span class="bar"><i class="p" style="width:55%"></i><i class="q over" style="width:75%;opacity:.85"></i></span>plan 30 · real 41</div></div></div></div>
+              <div class="slot extra done"><span class="t">8:15</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(2,132,199,.14)">📞</span><div><div class="nm">Llamada con el banco</div><div class="meta">8:15 – 8:40 <span class="tag extra">fuera del plan</span></div></div></div></div>
+              <div class="slot miss"><span class="t">8:30</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(16,185,129,.14)">🍳</span><div><div class="nm">Desayunar con calma</div><div class="meta"><span class="tag miss">no hecho</span> · 4 de 5 días</div></div><div class="r"><span class="btn sm">Lo hice</span></div></div></div>
+              <div class="slot done"><span class="t">9:00</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(124,58,237,.14)">🧹</span><div><div class="nm">Organizar la casa</div><div class="meta">9:05 – 10:08 <span class="tag late">empezó +5</span><span class="tag over">+18 min</span></div><div class="was"><span class="bar"><i class="p" style="width:50%"></i><i class="q over" style="width:70%;opacity:.85"></i></span>plan 45 · real 63</div></div></div></div>
+              <div class="slot done"><span class="t">10:00</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(16,185,129,.14)">📖</span><div><div class="nm">Leer un rato</div><div class="meta">10:10 – 10:32 <span class="tag short">−8 min</span></div><div class="was"><span class="bar"><i class="p" style="width:50%"></i><i class="q" style="width:37%"></i></span>plan 30 · real 22</div></div></div></div>
+              <div class="slot done"><span class="t">13:00</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(16,185,129,.14)">🥗</span><div><div class="nm">Cocinar y almorzar</div><div class="meta">13:05 – 14:00 <span class="tag done">✓</span></div></div></div></div>
+              <div class="nodata"><span class="dot"></span><span>14:00 – 16:40 · sin dato</span><span class="btn sm">¿Qué pasó?</span></div>
+              <div class="slot extra done"><span class="t">16:40</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(2,132,199,.14)">🚗</span><div><div class="nm">Salí a hacer cosas</div><div class="meta">16:40 – 18:05 <span class="tag extra">fuera del plan</span></div></div></div></div>
+              <div class="slot ghost"><span class="t">19:00</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear a las mascotas</div><div class="meta"><span class="tag moved">→ hecho a las 19:40</span></div></div></div></div>
+              <div class="slot done"><span class="t">19:40</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear a las mascotas</div><div class="meta">19:40 – 20:12 <span class="tag moved">40 min tarde</span> <span class="tag done">✓</span></div></div></div></div>
+              <div class="slot"><span class="t">21:30</span><span class="dot"></span><div class="card plan"><span class="ic" style="background:rgba(16,185,129,.14)">📖</span><div><div class="nm">Leer un rato</div><div class="meta">30 min · <b>queda tiempo</b></div></div><div class="r"><span class="btn go sm">▶ Empezar</span></div></div></div>
+              <div class="end">tu día termina a las 23:00</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- C · LA SEMANA -->
+    <div class="moment">
+      <div class="mtitle">C · La semana<small>Planear con antelación: no es obligatorio, pero se puede</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="body">
+            <div class="budget" style="margin-bottom:10px">
+              <div class="btop"><span class="d">Semana 38 · 15 – 21 sept</span><span class="left">seguido <b>78%</b></span></div>
+              <p class="hint" style="border:0;padding:0;margin:4px 0 0">Cuatro días vividos, dos planeados por adelantado, uno sin plan. Los jueves son tu mejor día.</p>
+            </div>
+            <div class="wk">
+              <div class="wd"><div class="dn"><div class="w">Lun</div><div class="n">15</div></div><div class="mid"><div class="ttl">Seguiste 5 de 6</div><div class="sub">La casa +20 min · 1 fuera del plan</div><div class="bar"><i style="width:70%;background:var(--mint)"></i><i style="width:8%;background:var(--amber)"></i><i style="width:10%;background:var(--sky)"></i><i style="width:12%;background:rgba(15,23,42,.14)"></i></div></div></div>
+              <div class="wd"><div class="dn"><div class="w">Mar</div><div class="n">16</div></div><div class="mid"><div class="ttl">Seguiste 4 de 6</div><div class="sub">Sin leer · tarde sin dato</div><div class="bar"><i style="width:55%;background:var(--mint)"></i><i style="width:5%;background:var(--amber)"></i><i style="width:10%;background:var(--sky)"></i><i style="width:30%;background:rgba(15,23,42,.14)"></i></div></div></div>
+              <div class="wd"><div class="dn"><div class="w">Mié</div><div class="n">17</div></div><div class="mid"><div class="ttl">Seguiste 6 de 6</div><div class="sub">Día calcado</div><div class="bar"><i style="width:88%;background:var(--mint)"></i><i style="width:12%;background:rgba(15,23,42,.14)"></i></div></div></div>
+              <div class="wd today"><div class="dn"><div class="w">Vie</div><div class="n">18</div></div><div class="mid"><div class="ttl">Vas 6 de 7 · queda leer</div><div class="sub">Casa +18 · 2 fuera del plan</div><div class="bar"><i style="width:60%;background:var(--mint)"></i><i style="width:6%;background:var(--amber)"></i><i style="width:18%;background:var(--sky)"></i><i style="width:16%;background:rgba(15,23,42,.14)"></i></div></div></div>
+              <div class="wd"><div class="dn"><div class="w">Sáb</div><div class="n">19</div></div><div class="mid"><div class="ttl">Planeado · 7 bloques · 4h 20</div><div class="sub">Tarde libre 14:00 – 19:00</div><div class="bar"><i style="width:26%;background:repeating-linear-gradient(135deg,rgba(16,185,129,.5) 0 3px,rgba(16,185,129,.2) 3px 6px)"></i></div></div><span class="btn sm">Ver</span></div>
+              <div class="wd"><div class="dn"><div class="w">Dom</div><div class="n">20</div></div><div class="mid"><div class="ttl">Planeado · 3 bloques · 1h 40</div><div class="sub">Desde la plantilla, sin tocar</div><div class="bar"><i style="width:10%;background:repeating-linear-gradient(135deg,rgba(16,185,129,.5) 0 3px,rgba(16,185,129,.2) 3px 6px)"></i></div></div><span class="btn sm">Ver</span></div>
+              <div class="wd empty"><div class="dn"><div class="w">Lun</div><div class="n">21</div></div><div class="mid"><div class="ttl" style="color:var(--ink-dim);font-weight:500">Sin plan todavía</div><div class="sub">Tu plantilla trae 6 cosas los lunes</div></div><span class="btn go sm">Armar</span></div>
+              <div class="wd empty"><div class="dn"><div class="w">Mar</div><div class="n">22</div></div><div class="mid"><div class="ttl" style="color:var(--ink-dim);font-weight:500">Sin plan todavía</div></div><span class="btn sm">Armar</span></div>
+            </div>
+            <div class="acts" style="margin-top:10px"><span class="btn">Armar toda la semana que viene desde la plantilla</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <p class="note"><b>A · Planeado.</b> Un día futuro es la misma agenda con todo en trazo suave y el presupuesto contando <i>planeado frente a libre</i> (no hay «hecho» que contar). La tira de días arriba es lo que permite <b>planear con antelación</b>: un punto rayado bajo el día = tiene plan; un punto vacío = no. No es obligatorio: un día sin plan se vive igual, registrando. Dos atajos que valen oro: <i>copiar del sábado pasado</i> y <i>vaciar y rehacer</i>. Fíjate en las etiquetas suaves: «a tu ritmo real» (40 min porque así lo haces), «movido aquí · antes 8:30» (el desayuno que no hacías a las 8:30 se propone a las 9:30).</p>
+  <p class="note"><b>B · Ejecutado con variaciones.</b> Cada bloque planeado se queda en su hora y enseña lo que pasó encima: <b>✓ calcado</b>, <b>+11 min</b> con la barrita plan-frente-a-real debajo, <b>empezó +5</b>, <b>−8 min</b> cuando acabaste antes, <b>no hecho</b> tachado con «Lo hice» por si fue sin registrar, <b>fuera del plan</b> punteado en azul, <b>sin dato</b> con un «¿qué pasó?» que se pregunta una vez, y el caso bonito: el paseo de las 19:00 que hiciste a las 19:40 — el plan se queda como <i>sombra</i> con «→ hecho a las 19:40» y lo real aparece donde ocurrió con «40 min tarde». La barra de arriba ahora tiene cuatro colores: seguido, de más, fuera del plan, sin dato. <b>No hay «desperdiciado» en ninguna parte.</b></p>
+  <p class="note"><b>C · La semana.</b> Cada día en una línea: los vividos con su «seguiste N de M» y su barrita, los planeados con cuántos bloques, los vacíos con <b>Armar</b>. Y abajo, para quien quiere planear de golpe: <i>armar toda la semana que viene desde la plantilla</i>. Después se ajusta día a día — o no.</p>
+  <p class="note"><b>Para la spec, quedan apuntadas tres cosas tuyas:</b> planear con antelación cualquier día futuro (la tira de días y la vista semana), que no sea obligatorio (un día sin plan funciona registrando), y que el día termine a las 23:00 salvo que lo cambies.</p>
+
+</div>
+</body>
+</html>

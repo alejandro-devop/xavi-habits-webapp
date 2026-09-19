@@ -71,6 +71,11 @@ La revisión del día compara **plan frente a real** y nombra las cosas por lo q
 5. **Sin arrastrar y soltar en la v1.** No hay `dnd-kit` y no vuelve por esto: el plan del día se ordena por hora, y la hora se edita. Si más adelante duele, se decide entonces.
 6. **Renders antes de cada pantalla nueva**, aprobados por el usuario. Sin render aprobado no se abre la construcción de esa pantalla.
 7. **La web es el piloto** (ver `web-como-piloto-flutter-despues`): velocidad sobre pulido, y nada que no sea portable a Flutter sin rehacer la pantalla.
+8. **Hoy es una agenda con presupuesto de tiempo.** Arriba, siempre, cuánto queda del día y en qué está repartido (hecho · en marcha · planeado · libre · sin dato); la guía vive en los **huecos**, que ofrecen de la plantilla solo lo que cabe. Nada de burbujas que hablan. Render: `assets/03-vida-agenda.html`.
+9. **La agenda va de la mañana a la noche y abre en «Ahora».** Lo ya hecho se pliega en una línea; lo que está en marcha queda justo encima de la marca; lo que viene, debajo. Así lo más relevante está arriba sin romper el orden del día.
+10. **Se planea con antelación cualquier día futuro — y no es obligatorio.** Tira de días arriba de Hoy y una vista de semana con «Armar» por día y «Armar toda la semana desde la plantilla». Un día sin plan se vive igual, registrando. Render: `assets/04-vida-planeado-ejecutado.html`.
+11. **Lo ejecutado se enseña sobre lo planeado, en la misma agenda.** Cada bloque planeado se queda en su hora y muestra lo que pasó: calcado, +N min, empezó +N, −N min, no hecho, fuera del plan, sin dato, y el movido (sombra en la hora planeada, real donde ocurrió). Sin «desperdiciado».
+12. **El día termina a las 23:00** por defecto (el número del viejo widget) y empieza a las 6:30. Se cambian en ajustes; el presupuesto depende de ellos.
 
 ## Lo que se enlaza después, no ahora
 
@@ -106,23 +111,23 @@ Cada fase es una *feature* del protocolo `forja` (un dossier `FEAT-NNN`), con su
 
 ### F2 — Hoy: planear el día
 
-*Render: sí, y es el render importante del módulo — comparte pantalla con F3.*
+*Render aprobado en dirección: `assets/03-vida-agenda.html` y `assets/04-vida-planeado-ejecutado.html` (marcos A y C).*
 
-- Un día = una línea de tiempo vertical, de la mañana a la noche, con los **bloques planificados** del `activityDayPlan`.
-- Añadir bloque: elegir actividad, hora de inicio, duración. Editar y quitar. Marcar hecho.
-- **«Tomar desde Vida»**: las sugerencias de `vidaSuggestionsForDate` para ese día, con un toque entran al plan.
-- Navegación por días (ayer, hoy, mañana); planear mañana desde hoy es el caso de uso principal.
-- **Criterio:** se arma el plan de mañana en menos de un minuto partiendo de la plantilla.
+- **El presupuesto del día** arriba: tiempo que queda hasta el fin del día, barra del día entero con la marca de «ahora», y una línea de guía compuesta con reglas («del plan te quedan 3 bloques; la tarde está vacía de 13:30 a 19:00»).
+- **La agenda** con los bloques del `activityDayPlan`, y entre ellos los **huecos libres** con su tamaño y las sugerencias de la plantilla **que caben** (filtradas por duración). Un toque las coloca al principio del hueco.
+- **Añadir a un hueco** son tres preguntas: qué (plantilla primero, luego buscar), cuánto (duraciones que no caben, apagadas), cuándo. La hoja dice cuánto queda libre después.
+- **Planear con antelación:** tira de días arriba (punto rayado = tiene plan), navegación a cualquier día futuro, «copiar del <mismo día> pasado», «vaciar y rehacer». Vista de **semana** con una línea por día y «Armar» en los vacíos; «Armar toda la semana desde la plantilla».
+- **Criterio:** se arma el plan de mañana en menos de un minuto partiendo de la plantilla, y se puede dejar armada la semana entera en cinco.
 
 ### F3 — Hoy: vivir el día
 
-*Render: el mismo de F2, con el estado «en marcha».*
+*Render aprobado en dirección: `assets/03-vida-agenda.html` y `assets/04-vida-planeado-ejecutado.html` (marco B).*
 
-- Sobre la misma línea de tiempo, **lo real al lado de lo planeado**: cada bloque planificado muestra si se está haciendo, se hizo, o quedó atrás.
-- **Empezar** un bloque planificado → sesión abierta con cronómetro (y sus subtareas seleccionadas). **Terminar** → modal de cierre rescatado.
-- **Registrar lo que se sale:** empezar algo no planificado, o registrar tiempo pasado. Huecos libres detectados entre registros (utilidad rescatada).
-- Marcador **«Ahora»**. Sesión abierta visible desde cualquier pantalla del módulo.
-- **Criterio:** un día vivido a medias entre plan y improvisación queda registrado sin que el usuario tenga que «encajar» nada.
+- Sobre la misma agenda, **lo real encima de lo planeado**: cada bloque planeado se queda en su hora y enseña lo que pasó — calcado, `+N min` con la barrita plan-frente-a-real, `empezó +N`, `−N min`, `no hecho` con «Lo hice», `fuera del plan` punteado, `sin dato` con un «¿qué pasó?» que se pregunta **una vez** y acepta «dejarlo así», y el **movido**: sombra en la hora planeada con «→ hecho a las 19:40», y el real donde ocurrió.
+- **Empezar** un bloque planeado → sesión abierta con cronómetro (y sus subtareas, cuando las haya). **Terminar** → modal de cierre rescatado. Al pasarse del plan, el bloque lo dice; no interrumpe.
+- **Registrar lo que se sale:** empezar algo no planificado, o registrar tiempo pasado. Sesión abierta visible desde cualquier pantalla del módulo.
+- El presupuesto de arriba cambia de colores al vivir el día: seguido · de más · fuera del plan · sin dato.
+- **Criterio:** un día vivido a medias entre plan e improvisación queda registrado sin que el usuario tenga que «encajar» nada, y al final se lee de un vistazo qué se siguió y qué no.
 
 ### F4 — La plantilla Vida
 

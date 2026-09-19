@@ -101,8 +101,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 409** (`SearchSelect` ×2, preexistentes) |
-| Paquete | `pnpm build` | chunk inicial **816 kB** (gzip 250) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 487** (`SearchSelect` ×2, preexistentes) |
+| Paquete | `pnpm build` | chunk inicial **817,6 kB** (gzip 250,6) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 **La regla es «no peor que la línea base».** Los tres primeros se corren
 enteros antes de empezar y al terminar; el build al terminar. Un test que se
@@ -110,6 +110,13 @@ va con su módulo baja el total y es correcto; un fallo nuevo o un error de
 lint nuevo no se acepta.
 
 Después de cambiar código: `graphify update .` (regla de `CLAUDE.md`).
+
+**Contratos GraphQL de Vida.** `src/features/vida/graphql/contracts.test.ts`
+valida cada documento del módulo con `graphql` (devDependency; **no se importa
+fuera de tests**) contra el SDL vendorizado en `graphql/schema/*.schema.graphql`,
+copia literal del repo hermano con fecha y origen en la cabecera. Si añades un
+documento, entra en la lista del test; si el backend cambia, el SDL se recopia a
+mano — nada lo compara solo, y ese es el riesgo conocido.
 
 ## Patrones vivos
 

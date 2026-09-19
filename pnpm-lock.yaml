@@ -81,6 +81,9 @@ importers:
       globals:
         specifier: ^17.6.0
         version: 17.6.0
+      graphql:
+        specifier: ^17.0.2
+        version: 17.0.2
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
@@ -979,6 +982,10 @@ packages:
   globals@17.6.0:
     resolution: {integrity: sha512-sepffkT8stwnIYbsMBpoCHJuJM5l98FUF2AnE07hfvE0m/qp3R586hw4jF4uadbhvg1ooIdzuu7CsfD2jzCaNA==}
     engines: {node: '>=18'}
+
+  graphql@17.0.2:
+    resolution: {integrity: sha512-FRWbddMxfkjiB7z+aQDWIR+E34xo9I8c9mtK2RPv8PmMzKRvrdsreHL/Ui/TmwHJfhHChEtsFPyMHKI+xuarQQ==}
+    engines: {node: ^22.0.0 || ^24.0.0 || ^25.0.0 || >=26.0.0}
 
   hermes-estree@0.25.1:
     resolution: {integrity: sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw==}
@@ -2405,6 +2412,8 @@ snapshots:
       is-glob: 4.0.3
 
   globals@17.6.0: {}
+
+  graphql@17.0.2: {}
 
   hermes-estree@0.25.1: {}
 

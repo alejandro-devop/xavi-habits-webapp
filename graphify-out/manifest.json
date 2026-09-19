@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1789772237.4603999,
-    "ast_hash": "de49b44a8cd77bd86cbe16f0a412b47a",
+    "mtime": 1789800051.645086,
+    "ast_hash": "7cc30196d32e9e091eb0b60769022573",
     "semantic_hash": ""
   },
   "prettier.config.js": {
@@ -730,8 +730,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.ts": {
-    "mtime": 1789798905.738697,
-    "ast_hash": "203ee76c93848d295e09de6664c61f44",
+    "mtime": 1789800055.3440955,
+    "ast_hash": "916f49f7630bcd5a7dd2bbe61bad4f75",
     "semantic_hash": ""
   },
   "src/layouts/AuthLayout/AuthLayout.tsx": {
@@ -820,8 +820,8 @@
     "semantic_hash": ""
   },
   "src/shared/api/query-keys.ts": {
-    "mtime": 1789696614.9825408,
-    "ast_hash": "221dc4a0dc7dafda5c1a37025ef56cb7",
+    "mtime": 1789800062.9281147,
+    "ast_hash": "721853798aea14e9fcf1c456d0c88a95",
     "semantic_hash": ""
   },
   "src/shared/api/rest-client.test.ts": {
@@ -2495,18 +2495,18 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789798870.1094592,
-    "ast_hash": "941d33282a52f3f2df97a2ea8820590e",
+    "mtime": 1789799781.3723633,
+    "ast_hash": "537ac65133a6660648c19b15d069984c",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1789797942.5548873,
-    "ast_hash": "645e38b519b8d84223c788ede357fb43",
+    "mtime": 1789799918.1037402,
+    "ast_hash": "8b41444744a31860b37a150cff859351",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
-    "mtime": 1789798870.1094592,
-    "ast_hash": "f85be55d3554d87962348f68374cdb76",
+    "mtime": 1789799990.067929,
+    "ast_hash": "1b05578c122773a724e6ebfd5b6bd1c4",
     "semantic_hash": ""
   },
   "docs/features/PROTOCOL.md": {
@@ -2557,6 +2557,111 @@
   "graphify-out/memory/query_20260919_061600_vida_f0__what_already_exists_for_query_keys_of_act.md": {
     "mtime": 1789798560.1756415,
     "ast_hash": "3ffa5a2026cb96c54684daa11844476a",
+    "semantic_hash": ""
+  },
+  "src/features/vida/api/activities.api.ts": {
+    "mtime": 1789800143.055313,
+    "ast_hash": "b9c67911a3fcb633dd8832b966f08d9d",
+    "semantic_hash": ""
+  },
+  "src/features/vida/api/activity-categories.api.ts": {
+    "mtime": 1789800142.986313,
+    "ast_hash": "5c1c510ceb0aabbcf4aaa4fd02b88d20",
+    "semantic_hash": ""
+  },
+  "src/features/vida/api/activity-followups.api.ts": {
+    "mtime": 1789800142.991313,
+    "ast_hash": "2ed19f07cff0c0ee37332628503a3508",
+    "semantic_hash": ""
+  },
+  "src/features/vida/graphql/activities.graphql.ts": {
+    "mtime": 1789800103.7252164,
+    "ast_hash": "bb1ee3995f63ba5f370123c0c03c9910",
+    "semantic_hash": ""
+  },
+  "src/features/vida/graphql/activity-categories.graphql.ts": {
+    "mtime": 1789800103.7282164,
+    "ast_hash": "63ab74a1734a968d3ded33dcf6f43384",
+    "semantic_hash": ""
+  },
+  "src/features/vida/graphql/activity-followups.graphql.ts": {
+    "mtime": 1789800103.7292163,
+    "ast_hash": "3c5455bc941c4d273bff0765de6158ff",
+    "semantic_hash": ""
+  },
+  "src/features/vida/graphql/contracts.test.ts": {
+    "mtime": 1789800275.2006302,
+    "ast_hash": "ea55a95671b4bccc0d92e5cc5283de0d",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivities.test.tsx": {
+    "mtime": 1789800314.7327228,
+    "ast_hash": "c0b7ee7f9827a8ab70800c0d669c1fc8",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivities.ts": {
+    "mtime": 1789800185.5354164,
+    "ast_hash": "b4685a90077aa511cce2a699340dda86",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivityCategories.test.tsx": {
+    "mtime": 1789800335.1407702,
+    "ast_hash": "8c13cb43d19046f6974b3882aefd8e93",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivityCategories.ts": {
+    "mtime": 1789800185.5394163,
+    "ast_hash": "ddc8ec0a3e0d20fdeea75f5cc163c45b",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivityFollowUps.test.tsx": {
+    "mtime": 1789800406.5829346,
+    "ast_hash": "dac911ffd0f829fac30e469437a86b5c",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivityFollowUps.ts": {
+    "mtime": 1789800203.162459,
+    "ast_hash": "4448fe041f2f514ef9bad1a058458731",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useVidaQueryGuard.ts": {
+    "mtime": 1789800165.4813678,
+    "ast_hash": "73d45bea91843a4ad49d124f1ecb93fc",
+    "semantic_hash": ""
+  },
+  "src/features/vida/types/activity-category.types.ts": {
+    "mtime": 1789800081.3711607,
+    "ast_hash": "b7edca865dd601f17e409352bc65dd2c",
+    "semantic_hash": ""
+  },
+  "src/features/vida/types/activity-followup.types.ts": {
+    "mtime": 1789800081.3761609,
+    "ast_hash": "39cf714d465057b929e47f952b908272",
+    "semantic_hash": ""
+  },
+  "src/features/vida/types/activity.types.ts": {
+    "mtime": 1789800081.3671608,
+    "ast_hash": "a030cdefb159f1369a4199012ef657a7",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/activity-filters.ts": {
+    "mtime": 1789800165.4693677,
+    "ast_hash": "0c67080c3630f46687ecd16a157b962d",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/invalidate-vida-queries.ts": {
+    "mtime": 1789800165.4773679,
+    "ast_hash": "e1c8c41f16b301c6bc21cd0775e3e1e8",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-date.utils.test.ts": {
+    "mtime": 1789800289.9526649,
+    "ast_hash": "44f7cd0697cbbe8459db413c06cb8c7f",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-date.utils.ts": {
+    "mtime": 1789800165.4733677,
+    "ast_hash": "24e3d7d0b8475b349f044f39bff55d25",
     "semantic_hash": ""
   }
 }

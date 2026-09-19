@@ -29,24 +29,25 @@ export const habitKeys = {
   },
 }
 
-export const activityKeys = {
-  all: ['activities'] as const,
-  list: (filters: ListFilters = {}) => [...activityKeys.all, 'list', filters] as const,
-  detail: (id: string) => [...activityKeys.all, 'detail', id] as const,
+export const vidaKeys = {
+  all: ['vida'] as const,
+  activities: {
+    all: () => [...vidaKeys.all, 'activities'] as const,
+    list: (filters: ListFilters = {}) => [...vidaKeys.activities.all(), 'list', filters] as const,
+    detail: (id: string) => [...vidaKeys.activities.all(), 'detail', id] as const,
+  },
   categories: {
-    all: () => [...activityKeys.all, 'categories'] as const,
-    list: () => [...activityKeys.categories.all(), 'list'] as const,
-    detail: (id: string) => [...activityKeys.categories.all(), 'detail', id] as const,
+    all: () => [...vidaKeys.all, 'categories'] as const,
+    list: () => [...vidaKeys.categories.all(), 'list'] as const,
+    detail: (id: string) => [...vidaKeys.categories.all(), 'detail', id] as const,
   },
   followUps: {
-    all: () => [...activityKeys.all, 'followUps'] as const,
-    open: () => [...activityKeys.followUps.all(), 'open'] as const,
-    day: (date: string) => [...activityKeys.followUps.all(), 'day', date] as const,
+    all: () => [...vidaKeys.all, 'followUps'] as const,
+    open: () => [...vidaKeys.followUps.all(), 'open'] as const,
+    day: (date: string) => [...vidaKeys.followUps.all(), 'day', date] as const,
     range: (from: string, to: string) =>
-      [...activityKeys.followUps.all(), 'range', from, to] as const,
+      [...vidaKeys.followUps.all(), 'range', from, to] as const,
   },
-  pendingTodos: (activityId: string) =>
-    [...activityKeys.all, 'pendingTodos', activityId] as const,
 }
 
 export const courseKeys = {

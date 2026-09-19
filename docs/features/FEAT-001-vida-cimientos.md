@@ -1,7 +1,7 @@
 ---
 id: FEAT-001
 title: Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón
-status: building    # tajada 1 aceptada; quedan las tajadas 2 y 3
+status: building    # tajadas 1 y 2 aceptadas; queda la 3
 architect: yes    # introduce un módulo nuevo entero: navegación con cambio de módulo (no existe hoy), rutas nuevas, y capas de datos nuevas que no hablan hoy entre sí. Ver razón completa en la sección 1.
 area: layouts, app/router, features/vida
 requested: 2026-09-19
@@ -111,7 +111,7 @@ queda para el recorrido real del usuario.
 | # | What it does | State |
 |---|---|---|
 | 1 | La píldora de módulo gana «Vida»; `/app/vida` y sus 4 rutas existen y renderizan cascarones con título; `⌘K` conoce los destinos de Vida | delivered (criterio 10 pendiente del recorrido del usuario) |
-| 2 | Capas de datos rescatadas de `79bece0` (actividades, categorías, follow-ups): GraphQL, api, hooks, tipos, query keys — con tests contra el esquema | pending |
+| 2 | Capas de datos rescatadas de `79bece0` (actividades, categorías, follow-ups): GraphQL, api, hooks, tipos, query keys — con tests contra el esquema | delivered |
 | 3 | Capas de datos nuevas (plan del día `activityDayPlan*` y Vida `vidaItems`/`vidaSuggestionsForDate`/`vidaTakenToday`/`vidaItem*`/`vidaMarkTakenToday`): GraphQL, api, hooks, tipos, query keys e invalidaciones — con tests contra el esquema | pending |
 
 El slice 1 es el único con superficie visible; los slices 2 y 3 son
@@ -290,7 +290,7 @@ existe.
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
 | 1 | Píldora de módulo Hábitos · Vida; `/app/vida` + 4 rutas con título; `⌘K` con destinos de Vida; una sola descripción de módulos | crear `src/features/vida/{index.ts, routes/vida-paths.ts, routes/vida.routes.tsx, routes/vida.routes.test.tsx, pages/VidaHoyPage.tsx, pages/VidaPlantillaPage.tsx, pages/VidaRevisionPage.tsx, pages/VidaActividadesPage.tsx}`, `src/layouts/AppLayout/{app-nav.config.test.ts, AppLayout.test.tsx}`; modificar `src/app/router/routes.tsx:10-11,79-81`, `src/layouts/AppLayout/app-nav.config.ts`, `AppLayout.tsx:34-38,89,134-163`, `AppLayout.module.scss` | 1, 2, 3, 4, 5 (automatizables), 9, y deja listo el 10 (usuario) | delivered |
-| 2 | Capa de datos rescatada: actividades, categorías, follow-ups — tipos al esquema real, `vidaKeys`, una sola invalidación, tests de hooks y de contrato | modificar `src/shared/api/query-keys.ts:32-50`; crear `src/features/vida/{types/activity.types.ts, types/activity-category.types.ts, types/activity-followup.types.ts, graphql/activities.graphql.ts, graphql/activity-categories.graphql.ts, graphql/activity-followups.graphql.ts, graphql/schema/activity.schema.graphql, graphql/contracts.test.ts, api/activities.api.ts, api/activity-categories.api.ts, api/activity-followups.api.ts, utils/activity-filters.ts, utils/vida-date.utils.ts, utils/vida-date.utils.test.ts, utils/invalidate-vida-queries.ts, hooks/useVidaQueryGuard.ts, hooks/useActivities.ts, hooks/useActivities.test.tsx, hooks/useActivityCategories.ts, hooks/useActivityCategories.test.tsx, hooks/useActivityFollowUps.ts, hooks/useActivityFollowUps.test.tsx}` | 6, 8 (parte de actividades/categorías/follow-ups), 9 | pending |
+| 2 | Capa de datos rescatada: actividades, categorías, follow-ups — tipos al esquema real, `vidaKeys`, una sola invalidación, tests de hooks y de contrato | modificar `src/shared/api/query-keys.ts:32-50`; crear `src/features/vida/{types/activity.types.ts, types/activity-category.types.ts, types/activity-followup.types.ts, graphql/activities.graphql.ts, graphql/activity-categories.graphql.ts, graphql/activity-followups.graphql.ts, graphql/schema/activity.schema.graphql, graphql/contracts.test.ts, api/activities.api.ts, api/activity-categories.api.ts, api/activity-followups.api.ts, utils/activity-filters.ts, utils/vida-date.utils.ts, utils/vida-date.utils.test.ts, utils/invalidate-vida-queries.ts, hooks/useVidaQueryGuard.ts, hooks/useActivities.ts, hooks/useActivities.test.tsx, hooks/useActivityCategories.ts, hooks/useActivityCategories.test.tsx, hooks/useActivityFollowUps.ts, hooks/useActivityFollowUps.test.tsx}` | 6, 8 (parte de actividades/categorías/follow-ups), 9 | delivered |
 | 3 | Capa de datos nueva: plan del día y plantilla Vida — tipos, GraphQL, api, hooks, keys, invalidaciones, tests de hooks y de contrato | modificar `src/shared/api/query-keys.ts` (`vidaKeys.dayPlan`, `vidaKeys.items`), `src/features/vida/utils/invalidate-vida-queries.ts`, `src/features/vida/graphql/contracts.test.ts`; crear `src/features/vida/{types/activity-day-plan.types.ts, types/vida-item.types.ts, graphql/activity-day-plan.graphql.ts, graphql/vida-items.graphql.ts, graphql/schema/activity-day-plan.schema.graphql, graphql/schema/vida.schema.graphql, api/activity-day-plan.api.ts, api/vida-items.api.ts, hooks/useActivityDayPlan.ts, hooks/useActivityDayPlan.test.tsx, hooks/useVidaItems.ts, hooks/useVidaItems.test.tsx}` | 7, 8 (resto), 9 | pending |
 
 Los tres slices de la sección 1 se mantienen. Orden **obligatorio** 1 → 2 → 3: el
@@ -372,6 +372,78 @@ Los criterios 6, 7 y 8 son de las tajadas 2 y 3: **no se tocan aquí**.
 - El `⌘K` creció de 9 a 13 acciones; la paleta no tiene agrupación por módulo. No es un fallo, pero se nota y en algún momento pedirá secciones.
 
 **Lo que vi de paso y no toqué:** `docs/features/ENVIRONMENT.md` ya anota `/app/vida/*` como «NO EXISTE AÚN; lo crea la feature F0» — queda desactualizado al aceptarse esta tajada, pero ese archivo no lo modifica un constructor. El `activityKeys` huérfano de `src/shared/api/query-keys.ts` y el rancio `docs/activities-domain.md` siguen ahí: son de la tajada 2 y del usuario, respectivamente.
+
+**Tree state:** sin commitear.
+
+### Slice 2
+
+**Summary for the reviewer:** La capa de datos de Vida existe bajo
+`src/features/vida/` — actividades, categorías y follow-ups: tipos, documentos
+GraphQL, api, hooks, una sola invalidación y `vidaKeys` — y cada documento se
+valida de verdad (`buildSchema` + `parse` + `validate` de `graphql`, añadido como
+**devDependency**) contra el SDL real del backend, vendorizado con fecha y
+origen. Ninguna pantalla la consume todavía: es todo tests. Lo que más
+probablemente rompí está **fuera** de `src/features/vida/`: en
+`src/shared/api/query-keys.ts` sustituí `activityKeys` por `vidaKeys` (si algo
+lo importaba, se cae ahí — busqué y no lo importaba nadie), y en
+`app-nav.config.ts` quité el `| string` del tipo del icono, que es la barra de
+la tajada 1. Segundo sospechoso: haber añadido un paquete al `package.json`.
+
+**What was built:**
+- `src/shared/api/query-keys.ts` — `activityKeys` (huérfano, L32-50) **sustituido** por `vidaKeys` (`all:['vida']`, `activities.{all,list,detail}`, `categories.{all,list,detail}`, `followUps.{all,open,day,range}`). No queda una segunda fábrica para la misma entidad. Se fue con él `pendingTodos`, que era de tareas.
+- `src/features/vida/types/{activity,activity-category,activity-followup}.types.ts` — al esquema real: `ActivitySubtask`, `ActivitySubtasksCount`, `subtasks?`/`subtasksCount?` en `Activity`; `ActivityFollowUpSubtask`, `sessionSubtasks?`/`sessionSubtasksCount?`, `isOpen`/`endTime`/`endDate`/`endDateTime` en `ActivityFollowUp`; `clientId?` en los inputs Add/Start y `subtaskIds?` en Start. Fuera `ActivityTodoFolderRef`, `todoFolders`, `todoFolderIds`, `linkedTodo*`, `RunningActivitySession*`, todos los `*FormValues` y `WeekDay` (son de F1–F3).
+- `src/features/vida/graphql/{activities,activity-categories,activity-followups}.graphql.ts` — 18 documentos. Fuera `ACTIVITY_PENDING_TODOS_QUERY`, las selecciones `todoFolders`, `FOLLOW_UP_LINKED_TODO_FIELDS` y `linkedTodoId`. Dentro `subtasksCount { total completed }` en las selecciones de `Activity` y `sessionSubtasksCount { total completed }` en las de `ActivityFollowUp`.
+- `src/features/vida/graphql/schema/activity.schema.graphql` — SDL vendorizado: copia literal de `activityTypeDefs` de `xavi-platform-node/src/graphql/modules/activity/activity.schema.ts` con encabezado de fecha (2026-09-19) y origen.
+- `src/features/vida/graphql/contracts.test.ts` — **39 tests**. `buildSchema` sobre el SDL y `validate(schema, parse(documento))` para los 18 documentos; más: la lista exacta de documentos exportados, que ninguno nombra tareas ni `standup`, que el SDL trae los seis campos que el código viejo no conocía, y un test de dientes (un campo inventado **debe** fallar la validación).
+- `src/features/vida/api/{activities,activity-categories,activity-followups}.api.ts` — copia de los viejos con `graphqlRequest` y un tipo `XxxData` por operación; sin `getActivityPendingTodos` ni imports de `@/features/todos`.
+- `src/features/vida/utils/activity-filters.ts` — copia del viejo, puro, lo usa `activities.api.ts`.
+- `src/features/vida/utils/vida-date.utils.ts` (+ `.test.ts`, 7 tests) — `formatDateToYmd`, `getCurrentLocalDate`, `getMondayOfWeek`, `getCurrentWeekRange`, `isFutureDate`, `isToday`, extraídas de `activity-time.utils.ts:20-46,119-131`. El resto de aquel archivo (494 líneas, importa `@/features/weekly-routine`) **no** entra.
+- `src/features/vida/utils/invalidate-vida-queries.ts` — **la única** invalidación del módulo, con la versión completa (día, semana, abierto, detalle de la actividad y lista). Añade `invalidateActivityQueries` e `invalidateActivityCategoryQueries` para que ningún hook invalide a mano.
+- `src/features/vida/hooks/useVidaQueryGuard.ts` — el guard `isReady && isAuthenticated` en un solo sitio, exportado.
+- `src/features/vida/hooks/{useActivities,useActivityCategories,useActivityFollowUps}.ts` (+ sus tres `.test.tsx`, 15 tests) — sobre `vidaKeys`, con el guard y las invalidaciones del archivo único; **sin `onError` ni `*.errors.ts`**, como `useHabits.ts`. Los `toast.success` se mantienen.
+- `src/layouts/AppLayout/app-nav.config.ts` — el arreglo que dejó anotado el revisor de la tajada 1: `AppModuleSection.icon` y `AppModuleSettingsLink.icon` pasan de `AppIconName | string` a `AppIconName`. Ningún nombre dejó de compilar: los doce iconos de la tabla estaban bien escritos.
+- `package.json` / `pnpm-lock.yaml` — `graphql ^17.0.2` como **devDependency** (decisión del usuario para esta tajada).
+
+**Why this way:**
+- **El test de contrato valida de verdad, no por regex.** El plan lo dejaba en regex porque no había paquete `graphql`; el usuario decidió añadirlo como dependencia de desarrollo. Con `validate` lo que corre es el mismo algoritmo del servidor: cubre tipos de variable, argumentos, campos hoja y selecciones sobre tipos compuestos de una vez, y no hay que mantener un extractor propio. Medido: el chunk inicial **no crece** (`index-*.js` 817,63 kB, idéntico a la línea base), porque solo lo importa un `.test.ts`.
+- **El SDL vendorizado lleva cuatro líneas que no son copia literal**, y están marcadas como tales en el encabezado: `type Query`/`type Mutation` base (el módulo solo trae `extend type`), los cuatro escalares de `common/scalars.schema.ts`, y `Todo`/`TodoFolder` reducidos a `{ id: ID! }`. Sin ellos `buildSchema` no levanta el documento. El módulo de tareas no es de Vida: están ahí solo porque `Activity.todoFolders`, `ActivityFollowUp.linkedTodo` y `activityPendingTodos` los nombran en el esquema real, y ningún documento nuestro los selecciona — que es justo lo que comprueba un test.
+- **El test de dientes usa un campo inventado (`spentTimeSeconds`), no `todoFolders`.** `todoFolders` **sigue existiendo** en el esquema real: que no lo pidamos es política nuestra, no un error de contrato. Confundir las dos cosas habría dado un test que parece probar y no prueba.
+- **`getCurrentWeekRange` se reescribió sobre `getMondayOfWeek`** en vez de copiarse: la versión vieja pasaba por `getWeekDaysForDate`, que construye etiquetas de UI (`WeekDay`) y arrastra media línea de tiempo. Mismo resultado (lunes a domingo, fechas locales), probado con dos casos incluido el cruce de mes.
+- **Las invalidaciones viven en funciones, no sueltas en cada `onSuccess`.** Es lo que permite que el test compruebe la lista **exacta** de claves invalidadas y que no vuelvan a existir dos versiones distintas como en `79bece0`.
+- **No se creó `src/features/vida/index.ts` con exports de datos.** El barril de la tajada 1 exporta rutas; nada consume aún la capa de datos y añadir exports muertos invita a importarlos desde fuera de la feature.
+- **`vida-date.utils.ts` se solapa con `getTodayString`** de `habits/utils/habit-type.utils.ts`. Asumido: feature-first, como dejó escrito el arquitecto. Unificarlo en `shared/` es otro dossier.
+
+**Verification:**
+- Línea base **antes** (tras la tajada 1): typecheck limpio · lint 14/0 · tests 2 fallos de 426 · build `index-*.js` 817,63 kB (gzip 250,64).
+- `pnpm typecheck` → limpio, sin salida.
+- `pnpm lint` → `✖ 14 problems (14 errors, 0 warnings)`. Los mismos preexistentes (`SteppedModal`, `Tabs`, `toast.context`, `test/render`); ninguno en archivos de esta tajada.
+- `pnpm test` → `Test Files 1 failed | 63 passed (64) · Tests 2 failed | 485 passed (487)`. El único archivo rojo es `SearchSelect.test.tsx`, el de siempre. 426 → 487 = **+61 tests, 0 fallos nuevos** (39 de contratos, 7 de fechas, 5+4+6 de hooks).
+- `pnpm build` → `dist/assets/index-B8e6cbwQ.js 817.63 kB │ gzip: 250.64 kB` — **exactamente la línea base**: `graphql` no se coló en el paquete servido. `app-icons` sigue en 620,20 kB perezoso e `IconPicker` en 4,64 kB.
+- Comprobado a mano que `activityKeys` ya no aparece en `src/` y que en `src/features/vida/*.ts(x)` no queda una sola mención a tareas, `standup`, bitácora ni tiptap (las únicas coincidencias con «todo» son las aserciones del test que lo prohíbe).
+- **Sin navegador**: esta tajada no tiene superficie visible (`ENVIRONMENT.md`, «Cómo conseguir datos reales»). No se sembró ningún dato ni se tocó la API.
+- `graphify update .` → 2525 nodos, 2696 aristas.
+
+**Criteria it closes:** (numerados como en la sección 1)
+6. **Capas de datos rescatadas de `79bece0` bajo `src/features/vida/`, adaptadas, con tests que verifican que las operaciones respetan el esquema real** — **cerrado para actividades, categorías y follow-ups** (que es lo que esta tajada abarca). Evidencia: los 18 documentos pasan `validate` contra el SDL real en `contracts.test.ts`; los tres desfases que el arquitecto había detectado están corregidos y el test lo fija (`subtasksCount`, `sessionSubtasksCount`, `clientId`/`subtaskIds`, `isOpen`/`endTime`/`endDate`/`endDateTime`); nada de tiptap, nada de tareas. Los hooks tienen 15 tests propios.
+8. **Cada conjunto de query keys expone sus funciones de invalidación y existen antes de que ninguna pantalla las consuma** — **cerrado en su parte de esta tajada**. `invalidate-vida-queries.ts` es el único sitio con invalidaciones; los tests de los tres hooks comprueban la lista **exacta** de claves invalidadas por cada mutación (p. ej. registrar un follow-up invalida día + semana + abierto + detalle + lista, en ese orden), y todos pasan sin que exista ninguna página que importe nada de esto. Las invalidaciones de `dayPlan` e `items` son de la tajada 3.
+9. **Línea base** — cerrado: las cuatro medidas arriba, ninguna peor; el build ni siquiera se movió un byte.
+Los criterios 1–5 y 10 son de la tajada 1; el 7 y el resto del 8 son de la tajada 3.
+
+**Pendiente de prueba manual (usuario):** nada de esta tajada. No hay pantalla ni recorrido: si algo aquí está mal contra el backend real, se verá cuando F1 pinte la primera lista. La comprobación posible sin sesión —que los documentos son válidos contra el esquema— está hecha y automatizada.
+
+**Risks:**
+- **El SDL caduca en silencio.** Si el backend cambia `activity.schema.ts`, este test seguirá en verde contra una copia vieja. La cabecera con fecha y origen es lo mínimo; un script que compare con el repo hermano sería otro dossier. Es el riesgo número uno de esta tajada.
+- **`graphql` es la primera dependencia nueva del módulo.** Está en `devDependencies` y medí que no toca el paquete servido, pero cualquier archivo de producción que lo importe sí lo metería en el chunk inicial (~40 kB min). Solo debe importarlo un test.
+- **`vidaKeys` sustituyó a `activityKeys`.** Busqué importadores y no había ninguno, pero si alguna sesión paralela añadió uno, se cae al compilar.
+- **Los hooks nunca se han ejecutado contra la API real**; los tests mockean el `api`. Lo que está probado es el contrato de los documentos y las claves de invalidación, no un ida y vuelta real.
+- **`AppModuleSection.icon` pasó a `AppIconName`**: es un estrechamiento de tipo en la barra de la tajada 1. Compila hoy; si alguien añade una sección con un icono fuera del catálogo, ahora falla el typecheck — que es el efecto buscado.
+- Los tests de follow-ups usan `vi.useFakeTimers({ shouldAdvanceTime: true })`: sin `shouldAdvanceTime`, `waitFor` se queda colgado 5 s por test. Queda anotado porque el siguiente que congele el reloj en este repo tropezará igual.
+
+**Lo que vi de paso y no toqué:**
+- `docs/activities-domain.md` sigue rancio (describe `/app/activities` y `activityKeys`, que desde hoy ya no existe ni como resto). Es del usuario.
+- `src/shared/api/query-keys.ts` conserva seis fábricas más igual de huérfanas que estaba `activityKeys` (`courseKeys`, `todoKeys`, `standupKeys`, `noteKeys`, `learningKeys`, `appIdeaKeys`, `sleepKeys`, `quarterKeys`, `weeklyRoutineKeys`). Limpiarlas no es de este dossier.
+- `docs/features/ENVIRONMENT.md` sigue diciendo que `/app/vida/*` no existe y su línea base de tests (409) es la de antes de la tajada 1. Un constructor no modifica ese archivo.
+- `src/features/vida/utils/vida-date.utils.ts` y `src/features/habits/utils/habit-type.utils.ts` calculan el día de hoy cada uno por su lado. Anotado, no unificado.
 
 **Tree state:** sin commitear.
 
@@ -572,3 +644,179 @@ credenciales):
    arriba siga cabiendo y que se vea con claridad **cuál de los dos módulos
    está encendido** — en oscuro el contraste entre encendido y apagado es más
    sutil que en claro.
+
+### Slice 2
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del
+constructor). Entorno: `docs/features/ENVIRONMENT.md` leído y **no
+modificado**. Esta tajada no tiene superficie visible: no abrí navegador, no
+entré con credenciales y no toqué la API.
+
+6. **Capas de datos rescatadas de `79bece0` bajo `src/features/vida/`,
+   adaptadas (sin tiptap), con tests que verifican que las operaciones
+   respetan el esquema real** — **cumplido para actividades, categorías y
+   follow-ups**, que es el alcance de esta tajada.
+   - *La validación es real, no cosmética*: `contracts.test.ts` importa
+     `buildSchema, parse, validate` de `graphql`, construye el esquema desde
+     `schema/activity.schema.graphql?raw` y corre `validate(schema,
+     parse(documento))`.
+   - *Todos los documentos pasan por ahí*: conté los exports de los tres
+     `*.graphql.ts` — 7 + 6 + 5 = **18** — y la lista literal que el test fija
+     con `toEqual` tiene **los mismos 18 nombres**. No hay documento fuera de
+     la red.
+   - *El SDL vendorizado coincide con el real*: extraje la cadena `gql` de
+     `~/Developer/xavi-platform-node/src/graphql/modules/activity/activity.schema.ts`
+     y la comparé con el archivo vendorizado, sin comentarios ni líneas en
+     blanco. El `diff` completo son **16 líneas, todas añadidas y todas de
+     los cuatro bloques declarados**: `type Query`/`type Mutation` base, los
+     cuatro escalares (`DateTime`, `Date`, `JSON`, `Decimal`) y
+     `Todo`/`TodoFolder` reducidos a `{ id: ID! }`. **Cero diferencias en el
+     cuerpo del módulo**: ni un campo cambiado, quitado ni añadido.
+   - *El test tiene dientes de verdad*: el caso del campo inventado
+     (`spentTimeSeconds`) fija el mensaje literal de error del validador.
+   - *Los hooks tienen 15 tests propios*; los corrí aparte y pasan.
+7. **No es de esta tajada** (plan del día y `vidaItems`: tajada 3).
+8. **Cada conjunto de query keys expone sus funciones de invalidación y
+   existen antes de que ninguna pantalla las consuma** — **cumplido en su
+   parte de esta tajada**. `activityKeys` **ya no existe** en `src/`
+   (búsqueda literal: cero coincidencias, y con él se fue `pendingTodos`, que
+   tampoco aparece ya). `vidaKeys` se define en **un solo sitio**
+   (`src/shared/api/query-keys.ts:32`) y no hay ninguna segunda fábrica de
+   claves de Vida. Todas las llamadas a `invalidateQueries` de producción del
+   módulo están en `utils/invalidate-vida-queries.ts`: en los hooks no queda
+   **ninguna**; las únicas coincidencias fuera de ese archivo son los `spyOn`
+   de los tres tests. Los tests fijan la **lista exacta y ordenada** de claves
+   por mutación (`expect(invalidated).toEqual(expectedInvalidations(...))`:
+   día → semana → abierto → detalle → lista), no un subconjunto. Nada de esto
+   lo importa ninguna página: `src/features/vida/index.ts` sigue exportando
+   solo rutas.
+9. **Línea base** — **cumplido; las cuatro medidas corridas enteras por mí**:
+   - `pnpm typecheck` → limpio, sin salida.
+   - `pnpm lint` → `✖ 14 problems (14 errors, 0 warnings)`, en los mismos
+     cuatro archivos preexistentes (`SteppedModal`, `Tabs`, `toast.context`,
+     `test/render`). Ninguno en archivos de esta tajada.
+   - `pnpm test` → `Test Files 1 failed | 63 passed (64)` · `Tests 2 failed |
+     485 passed (487)`. El único archivo rojo es `SearchSelect.test.tsx`, el
+     de siempre. 426 → 487 = **+61 tests, 0 fallos nuevos**.
+   - `pnpm build` → `dist/assets/index-B8e6cbwQ.js 817,63 kB │ gzip 250,64 kB`
+     — **idéntico al byte** a la línea base tras la tajada 1, con `app-icons`
+     en 620,20 kB perezoso e `IconPicker` en 4,64 kB. Comprobé además que
+     `graphql` **no se coló**: está en `devDependencies`, el único archivo de
+     `src/` que lo importa es `contracts.test.ts`, y `buildSchema`/
+     `GraphQLSchema` no aparecen ni una vez en el chunk servido.
+1–5 y 10. **No son de esta tajada** (tajada 1; el 10 sigue pendiente del
+   recorrido del usuario).
+
+**Que el código viejo no se copió a ciegas** — comprobado campo a campo:
+- **Nada de tareas ni de standup** en documentos ni tipos: búsqueda literal de
+  `todoFolder|linkedTodo|activityPendingTodos|standup|bitácora|tiptap` sobre
+  `src/features/vida/`. Las únicas coincidencias están en el **SDL
+  vendorizado** (donde *deben* estar: es el esquema real del backend) y en las
+  aserciones del test que las prohíbe. Ni un documento, ni un tipo, ni un api.
+- **Lo que sí entró**: `subtasks`/`subtasksCount` en `Activity` (tipos L43-44 y
+  selección `subtasksCount { total completed }` en `activities.graphql.ts`);
+  `sessionSubtasks`/`sessionSubtasksCount` + `isOpen`/`endTime`/`endDate`/
+  `endDateTime` en `ActivityFollowUp` (tipos L32-39 y en `FOLLOW_UP_FIELDS`);
+  `clientId` en los inputs Add/Start y `subtaskIds` en Start (L51, L60, L62).
+- **Comparado con el punto de partida**:
+  `git show 79bece0:src/features/activities/graphql/activity-followups.graphql.ts`
+  → el `FOLLOW_UP_FIELDS` viejo terminaba en `linkedTodoId` y existía un
+  `FOLLOW_UP_LINKED_TODO_FIELDS`; en el nuevo **ambos han desaparecido** y en
+  su lugar está `sessionSubtasksCount { total completed }`. Es poda
+  deliberada, no copia.
+
+**Qué rompió cerca** (cómo lo busqué, no solo el resultado):
+- **`graphify explain`** sobre las claves de consulta devolvió solo el nodo de
+  documentación (`docs/activities-domain.md`), no los símbolos de código: el
+  grafo no tiene nodo para `query-keys.ts` con ese vocabulario, así que **el
+  grafo no sirvió aquí** y lo digo en vez de apoyarme en un «no encontrado».
+  Lo resolví con búsqueda literal de importadores.
+- **Quién más usa `src/shared/api/query-keys.ts`** (el sospechoso número uno
+  del constructor): 15 archivos. Fuera de Vida, los ocho importadores traen
+  `habitKeys` (seis hooks de hábitos), `habitKeys, settingsKeys`
+  (`useUserSettings.ts`) y `authKeys` (`useProfileQuery.ts`). El
+  `git diff` del archivo toca **exclusivamente** el bloque `activityKeys` →
+  `vidaKeys`: `habitKeys`, `settingsKeys`, `authKeys` y las nueve fábricas
+  huérfanas restantes están intactas, línea por línea. Ningún importador de
+  fuera de Vida ve un solo cambio.
+- **`activityKeys` no tenía importadores y sigue sin tenerlos**: cero
+  coincidencias en `src/`. El riesgo que el constructor dejó anotado («si
+  alguna sesión paralela añadió uno») no se materializó.
+- **La barra de la tajada 1 y el estrechamiento `icon: AppIconName`**: el
+  `git diff` de `app-nav.config.ts` son exactamente **dos líneas** (quitar
+  `| string` en `AppModuleSection` y en `AppModuleSettingsLink`), sin tocar
+  datos. Lo importan solo `AppLayout.tsx` y `app-nav.config.test.ts`. Corrí
+  los tests de la tajada 1 aparte (`src/layouts/AppLayout` +
+  `src/features/vida/routes`): **8 archivos, 78 tests, todos verdes**. Y el
+  `typecheck` está limpio, que es donde se habría caído un nombre de icono mal
+  escrito.
+- **Ningún guard ni cliente duplicado**: `isAuthenticated`/`useAuthBootstrap`
+  aparecen en producción de Vida **solo** en `useVidaQueryGuard.ts`. Ningún
+  archivo de Vida importa `@/features/todos`, `tiptap` ni
+  `@/features/weekly-routine`.
+- **La trampa de los timers** que el constructor dejó escrita: corrí los ocho
+  archivos de Vida + barra por separado → `Duration 7,96s`, de los cuales
+  **`tests 2,06s`**. Ningún `waitFor` colgado. La suite entera tardó `54,66s`
+  con 487 tests; el coste de esta tajada son los ~2 s de sus propios tests.
+
+**Las tres desviaciones declaradas** — las tres razonables:
+1. **Los cuatro bloques no literales del SDL** — correcta y, además,
+   *necesaria*: el módulo solo trae `extend type`, y sin la base `buildSchema`
+   no levanta. Está documentada en la cabecera del archivo con origen y fecha,
+   y verifiqué que el `diff` no esconde nada más. Que `Todo`/`TodoFolder`
+   entren reducidos a `{ id: ID! }` es lo mínimo imprescindible para que el
+   esquema cierre, y no abre la puerta a seleccionarlos.
+2. **`getCurrentWeekRange` reescrito sobre `getMondayOfWeek`** — correcta y
+   **equivalente**, no solo parecida: abrí el original en `79bece0`, y
+   `getWeekDaysForDate` empieza por `getMondayOfWeek(anchor)` y devuelve siete
+   días consecutivos, así que `days[0]`/`days[6]` son el mismo lunes y domingo
+   que calcula la versión nueva. Lo único que se deja atrás son las etiquetas
+   de UI. El test cubre el cruce de mes (`2026-09-28` → `2026-10-04`).
+3. **El test de dientes con `spentTimeSeconds` en vez de `todoFolders`** —
+   correcta, y es el detalle que más me convenció del conjunto: `todoFolders`
+   **sí** existe en el esquema real (lo vi en el SDL, L138), así que un test de
+   dientes construido sobre él habría pasado en verde sin probar nada. Usar un
+   campo que de verdad no existe, y fijar el mensaje literal del validador, es
+   la versión que funciona.
+
+**Estados sin construir:** esta tajada **no tiene superficie**, así que
+*vacío*, *cargando*, *texto largo* y *móvil* **no aplican**: no hay nada que
+pintar. De los que sí tienen análogo en capa de datos:
+- **Sin permisos** — *cubierto*: `useVidaQueryGuard` (`isReady &&
+  isAuthenticated`) apaga las consultas sin sesión, en un solo sitio, y los
+  tests de hooks lo ejercitan.
+- **Error** — **hallazgo, no motivo de devolución**: los hooks no tienen
+  `onError`; una mutación que falle no avisa al usuario (los `toast` son solo
+  de éxito). Es **exactamente lo que hace `useHabits.ts`**, la implementación
+  de referencia que fijó el arquitecto, y el constructor lo declaró. Queda
+  escrito para quien construya la primera pantalla de Vida (F1): ahí el estado
+  de error deja de ser opcional.
+- *Hallazgo menor*: `documentsOf()` filtra los exports por `typeof === 'string'`;
+  si algún día un documento se exportara como `DocumentNode`, se saldría de la
+  red en silencio. Hoy la lista literal de 18 nombres lo taparía, porque es un
+  `toEqual` exacto. No hay que tocar nada; solo saberlo.
+
+**¿Duplica algo que ya existía?** (contra la sección 2) **No.** El «What NOT
+to create» del arquitecto se respetó punto por punto: no hay otro cliente
+GraphQL (los tres `api` usan `graphqlRequest`), no hay otro guard (uno solo,
+`useVidaQueryGuard.ts`), `activityKeys` se **sustituyó** en vez de quedarse al
+lado, y no entró nada de `activity-time.utils.ts` salvo las seis funciones de
+fecha que la capa de datos necesita — con el archivo diciendo de dónde salen y
+pidiendo que F2/F3 re-exporten en vez de volver a copiar. La duplicación real
+que queda (`vida-date.utils.ts` vs. `getTodayString` de hábitos) está declarada
+por el constructor y es consecuencia de la regla *feature-first* que el propio
+arquitecto escribió: no es una duplicación que nadie haya visto.
+
+**Veredicto: accepted** — porque los tres criterios de la tajada (6 en su
+parte, 8 en su parte, 9) están cumplidos con evidencia reproducible, la
+validación de contratos es real y completa (18 de 18 documentos, SDL idéntico
+al del backend salvo los cuatro bloques declarados), no encontré ninguna
+regresión en lo que comparte con hábitos y la barra de la tajada 1 sigue
+verde. La feature **sigue abierta**: queda la tajada 3.
+
+**Para el usuario:** nada que probar a mano en esta tajada. No hay pantalla ni
+recorrido nuevo: lo que existe ahora es el andamiaje de datos del módulo Vida
+—actividades, categorías y registros de tiempo— escrito y verificado contra el
+esquema de verdad de tu backend, para que cuando F1 pinte la primera lista no
+se descubra entonces que un campo no existía. El recorrido pendiente sigue
+siendo el de la tajada 1 (criterio 10), escrito más arriba.

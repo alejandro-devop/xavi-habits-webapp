@@ -9,7 +9,7 @@ export type AppModuleSection = {
   id: string
   to: string
   label: string
-  icon: AppIconName | string
+  icon: AppIconName
   keywords: string[]
 }
 
@@ -18,7 +18,7 @@ export type AppModuleSettingsLink = {
   id: string
   to: string
   label: string
-  icon: AppIconName | string
+  icon: AppIconName
   keywords: string[]
 }
 

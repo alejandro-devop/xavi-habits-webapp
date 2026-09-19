@@ -1,0 +1,90 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SDL vendorizado. NO se edita a mano para "arreglar" un test: si el test falla,
+# el desfase está en nuestros documentos o el backend cambió y hay que volver a
+# copiar este archivo.
+#
+# Origen : xavi-platform-node/src/graphql/modules/activity-day-plan/activity-day-plan.schema.ts
+#          (la cadena `gql` de `activityDayPlanTypeDefs`, copiada literal)
+# Copiado: 2026-09-19
+#
+# Aquí no se añade nada: este módulo hace `extend type Query`/`extend type
+# Mutation` y referencia `Activity` y `DateTime`, que aporta
+# `activity.schema.graphql`. El test de contrato construye **un solo** esquema
+# concatenando los tres SDL vendorizados.
+# ─────────────────────────────────────────────────────────────────────────────
+
+  type ActivityDayPlanItem {
+    id: ID!
+    userId: Int!
+    activityId: ID!
+    """
+    Fecha local del plan, formato YYYY-MM-DD.
+    """
+    date: String!
+    """
+    Hora local de inicio, formato HH:mm.
+    """
+    startTime: String!
+    """
+    Hora local de fin, formato HH:mm.
+    """
+    endTime: String!
+    orderIndex: Int!
+    completedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    activity: Activity!
+  }
+
+  extend type Query {
+    activityDayPlan(date: String!): [ActivityDayPlanItem!]!
+  }
+
+  extend type Mutation {
+    """
+    Reemplaza (atómicamente) el plan del día indicado con los ítems dados.
+    """
+    activityDayPlanSet(input: ActivityDayPlanSetInput!): [ActivityDayPlanItem!]!
+    """
+    Añade un ítem al plan del día sin reemplazar el resto (p. ej. Tomar desde Vida).
+    """
+    activityDayPlanItemAdd(input: ActivityDayPlanItemAddInput!): ActivityDayPlanItem!
+    activityDayPlanItemEdit(input: ActivityDayPlanItemEditInput!): ActivityDayPlanItem!
+    activityDayPlanItemRemove(input: ActivityDayPlanItemRemoveInput!): Boolean!
+  }
+
+  input ActivityDayPlanSetInput {
+    date: String!
+    items: [ActivityDayPlanSetItemInput!]!
+  }
+
+  input ActivityDayPlanSetItemInput {
+    activityId: ID!
+    startTime: String!
+    endTime: String!
+    orderIndex: Int
+    """UUID v7 del cliente para idempotencia offline."""
+    clientId: ID
+  }
+
+  input ActivityDayPlanItemAddInput {
+    date: String!
+    activityId: ID!
+    startTime: String!
+    endTime: String!
+    orderIndex: Int
+    """UUID v7 del cliente para idempotencia offline."""
+    clientId: ID
+  }
+
+  input ActivityDayPlanItemEditInput {
+    itemId: ID!
+    startTime: String
+    endTime: String
+    orderIndex: Int
+    isCompleted: Boolean
+  }
+
+  input ActivityDayPlanItemRemoveInput {
+    itemId: ID!
+  }

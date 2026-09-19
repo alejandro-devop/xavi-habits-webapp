@@ -56,3 +56,39 @@ export function invalidateActivityCategoryQueries(
     void queryClient.invalidateQueries({ queryKey: vidaKeys.categories.detail(options.id) })
   }
 }
+
+/**
+ * Plan del día: mutarlo solo afecta a **esa** fecha. No se invalida
+ * `dayPlan.all()`: tirar el plan de todos los días porque cambió el de hoy
+ * obligaría a refetch de fechas que nadie tocó.
+ */
+export function invalidateDayPlanQueries(queryClient: QueryClient, options: { date: string }) {
+  const date = toFollowUpDateKey(options.date)
+
+  void queryClient.invalidateQueries({ queryKey: vidaKeys.dayPlan.byDate(date) })
+}
+
+/**
+ * Plantilla Vida: crear, editar o borrar un `VidaItem` cambia la lista **y** las
+ * sugerencias de cualquier fecha. Una sola clave basta, porque
+ * `items.suggestions(*)` y `items.takenToday(*)` cuelgan de `items.all()` y
+ * React Query invalida por prefijo.
+ */
+export function invalidateVidaItemQueries(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: vidaKeys.items.all() })
+}
+
+/**
+ * Marcar/desmarcar «tomado hoy» solo mueve esa fecha: lo tomado y las
+ * sugerencias de ese día (cuyo `takenToday` cambia). La plantilla en sí no
+ * cambia, así que no se invalida la lista de ítems.
+ */
+export function invalidateVidaTakenTodayQueries(
+  queryClient: QueryClient,
+  options: { date: string },
+) {
+  const date = toFollowUpDateKey(options.date)
+
+  void queryClient.invalidateQueries({ queryKey: vidaKeys.items.takenToday(date) })
+  void queryClient.invalidateQueries({ queryKey: vidaKeys.items.suggestions(date) })
+}

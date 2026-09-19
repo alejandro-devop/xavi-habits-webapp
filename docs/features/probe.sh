@@ -36,5 +36,5 @@ fi
 echo "== Línea base (no se ejecuta aquí; tarda) =="
 echo "  pnpm typecheck  → limpio"
 echo "  pnpm lint       → 14 errores / 0 warnings (preexistentes)"
-echo "  pnpm test       → 2 fallos de 487 (SearchSelect ×2, preexistentes)"
+echo "  pnpm test       → 2 fallos de 530 (SearchSelect ×2, preexistentes)"
 echo "  pnpm build      → chunk inicial 817,6 kB + app-icons 620 kB (perezoso)"

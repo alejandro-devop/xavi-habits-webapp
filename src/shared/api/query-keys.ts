@@ -48,6 +48,21 @@ export const vidaKeys = {
     range: (from: string, to: string) =>
       [...vidaKeys.followUps.all(), 'range', from, to] as const,
   },
+  dayPlan: {
+    all: () => [...vidaKeys.all, 'dayPlan'] as const,
+    byDate: (date: string) => [...vidaKeys.dayPlan.all(), 'byDate', date] as const,
+  },
+  /**
+   * `suggestions` y `takenToday` cuelgan de `items.all()` **a propósito**:
+   * invalidar `items.all()` es «invalidar `vidaItems`» y arrastra por prefijo
+   * las sugerencias de cualquier fecha, que es lo que pide el criterio 8.
+   */
+  items: {
+    all: () => [...vidaKeys.all, 'items'] as const,
+    list: (includeInactive = false) => [...vidaKeys.items.all(), 'list', includeInactive] as const,
+    suggestions: (date: string) => [...vidaKeys.items.all(), 'suggestions', date] as const,
+    takenToday: (date: string) => [...vidaKeys.items.all(), 'takenToday', date] as const,
+  },
 }
 
 export const courseKeys = {

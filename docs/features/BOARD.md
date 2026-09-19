@@ -9,7 +9,7 @@ The user decides the order, not an agent. The state and slice rules are in
 
 | ID | State | Slice | Area | Title | Requested |
 |---|---|---|---|---|---|
-| FEAT-001 | building | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
+| FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -18,4 +18,8 @@ feature in `building` at `3/4` has two accepted and one in progress.
 
 | ID | Area | Title | Delivered |
 |---|---|---|---|
-| — | — | _None yet._ | — |
+| FEAT-001 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
+
+FEAT-001 queda con el **criterio 10 pendiente**: el recorrido real con sesión
+(cambiar de Hábitos a Vida y volver). No es de ningún agente — está detrás del
+login; los pasos están al final del dossier.

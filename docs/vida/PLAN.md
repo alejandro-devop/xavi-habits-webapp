@@ -18,6 +18,8 @@ PLANEAR  →  VIVIR  →  REVISAR  →  APRENDER
 
 El *time tracker* que existía era solo el paso 2. Los otros tres son lo que lo convierte en «la plantilla de mi vida».
 
+**Y empieza por lo pequeño.** Las actividades de la primera versión son las de la vida diaria: *pasear a las mascotas, organizar la casa, lavarme los dientes, bañarme, cocinar, leer un rato*. Nada de proyectos, prioridades ni fechas de entrega. Ejercicio, tareas y lo demás **se van enlazando poco a poco, después** — cada uno cuando toque y con su propia decisión.
+
 ## Lo que el API ya tiene — y es casi todo
 
 Esto es lo que cambia el tamaño del trabajo: **el backend ya modela los cuatro pasos**. No hay que tocarlo para la primera versión completa.
@@ -31,7 +33,7 @@ Esto es lo que cambia el tamaño del trabajo: **el backend ya modela los cuatro 
 | **Aprender** | — | **Nada en backend.** `vidaSuggestionsForDate` es por día de la semana, no por historia. Lo que «entiende» hay que derivarlo en cliente de plan + real de las últimas semanas. |
 | Catálogo | `activity`, `activityCategories` | Actividades con estado, prioridad, categoría, fecha, **subtareas**. |
 
-Fuera del bucle pero en el mismo módulo del API, y **hay que decidir qué hacer con ellos** (ver abajo): `standup` (kanban de equipo), `todoFolders`/`linkedTodo` (el módulo de tareas que borramos), `isWorkout`/`workoutExerciseIds` (entrenamiento — hoy tiene su propia app, `xavi-active-api`).
+El API trae también standup, enlaces a tareas y entrenamiento. **Ninguno entra ahora.** Se enlazarán poco a poco, cuando el bucle básico lleve semanas en uso.
 
 ## Lo que la web ya tuvo — y se puede rescatar de git
 
@@ -70,16 +72,13 @@ La revisión del día compara **plan frente a real** y nombra las cosas por lo q
 6. **Renders antes de cada pantalla nueva**, aprobados por el usuario. Sin render aprobado no se abre la construcción de esa pantalla.
 7. **La web es el piloto** (ver `web-como-piloto-flutter-despues`): velocidad sobre pulido, y nada que no sea portable a Flutter sin rehacer la pantalla.
 
-## Decisiones que son del usuario
+## Lo que se enlaza después, no ahora
 
-Van con recomendación. Si no dice nada, se sigue la recomendación.
+Por orden de probabilidad, y cada uno con su propia conversación cuando llegue:
 
-| # | Pregunta | Recomendación |
-|---|---|---|
-| A | **Standup** (kanban de equipo, carry-over, resumen diario): ¿entra en Vida, es otro módulo, o se queda fuera? | **Fuera de este plan.** Es un producto de trabajo en equipo, no de la vida propia. Si vuelve, es su propio plan. |
-| B | **Tareas** (`linkedTodo`, `todoFolders`): el API las enlaza a sesiones y actividades, pero la web ya no tiene tareas. | **Se ignoran en la v1.** Las sesiones no enlazan tareas. Traer tareas de vuelta es otro módulo. |
-| C | **Entrenamiento** (`isWorkout`, sesiones con series): ¿lo pinta Vida? | **No.** Tiene su propia app y su propio API. Vida solo muestra que la actividad es de entrenamiento; la sesión con series vive allí. |
-| D | **Reflexión escrita al cerrar el día.** El API no tiene una nota a nivel de día, solo por sesión. | **v1 sin reflexión libre.** La revisión es calculada. Si se quiere una nota del día, es **el único cambio de backend** que este plan pediría, y se decide después de vivir la v1 unas semanas. |
+- **Ejercicio.** El API ya marca actividades como entrenamiento; la sesión con series vive en su propia app. Enlazar es enseñar en Vida que el bloque «entrenar» existió, no traer las series aquí.
+- **Tareas.** El API enlaza sesiones a tareas. La web no tiene tareas hoy.
+- **Standup, reflexión escrita del día, y cualquier cambio de backend.** Después de vivir la v1.
 
 ## Las fases
 
@@ -95,14 +94,15 @@ Cada fase es una *feature* del protocolo `forja` (un dossier `FEAT-NNN`), con su
 - `⌘K` gana los destinos de Vida.
 - **Criterio que cierra la fase:** se navega entre módulos, `/app/vida` existe y renderiza un cascarón vacío, y los hooks tienen tests contra el esquema.
 
-### F1 — El catálogo: actividades y categorías
+### F1 — El catálogo: las actividades de tu día a día
 
-*Render: sí, ligero (lista y ficha en Aura; el formulario reutiliza el lenguaje del wizard de hábitos).*
+*Render: sí, ligero. Se parece al wizard de hábitos, no a un gestor de proyectos.*
 
-- Lista con filtros (estado, prioridad, categoría), crear, editar, completar, borrar.
-- **Subtareas de la actividad** (nuevo en la web; el API las tiene).
-- Categorías con icono y color — reutilizando `IconPickerLazy` y `HabitColorPicker` (hay que sacarlo de `features/habits` a un sitio compartido, o duplicar la paleta: decisión del arquitecto, con preferencia por compartir).
-- **Criterio:** se puede crear una actividad con categoría y tres subtareas sin salir del módulo.
+- Crear una actividad es **ponerle nombre y categoría**. Nada más obligatorio. La categoría le da el icono y el color (el API no tiene icono en la actividad, sí en la categoría).
+- **Puntos de partida** como los del wizard de hábitos: *Pasear a las mascotas, Organizar la casa, Lavarme los dientes, Bañarme, Cocinar, Leer, Descansar*… con su categoría sugerida. Un toque y existe.
+- Categorías con icono y color — reutilizando `IconPickerLazy` y `HabitColorPicker` (sacarlo a un sitio compartido es decisión del arquitecto, con preferencia por compartir).
+- Lista sencilla, editar, archivar. **Estado, prioridad y fecha programada existen en el API y no se enseñan en la v1.** Las subtareas tampoco: cuando «organizar la casa» pida pasos, se añaden.
+- **Criterio:** en el primer minuto de uso hay ocho actividades cotidianas creadas sin haber escrito casi nada.
 
 ### F2 — Hoy: planear el día
 
@@ -165,4 +165,4 @@ Lo que «aprender» **no** puede hacer sin backend, y se anota como frontera: re
 
 ## Tamaño, en honesto
 
-El módulo borrado tenía 12.800 líneas y 24 tests. De eso se rescata quizá la mitad. Lo nuevo de verdad son F2, F4, F5 y F6, y el cambio de barra. Es más trabajo que cualquier fase del rediseño de hábitos, y menos de lo que fue el rediseño entero.
+El módulo borrado tenía 12.800 líneas porque hacía de todo. Esta v1 hace **una cosa**: el bucle diario con actividades cotidianas. Se rescata lo que sirve al bucle (contratos, cronómetro, métricas, modales de sesión) y se deja fuera todo lo demás. Es más trabajo que una fase del rediseño de hábitos, y bastante menos que el módulo que había.

@@ -9,7 +9,7 @@ The user decides the order, not an agent. The state and slice rules are in
 
 | ID | State | Slice | Area | Title | Requested |
 |---|---|---|---|---|---|
-| — | — | — | — | _No features in progress._ | — |
+| FEAT-001 | specified | 0/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.

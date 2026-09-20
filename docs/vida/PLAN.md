@@ -132,10 +132,10 @@ Cada fase es una *feature* del protocolo `forja` (un dossier `FEAT-NNN`), con su
 
 ### F4 — La plantilla Vida
 
-*Render: sí.*
+*Render aprobado el 2026-09-20: `assets/06-vida-plantilla.html` (marcos A móvil por día, B hoja de ítem, C escritorio en siete columnas con lateral «Añadir a mi Vida», D primer minuto). Decidido: la plantilla **es una agenda** (hora + duración por ítem, decisión 13), sin arrastrar; los sin hora van en un cajón al final; desactivar ≠ quitar; los solapes no se bloquean aquí (los resuelve «Armar» en Hoy); «copiar un día a otros» sustituye al arrastre para armar la semana.*
 
-- Gestionar `VidaItem`: actividad × días de la semana × notas, activar y desactivar, ordenar.
-- Vista de **semana tipo**: siete columnas con lo que toca cada día.
+- Gestionar `VidaItem`: actividad × días de la semana × hora × duración × notas, activar y desactivar. El orden lo da la hora.
+- Vista de **semana tipo**: siete columnas con lo que toca cada día, a su hora.
 - Desde una actividad del catálogo, «añadir a mi Vida».
 - **Criterio:** la plantilla de una semana se arma sin salir de la pantalla, y F2 la ve al instante.
 

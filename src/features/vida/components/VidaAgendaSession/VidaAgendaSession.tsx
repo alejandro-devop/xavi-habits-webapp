@@ -1,12 +1,23 @@
 import type { CSSProperties } from 'react'
+import { useDeleteActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
+import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { ExecutionSessionEntry } from '@/features/vida/utils/vida-execution.utils'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
 import { formatTimeForDisplay, minutesToTime } from '@/features/vida/utils/vida-time.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
+import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
+import { IconButton } from '@/shared/ui/IconButton'
+import { Popover } from '@/shared/ui/Popover'
 import styles from './VidaAgendaSession.module.scss'
 
 type VidaAgendaSessionProps = {
   entry: ExecutionSessionEntry
+  /**
+   * «Corregir» (criterio 35): abre la hoja con esta sesión. Sin esto **no se
+   * pinta el «···»**, que es lo que pasa mientras la sesión sigue en marcha
+   * —ahí se termina, no se corrige— y en cualquier pantalla que no lo cablee.
+   */
+  onEdit?: (session: ActivityFollowUp) => void
 }
 
 /**
@@ -25,14 +36,71 @@ type VidaAgendaSessionProps = {
  * es de la tajada 4, pero la regla vale ya): «fuera del plan» y «40 min tarde».
  * Ninguno reprocha nada.
  *
- * Lo que **no** hace todavía: el «···» con corregir y quitar del registro
- * (criterio 35) — eso es la **tajada 3**, que es la que escribe la hoja.
+ * **Desde la tajada 3 se puede corregir y quitar** (criterio 35). El «···» —el
+ * mismo `Popover` + `IconButton` de `VidaAgendaBlock`— lleva a **«Corregir»**
+ * (hora, duración y notas, que los pinta la hoja) y a **«Quitar del registro»**,
+ * con confirmación que nombra qué se quita y salida **«Volver»**. Nunca
+ * «cancelar» ni «eliminar» (criterio 59).
+ *
+ * Quitar vive **aquí** y no en la página, por el mismo motivo que en el bloque:
+ * confirmar y quitar son **una sola decisión** y no hay nada que la página
+ * necesite saber. Corregir sí sube, porque la hoja es de la página.
+ *
+ * Una sesión **en marcha** no ofrece nada de esto: se termina desde su bloque o
+ * desde la barra del módulo, y corregir la hora de algo que aún no ha acabado
+ * sería corregir lo que todavía no se sabe.
  */
-export function VidaAgendaSession({ entry }: VidaAgendaSessionProps) {
+export function VidaAgendaSession({ entry, onEdit }: VidaAgendaSessionProps) {
+  const { confirm } = useConfirmDialog()
+  const removeMutation = useDeleteActivityFollowUpMutation()
+  const session = entry.span.session
   const category = entry.span.session.activity?.category ?? null
   const colorStyle = category?.color
     ? ({ '--vida-category-color': category.color } as CSSProperties)
     : undefined
+  // Mientras está en marcha no hay nada que corregir: se termina.
+  const canManage = Boolean(onEdit) && !entry.span.isRunning
+
+  async function handleRemove() {
+    const ok = await confirm({
+      title: `¿Quitar «${entry.span.title}» del registro?`,
+      description: `Se va el rato de ${entry.rangeLabel} y el día vuelve a contarlo como sin dato. Tu actividad sigue en el catálogo y en tu plantilla.`,
+      confirmLabel: 'Quitar del registro',
+      cancelLabel: 'Volver',
+    })
+    if (!ok) return
+    removeMutation.mutate({
+      id: session.id,
+      date: session.date,
+      activityId: session.activityId,
+      wasOpen: false,
+    })
+  }
+
+  const menu = (
+    <ul className={styles.menu}>
+      <li>
+        <button
+          type="button"
+          className={styles.menuItem}
+          onClick={() => onEdit?.(session)}
+          disabled={removeMutation.isPending}
+        >
+          Corregir
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          className={styles.menuItem}
+          onClick={handleRemove}
+          disabled={removeMutation.isPending}
+        >
+          Quitar del registro
+        </button>
+      </li>
+    </ul>
+  )
 
   return (
     <li className={styles.row} style={colorStyle} data-variant={entry.variant}>
@@ -60,6 +128,17 @@ export function VidaAgendaSession({ entry }: VidaAgendaSessionProps) {
           </p>
         </div>
         <span className={styles.tag}>{entry.label}</span>
+
+        {canManage ? (
+          <div className={styles.more}>
+            <Popover
+              triggerLabel={`Más opciones de ${entry.span.title}`}
+              trigger={<IconButton icon="ellipsis" size="sm" tabIndex={-1} aria-hidden />}
+              content={menu}
+              placement="bottom-end"
+            />
+          </div>
+        ) : null}
       </article>
     </li>
   )

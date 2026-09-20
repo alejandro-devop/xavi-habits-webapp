@@ -12,7 +12,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
-| FEAT-004 | building | 3/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+| FEAT-004 | building | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -24,6 +24,70 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-001 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
+
+**FEAT-004, tajada 3 — revisión: `accepted`** (2026-09-20), **con un recorte
+escrito y con dueño**. Los criterios 30–38 y 56 se cumplen; el **35 queda cerrado
+solo para las sesiones que se pintan sueltas** —el «···» de una sesión
+**emparejada con su bloque** no existe todavía—, y no devuelvo por eso porque es
+el reparto del arquitecto y el **criterio 41** de la tajada 4 pide exactamente
+eso; pero **la tajada 4 no se puede aceptar sin ello**, o el camino más común de
+todos (empezar y terminar un bloque) se quedará sin poder corregirse. Medido con
+arnés propio (9 casos, borrado, con proveedores de verdad): un **día pasado**
+tiene **un solo botón** en la fila del día —«Registrar tiempo pasado»— sin
+«Empezar algo» ni atajos de plan; un **día futuro**, ninguno de los dos; y el
+«···» de una sesión suelta ofrece **«Corregir»** y **«Quitar del registro»** con
+diálogo «¿Quitar «X» del registro?», salida **«Volver»** que no llama a la
+mutación, y **cero** controles que digan «cancelar», «eliminar» o «borrar»; una
+sesión **en marcha** no lo ofrece. `validateLogPast` rechaza el día futuro, la
+hora que no ha llegado y el rato a medias, con mensajes que describen sin
+reprochar: esa **tercera regla es del constructor, no del criterio 32**, la doy
+por razonable y queda escrita —con un aviso: «Lo hice» (criterio 41) creará
+sesiones que terminan en el futuro y esta validación las bloqueará al corregir—.
+Sin regresiones: `VidaAgendaSession` —que ya no es puro— **solo lo monta
+`VidaHoyPage`**, la extracción de `VidaActivityPicker` deja **un solo buscador**
+en el módulo (`filterActivitiesBySearch` no aparece en ninguna hoja), y un día
+pasado ya **no pide** el plan de la semana anterior. Nada en `localStorage`, nada
+de Font Awesome a pelo. Línea base corrida entera por el revisor: typecheck
+**exit 0**, lint **14/0**, `pnpm test` **2 fallos de 1101** (los dos de
+`SearchSelect`; 1 archivo rojo de 98), `pnpm build` **exit 0** con chunk inicial
+**953,93 kB**, `app-icons` **620,20 kB** e `IconPicker` **4,64 kB**. **Sin
+revisar por el revisor:** los 375 px y el tema oscuro de la hoja nueva (medidos
+por el constructor en un arnés; mi arnés fue de comportamiento, en jsdom) y
+cualquier llamada real al API. Siguiente: la tajada 4, la última — y con ella el
+«···» de la sesión de un bloque.
+
+**FEAT-004, tajada 3 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **el día ya registra lo que se
+sale del plan.** En hoy hay **«Empezar algo»** —elige qué con el mismo molde de
+la hoja de FEAT-003 y **arranca ahora mismo, sin preguntar cuánto va a durar**,
+delegando en `useVidaSessionActions` para que siga valiendo el «cierra la
+anterior» de D4— y **«Registrar tiempo pasado»** —qué · a qué hora empezó ·
+cuánto, con las píldoras 15 · 30 · 45 · 1h · libre y `activityFollowUpAdd`—, que
+**también está en los días de atrás** aunque su plan siga sin tocarse (D10); en
+un día **futuro**, ninguno de los dos. Lo registrado sale en la agenda en su hora
+por el cruce que ya hacía la tajada 2, y su **«···»** lleva a **«Corregir»**
+(hora, duración y notas) y a **«Quitar del registro»** (confirmación que nombra
+qué se quita, salida **«Volver»**). **Registrar no toca el plan** y está
+comprobado con espía: tras registrar, las **cuatro** mutaciones de
+`activityDayPlan` siguen sin llamarse. La **hoja de «qué» se extrajo**
+(`components/VidaActivityPicker/`) y **la estrenan las dos** el mismo día, con un
+test que lo afirma **por estructura**: ninguna de las dos hojas vuelve a nombrar
+`filterActivitiesBySearch` ni `useActivitiesQuery`. Línea base sin empeorar:
+typecheck limpio, lint **14/0**, `pnpm test` **2 fallos de 1100** (los dos de
+`SearchSelect`; **+44 tests**, 1 archivo rojo de 98), `pnpm build` chunk inicial
+**953,93 kB** (+8,4 kB, **ninguno de iconos**: `app-icons` 620,20 e `IconPicker`
+4,64 clavados). **Una desviación dicha**: `validateLogPast` tampoco deja
+registrar un rato que **acabaría después de ahora** —el criterio 32 solo prohíbe
+el día futuro—, con su test y su mensaje sin culpa. **Avisos para quien revise:**
+`VidaPlaceInGapSheet` perdió su buscador y parte de su SCSS, `VidaDayActions` se
+pinta ahora **también en días pasados** (su mitad de plan salió a un componente
+interno para no pedir el plan de la semana pasada allí) y `VidaAgendaSession`
+**ya no es puro**. **Queda abierto y lo digo**: la sesión **emparejada con su
+bloque** todavía no se corrige desde la agenda —el «···» del criterio 35 vive en
+la sesión suelta, como puso la tabla del arquitecto—; su dueño natural es el
+criterio 41, en la tajada 4. Del navegador solo se midió **la hoja sola** a 375
+px (sin scroll horizontal, nombre de 47 caracteres truncado en una línea): todo
+`/app/*` está detrás del login.
 
 **FEAT-004, tajada 2 — segunda revisión: `accepted`** (2026-09-20). El motivo de
 la devolución está cerrado y lo comprobé con **arnés propio de tests puros** (13

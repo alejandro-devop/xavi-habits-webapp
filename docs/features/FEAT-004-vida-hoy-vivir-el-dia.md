@@ -5,7 +5,7 @@ status: building
 architect: yes    # concepto nuevo (la sesión viva y su cruce con el plan), superficie global en todo el módulo, y una decisión abierta que puede tocar el API
 area: features/vida
 requested: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-20   # tajada 3 `in-review`: registrar lo que se sale
 ---
 
 # FEAT-004 — Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro
@@ -992,7 +992,7 @@ sesión, **el toast del cierre lo lanza el llamante, no el hook**:
 |---|---|---|---|---|
 | 1 | **Empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo.** | `utils/vida-session.utils.ts` (N) · `hooks/useVidaElapsed.ts` (N) · `hooks/useVidaOpenSession.ts` (N) · `hooks/useVidaSessionActions.ts` (N) · `components/VidaSessionBar/` (N) · `components/VidaFinishSessionModal/` (N) · `components/VidaStaleSessionPrompt/` (N) · `routes/VidaModuleLayout.tsx` (N) · `routes/vida.routes.tsx` · `graphql/activity-followups.graphql.ts` · `api/activity-followups.api.ts` · `types/activity-followup.types.ts` · `hooks/useActivityFollowUps.ts` · `graphql/contracts.test.ts` · `shared/ui/Toast/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 2–17, **1 a medias** (ver el recorte), 54, 59 (los tres toasts), 64, y la parte de 60/61/63 que toca la barra y el cierre | **accepted** (2026-09-20; 10 y 66 quedan en el recorrido manual) |
 | 2 | **Lo real encima de lo planeado, y el presupuesto por colores.** | `utils/vida-execution.utils.ts` (N) · `hooks/useVidaDayData.ts` · `components/VidaAgendaBlock/` · `components/VidaPlanVsRealBar/` (N) · `components/VidaAgendaSession/` (N) · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | **la otra mitad de 1**, 18–29, 53, 55, 57, 58, 62 | **accepted** (2026-09-20, en la **segunda** revisión: devuelta por el cruce de D1, re-entregada con los dos pases y comprobada con arnés propio) |
-| 3 | **Registrar lo que se sale.** | `components/VidaActivityPicker/` (N) · `components/VidaPlaceInGapSheet/` · `components/VidaLogSessionSheet/` (N) · `utils/vida-session.utils.ts` · `components/VidaDayActions/` · `components/VidaAgendaSession/` · `pages/VidaHoyPage.tsx` | 30–38, 56 | pending |
+| 3 | **Registrar lo que se sale.** | `components/VidaActivityPicker/` (N) · `components/VidaPlaceInGapSheet/` · `components/VidaLogSessionSheet/` (N) · `utils/vida-session.utils.ts` · `components/VidaDayActions/` · `components/VidaAgendaSession/` · `pages/VidaHoyPage.tsx` | 30–38, 56 | **accepted** (2026-09-20; el criterio 35 queda **recortado a las sesiones sueltas** y el «···» de la emparejada es obligatorio en la tajada 4) |
 | 4 | **Lo que falta: pendiente, las tres salidas, sin dato y la frase de cierre.** | `store/vida-device-notes.store.ts` (N) · `utils/vida-execution.utils.ts` · `components/VidaBlockOutcomes/` (N) · `components/VidaAgendaNoData/` (N) · `components/VidaAgendaBlock/` · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | 39–52, 60, 61, 65; **66 lo cierra el usuario** | pending |
 
 **Las cuatro tajadas se quedan como las cortó el analista.** Miradas contra el
@@ -1807,6 +1807,229 @@ del login y es del recorrido manual.
 **Estado del árbol:** sin commitear. 10 archivos modificados y 5 nuevos bajo
 `src/`, más este dossier y `BOARD.md`. Ningún arnés vivo.
 
+### Tajada 3 — registrar lo que se sale
+
+**Resumen para el revisor:**
+1. `/app/vida/hoy` ya **registra lo que no estaba en el plan**: **«Empezar algo»**
+   (solo hoy, arranca ahora mismo y **sin pedir duración**) y **«Registrar tiempo
+   pasado»** (qué · a qué hora empezó · cuánto, con las píldoras 15 · 30 · 45 ·
+   1h · libre) en **hoy y en los días de atrás**, aunque su plan siga sin
+   tocarse; lo registrado sale en la agenda en su hora y se puede **corregir** o
+   **«Quitar del registro»** desde su «···». La hoja de «qué» **se extrajo**
+   —`VidaActivityPicker`— y la usan **las dos** hojas: `VidaPlaceInGapSheet`
+   estrena la extracción el mismo día.
+2. Lo escrito: **2 componentes nuevos** (`VidaActivityPicker/`,
+   `VidaLogSessionSheet/`, 4 archivos cada uno contando su test) y **8
+   modificados**, ninguno fuera de `src/features/vida/`.
+3. **Lo que más probablemente rompí, en orden:** (a) **`VidaPlaceInGapSheet` ya
+   no tiene buscador propio** —el paso «qué» es ahora otro componente con su
+   propio `.module.scss`, y le quité a la hoja las clases que se llevó: si algo
+   de FEAT-003 se ve distinto, es ahí—; (b) **`VidaDayActions` se pinta en días
+   pasados**, donde antes no existía, y su mitad de plan salió a un componente
+   interno (`PlanShortcuts`) para que un día pasado no pida el plan de la semana
+   pasada; (c) **`VidaAgendaSession` dejó de ser puro**: usa
+   `useDeleteActivityFollowUpMutation` y `useConfirmDialog`, así que montarlo
+   pide `QueryClient` y `ConfirmDialogProvider`, y quien mockee
+   `useActivityFollowUps` tiene que devolver **tres** mutaciones más.
+
+**Qué se construyó**
+
+*Lo nuevo*
+
+- `components/VidaActivityPicker/` (**N**, 4 archivos). **El «qué», escrito una
+  vez** (criterio 38). Es el paso «qué» que vivía dentro de
+  `VidaPlaceInGapSheet`, **extraído** —no copiado—: la plantilla del día primero,
+  el buscador (`filterActivitiesBySearch` sobre `useActivitiesQuery` sin
+  archivadas) después, y la vía al catálogo cuando no hay nada con ese nombre.
+  `VidaPlaceInGapSheet` pasa a usarlo **en esta misma tajada**, que es lo que
+  impide que acaben siendo dos.
+- `components/VidaLogSessionSheet/` (**N**, 4 archivos). **Una hoja, tres
+  modos**: `start` («Empezar algo», solo «qué»), `log` («Registrar tiempo
+  pasado», qué · hora · cuánto con `VidaDurationPills`) y `edit` (corregir hora,
+  duración y notas de algo ya registrado). Molde `VidaPlaceInGapSheet`:
+  `SteppedModal` `ds="aura"` + `mobileSheet`, estado arriba, **`key` por
+  apertura** puesta por la página y el cierre en el `onSuccess` **local** del
+  `mutate`.
+- `utils/vida-session.utils.ts` (M): `isFutureDateTime` (rescatado de
+  `79bece0:activity-time.utils.ts:253`), **`validateLogPast`** (la forma de
+  `activity-followup-form.ts:58`, con otros mensajes), `logSessionInput` y
+  `editSessionInput`. Puros, con `now` inyectado, **+16 casos** de test.
+
+*Lo que cambió de sitio o de forma*
+
+- `components/VidaPlaceInGapSheet/` (M): monta `VidaActivityPicker` y pierde su
+  buscador, su consulta de actividades y sus dos ayudantes (`toChosen`,
+  `fromActivity`). El `.module.scss` pierde las clases que se llevó el picker y
+  **conserva `.optionName`**, que sigue usando el nombre del bloque que se edita.
+- `components/VidaDayActions/` (M): además de los dos atajos de plan, las dos
+  entradas de registro. La mitad de plan salió a `PlanShortcuts`, un componente
+  interno, **por una razón de datos**: `VidaDayActions` se pinta ahora también en
+  días pasados y `useActivityDayPlanQuery(sameWeekdayLastWeek(date))` no puede
+  colgar de un día donde no se planea.
+- `components/VidaAgendaSession/` (M): el «···» con **«Corregir»** y **«Quitar
+  del registro»** (`ConfirmDialog`, salida «Volver»), mismo `Popover` +
+  `IconButton` que el bloque. Una sesión **en marcha** no lo pinta: ahí se
+  termina, no se corrige.
+- `pages/VidaHoyPage.tsx` (M): cablea la hoja nueva, decide **quién puede qué**
+  (`canStart` para «Empezar algo», `canLogPast = isToday || isPast` para el
+  resto) y pinta `VidaDayActions` **siempre**, pasándole `canPlan`.
+
+**Por qué así, y qué se descartó**
+
+- **La extracción del «qué» va entera, con su SCSS.** La alternativa —dejar las
+  clases en la hoja y pasarlas por props— habría atado el picker a un
+  `.module.scss` ajeno. Lo que sí viaja de fuera es **una** clase, la del
+  contenedor (`className`), para que el separador `.block + .block` de la hoja
+  siga cayendo entre «Qué» y «Cuánto».
+- **Tres modos en una hoja, no tres hojas.** El criterio 38 pide una hoja de
+  «qué» reutilizada, y el 35 pide corregir lo registrado: partirlas habría
+  devuelto los cinco modales de `79bece0` por la puerta de atrás.
+- **El «qué» no se cambia al corregir.** `activityFollowUpEdit` no admite
+  `activityId`: fingir que sí sería quitar la sesión y crear otra sin decirlo.
+  Queda escrito en la cabecera del componente.
+- **«Empezar algo» no llama a ninguna mutación**: delega en
+  `useVidaSessionActions.start`, que es quien ya sabe **cerrar lo anterior y
+  empezar lo nuevo** (D4, criterio 15). Una hoja que empezara por su cuenta se
+  saltaría esa regla.
+- **Desviación, dicha: `validateLogPast` no deja registrar un rato que acabaría
+  después de ahora.** El criterio 32 solo prohíbe el día futuro; esto prohíbe
+  además «de 15:00 a 16:00» cuando son las 15:30, porque pintaría en la agenda
+  media hora que nadie ha vivido y el presupuesto la contaría. Es una regla que
+  **añadí yo**, tiene su test y su mensaje sin culpa («Ese rato no ha pasado
+  entero todavía. Ajusta cuánto duró.»). **Consecuencia que también digo:**
+  corregir una sesión de hoy usa la misma validación, así que una sesión ya
+  registrada con hora futura —que no debería existir— no se podría corregir sin
+  bajarle la duración.
+- **`VidaDayActions` se pinta en días pasados.** El criterio 32 lo obliga
+  («en un día pasado hay "Registrar tiempo pasado"»), y el 56 sigue cumpliéndose
+  porque los atajos de plan siguen atados a `canPlan`.
+
+**Verificación**
+
+*Las comprobaciones del `ENVIRONMENT.md`, enteras, al terminar*
+
+| Qué | Línea base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos |
+| `pnpm test` | 2 fallos de 1056 (`SearchSelect` ×2) | **2 fallos de 1100** — los dos de `SearchSelect`, **1 archivo rojo de 98**. **+44 tests**, ninguno nuevo en rojo |
+| `pnpm build` | inicial 945,56 kB · `app-icons` 620,20 · `IconPicker` 4,64 | **953,93 kB** · `app-icons` **620,20** · `IconPicker` **4,64** — **+8,4 kB, y no de iconos** (CSS 195,68 kB) |
+
+*Criterio por criterio*
+
+| # | Cómo queda | Evidencia |
+|---|---|---|
+| 30 | cumplido | «Empezar algo» en la fila del día (solo hoy) abre la hoja con **solo** el paso «qué» y llama a `sessionActions.start(activityId)`, que arranca con la hora del reloj. Tests: `VidaHoyPage.test.tsx` («pregunta solo qué y arranca ahora mismo»: `startSession` recibe `a-s1`, y **no hay** «Cuánto duró» ni el grupo de píldoras) y `VidaLogSessionSheet.test.tsx`. |
+| 31 | cumplido | «Registrar tiempo pasado» pregunta **qué · a qué hora empezó · cuánto**, con `VidaDurationPills` (15 · 30 · 45 · 1h · libre, comprobadas una a una en el test de pantalla) y escribe con `activityFollowUpAdd`: `createFollowUpMutation.mutate` recibe `{ activityId, date, startTime: '08:00', durationMinutes: 45, notes: null }`. |
+| 32 | cumplido | Tres tests de pantalla: **hoy** trae los dos botones; un **día pasado** trae solo «Registrar tiempo pasado»; un **día futuro**, ninguno. Y en lo puro, `validateLogPast` rechaza el día futuro («Ese día todavía no ha llegado»), la hora que aún no llegó y el rato que no ha pasado entero; un **día pasado** admite cualquier hora, incluida la noche. |
+| 33 | cumplido | Lo registrado ya entraba en la agenda por el cruce de la tajada 2 (`toSessionSpans` → «fuera del plan» en su hora) y el presupuesto se refresca con `invalidateFollowUpQueries`, que ya existía. Test: la sesión de las 11:40 se lee con su nombre, su «fuera del plan» y **ahora** con su «···». |
+| 34 | cumplido | El picker busca sobre `excludeArchivedActivities(useActivitiesQuery(...))`: una archivada no sale (test con `status: 'cancelled'`). Lo que no existe **no se crea aquí**: `«Nada con ese nombre.»` + enlace a `/app/vida/actividades` (comprobado el `href`). |
+| 35 | cumplido | El «···» de una sesión lleva a **«Corregir»** —la hoja abre con su hora (`08:10`), su duración y sus notas, y `activityFollowUpEdit` recibe `{ id, startTime, durationMinutes, notes }`— y a **«Quitar del registro»**, con diálogo «¿Quitar «X» del registro?», salida **«Volver»** y `activityFollowUpRemove` con su `id`, `date` y `activityId`. Ni «cancelar» ni «eliminar» en pantalla (comprobado con `queryByRole(/cancelar|eliminar/i)`). |
+| 36 | cumplido | `VidaLogSessionSheet.test.tsx`: con `isError`, `onClose` **no** se llama, lo elegido sigue `aria-pressed="true"` (actividad y píldora), `mutate` salió **una sola vez** y se lee «No pudimos registrarlo…». **No hay sesión fantasma porque no hay escritura optimista**: la agenda solo pinta lo que devuelve la consulta del día. Lo mismo en el modo `start` con `{ ok: false }`. |
+| 37 | cumplido, con espía | En el test de pantalla, tras registrar: `addMutation`, `editMutation`, `removeMutation` y `setMutation` —**las cuatro** de `activityDayPlan`— siguen sin llamarse. Y en lo puro, `logSessionInput` devuelve exactamente cinco claves, ninguna del plan. |
+| 38 | cumplido, por estructura | `VidaActivityPicker.test.tsx` lee los fuentes de **las dos** hojas con `import.meta.glob(..., '?raw')` y afirma que las dos importan y montan `VidaActivityPicker`, y que **ninguna** vuelve a nombrar `filterActivitiesBySearch` ni `useActivitiesQuery`. Más seis casos de comportamiento del picker. |
+| 56 | cumplido | El día pasado registra y **no** planea: «Registrar tiempo pasado» sí; «Empezar algo», «Copiar del \<día\> pasado» y «Vaciar y rehacer», no. Los tests de FEAT-003 que afirman «cero botones de plan» siguen verdes sin tocarse. |
+| 59 | cumplido | `vida-vocabulary.test.ts` **8 de 8** en la corrida entera. Los textos nuevos —«Registrar tiempo pasado», «Quitar del registro», «Corregir», «Ese rato no ha pasado entero todavía», «Se apunta encima de tu día. Tu plan se queda como está.»— no usan ninguna palabra prohibida, y hay un test propio que lo afirma sobre los cinco mensajes de `validateLogPast`. |
+| 65 | cumplido, medido | La tabla de arriba. |
+
+*Lo que miré en el navegador* (arnés temporal `src/arnes-registrar.html` +
+`src/arnes-registrar.tsx`, **ya borrados**): la hoja `log` a **375 px** con tres
+fichas de plantilla y un nombre de **47 caracteres**.
+`scrollWidth === clientWidth === 375` y **cero elementos desbordando**. Se lee,
+en orden: «Registrar tiempo pasado» · «Algo que ya hiciste el viernes 18, esté o
+no en tu plan.» · **Qué** (las tres fichas, la larga **truncada con puntos
+suspensivos en una línea** y las duraciones «20m» / «4h» al lado) · el buscador ·
+**A qué hora empezó** con `08:54` · **Cuánto duró** con `15 30 45 1h libre` · y
+el pie **«Volver» / «Registrar»**.
+
+**Riesgos**
+
+1. **La extracción toca una hoja entregada.** `VidaPlaceInGapSheet` es de
+   FEAT-003 y está aceptada; su paso «qué» ahora vive fuera. El marcado es el
+   mismo carácter a carácter y el SCSS también, pero es un cambio en código que
+   ya funcionaba.
+2. **`VidaDayActions` aparece donde no aparecía.** En un día pasado la fila
+   existe por primera vez. Si algún test o alguna medida de FEAT-003 contaba con
+   que ahí no había nada, se nota ahí.
+3. **`VidaAgendaSession` ya no es puro.** Pide `QueryClient` y
+   `ConfirmDialogProvider`, y el mock de `useActivityFollowUps` necesita tres
+   funciones más. Los tests de la tajada 2 siguen verdes porque el mock de la
+   página se amplió aquí.
+4. **La validación del futuro dentro del día es mía, no del criterio.** Ver la
+   desviación de arriba.
+5. **Dos sesiones registradas a la misma hora no se avisan.** Registrar no valida
+   solapes —el plan sí lo hace con `validatePlacement`—, porque **lo real puede
+   solaparse de verdad**. El presupuesto ya cuenta cada minuto una sola vez
+   (criterio 26), así que la barra no miente; pero nadie avisa.
+6. **El «···» de una sesión de un bloque sigue sin existir.** El criterio 35
+   habla de «una sesión registrada» y la tabla del arquitecto puso el «···» en
+   `VidaAgendaSession`: lo que se corrige es lo que se pinta suelto (fuera del
+   plan y el real de un movido). La sesión **emparejada con su bloque** todavía
+   no se corrige ni se quita desde la agenda, y quien la necesite está en el
+   criterio 41 (tajada 4). **Lo digo en vez de darlo por cerrado.**
+
+**Lo que no pude verificar, y no lo disimulo**
+
+- **Ni una llamada real al API.** `/app/*` está detrás del login y los agentes no
+  entran con credenciales (`ENVIRONMENT.md`). En particular no se ha visto nunca
+  un `activityFollowUpAdd` ni un `activityFollowUpRemove` de verdad: lo que se
+  comprueba es qué entra en `mutate`.
+- **La pantalla `/app/vida/hoy` entera con la hoja abierta**: lo medido en el
+  navegador es la hoja **sola**, en un arnés. El tema oscuro **dentro** de la
+  aplicación sigue sin verlo nadie (criterio 62, de la tajada 2).
+- **Los criterios 52 y 66 son del usuario.**
+
+**Recorrido manual para el usuario** (con la API despierta; Render tarda ~1 min):
+1. En **hoy**, toca **«Empezar algo»**, elige algo de tu plantilla y dale a
+   «Empezar»: tiene que arrancar el cronómetro **sin preguntarte cuánto va a
+   durar**, y si ya tenías algo en marcha, el aviso tiene que decir que
+   terminamos lo anterior.
+2. Termínalo y mira la agenda: si eso no estaba en el plan, tiene que aparecer
+   **punteado en su hora** con «fuera del plan», y **tu plan no puede haberse
+   movido ni un bloque**.
+3. Toca **«Registrar tiempo pasado»**, elige algo, pon una hora de **esta
+   mañana** y una duración: tiene que aparecer en su hora y el presupuesto
+   cambiar **sin recargar**.
+4. Prueba a poner una hora **que aún no ha llegado**: tiene que decírtelo y no
+   registrar nada.
+5. En el **«···»** de lo que registraste: **«Corregir»** (cámbiale la hora y
+   añade una nota) y **«Quitar del registro»** (léete la confirmación: la salida
+   es «Volver»).
+6. Abre un **día de atrás** en la tira: tiene que haber **«Registrar tiempo
+   pasado»** y **ninguno** de los botones de plan, ni «Empezar algo». Registra un
+   rato de aquel día y compruébalo en su hora.
+7. Abre un **día futuro**: no puede haber ni «Empezar algo» ni «Registrar tiempo
+   pasado».
+8. En **móvil**, con la hoja abierta y una actividad de nombre largo: que no se
+   salga nada a lo ancho y que «Registrar» se alcance sin scroll dentro de la
+   hoja.
+9. Busca una actividad que **no exista** («zzz»): tiene que ofrecerte
+   **«Crearla en Actividades»**, no crearla ahí.
+
+**Hallazgos que dejo escritos, ninguno de esta tajada**
+
+1. **Una sesión emparejada con su bloque no se corrige desde la agenda** (riesgo
+   6). Tiene dueño natural en la tajada 4 (criterio 41).
+2. **El buscador del picker no dice cuándo la consulta de actividades falla**:
+   sigue leyéndose «Nada con ese nombre». Es el hallazgo que ya dejó la tajada 3
+   de FEAT-003 y **no lo agrandé ni lo arreglé**: el picker se extrajo tal cual.
+3. **Registrar no mira solapes** (riesgo 5).
+4. **La hoja de registrar no ofrece notas en el modo `log`**, solo al corregir.
+   El criterio 31 pide tres preguntas y no las nombra; se pueden añadir después
+   desde «Corregir».
+5. **Siguen abiertos los hallazgos de las tajadas 1 y 2** que no eran míos: la
+   sesión fuera del horario del día que no entra en la barra, el movido que
+   además está en marcha, la barrita que le falta al movido, «▶ Empezar»
+   apagándose por actividad, «Cambiar hora o duración» validando solo contra el
+   plan, y la línea de guía que no sabe nada de lo vivido.
+
+**Estado del árbol:** sin commitear. 8 archivos modificados y 8 nuevos bajo
+`src/`, más este dossier y `BOARD.md`. El arnés temporal está **borrado**
+(`src/arnes-registrar.html` y `src/arnes-registrar.tsx`) y no queda ningún dato
+de prueba: todo lo que se escribió fueron mutaciones **simuladas** en tests.
+
+---
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo
@@ -2269,3 +2492,103 @@ el límite de este repositorio), los **375 px** y el **tema oscuro** dentro de
 devolvían siguen abiertos menos el 3 y el 6; el más sustancioso es que **una
 sesión fuera del horario del día no entra en la barra** (borde del criterio 26).
 Siguiente: la tajada 3, registrar lo que se sale.
+
+### Tajada 3 — registrar lo que se sale
+
+**Veredicto: `accepted`**, con **un recorte escrito y con dueño**: el «···» de
+una sesión **emparejada con su bloque** no existe todavía, así que el criterio 35
+queda cerrado **solo para lo que se pinta suelto**. No devuelvo por eso porque el
+reparto es el del arquitecto —la tabla de la sección 2 le da a esta tajada
+`components/VidaAgendaSession/`, y el **criterio 41** (tajada 4) pide
+explícitamente que la sesión de un bloque sea «ajustable desde el "···" (hora,
+duración, notas, criterio 6)» y deshacible—, pero **lo dejo dicho aquí para que
+nadie cierre la tajada 4 sin eso**: si la 4 solo lo da a las sesiones nacidas de
+«Lo hice», el criterio 35 se quedará sin cumplir para una sesión empezada y
+terminada sobre su bloque, que es el camino más común de todos.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del constructor)
+
+| # | Veredicto del revisor | Cómo lo comprobé |
+|---|---|---|
+| 30 | cumplido | «Empezar algo» solo llega con `onStartSomething` cuando `canStart` (hoy, con sesión y sin la pregunta de otro día). La hoja en modo `start` no monta `VidaDurationPills` ni pregunta «cuánto», y **no llama a ninguna mutación**: `onStart` → `sessionActions.start`, que es quien cierra la anterior (D4). Leído en `VidaHoyPage.tsx` y en `VidaLogSessionSheet.tsx`. El molde es el de FEAT-003 (`SteppedModal` `ds="aura"` + `mobileSheet`). |
+| 31 | cumplido | Modo `log` con los tres pasos y `VidaDurationPills`; escribe con `useCreateActivityFollowUpMutation` (`activityFollowUpAdd`) y `logSessionInput`, que devuelve exactamente `activityId · date · startTime · durationMinutes · notes`. |
+| 32 | cumplido, **medido por mí** | Arnés propio (`src/features/vida/components/zz-rev-t3.test.tsx`, 9 casos, **borrado**): **hoy** pinta los dos botones; **día pasado** pinta **un solo botón** en toda la fila —«Registrar tiempo pasado»—, sin «Empezar algo», sin «Copiar del \<día\> pasado» y sin «Vaciar y rehacer»; **día futuro**, ninguno de los dos. `canLogPast = isToday \|\| isPast` en la página. |
+| 33 | cumplido | Lo registrado entra por el cruce de la tajada 2 (nada nuevo que pintar) y el refresco va por `invalidateFollowUpQueries`, que ya existía. |
+| 34 | cumplido | El picker filtra con `excludeArchivedActivities` sobre `useActivitiesQuery`; lo que no existe no se crea aquí, se enlaza al catálogo. |
+| 35 | **cumplido para las sesiones sueltas; recortado para las emparejadas** | Medido en mi arnés con proveedores de verdad: el «···» de una sesión suelta abre **«Corregir»** y **«Quitar del registro»**, el diálogo dice «¿Quitar «Llamada con el banco» del registro?» con salida **«Volver»**, pulsar «Volver» **no llama a la mutación**, y no hay ni un control que diga «cancelar», «eliminar» o «borrar». Una sesión **en marcha** no ofrece el menú, y sin `onEdit` (día futuro) tampoco. Lo que **no** existe: el «···» de la sesión que casó con su bloque — el bloque solo ofrece el cierre completo `isRunning && onOpenFinishModal`. |
+| 36 | cumplido | El `mutate` cierra la hoja en su `onSuccess` **local**: con error, `onClose` no se llama y el estado sigue en el componente (la `key` es por apertura, así que no se remonta). No hay escritura optimista en ninguna de las dos mutaciones, así que no puede quedar una sesión fantasma en la agenda. |
+| 37 | cumplido | La hoja no importa ni nombra nada de `activityDayPlan` (solo en un comentario), y `logSessionInput`/`editSessionInput` no tienen una sola clave del plan. |
+| 38 | cumplido, **verificado por estructura** | `filterActivitiesBySearch` solo aparece en `VidaActivityPicker`, en `activity-filters.ts` y en `VidaActividadesPage` (que ya era suyo); `useActivitiesQuery` ya **no** está en `VidaPlaceInGapSheet`. Las dos hojas importan y montan `VidaActivityPicker`. No hay dos buscadores. |
+| 56 | cumplido | Ver el 32: en un día pasado la fila tiene **un** botón y es de registro. Los tests de FEAT-003 que afirman «cero botones de plan» siguen verdes sin tocarse. |
+| 59 | cumplido | `pnpm test src/features/vida/vida-vocabulary.test.ts` → **8 de 8**. Los cinco mensajes de `validateLogPast` los leí uno a uno: describen, no reprochan. |
+| 65 | cumplido, **medido por mí** | typecheck **exit 0** · lint **14/0** · `pnpm test` **2 fallos de 1101** (los dos de `SearchSelect`; **1 archivo rojo de 98**) · `pnpm build` **exit 0**, chunk inicial **953,93 kB**, `app-icons` **620,20 kB**, `IconPicker` **4,64 kB** (CSS 195,68 kB): **+8,4 kB y ninguno de iconos**. |
+
+**La desviación de `validateLogPast`: razonable, y queda escrita.** Rechazar un
+rato que **terminaría después de ahora** («de 15:00 a 16:00» a las 15:30) no lo
+pide el criterio 32, pero es coherente con el resto: pintaría en la agenda media
+hora que nadie ha vivido y el presupuesto la contaría como vivida, justo lo que
+el criterio 50 prohíbe para el tiempo que aún no ha llegado. El mensaje —«Ese
+rato no ha pasado entero todavía. Ajusta cuánto duró.»— describe y ofrece salida,
+sin una palabra de culpa. **Un aviso para la tajada 4:** «Lo hice» (criterio 41)
+crea la sesión con **la hora y la duración planeadas**, así que un bloque de
+14:00 a 15:00 marcado a las 14:50 nacerá terminando en el futuro y **no se podrá
+corregir** con esta validación hasta bajarle la duración. O se exceptúa ahí, o se
+vive con ello sabiéndolo.
+
+**Qué miré alrededor, y cómo** (regresiones)
+
+- **Quién monta lo que se tocó**: `VidaAgendaSession` solo lo monta
+  `VidaHoyPage` (`grep` sobre `src/`, tres archivos: el componente, su barril y
+  la página), así que **que haya dejado de ser puro no puede romper a nadie más**;
+  en mi arnés lo monté con `QueryClient` + `ConfirmDialogProvider` reales y
+  funciona. `VidaDayActions` y `VidaPlaceInGapSheet` tampoco salen de la página.
+- **La extracción del «qué»** (riesgo 1 del constructor): comprobado que la hoja
+  de FEAT-003 **usa** el picker y ya no tiene buscador propio ni consulta de
+  actividades; su test sigue verde en la corrida entera.
+- **`VidaDayActions` donde no aparecía** (riesgo 2): medido arriba. En un día
+  pasado **no se monta `PlanShortcuts`**, así que tampoco se pide el plan de la
+  semana anterior: la razón del componente interno se sostiene.
+- **Nada nuevo en el aparato ni en el arranque**: `git diff dda6caf -- src/` no
+  añade una línea con `localStorage`/`sessionStorage`, no hay `free-solid-svg-icons`
+  a pelo en el módulo, y `app-icons`/`IconPicker` salen **idénticos** del build.
+- **Nada duplicado** (sección 2): ni mutación, ni clave, ni invalidación, ni SDL,
+  ni componente de `shared/ui`, ni un quinto normalizador de texto. `VidaDurationPills`
+  se reutiliza, `VidaActivityPicker` es **extracción** y no copia, y los cinco
+  modales de `79bece0` no han vuelto: son tres modos de una hoja.
+
+**Estados**
+
+- **Sin datos** (catálogo vacío / nada con ese nombre) ✔ con vía al catálogo ·
+  **Error de escritura** (36) ✔ · **Día pasado** (56) ✔ · **Día futuro** ✔.
+- **Cargando el catálogo dentro del picker** y **el fallo de esa consulta** siguen
+  sin distinguirse («Nada con ese nombre»): es el hallazgo heredado de FEAT-003,
+  **no agrandado**, y sigue abierto.
+- **375 px y tema oscuro de la hoja nueva**: medidos por el **constructor** en un
+  arnés que ya borró (375 = `scrollWidth` = `clientWidth`, nombre de 47
+  caracteres truncado en una línea). **Yo no los volví a medir**: mi arnés fue de
+  comportamiento, en jsdom, que no tiene disposición. Queda como medida de
+  segunda mano, igual que el criterio 62 de la tajada 2.
+
+**Hallazgos anotados, ninguno devuelve**
+
+1. **El «···» de una sesión emparejada con su bloque** (el recorte de arriba):
+   **obligatorio en la tajada 4**, junto al criterio 41.
+2. **Corregir no puede cambiar el «qué»** (`activityFollowUpEdit` no admite
+   `activityId`): está dicho en el componente; si alguien registra la actividad
+   equivocada, hay que quitarla y registrarla otra vez. Ninguna pantalla lo
+   explica.
+3. **Registrar no avisa de solapes** (riesgo 5 del constructor): correcto que lo
+   real se solape, pero nadie lo dice.
+4. **El modo `log` no ofrece notas**, solo el modo `edit`. El criterio 31 no las
+   pide; se añaden después desde «Corregir».
+5. Siguen abiertos los de las tajadas 1 y 2: la sesión fuera del horario del día
+   que no entra en la barra, el movido que además está en marcha, la barrita que
+   le falta al movido, «▶ Empezar» apagándose por actividad, «Cambiar hora o
+   duración» validando solo contra el plan, la línea de guía que no sabe nada de
+   lo vivido y el buscador que no distingue fallo de vacío.
+
+**Lo que no revisé, y no lo disimulo:** ni una llamada real al API —ni un
+`activityFollowUpAdd` ni un `activityFollowUpRemove` de verdad—, los 375 px y el
+tema oscuro en un navegador, y los criterios 52 y 66, que son del usuario.
+Siguiente: la tajada 4, **la última**: pendiente, las tres salidas, «sin dato» y
+la frase de cierre — **más el «···» de la sesión de un bloque**.

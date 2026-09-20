@@ -30,75 +30,16 @@
   font-weight: 500;
 }
 
-/* `flex-wrap` es la red de los 375 px: las fichas bajan de línea, nunca
-   desbordan la hoja. */
-.options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-/* Cada ficha va dentro de un `li`: sin esto el `li` crece con el nombre y a
-   375 px aparece scroll horizontal (criterios 53 y 54). */
-.options > li {
-  display: flex;
-  max-width: 100%;
-  min-width: 0;
-}
-
-.option {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  max-width: 100%;
-  padding: 0.45rem 0.7rem;
-  overflow: hidden;
-  border: 1px solid var(--color-glass-border);
-  border-radius: var(--radius-full);
-  background: var(--aura-glass-1);
-  color: var(--color-text-secondary);
-  font-family: var(--font-label, inherit);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    color: var(--color-text);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
-    outline-offset: 2px;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.optionOn {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
-  color: var(--color-primary-hover);
-}
-
-/* Un nombre de 60 caracteres trunca en vez de estirar la hoja (criterio 54). */
+/* Lo único que queda del «qué» aquí: el nombre del bloque que se está
+   editando, que no se elige sino que se recuerda. El resto de las fichas vive
+   en `VidaActivityPicker.module.scss`.
+   Un nombre de 60 caracteres trunca en vez de estirar la hoja (criterio 54). */
 .optionName {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.optionMeta {
-  flex: none;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
 
 /* Las horas de «cuándo» y «otra hora»: mismas píldoras, otra fila. */
 .pills {
@@ -186,11 +127,6 @@
   font-weight: 600;
 }
 
-.hint {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
-}
 
 .error {
   margin: 0;

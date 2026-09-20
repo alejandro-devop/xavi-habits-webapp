@@ -7,6 +7,8 @@ import { VidaAgendaSession } from '@/features/vida/components/VidaAgendaSession'
 import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
+import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
+import type { VidaLogSessionMode } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
 import { useAddDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
@@ -18,6 +20,7 @@ import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActio
 import { useVidaSessionUi } from '@/features/vida/hooks/useVidaSessionUi'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
+import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import type {
   AgendaBlock,
@@ -42,7 +45,7 @@ import {
   describeBuildDay,
   usableTemplateItems,
 } from '@/features/vida/utils/vida-build-day.utils'
-import { minutesToTime } from '@/features/vida/utils/vida-time.utils'
+import { minutesToTime, parseTimeToMinutes } from '@/features/vida/utils/vida-time.utils'
 import {
   VIDA_DAY_LABELS,
   formatDayHeading,
@@ -129,6 +132,10 @@ export function VidaHoyPage() {
   // cruce de D1 y llega en la tajada 2.
   const canStart = isToday && !openSession.isDisabled && !openSession.isFromAnotherDay
   const runningActivityId = openSession.session?.activityId ?? null
+  // **Registrar** se puede en cualquier día de la tira que ya haya ocurrido, sea
+  // hoy o de atrás, aunque su **plan** no se pueda tocar (D10, criterios 32 y
+  // 56). En un día futuro, no: no se registra lo que no ha pasado.
+  const canLogPast = isToday || isPast
   const {
     planItems,
     suggestions,
@@ -215,6 +222,11 @@ export function VidaHoyPage() {
   const [sheet, setSheet] = useState<SheetState | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetSession, setSheetSession] = useState(0)
+  // La hoja de **registrar** (tajada 3), con su propia `key` por apertura: son
+  // dos hojas distintas y no comparten estado.
+  const [logSheet, setLogSheet] = useState<LogSheetState | null>(null)
+  const [logSheetOpen, setLogSheetOpen] = useState(false)
+  const [logSheetSession, setLogSheetSession] = useState(0)
   const addMutation = useAddDayPlanItemMutation()
   // Armar el día visto desde su plantilla (criterios 21, 41–44). Es una sola
   // `activityDayPlanSet` y el resumen se pinta aquí, porque lleva un enlace al
@@ -225,6 +237,12 @@ export function VidaHoyPage() {
     setSheet(next)
     setSheetSession((session) => session + 1)
     setSheetOpen(true)
+  }
+
+  function openLogSheet(next: LogSheetState) {
+    setLogSheet(next)
+    setLogSheetSession((session) => session + 1)
+    setLogSheetOpen(true)
   }
 
   /**
@@ -415,7 +433,20 @@ export function VidaHoyPage() {
         if (entry.kind === 'session') {
           // Algo que pasó y no es de ningún bloque, o lo real de un movido: en
           // **su** hora, punteado, sin tocar el plan (criterios 22 y 23).
-          return <VidaAgendaSession key={entry.id} entry={entry} />
+          return (
+            <VidaAgendaSession
+              key={entry.id}
+              entry={entry}
+              // Corregir y «Quitar del registro» (criterio 35). Se ofrece en
+              // los mismos días en que se registra —hoy y pasados—, y **no**
+              // en uno futuro, donde no hay nada que corregir.
+              onEdit={
+                canLogPast
+                  ? (session) => openLogSheet({ mode: 'edit', session })
+                  : undefined
+              }
+            />
+          )
         }
         return (
           <Fragment key={entry.id}>
@@ -583,9 +614,18 @@ export function VidaHoyPage() {
             </div>
           ) : null}
 
-          {/* Los dos atajos del día, solo donde se puede planear (criterios 36
-              y 37): en un día pasado esta fila no existe. */}
-          {canPlan ? <VidaDayActions date={date} planItems={planItems} /> : null}
+          {/* La fila de acciones del día. Los atajos de **plan** solo donde se
+              puede planear (FEAT-003, criterios 36 y 37); los de **registro**
+              donde el día ya ocurrió: «Empezar algo» solo hoy y «Registrar
+              tiempo pasado» también en los días de atrás (criterios 32 y 56).
+              En un día futuro no se pinta ninguno de los dos de registro. */}
+          <VidaDayActions
+            date={date}
+            planItems={planItems}
+            canPlan={canPlan}
+            onStartSomething={canStart ? () => openLogSheet({ mode: 'start' }) : undefined}
+            onLogPast={canLogPast ? () => openLogSheet({ mode: 'log' }) : undefined}
+          />
 
           {agendaList}
         </div>
@@ -619,8 +659,40 @@ export function VidaHoyPage() {
           preselected={sheet.kind === 'place' ? (sheet.preselected ?? null) : null}
         />
       ) : null}
+
+      {/* Registrar lo que se sale (tajada 3). Es **otra** hoja: no comparte
+          estado con la del plan, aunque las dos usen el mismo «qué». */}
+      {logSheet ? (
+        <VidaLogSessionSheet
+          key={logSheetSession}
+          open={logSheetOpen}
+          onClose={() => setLogSheetOpen(false)}
+          mode={logSheet.mode}
+          date={date}
+          dayLabel={dayLabel}
+          suggestions={suggestions}
+          defaultStartTime={defaultLogStartTime(dayHours.startTime, nowMinutes)}
+          session={logSheet.mode === 'edit' ? logSheet.session : null}
+          onStart={(activityId) => sessionActions.start(activityId)}
+        />
+      ) : null}
     </div>
   )
+}
+
+/** Cuántos minutos atrás arranca «Registrar tiempo pasado» por defecto. */
+const LOG_DEFAULT_LOOKBACK_MINUTES = 30
+
+/**
+ * De qué hora parte «Registrar tiempo pasado»: **media hora antes de ahora** en
+ * el día de hoy —que es el caso de «se me fue la mañana y no lo apunté»— y el
+ * principio del día en uno pasado, donde no hay reloj al que mirar. Nunca antes
+ * del inicio del día, y nunca una hora del futuro.
+ */
+function defaultLogStartTime(dayStart: string, nowMinutes: number | null): string {
+  if (nowMinutes === null) return dayStart
+  const startOfDay = parseTimeToMinutes(dayStart)
+  return minutesToTime(Math.max(startOfDay, nowMinutes - LOG_DEFAULT_LOOKBACK_MINUTES))
 }
 
 type SheetActivity = { id: string; title: string; icon: string | null; color: string | null }
@@ -642,3 +714,12 @@ type SheetState =
         durationMinutes: number
       }
     }
+
+/**
+ * Por dónde se abrió la hoja de registrar. Los tres modos van en una sola
+ * variable para que no pueda existir «corrigiendo una sesión mientras se
+ * empieza otra».
+ */
+type LogSheetState =
+  | { mode: Extract<VidaLogSessionMode, 'start' | 'log'> }
+  | { mode: Extract<VidaLogSessionMode, 'edit'>; session: ActivityFollowUp }

@@ -38,6 +38,10 @@ let addMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError
 let editMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let removeMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let setMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+/** Las de sesión (FEAT-004, tajada 3): registrar, corregir y quitar. */
+let createFollowUpMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+let updateFollowUpMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+let deleteFollowUpMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 /** Planes de **otros** días: la tira y «Copiar del <día> pasado» los leen. */
 let plansByDate: Record<string, ActivityDayPlanItem[]>
 /** El día que la página está mirando; las demás fechas salen de `plansByDate`. */
@@ -86,8 +90,13 @@ vi.mock('@/features/vida/hooks/useVidaItems', () => ({
 // Lo vivido del día visto (FEAT-004, tajada 2). Se mockea **la consulta**, no
 // `useVidaDayData`: lo que hay que comprobar es que la pantalla cruza de verdad
 // el plan con las sesiones.
+// Las tres mutaciones de sesión entran desde la tajada 3: la hoja de registrar
+// crea y corrige, y el «···» de una sesión la quita del registro.
 vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
   useActivityDayFollowUpsQuery: () => dayFollowUpsQuery,
+  useCreateActivityFollowUpMutation: () => createFollowUpMutation,
+  useUpdateActivityFollowUpMutation: () => updateFollowUpMutation,
+  useDeleteActivityFollowUpMutation: () => deleteFollowUpMutation,
 }))
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
@@ -232,6 +241,9 @@ beforeEach(() => {
   viewedDate = '2026-09-18'
   editMutation = { mutate: vi.fn(), isPending: false, isError: false }
   removeMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  createFollowUpMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  updateFollowUpMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  deleteFollowUpMutation = { mutate: vi.fn(), isPending: false, isError: false }
   planQuery = ready(PLAN)
   suggestionsQuery = ready([
     suggestion('s1', 'Poner lavadora', 20),
@@ -1203,5 +1215,192 @@ describe('VidaHoyPage — lo real encima de lo planeado (FEAT-004, tajada 2)', (
     // Y **no se afirma nada** de lo vivido: ni tramos nuevos ni etiquetas.
     expect(screen.queryByText(/^sin dato /)).not.toBeInTheDocument()
     expect(screen.queryByText('✓ calcado')).not.toBeInTheDocument()
+  })
+})
+
+/* ── Registrar lo que se sale (FEAT-004, tajada 3) ───────────────────────── */
+
+describe('VidaHoyPage — registrar lo que se sale (criterios 30 a 37 y 56)', () => {
+  function loose(
+    id: string,
+    activityId: string,
+    startTime: string,
+    durationMinutes: number,
+    title = 'Llamada con el banco',
+    date = '2026-09-18',
+  ): ActivityFollowUp {
+    return {
+      id,
+      activityId,
+      date,
+      startTime,
+      durationMinutes,
+      isOpen: false,
+      endTime: null,
+      endDate: null,
+      endDateTime: null,
+      notes: null,
+      activity: { id: activityId, title, category: null },
+    }
+  }
+
+  it('criterio 32 — hoy trae los dos: «Empezar algo» y «Registrar tiempo pasado»', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByRole('button', { name: 'Empezar algo' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Registrar tiempo pasado' })).toBeInTheDocument()
+  })
+
+  it('criterios 32 y 56 — un día pasado registra, pero no empieza ni planea', () => {
+    plansByDate = {
+      '2026-09-17': [{ ...block('x1', 'Leer un rato', '09:00', '09:30'), date: '2026-09-17' }],
+    }
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    expect(screen.getByRole('button', { name: 'Registrar tiempo pasado' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Empezar algo' })).not.toBeInTheDocument()
+    // Y sigue sin haber **un solo** botón de plan (criterio 56).
+    expect(screen.queryByRole('button', { name: /copiar del/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Vaciar y rehacer' })).not.toBeInTheDocument()
+  })
+
+  it('criterio 32 — en un día futuro no hay ninguno de los dos', () => {
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.queryByRole('button', { name: 'Empezar algo' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Registrar tiempo pasado' })).not.toBeInTheDocument()
+  })
+
+  it('criterio 30 — «Empezar algo» pregunta solo qué y arranca ahora mismo', async () => {
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar algo' }))
+
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByText('Empezar algo')).toBeInTheDocument()
+    // **No pide duración**: una sesión abierta no la tiene.
+    expect(within(sheet).queryByText('Cuánto duró')).not.toBeInTheDocument()
+    expect(within(sheet).queryByRole('group', { name: 'Cuánto duró' })).not.toBeInTheDocument()
+
+    fireEvent.click(within(sheet).getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Empezar' }))
+    await act(async () => {})
+
+    expect(startSession).toHaveBeenCalledWith('a-s1')
+  })
+
+  it('criterios 31, 33 y 37 — registrar un rato pasado escribe la sesión y no toca el plan', async () => {
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar tiempo pasado' }))
+
+    const sheet = screen.getByRole('dialog')
+    fireEvent.click(within(sheet).getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(within(sheet).getByLabelText('Hora a la que empezó'), {
+      target: { value: '08:00' },
+    })
+    // Las píldoras del criterio 31: 15 · 30 · 45 · 1h · libre.
+    const pills = within(sheet).getByRole('group', { name: 'Cuánto duró' })
+    expect(within(pills).getByRole('button', { name: '15' })).toBeInTheDocument()
+    expect(within(pills).getByRole('button', { name: '1h' })).toBeInTheDocument()
+    expect(within(pills).getByRole('button', { name: 'libre' })).toBeInTheDocument()
+    fireEvent.click(within(pills).getByRole('button', { name: '45' }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Registrar' }))
+    await act(async () => {})
+
+    expect(createFollowUpMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(createFollowUpMutation.mutate.mock.calls[0][0]).toEqual({
+      activityId: 'a-s1',
+      date: '2026-09-18',
+      startTime: '08:00',
+      durationMinutes: 45,
+      notes: null,
+    })
+    // **Registrar no toca el plan** (criterio 37): ninguna de las cuatro
+    // mutaciones de `activityDayPlan` se llamó.
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+    expect(editMutation.mutate).not.toHaveBeenCalled()
+    expect(removeMutation.mutate).not.toHaveBeenCalled()
+    expect(setMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 33 — lo registrado ya se veía en su hora, y ahora además se puede tocar', () => {
+    dayFollowUpsQuery = ready([loose('f9', 'otra', '11:40', 32)])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('Llamada con el banco')).toBeInTheDocument()
+    expect(screen.getByText('fuera del plan')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Más opciones de Llamada con el banco' }),
+    ).toBeInTheDocument()
+  })
+
+  it('criterio 35 — «Corregir» abre la hoja con esa sesión, hora, duración y notas', async () => {
+    // Un rato **que ya pasó** a las 9:24 de la mañana del fixture: corregir
+    // valida contra el reloj igual que registrar, así que la sesión de las
+    // 11:40 que usan los demás casos no serviría aquí.
+    dayFollowUpsQuery = ready([loose('f9', 'otra', '08:10', 32)])
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Llamada con el banco' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Corregir' }))
+
+    // El `Popover` que se acaba de usar también es un `dialog`: la hoja es el
+    // último que se montó.
+    const sheet = screen.getAllByRole('dialog').at(-1) as HTMLElement
+    expect(within(sheet).getByText('Corregir «Llamada con el banco»')).toBeInTheDocument()
+    expect(within(sheet).getByLabelText('Hora a la que empezó')).toHaveValue('08:10')
+    expect(within(sheet).getByLabelText('Notas de esta sesión')).toBeInTheDocument()
+
+    fireEvent.change(within(sheet).getByLabelText('Hora a la que empezó'), {
+      target: { value: '08:00' },
+    })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Guardar' }))
+    await act(async () => {})
+
+    expect(updateFollowUpMutation.mutate.mock.calls[0][0]).toEqual({
+      id: 'f9',
+      startTime: '08:00',
+      durationMinutes: 32,
+      notes: null,
+    })
+  })
+
+  it('criterio 35 — «Quitar del registro» pide confirmación y sale por «Volver»', async () => {
+    dayFollowUpsQuery = ready([loose('f9', 'otra', '11:40', 32)])
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Llamada con el banco' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar del registro' }))
+
+    expect(screen.getByText('¿Quitar «Llamada con el banco» del registro?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Volver' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /cancelar|eliminar/i })).not.toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'Quitar del registro' }).at(-1) as HTMLElement,
+    )
+    await act(async () => {})
+
+    expect(deleteFollowUpMutation.mutate).toHaveBeenCalledWith({
+      id: 'f9',
+      date: '2026-09-18',
+      activityId: 'otra',
+      wasOpen: false,
+    })
+  })
+
+  it('una sesión **en marcha** no se corrige: se termina', () => {
+    dayFollowUpsQuery = ready([
+      { ...loose('f9', 'otra', '09:10', 0), durationMinutes: null, isOpen: true },
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('Llamada con el banco')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Más opciones de Llamada con el banco' }),
+    ).not.toBeInTheDocument()
   })
 })

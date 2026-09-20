@@ -1,0 +1,98 @@
+/* El paso «qué», extraído de `VidaPlaceInGapSheet.module.scss` sin cambiarle
+   una medida: las fichas de la plantilla y los resultados del buscador tienen
+   que verse igual vengan de la hoja que vengan. Quien lo monta le pasa la clase
+   de su contenedor (`className`), así que los separadores de la hoja siguen
+   funcionando. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.legend {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* `flex-wrap` es la red de los 375 px: las fichas bajan de línea, nunca
+   desbordan la hoja. */
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cada ficha va dentro de un `li`: sin esto el `li` crece con el nombre y a
+   375 px aparece scroll horizontal. */
+.options > li {
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+  padding: 0.45rem 0.7rem;
+  overflow: hidden;
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-full);
+  background: var(--aura-glass-1);
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.optionOn {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary-hover);
+}
+
+/* Un nombre de 60 caracteres trunca en vez de estirar la hoja (criterio 61). */
+.optionName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.optionMeta {
+  flex: none;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}

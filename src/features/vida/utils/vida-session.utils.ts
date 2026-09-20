@@ -27,11 +27,13 @@
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type {
   ActivityFollowUpEditInput,
+  ActivityFollowUpInput,
   ActivityFollowUpStartInput,
 } from '@/features/vida/types/activity-followup.types'
 import { formatDateToYmd } from '@/features/vida/utils/vida-date.utils'
 import {
   DEFAULT_BLOCK_MINUTES,
+  isValidHhMm,
   normalizeTimeForApi,
   normalizeTimeForDisplay,
   parseTimeToMinutes,
@@ -226,6 +228,131 @@ export function minutesUntilEndTime(startTime: string, endTime: string): number 
   if (end === start) return 1
   const diff = end > start ? end - start : end + MINUTES_PER_DAY - start
   return Math.max(1, diff)
+}
+
+/* ── Registrar lo que se sale (tajada 3, criterios 31, 32 y 36) ─────────── */
+
+/**
+ * `YYYY-MM-DD` + `HH:mm` que **todavía no han llegado**, mirando el reloj.
+ *
+ * Rescatado de `79bece0:…/activity-time.utils.ts:253` (`isFutureDateTime`), con
+ * `now` inyectado. Lo usa «Registrar tiempo pasado»: no se registra lo que aún
+ * no ha pasado (criterio 32).
+ */
+export function isFutureDateTime(date: string, time: string, now: Date): boolean {
+  const instant = sessionStartInstant(date, time)
+  if (!instant) return false
+  return instant.getTime() > now.getTime()
+}
+
+export type LogPastValidation = { valid: boolean; message: string | null }
+
+export type ValidateLogPastInput = {
+  /** `YYYY-MM-DD` del día en el que se registra. */
+  date: string
+  /** `HH:mm` a la que empezó, tal como está escrito en la hoja. */
+  startTime: string
+  /** Minutos, o `null` si todavía no se ha elegido cuánto. */
+  durationMinutes: number | null
+  /** El reloj de este momento: ni un `new Date()` aquí dentro. */
+  now: Date
+}
+
+/**
+ * «Registrar tiempo pasado», comprobado **antes** de llamar al API.
+ *
+ * Rescatada la forma de `79bece0:…/activity-followup-form.ts:58`
+ * (`validateLogPastActivityForm`) con otros mensajes —allí eran horas y minutos
+ * sueltos; aquí manda `VidaDurationPills`— y con dos reglas que son de esta
+ * feature:
+ *
+ * 1. **La hora tiene que ser `HH:mm`** y del día que se está mirando.
+ * 2. **Nada del futuro** (criterio 32): ni una hora que aún no ha llegado, ni un
+ *    rato que se acabaría después de ahora. Lo segundo no lo pide el criterio
+ *    con esas palabras, pero registrar «de 15:00 a 16:00» a las 15:30 pintaría
+ *    en la agenda media hora que nadie ha vivido todavía, y el presupuesto la
+ *    contaría. Queda dicho en la sección 3, no escondido.
+ *
+ * El mínimo de un minuto es del API (`Duration must be at least 1 minute`).
+ * Un **día pasado** no tiene ninguna de las dos restricciones de futuro: ahí
+ * cualquier hora ya ocurrió.
+ */
+export function validateLogPast({
+  date,
+  startTime,
+  durationMinutes,
+  now,
+}: ValidateLogPastInput): LogPastValidation {
+  // Sobre el crudo, no sobre lo normalizado: `normalizeTimeForDisplay('')`
+  // devuelve `00:00`, y una hora vacía se colaría como medianoche.
+  const looksLikeTime = /^\d{1,2}:\d{2}(:\d{2})?$/.test(startTime.trim())
+  const time = looksLikeTime ? normalizeTimeForDisplay(startTime) : ''
+  if (!isValidHhMm(time)) {
+    return { valid: false, message: 'Dinos a qué hora empezó, con horas y minutos.' }
+  }
+  if (durationMinutes === null) {
+    return { valid: false, message: 'Elige cuánto duró.' }
+  }
+  if (durationMinutes < 1) {
+    return { valid: false, message: 'Un rato dura como mínimo un minuto.' }
+  }
+  const today = formatDateToYmd(now)
+  if (date > today) {
+    return { valid: false, message: 'Ese día todavía no ha llegado.' }
+  }
+  if (date === today) {
+    if (isFutureDateTime(date, time, now)) {
+      return { valid: false, message: 'Esa hora todavía no ha llegado.' }
+    }
+    const start = sessionStartInstant(date, time)
+    if (start && start.getTime() + durationMinutes * MS_PER_MINUTE > now.getTime()) {
+      return {
+        valid: false,
+        message: 'Ese rato no ha pasado entero todavía. Ajusta cuánto duró.',
+      }
+    }
+  }
+  return { valid: true, message: null }
+}
+
+/**
+ * Lo que se le manda a `activityFollowUpAdd` al registrar un rato que ya pasó
+ * (criterio 31). **No toca el plan**: `activityDayPlan` no se nombra aquí ni en
+ * la hoja que la llama (criterio 37).
+ */
+export function logSessionInput(params: {
+  date: string
+  activityId: string
+  startTime: string
+  durationMinutes: number
+  notes?: string | null
+}): ActivityFollowUpInput {
+  return {
+    activityId: params.activityId,
+    date: params.date,
+    startTime: normalizeTimeForApi(params.startTime),
+    durationMinutes: Math.max(1, Math.round(params.durationMinutes)),
+    notes: params.notes?.trim() ? params.notes.trim() : null,
+  }
+}
+
+/**
+ * Corregir una sesión ya registrada (criterio 35): hora, duración y notas.
+ * `activityFollowUpEdit` acepta cada campo por separado; se mandan los tres
+ * porque la hoja los enseña los tres.
+ */
+export function editSessionInput(params: {
+  id: string
+  startTime: string
+  durationMinutes: number
+  notes?: string | null
+}): ActivityFollowUpEditInput {
+  return {
+    id: params.id,
+    startTime: normalizeTimeForApi(params.startTime),
+    durationMinutes: Math.max(1, Math.round(params.durationMinutes)),
+    notes: params.notes?.trim() ? params.notes.trim() : null,
+  }
 }
 
 /* ── Lo que dice el API cuando algo sale mal ────────────────────────────── */

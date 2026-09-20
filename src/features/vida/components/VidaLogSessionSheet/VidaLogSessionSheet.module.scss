@@ -1,0 +1,115 @@
+/* Misma hoja que `VidaPlaceInGapSheet.module.scss`: quien abra las dos tiene
+   que ver la misma cosa con distintas preguntas, no dos hojas parecidas. El
+   `SteppedModal` ya la ancla abajo en móvil (`mobileSheet`). */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Cada pregunta, separada por una línea. */
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+
+  & + & {
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-glass-border);
+  }
+}
+
+.legend {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Corrigiendo, «qué» no se pregunta: se recuerda. */
+.editing {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Un nombre de 60 caracteres trunca en vez de estirar la hoja (criterio 61). */
+.editingName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom {
+  display: block;
+  min-width: 0;
+}
+
+.notes {
+  width: 100%;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.75rem;
+  background: var(--aura-glass-1);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  resize: vertical;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Lo que va a quedar registrado, dicho antes de guardarlo. */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  background: var(--aura-glass-1);
+  /* `--color-text-secondary` y no `--color-text-muted`: el apagado del tema
+     claro se queda en ~2,4:1 y esto hay que poder leerlo. */
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.previewLine {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.75rem;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

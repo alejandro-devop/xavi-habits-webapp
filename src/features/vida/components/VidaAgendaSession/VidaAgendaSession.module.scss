@@ -106,3 +106,53 @@
   color: var(--aura-ring-to, #7c3aed);
   font-weight: 700;
 }
+
+/* ── El «···» de una sesión registrada (criterio 35) ─────────────────────── */
+
+/* Idéntico al de `VidaAgendaBlock.module.scss`, que a su vez copia el de
+   `VidaActivityCard`: es el mismo menú, en el mismo sitio de la tarjeta.
+   Dos menús que se parecen se leen peor que dos menús idénticos.
+   La etiqueta deja de empujarse sola al borde: ahora el que cierra la fila es
+   el «···». */
+.more {
+  flex: 0 0 auto;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menuItem {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: -2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}

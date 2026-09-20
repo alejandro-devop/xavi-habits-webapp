@@ -1,19 +1,14 @@
 import { useMemo, useState } from 'react'
+import type { PickedActivity } from '@/features/vida/components/VidaActivityPicker'
+import { VidaActivityPicker } from '@/features/vida/components/VidaActivityPicker'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
-import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import {
   useAddDayPlanItemMutation,
   useEditDayPlanItemMutation,
 } from '@/features/vida/hooks/useActivityDayPlan'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
-import type { Activity } from '@/features/vida/types/activity.types'
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
-import { filterActivitiesBySearch } from '@/features/vida/utils/activity-filters'
-import {
-  CATALOG_LIMIT,
-  UNCATEGORIZED_GROUP_ICON,
-  excludeArchivedActivities,
-} from '@/features/vida/utils/vida-catalog.utils'
+import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
 import type { GapWindow } from '@/features/vida/utils/vida-gap-form.utils'
 import {
   buildStartTimeOptions,
@@ -32,11 +27,14 @@ import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { Input } from '@/shared/ui/Input'
-import { Skeleton } from '@/shared/ui/Skeleton'
 import { SteppedModal } from '@/shared/ui/SteppedModal'
 import styles from './VidaPlaceInGapSheet.module.scss'
 
-type ChosenActivity = { id: string; title: string; icon: string | null; color: string | null }
+/**
+ * El «qué» ya no se describe aquí: es `VidaActivityPicker`, compartido con las
+ * hojas de registrar (criterio 38 de FEAT-004).
+ */
+type ChosenActivity = PickedActivity
 
 type VidaPlaceInGapSheetProps = {
   open: boolean
@@ -109,7 +107,6 @@ export function VidaPlaceInGapSheet({
   const [customStart, setCustomStart] = useState(
     isEditing && editing.startTime !== minutesToTime(gapWindow.startMinutes),
   )
-  const [search, setSearch] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
 
   const startOptions = useMemo(
@@ -118,27 +115,9 @@ export function VidaPlaceInGapSheet({
   )
   const maxMinutes = getMaxDurationForStartTime(startTime, gapWindow)
 
-  // El buscador de «qué»: las actividades no archivadas, con la misma clave de
-  // caché que el catálogo (`{ page: 1, limit: CATALOG_LIMIT }`), así que abrir
-  // la hoja viniendo de Actividades no pide nada. **No se usa `SearchSelect`**:
-  // tiene dos tests rojos en la línea base y arrastrarlo metería ruido.
-  const activitiesQuery = useActivitiesQuery({ page: 1, limit: CATALOG_LIMIT })
-  const plannedIds = new Set(planItems.map((item) => item.activityId))
-
-  const templateOptions = suggestions
-    .filter((suggestion) => suggestion.item.isActive !== false)
-    .filter((suggestion) => !plannedIds.has(suggestion.item.activityId))
-    .map((suggestion) => ({
-      activity: toChosen(suggestion),
-      durationMinutes: suggestion.item.durationMinutes,
-    }))
-
-  const searchResults = search.trim()
-    ? filterActivitiesBySearch(
-        excludeArchivedActivities(activitiesQuery.data?.activities ?? []),
-        search,
-      ).slice(0, 8)
-    : []
+  // El «qué» lo pinta `VidaActivityPicker`: lo que ya está en el plan no se
+  // vuelve a ofrecer desde la plantilla.
+  const plannedIds = planItems.map((item) => item.activityId)
 
   const validation = validatePlacement({ startTime, durationMinutes }, gapWindow)
   const canSubmit = chosen !== null && validation.valid && !mutation.isPending
@@ -207,88 +186,20 @@ export function VidaPlaceInGapSheet({
     >
       <div className={styles.form}>
         {!isEditing ? (
-          <section className={styles.block} aria-labelledby="vida-gap-what">
-            <h3 className={styles.legend} id="vida-gap-what">
-              Qué
-            </h3>
-
-            {templateOptions.length > 0 ? (
-              <ul className={styles.options}>
-                {templateOptions.map(({ activity, durationMinutes: templateMinutes }) => (
-                  <li key={activity.id}>
-                    <button
-                      type="button"
-                      className={[styles.option, chosen?.id === activity.id ? styles.optionOn : '']
-                        .filter(Boolean)
-                        .join(' ')}
-                      aria-pressed={chosen?.id === activity.id}
-                      disabled={mutation.isPending}
-                      onClick={() => chooseActivity(activity, templateMinutes)}
-                    >
-                      <AppIcon name={activity.icon ?? UNCATEGORIZED_GROUP_ICON} size="2xs" decorative />
-                      <span className={styles.optionName}>{activity.title}</span>
-                      {templateMinutes !== null ? (
-                        <span className={styles.optionMeta}>
-                          {formatDurationFromMinutes(templateMinutes)}
-                        </span>
-                      ) : null}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className={styles.hint}>
-                Tu plantilla de {dayLabel} no tiene nada más que ofrecer aquí. Búscalo abajo.
-              </p>
-            )}
-
-            <Input
-              type="search"
-              value={search}
-              placeholder="Busca otra cosa…"
-              aria-label="Buscar entre tus actividades"
-              disabled={mutation.isPending}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-
-            {activitiesQuery.isPending && activitiesQuery.fetchStatus !== 'idle' && search.trim() ? (
-              <span aria-busy="true" aria-live="polite">
-                <Skeleton width="100%" height={30} radius="999px" />
-              </span>
-            ) : null}
-
-            {search.trim() ? (
-              searchResults.length > 0 ? (
-                <ul className={styles.options}>
-                  {searchResults.map((activity) => (
-                    <li key={activity.id}>
-                      <button
-                        type="button"
-                        className={[
-                          styles.option,
-                          chosen?.id === activity.id ? styles.optionOn : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
-                        aria-pressed={chosen?.id === activity.id}
-                        disabled={mutation.isPending}
-                        onClick={() => chooseActivity(fromActivity(activity), null)}
-                      >
-                        <AppIcon
-                          name={activity.category?.icon ?? UNCATEGORIZED_GROUP_ICON}
-                          size="2xs"
-                          decorative
-                        />
-                        <span className={styles.optionName}>{activity.title}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className={styles.hint}>Nada con ese nombre. Puedes crearla en Actividades.</p>
-              )
-            ) : null}
-          </section>
+          // El «qué» es `VidaActivityPicker`, el mismo que usan «Empezar algo»
+          // y «Registrar tiempo pasado» (criterio 38 de FEAT-004). Lleva la
+          // clase `block` de esta hoja para que el separador entre preguntas
+          // siga cayendo donde caía.
+          <VidaActivityPicker
+            className={styles.block}
+            headingId="vida-gap-what"
+            value={chosen}
+            onChange={chooseActivity}
+            suggestions={suggestions}
+            excludeActivityIds={plannedIds}
+            dayLabel={dayLabel}
+            disabled={mutation.isPending}
+          />
         ) : (
           <p className={styles.editing}>
             <AppIcon name={editing.activity.icon ?? UNCATEGORIZED_GROUP_ICON} size="2xs" decorative />
@@ -397,25 +308,6 @@ export function VidaPlaceInGapSheet({
       </div>
     </SteppedModal>
   )
-}
-
-function toChosen(suggestion: VidaSuggestion): ChosenActivity {
-  const activity = suggestion.item.activity ?? null
-  return {
-    id: suggestion.item.activityId,
-    title: activity?.title ?? 'Actividad',
-    icon: activity?.category?.icon ?? null,
-    color: activity?.category?.color ?? null,
-  }
-}
-
-function fromActivity(activity: Activity): ChosenActivity {
-  return {
-    id: activity.id,
-    title: activity.title,
-    icon: activity.category?.icon ?? null,
-    color: activity.category?.color ?? null,
-  }
 }
 
 /**

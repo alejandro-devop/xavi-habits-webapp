@@ -4,16 +4,20 @@ import {
   VIDA_UNKNOWN_SESSION_MINUTES,
   closeSessionInput,
   describeOverPlan,
+  editSessionInput,
   elapsedMinutes,
   followUpStartInstant,
   formatElapsedCompact,
   formatElapsedHHMMSS,
+  isFutureDateTime,
   isSessionFromAnotherDay,
+  logSessionInput,
   minutesUntilEndTime,
   resolveUnknownEndMinutes,
   sessionStartInstant,
   startSessionInput,
   translateSessionError,
+  validateLogPast,
 } from '@/features/vida/utils/vida-session.utils'
 
 function session(overrides: Partial<ActivityFollowUp> = {}): ActivityFollowUp {
@@ -248,5 +252,161 @@ describe('followUpStartInstant', () => {
       new Date(2026, 8, 18, 9, 0, 0),
     )
     expect(followUpStartInstant(null)).toBeNull()
+  })
+})
+
+/* ── Registrar lo que se sale (tajada 3) ─────────────────────────────────── */
+
+/** Un martes a las 15:30, para que «ahora» no dependa de cuándo se corra. */
+const AHORA = new Date(2026, 8, 22, 15, 30, 0, 0)
+const HOY = '2026-09-22'
+const AYER = '2026-09-21'
+const MANANA = '2026-09-23'
+
+describe('isFutureDateTime — lo que todavía no ha llegado', () => {
+  it('una hora de más tarde de hoy es futuro; una de antes, no', () => {
+    expect(isFutureDateTime(HOY, '16:00', AHORA)).toBe(true)
+    expect(isFutureDateTime(HOY, '15:00', AHORA)).toBe(false)
+  })
+
+  it('el minuto exacto de ahora no es futuro', () => {
+    expect(isFutureDateTime(HOY, '15:30', AHORA)).toBe(false)
+  })
+
+  it('cualquier hora de un día pasado ya ocurrió, y todo un día futuro no', () => {
+    expect(isFutureDateTime(AYER, '23:00', AHORA)).toBe(false)
+    expect(isFutureDateTime(MANANA, '00:10', AHORA)).toBe(true)
+  })
+
+  it('una fecha que no se entiende no se declara futuro', () => {
+    expect(isFutureDateTime('no-es-una-fecha', '10:00', AHORA)).toBe(false)
+  })
+})
+
+describe('validateLogPast — «Registrar tiempo pasado» (criterios 31, 32 y 36)', () => {
+  it('un rato de esta mañana vale', () => {
+    expect(
+      validateLogPast({ date: HOY, startTime: '09:00', durationMinutes: 45, now: AHORA }),
+    ).toEqual({ valid: true, message: null })
+  })
+
+  it('en un día pasado vale cualquier hora, incluida la noche', () => {
+    expect(
+      validateLogPast({ date: AYER, startTime: '22:40', durationMinutes: 60, now: AHORA }),
+    ).toEqual({ valid: true, message: null })
+  })
+
+  it('sin duración no se registra, y lo dice sin reproche', () => {
+    const result = validateLogPast({
+      date: HOY,
+      startTime: '09:00',
+      durationMinutes: null,
+      now: AHORA,
+    })
+    expect(result.valid).toBe(false)
+    expect(result.message).toBe('Elige cuánto duró.')
+  })
+
+  it('menos de un minuto no se registra: es el mínimo del API', () => {
+    expect(
+      validateLogPast({ date: HOY, startTime: '09:00', durationMinutes: 0, now: AHORA }).valid,
+    ).toBe(false)
+  })
+
+  it('una hora vacía o rota se pide otra vez', () => {
+    expect(validateLogPast({ date: HOY, startTime: '', durationMinutes: 30, now: AHORA })).toEqual({
+      valid: false,
+      message: 'Dinos a qué hora empezó, con horas y minutos.',
+    })
+  })
+
+  it('una hora que aún no ha llegado, no (criterio 32)', () => {
+    expect(
+      validateLogPast({ date: HOY, startTime: '16:00', durationMinutes: 30, now: AHORA }).message,
+    ).toBe('Esa hora todavía no ha llegado.')
+  })
+
+  it('un día futuro, tampoco (criterio 32)', () => {
+    expect(
+      validateLogPast({ date: MANANA, startTime: '09:00', durationMinutes: 30, now: AHORA })
+        .message,
+    ).toBe('Ese día todavía no ha llegado.')
+  })
+
+  it('un rato que se acabaría después de ahora no se registra entero', () => {
+    // 15:00 + 60 min acaba a las 16:00, y son las 15:30.
+    expect(
+      validateLogPast({ date: HOY, startTime: '15:00', durationMinutes: 60, now: AHORA }).message,
+    ).toBe('Ese rato no ha pasado entero todavía. Ajusta cuánto duró.')
+    // Los 30 que sí han pasado, sí.
+    expect(
+      validateLogPast({ date: HOY, startTime: '15:00', durationMinutes: 30, now: AHORA }).valid,
+    ).toBe(true)
+  })
+
+  it('ningún mensaje usa una palabra de culpa ni «cancelar»', () => {
+    const mensajes = [
+      validateLogPast({ date: HOY, startTime: '', durationMinutes: 30, now: AHORA }).message,
+      validateLogPast({ date: HOY, startTime: '09:00', durationMinutes: null, now: AHORA }).message,
+      validateLogPast({ date: HOY, startTime: '16:00', durationMinutes: 30, now: AHORA }).message,
+      validateLogPast({ date: MANANA, startTime: '09:00', durationMinutes: 30, now: AHORA })
+        .message,
+      validateLogPast({ date: HOY, startTime: '15:00', durationMinutes: 60, now: AHORA }).message,
+    ]
+    for (const mensaje of mensajes) {
+      expect(mensaje).not.toMatch(/desperdici|perdist|fallast|cancel|elimin/i)
+    }
+  })
+})
+
+describe('logSessionInput y editSessionInput — lo que se le manda al API', () => {
+  it('registrar manda la hora en `HH:mm` y nunca menos de un minuto', () => {
+    expect(
+      logSessionInput({
+        date: HOY,
+        activityId: 'a1',
+        startTime: '9:05',
+        durationMinutes: 0.4,
+        notes: '   ',
+      }),
+    ).toEqual({
+      activityId: 'a1',
+      date: HOY,
+      startTime: '09:05',
+      durationMinutes: 1,
+      notes: null,
+    })
+  })
+
+  it('registrar no lleva ni un campo del plan del día (criterio 37)', () => {
+    const input = logSessionInput({
+      date: HOY,
+      activityId: 'a1',
+      startTime: '09:00',
+      durationMinutes: 30,
+    })
+    expect(Object.keys(input).sort()).toEqual([
+      'activityId',
+      'date',
+      'durationMinutes',
+      'notes',
+      'startTime',
+    ])
+  })
+
+  it('corregir manda el `id` y los tres campos que la hoja enseña (criterio 35)', () => {
+    expect(
+      editSessionInput({
+        id: 'f9',
+        startTime: '19:40',
+        durationMinutes: 41.6,
+        notes: '  me alargué  ',
+      }),
+    ).toEqual({
+      id: 'f9',
+      startTime: '19:40',
+      durationMinutes: 42,
+      notes: 'me alargué',
+    })
   })
 })

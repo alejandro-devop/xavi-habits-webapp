@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1789944939.772526,
-    "ast_hash": "94724abb18f1948f5443a4ea78143624",
+    "mtime": 1789946439.9081402,
+    "ast_hash": "b1172dde25c9ed24f3ef380f290a1039",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,8 +2480,8 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789943984.5994523,
-    "ast_hash": "2df84c3dff69150df34d9324ec9755e9",
+    "mtime": 1789946264.335299,
+    "ast_hash": "3da9f51eae211b8836958fb7508e826d",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
@@ -2985,8 +2985,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaDayData.ts": {
-    "mtime": 1789944735.9726934,
-    "ast_hash": "2ce02c228a23890d286acdcd3fd2318d",
+    "mtime": 1789946439.9081402,
+    "ast_hash": "5c903419d75325fea5570c8c39485da6",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaNowMinute.test.tsx": {
@@ -3195,8 +3195,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-004-vida-hoy-vivir-el-dia.md": {
-    "mtime": 1789944251.7328682,
-    "ast_hash": "e122f4709a3c366181e9302873451c7b",
+    "mtime": 1789946244.1792495,
+    "ast_hash": "757b57f651944b2bfc7d7f375b6b880c",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260920_220412_que_existe_en_el_repo_para_la_sesion_viva_de_vida.md": {
@@ -3225,13 +3225,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-execution.utils.test.ts": {
-    "mtime": 1789944523.3316383,
-    "ast_hash": "bbfd53a0b43cd2e1df4bce47df8e88f1",
+    "mtime": 1789946419.7571697,
+    "ast_hash": "96805a298e304898a8d3686d9092a3d8",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-execution.utils.ts": {
-    "mtime": 1789944426.5340703,
-    "ast_hash": "b06f07e2785794ac6fb3323bea129166",
+    "mtime": 1789946397.7922046,
+    "ast_hash": "5eba3c3ba2c0156da986f95225ba9c05",
     "semantic_hash": ""
   },
   "docs/vida/assets/06-vida-plantilla.html": {

@@ -1,0 +1,108 @@
+/* Una sesión que no es de ningún bloque, o lo real de un bloque movido. Mismo
+   esqueleto que el bloque y el hueco —canaleta + tarjeta—, trazo **punteado**
+   como en el render 04-B: se lee como algo que pasó, no como algo planeado. */
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.gutter {
+  display: flex;
+  position: relative;
+  flex: 0 0 2.75rem;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding-top: 0.8rem;
+}
+
+.time {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.tick {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.1rem;
+  border: 2px dotted color-mix(in srgb, var(--vida-category-color, var(--aura-ring-to, #7c3aed)) 60%, transparent);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.card {
+  display: flex;
+  /* Igual que el bloque: a 375 px la etiqueta baja a su línea en vez de
+     aplastar el nombre hasta «O…» (criterio 60). */
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  row-gap: 0.4rem;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px dotted color-mix(in srgb, var(--aura-ring-to, #7c3aed) 45%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--aura-ring-to, #7c3aed) 6%, transparent);
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--aura-ring-to, #7c3aed)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--aura-ring-to, #7c3aed)) 65%, var(--color-text));
+}
+
+.body {
+  display: flex;
+  flex: 1 1 8rem;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+/* Un nombre largo se recorta: nunca empuja la tarjeta (criterio 61). */
+.name {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* «fuera del plan» / «40 min tarde»: **texto**, no solo color. Sin reproche y
+   sin color de alarma. */
+.tag {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--aura-ring-to, #7c3aed) 12%, transparent);
+  color: color-mix(in srgb, var(--aura-ring-to, #7c3aed) 55%, var(--color-text));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.live {
+  color: var(--aura-ring-to, #7c3aed);
+  font-weight: 700;
+}

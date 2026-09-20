@@ -991,7 +991,7 @@ sesión, **el toast del cierre lo lanza el llamante, no el hook**:
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **Empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo.** | `utils/vida-session.utils.ts` (N) · `hooks/useVidaElapsed.ts` (N) · `hooks/useVidaOpenSession.ts` (N) · `hooks/useVidaSessionActions.ts` (N) · `components/VidaSessionBar/` (N) · `components/VidaFinishSessionModal/` (N) · `components/VidaStaleSessionPrompt/` (N) · `routes/VidaModuleLayout.tsx` (N) · `routes/vida.routes.tsx` · `graphql/activity-followups.graphql.ts` · `api/activity-followups.api.ts` · `types/activity-followup.types.ts` · `hooks/useActivityFollowUps.ts` · `graphql/contracts.test.ts` · `shared/ui/Toast/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 2–17, **1 a medias** (ver el recorte), 54, 59 (los tres toasts), 64, y la parte de 60/61/63 que toca la barra y el cierre | **accepted** (2026-09-20; 10 y 66 quedan en el recorrido manual) |
-| 2 | **Lo real encima de lo planeado, y el presupuesto por colores.** | `utils/vida-execution.utils.ts` (N) · `hooks/useVidaDayData.ts` · `components/VidaAgendaBlock/` · `components/VidaPlanVsRealBar/` (N) · `components/VidaAgendaSession/` (N) · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | **la otra mitad de 1**, 18–29, 53, 55, 57, 58, 62 | pending |
+| 2 | **Lo real encima de lo planeado, y el presupuesto por colores.** | `utils/vida-execution.utils.ts` (N) · `hooks/useVidaDayData.ts` · `components/VidaAgendaBlock/` · `components/VidaPlanVsRealBar/` (N) · `components/VidaAgendaSession/` (N) · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | **la otra mitad de 1**, 18–29, 53, 55, 57, 58, 62 | **accepted** (2026-09-20, en la **segunda** revisión: devuelta por el cruce de D1, re-entregada con los dos pases y comprobada con arnés propio) |
 | 3 | **Registrar lo que se sale.** | `components/VidaActivityPicker/` (N) · `components/VidaPlaceInGapSheet/` · `components/VidaLogSessionSheet/` (N) · `utils/vida-session.utils.ts` · `components/VidaDayActions/` · `components/VidaAgendaSession/` · `pages/VidaHoyPage.tsx` | 30–38, 56 | pending |
 | 4 | **Lo que falta: pendiente, las tres salidas, sin dato y la frase de cierre.** | `store/vida-device-notes.store.ts` (N) · `utils/vida-execution.utils.ts` · `components/VidaBlockOutcomes/` (N) · `components/VidaAgendaNoData/` (N) · `components/VidaAgendaBlock/` · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | 39–52, 60, 61, 65; **66 lo cierra el usuario** | pending |
 
@@ -1401,6 +1401,412 @@ sintéticos), a **375 px y en tema oscuro**, con un nombre de **56 caracteres**:
 (`arnes-sesion-vida.html` y `src/arnes-sesion-vida.tsx`). `graphify update .`
 corrido: 3117 nodos, 3512 aristas.
 
+### Tajada 2 — lo real encima de lo planeado, y el presupuesto en dos formas
+
+**Resumen para el revisor:**
+1. `/app/vida/hoy` ya **cruza lo vivido con el plan**: cada bloque se queda en su
+   hora y enseña «✓ calcado» / «empezó +N» / «+N min» / «−N min» con sus **horas
+   reales** y su barrita **plan frente a real**; lo que no es de ningún bloque se
+   pinta **fuera del plan** punteado en su hora; el **movido** deja sombra («→
+   hecho a las 20:40») y lo real donde ocurrió («100 min tarde»); y el
+   presupuesto tiene **dos formas** —*hecho · en marcha · planeado · libre* con
+   el día en marcha, *seguido · de más · fuera del plan · sin dato* con el día
+   cerrado— que suman el 100 % y dicen sus minutos.
+2. Lo escrito: **3 archivos nuevos de código + 1 de test**
+   (`utils/vida-execution.utils.ts`, `components/VidaPlanVsRealBar/`,
+   `components/VidaAgendaSession/`), **9 modificados**, ninguno fuera de
+   `features/vida`.
+3. **Lo que más probablemente rompí, en orden:** (a) **`VidaHoyPage` ya no
+   recorre `agenda.entries` sino `execution.entries`**, y esa lista **parte los
+   huecos** alrededor de una sesión suelta — cambia las ventanas que se ofrecen
+   para colocar en un día con algo registrado, que es lo que usan las fichas de
+   plantilla y «+ otra cosa» de FEAT-003; (b) **`useVidaDayData` tiene una cuarta
+   consulta** y entra en su `isPending`: si `activityDayFollowUps` va lenta, la
+   pantalla entera espera (antes no); (c) **«en marcha» ya no lo decide el
+   `activityId` sino el cruce**, así que depende de que la sesión abierta esté en
+   la lista del día — la uno a mano en la página, y si el API cambiara de forma
+   ahí es donde se nota.
+
+**Qué se construyó**
+
+*Lo puro*
+
+- `src/features/vida/utils/vida-execution.utils.ts` (**N**, + `.test.ts` con 37
+  casos). El archivo **hermano** que pedía la decisión 3 del plan:
+  `buildDayAgenda` no gana una cuarta variante ni `AgendaBlock` un campo nuevo.
+  Contiene los dos umbrales (`VIDA_ON_PLAN_TOLERANCE_MINUTES = 5`,
+  `VIDA_MOVED_THRESHOLD_MINUTES = 60`), `toSessionSpans`,
+  `matchSessionsToBlocks`, `describeBlockExecution`, `getExecutedBudget`,
+  `isDayClosed` y `buildDayExecution`. **Puro y con `now` inyectado**: ni un
+  `new Date()` dentro.
+- **El cruce (D1)**: un solo pase sobre las sesiones ordenadas por hora; cada una
+  va al bloque **libre** de su actividad más cercano en hora, el empate lo gana
+  el más temprano, ningún bloque recibe dos y ninguna sesión va a dos. Lo que
+  sobra queda `unmatched` y se pinta fuera del plan.
+- **El 100 % (criterio 26)**: no se suman duraciones. El día se **parte por los
+  bordes** de todo lo que hay (ventana, bloques, sesiones) y cada trocito se
+  clasifica **una vez**, con prioridad. Por eso dos sesiones solapadas, o una
+  sesión encima de su bloque, no cuentan dos veces. Es también el motivo por el
+  que **no se rescató** `getUsedMinutesFromFollowUps` de `79bece0`, como decía el
+  plan.
+
+*Lo que se ve*
+
+- `components/VidaPlanVsRealBar/` (**N**, 3 archivos): la barrita del criterio 21
+  con «plan 30 · real 41» **como texto real**, no en un `title`. Sin rojo: durar
+  más no es un fallo.
+- `components/VidaAgendaSession/` (**N**, 3 archivos): la sesión que no es de
+  ningún bloque, o lo real de un movido. Mismo esqueleto que el bloque y el
+  hueco, trazo **punteado**, con su actividad, sus horas, su duración y su
+  etiqueta («fuera del plan» · «100 min tarde» · «120 min antes»).
+- `components/VidaAgendaBlock/` (M): prop **opcional** `execution`. Sin ella el
+  bloque se pinta **exactamente** como lo dejó FEAT-003 (criterios 27 y 29). Con
+  ella: las etiquetas, las horas reales en vez de la duración planeada, la
+  barrita, y la **sombra** del movido (trazo discontinuo + «→ hecho a las
+  20:40»).
+- `components/VidaDayBudget/` (M): prop **opcional** `executed` con las **dos
+  formas** de D5 y la línea que explica el cambio («Tu día ya terminó: esto es lo
+  que pasó.»). La forma `planned` es, literal, la barra de FEAT-003.
+- `pages/VidaHoyPage.tsx` (M): recorre `execution.entries`, cablea
+  `execution.byBlockId` a cada bloque y pasa `executed` al presupuesto. Y cierra
+  **la otra mitad del criterio 1**: un bloque que ya tiene sesión no ofrece
+  «▶ Empezar».
+- `hooks/useVidaDayData.ts` (M): la cuarta consulta,
+  `useActivityDayFollowUpsQuery(date)` —que ya existía y ya está apagada en los
+  días futuros—, con `followUps`, `isFollowUpsError` y **«lo que viviste»** en
+  `failed`, que es el criterio 58 literal.
+- `hooks/useVidaOpenSession.ts` + `routes/VidaModuleLayout.tsx` (M): el
+  **hallazgo 1** de la revisión de la tajada 1. La consulta expone `isError` y
+  `refetch`, y el layout pinta «No pudimos saber si tienes algo en marcha» con
+  «Reintentar» en vez de callar y parecer que no hay nada.
+
+**Por qué así, y qué se descartó**
+
+- **Dónde vive lo ejecutado.** En el archivo hermano, como mandó el arquitecto.
+  Se descartó meterlo en `vida-agenda.utils.ts`: lo importan
+  `vida-gap-form.utils.ts`, `VidaAgendaGap` y `VidaTemplateAside`, a los que esto
+  no les incumbe.
+- **El movido sigue emparejado con su bloque.** El criterio 19 dice «a menos de
+  60 min» y el 23 pide la sombra: si se cortara la pareja a los 60, el 23 no
+  tendría de dónde sacarla. Se hace como resolvió la decisión 4 del plan —pareja
+  marcada como movida— y queda escrito en la cabecera del archivo.
+- **Los huecos se parten alrededor de una sesión suelta.** La alternativa era
+  dejar el hueco entero y pintar la sesión al lado, pero entonces la agenda diría
+  «Libre 19:30 – 21:30 · 2h» encima de una sesión de 32 min que ocurrió dentro:
+  la agenda y la leyenda dejarían de decir los mismos minutos (criterio 26).
+- **Tres formas de presupuesto, no dos.** El criterio 24 nombra dos; el 29 pide
+  que un día **con plan y nada registrado** se vea como lo dejó F2. Con dos
+  formas, un día pasado sin registro habría estrenado «sin dato 16h 30», que es
+  justo el tramo inventado que el 29 prohíbe. Por eso `form: 'planned'` existe y
+  es la de FEAT-003. **No reescribo el criterio: lo digo.**
+- **«Sin dato» es el resto de la forma cerrada.** El criterio 24 fija cuatro
+  tramos y el 26 fija el 100 %: todo minuto que ninguna sesión cubre —incluido un
+  bloque planeado que no se hizo— cae ahí. La tajada 4 es la que sabe llamar a
+  eso «no hecho», y lo hará **en la agenda**, que es donde se lee con su nombre.
+  Está escrito en la cabecera de `getExecutedBudget`.
+- **La sesión abierta se une a la lista del día antes de cruzar.**
+  `activityDayFollowUps` es la fuente de lo vivido, pero **nadie ha podido
+  comprobar contra el API real** si incluye la que sigue abierta; si no la
+  trajera, el bloque en marcha habría dejado de estarlo en cuanto la tajada 2
+  pasó a decidirlo por el cruce. Se une por `id`, sin duplicar, y la de otro día
+  no entra. **Es una desviación del plan** (el plan solo nombraba
+  `activityDayFollowUps`) y está comentada en `VidaHoyPage.tsx`.
+- **Desviación 2: `useVidaOpenSession` y `VidaModuleLayout` no están en la fila
+  2 de la tabla del arquitecto.** Se tocan porque el revisor asignó
+  explícitamente a esta tajada el hallazgo 1 («el error de la consulta de la
+  sesión abierta no se ve por ninguna parte»). Son 12 líneas y no cambian ningún
+  contrato: `isError` y `refetch` son **aditivos**.
+- **Desviación 3: `data-form` en la barra y la leyenda.** Medido en oscuro,
+  «hecho» y «planeado» salían **del mismo mint** y el criterio 62 pide que los
+  cuatro tramos se distingan entre sí. Con el día en marcha, lo que queda por
+  delante baja al 55 %. La forma de F2 no cambia.
+- **El violeta de «en marcha» va rayado.** Es lo que lo separa de la marca de
+  «ahora», que es una línea violeta lisa: el hallazgo abierto de FEAT-003 sobre
+  los dos violetas en oscuro se cierra **sin inventar un token nuevo**, que es lo
+  que pedía el criterio 62.
+
+**Verificación**
+
+*Las comprobaciones del `ENVIRONMENT.md`, enteras, antes y después*
+
+| Qué | Línea base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos |
+| `pnpm test` | 2 fallos de 1005 (`SearchSelect` ×2) | **2 fallos de 1054**, los dos de `SearchSelect` (`filters options by search query`, `selects an option`). **+49 tests**, ninguno nuevo en rojo |
+| `pnpm build` | inicial 934,79 kB · `app-icons` 620,20 · `IconPicker` 4,64 | **945,13 kB** · `app-icons` **620,20** · `IconPicker` **4,64** — **+10,3 kB, y no de iconos** |
+
+*Los tests puros, caso por caso* (`vida-execution.utils.test.ts`, 37):
+calcado (±5 en inicio y duración, y los dos bordes: 09:05 sí, 09:06 no), «+11
+min», «−8 min», «empezó +20» dentro del umbral, **movido** (20:00 todavía no,
+20:01 sí) con su sombra y su «100 min tarde» / «120 min antes», **fuera del
+plan**, **dos bloques de la misma actividad** con una sesión (va al más cercano)
+y con dos (una cada uno, ninguno con dos), tres sesiones y dos bloques (la que
+sobra queda fuera del plan), **sesión en marcha** (no se compara nada todavía),
+**sesión que cruza el fin del día** (22:40 + 120 min se lee «22:40 – 23:59» y
+«+90 min», sin dar la vuelta ni salirse de la barra), día cerrado por la hora de
+fin, día sin plan con sesiones, y **seis combinaciones distintas comprobando que
+segmentos y leyenda suman exactamente los minutos del día**.
+
+*Los tests de pantalla* (`VidaHoyPage.test.tsx`, 10 nuevos): «✓ calcado» con sus
+horas reales y el bloque todavía a las 8:00; «+18 min» con «plan 45 · real 63»;
+«empezó +30»; «fuera del plan» en su hora sin tocar el plan; el movido con
+sombra y su real contados **una vez**; las dos leyendas; el criterio 29; la otra
+mitad del criterio 1; y el criterio 58. En `VidaModuleLayout.test.tsx`, 2 más
+para el aviso del hallazgo 1 y su ausencia sin sesión de usuario.
+
+*Lo que miré en el navegador* (arnés temporal `src/arnes-ejecutado.html` +
+`src/arnes-ejecutado.tsx`, **ya borrados**; `MemoryRouter`, datos sintéticos, sin
+`localStorage` —el tema se fija en `data-theme` a mano, no con `ThemeProvider`,
+que persiste— y un día vivido a medias: calcado, +11, empezó +10 / −8, fuera del
+plan, movido y una sesión en marcha, en las **dos** formas del presupuesto):
+
+- **Los anchos suman el 100 %, medido:** día en marcha **100,0000 %** en 21
+  tramos; día cerrado **99,9999 %** en 19 (redondeo de coma flotante al sumar
+  porcentajes; los **minutos** suman exacto, y eso lo fija el test puro).
+- **La leyenda cuadra con el día:** en marcha, `3h17 + 10m + 1h2 + 12h1 = 990
+  min = 16h 30`; cerrado, `1h41 + 40m + 57m + 13h12 = 990`.
+- **375 px:** `scrollWidth === clientWidth === 375` — **cero scroll horizontal**,
+  con el bloque en marcha, la sesión suelta y la barrita en pantalla.
+- **Texto largo:** un nombre de 51 caracteres se recorta en **una línea**
+  (216,6 × 22,5 px) y no empuja la tarjeta ni en el bloque ni en la sesión
+  suelta.
+- **Tema oscuro, medido y no deducido:** los cuatro tramos de cada leyenda salen
+  con **fondos distintos** —`rgb(78,222,163)` / violeta rayado / mint 55 % / mint
+  18 % en la forma en marcha; mint / mint 45 % / violeta 70 % / gris 25 % en la
+  cerrada—. Antes del arreglo, «hecho» y «planeado» eran **el mismo color**: lo
+  cacé aquí. La marca de «ahora» es `rgb(167,139,250)` **lisa** y el tramo «en
+  marcha» es el mismo violeta **rayado**, así que se distinguen.
+- Leído en pantalla, en oscuro y en 375: «✓ calcado», «+11 min · plan 30 · real
+  41», «empezó +10 · −8 min», «fuera del plan», «planeado 30 min · → hecho a las
+  20:40», «100 min tarde», «Tu día ya terminó: esto es lo que pasó.» y los dos
+  huecos partidos alrededor del movido («Libre 19:30 – 20:40 · 1h 10» y «Libre
+  21:12 – 21:30 · 18m»).
+- Contrastado con los renders: `docs/vida/assets/03-vida-agenda.html` («hecho 1h
+  25 · en marcha 24m · planeado 3h 20 · libre 10h 16» — la misma leyenda) y el
+  **marco B** de `04-vida-planeado-ejecutado.html` («✓ calcado», «+11 min», «plan
+  30 · real 41», «empezó +5», «−8 min», «fuera del plan», «→ hecho a las 19:40»,
+  «40 min tarde»). **Donde el render y el criterio no coinciden manda el
+  criterio** (criterio 24): el marco B dibuja la leyenda cerrada a las 21:40 con
+  el día todavía abierto, y aquí eso es la forma *en marcha*.
+
+**Criterios que cierra**
+
+| # | Cómo queda | Evidencia |
+|---|---|---|
+| 1 (su otra mitad) | cerrado | Un bloque con sesión —abierta o cerrada— no recibe `onStart`, así que no pinta «▶ Empezar». Test de pantalla con los tres bloques y solo dos botones. |
+| 18 | cumplido | Los bloques salen de `agenda.entries` y **no se reordenan**: el cruce solo les cuelga datos. Las sesiones sueltas entran por hora de inicio. Test: el bloque sigue a las 8:00 con su sesión de las 8:02. |
+| 19 | cumplido | `matchSessionsToBlocks`, pura, con seis casos entre ellos los dos de «dos bloques de la misma actividad». Ningún bloque con dos, ninguna sesión en dos, un solo pase. |
+| 20 | cumplido | Las dos constantes con nombre en un solo sitio, y los cuatro bordes probados (±5 y ±60). «✓ calcado», «empezó +N», «+N min», «−N min» y las horas reales, todo como texto. |
+| 21 | cumplido | `VidaPlanVsRealBar` con «plan 30 · real 41» en un `<span>` de verdad; la barrita es `aria-hidden`. Visto en el arnés y en el test de pantalla. |
+| 22 | cumplido | `VidaAgendaSession` punteado, en su hora, con actividad, horas y duración. El plan **no se toca**: los tres bloques siguen. |
+| 23 | cumplido | Sombra con «→ hecho a las 20:40» + lo real con «100 min tarde», y el presupuesto lo cuenta **una vez** (el movido va a «fuera del plan», no a «seguido» ni a «de más»). Test: `getAllByText('11:40 – 12:12 · 32m')` devuelve **1**. |
+| 24 | cumplido | Las dos formas, sin mezclarse, cada tramo con sus minutos. `isDayClosed` probado en los tres casos (día pasado, 22:59, 23:00). |
+| 25 | cumplido | «Tu día ya terminó: esto es lo que pasó.» al cerrarse; «Tu día está en marcha: esto llevas y esto queda.» mientras dura. |
+| 26 | cumplido | Medido en el navegador (100,0000 % / 99,9999 %) y fijado en el test puro con seis combinaciones, incluidas **dos sesiones solapadas** y una que cruza el fin del día. |
+| 27 | cumplido | En un día futuro `useActivityDayFollowUpsQuery` está apagada → `followUps` vacía → `hasExecution` falso → ni una etiqueta. La marca de «ahora» la sigue poniendo `buildDayAgenda`, sin tocar. |
+| 28 | cumplido | Una sola consulta más, la que ya existía. **Ninguna por bloque** y ninguna clave nueva en `query-keys.ts`. |
+| 29 | cumplido | Con `spans.length === 0` el presupuesto devuelve `form: 'planned'` y `entries` es **`agenda.entries` idéntico** (`toEqual` en el test puro). La leyenda omite los tramos de cero. Ningún número sale del historial de otras semanas. |
+| 53 | cumplido | Un día sin plan con sesiones: la agenda las pinta en su hora, el presupuesto las cuenta (test puro: «fuera del plan 45m») y el texto añade «Lo que hiciste está abajo, en su hora.» antes de hablar de la plantilla. |
+| 55 | cumplido | El bloque en marcha no cambia de posición ni de hora: `execution` no toca `startMinutes`. Visto en el arnés con la sesión abierta encima del bloque de las 21:30. |
+| 57 | cumplido | `isPending` de `useVidaDayData` incluye la cuarta consulta y la pantalla devuelve el esqueleto antes de afirmar nada. |
+| 58 | cumplido | `failed` gana «lo que viviste», el plan se sigue viendo, hay «Reintentar» y **no se pinta ninguna etiqueta de ejecutado** con lo vivido caído. Test de pantalla. |
+| 62 | cumplido **en el arnés**, pendiente de verlo dentro de la app | Los ocho fondos medidos en oscuro, distintos dentro de cada forma; el violeta rayado de «en marcha» frente a la marca de «ahora» lisa. Lo que **no** pude mirar es la pantalla real de `/app/vida/hoy` en oscuro: está detrás del login. |
+| 65 | cumplido, medido | La tabla de arriba. |
+
+**Riesgos**
+
+1. **La lista de la agenda cambió de fuente.** `execution.entries` **parte los
+   huecos** alrededor de una sesión suelta, así que en un día con algo registrado
+   las ventanas que ofrecen las fichas de plantilla y «+ otra cosa» son más
+   pequeñas. Es más correcto —no se ofrece colocar en un rato ya ocupado— pero es
+   un cambio de comportamiento de FEAT-003 que nadie pidió por escrito.
+2. **Una cuarta consulta en el `isPending` de la pantalla.** Si
+   `activityDayFollowUps` va lenta, ahora espera la pantalla entera. Es coherente
+   con lo que ya hacían las otras tres (y lo que pide el criterio 57), pero
+   empeora el peor caso.
+3. **La sesión abierta se une a mano a la lista del día.** Si el API sí la
+   devolviera en `activityDayFollowUps`, no pasa nada (se deduplica por `id`);
+   pero es una suposición sobre el API que **nadie ha podido comprobar** y vive en
+   la página.
+4. **«Sin dato» absorbe los bloques no hechos** en la forma cerrada. Hasta la
+   tajada 4, un día con bloques sin sesión los cuenta ahí. No es culpa ni
+   reproche, pero un revisor puede leerlo como que falta información.
+5. **El presupuesto se recalcula cada minuto** junto con la agenda. Es aritmética
+   sobre unas decenas de bordes, pero ahora son dos pases en vez de uno.
+6. **`VidaDayBudget` y `VidaAgendaBlock` ganaron props opcionales.** Quien los
+   monte sin ellas se pinta igual que antes; lo comprobé con los tests de F2, que
+   pasan sin tocarse.
+
+**Lo que no pude verificar, y no lo disimulo**
+
+- **Ni una llamada real al API**: `/app/*` está detrás del login y los agentes no
+  entran con credenciales (`ENVIRONMENT.md`). En particular, **si
+  `activityDayFollowUps(date)` incluye la sesión abierta** sigue sin
+  comprobarse: es la suposición que sostiene el riesgo 3.
+- **El tema oscuro dentro de la aplicación** (criterio 62): medido en el arnés,
+  no en `/app/vida/hoy`.
+- **Un día de verdad vivido a medias**: el criterio 52 y el 66 son del usuario.
+
+**Recorrido manual para el usuario** (con la API despierta; Render tarda ~1 min):
+1. Empieza un bloque de hoy y **termínalo enseguida**: el bloque tiene que pasar
+   a enseñar sus **horas reales** y «✓ calcado», y dejar de ofrecer «▶ Empezar».
+2. Empieza otro y **pásate del tiempo planeado** antes de terminar: al cerrar
+   tiene que leerse «+N min» con «plan X · real Y» debajo.
+3. **Empieza algo que no esté en el plan** (por ahora, desde otro bloque de una
+   actividad que no tenga bloque hoy) y termínalo: tiene que aparecer **punteado,
+   en su hora**, con «fuera del plan», y el plan quedarse quieto.
+4. **Registra un rato de una actividad planeada más de una hora después de su
+   bloque** (llega en la tajada 3; hoy solo se puede empezando y terminando a esa
+   hora): el bloque tiene que quedar de **sombra** con «→ hecho a las HH:MM» y lo
+   real aparecer abajo con «N min tarde».
+5. Mira el presupuesto **antes** de las 23:00 (o de tu hora de fin): tiene que
+   decir *hecho · en marcha · planeado · libre*. Vuelve a entrar **después** y
+   tiene que decir *seguido · de más · fuera del plan · sin dato* con la línea
+   «Tu día ya terminó: esto es lo que pasó.».
+6. Abre **un día pasado** desde la tira: lo mismo, sin botones de plan.
+7. Si tienes **dos bloques de la misma actividad el mismo día**, empieza uno:
+   solo **ese** tiene que ponerse en marcha (era el hallazgo 2 de la tajada 1).
+8. Ponlo en **tema oscuro** y comprueba que los cuatro tramos de cada leyenda se
+   distinguen y que el «en marcha» no se confunde con la marca de «ahora».
+9. En **móvil**, comprueba que nada se sale a lo ancho con el día ya vivido.
+
+**Hallazgos que dejo escritos, ninguno de esta tajada**
+
+1. **La línea de guía de FEAT-003 no sabe nada de lo vivido.** En un día cerrado
+   sigue diciendo «Tienes puestos 6 bloques · 3h. Tu hueco más grande va de 10:30
+   – 19:00». La frase que resume el día es el **criterio 51, tajada 4**; lo anoto
+   para que no se quede sin cambiar.
+2. **El «···» de una sesión suelta todavía no existe**: corregir y quitar del
+   registro son el criterio 35, **tajada 3**. Hoy una sesión fuera del plan se
+   mira y no se toca.
+3. **Un bloque movido sigue ofreciendo «Quitar del plan» y «Cambiar hora o
+   duración»** en su «···», que es lo correcto (el plan se puede seguir
+   editando), pero no hay ninguna vía **desde la sombra hasta lo real**. El
+   criterio 23 no la pide; se leería mejor con ella.
+4. **`toSessionSpans` filtra por `date`**: una sesión que empezó ayer a las 23:50
+   y terminó hoy no aparece en el día de hoy. Es lo que hace el API
+   (`activityDayFollowUps` va por `date` de inicio) y lo que dice el criterio 63
+   —se ve en qué día quedó—, pero conviene mirarlo con datos reales.
+5. **El tramo «sin dato» de un día cerrado puede ser enorme** (13h 12 en el
+   arnés) porque incluye todo lo que no se registró. Con el «¿Qué pasó?» de la
+   tajada 4 tendrá salida; hasta entonces es solo un número grande.
+
+**Estado del árbol:** sin commitear. 9 archivos modificados y 5 nuevos bajo
+`src/`, más este dossier y `BOARD.md`. El arnés temporal está **borrado**
+(`src/arnes-ejecutado.html` y `src/arnes-ejecutado.tsx`). `graphify update .`
+corrido: 3167 nodos, 3591 aristas.
+
+---
+
+#### Vuelta de la tajada 2 — el cruce ahora mira el umbral (2026-09-20)
+
+**Resumen para el revisor:**
+1. Arreglado **lo que devolvió la tajada**: `matchSessionsToBlocks` hace ahora
+   **dos pases** —primero las parejas que cumplen la condición del criterio 19,
+   después las movidas del 23 con los bloques que queden libres— así que una
+   sesión lejana **ya no le roba el bloque** a la que cayó en su hora.
+2. Tocado: `src/features/vida/utils/vida-execution.utils.ts` (la función y las
+   dos cabeceras que la explicaban) + `.test.ts` (**+2 casos**, uno con el nombre
+   que pidió el revisor). De paso, **dos hallazgos triviales cerrados**: el 3
+   (`isFollowUpsError` que no usaba nadie) y el 6 (el aviso de la plantilla vacía
+   que desaparecía al partirse el hueco).
+3. **Lo que más probablemente rompí con esto:** el emparejamiento **ya no
+   depende del orden del reloj sino de la distancia**, así que un día con varias
+   sesiones de la misma actividad puede repartirlas distinto que antes — es el
+   punto del arreglo, pero es un cambio de resultado, y **un test existente
+   cambió de expectativa** (el de «tres sesiones y dos bloques»): ahora el bloque
+   de la tarde se lo queda la de las 19:05 y sobra la de las 12:00, no al revés.
+
+**El arreglo, en concreto**
+
+`matchSessionsToBlocks` pasa de «cada sesión, por hora, al bloque libre más
+cercano» a **dos pases sobre un mismo ayudante**, `assignClosestPairs`, que
+recorre **todas** las parejas candidatas ordenadas **por distancia** —no por la
+hora de la sesión— y las va fijando mientras haya bloque y sesión libres:
+
+1. `pass(VIDA_MOVED_THRESHOLD_MINUTES)` — solo las parejas que cumplen la
+   condición literal del criterio 19. Si varias sesiones compiten por el mismo
+   bloque, **gana la más cercana**.
+2. `pass(null)` — con los bloques que sobren, las sesiones que sobren se
+   emparejan sin tope: esas son las **movidas** del criterio 23, y solo ocurren
+   cuando al bloque **no le queda más remedio**.
+
+Los desempates quedan escritos y son estables (distancia → sesión más temprana →
+bloque más temprano → `id`), así que los mismos datos dan siempre el mismo
+reparto. Lo que sobra al final sigue saliendo `unmatched` y se pinta fuera del
+plan (criterio 22), y las dos garantías que el revisor ya había comprobado
+—ningún bloque con dos, ninguna sesión en dos— las sostiene ahora el par
+`takenBlockIds` / `assignedSpanIds`.
+
+**El caso que devolvió la tajada, como test**
+
+`vida-execution.utils.test.ts` gana los dos que pidió el revisor:
+
+- **«un bloque, dos sesiones de la misma actividad, la lejana primero: el bloque
+  es de la cercana»** — plan: «Pasear» 19:00–19:30; vivido: 07:30 (30 min) y
+  19:05 (28 min). Ahora `byBlockId.tarde` es la de las **19:05**,
+  `unmatched` es la de las **7:30**, y `describeBlockExecution` devuelve
+  `status: 'on-plan'` con `movedToLabel` en `null`: el bloque se lee **«✓
+  calcado»**, no «→ hecho a las 7:30».
+- **«el mismo caso, con el día cerrado, deja de decir "seguido 0"»** — el
+  presupuesto pasa a `seguido 25 min` (19:05–19:33 contra un bloque de 19:00 a
+  19:30) y `fuera del plan 30 min`, y la única sesión suelta es
+  `['off-plan', 'fuera del plan']`: la de la mañana, en su hora, **no** como
+  movida. Antes: `seguido 0`, `fuera del plan 58`.
+
+**Un test existente cambió de expectativa, y lo digo**
+
+«tres sesiones y dos bloques de la misma actividad» (07:31, 12:00, 19:05 contra
+bloques a las 7:30 y a las 19:00): antes el bloque de la tarde se lo quedaba la
+de las **12:00** —porque llegaba antes en el reloj— y sobraba la de las 19:05.
+Ahora se lo queda la de las **19:05**, que es la que cumple el criterio 19, y
+sobra la de las 12:00. **La expectativa vieja describía el defecto**; la nueva
+lleva el porqué escrito al lado.
+
+**Dos hallazgos triviales cerrados de paso**
+
+- **Hallazgo 3 — `isFollowUpsError` no lo usaba nadie.** Se **quita** de
+  `useVidaDayData`. El criterio 58 lo sostiene `failed` («lo que viviste») más el
+  hecho de que, con lo vivido caído, `followUps` llega vacía y **no se pinta ni
+  una etiqueta de ejecutado**. En la cabecera del hook queda escrito por qué no
+  está y cuándo tendrá que volver: en la **tajada 4**, que es la primera que
+  necesita distinguir «no hecho» de «no lo sé», y con quien lo use delante.
+- **Hallazgo 6 — el aviso de «tu plantilla está vacía» podía desaparecer.**
+  `firstRealGapId` salía de `agenda.gaps`, y un hueco partido por una sesión
+  estrena `id`: en un día con registros el aviso se quedaba sin dueño. Ahora sale
+  de `execution.entries`, que es la lista que de verdad se pinta. **Es una
+  regresión que introdujo esta tajada**, así que se cierra aquí.
+
+Los **otros siete** hallazgos del revisor (la sesión fuera de la ventana del día
+que no entra en la barra, el movido que además está en marcha, la barrita que le
+falta al movido, «▶ Empezar» apagándose por actividad, «Cambiar hora» validando
+solo contra el plan, y los cinco del constructor) **quedan donde estaban**:
+ninguno es de una línea y tres de ellos tienen dueño en las tajadas 3 y 4.
+
+**Verificación de la vuelta**
+
+| Qué | Línea base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos |
+| `pnpm test` | 2 fallos de 1005 (`SearchSelect` ×2) | **2 fallos de 1056** — los dos de `SearchSelect`, **1 archivo rojo de 96**. `vida-execution.utils.test.ts`: **39 casos en verde**; `src/features/vida` entero: **636 de 636** |
+| `pnpm build` | inicial 934,79 kB | **945,56 kB** · `app-icons` **620,20** · `IconPicker` **4,64** — intactos: el crecimiento sigue sin ser de iconos |
+
+`graphify update .` corrido tras el arreglo: **3171 nodos, 3595 aristas**.
+
+**Lo que no volví a mirar en el navegador.** El arreglo es **aritmética pura** y
+no toca una sola línea de pintura: ni un componente, ni un SCSS, ni la página
+—salvo el `firstRealGapId`, que solo cambia **dónde** sale un aviso que ya
+existía—. Lo visual sigue verificado como decía arriba: el arnés temporal de la
+primera entrega, con las dos formas del presupuesto medidas a 375 px y en tema
+oscuro, ya **está borrado** y no lo volví a levantar. Sigue en pie que el
+criterio 62 **no se ha visto nunca dentro de `/app/vida/hoy`**: eso está detrás
+del login y es del recorrido manual.
+
+**Estado del árbol:** sin commitear. 10 archivos modificados y 5 nuevos bajo
+`src/`, más este dossier y `BOARD.md`. Ningún arnés vivo.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo
@@ -1582,3 +1988,284 @@ tiempo a pulsar «añadir una nota» antes de que el aviso se vaya; (11) si tien
 dos bloques de la misma actividad el mismo día, mira si al empezar uno se ponen
 **los dos** en marcha — está anotado como hallazgo 2 y lo cierra la tajada 2.
 
+
+### Tajada 2 — lo real encima de lo planeado, y el presupuesto en dos formas
+
+**Veredicto: `returned`**, y por **una sola cosa**: el cruce de D1 **no aplica el
+umbral del criterio 19** al emparejar, así que una sesión lejana puede **robarle
+el bloque** a la que cayó justo en su hora. El resultado no es «la pareja
+cambiada» —la limitación que el analista sí aceptó por escrito—: es que **un día
+seguido se lee como un día no seguido**. Todo lo demás de la tajada está bien
+construido y bien probado, la línea base no empeora (la corrí entera) y no
+encontré ninguna regresión fuera de los hallazgos que dejo anotados. El arreglo
+es pequeño y vive en un solo sitio, `matchSessionsToBlocks`.
+
+**El motivo de la devolución, con pasos**
+
+Archivo: `src/features/vida/utils/vida-execution.utils.ts`, función
+`matchSessionsToBlocks` (L162–188). El pase recorre las sesiones **por hora** y
+cada una se queda con el bloque libre de su actividad **más cercano**, sin mirar
+`VIDA_MOVED_THRESHOLD_MINUTES`. El criterio 19 sí lo mira: «una sesión es "de" un
+bloque si comparten `activityId` **y su hora de inicio cae a menos de
+`VIDA_MOVED_THRESHOLD_MINUTES` de la planeada**»; el 23 solo añade qué pasa
+cuando a un bloque **no le queda** más remedio que quedarse con una lejana.
+
+Reproducido con un arnés de tests propio (`src/features/vida/utils/zz-review-t2.test.ts`,
+**ya borrado**), datos sintéticos, día 06:30–23:00:
+
+- Plan: **un** bloque, «Pasear» 19:00–19:30.
+- Vivido: una sesión de «Pasear» a las **07:30** (30 min, el paseo de más) y otra
+  a las **19:05** (28 min, justo la planeada).
+- Lo que sale hoy: el bloque de las 19:00 queda **`moved`** emparejado con la de
+  las 7:30 y se lee «planeado 30 min · **→ hecho a las 7:30**»; esa sesión se
+  pinta «**690 min antes**»; y la de las **19:05 se pinta «fuera del plan»**.
+  El presupuesto del día cerrado dice `fuera del plan 58m` · `sin dato 932m`,
+  con **`seguido` en cero**.
+- Lo que piden los criterios: la de las 19:05 es «de» ese bloque (dista 5 min),
+  el bloque se lee «**✓ calcado**», y la de las 7:30 —que no corresponde a
+  ningún bloque— va **fuera del plan** (criterio 22). En la barra, `seguido`
+  ≈ 28 min.
+
+El mismo defecto con cualquier par: bloque «Leer» 21:00, sesiones a las 08:00 y
+a las 21:00 → el bloque dice «→ hecho a las 8:00» y la lectura de las 21:00 sale
+«fuera del plan». **No hace falta tener dos bloques de la misma actividad**: basta
+con dos sesiones de la misma actividad, y ese es justo el día que el usuario
+describe (algo que se hace dos veces y solo está planeado una).
+
+**Lo que hay que cambiar** (y es una regla, no un rediseño): al buscar el bloque
+de una sesión, **preferir los candidatos dentro del umbral**; solo si no hay
+ninguno a menos de `VIDA_MOVED_THRESHOLD_MINUTES` se cae al más cercano lejano
+—que es el movido del criterio 23—. Dicho de otro modo: dos pases (primero los
+que casan, después los movidos) en vez de uno solo por hora. Y un caso de test
+con nombre propio: **un bloque, dos sesiones de la misma actividad, la lejana
+primero**. La suite actual (37 casos) cubre «dos bloques y una sesión» y «dos
+bloques y dos sesiones», pero no esta.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del constructor)
+
+| # | Veredicto del revisor | Cómo lo comprobé |
+|---|---|---|
+| 1 (su otra mitad) | cumplido | `onStart` solo se pasa si `!execution.byBlockId[entry.id]`: un bloque con sesión, abierta o cerrada, no pinta «▶ Empezar». Leído en `VidaHoyPage.tsx` L433–437 y cubierto por el test de pantalla. *(Con una salvedad anotada en los hallazgos: sigue en pie el `entry.item.activityId !== runningActivityId`, que apaga el botón de **otro** bloque de la misma actividad.)* |
+| 18 | cumplido | `buildDayExecution` recorre `agenda.entries` sin reordenar y solo cuelga datos; las sesiones sueltas se cuelan por hora de inicio. Arnés propio: el bloque de las 9:00 sigue a las 9:00 con su sesión encima. |
+| 19 | **NO cumplido** | El motivo de la devolución. La segunda mitad —«cada sesión a un bloque como mucho, cada bloque a una sesión como mucho»— **sí** se cumple (lo comprobé: `taken` impide el doble, y ninguna sesión sale a la vez en `byBlockId` y en `unmatched`). Lo que falla es la **condición de emparejamiento**. |
+| 20 | cumplido en lo suyo | Las dos constantes con nombre, en un solo sitio y con los valores 5 y 60 (test propio). Las etiquetas salen como texto: «✓ calcado», «empezó +N», «+N min», «−N min» y las horas reales en el `<p>` de la tarjeta. **Queda tocado por el 19**: en el caso de arriba el bloque que debía leerse «✓ calcado» no lo lee. |
+| 21 | cumplido | `VidaPlanVsRealBar` pone «plan 30 · real 41» en un `<span>` real y la barrita es `aria-hidden`. *(Hallazgo: en el movido no se pinta ninguna barrita.)* |
+| 22 | cumplido en el caso normal | `VidaAgendaSession` punteado, en su hora, con actividad, horas, duración y etiqueta; el plan no se toca. **Tocado por el 19**: una sesión que sí corresponde a un bloque puede acabar aquí. |
+| 23 | cumplido | Arnés propio: una sesión a 150 min de su bloque sale **una sola vez** como `moved` y el bloque queda de sombra con «→ hecho a las HH:MM». En el presupuesto el movido se cuenta **solo** en «fuera del plan» (`offPlanSpanIds` no lo borra), nunca además en «seguido» ni en «de más». |
+| 24 | cumplido, **con una tercera forma declarada** | `isDayClosed` correcto en los tres casos. Las dos formas no se mezclan. Sobre la tercera, ver abajo: **la doy por buena**. |
+| 25 | cumplido | «Tu día ya terminó: esto es lo que pasó.» solo en la forma cerrada; «Tu día está en marcha…» con el día vivo. Con la forma `planned` no hay nota **y no hace falta**: la barra no ha cambiado de colores. |
+| 26 | cumplido **salvo un borde** | Medido por mí en cuatro configuraciones (sesiones solapadas, sesión encima de su bloque, sesión que cruza el fin del día, día en marcha): los tramos suman **exactamente 990 min** = la ventana, y la leyenda también. **El borde**: una sesión **fuera de la ventana del día** (a las 5:00 con el día desde las 6:30, o a las 23:10 con el día hasta las 23:00) se pinta en la agenda con sus 40 min y **aporta 0 a la barra** — la agenda y la leyenda dejan de decir los mismos minutos. `buildDayAgenda` estira la ventana por un **bloque** fuera de horario; `getExecutedBudget` no la estira por una **sesión**. Hallazgo, no motivo de devolución. |
+| 27 | cumplido | En día futuro `useActivityDayFollowUpsQuery` está apagada, `followUps` llega vacía, `hasExecution` es falso y no se pinta una sola etiqueta; la marca de «ahora» la sigue poniendo `buildDayAgenda`, intacta. |
+| 28 | cumplido | Una sola consulta más —la que ya existía— dentro de `useVidaDayData`; ninguna clave nueva en `query-keys.ts` (revisado el diff entero: no se toca). |
+| 29 | cumplido | Arnés propio: sin sesiones, `execution.entries` es **`toEqual(agenda.entries)`**, `form: 'planned'` y la leyenda solo trae planeado y libre, sin tramos de cero. |
+| 53 | cumplido | Día sin plan con sesiones: salen en su hora, el presupuesto las cuenta y la página añade «Lo que hiciste está abajo, en su hora.» antes de hablar de la plantilla. Sin una palabra de reproche. |
+| 55 | cumplido | `execution` no toca `startMinutes` de ningún bloque; el bloque en marcha se queda en su hora y no empuja a los siguientes. |
+| 57 | cumplido | La cuarta consulta entra en el `isPending` de `useVidaDayData` con el mismo trato de «deshabilitada» que las otras tres: sin sesión no hay esqueleto eterno (criterio 64 intacto). |
+| 58 | cumplido | `failed` gana «lo que viviste» y la página pinta el `Alert` con «Reintentar» siempre que `failed.length > 0`; con lo vivido caído `followUps` está vacía y **no se afirma nada** de ejecutado. *(Hallazgo: `isFollowUpsError` se expone y **no lo usa nadie**; el aviso funciona por `failed`.)* |
+| 62 | **queda en comprobación de segunda mano** | Los ocho fondos los midió el constructor en su arnés, que ya borró; yo no volví a medirlos y **dentro de `/app/vida/hoy` no se puede mirar**: está detrás del login (`ENVIRONMENT.md`). El razonamiento del «violeta rayado» frente a la marca lisa lo leí en el SCSS y es correcto, pero **eso no es haberlo visto**. Lo dejo como pendiente de ojo humano, en el recorrido manual. |
+| 65 | cumplido, **medido por mí** | `pnpm typecheck` exit 0 · `pnpm lint` **14 errores / 0 warnings** (los mismos archivos) · `pnpm test` **2 fallos de 1054**, y los dos son los de `SearchSelect` (1 archivo rojo de 96) · `pnpm build` exit 0, chunk inicial **945,13 kB**, `app-icons` **620,20 kB** y `IconPicker` **4,64 kB** idénticos: **el crecimiento no es de iconos**. Ningún documento GraphQL nuevo. |
+
+**Sobre la tercera forma del presupuesto: la doy por buena, y queda anotada.**
+El criterio 24 nombra dos formas y el 29 exige que un día **con plan y nada
+registrado** se vea *exactamente* como lo dejó F2. Con solo dos formas, un día
+pasado sin un solo registro estrenaría «sin dato 16h 30» — el tramo inventado
+que el 29 prohíbe de forma literal. `form: 'planned'` es la salida correcta a esa
+contradicción y **no inventa nada**: comprobado en el arnés, con el día en marcha
+y sin sesiones la forma `planned` y la forma `running` producen **los mismos
+segmentos y la misma leyenda** (los tramos de cero se filtran), así que la
+tercera forma solo se nota en el día **cerrado sin registro**, que es justo el
+caso del criterio 29. No reescribo el criterio 24: queda dicho aquí.
+
+**Qué miré alrededor, y cómo** (regresiones)
+
+- **Quién más monta lo que se tocó.** `graphify explain "VidaAgendaBlock"` y
+  `graphify explain "useVidaDayData"` (el grafo está **actualizado por el
+  constructor**, así que para «quién dependía de esto» no sirve como foto previa:
+  lo confirmé con `grep` sobre `src/`). Resultado: `VidaAgendaBlock`,
+  `VidaDayBudget`, `VidaAgendaSession`, `VidaPlanVsRealBar` y `useVidaDayData`
+  **solo los monta `VidaHoyPage`**. Fuera de `src/features/vida/` no hay un solo
+  archivo tocado (`git diff ad9eb7f --stat`), así que hábitos, `AppLayout` y
+  `shared/ui` no pueden haberse movido.
+- **Las props nuevas son opcionales**: `execution` en el bloque y `executed` en
+  el presupuesto tienen valor por defecto `null`, y con `null` el `render` es el
+  de FEAT-003 rama por rama (leído en el diff). Los tests de F2/F3 pasan sin
+  tocarse: en mi corrida, **un solo archivo rojo de 96** y es `SearchSelect`.
+- **Lo que el constructor señaló como «lo que más probablemente rompí»**, que es
+  por donde empecé:
+  1. **Los huecos partidos alrededor de una sesión suelta.** Comprobado en el
+     arnés: con una sesión de 14:00 a 14:30 dentro del hueco de 10:00–23:00, la
+     lista sale `gap 10:00–14:00` · `sesión` · `gap 14:30–20:00` · `gap 20:00–23:00`
+     (la marca de «ahora» parte el último), **ningún hueco pisa la sesión** y la
+     suma de `trackMinutes` de la agenda sigue siendo **990 = el día entero**.
+  2. **Las fichas de FEAT-003 en un día con registros.** No se rompen y además
+     son coherentes: la página recalcula `suggestionsForGap({ gap: entry })` y
+     `gapToWindow(gap)` **sobre el trozo**, no sobre el hueco original, así que
+     una ficha no se ofrece para un rato ya ocupado ni se coloca encima de una
+     sesión. Es un cambio de comportamiento de FEAT-003, **a mejor**, y así lo
+     dijo el constructor.
+  3. **«En marcha» decidido por el cruce.** Comprobado: dos bloques de la misma
+     actividad y **una** sesión abierta a las 19:05 → **exactamente un** bloque
+     con `isRunning` (el de las 19:00), el otro sin nada. **El hallazgo 2 de la
+     tajada 1 queda cerrado.**
+- **El hallazgo 1 de la tajada 1** (el error de la sesión abierta) también queda
+  cerrado: `useVidaOpenSession` expone `isError` y `refetch` —aditivos, ningún
+  contrato cambiado— y `VidaModuleLayout` pinta el aviso con «Reintentar», con
+  dos tests nuevos. Leído en el diff; la superficie está en todo el módulo pero
+  el único que consume el hook es el layout.
+- **Nada nuevo en el aparato ni en el arranque**: `git diff ad9eb7f -- src/`
+  no añade una sola línea con `localStorage` ni `sessionStorage`, y no hay un
+  solo `from '@fortawesome/free-solid-svg-icons'` en `src/features/vida/`. El
+  build lo confirma: `app-icons` y `IconPicker` **byte a byte iguales**.
+- **Vocabulario sin culpa**: `pnpm test src/features/vida/vida-vocabulary.test.ts`
+  → **8 de 8 en verde**. Los textos nuevos que leí («fuera del plan», «sin dato»,
+  «Tu día ya terminó: esto es lo que pasó.», «Lo que hiciste está abajo, en su
+  hora.», «N min tarde») no usan ninguna palabra prohibida.
+
+**Estados** (los que aplican a esta tajada)
+
+- **Sin datos** (criterio 29) ✔ y **día sin plan con sesiones** (53) ✔,
+  comprobados arriba.
+- **Cargando** (57) ✔ · **Error** (58) ✔ · **Sin sesión de usuario** (64) ✔,
+  intacto.
+- **Texto largo** (61) y **móvil a 375 px** (60): **de segunda mano**. El
+  constructor los midió en un arnés que ya borró (51 caracteres en una línea,
+  `scrollWidth === clientWidth === 375`); yo **no los volví a medir** — la tabla
+  del arquitecto asigna 60 y 61 a las tajadas 1 y 4, no a esta. Queda dicho.
+- **Tema oscuro** (62): ver la tabla. Medido por el constructor, **no por mí**, y
+  nunca dentro de la aplicación.
+- **Sin permisos:** no aplica; el módulo entero está detrás del guard y eso lo
+  cubre el 64.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: lo ejecutado vive en
+el **archivo hermano** que mandó la decisión 3 (`vida-execution.utils.ts`),
+`buildDayAgenda` **no gana una cuarta variante** ni `AgendaBlock` un campo, no
+hay hook de día nuevo (se amplía `useVidaDayData`), ni clave ni invalidación ni
+consulta ni SDL nuevos, ningún componente de `shared/ui`, ningún normalizador de
+texto y ningún envoltorio de `localStorage`. `getUsedMinutesFromFollowUps` de
+`79bece0` **no se rescató**, y es lo correcto: sumaba duraciones sin mirar
+solapes, que es justo el fallo que el criterio 26 prohíbe. Lo único que crece es
+`VidaHoyPage`, que ya era el sitio.
+
+**Hallazgos anotados, ninguno motivo de devolución**
+
+1. **Una sesión fuera del horario del día no entra en la barra** (criterio 26,
+   borde): a las 23:10 con el día hasta las 23:00, la agenda la enseña con sus
+   40 min y la leyenda dice `sin dato 990` y nada más. Arreglo natural: estirar
+   la ventana con las sesiones, como `buildDayAgenda` ya hace con los bloques.
+2. **Un bloque `moved` que además está `en marcha` se pinta dos veces**: el
+   bloque dice «en marcha» y abajo aparece su tarjeta punteada «N min antes».
+   Pasa al empezar un bloque con más de una hora de adelanto. El criterio 23
+   habla de sesiones cerradas; no lo incumple, pero se lee raro.
+3. **`isFollowUpsError` no lo usa nadie.** `useVidaDayData` lo expone y
+   `VidaHoyPage` no lo destructura: el aviso del criterio 58 funciona por
+   `failed`. O se usa, o sobra.
+4. **El movido no lleva barrita plan-frente-a-real** (`comparisonLabel` es `null`
+   cuando `isMoved`). El criterio 21 dice «cuando plan y real difieren»; un
+   movido difiere. Se leería mejor con ella.
+5. **«▶ Empezar» sigue apagándose por actividad, no solo por bloque**: la
+   condición conserva `entry.item.activityId !== runningActivityId`, así que con
+   dos bloques de la misma actividad, empezar uno esconde el botón del otro. Es
+   conservador y defendible (el API no admite dos sesiones abiertas), pero el
+   criterio 1 habla del **bloque**.
+6. **El aviso «tu plantilla está vacía» puede desaparecer**: `firstRealGapId`
+   sale de `agenda.gaps`, y si ese hueco se parte, el trozo estrena `id` y
+   `showTemplateHint` no encuentra a nadie.
+7. **«Cambiar hora o duración» de un bloque sigue validando solo contra el
+   plan** (`getBlockEditWindow(agenda, …)`, sin las sesiones): se puede mover un
+   bloque encima de un rato ya registrado. Es coherente con FEAT-003 —lo real no
+   es el plan— pero conviene decidirlo, no heredarlo.
+8. Siguen en pie los **cinco hallazgos que dejó el constructor** (la línea de
+   guía que no sabe nada de lo vivido, el «···» de una sesión suelta, la vía de
+   la sombra a lo real, `toSessionSpans` filtrando por `date`, y el tramo «sin
+   dato» enorme), todos con dueño en las tajadas 3 y 4.
+
+**Lo que no revisé, y no lo disimulo:** ni una llamada real al API —el login es
+el límite estructural de este repositorio (`ENVIRONMENT.md`) y no entro con
+credenciales—, así que sigue sin comprobarse si `activityDayFollowUps(date)`
+devuelve la sesión abierta (el riesgo 3 del constructor); **no volví a medir los
+375 px ni el tema oscuro** en un navegador, ni dentro de la aplicación, que es
+donde el criterio 62 se cierra de verdad; y el criterio 52 y el 66 son del
+usuario. Mi arnés fue **de tests puros** (`zz-review-t2.test.ts`, 14 casos,
+borrado), no de pantalla.
+
+### Tajada 2 — segunda revisión (tras la devolución)
+
+**Veredicto: `accepted`.** El motivo de la devolución está cerrado **de verdad**,
+comprobado con arnés propio y no de palabra, y **ninguno de los casos que ya
+medía se rompió**. La línea base la corrí otra vez entera. Los siete hallazgos
+que no devolvían siguen anotados; dos de ellos (el 3 y el 6) los cerró el
+constructor de paso y lo verifiqué.
+
+**El motivo de la devolución, comprobado** (arnés propio de tests puros,
+`src/features/vida/utils/zz-review-t2b.test.ts`, 13 casos, **ya borrado**):
+
+- **El caso exacto que devolví** — un bloque «Pasear» 19:00–19:30, sesiones a las
+  **07:30** (30 min) y a las **19:05** (28 min), día pasado: el bloque se lleva
+  **la de las 19:05** y se lee **`on-plan`** («✓ calcado»), con `movedToLabel`
+  en `null`; la de la mañana sale **«fuera del plan»**. El presupuesto cerrado
+  dice `seguido 25m · de más 3m · fuera del plan 30m · sin dato 932m` y **suma
+  990 = el día entero**. (Los 3 min de «de más» son los que la sesión se pasa del
+  final del bloque: correcto.) Antes decía `seguido 0`.
+- **El segundo caso que puse en el informe** —«Leer» 21:00 con sesiones a las
+  08:00 y a las 21:00— también: `seguido 30m · fuera del plan 30m`.
+- **Los bordes del umbral**: a **60 min** exactos la sesión **casa** (`changed`,
+  no movido) y a **61** es **movido**. Coherente con el criterio 23, que habla de
+  «**más de** 60 min». *(Nota fina: el criterio 19 dice «a menos de» y el 23 «a
+  más de», así que los 60 exactos caen en la costura entre los dos; el código
+  resuelve igual que el 23 y `describeBlockExecution` usa el mismo `>`, así que
+  al menos es una sola regla en los dos sitios.)*
+- **El movido no desapareció**: con una sola sesión de «Organizar la casa» a las
+  12:30 y su bloque a las 10:00, el bloque sigue siendo `moved` con «150 min
+  tarde», contado **una sola vez** (`fuera del plan 40m`). El segundo pase hace
+  lo que pide el criterio 23 **solo cuando al bloque no le queda más remedio**,
+  que es lo que decía el arquitecto.
+
+**Lo que ya medía, vuelto a medir** (todo verde, mismos números que en la primera
+revisión): dos bloques de la misma actividad con **una** sesión de la mañana (va
+al de la mañana, el de la tarde se queda sin ella) · dos bloques y una sesión
+**en marcha** → **exactamente un** bloque en marcha · **sesiones solapadas**
+990 = 990 · **sesión que cruza el fin del día** 990 = 990 y forma `closed` ·
+**día en marcha** 990 = 990 y forma `running` · **día sin registro**
+`entries` `toEqual(agenda.entries)` y forma `planned` · **huecos partidos** sin
+pisar la sesión y con la agenda sumando 990. Añadí dos comprobaciones nuevas:
+con **cinco sesiones y tres bloques** mezclando calcado, movido y fuera del plan,
+**ningún bloque recibe dos**, **ninguna sesión se pinta dos veces** y la barra
+sigue sumando 990; y el cruce es **determinista** —invertir el orden de bloques y
+sesiones da el mismo resultado—, que es lo que sostienen los cuatro desempates.
+
+**El cambio de expectativa del test viejo es legítimo.** «Tres sesiones y dos
+bloques de la misma actividad» (`vida-execution.utils.test.ts` L187–209) ahora
+espera que el bloque de las 19:00 sea de **s3 (19:05)** y que sobre **s2
+(12:00)**. Antes esperaba lo contrario, y lo contrario **era el defecto**: s2
+dista **420 min** del bloque, así que por el criterio 19 no es «de» él, y s3
+dista 5. El nombre del test —«la que sobra queda fuera del plan»— sigue
+describiendo lo que hace. Lo reproduje con mi propio arnés antes de leer el suyo.
+
+**Los dos hallazgos que cerró de paso**, verificados: `isFollowUpsError` ya no
+existe en `useVidaDayData` (el aviso del criterio 58 va por `failed`, y queda un
+comentario diciendo por qué no hay un `isError` aparte); y `firstRealGapId` sale
+de `execution.entries`, así que el aviso de «tu plantilla está vacía» **no se
+pierde** cuando una sesión parte el primer hueco.
+
+**Regresiones:** el cambio de esta segunda entrega vive en **una función pura**
+(`assignClosestPairs` + `matchSessionsToBlocks`) y en dos líneas de
+`VidaHoyPage`/`useVidaDayData`; `git diff ad9eb7f --stat` no saca un solo archivo
+fuera de `src/features/vida/` y los consumidores siguen siendo los de siempre
+(`VidaHoyPage` es el único que monta lo tocado). La suite entera no empeora.
+
+**Línea base, corrida entera por el revisor** (ninguna se toma del reporte):
+
+| Qué | Resultado |
+|---|---|
+| `pnpm typecheck` | **exit 0**, limpio |
+| `pnpm lint` | **14 errores / 0 warnings**, los preexistentes |
+| `pnpm test` | **2 fallos de 1056** (`SearchSelect` ×2; **1 archivo rojo de 96**; +2 tests sobre la entrega anterior) |
+| `pnpm build` | **exit 0** · chunk inicial **945,56 kB** · `app-icons` **620,20 kB** · `IconPicker` **4,64 kB** · CSS 193,23 kB |
+
+**Sigue sin revisarse, y no lo disimulo:** ni una llamada real al API (el login es
+el límite de este repositorio), los **375 px** y el **tema oscuro** dentro de
+`/app/vida/hoy` —el criterio 62 se cierra con ojo humano—, y los criterios 52 y
+66, que son del usuario. Los **siete hallazgos** de la primera revisión que no
+devolvían siguen abiertos menos el 3 y el 6; el más sustancioso es que **una
+sesión fuera del horario del día no entra en la barra** (borde del criterio 26).
+Siguiente: la tajada 3, registrar lo que se sale.

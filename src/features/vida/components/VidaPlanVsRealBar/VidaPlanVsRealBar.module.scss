@@ -1,0 +1,45 @@
+/* La barrita de plan frente a real, bajo el bloque. Dos trazos finos y el texto
+   con los minutos: el número se lee, no se deduce del dibujo (criterio 21). */
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.45rem;
+  margin: 0.25rem 0 0;
+  min-width: 0;
+}
+
+.bars {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 3.5rem;
+}
+
+.plan,
+.real {
+  height: 0.25rem;
+  border-radius: 999px;
+}
+
+/* El plan, en el mint de la marca a media fuerza: es la referencia. */
+.plan {
+  width: var(--vida-plan-width, 100%);
+  min-width: 0.25rem;
+  background: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+/* Lo real, sólido. Pasarse **no es una alarma**: el mismo mint, nunca rojo
+   (criterio 59). Lo que distingue el caso es el texto de al lado. */
+.real {
+  width: var(--vida-real-width, 100%);
+  min-width: 0.25rem;
+  background: var(--color-primary);
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}

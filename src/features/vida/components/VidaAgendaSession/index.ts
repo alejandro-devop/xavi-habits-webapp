@@ -1,0 +1,1 @@
+export { VidaAgendaSession } from './VidaAgendaSession'

@@ -20,6 +20,8 @@ let openSession: {
   isFromAnotherDay: boolean
   isDisabled: boolean
   isPending: boolean
+  isError: boolean
+  refetch: () => void
 }
 
 vi.mock('@/features/vida/hooks/useVidaOpenSession', () => ({
@@ -81,6 +83,8 @@ beforeEach(() => {
     isFromAnotherDay: false,
     isDisabled: false,
     isPending: false,
+    isError: false,
+    refetch: vi.fn(),
   }
 })
 
@@ -103,6 +107,8 @@ describe('VidaModuleLayout — la sesión visible en todo el módulo (criterio 7
       isFromAnotherDay: false,
       isDisabled: false,
       isPending: false,
+      isError: false,
+      refetch: vi.fn(),
     }
     const { container } = renderWithProviders(<VidaModuleLayout />)
 
@@ -121,6 +127,8 @@ describe('VidaModuleLayout — la sesión visible en todo el módulo (criterio 7
       isFromAnotherDay: false,
       isDisabled: false,
       isPending: false,
+      isError: false,
+      refetch: vi.fn(),
     }
     renderWithProviders(<VidaModuleLayout />)
 
@@ -137,6 +145,8 @@ describe('VidaModuleLayout — la sesión visible en todo el módulo (criterio 7
       isFromAnotherDay: false,
       isDisabled: false,
       isPending: false,
+      isError: false,
+      refetch: vi.fn(),
     }
     renderWithProviders(<VidaModuleLayout />)
 
@@ -152,6 +162,8 @@ describe('VidaModuleLayout — la sesión visible en todo el módulo (criterio 7
       isFromAnotherDay: false,
       isDisabled: false,
       isPending: false,
+      isError: false,
+      refetch: vi.fn(),
     }
     renderWithProviders(<VidaModuleLayout />)
 
@@ -165,6 +177,8 @@ describe('VidaModuleLayout — la sesión visible en todo el módulo (criterio 7
       isFromAnotherDay: false,
       isDisabled: true,
       isPending: false,
+      isError: false,
+      refetch: vi.fn(),
     }
     const { container } = renderWithProviders(<VidaModuleLayout />)
 
@@ -181,6 +195,8 @@ describe('VidaModuleLayout — la que quedó abierta de otro día (criterios 16 
       isFromAnotherDay: true,
       isDisabled: false,
       isPending: false,
+      isError: false,
+      refetch: vi.fn(),
     }
   })
 
@@ -212,5 +228,44 @@ describe('VidaModuleLayout — la que quedó abierta de otro día (criterios 16 
     expect(container.textContent ?? '').not.toMatch(/cancelar/i)
     // No es un modal: no atrapa el foco ni tapa la pantalla (criterio 54).
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+})
+
+/* ── El error de la consulta de la sesión (hallazgo 1 de la tajada 1) ────── */
+
+describe('VidaModuleLayout — si no se pudo saber qué hay en marcha', () => {
+  it('lo dice y ofrece reintentar, en vez de callar y parecer que no hay nada', () => {
+    const refetch = vi.fn()
+    openSession = {
+      session: null,
+      startInstant: null,
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+      isError: true,
+      refetch,
+    }
+    renderWithProviders(<VidaModuleLayout />)
+
+    expect(screen.getByText('No pudimos saber si tienes algo en marcha')).toBeInTheDocument()
+    screen.getByRole('button', { name: 'Reintentar' }).click()
+    expect(refetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('sin sesión de usuario no se pinta ese aviso (criterio 64)', () => {
+    openSession = {
+      session: null,
+      startInstant: null,
+      isFromAnotherDay: false,
+      isDisabled: true,
+      isPending: false,
+      isError: true,
+      refetch: vi.fn(),
+    }
+    renderWithProviders(<VidaModuleLayout />)
+
+    expect(
+      screen.queryByText('No pudimos saber si tienes algo en marcha'),
+    ).not.toBeInTheDocument()
   })
 })

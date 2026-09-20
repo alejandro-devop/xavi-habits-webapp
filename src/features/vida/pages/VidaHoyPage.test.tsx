@@ -32,6 +32,8 @@ let suggestionsQuery: Query<VidaSuggestion[]>
 /** La plantilla entera: de ahí sale «Mañana, \<día\>» del lateral (tajada 5). */
 let itemsQuery: Query<VidaItem[]>
 let settingsQuery: Query<UserSettings>
+/** Lo que se vivió ese día (FEAT-004, tajada 2). */
+let dayFollowUpsQuery: Query<ActivityFollowUp[]>
 let addMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let editMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let removeMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
@@ -80,6 +82,12 @@ vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   // Desde la tajada 5: el bloque «Mañana» del lateral lee la plantilla entera
   // (`vidaItems`) para saber qué trae **mañana**, que no es el día visto.
   useVidaItemsQuery: () => itemsQuery,
+}))
+// Lo vivido del día visto (FEAT-004, tajada 2). Se mockea **la consulta**, no
+// `useVidaDayData`: lo que hay que comprobar es que la pantalla cruza de verdad
+// el plan con las sesiones.
+vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
+  useActivityDayFollowUpsQuery: () => dayFollowUpsQuery,
 }))
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
@@ -230,6 +238,7 @@ beforeEach(() => {
     suggestion('s2', 'Compra de la semana', 240),
   ])
   settingsQuery = ready(SETTINGS)
+  dayFollowUpsQuery = ready([])
   // La plantilla entera, para «Mañana»: vacía por defecto, así el bloque del
   // lateral no mete ruido en las comprobaciones del día que se mira.
   itemsQuery = ready([])
@@ -1041,5 +1050,158 @@ describe('VidaHoyPage — empezar y terminar un bloque (FEAT-004, tajada 1)', ()
     renderWithProviders(<VidaHoyPage />)
 
     expect(screen.queryByRole('button', { name: '▶ Empezar' })).not.toBeInTheDocument()
+  })
+})
+
+/* ── Lo real encima de lo planeado (FEAT-004, tajada 2) ────────────────────
+ *
+ * Criterios 18 a 29 vistos **en la pantalla**. La aritmética del cruce y del
+ * presupuesto tiene su propio test puro y exhaustivo en
+ * `utils/vida-execution.utils.test.ts`; aquí se comprueba que la página la
+ * cablea: que los bloques se quedan en su hora, que lo que no es de ningún
+ * bloque se pinta en la suya y que la leyenda cambia de forma cuando toca.
+ */
+describe('VidaHoyPage — lo real encima de lo planeado (FEAT-004, tajada 2)', () => {
+  /** Una sesión cerrada de ese día. */
+  function done(
+    id: string,
+    activityId: string,
+    startTime: string,
+    durationMinutes: number,
+    title = 'Actividad',
+  ): ActivityFollowUp {
+    return {
+      id,
+      activityId,
+      date: '2026-09-18',
+      startTime,
+      durationMinutes,
+      isOpen: false,
+      endTime: null,
+      endDate: null,
+      endDateTime: null,
+      notes: null,
+      activity: { id: activityId, title, category: null },
+    }
+  }
+
+  it('criterios 18 y 20 — el bloque se queda en su hora y enseña «✓ calcado»', () => {
+    dayFollowUpsQuery = ready([done('f1', 'a-b1', '08:02', 44, 'Bañarme')])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('✓ calcado')).toBeInTheDocument()
+    // Las **horas reales** al lado, y el bloque sigue a las 8:00.
+    expect(screen.getByText('8:02 – 8:46')).toBeInTheDocument()
+    expect(screen.getByText('8:00')).toBeInTheDocument()
+  })
+
+  it('criterios 20 y 21 — «+N min» con su barrita «plan 45 · real 63»', () => {
+    dayFollowUpsQuery = ready([done('f1', 'a-b1', '08:05', 63, 'Bañarme')])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('+18 min')).toBeInTheDocument()
+    expect(screen.getByText('plan 45 · real 63')).toBeInTheDocument()
+  })
+
+  it('criterio 20 — «empezó +N» cuando arranca tarde dentro del umbral', () => {
+    dayFollowUpsQuery = ready([done('f1', 'a-b1', '08:30', 45, 'Bañarme')])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('empezó +30')).toBeInTheDocument()
+  })
+
+  it('criterio 22 — lo que no es de ningún bloque se pinta fuera del plan, en su hora', () => {
+    dayFollowUpsQuery = ready([done('f1', 'otra', '08:50', 25, 'Llamada con el banco')])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('fuera del plan')).toBeInTheDocument()
+    expect(screen.getByText('Llamada con el banco')).toBeInTheDocument()
+    expect(screen.getByText('8:50 – 9:15 · 25m')).toBeInTheDocument()
+    // Y el plan **no se toca**: los tres bloques siguen ahí.
+    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+  })
+
+  it('criterio 23 — el movido deja sombra con «→ hecho a las 11:40» y lo real donde ocurrió', () => {
+    dayFollowUpsQuery = ready([done('f1', 'a-b2', '11:40', 32, 'Leer un rato')])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('→ hecho a las 11:40')).toBeInTheDocument()
+    expect(screen.getByText('100 min tarde')).toBeInTheDocument()
+    // Contado **una vez**: no aparecen dos veces las horas reales.
+    expect(screen.getAllByText('11:40 – 12:12 · 32m')).toHaveLength(1)
+  })
+
+  it('criterio 24 — con el día en marcha la leyenda es hecho · en marcha · planeado · libre', () => {
+    // `f9` y no `f1`: la sesión abierta del mock ya se llama `f1` y la página
+    // no la duplica cuando el día ya la trae.
+    dayFollowUpsQuery = ready([done('f9', 'a-b1', '08:00', 45, 'Bañarme')])
+    openSession = {
+      session: openFollowUp('a-b2', '09:00'),
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText(/^hecho /)).toBeInTheDocument()
+    expect(screen.getByText(/^en marcha /)).toBeInTheDocument()
+    // «planeado» sale dos veces: en la leyenda y en el bloque en marcha
+    // («planeado 30 min · en marcha»). Las dos dicen lo mismo.
+    expect(screen.getAllByText(/^planeado /).length).toBeGreaterThan(0)
+    expect(screen.getByText(/^libre /)).toBeInTheDocument()
+    expect(screen.queryByText(/^seguido /)).not.toBeInTheDocument()
+  })
+
+  it('criterios 24 y 25 — con el día cerrado son seguido · de más · fuera del plan · sin dato, y lo dice', () => {
+    viewedDate = '2026-09-16'
+    dayFollowUpsQuery = ready([
+      { ...done('f1', 'a-b1', '08:00', 60, 'Bañarme'), date: '2026-09-16' },
+      { ...done('f2', 'otra', '11:00', 30, 'Llamada'), date: '2026-09-16' },
+    ])
+    planQuery = ready(PLAN.map((item) => ({ ...item, date: '2026-09-16' })))
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-16'] },
+    })
+
+    expect(screen.getByText(/^seguido /)).toBeInTheDocument()
+    expect(screen.getByText(/^de más /)).toBeInTheDocument()
+    expect(screen.getByText(/^fuera del plan /)).toBeInTheDocument()
+    expect(screen.getByText(/^sin dato /)).toBeInTheDocument()
+    expect(screen.getByText('Tu día ya terminó: esto es lo que pasó.')).toBeInTheDocument()
+    expect(screen.queryByText(/^hecho /)).not.toBeInTheDocument()
+  })
+
+  it('criterio 29 — un día con plan y nada registrado se ve como lo dejó F2', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText(/^planeado /)).toBeInTheDocument()
+    expect(screen.getByText(/^libre /)).toBeInTheDocument()
+    expect(screen.queryByText(/^hecho /)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^sin dato /)).not.toBeInTheDocument()
+    expect(screen.queryByText('✓ calcado')).not.toBeInTheDocument()
+  })
+
+  it('criterio 1 (su otra mitad) — un bloque que ya tiene sesión no ofrece «▶ Empezar»', () => {
+    dayFollowUpsQuery = ready([done('f1', 'a-b1', '08:00', 45, 'Bañarme')])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getAllByRole('button', { name: '▶ Empezar' })).toHaveLength(PLAN.length - 1)
+  })
+
+  it('criterio 58 — si falla lo vivido se dice qué falta y el plan se sigue viendo', () => {
+    dayFollowUpsQuery = {
+      isPending: false,
+      isError: true,
+      fetchStatus: 'idle',
+      refetch: vi.fn(),
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText(/No pudimos cargar lo que viviste/)).toBeInTheDocument()
+    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+    // Y **no se afirma nada** de lo vivido: ni tramos nuevos ni etiquetas.
+    expect(screen.queryByText(/^sin dato /)).not.toBeInTheDocument()
+    expect(screen.queryByText('✓ calcado')).not.toBeInTheDocument()
   })
 })

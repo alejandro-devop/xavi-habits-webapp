@@ -10,3 +10,12 @@
 .root[data-session-bar='on'] {
   padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
 }
+
+/* El aviso de que no se pudo saber si hay algo en marcha (hallazgo 1 de la
+   revisión de la tajada 1). Mismo tamaño de texto que los avisos de Hoy. */
+.errorText {
+  margin: 0 0 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}

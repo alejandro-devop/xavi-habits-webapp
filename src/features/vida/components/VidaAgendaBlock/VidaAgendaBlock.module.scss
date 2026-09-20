@@ -213,3 +213,48 @@
     font-size: 0.75rem;
   }
 }
+
+/* ── Lo real encima de lo planeado (FEAT-004, tajada 2) ──────────────────── */
+
+/* Las etiquetas de lo que pasó: «✓ calcado», «empezó +5», «+18 min». Son
+   **texto**, y el color solo acompaña: quien no distinga los tonos lee lo
+   mismo (criterio 20). Ninguna es roja: durar más no es un fallo. */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.35rem;
+  margin: 0.15rem 0 0;
+  min-width: 0;
+}
+
+.tag {
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+
+  /* «✓ calcado»: el mint de la marca. Lo seguido se celebra en voz baja. */
+  &[data-kind='on-plan'] {
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: color-mix(in srgb, var(--color-primary) 60%, var(--color-text));
+  }
+}
+
+/* «→ hecho a las 19:40»: la sombra que deja el bloque movido en su hora
+   planeada (criterio 23). Lo real se pinta donde ocurrió, aparte. */
+.movedTo {
+  color: color-mix(in srgb, var(--aura-ring-to, #7c3aed) 55%, var(--color-text));
+  font-weight: 700;
+}
+
+/* La sombra: trazo discontinuo y fondo más apagado, sin tocar el contraste del
+   texto —lo que se lee se sigue leyendo igual—. */
+.card[data-shadow] {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--aura-glass-1) 55%, transparent);
+  box-shadow: none;
+}

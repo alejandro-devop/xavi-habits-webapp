@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react'
+import { VidaPlanVsRealBar } from '@/features/vida/components/VidaPlanVsRealBar'
 import { useRemoveDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
 import { useVidaElapsed } from '@/features/vida/hooks/useVidaElapsed'
 import type { AgendaBlock } from '@/features/vida/utils/vida-agenda.utils'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
+import type { BlockExecution } from '@/features/vida/utils/vida-execution.utils'
 import { describeOverPlan } from '@/features/vida/utils/vida-session.utils'
 import {
   formatDurationMinutes,
@@ -50,6 +52,13 @@ type VidaAgendaBlockProps = {
   onOpenFinishModal?: () => void
   /** Una mutación de sesión en vuelo: los botones se inhabilitan (criterio 13). */
   isSessionBusy?: boolean
+
+  /**
+   * Lo que pasó **en este bloque** (FEAT-004, tajada 2). También aditivo: sin
+   * esto el bloque se pinta como lo dejó FEAT-003, que es lo que ocurre en un
+   * día futuro y en uno sin nada registrado (criterios 27 y 29).
+   */
+  execution?: BlockExecution | null
 }
 
 /**
@@ -74,11 +83,16 @@ type VidaAgendaBlockProps = {
  * sesión**, no contra el montaje: recargar la página no lo reinicia. Y solo el
  * bloque en marcha monta un intervalo; los demás pasan `null`.
  *
- * Lo que **no** hace: pintar «ya registrado» ni ninguna etiqueta de ejecutado
- * («✓ calcado», «+11 min», las horas reales). Eso necesita el cruce sesión ↔
- * bloque de D1, que es la **tajada 2**. Por eso aquí «▶ Empezar» se esconde solo
- * en el bloque en marcha y en los días que no son hoy: la otra mitad del
- * criterio 1 llega con el cruce.
+ * **Desde la tajada 2 enseña también lo que pasó** (prop `execution`, que sale
+ * del cruce de D1 en `vida-execution.utils.ts`): «✓ calcado», «empezó +5»,
+ * «+18 min», las **horas reales** en vez de la duración planeada, la barrita
+ * **plan frente a real** y, en el movido, la **sombra** en la hora planeada con
+ * «→ hecho a las 19:40» (criterios 20, 21 y 23). El bloque **no se mueve de su
+ * hora** por nada de esto (criterios 18 y 55), y sin `execution` se pinta
+ * exactamente como lo dejó FEAT-003.
+ *
+ * Lo que **no** hace todavía: «pendiente» y «no hecho», las tres salidas y la
+ * razón de «no se pudo». Eso es la **tajada 4** (criterios 39 a 45).
  *
  * En pantalla se lee **«Quitar del plan»**: nunca «cancelar» ni «eliminar»
  * (criterio 30, heredado del 25 de FEAT-002). Y la salida del diálogo es
@@ -101,6 +115,7 @@ export function VidaAgendaBlock({
   onFinish,
   onOpenFinishModal,
   isSessionBusy = false,
+  execution = null,
 }: VidaAgendaBlockProps) {
   const { confirm } = useConfirmDialog()
   const removeMutation = useRemoveDayPlanItemMutation()
@@ -167,8 +182,23 @@ export function VidaAgendaBlock({
     </ul>
   )
 
+  // El movido: el bloque se queda de **sombra** en su hora y lo real se pinta
+  // donde ocurrió (criterio 23). No se mueve de sitio y no se cuenta dos veces.
+  const isMoved = execution?.status === 'moved'
+  // Lo que se lee encima del bloque cuando ya pasó: «✓ calcado», «empezó +5»,
+  // «+18 min». Son **etiquetas de texto**, no colores (criterio 20).
+  const executionTags =
+    execution && !execution.isRunning && !isMoved
+      ? execution.isOnPlan
+        ? [{ kind: 'on-plan', label: '✓ calcado' }]
+        : [
+            execution.startLabel ? { kind: 'shift', label: execution.startLabel } : null,
+            execution.durationLabel ? { kind: 'duration', label: execution.durationLabel } : null,
+          ].filter((tag): tag is { kind: string; label: string } => tag !== null)
+      : []
+
   return (
-    <li className={styles.row} style={colorStyle}>
+    <li className={styles.row} style={colorStyle} data-execution={execution?.status}>
       <span className={styles.gutter}>
         <time className={styles.time} dateTime={minutesToTime(block.startMinutes)}>
           {formatTimeForDisplay(minutesToTime(block.startMinutes))}
@@ -176,7 +206,7 @@ export function VidaAgendaBlock({
         <span className={styles.tick} aria-hidden />
       </span>
 
-      <article className={styles.card}>
+      <article className={styles.card} data-shadow={isMoved ? '' : undefined}>
         <span className={styles.capsule} aria-hidden>
           <AppIcon name={category?.icon ?? UNCATEGORIZED_GROUP_ICON} size="sm" decorative />
         </span>
@@ -188,6 +218,15 @@ export function VidaAgendaBlock({
                 planeado {formatDurationMinutes(block.durationMinutes)} ·{' '}
                 <span className={styles.live}>en marcha</span>
               </>
+            ) : isMoved ? (
+              <>
+                planeado {formatDurationMinutes(block.durationMinutes)} ·{' '}
+                <span className={styles.movedTo}>{execution?.movedToLabel}</span>
+              </>
+            ) : execution ? (
+              // Ya pasó: se leen **las horas reales**, no la duración planeada
+              // (criterio 20). El plan sigue contándose en la barrita de abajo.
+              <>{execution.rangeLabel}</>
             ) : (
               <>
                 {formatDurationMinutes(block.durationMinutes)}
@@ -195,6 +234,24 @@ export function VidaAgendaBlock({
               </>
             )}
           </p>
+          {executionTags.length > 0 ? (
+            <p className={styles.tags}>
+              {executionTags.map((tag) => (
+                <span key={tag.label} className={styles.tag} data-kind={tag.kind}>
+                  {tag.label}
+                </span>
+              ))}
+            </p>
+          ) : null}
+          {/* La barrita plan frente a real, con «plan 30 · real 41» como texto
+              de verdad (criterio 21). */}
+          {execution?.comparisonLabel ? (
+            <VidaPlanVsRealBar
+              plannedMinutes={execution.plannedMinutes}
+              realMinutes={execution.realMinutes}
+              label={execution.comparisonLabel}
+            />
+          ) : null}
           {/* Pasarse del plan **no interrumpe** (criterio 9): una línea, sin
               color de alarma, sin modal y sin sonido. */}
           {overPlan ? <p className={styles.overPlan}>{overPlan}</p> : null}

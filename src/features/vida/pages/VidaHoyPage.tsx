@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaAgendaBlock } from '@/features/vida/components/VidaAgendaBlock'
 import { VidaAgendaGap } from '@/features/vida/components/VidaAgendaGap'
+import { VidaAgendaSession } from '@/features/vida/components/VidaAgendaSession'
 import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
@@ -30,6 +31,7 @@ import {
   getDayBudget,
   suggestionsForGap,
 } from '@/features/vida/utils/vida-agenda.utils'
+import { buildDayExecution } from '@/features/vida/utils/vida-execution.utils'
 import type { GapWindow } from '@/features/vida/utils/vida-gap-form.utils'
 import {
   gapToWindow,
@@ -86,9 +88,13 @@ function subtitleFor(date: string, isToday: boolean, isPast: boolean): string {
  * vacío que se pueda planear —la mitad del criterio 21 que faltaba— y la vía a
  * la vista de semana desde la tira.
  *
- * Y nada de vivir el día (criterio 22): ni «Empezar», ni cronómetro, ni
- * «Terminar», ni barra de sesión, ni etiquetas de ejecutado. Eso es F3, aunque
- * el render `docs/vida/assets/03-vida-agenda.html` lo dibuje.
+ * **Desde FEAT-004 la pantalla vive el día.** La tajada 1 trajo «Empezar», el
+ * cronómetro y «Terminar»; la **tajada 2** pinta **lo real encima de lo
+ * planeado**: recorre `execution.entries` en vez de `agenda.entries` —los
+ * bloques siguen en su hora y enseñan lo suyo, y lo que no es de ningún bloque
+ * se cuela en la suya— y el presupuesto cambia de forma cuando el día se cierra
+ * (D5). Todo eso sale de un **segundo pase puro**,
+ * `utils/vida-execution.utils.ts`: `buildDayAgenda` no sabe nada de sesiones.
  *
  * Los cuatro estados van separados de verdad, como en `VidaActividadesPage`:
  * sin sesión (consultas deshabilitadas: `isPending` + `fetchStatus: 'idle'`),
@@ -123,8 +129,17 @@ export function VidaHoyPage() {
   // cruce de D1 y llega en la tajada 2.
   const canStart = isToday && !openSession.isDisabled && !openSession.isFromAnotherDay
   const runningActivityId = openSession.session?.activityId ?? null
-  const { planItems, suggestions, dayHours, isDisabled, isPending, isPlanError, failed, refetch } =
-    useVidaDayData(date)
+  const {
+    planItems,
+    suggestions,
+    followUps,
+    dayHours,
+    isDisabled,
+    isPending,
+    isPlanError,
+    failed,
+    refetch,
+  } = useVidaDayData(date)
 
   // La tira: siete días desde dos antes del que se mira, con un punto por día.
   // Cada punto es **la misma consulta** que la agenda de ese día
@@ -149,6 +164,35 @@ export function VidaHoyPage() {
     [planItems, dayHours.startTime, dayHours.endTime, nowMinutes],
   )
   const budget = getDayBudget({ agenda, dayEnd: dayHours.endTime, nowMinutes })
+  // Lo real encima de lo planeado (FEAT-004, tajada 2). Es un **segundo pase
+  // puro** sobre la agenda: los bloques se quedan en su hora y enseñan lo que
+  // pasó, lo que no es de ningún bloque se cuela en la suya, y el presupuesto
+  // cambia de forma cuando el día se cierra. Sin sesiones registradas devuelve
+  // exactamente las entradas de `buildDayAgenda` y la barra de F2 (criterio 29).
+  // La sesión **en marcha** se une a lo que devolvió el día antes de cruzar.
+  // `activityDayFollowUps` es la fuente de lo vivido, pero nadie ha podido
+  // comprobar contra el API real si incluye la que sigue abierta: si no la
+  // trajera, el bloque en marcha dejaría de estar en marcha en cuanto la
+  // tajada 2 pasó a decidirlo por el cruce. Si ya viene, **no se duplica**:
+  // manda el `id`. La de otro día no entra (criterio 16: se pregunta, no se
+  // pinta).
+  const dayFollowUps = useMemo(() => {
+    const open = openSession.session
+    if (!open || open.date !== date) return followUps
+    return followUps.some((followUp) => followUp.id === open.id) ? followUps : [...followUps, open]
+  }, [followUps, openSession.session, date])
+  const execution = useMemo(
+    () =>
+      buildDayExecution({
+        agenda,
+        followUps: dayFollowUps,
+        date,
+        nowMinutes,
+        dayEnd: dayHours.endTime,
+        isPastDay: isPast,
+      }),
+    [agenda, dayFollowUps, date, nowMinutes, dayHours.endTime, isPast],
+  )
   const guidance = buildGuidanceLine({
     agenda,
     nowMinutes,
@@ -157,8 +201,13 @@ export function VidaHoyPage() {
   })
   const nextBlockId = findNextBlockId(agenda.blocks, nowMinutes)
   // El aviso de «tu plantilla está vacía» se da **una vez**, en el primer hueco
-  // de verdad: repetirlo en cada uno sería ruido.
-  const firstRealGapId = agenda.gaps.find((gap) => !gap.isSliver && !gap.isPast)?.id ?? null
+  // de verdad: repetirlo en cada uno sería ruido. Sale de `execution.entries` y
+  // **no** de `agenda.gaps`: un hueco partido por una sesión estrena `id`, y
+  // buscándolo en la lista vieja el aviso desaparecía del día con registros
+  // (hallazgo 6 de la revisión de la tajada 2).
+  const firstRealGapId =
+    execution.entries.find((entry) => entry.kind === 'gap' && !entry.isSliver && !entry.isPast)
+      ?.id ?? null
 
   // La hoja: una `key` por apertura, como `VidaActividadesPage`. Se remonta
   // limpia sin que nadie tenga que vaciarla a mano, y se queda montada al
@@ -353,7 +402,7 @@ export function VidaHoyPage() {
     // 33): es un plan, no lo que está pasando. Se apagan los bordes, no el
     // texto: el contraste de lo que se lee no se toca (criterio 55).
     <ol className={styles.agenda} data-tone={isToday ? undefined : 'plan'}>
-      {agenda.entries.map((entry) => {
+      {execution.entries.map((entry) => {
         if (entry.kind === 'now') {
           return (
             <li className={styles.nowRow} ref={nowRef} key="now">
@@ -362,6 +411,11 @@ export function VidaHoyPage() {
               <span className={styles.nowPill}>Ahora</span>
             </li>
           )
+        }
+        if (entry.kind === 'session') {
+          // Algo que pasó y no es de ningún bloque, o lo real de un movido: en
+          // **su** hora, punteado, sin tocar el plan (criterios 22 y 23).
+          return <VidaAgendaSession key={entry.id} entry={entry} />
         }
         return (
           <Fragment key={entry.id}>
@@ -374,12 +428,16 @@ export function VidaHoyPage() {
                 // hay nada que quitar ni que cambiar de hora (criterio 38).
                 date={canPlan ? date : null}
                 onEdit={canPlan ? editBlock : undefined}
-                isRunning={
-                  runningActivityId !== null && entry.item.activityId === runningActivityId
-                }
+                // **El bloque**, no la actividad: con dos bloques de la misma
+                // actividad el mismo día, el cruce de D1 dice cuál está en
+                // marcha y el otro se queda quieto (hallazgo 2 de la tajada 1).
+                isRunning={execution.byBlockId[entry.id]?.isRunning ?? false}
+                execution={execution.byBlockId[entry.id] ?? null}
                 sessionStartInstant={openSession.startInstant}
+                // La otra mitad del criterio 1: «▶ Empezar» tampoco se pinta en
+                // un bloque que **ya tiene** sesión, esté en marcha o cerrada.
                 onStart={
-                  canStart && entry.item.activityId !== runningActivityId
+                  canStart && !execution.byBlockId[entry.id] && entry.item.activityId !== runningActivityId
                     ? (block) => void sessionActions.start(block.item.activityId)
                     : undefined
                 }
@@ -444,6 +502,7 @@ export function VidaHoyPage() {
             isDefaultSchedule={dayHours.isDefault}
             agenda={agenda}
             budget={budget}
+            executed={execution.budget}
             guidance={guidance}
             nowLabel={nowLabel}
           />
@@ -453,8 +512,9 @@ export function VidaHoyPage() {
               arregla en F3, no aquí. */}
           {isPast ? (
             <p className={styles.readOnly}>
-              Este día ya pasó: aquí queda como lo planeaste, para mirarlo. Los días de atrás no se
-              cambian.
+              {execution.hasExecution
+                ? 'Este día ya pasó: aquí queda lo que planeaste y lo que hiciste. El plan de los días de atrás no se cambia.'
+                : 'Este día ya pasó: aquí queda como lo planeaste, para mirarlo. Los días de atrás no se cambian.'}
             </p>
           ) : null}
 
@@ -487,6 +547,7 @@ export function VidaHoyPage() {
                 : isToday
                   ? 'Aún no hay plan para hoy.'
                   : `Todavía no hay plan para el ${formatDayHeading(date).toLowerCase()}.`}{' '}
+              {execution.hasExecution ? 'Lo que hiciste está abajo, en su hora. ' : ''}
               {templateCount > 0
                 ? `Tu plantilla trae ${templateCount} ${templateCount === 1 ? 'cosa' : 'cosas'} los ${pluralDayLabel(dayLabel)}.`
                 : 'Tu plantilla todavía no trae nada para este día.'}

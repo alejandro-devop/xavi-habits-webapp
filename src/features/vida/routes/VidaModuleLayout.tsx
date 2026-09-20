@@ -11,6 +11,8 @@ import {
 import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActions'
 import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import { Alert } from '@/shared/ui/Alert'
+import { Button } from '@/shared/ui/Button'
 import styles from './VidaModuleLayout.module.scss'
 
 /**
@@ -34,7 +36,8 @@ import styles from './VidaModuleLayout.module.scss'
  * cambian: este componente es el `element` de un nodo de ruta que ya existía.
  */
 export function VidaModuleLayout() {
-  const { session, startInstant, isFromAnotherDay, isDisabled } = useVidaOpenSession()
+  const { session, startInstant, isFromAnotherDay, isDisabled, isError, refetch } =
+    useVidaOpenSession()
   const plannedMinutes = useVidaSessionPlannedMinutes(session)
   const dayHours = useVidaDayHours()
 
@@ -65,6 +68,21 @@ export function VidaModuleLayout() {
 
   return (
     <div className={styles.root} data-session-bar={hasBar ? 'on' : undefined}>
+      {/* Si no pudimos saber si hay algo en marcha, **se dice** (hallazgo 1 de
+          la revisión de la tajada 1): callarlo se lee como «no tienes nada» y
+          deja un «▶ Empezar» que acaba en «Ya tenías algo en marcha» sin
+          ninguna barra para terminarla. Nada afirma lo que no sabe. */}
+      {!isDisabled && isError ? (
+        <Alert variant="warning" title="No pudimos saber si tienes algo en marcha">
+          <p className={styles.errorText}>
+            Si dejaste una sesión abierta, sigue guardada. Vuelve a intentarlo y aparece.
+          </p>
+          <Button variant="secondary" size="sm" onClick={refetch}>
+            Reintentar
+          </Button>
+        </Alert>
+      ) : null}
+
       {hasPrompt && session ? (
         <VidaStaleSessionPrompt
           session={session}

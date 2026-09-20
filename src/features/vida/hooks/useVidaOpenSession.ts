@@ -20,6 +20,16 @@ export type VidaOpenSession = {
   isDisabled: boolean
   /** En vuelo: todavía no se afirma «no hay nada en marcha». */
   isPending: boolean
+  /**
+   * La consulta falló. **Hay que pintarlo** (hallazgo 1 de la revisión de la
+   * tajada 1): sin esto, `session` es `null` y la pantalla se lee como «no
+   * tienes nada en marcha» —que es afirmar lo que no se sabe— y encima el
+   * «▶ Empezar» acaba en «Ya tenías algo en marcha» **sin ninguna barra para
+   * terminarla**. Es la misma regla del criterio 58, aplicada a la sesión.
+   */
+  isError: boolean
+  /** Volver a preguntar si hay algo en marcha. */
+  refetch: () => void
 }
 
 /**
@@ -57,6 +67,10 @@ export function useVidaOpenSession(): VidaOpenSession {
     isFromAnotherDay: isSessionFromAnotherDay(session, getCurrentLocalDate()),
     isDisabled,
     isPending: query.isPending && !isDisabled,
+    isError: query.isError,
+    refetch: () => {
+      void query.refetch()
+    },
   }
 }
 

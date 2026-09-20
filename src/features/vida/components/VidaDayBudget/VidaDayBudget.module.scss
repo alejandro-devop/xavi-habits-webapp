@@ -71,6 +71,10 @@
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
 }
 
+/* Los ocho tramos de las tres formas (criterios 24 y 62). Dentro de cada forma
+   se distinguen **entre sí y del fondo**, también en oscuro: van por mezcla con
+   `--color-text` o con los dos colores de Aura, que se invierten con el tema.
+   Ninguno es rojo ni ámbar: pasarse del plan no es una alarma. */
 .segment {
   height: 100%;
 
@@ -82,6 +86,49 @@
      rayado de «desperdicio» (criterio 56). */
   &[data-kind='free'] {
     background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  }
+
+  /* Día en marcha: lo hecho es el mint lleno; lo planeado que queda, a media
+     fuerza; y lo que está pasando, **violeta rayado**. El rayado no es
+     decoración: es lo que lo separa de la marca de «ahora», que es una línea
+     violeta lisa (hallazgo abierto de FEAT-003 sobre los dos violetas en
+     oscuro — criterio 62). */
+  &[data-kind='done'] {
+    background: var(--color-primary);
+  }
+
+  /* Lo que **queda** por delante, con el día en marcha: el mismo mint a media
+     fuerza. Si se quedara lleno sería idéntico a «hecho» y la leyenda tendría
+     dos tramos indistinguibles (criterio 62, medido en oscuro). */
+  .track[data-form='running'] &[data-kind='planned'] {
+    background: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  }
+
+  &[data-kind='running'] {
+    background: repeating-linear-gradient(
+      135deg,
+      var(--aura-ring-to, #7c3aed) 0 0.25rem,
+      color-mix(in srgb, var(--aura-ring-to, #7c3aed) 55%, transparent) 0.25rem 0.5rem
+    );
+  }
+
+  /* Día cerrado. */
+  &[data-kind='followed'] {
+    background: var(--color-primary);
+  }
+
+  &[data-kind='over'] {
+    background: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  }
+
+  &[data-kind='off-plan'] {
+    background: color-mix(in srgb, var(--aura-ring-to, #7c3aed) 70%, transparent);
+  }
+
+  /* «Sin dato» es el pasado del que no se sabe: gris neutro, **nunca** un tono
+     de reproche ni un rayado de desperdicio (criterios 47 y 59). */
+  &[data-kind='no-data'] {
+    background: color-mix(in srgb, var(--color-text) 25%, transparent);
   }
 }
 
@@ -123,15 +170,51 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* El punto de la leyenda lleva **el mismo color que su tramo**: si no, la
+   leyenda y la barra dirían cosas distintas (criterio 26). */
 .dot {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-primary) 18%, transparent);
 
-  [data-kind='planned'] > & {
+  [data-kind='planned'] > &,
+  [data-kind='done'] > &,
+  [data-kind='followed'] > & {
     background: var(--color-primary);
   }
+
+  .legend[data-form='running'] [data-kind='planned'] > & {
+    background: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  }
+
+  [data-kind='running'] > & {
+    background: repeating-linear-gradient(
+      135deg,
+      var(--aura-ring-to, #7c3aed) 0 0.125rem,
+      color-mix(in srgb, var(--aura-ring-to, #7c3aed) 55%, transparent) 0.125rem 0.25rem
+    );
+  }
+
+  [data-kind='over'] > & {
+    background: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  }
+
+  [data-kind='off-plan'] > & {
+    background: color-mix(in srgb, var(--aura-ring-to, #7c3aed) 70%, transparent);
+  }
+
+  [data-kind='no-data'] > & {
+    background: color-mix(in srgb, var(--color-text) 25%, transparent);
+  }
+}
+
+/* La línea que explica el cambio de forma (criterio 25). */
+.formNote {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 /* ── La guía y el horario ────────────────────────────────────────────────── */

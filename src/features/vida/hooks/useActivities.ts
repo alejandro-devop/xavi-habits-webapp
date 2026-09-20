@@ -11,6 +11,16 @@ import { invalidateActivityQueries } from '@/features/vida/utils/invalidate-vida
 import { vidaKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
 
+/**
+ * `onError` con toast en las mutaciones que estrena F1. Lo dejaron anotado los
+ * tres revisores de F0: sin él, una mutación que falla no dice nada y el
+ * usuario cree que guardó. Va en el hook y no en cada pantalla para que la
+ * siguiente no se lo olvide.
+ */
+function toErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message.trim() ? error.message : fallback
+}
+
 export function useActivitiesQuery(filters: ActivityFilters = {}) {
   const enabled = useVidaQueryGuard()
   return useQuery({
@@ -40,6 +50,9 @@ export function useCreateActivityMutation() {
       invalidateActivityQueries(queryClient)
       toast.success('Actividad creada')
     },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos crear la actividad'))
+    },
   })
 }
 
@@ -51,6 +64,9 @@ export function useUpdateActivityMutation() {
     onSuccess: (_data, variables) => {
       invalidateActivityQueries(queryClient, { id: variables.id })
       toast.success('Actividad actualizada')
+    },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos guardar los cambios'))
     },
   })
 }

@@ -1,11 +1,11 @@
 ---
 id: FEAT-002
 title: El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días
-status: planned
+status: building
 architect: yes    # primera pantalla real de Vida, datos de arranque nuevos y dos selectores que hoy viven en hábitos
 area: features/vida
 requested: 2026-09-19
-updated: 2026-09-19
+updated: 2026-09-20
 ---
 
 # FEAT-002 — El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días
@@ -214,7 +214,7 @@ cuatro notas al pie; las notas son parte de la spec). Se abre en
 
 | # | What it does | State |
 |---|---|---|
-| 1 | **El primer minuto y el catálogo.** Sin nada creado, los puntos de partida: se marcan varias y un botón las crea todas con sus categorías (creando las que falten). Con actividades, el catálogo agrupado por categoría, con los días de la plantilla, el buscador y los estados (cargando, sin sesión, error, vacío, 375 px, oscuro). Solo lectura: aún no hay hoja. | pending |
+| 1 | **El primer minuto y el catálogo.** Sin nada creado, los puntos de partida: se marcan varias y un botón las crea todas con sus categorías (creando las que falten). Con actividades, el catálogo agrupado por categoría, con los días de la plantilla, el buscador y los estados (cargando, sin sesión, error, vacío, 375 px, oscuro). Solo lectura: aún no hay hoja. | accepted (2026-09-20) |
 | 2 | **Crear y editar desde la hoja.** El `+` y el «···» → editar abren la hoja con nombre y categoría (píldoras), con «+ nueva» categoría (icono + color) dentro de la misma hoja. Errores de mutación visibles. Sin duración: la hoja tiene nombre y categoría, nada más (D2). | pending |
 | 3 | **Ponerla en mi plantilla.** El interruptor y los siete días en la hoja: crea, actualiza y desactiva el `VidaItem`, y las casillas de la tarjeta lo reflejan. | pending |
 | 4 | **Archivar, restaurar y gestionar categorías.** El «···» → «Archivar» (`status: 'cancelled'` + `VidaItem` desactivado), «ver archivadas» con «Restaurar», y la pantalla/hoja de categorías: listar, editar nombre, icono y color. | pending |
@@ -460,7 +460,7 @@ El toast **no basta** para el criterio 16: lo que garantiza que la hoja no se ci
 
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
-| 1 | **El primer minuto y el catálogo (solo lectura).** Puntos de partida con selección múltiple y creación en lote; catálogo agrupado por categoría con casillas de plantilla y buscador; los cuatro estados. | **Crea:** `data/vida-starting-points.ts` · `hooks/useCreateStartingActivities.ts` (+test) · `utils/vida-catalog.utils.ts` (+test) · `utils/vida-text.utils.ts` (+test) · `components/VidaStartingPoints/` · `components/VidaCatalogGroup/` · `components/VidaActivityCard/` (+test) · `pages/VidaActividadesPage.module.scss` · `pages/VidaActividadesPage.test.tsx`. **Modifica:** `pages/VidaActividadesPage.tsx` (entero) · `utils/activity-filters.ts:36-45` · `utils/vida-date.utils.ts` (al final) · `hooks/useActivities.ts:37,49` (`onError`). | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 28, 29, 30, 31*, 32*, 33*, 34, 35 | pending |
+| 1 | **El primer minuto y el catálogo (solo lectura).** Puntos de partida con selección múltiple y creación en lote; catálogo agrupado por categoría con casillas de plantilla y buscador; los cuatro estados. | **Crea:** `data/vida-starting-points.ts` · `hooks/useCreateStartingActivities.ts` (+test) · `utils/vida-catalog.utils.ts` (+test) · `utils/vida-text.utils.ts` (+test) · `components/VidaStartingPoints/` · `components/VidaCatalogGroup/` · `components/VidaActivityCard/` (+test) · `pages/VidaActividadesPage.module.scss` · `pages/VidaActividadesPage.test.tsx`. **Modifica:** `pages/VidaActividadesPage.tsx` (entero) · `utils/activity-filters.ts:36-45` · `utils/vida-date.utils.ts` (al final) · `hooks/useActivities.ts:37,49` (`onError`). | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 28, 29, 30, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
 | 2 | **Crear y editar desde la hoja.** FAB `+` y «···» → Editar abren `SteppedModal` con nombre + píldoras de categoría + «+ nueva» (icono y color). Mueve el selector de color a compartido. | **Crea:** `shared/ui/ColorPicker/{ColorPicker.tsx,.module.scss,color-palette.ts,ColorPicker.test.tsx,index.ts}` · `components/VidaActivitySheet/` (+test) · `components/CreateVidaCategoryStep/`. **Modifica:** `pages/VidaActividadesPage.tsx` (FAB, menú «···» → editar, estado de la hoja) · `components/VidaActivityCard/VidaActivityCard.tsx` (el menú) · `habits/components/HabitFormModal/HabitWizardStep1.tsx:3,118` · `habits/components/HabitFormModal/HabitEditForm.tsx:4,305` · `habits/data/habit-colors.ts:11-97` · `shared/ui/index.ts` · `hooks/useActivityCategories.ts:35,48`. **Borra:** `habits/components/HabitColorPicker/`. | 12, 13, 14, 15, 16, 31*, 32*, 33*, 34, 35 | pending |
 | 3 | **Ponerla en mi plantilla.** Interruptor + siete días en la hoja: crea, actualiza y desactiva el `VidaItem`; la tarjeta lo refleja. | **Crea:** `hooks/useSaveVidaItemForActivity.ts` (+test). **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx` (bloque plantilla + validación) · `pages/VidaActividadesPage.tsx` (pasa el `VidaItem` de la actividad a la hoja) · `hooks/useVidaItems.ts:61,73` (`onError`). | 17, 18, 19, 20, 31*, 33*, 35 | pending |
 | 4 | **Archivar, restaurar y categorías.** «···» → Archivar con confirmación; `/app/vida/actividades/archivadas` con Restaurar; `/app/vida/categorias` para listar y editar. | **Crea:** `pages/VidaArchivadasPage.tsx` (+scss, +test) · `pages/VidaCategoriasPage.tsx` (+scss, +test) · `components/VidaCategoryForm/`. **Modifica:** `components/VidaActivityCard/VidaActivityCard.tsx` (Archivar) · `pages/VidaActividadesPage.tsx` (enlaces «ver archivadas» y «Categorías ›») · `routes/vida-paths.ts:6` · `routes/vida.routes.tsx:39-42` · `routes/vida.routes.test.tsx`. | 21, 22, 23, 24, 25, 26, 27, 31*, 32*, 33*, 34, 35 | pending |
@@ -529,4 +529,382 @@ La línea base está en `docs/features/ENVIRONMENT.md`: `pnpm typecheck` limpio,
 
 ## 3. Construction — feature-builder
 
+*(una entrada por tajada, añadidas debajo)*
+
+### Tajada 1 — El primer minuto y el catálogo
+
+**Summary for the reviewer:**
+1. `/app/vida/actividades` deja de ser un cascarón de 6 líneas: con cero
+   actividades enseña los **13 puntos de partida** (6 marcados) y un botón que
+   las crea con sus categorías; con actividades, el **catálogo agrupado por
+   categoría** con casillas de plantilla, buscador sin tildes y los cuatro
+   estados (cargando / sin sesión / error / vacío). Solo lectura: ni FAB `+` ni
+   «Categorías ›» (llegan en las tajadas 2 y 4).
+2. Todo el código nuevo vive en `src/features/vida/{components,data,hooks,pages,utils}`;
+   de fuera del módulo solo se tocó `src/features/vida/routes/vida.routes.test.tsx`.
+3. **Lo que más probablemente rompí:** el **test de rutas de Vida**
+   (`vida.routes.test.tsx`). Actividades ya no renderiza en seco —pide
+   `QueryClientProvider` y contexto de sesión a través de `useVidaQueryGuard`—,
+   así que el test ahora **mockea el guard a `false`** y monta un `QueryClient`
+   propio. Si mañana alguien quiere que ese test compruebe la pantalla con
+   datos, ese mock le estorbará. Segundo sospechoso:
+   `filterActivitiesBySearch`, que **dejó de mirar `description` y
+   `category.name`** — hoy su único consumidor es esta pantalla y sus tests,
+   pero cualquier pantalla futura que esperara la búsqueda ancha se llevará una
+   sorpresa. Tercero: el chunk inicial subió de 817,6 kB a **833,0 kB** (+15,4);
+   no es por iconos (el `app-icons` perezoso sigue en 620,20 kB), es código de
+   la pantalla, pero el número de la línea base cambia.
+
+**What was built:**
+
+*Creado*
+
+| Archivo | Qué hace |
+|---|---|
+| `src/features/vida/data/vida-starting-points.ts` (+`.test.ts`) | Los 13 puntos de partida del render y sus 4 categorías sugeridas (Casa, Mascotas, Yo, Comida) con icono y hexadecimal. Datos puros, `categoryName` y **nunca** un id, igual que `habit-templates.ts`. El test fija los cuatro hexadecimales del núcleo de la paleta. |
+| `src/features/vida/utils/vida-text.utils.ts` (+`.test.ts`) | `normalizeVidaText` (minúsculas + sin tildes) y `compareVidaNames` (`localeCompare` en `'es'`). Copiado y no importado de `habit-list.utils.ts`: Vida no depende de hábitos. |
+| `src/features/vida/utils/vida-catalog.utils.ts` (+`.test.ts`) | Aritmética pura del catálogo: `excludeArchivedActivities`, `buildVidaItemsByActivity` (`activityId → VidaItem` **activo**), `groupActivitiesByCategory` (orden por `orderIndex`, «Sin categoría» siempre al final) y `countCatalogCategories`. |
+| `src/features/vida/hooks/useCreateStartingActivities.ts` (+`.test.tsx`) | El orquestador del botón: resuelve las categorías necesarias (reutiliza por nombre normalizado, crea las que falten), crea las actividades, **invalida una sola vez** y da **un solo mensaje**. No lanza: resuelve con `{ created, failed }`. |
+| `src/features/vida/components/VidaActivityCard/` (+`.test.tsx`) | La tarjeta: cápsula con icono y color de la categoría, nombre y las **siete casillas L M X J V S D** o «sin plantilla». |
+| `src/features/vida/components/VidaCatalogGroup/` | La cabecera del grupo (punto de color, nombre, recuento) y su rejilla de tarjetas. |
+| `src/features/vida/components/VidaStartingPoints/` (+`.test.tsx`) | El primer minuto: 13 píldoras, 6 marcadas, el botón que dice cuántas, el `Alert` de lo que falló. |
+| `src/features/vida/pages/VidaActividadesPage.module.scss` | El SCSS de la pantalla y su esqueleto. |
+| `src/features/vida/pages/VidaActividadesPage.test.tsx` | 13 casos: agrupado, «Sin categoría» al final, recuento, archivadas fuera, buscador, sin resultados, esqueleto, sin sesión, error + reintento, vacío → puntos de partida, ausencia de FAB/«Categorías ›», texto largo y vocabulario. |
+
+*Modificado*
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/pages/VidaActividadesPage.tsx` | De 6 líneas a la pantalla entera. `CATALOG_LIMIT = 200`, consulta **sin filtro de estado**, recuento del array ya filtrado (nunca de `total`), línea «Mostrando las primeras 200…» cuando `total > activities.length`. |
+| `src/features/vida/utils/activity-filters.ts:44-48` | `filterActivitiesBySearch` pasa por `normalizeVidaText` y busca **solo por `title`**. |
+| `src/features/vida/utils/vida-date.utils.ts` (al final) | `VIDA_DAY_ORDER` (lunes→domingo), `VIDA_DAY_SHORT_LABELS` (L M X J V S D) y `VIDA_DAY_LABELS` (para el `aria-label`, que una letra suelta no se lee). |
+| `src/features/vida/hooks/useActivities.ts:53,68` | `onError` con toast en crear y actualizar, el hueco que dejaron anotado los tres revisores de F0. |
+| `src/features/vida/routes/vida.routes.test.tsx` | Mock de `useVidaQueryGuard` a `false` + `QueryClientProvider` en `renderAt`. La aserción «nada más que el título» pasa a ser un `it.each` sobre **plantilla, hoy y revisión**: Actividades ya no es un cascarón. |
+
+**Why this way:**
+
+- **El esqueleto mira `fetchStatus`, no solo `isPending`** (criterio 29). Con el
+  guard en `false` la consulta queda `isPending` con `fetchStatus: 'idle'` para
+  siempre; si el esqueleto mirara `isPending` a secas giraría eternamente. La
+  pantalla distingue: `isPending && fetchStatus === 'idle'` → mensaje de sesión;
+  `isPending` a secas → esqueleto. Descartado usar `isLoading`, que es
+  exactamente el booleano que miente aquí.
+- **`useCreateStartingActivities` orquesta sobre `api/` y no sobre los hooks de
+  mutación.** Seis actividades + cuatro categorías con los hooks serían **diez
+  toasts** por un solo gesto. Es el único sitio de Vida autorizado a saltárselos
+  y su comentario de cabecera lo dice. Descartada la alternativa —silenciar el
+  toast con una bandera en el hook— porque contamina la capa de datos de F0 para
+  un caso de una pantalla.
+- **Resuelve, no lanza** (criterio 11): `{ created, failed }`. Un `Promise.all`
+  que rechaza dejaría a medias sin poder decir **qué** quedó creado, y la
+  pantalla anunciaría «6 creadas» cuando fueron 4.
+- **Las categorías se piden frescas** (`getActivityCategories()`) dentro de la
+  mutación en vez de leer la caché de la pantalla: si el usuario ya tenía «Casa»
+  de antes, se reutiliza aunque la caché venga de hace rato. Si esa lectura
+  falla se sigue con lista vacía —como mucho se duplica una categoría— en vez de
+  no crear nada.
+- **El recuento sale del array filtrado en cliente**, nunca de `data.total`:
+  `total` cuenta también las archivadas. La línea «hay más» sí compara el
+  **crudo**, que es lo que dice si el lote no cabía.
+- **Un nombre largo se recorta con elipsis** (`text-overflow` + `min-width: 0`
+  en cadena) en vez de envolverse: en una fila de una línea, envolver empujaría
+  las casillas fuera de la tarjeta.
+- **Los grupos se ordenan por `orderIndex` de la categoría** y, a igualdad, por
+  nombre; dentro, alfabético por título. Era la propuesta —no decisión— que
+  dejó el arquitecto; queda tomada aquí y dicha, por si el usuario la quiere de
+  otra forma.
+
+**Verification:**
+
+```
+$ pnpm typecheck
+> tsc -b --noEmit
+(limpio)
+
+$ pnpm lint
+✖ 14 problems (14 errors, 0 warnings)
+$ pnpm lint | grep -c "features/vida"
+0
+
+$ pnpm test
+ Test Files  1 failed | 72 passed (73)
+      Tests  2 failed | 579 passed (581)
+(los 2 fallos son SearchSelect.test.tsx, preexistentes en la línea base)
+
+$ pnpm vitest run src/features/vida
+ Test Files  15 passed (15)
+      Tests  161 passed (161)
+
+$ pnpm build
+dist/assets/index-DoNhT2sV.js       832.97 kB │ gzip: 255.54 kB
+dist/assets/app-icons-B03FATU2.js   620.20 kB │ gzip: 193.19 kB
+dist/assets/IconPicker-CzH4q4OG.js    4.64 kB │ gzip:   1.81 kB
+
+$ grep -rn "free-solid-svg-icons" src/features/vida/
+(ninguno)
+```
+
+La línea base pasa de 530 a **581 tests**: 51 nuevos, ninguno roto. El lint
+llegó a 15 errores a mitad de construcción (`no-useless-assignment` en
+`useCreateStartingActivities.ts:111`, una inicialización `= []` que ambas ramas
+pisaban) y se dejó en los 14 de la línea base.
+
+**Criteria it closes:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 1 | cerrado | `VidaActividadesPage.test.tsx` «agrupa por categoría…»: la cabecera «Casa» lleva `2 actividades`, su `<section>` lleva `--vida-category-color: #8b5cf6` y dentro hay 2 `article`. |
+| 2 | cerrado | «la actividad sin categoría va a "Sin categoría", y va la última»: el último `h2` contiene «Sin categoría» y dentro está «Llamar a alguien». Icono neutro `circle-dot` en `vida-catalog.utils.ts:16`. |
+| 3 | cerrado **por test de componente** | `VidaActivityCard.test.tsx`: con un `VidaItem` inyectado (`monday/wednesday/friday`) las siete casillas salen `L M X J V S D` y las marcadas son `L X V`; sin `VidaItem` se lee «sin plantilla» y no hay ninguna casilla. **Tal como acordó el arquitecto**: nada crea `VidaItem` hasta la tajada 3, así que en un recorrido real de esta tajada todas las tarjetas dirán «sin plantilla». La mitad «a mano» se cierra en la tajada 3. |
+| 4 | cerrado | «4 actividades · 2 categorías» con 4 `article` y 3 grupos en pantalla («Sin categoría» no cuenta como categoría). Un caso extra comprueba que una `cancelled` ni se pinta ni cuenta. |
+| 5 | cerrado | Escribir `banar` deja «Bañarme» y esconde el grupo «Casa»; `zzz` da «Sin resultados para “zzz”» y el botón «Limpiar búsqueda» restaura. Más `vida-text.utils.test.ts` y los tests de `activity-filters`. |
+| 6 | cerrado | Con `activities: []` salen los 13 puntos (`VidaStartingPoints.test.tsx`: 6 `pressed`, 7 no), cada uno con su icono y su `categoryName`; no hay ningún `textbox` en pantalla. Los 17 nombres de icono se comprobaron contra `src/shared/icons/catalog`. |
+| 7 | cerrado | `useCreateStartingActivities.test.tsx` «crea exactamente lo marcado»: 3 puntos → 3 `createActivity`, todas con `categoryId`. Y en la pantalla el botón dice «Crear las 6» / «Crear las 7» según lo marcado. |
+| 8 | cerrado | «reutiliza la categoría que ya existía…»: con «YO» y «compañía» en la cuenta, pedir «Yo» y «Compania» **no llama a `createActivityCategory`** y usa los ids existentes. Y «crea con nombre, icono y color…»: `createActivityCategory({ name: 'Casa', icon: 'house-chimney', color: '#8b5cf6' })`. Dos actividades de «Yo» crean **una** categoría. |
+| 9 | cerrado | «sin ninguna marcada el botón está deshabilitado y no crea nada»: `toBeDisabled()` y `mutate` sin llamadas. |
+| 10 | cerrado | `VidaStartingPoints.test.tsx` «mientras crea no admite un segundo toque» (dos clics con `isPending` → 0 llamadas) + `useCreateStartingActivities.test.tsx` «un segundo toque mientras crea no vuelve a crear» (con la promesa retenida, `createActivity` queda en 1). |
+| 11 | cerrado | Hook: con «Cocinar» fallando, `created` = `['Bañarme','Descansar']`, `failed` = `[{name:'Cocinar', reason:'El servidor no respondió'}]`, `isError` **false**, el toast dice «2 de 3» y **no** hay toast de éxito. Pantalla: `Alert` «Algunas no se pudieron crear» con el motivo, lo creado se desmarca y «Cocinar» sigue marcada. |
+| 28 | cerrado | Con `isPending` + `fetchStatus: 'fetching'` hay `[aria-busy="true"]` y **no** hay puntos de partida ni botón «Crear las…». |
+| 29 | cerrado | Con `isPending` + `fetchStatus: 'idle'`: «Entra para ver tus actividades», enlace «Iniciar sesión» y **ningún** `aria-busy`. |
+| 30 | cerrado | Con `isError`: «No pudimos cargar tus actividades» y el botón «Reintentar» llama a `refetch` una vez. |
+| 31 | **pendiente de prueba manual** | El 5173 del usuario estaba apagado (`probe.sh`: «APAGADO (nadie escucha)», `curl` rc 7), así que no se pudo montar el arnés. Por código: `min-width: 0` en toda la cadena, rejilla `repeat(auto-fill, minmax(min(20.25rem, 100%), 1fr))` y elipsis en nombre y categoría — pero **no está medido**. La mitad del criterio que habla del «···» no aplica todavía: esta tajada no lo pinta. |
+| 32 | cerrado en DOM, **visual pendiente** | Test de pantalla con título de 61 caracteres y categoría de 42: los dos se pintan enteros sin romper el árbol; `VidaActivityCard.test.tsx` repite con el nombre largo. Que no produzcan scroll horizontal a 375 px es la parte que necesita el arnés (ver 31). |
+| 33 | **pendiente de prueba manual** | Mismo motivo: sin 5173 no hay arnés. Por código no hay ni un color literal en el SCSS: todo sale de `--color-text`, `--color-text-muted`, `--color-primary`, `--color-glass-border` y `--aura-glass-1`, y el color de categoría entra siempre por `color-mix` contra el texto o el fondo, que es lo que lo mantiene legible al invertir el tema. **No verificado.** |
+| 34 | cerrado | Test de pantalla y de tarjeta: el texto renderizado no contiene «pendiente», «prioridad», «vencida», «atrasad», «fallaste», «incumpl», «desperdici», «cancelad», «eliminar» ni «tarea». |
+| 35 | cerrado con un matiz | typecheck limpio, lint 14/0 (ninguno en Vida), tests 2 fallos preexistentes y ni un import a pelo de `@fortawesome/free-solid-svg-icons`. **El matiz:** el chunk inicial pasa de 817,6 kB a **833,0 kB**. No es por iconos (`app-icons` sigue perezoso en 620,20 kB), es el código de la pantalla; pero el criterio dice «no crece **por iconos**» y ahí está limpio. |
+
+Los criterios 12-27 son de las tajadas 2-4 y no se tocan. El **36** es del
+usuario por definición.
+
+**Risks:**
+
+- **`vida.routes.test.tsx` con el guard mockeado a `false`.** El test comprueba
+  el enrutado, no la pantalla; si alguien espera que ahí se vea el catálogo con
+  datos, ese mock lo impide. Era eso o meter `AuthBootstrapProvider` en un test
+  de rutas.
+- **`filterActivitiesBySearch` se estrechó a `title`.** Cambio pedido por el
+  plan (criterio 5 dice «por nombre»), pero es una función compartida del
+  módulo: cualquier pantalla futura que esperase la búsqueda ancha —descripción
+  y categoría— ya no la tiene.
+- **`onError` nuevo en `useActivities`.** Cualquier consumidor que hoy tragara
+  un fallo en silencio ahora enseña un toast. Es la intención, pero es un cambio
+  de comportamiento en código de F0, ya entregado.
+- **`CATALOG_LIMIT = 200` sin paginación.** Con más de 200 actividades sale la
+  línea «Mostrando las primeras 200…» y el resto no se ve. Está dicho en
+  pantalla, no escondido, pero es un techo real.
+- **Los dos estados que no pude mirar** (375 px y tema oscuro) son precisamente
+  los que un test no sustituye. Van como pendientes, no como cerrados.
+- **El grafo** se actualizó con `graphify update .` (2696 nodos, 2874 aristas).
+
+**Deviations from the plan:**
+
+1. **`data/vida-starting-points.test.ts` no estaba en la lista de archivos del
+   plan.** Se añadió para fijar los cuatro hexadecimales del núcleo de la
+   paleta: como los colores se escriben aquí como literales —para no atar
+   `features/vida` a `features/habits`— sin test se desincronizan en silencio
+   cuando la paleta se mude a `@/shared/ui/ColorPicker` en la tajada 2.
+2. **Se tocó `routes/vida.routes.test.tsx`, que el plan asignaba a la tajada
+   4.** No fue opcional: al dejar de ser un cascarón, `VidaActividadesPage`
+   rompía ese test. Se arregló sin recortar lo que comprueba (las cuatro rutas
+   siguen verificándose; la aserción «nada más que el título» pasó a cubrir
+   explícitamente plantilla, hoy y revisión, que es donde sigue siendo cierta).
+3. **`VIDA_DAY_LABELS` no estaba en el plan** (que pedía `VIDA_DAY_ORDER` y
+   `VIDA_DAY_SHORT_LABELS`). Hizo falta para el `aria-label` de la fila de
+   casillas: «L M X J V S D» leído en voz alta no dice nada.
+4. **El orden de los grupos** (por `orderIndex`, luego por nombre; alfabético
+   dentro) era «propuesta, no decisión» del arquitecto. Queda tomada así.
+5. **Los dos ajustes de alcance del arquitecto se respetaron** y hay un test que
+   lo vigila: la pantalla **no** pinta el FAB `+` ni «Categorías ›», y el
+   criterio 3 se cierra por test de `VidaActivityCard` con un `VidaItem`
+   inyectado.
+
+**Lo que queda para el usuario** (criterio 36, la parte de esta tajada). Está
+detrás del login y ningún agente entra con credenciales. Con el 5173 arriba y la
+sesión iniciada:
+
+1. Ir a **Vida → Actividades** (`/app/vida/actividades`).
+2. **Si la cuenta no tiene ninguna actividad:** deberían verse las 13 tarjetas
+   de puntos de partida con 6 ya marcadas y el botón **«Crear las 6»**. Tocar
+   alguna más y otra menos: el botón cambia el número. Pulsarlo → un solo aviso
+   y el catálogo agrupado con exactamente esas, cada una en su categoría.
+   *(Si la cuenta ya tiene actividades, este paso no aparece: es correcto.)*
+3. Comprobar la línea bajo el título: **«N actividades · M categorías»** con los
+   números de lo que se ve. «Sin categoría», si sale, va **al final** y no cuenta
+   como categoría.
+4. Escribir **«banar»** en el buscador: debería aparecer «Bañarme» y esconderse
+   los grupos sin resultados. Escribir **«zzz»**: «Sin resultados para “zzz”» y
+   un botón para limpiar.
+5. **A 375 px** (o en el móvil): que no haya scroll horizontal y que ningún
+   nombre largo se salga de la tarjeta. **Esto no lo pude medir**: el 5173
+   estaba apagado.
+6. **Con el tema oscuro puesto:** que las cabeceras de grupo, el punto de color
+   y las tarjetas se lean sin texto oscuro sobre fondo oscuro. **Tampoco
+   medido.**
+7. Todas las tarjetas dirán **«sin plantilla»**: es lo esperado en esta tajada
+   —nada crea `VidaItem` hasta la tajada 3—, no un fallo.
+8. No hay botón `+` ni «Categorías ›»: llegan en las tajadas 2 y 4.
+
+**Tree state:** sin commitear. 26 archivos de código —5 modificados y 21
+nuevos—, **todos** bajo `src/features/vida/`; fuera de ahí solo este dossier,
+`BOARD.md` y lo que reescribe `graphify update .`. No se montó ningún arnés
+temporal (el 5173 estaba apagado), así que no hay nada que borrar, y no se
+sembró ningún dato de prueba.
+
 ## 4. Review — feature-reviewer
+
+*(una entrada por tajada)*
+
+### Tajada 1 — El primer minuto y el catálogo
+
+**Veredicto: aceptada.** Los diecinueve criterios que la tajada cierra se
+comprobaron uno a uno; los tres que el constructor dejó pendientes (31, 33 y la
+mitad visual del 32) se midieron aquí con un arnés a 375 px en los dos temas y
+salen bien. No apareció ninguna regresión fuera de `features/vida`.
+
+**Lo que hice para revisar** (el 5173 seguía apagado: `probe.sh` → «APAGADO
+(nadie escucha)» en 5173 y 5174). Arranqué uno con `preview_start
+{name: "xavi-habits-web"}` —cayó en el **5173**, libre— e iba a pararlo por su
+`serverId` al terminar, pero ahí me faltó herramienta: **en esta sesión no tengo
+`preview_stop`**, así que el servidor que arranqué **sigue vivo en el 5173** y
+lo tiene que parar el usuario (o reutilizarlo tal cual: es el puerto bueno, el
+que admite el CORS de la API). Queda dicho, no disimulado. Arnés temporal `src/__rev-feat002.html` +
+`src/__rev-feat002.tsx` (MemoryRouter, `ThemeProvider`, `ToastProvider`, datos
+sintéticos: 3 categorías —una de 38 caracteres—, 5 actividades —una de 61—, una
+sin categoría, un `VidaItem` con L X V), **borrado antes de reportar**: `git
+status src` vuelve a ser exactamente el árbol del constructor.
+
+**Criterios, uno a uno** (contra la sección 1, literal):
+
+| # | Veredicto | Cómo lo comprobé |
+|---|---|---|
+| 1 | cumple | Arnés a 375 px: cuatro `<section>` con su `h2` («CASA · 2 actividades», «MASCOTAS · 1 actividad»…), punto del color de la categoría (`--vida-category-color`) y dentro un `article` por actividad con la cápsula del icono de la categoría, su color al 16 % y el nombre. Más `VidaActividadesPage.test.tsx`. |
+| 2 | cumple | En el arnés, la actividad con `categoryId: null` cae en el **último** grupo, «Sin categoría», con icono `circle-dot` y sin punto de color. `groupActivitiesByCategory` además manda ahí las que apuntan a una categoría que ya no está en el catálogo, que es más de lo que pedía el criterio. |
+| 3 | cumple **por test de componente** (acordado en la sección 2) | Arnés: la tarjeta con `VidaItem` activo pinta las siete letras `L M X J V S D` con `data-on` en L, X y V; las demás dicen «sin plantilla» y no pintan ninguna casilla. `aria-label` = «En tu plantilla: lunes, miércoles y viernes». La mitad «a mano» sigue pendiente hasta la tajada 3, como se pactó. |
+| 4 | cumple, **con un matiz que dejo como hallazgo** | La línea es «N actividades · M categorías», sale del array ya filtrado en cliente (las `cancelled` no cuentan) y «Sin categoría» no suma como categoría. **Matiz:** mientras hay búsqueda escrita la línea sigue diciendo el total del catálogo, no lo que queda en pantalla. Con el criterio en la mano («los números coinciden con lo que se ve»), es discutible; no devuelvo por ello porque el criterio describe la cabecera del catálogo y hábitos se comporta igual, pero queda escrito. |
+| 5 | cumple | `filterActivitiesBySearch` normaliza minúsculas y tildes (`banar` → «Bañarme»), los grupos vacíos se caen (`.filter(group => group.activities.length > 0)`) y sin resultados sale «Sin resultados para “…”» con botón «Limpiar búsqueda». Tests de `vida-text.utils`, `activity-filters` y de la pantalla. |
+| 6 | cumple | Arnés con `mode=start`: **13 píldoras**, exactamente los 13 nombres del criterio, cada una con su icono, **6 marcadas** (`aria-pressed`), ningún campo de texto en pantalla. La categoría no se lee en la píldora pero va puesta en el dato (`categoryName`) y la línea lo dice: «6 elegidas · con su categoría puesta» — igual que el render aprobado, que tampoco la enseña. |
+| 7 | cumple | Botón «Crear las 6» en el arnés; cambia el número al tocar otra. `useCreateStartingActivities.test.tsx`: 3 puntos → 3 `createActivity`, todas con `categoryId`. |
+| 8 | cumple | El hook resuelve por **nombre normalizado**: «YO» reutiliza, «Compania» encuentra «Compañía», y dos actividades de «Yo» crean **una** categoría (`collectNeededCategoryNames` deduplica por clave normalizada). Las que faltan se crean con nombre, icono y color. |
+| 9 | cumple | Arnés: con 0 marcadas el botón dice «Crear» y está `disabled`; `handleCreate` además corta en seco. |
+| 10 | cumple | `isPending` deshabilita el botón y las 13 píldoras, y `handleCreate` vuelve a comprobarlo. Test con la promesa retenida: `createActivity` queda en 1. |
+| 11 | cumple | El hook **resuelve**, no lanza: `{ created, failed }`. En la pantalla sale un `Alert` «Algunas no se pudieron crear» que **nombra** cada fallo con su motivo, lo creado se desmarca y lo que falló sigue marcado; el toast dice «Creamos 2 de 3», nunca 6. |
+| 28 | cumple | Con `isPending` y `fetchStatus: 'fetching'` se pinta el esqueleto (`aria-busy="true"`) y no hay ni puntos de partida ni vacío. |
+| 29 | cumple | `isPending && fetchStatus === 'idle'` → «Entra para ver tus actividades» + enlace a `/auth/login`, sin esqueleto. Es exactamente la condición que pedía la sección 2, y el test la fija. |
+| 30 | cumple | `isError` → «No pudimos cargar tus actividades» en lenguaje humano + «Reintentar» que llama a `refetch`. |
+| 31 | **cumple — lo medí yo** | Arnés a 375 px, catálogo: `documentElement.scrollWidth === clientWidth === 375`, ni un elemento con `right > innerWidth`, las siete casillas dentro de la tarjeta (`right` máximo 223 px). Puntos de partida a 375: también 375/375 y 0 desbordes. La mitad del «···» **no aplica**: esta tajada no lo pinta. |
+| 32 | **cumple — lo medí yo** | Título de 61 caracteres y categoría de 38: los dos se recortan con elipsis (`text-overflow` + `min-width: 0` en cadena), la tarjeta se queda en 343 px de ancho y 71 de alto —la misma que las cortas— y no hay scroll horizontal. |
+| 33 | **cumple — lo medí yo** | Arnés con `data-theme="dark"` dentro de `[data-ds='aura']`: nombre `#eef2ff` sobre el vidrio compuesto (≈ rgb(26,32,45)) → **≈14:1**; texto apagado y recuento `#7c8aa5` → **≈4,7:1**; casilla marcada `#4edea3` sobre su propio tinte → **≈6:1**; el icono de la cápsula entra por `color-mix` contra `--color-text` y se aclara solo. Ningún texto oscuro sobre fondo oscuro, y el punto de color de la cabecera se distingue en los dos temas. |
+| 34 | cumple | Leí la pantalla pintada en los dos modos: no aparece «pendiente», «prioridad», «vencida», «cancelada», «eliminar», «tarea» ni ninguna palabra de culpa. El texto de los fallos («Lo que sí se creó ya está en tu catálogo») tampoco culpa a nadie. |
+| 35 | cumple | Corrido entero por mí, no leído del reporte: `pnpm typecheck` limpio · `pnpm lint` **14 errores / 0 warnings** (los mismos de la línea base; el último sigue siendo el de `src/test/render.tsx`) · `pnpm test` **2 fallos de 581** (`SearchSelect` ×2, preexistentes; 51 tests más que la línea base y ninguno roto). Ni un import a pelo de `@fortawesome/free-solid-svg-icons` en Vida. **El chunk inicial sube a 833,0 kB** (+15,4 sobre 817,6): el criterio dice «no crece **por iconos**» y ahí está limpio (`app-icons` sigue perezoso en 620,20 kB), así que el criterio se cumple — pero el número de la línea base de `ENVIRONMENT.md` ya no es el de hoy y **alguien tiene que actualizarlo** (no lo toco: el protocolo me lo prohíbe). |
+| 36 | **del usuario, sigue pendiente** | Está detrás del login y no entro con credenciales. Los pasos están abajo. |
+
+Los criterios 12-27 son de las tajadas 2-4 y no se revisan aquí.
+
+**Qué se rompió alrededor** (cómo busqué, no solo el resultado):
+
+- **El grafo no servía para esto y lo digo:** `graphify explain
+  "filterActivitiesBySearch"` devuelve el nodo **ya modificado** (el constructor
+  corrió `graphify update .`), con una sola arista saliente a
+  `normalizeVidaText`. Para «¿quién dependía de esto **antes**?» lo que vale es
+  el árbol de HEAD, así que fui por ahí: `git grep -n
+  "filterActivitiesBySearch" be46e91 -- src` → **una sola línea**, su propia
+  definición; en HEAD no tenía ni un consumidor de producto, solo sus tests. El
+  estrechamiento a `title` no puede romper ninguna pantalla existente. Riesgo
+  real: futuro, y está anotado por el constructor.
+- **`useActivities` (el `onError` nuevo):** `git grep -ln` sobre HEAD →
+  `useActivities.ts` y su test, nada más. Los únicos consumidores nuevos son de
+  esta tajada. Ningún consumidor antiguo cambia de comportamiento porque no
+  había ninguno.
+- **`vida-date.utils.ts`:** solo se **añadió** al final (`VIDA_DAY_ORDER`,
+  `VIDA_DAY_SHORT_LABELS`, `VIDA_DAY_LABELS`); leí el diff entero y ninguna
+  función anterior cambia. Sus consumidores previos —`useActivityFollowUps.ts`,
+  `invalidate-vida-queries.ts`— siguen importando lo de siempre.
+- **Las rutas y el cromo:** `vida.routes.test.tsx` es el único archivo tocado
+  fuera de las páginas/utilidades del catálogo. Leí el diff: las cuatro rutas se
+  siguen comprobando y la aserción «nada más que el título» **no se recortó**,
+  se volvió un `it.each` sobre plantilla, hoy y revisión, que es donde sigue
+  siendo verdad. `app-nav.config.ts`, `AppLayout`, `routes.tsx` y
+  `vida-paths.ts`: intactos (`git status` no los lista). Las píldoras de Vida no
+  cambian.
+- **Hábitos y `shared/`:** ni un archivo tocado. `git diff --stat -- src` son
+  cinco archivos, **los cinco bajo `src/features/vida/`**. Lo que el plan
+  dejaba para la tajada 2 —mover `HabitColorPicker` a `shared/ui/ColorPicker`—
+  no se adelantó, que era el riesgo grande para hábitos.
+- **La suite entera**, no solo la de Vida: 581 tests, los 2 fallos de siempre.
+  Si algo de hábitos, `shared` o `layouts` se hubiera movido, ahí se vería.
+
+**Estados que nadie construye:**
+
+- **Vacío, cargando, error y sin sesión:** construidos y comprobados (criterios
+  6, 28, 29, 30). Es lo mejor de esta tajada.
+- **Móvil 375 y texto largo:** medidos aquí, bien.
+- **Tema oscuro:** medido aquí, bien.
+- **Sin permisos:** no aplica más allá de «sin sesión»: el módulo no tiene roles.
+- **Hallazgo — el cargando a medias de las casillas.** La pantalla decide con
+  `useActivitiesQuery`, pero las casillas de plantilla vienen de
+  `useVidaItemsQuery`, que va por su cuenta. Si las actividades llegan primero,
+  las tarjetas dicen **«sin plantilla»** durante ese hueco aunque la actividad
+  sí esté en la plantilla, y luego cambian. El `aria-busy={isVidaItemsPending}`
+  lo anuncia a un lector de pantalla, pero visualmente es una afirmación falsa
+  breve. Hoy no se nota —nada crea `VidaItem` hasta la tajada 3—, pero en la
+  tajada 3 sí: **quien la construya tiene que resolverlo** (o esperar a las dos
+  consultas, o no afirmar «sin plantilla» mientras la segunda está en vuelo).
+  No devuelvo la tajada por esto: en su alcance actual el estado no es
+  observable.
+- **Hallazgo menor:** en el `Alert` de fallos, la lista usa `failure.name` como
+  `key`; si una categoría y una actividad fallaran con el mismo nombre, React
+  avisaría por clave duplicada. Cosmético.
+
+**¿Duplica algo que ya existía?** (contra la sección 2)
+
+- **No se creó ningún documento GraphQL, ningún hook de consulta, ninguna
+  `vidaKeys`, nada en `invalidate-vida-queries.ts`.** Verificado en la lista de
+  archivos nuevos: todos son componentes, datos, utilidades puras y un
+  orquestador. `contracts.test.ts` no se tocó.
+- **`useCreateStartingActivities` orquesta sobre `api/activities.api.ts` y
+  `api/activity-categories.api.ts`**, tal como autorizó el arquitecto, y su
+  comentario de cabecera **dice por qué** se salta los hooks (diez toasts por un
+  solo gesto). Es el único sitio que lo hace: comprobado, ningún otro archivo de
+  Vida importa `api/` directamente salvo los hooks de F0.
+- **Ningún selector de color ni de iconos nuevo**, y `HabitColorPicker` sigue
+  donde estaba: el movimiento a `shared/ui/ColorPicker` es de la tajada 2 y no
+  se adelantó.
+- **Hallazgo — la cuarta copia de «normalizar texto».** `normalizeVidaText`
+  (`vida-text.utils.ts:13`) repite el `toLowerCase + NFD + quitar diacríticos`
+  que ya está en `habits/utils/habit-list.utils.ts:38`,
+  `habits/utils/habit-form.utils.ts:285` y `shared/icons/icon-search.ts:8`. El
+  arquitecto lo autorizó explícitamente («imitar la forma, sí; importar, no»)
+  para no atar Vida a hábitos, y no devuelvo por ello — pero con cuatro copias
+  el sitio que pide esa función a gritos es `src/shared/utils/`, y conviene
+  decidirlo cuando se mueva el `ColorPicker` en la tajada 2, no más tarde.
+- **`VIDA_DAY_LABELS` fuera del plan:** justificado (el `aria-label` de la fila
+  de letras) y vive donde el plan puso las otras dos constantes. No duplica
+  nada: no había etiquetas de día de la semana en el repo.
+
+**Lo que no revisé:** el recorrido real con sesión (criterio 36, estructural:
+los agentes no entran con credenciales) y el comportamiento con más de 200
+actividades (`CATALOG_LIMIT`), que no tengo cómo montar sin datos reales; la
+línea «Mostrando las primeras 200…» está escrita y su condición leída, pero no
+ejecutada contra un lote grande.
+
+**Veredicto: aceptada** — los criterios de la tajada se cumplen con evidencia,
+la línea base no empeora y no hay regresión fuera del módulo. Quedan cuatro
+hallazgos anotados (el recuento durante la búsqueda, el «sin plantilla» mientras
+`vidaItems` está en vuelo —**a resolver en la tajada 3**—, la cuarta copia del
+normalizador y la clave duplicada del `Alert`) y una tarea que no es mía: la
+línea base del **paquete** en `ENVIRONMENT.md` pasa de 817,6 kB a **833,0 kB**.
+
+**Para el usuario — los pasos de esta tajada** (criterio 36; con tu 5173 arriba
+y sesión iniciada; el 5173 que arranqué sigue arriba —no pude pararlo, ver
+arriba—, así que sirve tal cual):
+
+1. Entra en **Vida → Actividades**.
+2. Si la cuenta no tiene ninguna actividad verás **13 puntos de partida** con 6
+   marcados y el botón **«Crear las 6»**. Toca alguno más y alguno menos: el
+   número del botón cambia. Púlsalo → un solo aviso y el catálogo agrupado.
+3. Mira la línea bajo el título: **«N actividades · M categorías»**. «Sin
+   categoría», si aparece, va al final y no cuenta como categoría.
+4. Escribe **«banar»** en el buscador (sin tilde y sin la ñ): debería aparecer
+   «Bañarme». Escribe **«zzz»**: «Sin resultados» y un botón para limpiar.
+5. Todas las tarjetas dirán **«sin plantilla»**: es lo correcto en esta tajada.
+6. No hay botón `+` ni «Categorías ›»: llegan en las tajadas 2 y 4.

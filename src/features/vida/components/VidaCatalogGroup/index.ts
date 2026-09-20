@@ -1,0 +1,1 @@
+export { VidaCatalogGroup } from './VidaCatalogGroup'

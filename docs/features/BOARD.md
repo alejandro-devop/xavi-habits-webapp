@@ -10,7 +10,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | ID | State | Slice | Area | Title | Requested |
 |---|---|---|---|---|---|
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
-| FEAT-002 | planned | 0/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
+| FEAT-002 | building | 2/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.

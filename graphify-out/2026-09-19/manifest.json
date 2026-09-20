@@ -820,8 +820,8 @@
     "semantic_hash": ""
   },
   "src/shared/api/query-keys.ts": {
-    "mtime": 1789800062.9281147,
-    "ast_hash": "721853798aea14e9fcf1c456d0c88a95",
+    "mtime": 1789801277.978592,
+    "ast_hash": "807212e31dcce55d880bfef8d445e8d2",
     "semantic_hash": ""
   },
   "src/shared/api/rest-client.test.ts": {
@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "docs/features/probe.sh": {
-    "mtime": 1789797942.5548873,
-    "ast_hash": "ff7b10db14548058b2e58d79aa9639c4",
+    "mtime": 1789801050.963472,
+    "ast_hash": "f8c9f98e447ef96ab99660eae9bb62e3",
     "semantic_hash": ""
   },
   "src/features/vida/index.ts": {
@@ -2495,18 +2495,18 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789799781.3723633,
-    "ast_hash": "537ac65133a6660648c19b15d069984c",
+    "mtime": 1789800905.7444682,
+    "ast_hash": "7d323f78efea58edb44472ed4d60a0f0",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1789799918.1037402,
-    "ast_hash": "8b41444744a31860b37a150cff859351",
+    "mtime": 1789801050.963472,
+    "ast_hash": "5996d7006dc364e23a02efee45cb08f1",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
-    "mtime": 1789799990.067929,
-    "ast_hash": "1b05578c122773a724e6ebfd5b6bd1c4",
+    "mtime": 1789801160.427515,
+    "ast_hash": "a811dd50b5858e018fe5ec325222f3f7",
     "semantic_hash": ""
   },
   "docs/features/PROTOCOL.md": {
@@ -2590,8 +2590,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/graphql/contracts.test.ts": {
-    "mtime": 1789800275.2006302,
-    "ast_hash": "ea55a95671b4bccc0d92e5cc5283de0d",
+    "mtime": 1789801370.39067,
+    "ast_hash": "aa579ad881b6038ec6e95d913f6668e4",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useActivities.test.tsx": {
@@ -2650,8 +2650,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/invalidate-vida-queries.ts": {
-    "mtime": 1789800165.4773679,
-    "ast_hash": "e1c8c41f16b301c6bc21cd0775e3e1e8",
+    "mtime": 1789801288.8676002,
+    "ast_hash": "f985ff49d5e0cc5aeee5a85872042909",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-date.utils.test.ts": {
@@ -2662,6 +2662,56 @@
   "src/features/vida/utils/vida-date.utils.ts": {
     "mtime": 1789800165.4733677,
     "ast_hash": "24e3d7d0b8475b349f044f39bff55d25",
+    "semantic_hash": ""
+  },
+  "src/features/vida/api/activity-day-plan.api.ts": {
+    "mtime": 1789801227.6475556,
+    "ast_hash": "b2725a62ad73eb2c700235030efbd086",
+    "semantic_hash": ""
+  },
+  "src/features/vida/api/vida-items.api.ts": {
+    "mtime": 1789801242.3995657,
+    "ast_hash": "2615694de9f7b90d2f7fbe2c11ba8d32",
+    "semantic_hash": ""
+  },
+  "src/features/vida/graphql/activity-day-plan.graphql.ts": {
+    "mtime": 1789801205.1995409,
+    "ast_hash": "1917127c3e06787ad79420e7926fa3d9",
+    "semantic_hash": ""
+  },
+  "src/features/vida/graphql/vida-items.graphql.ts": {
+    "mtime": 1789801215.4125473,
+    "ast_hash": "953b282f6ada695e1fb75f45df8180e0",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivityDayPlan.test.tsx": {
+    "mtime": 1789801396.2396944,
+    "ast_hash": "4485a67254f04633e6d3ed6180a35ea3",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useActivityDayPlan.ts": {
+    "mtime": 1789801309.0556166,
+    "ast_hash": "f0aeefee29d50cdab68e577c84f729cd",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useVidaItems.test.tsx": {
+    "mtime": 1789801457.943756,
+    "ast_hash": "e3fb10878785787f0dd819634c37d8cd",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useVidaItems.ts": {
+    "mtime": 1789801324.7296295,
+    "ast_hash": "826c6713090a31844d8d0869cbe80e7c",
+    "semantic_hash": ""
+  },
+  "src/features/vida/types/activity-day-plan.types.ts": {
+    "mtime": 1789801186.4155295,
+    "ast_hash": "184a38c1abd500de1352fc7dc3b7e759",
+    "semantic_hash": ""
+  },
+  "src/features/vida/types/vida-item.types.ts": {
+    "mtime": 1789801196.4825356,
+    "ast_hash": "5e81c6b36bab090bf357395b9236826a",
     "semantic_hash": ""
   }
 }

@@ -6,6 +6,8 @@
  * pantalla; cuando llegue, re-exporta desde aquí en vez de volver a copiar.
  */
 
+import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
+
 function pad2(n: number): string {
   return String(n).padStart(2, '0')
 }
@@ -42,4 +44,44 @@ export function isFutureDate(date: string): boolean {
 
 export function isToday(date: string): boolean {
   return date === getCurrentLocalDate()
+}
+
+/* ── Los días de la semana de la plantilla ──────────────────────────────────
+ *
+ * `VidaDayOfWeek` no traía ni orden ni etiquetas en ningún archivo. Viven aquí
+ * y no en la tarjeta porque la plantilla (F4) y el día (F2/F3) los van a pintar
+ * igual: una sola fila de siete, siempre de lunes a domingo.
+ */
+
+/** Lunes → domingo. El orden en que se pintan las siete casillas. */
+export const VIDA_DAY_ORDER: readonly VidaDayOfWeek[] = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
+] as const
+
+/** La letra de cada casilla: L M X J V S D. */
+export const VIDA_DAY_SHORT_LABELS: Record<VidaDayOfWeek, string> = {
+  monday: 'L',
+  tuesday: 'M',
+  wednesday: 'X',
+  thursday: 'J',
+  friday: 'V',
+  saturday: 'S',
+  sunday: 'D',
+}
+
+/** Lo que se lee en voz alta: una letra suelta no dice nada. */
+export const VIDA_DAY_LABELS: Record<VidaDayOfWeek, string> = {
+  monday: 'lunes',
+  tuesday: 'martes',
+  wednesday: 'miércoles',
+  thursday: 'jueves',
+  friday: 'viernes',
+  saturday: 'sábado',
+  sunday: 'domingo',
 }

@@ -1,0 +1,52 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* La cabecera del render: punto del color de la categoría, nombre y cuántas. */
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  margin: 0.25rem 0 0;
+  min-width: 0;
+  font-family: var(--font-label, inherit);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.swatch {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--vida-category-color, var(--color-text-muted));
+}
+
+/* Un nombre de categoría largo se recorta antes que empujar el recuento. */
+.name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.count {
+  flex: 0 0 auto;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(20.25rem, 100%), 1fr));
+  gap: 0.5rem;
+  min-width: 0;
+}

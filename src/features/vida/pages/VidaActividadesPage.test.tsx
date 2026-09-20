@@ -387,12 +387,6 @@ describe('VidaActividadesPage', () => {
     expect(within(sheet).getByRole('button', { name: 'Guardar' })).toBeDisabled()
   })
 
-  it('«Categorías ›» sigue sin existir: llega en la tajada 4', () => {
-    renderWithProviders(<VidaActividadesPage />)
-
-    expect(screen.queryByText(/Categorías ›/)).not.toBeInTheDocument()
-  })
-
   it('un nombre de 60 y una categoría de 40 no rompen la pantalla (criterio 32)', () => {
     const longTitle = 'Organizar la casa entera de arriba abajo un sábado cualquiera'
     const longCategory = 'Cosas de la casa que nadie quiere hacer hoy'
@@ -405,6 +399,38 @@ describe('VidaActividadesPage', () => {
 
     expect(screen.getByText(longTitle)).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: new RegExp(longCategory) })).toBeInTheDocument()
+  })
+
+  it('el recuento sigue a la búsqueda: cuenta lo que se ve (criterio 4)', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<VidaActividadesPage />)
+    expect(screen.getByText('4 actividades · 2 categorías')).toBeInTheDocument()
+
+    await user.type(screen.getByRole('searchbox', { name: 'Buscar actividades' }), 'banar')
+
+    expect(screen.getByText('1 actividad · 1 categoría')).toBeInTheDocument()
+  })
+
+  it('lleva a categorías y a las archivadas (criterios 24 y 27)', () => {
+    renderWithProviders(<VidaActividadesPage />)
+
+    expect(screen.getByRole('link', { name: 'Categorías ›' })).toHaveAttribute(
+      'href',
+      '/app/vida/categorias',
+    )
+    expect(screen.getByRole('link', { name: 'Ver archivadas' })).toHaveAttribute(
+      'href',
+      '/app/vida/actividades/archivadas',
+    )
+  })
+
+  it('el acceso a las archivadas también está en el primer minuto', () => {
+    // Quien archiva todo su catálogo vuelve a ver los puntos de partida: sin
+    // este enlace se quedaría sin manera de recuperar lo suyo.
+    activitiesState = loaded([])
+    renderWithProviders(<VidaActividadesPage />)
+
+    expect(screen.getByRole('link', { name: 'Ver archivadas' })).toBeInTheDocument()
   })
 
   it('no hay ni una palabra de culpa ni de gestión de proyectos (criterio 34)', () => {

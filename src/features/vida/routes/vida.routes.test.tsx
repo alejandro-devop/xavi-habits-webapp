@@ -4,13 +4,20 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import { vidaRoutes } from '@/features/vida/routes/vida.routes'
+import { ToastProvider } from '@/shared/ui/Toast'
 
 /**
- * Actividades dejó de ser un cascarón (F1): consulta el API a través de
+ * Actividades y sus dos pantallas hermanas —archivadas y categorías— dejaron de
+ * ser cascarones (F1): consulta el API a través de
  * `useVidaQueryGuard`, que a su vez lee el contexto de sesión. Aquí solo se
  * comprueba el **enrutado**, así que el guard se deja en `false` —la pantalla
  * pinta entonces su estado «sin sesión», que sigue teniendo su título— y las
  * consultas viven en un `QueryClient` propio del test.
+ *
+ * El `ToastProvider` hace falta desde la tajada 4: archivadas y categorías
+ * piden sus mutaciones en el cuerpo del componente —antes de cualquier
+ * return— y esas mutaciones avisan con un toast cuando fallan. En la app lo
+ * pone `AppProviders`; aquí se monta a mano.
  */
 vi.mock('@/features/vida/hooks/useVidaQueryGuard', () => ({
   useVidaQueryGuard: () => false,
@@ -23,7 +30,9 @@ function renderAt(initialEntry: string) {
   })
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
     </QueryClientProvider>,
   )
   return router
@@ -35,6 +44,8 @@ describe('vidaRoutes', () => {
     [vidaPaths.plantilla, 'Plantilla'],
     [vidaPaths.revision, 'Revisión'],
     [vidaPaths.actividades, 'Actividades'],
+    [vidaPaths.archivadas, 'Archivadas'],
+    [vidaPaths.categorias, 'Categorías'],
   ])('%s renderiza el título «%s»', (path, title) => {
     renderAt(path)
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument()

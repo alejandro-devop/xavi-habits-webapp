@@ -6,10 +6,12 @@ import { VidaStartingPoints } from '@/features/vida/components/VidaStartingPoint
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import { useVidaItemsQuery } from '@/features/vida/hooks/useVidaItems'
+import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { Activity } from '@/features/vida/types/activity.types'
 import { filterActivitiesBySearch } from '@/features/vida/utils/activity-filters'
 import {
   buildVidaItemsByActivity,
+  CATALOG_LIMIT,
   countCatalogCategories,
   excludeArchivedActivities,
   findVidaItemForActivity,
@@ -33,8 +35,6 @@ import styles from './VidaActividadesPage.module.scss'
  * `cancelled`» costaría tres consultas. De ahí que el recuento salga del array
  * ya filtrado y nunca de `total`.
  */
-const CATALOG_LIMIT = 200
-
 export function VidaActividadesPage() {
   const [search, setSearch] = useState('')
   // La hoja: abierta sin actividad es «crear»; con actividad, «editar». Vive en
@@ -97,14 +97,33 @@ export function VidaActividadesPage() {
       .filter((group) => group.activities.length > 0)
   }, [allGroups, search])
 
-  const activityCount = activities.length
-  const categoryCount = countCatalogCategories(allGroups)
+  // El recuento mira **lo que se ve**: con una búsqueda escrita, lo filtrado.
+  // Es lo que pide el criterio 4 al pie de la letra («los números coinciden con
+  // lo que se ve en pantalla») y lo que dejó anotado el revisor de la tajada 1,
+  // que veía «11 actividades» con dos tarjetas delante.
+  const activityCount = visibleGroups.reduce((total, group) => total + group.activities.length, 0)
+  const categoryCount = countCatalogCategories(visibleGroups)
+  /** El catálogo entero, sin filtrar: es lo que decide si hay primer minuto. */
+  const totalCount = activities.length
   // El crudo, antes de recortar: es lo que dice si el lote no cabía entero.
   const hasMore = (data?.total ?? 0) > (data?.activities.length ?? 0)
 
   function header(subtitle: string) {
     return <PageHeader title="Actividades" subtitle={subtitle} />
   }
+
+  /**
+   * El acceso a las archivadas (criterio 24): discreto y al pie, no en la barra
+   * de módulo. Se pinta también en el primer minuto porque quien archiva todo
+   * su catálogo se queda si no sin manera de volver a lo suyo.
+   */
+  const archivedLink = (
+    <p className={styles.archivedLink}>
+      <Button variant="ghost" size="sm" to={vidaPaths.archivadas}>
+        Ver archivadas
+      </Button>
+    </p>
+  )
 
   const countLine = `${activityCount} ${activityCount === 1 ? 'actividad' : 'actividades'} · ${categoryCount} ${categoryCount === 1 ? 'categoría' : 'categorías'}`
 
@@ -170,11 +189,12 @@ export function VidaActividadesPage() {
     )
   }
 
-  if (activityCount === 0) {
+  if (totalCount === 0) {
     return (
       <div className={styles.root}>
         {header('Las cosas que haces en un día. Nada más.')}
         <VidaStartingPoints />
+        {archivedLink}
       </div>
     )
   }
@@ -183,15 +203,20 @@ export function VidaActividadesPage() {
     <div className={styles.root}>
       {header(countLine)}
 
-      <div className={styles.search}>
-        <Input
-          type="search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Buscar…"
-          aria-label="Buscar actividades"
-          leftIcon={<AppIcon name="magnifying-glass" size="xs" decorative />}
-        />
+      <div className={styles.searchRow}>
+        <div className={styles.search}>
+          <Input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar…"
+            aria-label="Buscar actividades"
+            leftIcon={<AppIcon name="magnifying-glass" size="xs" decorative />}
+          />
+        </div>
+        <Button variant="ghost" size="sm" to={vidaPaths.categorias}>
+          Categorías ›
+        </Button>
       </div>
 
       {hasMore ? (
@@ -225,6 +250,8 @@ export function VidaActividadesPage() {
           ))}
         </div>
       )}
+
+      {archivedLink}
 
       <button type="button" className={styles.fab} onClick={openCreateSheet}>
         <AppIcon name="plus" size="sm" decorative />

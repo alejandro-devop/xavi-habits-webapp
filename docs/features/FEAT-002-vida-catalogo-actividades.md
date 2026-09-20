@@ -1,7 +1,7 @@
 ---
 id: FEAT-002
 title: El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días
-status: building
+status: delivered
 architect: yes    # primera pantalla real de Vida, datos de arranque nuevos y dos selectores que hoy viven en hábitos
 area: features/vida
 requested: 2026-09-19
@@ -217,7 +217,7 @@ cuatro notas al pie; las notas son parte de la spec). Se abre en
 | 1 | **El primer minuto y el catálogo.** Sin nada creado, los puntos de partida: se marcan varias y un botón las crea todas con sus categorías (creando las que falten). Con actividades, el catálogo agrupado por categoría, con los días de la plantilla, el buscador y los estados (cargando, sin sesión, error, vacío, 375 px, oscuro). Solo lectura: aún no hay hoja. | accepted (2026-09-20) |
 | 2 | **Crear y editar desde la hoja.** El `+` y el «···» → editar abren la hoja con nombre y categoría (píldoras), con «+ nueva» categoría (icono + color) dentro de la misma hoja. Errores de mutación visibles. Sin duración: la hoja tiene nombre y categoría, nada más (D2). | accepted (2026-09-20) |
 | 3 | **Ponerla en mi plantilla.** El interruptor y los siete días en la hoja: crea, actualiza y desactiva el `VidaItem`, y las casillas de la tarjeta lo reflejan. | accepted (2026-09-20, en 2ª revisión) |
-| 4 | **Archivar, restaurar y gestionar categorías.** El «···» → «Archivar» (`status: 'cancelled'` + `VidaItem` desactivado), «ver archivadas» con «Restaurar», y la pantalla/hoja de categorías: listar, editar nombre, icono y color. | pending |
+| 4 | **Archivar, restaurar y gestionar categorías.** El «···» → «Archivar» (`status: 'cancelled'` + `VidaItem` desactivado), «ver archivadas» con «Restaurar», y la pantalla/hoja de categorías: listar, editar nombre, icono y color. | accepted (2026-09-20) |
 
 Cada tajada se puede revisar sola: la 1 ya es útil (un catálogo poblado en un
 minuto), la 2 añade el control fino, la 3 conecta con la plantilla, la 4 limpia.
@@ -463,7 +463,7 @@ El toast **no basta** para el criterio 16: lo que garantiza que la hoja no se ci
 | 1 | **El primer minuto y el catálogo (solo lectura).** Puntos de partida con selección múltiple y creación en lote; catálogo agrupado por categoría con casillas de plantilla y buscador; los cuatro estados. | **Crea:** `data/vida-starting-points.ts` · `hooks/useCreateStartingActivities.ts` (+test) · `utils/vida-catalog.utils.ts` (+test) · `utils/vida-text.utils.ts` (+test) · `components/VidaStartingPoints/` · `components/VidaCatalogGroup/` · `components/VidaActivityCard/` (+test) · `pages/VidaActividadesPage.module.scss` · `pages/VidaActividadesPage.test.tsx`. **Modifica:** `pages/VidaActividadesPage.tsx` (entero) · `utils/activity-filters.ts:36-45` · `utils/vida-date.utils.ts` (al final) · `hooks/useActivities.ts:37,49` (`onError`). | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 28, 29, 30, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
 | 2 | **Crear y editar desde la hoja.** FAB `+` y «···» → Editar abren `SteppedModal` con nombre + píldoras de categoría + «+ nueva» (icono y color). Mueve el selector de color a compartido. | **Crea:** `shared/ui/ColorPicker/{ColorPicker.tsx,.module.scss,color-palette.ts,ColorPicker.test.tsx,index.ts}` · `components/VidaActivitySheet/` (+test) · `components/CreateVidaCategoryStep/`. **Modifica:** `pages/VidaActividadesPage.tsx` (FAB, menú «···» → editar, estado de la hoja) · `components/VidaActivityCard/VidaActivityCard.tsx` (el menú) · `habits/components/HabitFormModal/HabitWizardStep1.tsx:3,118` · `habits/components/HabitFormModal/HabitEditForm.tsx:4,305` · `habits/data/habit-colors.ts:11-97` · `shared/ui/index.ts` · `hooks/useActivityCategories.ts:35,48`. **Borra:** `habits/components/HabitColorPicker/`. | 12, 13, 14, 15, 16, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
 | 3 | **Ponerla en mi plantilla.** Interruptor + siete días en la hoja: crea, actualiza y desactiva el `VidaItem`; la tarjeta lo refleja. | **Crea:** `hooks/useSaveVidaItemForActivity.ts` (+test). **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx` (bloque plantilla + validación) · `pages/VidaActividadesPage.tsx` (pasa el `VidaItem` de la actividad a la hoja) · `hooks/useVidaItems.ts:61,73` (`onError`). | 17, 18, 19, 20, 31*, 33*, 35 | accepted (2026-09-20, en 2ª revisión) |
-| 4 | **Archivar, restaurar y categorías.** «···» → Archivar con confirmación; `/app/vida/actividades/archivadas` con Restaurar; `/app/vida/categorias` para listar y editar. | **Crea:** `pages/VidaArchivadasPage.tsx` (+scss, +test) · `pages/VidaCategoriasPage.tsx` (+scss, +test) · `components/VidaCategoryForm/`. **Modifica:** `components/VidaActivityCard/VidaActivityCard.tsx` (Archivar) · `pages/VidaActividadesPage.tsx` (enlaces «ver archivadas» y «Categorías ›») · `routes/vida-paths.ts:6` · `routes/vida.routes.tsx:39-42` · `routes/vida.routes.test.tsx`. | 21, 22, 23, 24, 25, 26, 27, 31*, 32*, 33*, 34, 35 | pending |
+| 4 | **Archivar, restaurar y categorías.** «···» → Archivar con confirmación; `/app/vida/actividades/archivadas` con Restaurar; `/app/vida/categorias` para listar y editar. | **Crea:** `pages/VidaArchivadasPage.tsx` (+scss, +test) · `pages/VidaCategoriasPage.tsx` (+scss, +test) · `components/VidaCategoryForm/`. **Modifica:** `components/VidaActivityCard/VidaActivityCard.tsx` (Archivar) · `pages/VidaActividadesPage.tsx` (enlaces «ver archivadas» y «Categorías ›») · `routes/vida-paths.ts:6` · `routes/vida.routes.tsx:39-42` · `routes/vida.routes.test.tsx`. | 21, 22, 23, 24, 25, 26, 27, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
 
 `*` Los criterios 31, 32 y 33 (375 px, texto largo, tema oscuro) se cierran **en cada tajada sobre lo que esa tajada pinta**, no al final: el reviewer los pide otra vez cada vez.
 
@@ -1315,6 +1315,187 @@ lo más rápido que puedas, antes de que las casillas aparezcan. La hoja debe
 decir «Mirando si ya está en tu plantilla…» y **no** dejarte guardar hasta que
 sepa qué hay; cuando lo sepa, el interruptor debe aparecer en su sitio.
 
+### Tajada 4 — Archivar, restaurar y categorías
+
+**Resumen para quien revisa:** el «···» de cada tarjeta tiene ahora **Archivar**
+con confirmación (`activityEdit` con `status: 'cancelled'` + su `VidaItem`
+desactivado), y el catálogo tiene dos salidas nuevas: `/app/vida/actividades/archivadas`
+—con **Restaurar**— y `/app/vida/categorias` —listar y editar nombre, icono y
+color—. Todo lo nuevo vive en `src/features/vida/{components,hooks,pages,routes,utils}`
+y no añade ni un documento GraphQL ni un hook de API.
+**Lo que más probablemente he roto:** (a) el **recuento del catálogo**, que
+ahora sigue a la búsqueda —era un hallazgo del revisor de la tajada 1, pero es
+código de la tajada 1 y cambia texto que ya se había aceptado—; (b) el **orden
+de las dos mutaciones** de archivar: si la segunda falla, la actividad queda
+archivada y su `VidaItem` sigue activo, y de eso solo avisa un toast; (c) el
+`ToastProvider` que tuve que añadir a `vida.routes.test.tsx` —si `AppProviders`
+dejara de montarlo, las dos pantallas nuevas reventarían en producción y el test
+no se enteraría—.
+
+**Lo que se construyó:**
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/hooks/useArchiveActivity.ts` | **nuevo.** Orquestador sobre las dos mutaciones de F0: `archive` → `status: 'cancelled'` + `VidaItem` a `isActive: false`; `restore` → `status: 'pending'` + `isActive: true`. Primero la actividad y, **solo si sale bien**, la plantilla. `activityRemove` no aparece por ningún lado. |
+| `src/features/vida/pages/VidaArchivadasPage.tsx` `.module.scss` `.test.tsx` | **nueva.** `useActivitiesQuery({ status: 'cancelled', … })` —la única consulta directa que permite el enum único— + categorías para el icono y el color + `useVidaItemsQuery(true)` para reactivar el ítem apagado. Cuatro estados (sin sesión, esqueleto, error con reintento, «No has archivado nada») y una fila por actividad con **Restaurar**. |
+| `src/features/vida/pages/VidaCategoriasPage.tsx` `.module.scss` `.test.tsx` | **nueva.** Lista ordenada por `orderIndex`, con icono, color, nombre y **cuántas actividades tiene cada una** (contadas sobre el array **sin archivadas**, el mismo del que sale el «N actividades · M categorías»). «Editar» abre un `Modal` con el formulario; se cierra en el `onSuccess` **local** del `mutate`, así que si falla no se cierra ni pierde lo escrito. |
+| `src/features/vida/components/VidaCategoryForm/` | **nuevo.** Nombre + `IconPicker` (el diferido del barril) + `ColorPicker` (los 17 compartidos). Tonto: no muta, solo valida el nombre y devuelve. |
+| `src/features/vida/components/VidaActivityCard/VidaActivityCard.tsx` | «Archivar» en el menú, con `useConfirmDialog`. |
+| `src/features/vida/components/VidaActivityCard/VidaActivityCard.module.scss` | `.dayOn` pasa de `--color-primary` a `--color-primary-hover`: el hallazgo que dejó el revisor de la tajada 3 (3,89:1 → **5,54:1** medido en claro). Ahora la casilla de la tarjeta y la de la hoja son el mismo tono. |
+| `src/features/vida/pages/VidaActividadesPage.tsx` `.module.scss` | «Categorías ›» junto al buscador (como el render) y «Ver archivadas» al pie —también en el primer minuto—. Y el recuento pasa a contar **lo visible**. |
+| `src/features/vida/utils/vida-catalog.utils.ts` | `CATALOG_LIMIT` sube aquí desde la página (lo piden dos pantallas) y entra `countActivitiesByCategory`. |
+| `src/features/vida/routes/vida-paths.ts` · `vida.routes.tsx` · `vida.routes.test.tsx` | las dos rutas nuevas y sus asserts. |
+
+**Por qué así, y qué descarté:**
+
+- **Un hook nuevo que el plan no listaba (`useArchiveActivity`).** Archivar y
+  restaurar son la **misma** operación en dos sentidos, y la necesitan dos
+  sitios distintos (la tarjeta y la pantalla de archivadas). Escribir el par de
+  mutaciones encadenadas dos veces era peor. Es un orquestador sobre hooks que
+  ya existen —exactamente la misma figura que `useSaveVidaItemForActivity` de la
+  tajada 3—, no acceso nuevo al API, así que respeta el «what NOT to create».
+- **El diálogo dice «Volver», no «Cancelar».** El criterio 25 prohíbe esa
+  palabra en este flujo, y `HabitListCard` la usa. Preferí desviarme de la
+  referencia antes que meter «Cancelar» en la misma pantalla donde `cancelled`
+  es el mecanismo. Por lo mismo el diálogo **no** es `variant: 'danger'`:
+  archivar es reversible y el rojo diría lo contrario.
+- **Archivar muta en dos pasos, no en uno.** El API no tiene forma de hacerlo
+  atómico. Descarté apagar primero el `VidaItem` (un fallo al archivar dejaría
+  la plantilla rota sin que nadie lo pidiera) y descarté no avisar del segundo
+  fallo (el `onError` del hook de F0 lanza su toast).
+- **El recuento sigue a la búsqueda.** El revisor de la tajada 1 lo dejó como
+  «si es barato»: son cuatro líneas y el criterio 4 dice literalmente «los
+  números coinciden con lo que se ve en pantalla». El primer minuto sigue
+  mirando el total sin filtrar (`totalCount`), que es lo correcto.
+- **`--color-text-secondary` en la segunda línea de las filas nuevas.** El
+  `--color-text-muted` de la tarjeta se queda en **2,56:1** sobre vidrio claro.
+  El token compartido **no se toca** (lo dijo el revisor de la tajada 3 y lo
+  respeto): lo que hago es elegir el otro token en mis dos SCSS nuevos, donde
+  esa línea lleva información (la categoría, el recuento). Sube a **7,58:1**.
+  Deja una pequeña inconsistencia con el «sin plantilla» de la tarjeta, que
+  sigue en `muted`; no lo he tocado porque es código ya aceptado.
+- **Borré un test de la tajada 1**: `«Categorías ›» sigue sin existir: llega en
+  la tajada 4`. Se cumplió su plazo.
+- **Añadí `ToastProvider` a `vida.routes.test.tsx`**: las dos pantallas nuevas
+  piden sus mutaciones en el cuerpo del componente, antes de cualquier `return`,
+  y `useToast` exige el proveedor. En la app lo monta `AppProviders`.
+- **Sin «Nueva categoría» en la pantalla de categorías** y **sin borrar**: el
+  criterio 27 pide listar y editar; crear vive en «+ nueva» dentro de la hoja y
+  borrar está fuera de alcance («deja actividades huérfanas y se decide cuando
+  duela»).
+
+**Verificación:**
+
+Línea base al empezar, corrida entera: `pnpm typecheck` limpio · `pnpm lint`
+**14 errores / 0 warnings** · `pnpm test` **2 fallos de 620** (`SearchSelect` ×2).
+
+Al terminar:
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   [misma línea base]
+pnpm test       → Test Files 1 failed | 76 passed (77)
+                  Tests 2 failed | 645 passed (647)
+                  (los 2 son SearchSelect: `npx vitest run src/shared/ui/SearchSelect`
+                   → 2 failed (2), sin tocar nada)
+npx vitest run src/features/vida → 19 archivos / 227 tests, todos verdes
+pnpm build      → index 853,16 kB · app-icons 620,20 kB (perezoso) · IconPicker 4,64 kB
+```
+
+El chunk inicial sube de 844,2 a **853,16 kB** (+8,96 kB): dos pantallas, un
+formulario y un hook. **No es por iconos** —`app-icons` sigue clavado en 620,20
+kB y no hay ni un import a pelo de `@fortawesome/free-solid-svg-icons` en lo
+nuevo—, que es lo que dice el criterio 35.
+
+**Arnés temporal** (`src/tajada4-preview.html` + `.tsx`, **borrado antes de
+reportar**; `git status src` no lo muestra): `MemoryRouter`, `ThemeProvider`,
+`ToastProvider`, `ConfirmDialogProvider ds="aura"` y un `QueryClient` con la
+caché **sembrada** en `vidaKeys.activities.list(...)`, `vidaKeys.categories.list()`
+y `vidaKeys.items.list(true)` —así las consultas resuelven con el guard en
+`false` y sin tocar la API—. Datos sintéticos: 3 categorías (una de 42
+caracteres), 3 archivadas (una de 61 caracteres, una sin categoría), 2 vivas.
+Nota de método: el primer arnés se llamó `src/__t4-harness.*` y **el navegador
+bloqueó el `<script type=module>` con `ERR_BLOCKED_BY_CLIENT`**; con un nombre
+sin `__` cargó. Queda dicho por si le pasa al siguiente.
+
+**Criterios, uno a uno:**
+
+- **21 — cumple.** `VidaActivityCard.test.tsx`: el diálogo dice «¿Archivar
+  «Organizar la casa»?» + «Sale del catálogo y de tu plantilla. Puedes
+  restaurarla cuando quieras y lo que ya registraste se conserva.»; al confirmar,
+  `updateActivity.mutate` recibe **exactamente** `{ id: 'a1', status: 'cancelled' }`.
+  `useDeleteActivityMutation` **no está en el mock a propósito**: si alguien
+  llamara a `activityRemove`, el test reventaría. Visto pintado en el arnés, en
+  los dos temas, a 375 px.
+- **22 — cumple.** Mismo test: `updateVidaItem.mutate` recibe `{ id: 'v1',
+  isActive: false }`, sin `days` ni `notes` en el input —lo que garantiza que no
+  se pisan—. Y «sin VidaItem, archivar no toca la plantilla».
+- **23 — cumple (heredado y no roto).** `excludeArchivedActivities` sigue
+  recortando en cliente y el recuento sale de ese array. Los puntos de partida y
+  las sugerencias de plantilla nacen del mismo array filtrado.
+- **24 — cumple en test, la mitad de ida y vuelta la cierra el usuario.**
+  `VidaArchivadasPage.test.tsx` comprueba que se pide con `{ status:
+  'cancelled', page: 1, limit: 200 }` y la plantilla con `includeInactive:
+  true`, y que «Restaurar» manda `{ id, status: 'pending' }` + `{ id: 'v1',
+  isActive: true }`, sin tocar `days`. «Que la actividad vuelva a su grupo del
+  catálogo» depende de la invalidación por prefijo (`invalidateActivityQueries`),
+  que **no he podido ver contra el API real**: va en el recorrido manual.
+- **25 — cumple.** Aserción literal en tres tests: ni «cancel», ni «eliminar»,
+  ni «borrar» en el diálogo, ni en la pantalla de archivadas, ni en la de
+  categorías. Las palabras son «Archivar» y «Restaurar».
+- **26 — cumple.** «No has archivado nada» + «Volver al catálogo», con test.
+- **27 — cumple.** `VidaCategoriasPage.test.tsx`: dos filas con su nombre, su
+  `--vida-category-color` en el `style` y «2 actividades» / «1 actividad» (la
+  archivada y la que no tiene categoría no cuentan). «Editar» abre el modal con
+  el nombre puesto y guarda `{ id, name, icon, color }`. Lo único que **no** se
+  puede cerrar desde aquí es «el cambio se ve en el catálogo al volver»: eso es
+  invalidación contra el API real → recorrido manual.
+- **31 — cumple, medido.** Arnés a 375 px con las tres pantallas y el diálogo:
+  `documentElement.scrollWidth === clientWidth === 375` en los dos temas. El
+  «···» queda dentro de la tarjeta (`dots.right` 344 ≤ `card.right` 359) y su
+  menú también (borde derecho 329). El diálogo mide 329 px de ancho dentro de
+  375. La fila del buscador reparte 227 px de campo + 108 px de «Categorías ›»
+  sin desbordar.
+- **32 — cumple.** Nombre de 61 y categoría de 42 caracteres: se recortan con
+  elipsis (visto en el arnés), no empujan el botón y no producen scroll. Con
+  test en las tres pantallas.
+- **33 — cumple, medido en los dos temas.** Claro: casilla marcada **5,54**,
+  nombre de fila **17,85**, segunda línea **7,58**, cápsula **15,95**. Oscuro:
+  casilla **13,76**, nombre **17,11**, segunda línea **9,05**, h1 **18,78**,
+  subtítulo **9,94**, «Restaurar» **14,96**. La cápsula en oscuro no la pude
+  medir bien (mi composición de alfas dio 1,08, que es claramente un artefacto):
+  **se comprobó por captura**, y el glifo se lee.
+- **34 — cumple.** Aserción de vocabulario en las dos pantallas nuevas y en la
+  tarjeta.
+- **35 — cumple** con el matiz del chunk (arriba): no peor en tipos, lint ni
+  tests; el crecimiento del paquete es de código, no de iconos.
+- **36 — sigue pendiente entero**, y ahora con dos pasos más (archivar y
+  restaurar). Está detrás del login y no entro con credenciales.
+
+**Lo que descubrí y no era del plan:**
+
+- **El `Popover` del «···» se queda pintado encima del diálogo de
+  confirmación.** El revisor de las tajadas 2 y 3 suponía que desaparecía del
+  DOM; no lo hace. Se ve en la captura: el menú «Editar / Archivar» sigue
+  visible sobre el velo oscuro. No bloquea nada —«Volver» cierra las dos
+  cosas— pero es feo. Además `Popover` es `role="dialog"` **sin nombre**, así
+  que en test hay que buscar el de confirmación por su nombre accesible.
+  No lo he forzado: el arreglo es en `src/shared/ui/Popover/Popover.tsx` y
+  toca a hábitos.
+- **Archivar lanza dos toasts** («Actividad actualizada» + «Plantilla
+  actualizada») y el primero no dice «Archivada». Cambiar el texto del
+  `onSuccess` del hook de F0 afectaría también a editar, así que no lo toco.
+- `normalizeVidaText` sigue siendo la cuarta copia del normalizador: anotado,
+  no es de esta tajada.
+
+**Riesgos:** los tres del resumen, más: `VidaCategoriasPage` pide el catálogo
+entero (`limit: 200`) solo para contar; si algún día hay más de 200, los
+recuentos de esa pantalla se quedarán cortos en silencio —igual que el catálogo,
+que al menos lo dice en una línea—.
+
+**Estado del árbol:** sin commitear.
+
+
 ## 4. Review — feature-reviewer
 
 *(una entrada por tajada)*
@@ -1853,3 +2034,189 @@ variable; que lo recoja quien haga la tajada 4.
 **Lo que sigue sin verse nunca:** el API real con `includeInactive: true`, el
 reintento tras «la actividad se guardó pero la plantilla no», y el recorrido con
 sesión. Está detrás del login y no entro con credenciales.
+
+### Tajada 4 — Archivar, restaurar y categorías
+
+**Veredicto: aceptada.** Los once criterios de la tajada (21-27 y 31-35) se
+cumplen en todo lo que se puede comprobar sin sesión, y lo que queda fuera
+—que la actividad restaurada reaparezca en su grupo y que el cambio de
+categoría se vea al volver— lo dejé comprobado **en el nivel de la caché**, que
+es hasta donde llega un agente aquí. Los dos defectos que el constructor
+destapó él mismo (el `Popover` que se queda pintado y los dos toasts de
+archivar) los medí y **no devuelven la tajada**: quedan como hallazgos, con su
+medida.
+
+**Criterios, uno a uno** (contra la sección 1, literal):
+
+| # | Estado | Cómo lo comprobé |
+|---|---|---|
+| 21 | **cumplido** | En navegador, con arnés propio a 375 px: «···» → «Archivar» abre el diálogo «¿Archivar «Organizar la casa»?» con «Sale del catálogo y de tu plantilla. Puedes restaurarla cuando quieras y lo que ya registraste se conserva.» y los botones «Archivar»/«Volver». Al confirmar sale la mutación (sin sesión respondió con el toast «Debes iniciar sesión para continuar.», que es el `onError` de F0 funcionando). Que sea `activityEdit` con `status:'cancelled'` y **nunca** `activityRemove`: `VidaActivityCard.test.tsx` afirma el input exacto `{id:'a1', status:'cancelled'}` y deja `useDeleteActivityMutation` **fuera del mock** a propósito, así que una llamada reventaría el test. Y `grep` sobre `src/`: `activityRemove`/`ACTIVITY_REMOVE_MUTATION`/`useDeleteActivityMutation` y `vidaItemDelete`/`useDeleteVidaItemMutation` **no tienen un solo llamante** fuera de `api/`, de su propio hook y de sus tests. |
+| 22 | **cumplido** | `useArchiveActivity.ts` manda `{id: item.id, isActive:false}` y nada más —ni `days` ni `notes` viajan, así que no se pisan—, y solo dentro del `onSuccess` de la actividad. Test en `VidaActivityCard.test.tsx` (con ítem y sin ítem). |
+| 23 | **cumplido** | El catálogo sigue pidiendo **sin filtro de estado** (`useActivitiesQuery({page:1, limit: CATALOG_LIMIT})`, `VidaActividadesPage.tsx:66`) y recorta en cliente con `excludeArchivedActivities` (`status !== 'cancelled'`); el recuento sale de ese array, nunca de `data.total`. Los puntos de partida sólo aparecen con `totalCount === 0`, y `totalCount` es el array ya filtrado. Medido además en el arnés: con dos vivas y tres archivadas sembradas, la categoría «Casa» (una viva + una archivada) cuenta **«1 actividad»**. |
+| 24 | **cumplido en lo verificable; la vuelta al grupo la cierra el usuario** | La pantalla pide `{status:'cancelled', page:1, limit:200}` y la plantilla con `includeInactive: true` (test + arnés). «Restaurar» manda `{id, status:'pending'}` y `{id:'v1', isActive:true}` — **el mismo `VidaItem`**, localizado con `findVidaItemForActivity` sobre la lista que incluye los desactivados, y sin `days` en el input, así que los días quedan intactos. **La invalidación la seguí hasta la clave:** `useUpdateActivityMutation.onSuccess` → `invalidateActivityQueries` → `vidaKeys.activities.all()` = `['vida','activities']`, que por prefijo arrastra **las dos** entradas de lista (la del catálogo, `{status:null,page:1,limit:200}`, y la de archivadas, `{status:'cancelled',…}`); `useUpdateVidaItemMutation.onSuccess` → `invalidateVidaItemQueries` → `vidaKeys.items.all()`, que arrastra `items.list(true)` **y** `items.list(false)`. Las claves son correctas; que el refetch traiga lo esperado del API real es el criterio 36. El acceso discreto existe: «Ver archivadas» al pie del catálogo, y también en el primer minuto. |
+| 25 | **cumplido** | Leído el texto pintado de las dos pantallas nuevas y del diálogo en el navegador: «Archivadas», «Restaurar», «Volver», «Al catálogo». Ni «cancelar», ni «cancelada», ni «eliminar», ni «borrar». Con aserción literal en tres tests. El botón de salida del diálogo dice «Volver» y el diálogo **no** es `danger`: coherente con que archivar sea reversible. |
+| 26 | **cumplido** | «No has archivado nada» + «Cuando algo deje de formar parte de tus días, archívalo desde su «···» y lo encontrarás aquí.» + enlace «Volver al catálogo», con test. |
+| 27 | **cumplido en lo verificable** | En el arnés: la lista ordenada por `orderIndex`, cada fila con su cápsula de icono, su `--vida-category-color` en el `style`, su nombre y su recuento; «Editar» abre el modal con nombre, `IconPicker` diferido y los 17 colores compartidos, y guarda `{id, name, icon, color}`; el cierre vive en el `onSuccess` **local**, así que un fallo no cierra ni pierde lo escrito (test). «Categorías ›» sale junto al buscador y apunta a `vidaPaths.categorias`. La invalidación del cambio: `invalidateActivityCategoryQueries` → `vidaKeys.categories.list()`, que es **exactamente** la clave que lee el catálogo (`useActivityCategoriesQuery`), así que «se ve al volver» está bien cableado; verlo pintado contra el API real es el 36. |
+| 31 (375 px) | **cumplido — medido** | Arnés propio a 375×812 con las dos pantallas nuevas y la tarjeta: `documentElement.scrollWidth === clientWidth === 375` en claro y en oscuro. Con el diálogo de confirmación abierto: 329,3 px de ancho dentro de 375, y el menú del «···» de 184 a 344. |
+| 32 | **cumplido — visto** | Con un título de 61 caracteres y una categoría de 42: las dos líneas se recortan con elipsis dentro de la fila, el botón «Restaurar»/«Editar» no se mueve y no hay desbordamiento. |
+| 33 (oscuro) | **cumplido — visto en los dos temas** | Captura a 375 px con `data-theme="dark"`: nombres en claro sobre vidrio oscuro, segunda línea legible, cápsulas de color con su glifo visible, botones con borde. Nada de texto oscuro sobre fondo oscuro. La casilla marcada de la tarjeta, que devolví como hallazgo en la tajada 3, ahora usa `--color-primary-hover` y se lee en los dos temas. |
+| 34 | **cumplido** | El texto pintado de las dos pantallas y del diálogo no trae «pendiente», «prioridad», «vencida», «tarea» ni una palabra de culpa. Sobre el toast «Actividad actualizada»: no es vocabulario de culpa ni de gestión de proyectos, así que **no rompe el 34** ni el 25 —que prohíbe «cancelar/cancelada/eliminar», no esto—; queda como hallazgo (abajo). |
+| 35 | **cumplido — corrido entero por mí** | `pnpm typecheck` limpio · `pnpm lint` **14 errores / 0 warnings** (línea base) · `pnpm test` **2 fallos de 647**, los dos de `SearchSelect` preexistentes, 645 verdes · `npx vitest run src/features/vida` **19 archivos / 227 tests, todos verdes**. Sin imports a pelo de `@fortawesome/free-solid-svg-icons` ni de `@/shared/ui/IconPicker/IconPicker` en todo `features/vida`. El build lo reporta el constructor (853,16 kB, +8,96 sobre 844,2, con `app-icons` clavado en 620,20): el crecimiento es de código, que es lo que el criterio permite. **`ENVIRONMENT.md` queda otra vez viejo** (dice 620 tests y 844,2 kB): no lo toco, lo digo. |
+| 36 | **del usuario, pendiente entero** | Detrás del login. Ahora con dos pasos más: archivar y restaurar. |
+
+**Cómo busqué lo que se pudo haber roto** (no solo el resultado):
+
+- **Qué cambió de verdad:** `git diff HEAD --stat -- src/` — diez archivos
+  modificados y ocho nuevos, **todos bajo `src/features/vida/`**. Ni un archivo
+  de `features/habits`, `shared/ui` o `layouts` en esta tajada: el riesgo de
+  contagio a hábitos es estructuralmente nulo, y la suite entera lo confirma
+  (645 verdes, los 2 de siempre).
+- **Quién usa lo que se tocó:** `graphify explain "VidaActivityCard"` da sus
+  cinco aristas (llama a `useConfirmDialog` y `useArchiveActivity`, lo
+  re-exporta su `index.ts`); el único consumidor real es
+  `VidaCatalogGroup.tsx`, confirmado abriendo el archivo. De `vida-catalog.utils`
+  cuelgan ahora cuatro archivos (las tres páginas y el grupo) y de `vida-paths`,
+  cinco. Nada fuera del módulo. *(Nota de método: el grafo de este repo está
+  actualizado **sobre el árbol sin commitear**, así que aquí no sirve para «¿qué
+  había antes?»; para eso usé `git diff HEAD` y la sección 2.)*
+- **Lo que el constructor marcó como más probable roto**, por orden: (a) el
+  recuento que ahora sigue a la búsqueda — es código de la tajada 1 y lo
+  releí: `activityCount` sale de `visibleGroups` y el primer minuto sigue
+  mirando `totalCount` sin filtrar, así que la puerta de los puntos de partida
+  no cambió; el criterio 4 queda **mejor** cumplido que antes. (b) El orden de
+  las dos mutaciones de archivar: confirmado que la plantilla solo se toca en el
+  `onSuccess` de la actividad y que un fallo del segundo paso avisa con toast
+  —sigue siendo un estado a medias posible, anotado abajo—. (c) El
+  `ToastProvider` del test de rutas: `AppProviders.tsx:31-32` monta
+  `ToastProvider` **y** `ConfirmDialogProvider` con `ds="aura"`, así que el
+  diálogo de la tarjeta y los toasts de las dos pantallas nuevas tienen
+  proveedor en la app de verdad.
+- **Lo que vive al lado en la barra:** las dos rutas nuevas no entran en
+  `app-nav.config.ts` (así lo mandaba la sección 2). Comprobado que eso no deja
+  la barra muerta: las píldoras usan `NavLink` sin `end`, de modo que
+  `/app/vida/actividades/archivadas` **mantiene encendida** la píldora
+  «Actividades»; en `/app/vida/categorias` no hay píldora encendida —la pantalla
+  lleva su propio «← Al catálogo»— y el módulo «Vida» sigue seleccionado porque
+  se compara por `pathname.startsWith(vidaPaths.root)`. Ninguna ruta nueva choca
+  con un `:id` del módulo.
+
+**Los dos defectos que el constructor destapó, medidos:**
+
+- **El `Popover` encima del diálogo: es cosmético, no bloquea.** Medido en el
+  navegador con el diálogo abierto: el menú sigue en el DOM con `z-index: 100`,
+  pero `document.elementFromPoint` sobre sus botones devuelve el **velo** del
+  diálogo (`div._overlay_…`), es decir que el menú queda **debajo** y no es
+  pulsable; los dos botones del diálogo («Archivar» y «Volver») sí responden al
+  ratón (`elementFromPoint` cae dentro de ellos), y el foco salta solo al
+  diálogo (`document.activeElement` = su «×»), así que con teclado se confirma
+  sin tocar el ratón. Lo que se ve es el menú traslucido tras el velo: feo, no
+  incapacitante. El arreglo es de `src/shared/ui/Popover/Popover.tsx` y toca a
+  hábitos: **hallazgo, no devolución.**
+- **Los dos toasts de archivar** («Actividad actualizada» + «Plantilla
+  actualizada»): ninguna de las dos frases está prohibida por el criterio 25 ni
+  por el 34, y el texto sale del `onSuccess` de un hook de F0 que comparte con
+  editar. Cambiarlo ahí cambiaría también el mensaje de guardar una edición.
+  **Hallazgo**, con nombre propio para quien haga F2: si se quiere «Archivada»,
+  el mensaje tiene que dejar de vivir en el hook y pasar al `mutate` que lo
+  dispara.
+
+**Estados que nadie construye:** los seis están. Vacío (las dos pantallas, con
+su vuelta), cargando (esqueleto con `aria-busy`, sin afirmar «no hay nada»),
+error (mensaje humano + «Reintentar», con test), sin sesión (`isPending &&
+fetchStatus === 'idle'` → «Entra para ver…», que es la trampa que la sección 2
+dejó señalada y está bien resuelta en las dos), texto largo (61/42 caracteres) y
+móvil 375 px. **Sin permisos** no aplica más allá de «sin sesión»: este producto
+no tiene roles.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: ni un documento
+GraphQL nuevo (`contracts.test.ts` sin tocar), ni un hook de API nuevo
+—`useArchiveActivity` es un orquestador sobre `useUpdateActivityMutation` y
+`useUpdateVidaItemMutation`, la misma figura que `useSaveVidaItemForActivity`—,
+ni una clave nueva en `vidaKeys`, ni una línea nueva en
+`invalidate-vida-queries.ts`, ni paleta ni selector de iconos propios
+(`VidaCategoryForm` usa `ColorPicker` compartido y el `IconPicker` diferido del
+barril). `VidaCategoryForm` es un formulario tonto que no muta: no solapa con
+`CreateVidaCategoryStep`, que sí crea. El hook nuevo **no estaba en el plan** y
+lo doy por bueno con la razón escrita: dos consumidores (la tarjeta y la
+pantalla de archivadas) y la alternativa era escribir dos veces la cadena de
+mutaciones.
+
+**Hallazgos que no devuelven nada** (por orden de a quién le va a doler):
+
+1. **Archivar no es atómico** y el estado a medias es real: si la segunda
+   mutación falla, la actividad queda archivada con su `VidaItem` activo. Solo
+   avisa un toast y no hay reintento. Recuperable volviendo a archivar. Para
+   F4, que es quien vivirá de la plantilla.
+2. **El `Popover` bajo el velo** (arriba). `src/shared/ui/Popover/Popover.tsx`.
+3. **«Actividad actualizada» al archivar** (arriba).
+4. `VidaCategoriasPage` pide el catálogo entero (`limit: 200`) **solo para
+   contar**, y a diferencia del catálogo no avisa si se queda corta. Hoy es
+   teórico; con >200 actividades los recuentos mentirán en silencio.
+5. Con una búsqueda sin resultados el recuento lee «0 actividades · 0
+   categorías» sobre el «Sin resultados para…». Es literal y no miente, pero
+   suena raro; si se toca alguna vez, que sea por gusto, no por criterio.
+6. `--color-text-muted` (2,56:1 sobre vidrio claro) sigue sin arreglar y ahora
+   convive con `--color-text-secondary` en las pantallas nuevas: la segunda
+   línea de la tarjeta y la de las filas nuevas tienen tonos distintos. Token
+   compartido: sigue siendo hallazgo de proyecto, no de esta tajada.
+7. `ENVIRONMENT.md` se quedó viejo en dos cifras (tests 620 → 647 totales, y
+   paquete 844,2 → 853,16 kB). **No lo he tocado**, como manda el protocolo.
+
+**Arnés:** propio, `src/rev-t4.{html,tsx}`, con `MemoryRouter`, `ToastProvider`,
+`ConfirmDialogProvider ds="aura"`, `AuthBootstrapProvider` (las pantallas lo
+exigen a través de `useVidaQueryGuard`) y un `QueryClient` con la caché sembrada
+en las cuatro claves. **Borrado antes de reportar** (`git status src/` limpio de
+él). Confirmo el aviso del constructor: con el nombre `src/__…` el navegador
+bloquea el módulo; sin `__` carga.
+
+**Lo que no se ha visto nunca y solo puede ver el usuario:** el viaje real de
+`activityEdit` con `status: 'cancelled'` contra el API, la lista de archivadas
+que devuelve el backend, la reaparición de la actividad en su grupo tras
+restaurar y el cambio de categoría reflejado al volver al catálogo. Es el
+criterio 36, y con esta tajada queda completo el recorrido que hay que hacer.
+
+**Para el usuario** (la feature queda entregada; esto es lo único que hay que
+hacer a mano):
+
+Ya puedes tener escrito en un sitio lo que haces en un día. Entras en **Vida ·
+Actividades** y, si no tienes nada, te salen trece puntos de partida con su
+categoría puesta: marcas los que te suenen y en un toque los tienes creados.
+Desde ahí el catálogo se ve agrupado por categoría, cada tarjeta con su icono,
+su color y los días en que la tienes en tu plantilla, y el buscador te encuentra
+«Bañarme» aunque escribas «banar». Con el `+` creas una actividad nueva con solo
+nombre y categoría —y puedes crear la categoría ahí mismo, con su icono y su
+color—, y con «ponerla en mi plantilla» eliges los días.
+
+Y lo que añade esta última tajada: lo que ya no hagas **se archiva, no se
+borra**. Desde el «···» de una tarjeta, «Archivar» te pide confirmación, te dice
+que podrás restaurarla y que lo que registraste se conserva; sale del catálogo y
+su plantilla se apaga, pero sus días siguen guardados. En «Ver archivadas», al
+pie del catálogo, está todo lo archivado con un botón «Restaurar» que la
+devuelve a su grupo **con sus días tal como estaban**. Y «Categorías ›», junto al
+buscador, te enseña todas tus categorías con cuántas actividades tiene cada una
+y te deja cambiarles el nombre, el icono y el color.
+
+**Lo que falta por probar, y solo puedes hacerlo tú** (es el criterio 36: todo
+esto está detrás de tu cuenta y ningún agente entra con credenciales). Con la
+web en `http://localhost:5173`, ya con sesión:
+
+1. Entra en **Vida → Actividades**. Si está vacío, marca seis puntos de partida
+   y pulsa «Crear las 6»: comprueba que aparecen las seis con su categoría.
+2. Pulsa el `+`, crea una actividad con una **categoría nueva** (icono y color),
+   enciende «ponerla en mi plantilla» y marca tres días. Al guardar, la tarjeta
+   debe mostrar esas tres casillas.
+3. Abre su «···» → «Editar», cambia el nombre y la categoría: debe cambiarse de
+   grupo sin recargar.
+4. En ese mismo «···», pulsa **«Archivar»** y confirma. La actividad desaparece
+   del catálogo y el recuento de arriba baja.
+5. Pulsa **«Ver archivadas»** al pie: ahí debe estar. Pulsa **«Restaurar»** y
+   vuelve al catálogo: tiene que reaparecer en su grupo **con los mismos tres
+   días marcados**. Esto es lo que ningún agente pudo comprobar contra el API.
+6. Pulsa **«Categorías ›»**, cambia el color o el icono de una categoría y
+   vuelve al catálogo: las tarjetas de ese grupo deben salir con el color nuevo.
+7. Hazlo una vez en el móvil (o con la ventana a 375 px) y otra en tema oscuro.
+
+Dos cosas que ya sabemos y no son fallos tuyos: al archivar salen **dos avisos**
+y el primero dice «Actividad actualizada» en vez de «Archivada», y el menú
+«···» se queda traslucido detrás del cuadro de confirmación. Ninguna de las dos
+impide nada; están anotadas para cuando se toque ese cromo compartido.

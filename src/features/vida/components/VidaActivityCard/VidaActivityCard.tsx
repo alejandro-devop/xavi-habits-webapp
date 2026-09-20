@@ -6,7 +6,9 @@ import {
   VIDA_DAY_ORDER,
   VIDA_DAY_SHORT_LABELS,
 } from '@/features/vida/utils/vida-date.utils'
+import { useArchiveActivity } from '@/features/vida/hooks/useArchiveActivity'
 import { AppIcon } from '@/shared/ui/AppIcon'
+import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import { IconButton } from '@/shared/ui/IconButton'
 import { Popover } from '@/shared/ui/Popover'
 import { Skeleton } from '@/shared/ui/Skeleton'
@@ -51,16 +53,45 @@ export function VidaActivityCard({
   isTemplatePending = false,
   onEdit,
 }: VidaActivityCardProps) {
+  const { confirm } = useConfirmDialog()
+  const { archive, isPending: isArchiving } = useArchiveActivity()
   const days = vidaItem?.days ?? []
   const colorStyle = color ? ({ '--vida-category-color': color } as CSSProperties) : undefined
 
-  // El menú de la tarjeta. Por ahora una sola entrada: «Archivar» llega en la
-  // tajada 4 y se cuelga aquí mismo.
+  /**
+   * Archivar con confirmación, como `HabitListCard`. Dos cosas a propósito:
+   * el diálogo **no** es `variant: 'danger'` —archivar es reversible y nada se
+   * borra (D1), teñirlo de rojo diría lo contrario— y el botón de salida dice
+   * «Volver» y no «Cancelar»: el criterio 25 prohíbe esa palabra en todo este
+   * flujo, para que no se confunda con el `cancelled` del API.
+   */
+  async function handleArchive() {
+    const ok = await confirm({
+      title: `¿Archivar «${activity.title}»?`,
+      description:
+        'Sale del catálogo y de tu plantilla. Puedes restaurarla cuando quieras y lo que ya registraste se conserva.',
+      confirmLabel: 'Archivar',
+      cancelLabel: 'Volver',
+    })
+    if (!ok) return
+    archive(activity, vidaItem)
+  }
+
   const menu = (
     <ul className={styles.menu}>
       <li>
         <button type="button" className={styles.menuItem} onClick={() => onEdit(activity)}>
           Editar
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          className={styles.menuItem}
+          onClick={handleArchive}
+          disabled={isArchiving}
+        >
+          Archivar
         </button>
       </li>
     </ul>

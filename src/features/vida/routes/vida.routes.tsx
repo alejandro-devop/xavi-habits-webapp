@@ -4,6 +4,8 @@ import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
 import { VidaPlantillaPage } from '@/features/vida/pages/VidaPlantillaPage'
 import { VidaRevisionPage } from '@/features/vida/pages/VidaRevisionPage'
 import { VidaActividadesPage } from '@/features/vida/pages/VidaActividadesPage'
+import { VidaArchivadasPage } from '@/features/vida/pages/VidaArchivadasPage'
+import { VidaCategoriasPage } from '@/features/vida/pages/VidaCategoriasPage'
 
 /**
  * El índice redirige a `hoy` en vez de renderizar la página: así la URL y la
@@ -32,6 +34,16 @@ export const vidaRoutes: RouteObject = {
     {
       path: 'actividades',
       element: <VidaActividadesPage />,
+    },
+    {
+      // Hija del catálogo en la URL, hermana en el árbol: el catálogo no tiene
+      // `Outlet`, así que anidarla de verdad no pintaría nada.
+      path: 'actividades/archivadas',
+      element: <VidaArchivadasPage />,
+    },
+    {
+      path: 'categorias',
+      element: <VidaCategoriasPage />,
     },
   ],
 }

@@ -1,0 +1,98 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.panel {
+  border-color: var(--color-glass-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+.errorText {
+  margin: 0 0 0.75rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* La misma fila de vidrio que el catálogo y que archivadas: es la misma cosa
+   vista por otro lado. `min-width: 0` en toda la cadena para que un nombre
+   largo se recorte en vez de empujar el botón fuera (criterios 31 y 32). */
+.row,
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1rem;
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  background: color-mix(
+    in srgb,
+    var(--vida-category-color, var(--color-primary)) 16%,
+    transparent
+  );
+  color: color-mix(
+    in srgb,
+    var(--vida-category-color, var(--color-primary)) 65%,
+    var(--color-text)
+  );
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* `--color-text-secondary` y no `--color-text-muted`: la segunda línea de estas
+   filas lleva información (la categoría, el recuento) y el token «muted» se
+   queda en 2,56:1 sobre el vidrio claro. El token compartido no se toca —lo
+   usan hábitos y el resto de la app—, solo se elige el otro aquí. */
+.meta {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

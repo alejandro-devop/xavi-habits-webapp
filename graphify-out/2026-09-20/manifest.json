@@ -2435,8 +2435,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaActividadesPage.tsx": {
-    "mtime": 1789884848.768436,
-    "ast_hash": "27feca286c5c18a7062fccc75014748d",
+    "mtime": 1789886245.8694472,
+    "ast_hash": "ecf35b369d836dee8cddb9cf87469c06",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
@@ -2480,8 +2480,8 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789884452.6486952,
-    "ast_hash": "9e5e5b93f88295eb97838cf34430fa3f",
+    "mtime": 1789886704.207499,
+    "ast_hash": "9fd84c320d3e1034500320e72acede93",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
@@ -2760,8 +2760,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaActividadesPage.test.tsx": {
-    "mtime": 1789885121.622945,
-    "ast_hash": "9dc9f29b0d7d2f579c998534c82af473",
+    "mtime": 1789886365.8538337,
+    "ast_hash": "229cf6adae8db3814132ac0bd6f7d708",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-catalog.utils.test.ts": {
@@ -2785,8 +2785,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-002-vida-catalogo-actividades.md": {
-    "mtime": 1789884560.2960658,
-    "ast_hash": "ebc9de27f23f5513d63bcb1b4d093548",
+    "mtime": 1789886697.7784612,
+    "ast_hash": "7dc7461c6b0589473b3513aca2397d3d",
     "semantic_hash": ""
   },
   "docs/vida/assets/05-vida-catalogo.html": {
@@ -2810,13 +2810,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx": {
-    "mtime": 1789884986.988676,
-    "ast_hash": "91bead27a96dc497cf7fef7010650ec2",
+    "mtime": 1789886341.6865776,
+    "ast_hash": "d0f7c45c2af8879f150f05a35de6e6c1",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx": {
-    "mtime": 1789884803.405688,
-    "ast_hash": "7857b6304fea80cbefb5c60f9b3a8794",
+    "mtime": 1789886228.8042247,
+    "ast_hash": "560f39bf68a0eb87420fd3861164cc3e",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/index.ts": {

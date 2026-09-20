@@ -86,11 +86,13 @@
 }
 
 /* Como en el render: la casilla marcada es un tinte de la marca con su propio
-   texto. `--color-primary` ya es el tono que pasa AA en cada tema (#006c49 en
-   claro, #4edea3 en oscuro), así que la letra se lee en los dos. */
+   texto. El tono es `--color-primary-hover` y no `--color-primary` porque sobre
+   el fondo teñido este último se queda en 3,89:1 en tema claro —el hallazgo que
+   dejó el revisor de la tajada 3—. Es el mismo tono que ya usa la casilla de la
+   hoja (`VidaActivitySheet.module.scss`), así que las dos se ven iguales. */
 .dayOn {
   background: color-mix(in srgb, var(--color-primary) 20%, transparent);
-  color: var(--color-primary);
+  color: var(--color-primary-hover);
 }
 
 /* ── El «···» ────────────────────────────────────────────────────────────── */

@@ -1,10 +1,27 @@
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { VidaActivityCard } from '@/features/vida/components/VidaActivityCard'
 import type { Activity } from '@/features/vida/types/activity.types'
 import type { VidaItem } from '@/features/vida/types/vida-item.types'
 import { renderWithProviders } from '@/test/render'
+
+/**
+ * Las dos mutaciones de F0 que usa «Archivar» se mockean: lo que se comprueba
+ * aquí es **con qué** se llaman (criterios 21 y 22), no que viajen al API. El
+ * orquestador `useArchiveActivity` corre de verdad; el que no existe en el
+ * mock, a propósito, es `useDeleteActivityMutation`: si alguien lo llamara, el
+ * test reventaría —y eso es justamente lo que dice el criterio 21—.
+ */
+const updateActivity = { mutate: vi.fn(), isPending: false, isError: false }
+const updateVidaItem = { mutate: vi.fn(), isPending: false, isError: false }
+
+vi.mock('@/features/vida/hooks/useActivities', () => ({
+  useUpdateActivityMutation: () => updateActivity,
+}))
+vi.mock('@/features/vida/hooks/useVidaItems', () => ({
+  useUpdateVidaItemMutation: () => updateVidaItem,
+}))
 
 function buildActivity(overrides: Partial<Activity> = {}): Activity {
   return {
@@ -46,6 +63,24 @@ function renderCard(props: Partial<Parameters<typeof VidaActivityCard>[0]> = {})
       {...props}
     />,
   )
+}
+
+beforeEach(() => {
+  updateActivity.mutate.mockReset()
+  updateVidaItem.mutate.mockReset()
+  // El `onSuccess` local encadena el `VidaItem`: sin esto el mock cortaría la
+  // cadena y el criterio 22 no se podría comprobar.
+  updateActivity.mutate.mockImplementation((_input, options) => options?.onSuccess?.())
+})
+
+/**
+ * El `Popover` del «···» **también** es `role="dialog"` y se queda abierto
+ * detrás del diálogo de confirmación —no expone forma de cerrarse desde su
+ * contenido; el revisor de las tajadas 2 y 3 ya lo dejó anotado—. Por eso el
+ * diálogo se busca por su nombre accesible y no por el rol a secas.
+ */
+function findConfirmDialog() {
+  return screen.findByRole('dialog', { name: /Archivar/ })
 }
 
 describe('VidaActivityCard', () => {
@@ -93,6 +128,67 @@ describe('VidaActivityCard', () => {
 
     expect(onEdit).toHaveBeenCalledTimes(1)
     expect(onEdit.mock.calls[0][0]).toMatchObject({ id: 'a1', title: 'Organizar la casa' })
+  })
+
+  it('«Archivar» pide confirmación diciendo que se restaura y que lo registrado se conserva (criterio 21)', async () => {
+    const user = userEvent.setup()
+    renderCard({ vidaItem })
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Organizar la casa' }))
+    await user.click(screen.getByRole('button', { name: 'Archivar' }))
+
+    const dialog = await findConfirmDialog()
+    expect(within(dialog).getByText('¿Archivar «Organizar la casa»?')).toBeInTheDocument()
+    expect(within(dialog).getByText(/restaurarla cuando quieras/i)).toBeInTheDocument()
+    expect(within(dialog).getByText(/ya registraste se conserva/i)).toBeInTheDocument()
+    // Criterio 25: ni «cancelar» ni «eliminar» en todo el gesto.
+    expect((dialog.textContent ?? '').toLowerCase()).not.toContain('cancelar')
+    expect((dialog.textContent ?? '').toLowerCase()).not.toContain('eliminar')
+    // Y no ha mutado nada todavía.
+    expect(updateActivity.mutate).not.toHaveBeenCalled()
+  })
+
+  it('al confirmar archiva con status cancelled y desactiva su VidaItem (criterios 21 y 22)', async () => {
+    const user = userEvent.setup()
+    renderCard({ vidaItem })
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Organizar la casa' }))
+    await user.click(screen.getByRole('button', { name: 'Archivar' }))
+    const dialog = await findConfirmDialog()
+    await user.click(within(dialog).getByRole('button', { name: 'Archivar' }))
+
+    expect(updateActivity.mutate).toHaveBeenCalledTimes(1)
+    expect(updateActivity.mutate.mock.calls[0][0]).toEqual({ id: 'a1', status: 'cancelled' })
+    expect(updateVidaItem.mutate).toHaveBeenCalledTimes(1)
+    // Desactivado, **no** borrado: sin `days` ni `notes` en el input, que es lo
+    // que garantiza que no se pisan.
+    expect(updateVidaItem.mutate.mock.calls[0][0]).toEqual({ id: 'v1', isActive: false })
+  })
+
+  it('si dices que no, no archiva nada', async () => {
+    const user = userEvent.setup()
+    renderCard({ vidaItem })
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Organizar la casa' }))
+    await user.click(screen.getByRole('button', { name: 'Archivar' }))
+    const dialog = await findConfirmDialog()
+    await user.click(within(dialog).getByRole('button', { name: 'Volver' }))
+
+    expect(updateActivity.mutate).not.toHaveBeenCalled()
+    expect(updateVidaItem.mutate).not.toHaveBeenCalled()
+  })
+
+  it('sin VidaItem, archivar no toca la plantilla', async () => {
+    const user = userEvent.setup()
+    renderCard({ vidaItem: null })
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Organizar la casa' }))
+    await user.click(screen.getByRole('button', { name: 'Archivar' }))
+    const dialog = await findConfirmDialog()
+    await user.click(within(dialog).getByRole('button', { name: 'Archivar' }))
+
+    expect(updateActivity.mutate).toHaveBeenCalledTimes(1)
+    expect(updateVidaItem.mutate).not.toHaveBeenCalled()
   })
 
   it('no dice ni una palabra de culpa ni de gestión de proyectos', () => {

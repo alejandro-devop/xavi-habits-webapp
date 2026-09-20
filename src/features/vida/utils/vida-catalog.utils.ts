@@ -9,6 +9,14 @@ import { compareVidaNames } from '@/features/vida/utils/vida-text.utils'
  * `buildFollowUpsByHabit` en hábitos—, así no hay ni una consulta por tarjeta.
  */
 
+/**
+ * Cuántas actividades se piden de una vez. `activities` es paginado y el
+ * catálogo no enseña controles de página: trae un lote y, si no cabía entero,
+ * lo dice en una línea. Vive aquí y no en la página porque las archivadas piden
+ * el mismo lote con otro filtro.
+ */
+export const CATALOG_LIMIT = 200
+
 /** No es un id del API: es la llave del grupo que no tiene categoría. */
 export const UNCATEGORIZED_GROUP_ID = '__sin-categoria__'
 export const UNCATEGORIZED_GROUP_NAME = 'Sin categoría'
@@ -130,4 +138,17 @@ export function groupActivitiesByCategory(
  */
 export function countCatalogCategories(groups: VidaCatalogGroupModel[]): number {
   return groups.filter((group) => !group.isUncategorized).length
+}
+
+/**
+ * `categoryId → cuántas actividades` para la pantalla de categorías. Las que no
+ * tienen categoría no entran: no hay ninguna fila a la que sumarlas.
+ */
+export function countActivitiesByCategory(activities: Activity[]): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const activity of activities) {
+    if (!activity.categoryId) continue
+    counts.set(activity.categoryId, (counts.get(activity.categoryId) ?? 0) + 1)
+  }
+  return counts
 }

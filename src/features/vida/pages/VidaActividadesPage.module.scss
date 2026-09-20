@@ -7,8 +7,26 @@
   min-width: 0;
 }
 
-.search {
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   min-width: 0;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+}
+
+/* «Ver archivadas»: al pie, discreto y centrado. No es una sección del módulo
+   —no entra en las píldoras ni en ⌘K—, es navegación de esta pantalla. */
+.archivedLink {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  /* Hueco para el «+», que es fijo y se le echaría encima al hacer scroll. */
+  padding-bottom: 3.5rem;
 }
 
 .groups {

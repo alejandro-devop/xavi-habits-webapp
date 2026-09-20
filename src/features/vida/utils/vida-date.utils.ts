@@ -85,3 +85,34 @@ export const VIDA_DAY_LABELS: Record<VidaDayOfWeek, string> = {
   saturday: 'sábado',
   sunday: 'domingo',
 }
+
+/* ── De un `YYYY-MM-DD` al día de la semana y a lo que se lee ───────────────
+ *
+ * Lo añade la tajada 2 de FEAT-003: el encabezado del presupuesto dice
+ * «Viernes 18» y el lateral dice «Tu plantilla de viernes», y los dos parten de
+ * la misma cadena local. Va aquí, con el resto de lo de fechas, y no en
+ * `vida-agenda.utils.ts`, que es geometría.
+ *
+ * `new Date('2026-09-18')` se interpreta **en UTC** y a partir de UTC-1 cae en
+ * el día anterior: por eso se parte la cadena a mano (criterio 49).
+ */
+
+/** `YYYY-MM-DD` → `Date` local a medianoche. Lo que no se entiende cae en hoy. */
+export function parseYmdToLocalDate(date: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date.trim())
+  if (!match) return new Date()
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+}
+
+/** El día de la semana de una fecha local, en el vocabulario de la plantilla. */
+export function getVidaDayOfWeek(date: string): VidaDayOfWeek {
+  const index = parseYmdToLocalDate(date).getDay()
+  // `getDay()` es domingo = 0; `VIDA_DAY_ORDER` empieza en lunes.
+  return VIDA_DAY_ORDER[(index + 6) % 7]!
+}
+
+/** «Viernes 18»: el día de la semana en mayúscula inicial y el número. */
+export function formatDayHeading(date: string): string {
+  const label = VIDA_DAY_LABELS[getVidaDayOfWeek(date)]
+  return `${label.charAt(0).toUpperCase()}${label.slice(1)} ${parseYmdToLocalDate(date).getDate()}`
+}

@@ -1,0 +1,1 @@
+export { VidaAgendaGap } from './VidaAgendaGap'

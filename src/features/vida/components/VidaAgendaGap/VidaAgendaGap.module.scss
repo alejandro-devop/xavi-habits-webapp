@@ -1,0 +1,126 @@
+/* Un hueco libre. Mismo esqueleto que el bloque —canaleta + tarjeta— pero con
+   trazo discontinuo: se lee como sitio, no como cosa. */
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.gutter {
+  display: flex;
+  flex: 0 0 2.75rem;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-top: 0.75rem;
+}
+
+.time {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 35%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.5rem;
+  margin: 0;
+  min-width: 0;
+}
+
+/* «Libre» con el color de la marca: un tramo sin nada es **libre**, nunca un
+   agujero ni un reproche (criterio 56). */
+.free {
+  color: var(--color-primary-hover);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.size {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Las fichas de la plantilla ──────────────────────────────────────────── */
+
+/* `flex-wrap` y `min-width: 0` en cada ficha: a 375 px bajan de línea en vez de
+   producir scroll horizontal (criterios 53 y 54). */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 999px;
+  background: var(--aura-glass-1);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 60%, var(--color-text));
+  font-size: 0.75rem;
+}
+
+.chipName {
+  overflow: hidden;
+  color: var(--color-text);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipTime {
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+/* ── El resto de menos de 15 minutos ─────────────────────────────────────── */
+
+/* No desaparece: si lo hiciera, la leyenda del presupuesto dejaría de sumar lo
+   que se ve. Se pinta fino y sin fichas. */
+.sliver {
+  flex: 1;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-left: 2px dashed color-mix(in srgb, var(--color-primary) 30%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}

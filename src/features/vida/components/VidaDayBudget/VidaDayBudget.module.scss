@@ -1,0 +1,159 @@
+/* El presupuesto del día: la tarjeta de vidrio que va siempre arriba de Hoy.
+   Mismo vidrio que `VidaActivityCard` y que los paneles del catálogo. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+/* A 375 px la fecha y el «te quedan» no caben en una línea: `flex-wrap` los
+   apila sin producir scroll horizontal (criterio 53). */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  min-width: 0;
+}
+
+.heading {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.day {
+  color: var(--color-text);
+}
+
+.clock {
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.remaining {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.remainingValue {
+  color: var(--color-text);
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ── La barra del día ────────────────────────────────────────────────────── */
+
+/* Los anchos son porcentajes de minutos y suman el 100%: la barra es el día
+   entero, de la hora de inicio a la de fin (criterio 13). */
+.track {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.segment {
+  height: 100%;
+
+  &[data-kind='planned'] {
+    background: var(--color-primary);
+  }
+
+  /* Lo libre no es un agujero: es un tramo con su propio tono, más suave. Sin
+     rayado de «desperdicio» (criterio 56). */
+  &[data-kind='free'] {
+    background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  }
+}
+
+/* La marca de «ahora»: violeta, el segundo color de Aura, para que no se
+   confunda con el mint de lo planeado. `--aura-ring-to` y no `--color-accent`,
+   que en este tema **es** `--color-primary` y la dejaría invisible sobre el
+   tramo planeado. `translateX(-50%)` la centra en su minuto; a 0% y 100% se
+   queda pegada al borde y el halo la separa del tramo de debajo. */
+.nowMark {
+  position: absolute;
+  top: -0.125rem;
+  bottom: -0.125rem;
+  width: 0.1875rem;
+  border-radius: 999px;
+  background: var(--aura-ring-to, #7c3aed);
+  box-shadow: 0 0 0 1px var(--color-surface);
+  transform: translateX(-50%);
+}
+
+/* ── La leyenda: los minutos como texto ──────────────────────────────────── */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  /* Dato, no decoración: `--color-text-secondary` y no `--color-text-muted`,
+     que en tema claro se queda en ~2,4:1. */
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+
+  [data-kind='planned'] > & {
+    background: var(--color-primary);
+  }
+}
+
+/* ── La guía y el horario ────────────────────────────────────────────────── */
+
+.guidance {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.schedule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.scheduleNote {
+  color: var(--color-text-secondary);
+}

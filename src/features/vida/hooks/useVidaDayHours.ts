@@ -19,6 +19,8 @@ export type VidaDayHours = {
   isError: boolean
   /** Sin sesión la consulta está deshabilitada: ni carga ni falla, no hay dato. */
   isDisabled: boolean
+  /** Vuelve a pedir los ajustes. Lo usa el «Reintentar» de Hoy (criterio 52). */
+  refetch: () => void
 }
 
 /**
@@ -61,5 +63,8 @@ export function useVidaDayHours(): VidaDayHours {
     isPending: query.isPending && query.fetchStatus !== 'idle',
     isError: query.isError,
     isDisabled: query.isPending && query.fetchStatus === 'idle',
+    refetch: () => {
+      void query.refetch()
+    },
   }
 }

@@ -1,0 +1,138 @@
+/* Hoy. Mismo contenedor que el resto del módulo: columna, `min-width: 0` en
+   todo lo que pueda llevar texto largo, y nada de anchos fijos. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Móvil primero: una sola columna. El lateral de escritorio aparece cuando hay
+   sitio de verdad; por debajo va **debajo** de la agenda, no apretado al lado. */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 20rem;
+    align-items: start;
+  }
+}
+
+/* ── La agenda ───────────────────────────────────────────────────────────── */
+
+.agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  /* Hueco al pie para que el último bloque no quede pegado al borde. */
+  padding: 0 0 2.5rem;
+  min-width: 0;
+  list-style: none;
+}
+
+.noPlan {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* ── La marca de «Ahora» ─────────────────────────────────────────────────── */
+
+/* Una línea de violeta con su píldora, como en el render. No es un separador
+   decorativo: es el ancla a la que abre la pantalla (criterio 20). */
+.nowRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.15rem 0;
+}
+
+/* La hora de «ahora» va en el color del texto, no en violeta: el violeta de
+   Aura sobre el lienzo claro se queda en 3,7:1 y esto es un dato que se lee.
+   El violeta lo lleva la píldora, que es la que marca la posición. */
+.nowTime {
+  flex: 0 0 2.75rem;
+  color: var(--color-text);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+}
+
+.nowLine {
+  flex: 1;
+  height: 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--aura-ring-to, #7c3aed) 55%, transparent);
+}
+
+.nowPill {
+  flex: 0 0 auto;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  /* Violeta fijo, **no** `--aura-ring-to`: en oscuro ese token se aclara a
+     #a78bfa y el texto blanco encima caía a 2,7:1. La píldora es un chip opaco,
+     así que el tema de alrededor no la afecta: blanco sobre #7c3aed son 5,7:1
+     en los dos temas, y sigue siendo inconfundible con el mint de «planeado»
+     (criterio 55). `--color-surface` tampoco valía: en Aura es blanco al 45%. */
+  background: #7c3aed;
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Estados ─────────────────────────────────────────────────────────────── */
+
+.panel {
+  border-color: var(--color-glass-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+.errorText {
+  margin: 0 0 0.75rem;
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

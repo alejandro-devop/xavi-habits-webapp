@@ -1,0 +1,1 @@
+export { VidaAgendaBlock } from './VidaAgendaBlock'

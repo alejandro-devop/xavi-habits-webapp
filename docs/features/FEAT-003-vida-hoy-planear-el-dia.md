@@ -386,7 +386,7 @@ hasta que el API desplegada lleve el cambio**, y eso es de él, no de un agente.
 | # | What it does | State |
 |---|---|---|
 | 1 | **La plantilla con hora y duración, y los ajustes de Vida.** Prerrequisito de todo lo demás: SDL recopiado y contratos verdes, tipos y hooks de `vida-items` con `startTime`/`durationMinutes`, la hoja de F1 gana «a qué hora» y «cuánto» (15 · 30 · 45 · 1h · libre), la tarjeta del catálogo los enseña, y una pantalla/hoja de ajustes de Vida con el inicio y el fin del día. Ya es útil sola: la plantilla deja de ser una lista sin orden y pasa a ser un día. | accepted |
-| 2 | **La agenda del día, en solo lectura.** El presupuesto (tiempo que queda, barra del día con la marca de «ahora», leyenda y línea de guía), los bloques del `activityDayPlan` ordenados por hora, los huecos con su tamaño y las sugerencias de la plantilla que caben (sin poder ponerlas aún), apertura en «Ahora», el lateral de escritorio, y todos los estados. Primera vez que el usuario ve su día repartido y dónde tiene sitio. | pending |
+| 2 | **La agenda del día, en solo lectura.** El presupuesto (tiempo que queda, barra del día con la marca de «ahora», leyenda y línea de guía), los bloques del `activityDayPlan` ordenados por hora, los huecos con su tamaño y las sugerencias de la plantilla que caben (sin poder ponerlas aún), apertura en «Ahora», el lateral de escritorio, y todos los estados. Primera vez que el usuario ve su día repartido y dónde tiene sitio. | accepted |
 | 3 | **Poner algo en un hueco.** Un toque en una ficha lo coloca al principio del hueco; «+ otra cosa» abre la hoja de tres preguntas (qué · cuánto · cuándo) con lo que no cabe apagado y el «queda libre después»; quitar un bloque y cambiarle hora o duración. Errores de mutación visibles. | pending |
 | 4 | **Cualquier día, no solo hoy.** La tira de 7 días con el punto de «tiene plan», el día en la URL, la ventana de esta semana y la siguiente, el día futuro en trazo suave, el día pasado en solo lectura, «copiar del mismo día pasado» y «vaciar y rehacer». Aquí ya se planea mañana a mano. | pending |
 | 5 | **La semana y armar desde la plantilla.** La vista de semana con una línea por día, «Armar» en los vacíos copiando hora y duración de cada ítem (con el trato explícito de los solapes y de los ítems sin hora) y «Armar toda la semana» sin pisar lo que ya existe. Cierra el criterio de fase. | pending |
@@ -763,7 +763,7 @@ código vivo y por eso se rescata por función, con test propio, no se restaura.
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **La plantilla con hora y duración, y los ajustes de Vida.** | `graphql/schema/vida.schema.graphql` · `settings/graphql/schema/user-settings.schema.graphql` (N) · `graphql/contracts.test.ts` · `graphql/vida-items.graphql.ts` · `settings/graphql/user-settings.graphql.ts` · `settings/types/user-settings.types.ts` · `types/vida-item.types.ts` · `utils/vida-time.utils.ts` (N) · `hooks/useSaveVidaItemForActivity.ts` · `hooks/useVidaDayHours.ts` (N) · `components/VidaDurationPills/` (N) · `components/VidaActivitySheet/` · `components/VidaActivityCard/` · `pages/VidaAjustesPage.tsx` (N) · `routes/vida-paths.ts` · `routes/vida.routes.tsx` · `layouts/AppLayout/app-nav.config.ts` | 1–10, y la parte de 53–57 que toca la hoja, la tarjeta y los ajustes | accepted |
-| 2 | **La agenda del día, en solo lectura.** | `utils/vida-agenda.utils.ts` (N) · `hooks/useVidaNowMinute.ts` (N) · `hooks/useVidaDayData.ts` (N) · `components/VidaDayBudget/` (N) · `components/VidaAgendaBlock/` (N) · `components/VidaAgendaGap/` (N) · `components/VidaTemplateAside/` (N) · `pages/VidaHoyPage.tsx` | 11–20, 22, 48 (la mitad «Tu plantilla de \<día\>»), 49–56; **21 solo en su mitad de texto** (ver nota) | pending |
+| 2 | **La agenda del día, en solo lectura.** | `utils/vida-agenda.utils.ts` (N) · `hooks/useVidaNowMinute.ts` (N) · `hooks/useVidaDayData.ts` (N) · `components/VidaDayBudget/` (N) · `components/VidaAgendaBlock/` (N) · `components/VidaAgendaGap/` (N) · `components/VidaTemplateAside/` (N) · `pages/VidaHoyPage.tsx` | 11–20, 22, 48 (la mitad «Tu plantilla de \<día\>»), 49–56; **21 solo en su mitad de texto** (ver nota) | accepted (2ª entrega) |
 | 3 | **Poner algo en un hueco.** | `utils/vida-gap-form.utils.ts` (N) · `components/VidaPlaceInGapSheet/` (N) · `components/VidaAgendaGap/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 23–30, y 29/52/56 sobre las mutaciones | pending |
 | 4 | **Cualquier día, no solo hoy.** | `utils/vida-window.utils.ts` (N) · `hooks/useVidaWeekPlans.ts` (N) · `components/VidaDayStrip/` (N) · `components/VidaDayActions/` (N) · `pages/VidaHoyPage.tsx` · `routes/vida-paths.ts` | 31–38 | pending |
 | 5 | **La semana y armar desde la plantilla.** | `utils/vida-build-day.utils.ts` (N) · `hooks/useBuildDayFromTemplate.ts` (N) · `hooks/useBuildWeekFromTemplate.ts` (N) · `pages/VidaSemanaPage.tsx` (N) · `components/VidaTemplateAside/` · `components/VidaAgendaGap/` · `routes/vida-paths.ts` · `routes/vida.routes.tsx` | 39–46, 48 (la mitad «Mañana»), y **la mitad de 21 que es el botón**; 47 lo cronometra el usuario | pending |
@@ -1110,6 +1110,492 @@ Contrastes medidos en el DOM (componiendo el alfa de cada capa; AA pide 4,5:1):
 **Estado del árbol: sin commitear.** El arnés temporal está borrado. `graphify
 update .` corrido (2.821 nodos, 3.041 aristas).
 
+### Tajada 2 — La agenda del día, en solo lectura
+
+**Resumen para el revisor:**
+1. `/app/vida/hoy` dejó de ser un cascarón: arriba el **presupuesto** (fecha y
+   hora, «te quedan Xh YY hasta las 23:00», la barra del día entero con la marca
+   de «ahora», la leyenda con los minutos y una línea de guía compuesta con
+   reglas) y debajo la **agenda**: los bloques del `activityDayPlan` ordenados
+   por hora y, entre ellos, los **huecos** con su tamaño y las fichas de la
+   plantilla que caben. En escritorio, el lateral «Tu plantilla de \<día\>».
+2. Todo lo nuevo vive en `src/features/vida/`: un `utils` puro
+   (`vida-agenda.utils.ts`), dos hooks, cuatro componentes y la página. Fuera
+   del módulo no se toca nada; sí se tocaron **dos tests ajenos**
+   (`vida.routes.test.tsx` y `layouts/AppLayout.test.tsx`), y ahí está el aviso.
+3. **Lo que más probablemente rompí:** esos dos tests. `AppLayout.test.tsx`
+   montaba `vidaRoutes` de verdad y ahora Hoy llega al contexto de sesión por
+   `useAuthBootstrap`, que ese arnés no monta: **cualquier test que monte
+   `vidaRoutes` sin proveedor de sesión reventará** hasta que mockee
+   `useVidaQueryGuard`. Segundo sospechoso: `useVidaDayHours` ganó un `refetch`
+   en su tipo de retorno, así que **todo mock de ese hook tiene que traerlo**.
+   Tercero, más sutil: la ventana de la barra **se estira** si un bloque cae
+   fuera del horario de los ajustes — si algún día la leyenda no cuadra con la
+   agenda, es ahí donde hay que mirar.
+
+**Lo que se construyó**
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/utils/vida-agenda.utils.ts` (+ `.test.ts`, 29 casos) (N) | El corazón **puro**: `buildDayAgenda` (bloques ordenados + huecos, con los de antes del primero y después del último), `getDayBudget` (minutos, porcentajes, posición de «ahora», «te quedan»), `buildGuidanceLine` (cinco formas, ninguna con reproche), `findLargestGap`, `formatGapRange`, `fitsInGap`, `suggestionsForGap` y `findNextBlockId`. El «ahora» **se inyecta** como minutos: ni un `new Date()` dentro. |
+| `src/features/vida/hooks/useVidaNowMinute.ts` (+ `.test.tsx`, 3 casos) (N) | Rescate de `79bece0:hooks/useCurrentTimeMarker.ts`: tic de 60 s, devuelve `{ minutes, label }` y **no tictaquea** con `enabled: false` (lo que la tajada 4 necesita para el día futuro). |
+| `src/features/vida/hooks/useVidaDayData.ts` (N) | Junta `useActivityDayPlanQuery`, `useVidaSuggestionsForDateQuery` y `useVidaDayHours`, y devuelve **el estado de cada una** (`isDisabled`, `isPending`, `isPlanError`, `failed[]`) para que el criterio 52 pueda decir *qué* falta. Ninguna clave de caché nueva. |
+| `src/features/vida/components/VidaDayBudget/` (N) | Fecha y hora, «te quedan», barra proporcional con la marca, leyenda **como texto real** (es la «tabla oculta» del gráfico, como en `ChartPanel`) y la línea de guía. La barra es `aria-hidden`: lo que hay que leer está escrito. |
+| `src/features/vida/components/VidaAgendaBlock/` (N) | Hora, icono y color de la categoría, nombre, duración y «en N min» en el primero que no ha empezado. Sin un solo control. |
+| `src/features/vida/components/VidaAgendaGap/` (N) | «Libre 10:30 – 13:00 · 2h 30» + hasta 3 fichas con su duración («sin duración» las que no la tienen). Los restos de menos de 15 min se pintan finos y sin fichas. |
+| `src/features/vida/components/VidaTemplateAside/` (N) | El lateral de escritorio: la plantilla del día con «en el plan» en lo que ya está, marcado **contra el plan por `activityId`**. |
+| `src/features/vida/pages/VidaHoyPage.tsx` (+ `.module.scss`, `.test.tsx`, 18 casos) | Sustituye el cascarón de 6 líneas. Compone lo anterior, coloca la marca de «Ahora» y hace `scrollIntoView({ block: 'center' })` **una sola vez** al montar. |
+| `src/features/vida/utils/vida-date.utils.ts` (+ 3 casos) | `parseYmdToLocalDate`, `getVidaDayOfWeek` y `formatDayHeading` («Viernes 18»). |
+| `src/features/vida/hooks/useVidaDayHours.ts` | Gana `refetch` en su retorno: el «Reintentar» del criterio 52 tiene que poder volver a pedir **las tres** consultas, y los ajustes son una de ellas. |
+| `src/features/vida/routes/vida.routes.test.tsx`, `src/layouts/AppLayout/AppLayout.test.tsx` | Los dos afirmaban cosas que esta tajada deroga o rompe. Ver abajo. |
+
+**Por qué así, y qué se descartó**
+
+- **Tres desviaciones del plan, a propósito y dichas:**
+
+  1. **No se pinta «+ otra cosa».** El criterio 18 lo nombra y la sección 2 lo
+     ponía en esta tajada, pero abrir la hoja es el criterio 24 —tajada 3—, así
+     que aquí sería **un botón muerto**. Es exactamente el mismo recorte que el
+     arquitecto dejó escrito para «Armar desde la plantilla» en el criterio 21:
+     la mitad que es información cierra en la 2, la que es acción en la 3. **No
+     reescribo el criterio: lo parto y lo digo.** Por lo mismo, las fichas son
+     `<span>` y no botones.
+  2. **El icono y el color del bloque salen de `item.activity.category`**, que
+     **ya viaja dentro del plan del día** (`activity-day-plan.graphql.ts`
+     selecciona `category { id name color icon }`), en vez del cruce por `Map`
+     con `useActivityCategoriesQuery` que hace `VidaActividadesPage:79`. El
+     tratamiento visual es el mismo que `VidaActivityCard` —tinte de la
+     categoría mezclado con el fondo—, pero sin una consulta que no hace falta.
+     El respaldo cuando no hay categoría es `UNCATEGORIZED_GROUP_ICON`, el
+     mismo del catálogo.
+  3. **Tres utilidades de fecha nuevas** en `vida-date.utils.ts`
+     (`parseYmdToLocalDate`, `getVidaDayOfWeek`, `formatDayHeading`), aunque el
+     plan decía «ninguna utilidad de fecha nueva». Faltaba ir de un
+     `YYYY-MM-DD` al día de la semana, y lo necesitan el encabezado y el
+     lateral. Van ahí y no en `vida-agenda.utils.ts`, que es geometría. Van con
+     su aviso: `new Date('2026-09-18')` se interpreta **en UTC** y a partir de
+     UTC-1 cae en el día anterior (criterio 49); se parte la cadena a mano.
+
+- **La ventana de la barra se estira** cuando un bloque cae fuera del horario de
+  los ajustes (alguien planeó a las 5:30 con el día empezando a las 6:30).
+  Recortar habría hecho dos daños: un bloque planeado que no se pinta, y una
+  leyenda que deja de sumar lo que se ve (criterio 14). En el caso normal la
+  ventana es exactamente el horario de los ajustes, que es lo que pide el 13.
+
+- **Los restos de menos de 15 minutos no desaparecen.** Es el matiz que el
+  arquitecto confirmó: `MIN_GAP_MINUTES` decide si un hueco **ofrece fichas**,
+  no si existe. Un tramo de 10 min se pinta como una línea fina con sus minutos;
+  si se tragara, «planeado + libre» dejaría de ser el día entero.
+
+- **La exclusión de las fichas se calcula contra `activityDayPlan(date)`, por
+  `activityId` — nunca contra `takenToday`.** Es el error caro que la sección 2
+  señala, y tiene un test con nombre propio: una sugerencia con
+  `takenToday: true` **sigue apareciendo**. El lateral marca «en el plan» con la
+  misma regla.
+
+- **La línea de guía tiene cinco formas, no cuatro.** Las cuatro que pide el
+  criterio 15 (sin plan, lleno, terminado y el caso normal) más una quinta que
+  apareció mirando el arnés a las 22:59: sin hueco **por delante** no es lo
+  mismo que sin hueco **en todo el día**, y decir «el día está completo» en un
+  día con la tarde libre habría sido falso.
+
+- **Nada de «vacío».** El criterio 15 escribe el ejemplo «la tarde está vacía de
+  13:30 a 19:00»; la frase que se compone dice **«Tu hueco más grande va de
+  13:30 – 19:00 · 5h 30»**, porque el criterio 56 manda que un tramo sin nada se
+  llame **libre**. Hay un test que pasa las cinco formas por
+  `/desperdici|perdiste|fallaste|cancelar|eliminar|vacío|vacía/i`.
+
+- **El tic es de 60 s y el `setState` del primer refresco va por
+  `setTimeout(0)`.** Llamarlo en el cuerpo del efecto encadena renders y el
+  linter de este repo lo marca (`react-hooks/set-state-in-effect`): era un error
+  nuevo sobre la línea base. `useRemainingDayTimer` (tic de 1 s, `DAY_END_TIME`
+  dentro del código) **no vuelve**, como mandaba el plan.
+
+- **Dos tests ajenos tocados, los dos por la misma razón y ninguno por
+  comodidad:**
+  - `vida.routes.test.tsx` afirmaba «`/app/vida/hoy` sigue siendo un cascarón:
+    nada más que el título». Era una afirmación de **F0** que el criterio 11
+    deroga. Se saca `hoy` de esa lista —`plantilla` y `revision` siguen— y en su
+    lugar hay un caso que comprueba lo que ahora sí es verdad: sin sesión, la
+    pantalla enseña el título y la vía para entrar (criterio 51).
+  - `AppLayout.test.tsx` montaba `vidaRoutes` **de verdad** porque las páginas de
+    Vida eran un `<h1>`. Ahora Hoy cruza tres consultas y llega a
+    `useAuthBootstrap`, que ese arnés no monta: reventaba con
+    «useAuthBootstrap must be used within AuthBootstrapProvider». Se mockean
+    `useVidaQueryGuard` (en `false`) y `useUserSettings` (consulta
+    deshabilitada), igual que ya hacía `vida.routes.test.tsx` desde la tajada 1.
+    **No se cambió ninguna aserción de ese test**: los cuatro casos son los
+    mismos.
+
+- **Dos arreglos de contraste hechos con el medidor delante, no de oído:** la
+  píldora «Ahora» usaba `--aura-ring-to`, que en tema oscuro se aclara a
+  `#a78bfa`, y el texto blanco encima caía a **2,7:1**. Se pinta con violeta
+  fijo `#7c3aed` (es un chip opaco: el tema de alrededor no la afecta) → **5,7:1
+  en los dos temas**, y sigue siendo inconfundible con el mint de «planeado»
+  (criterio 55). `--color-surface` tampoco servía de texto: en Aura es blanco al
+  45 %. Y la hora de la marca va en `--color-text`: el violeta sobre el lienzo
+  claro se quedaba en 3,7:1.
+
+- **Nada de lo prohibido:** ni normalizador de texto nuevo, ni arreglo de
+  `Popover`, ni `--color-text-muted` —todo lo que hay que leer usa
+  `--color-text-secondary`—, ni iconos importados a pelo de Font Awesome, ni
+  clave de caché nueva, ni mutación nueva, ni un solo componente de `shared/ui`
+  creado. Y **ni un control que escriba**: esta pantalla, hoy, no llama a
+  ninguna mutación.
+
+**Verificación**
+
+Línea base (antes de empezar, los tres enteros):
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)
+pnpm test       → Test Files 1 failed | 80 passed (81) · Tests 2 failed | 706 passed (708)
+                  (SearchSelect ×2, preexistentes)
+```
+
+Al cerrar:
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   (los mismos 14)
+pnpm test       → Test Files 1 failed | 83 passed (84) · Tests 2 failed | 759 passed (761)
+                  (los mismos 2 de SearchSelect; +53 tests nuevos, 0 fallos nuevos)
+pnpm build      → index 877,89 kB · app-icons 620,20 kB (perezoso) · IconPicker 4,64 kB
+```
+
+El chunk inicial pasa de **861,01 kB a 877,89 kB (+16,9 kB)**: la pantalla, los
+cuatro componentes y la aritmética. **No crece por iconos** — `app-icons` sigue
+en 620,20 kB perezoso y `IconPicker` en 4,64 kB (criterio 57).
+
+Arnés temporal (`src/harness-feat003-t2/`, `.html` + `.tsx`, `MemoryRouter`,
+datos sintéticos, **borrado**; `git status` ya no lo lista) servido por el Vite
+del usuario en `http://localhost:5173`. Cinco días sintéticos con el reloj
+inyectado: con plan a las **9:24**, a las **6:30** (borde izquierdo), a las
+**22:59** (borde derecho), **sin plan** y **sin plan ni plantilla**. Un nombre de
+63 caracteres («Revisar el correo y contestar lo que quedó pendiente de ayer») y
+otro de 54 en una ficha.
+
+- **375 px:** `document.documentElement.scrollWidth` **375** = `clientWidth`
+  **375** en toda la página, con los cinco días montados. Lo único que excede su
+  caja son los nombres con `text-overflow: ellipsis`, que es como truncan.
+- **La marca de «ahora»**, leída del DOM: `left` **0 %** a las 6:30, **17,58 %**
+  a las 9:24 y **99,9 %** a las 22:59 (criterio 13).
+- **La leyenda cuadra con la agenda:** «planeado 4h 10 · libre 12h 20» = 990 min
+  = el día de 6:30 a 23:00.
+- **Escritorio (1024 px):** `grid-template-columns: 641px 320px`; el lateral
+  marca «en el plan» exactamente en la actividad que está en el plan.
+
+Contrastes medidos en el DOM componiendo el alfa de cada capa (AA pide 4,5:1):
+
+| Qué | Claro | Oscuro |
+|---|---|---|
+| Leyenda «planeado 4h 10» | 7,58:1 | 9,05:1 |
+| «te quedan 13h 36» | 17,85:1 | 17,11:1 |
+| Línea de guía | 17,85:1 | 17,11:1 |
+| «Libre 6:30 – 7:00» | 7,97:1 | 13,77:1 |
+| Tamaño del hueco («30m») | 6,78:1 | 9,94:1 |
+| Duración de una ficha | 7,21:1 | 9,05:1 |
+| «De tu plantilla de viernes…» | 6,78:1 | 9,94:1 |
+| Resto fino («Libre 7:20 – 7:30 · 10m») | 7,58:1 | 9,94:1 |
+| Duración del bloque | 7,58:1 | 9,05:1 |
+| «· en 36 min» | 8,90:1 | 12,55:1 |
+| Píldora «Ahora» | 5,70:1 | 5,70:1 |
+| «en el plan» del lateral | — | 12,82:1 |
+
+**Criterios que cierra, uno por uno**
+
+- **11 — cerrado.** `/app/vida/hoy` ya no es `<PageHeader title="Hoy" />`.
+  Test: con plan se ven el presupuesto y los bloques, y el primero de la lista
+  es el de las 8:00 aunque llegue el segundo en el array. `buildDayAgenda` ordena
+  por `startTime` y desempata por `orderIndex`; hay test propio.
+- **12 — cerrado.** «Viernes 18 · 9:24» y «te quedan **13h 36** hasta las 23:00»
+  con el reloj a las 9:24 y el fin en 23:00. Test con temporizadores falsos:
+  al avanzar 60 s pasa a **13h 35** sin recargar y sin volver a montar.
+- **13 — cerrado.** Test puro: los anchos de las entradas suman **100 %** con
+  diez decimales de tolerancia, y `nowPercent` es **0** a la hora de inicio,
+  **100** a la de fin y **50** en el medio exacto. Medido también en el DOM del
+  arnés (0 % / 17,58 % / 99,9 %).
+- **14 — cerrado.** La leyenda escribe «planeado 2h 15» y «libre 14h 15» como
+  **texto**, no en un `title`; `plannedMinutes + freeMinutes === dayMinutes` y
+  los dos salen de la **misma** lista que pinta la agenda. Por eso los restos
+  de menos de 15 min se siguen pintando.
+- **15 — cerrado.** Cinco formas con test cada una: día sin plan, día lleno, día
+  terminado, «ya no queda hueco por delante» y el caso normal, que nombra
+  «2 bloques · 1h» y «13:30 – 23:00». Ninguna pasa el filtro de palabras de
+  reproche.
+- **16 — cerrado.** Cada bloque pinta hora, cápsula con el icono y el color de
+  la categoría, nombre y `endTime − startTime` («45 min», «1 h»). El primero que
+  no ha empezado dice «· en 36 min»; test de `findNextBlockId` para los tres
+  casos (antes, en medio, después).
+- **17 — cerrado.** Test: con dos bloques salen **tres** huecos —antes del
+  primero, entre ellos y después del último— de 90, 75 y 720 min, con la hora de
+  inicio y la de fin de los ajustes como bordes. En pantalla, «Libre 10:30 –
+  13:00» con «2h 30» al otro lado.
+- **18 — cerrado en su parte de contenido; la mitad que es «+ otra cosa» va con
+  el criterio 24, en la tajada 3.** Solo se ofrece lo que cabe (una de 4 h no
+  entra en 2h 30), se excluye por `activityId` lo que ya está en el plan, se
+  ven **como mucho 3** y se dice cuántas quedan fuera. Cinco tests, incluido el
+  de que `takenToday` **no** excluye.
+- **19 — cerrado.** Una sugerencia sin duración no se filtra por tamaño, va
+  **al final** y se lee **«sin duración»**. Lo de «al tocarla abre la hoja» es el
+  criterio 25 y llega en la tajada 3, donde la ficha se vuelve pulsable.
+- **20 — cerrado.** La marca «Ahora» se pinta una vez, justo antes del primer
+  tramo que no ha empezado, y la página hace `scrollIntoView({ block: 'center' })`
+  **una sola vez** al montar. Test: se llama con ese argumento y «Bañarme», que
+  es de las 8:00 y queda por encima, **sigue en el documento** — no se pliega
+  nada.
+- **21 — cerrado en su mitad de texto, como dejó escrito el arquitecto.** Sin
+  plan: «Aún no hay plan para hoy. Tu plantilla trae 2 cosas los viernes», el
+  día entero es un hueco («Libre de 6:30 – 23:00») y no se reprocha nada. Sin
+  plantilla y sin plan: no hay fichas vacías, se lee «Tu plantilla todavía no
+  trae nada para este día» y hay enlace a `/app/vida/actividades`. **El botón
+  «Armar desde la plantilla» no se pinta** y hay un test que lo afirma: llegaría
+  muerto. Cierra en la tajada 5.
+- **22 — cerrado.** Test que busca «empezar», «terminar», «en marcha», «fuera
+  del plan» y «hecho» en toda la pantalla: ninguno aparece, ni como texto ni
+  como botón. La pantalla no llama a ninguna mutación.
+- **48 — cerrado en su mitad «Tu plantilla de \<día\>».** El lateral lista la
+  plantilla del día y marca «en el plan» lo que ya está; test con una que sí y
+  una que no. **No** trae el botón de ponerla en el primer hueco (es una
+  mutación: tajada 3) ni el bloque «Mañana» (tajada 5) ni «Cómo va el día» (D8).
+- **49 — cerrado.** La fecha sale de `getCurrentLocalDate()` y el día de la
+  semana de `getVidaDayOfWeek`, que parte la cadena a mano en vez de dejar que
+  `new Date` la lea en UTC. Test: `parseYmdToLocalDate('2026-09-18').getDate()`
+  es **18**.
+- **50 — cerrado.** Con cualquiera de las tres consultas en vuelo se ve el
+  esqueleto y **no** aparece «Aún no hay plan» ni ningún «Libre». Con los
+  **ajustes** en vuelo tampoco se pinta «te quedan»: dos tests separados.
+- **51 — cerrado.** Con las tres deshabilitadas (`isPending` +
+  `fetchStatus: 'idle'`) se lee «Entra para ver tu día» con el enlace a
+  iniciar sesión, y **no** hay esqueleto. Además, el test de rutas lo comprueba
+  con el guard real en `false`.
+- **52 — cerrado.** Si falla el plan: «No pudimos cargar tu día» con
+  «Reintentar», que llama a `refetch`. Si falla **solo** la plantilla: un aviso
+  que **nombra qué falta** («No pudimos cargar lo que trae tu plantilla») y la
+  agenda se pinta igual. Dos tests.
+- **53 — cerrado en lo que toca esta tajada.** 375 px sin scroll horizontal con
+  los cinco días montados. La tira de días y la hoja son de las tajadas 4 y 3.
+- **54 — cerrado.** Un nombre de 63 caracteres trunca con elipsis en el bloque,
+  en la ficha del hueco y en el lateral, y no produce scroll horizontal.
+- **55 — cerrado.** Tabla de contrastes de arriba, en los dos temas, con la
+  píldora «Ahora» arreglada. El tramo «planeado» (mint sólido), el tramo
+  «libre» (mint al 18 %) y la marca (violeta) se distinguen en claro y en
+  oscuro.
+- **56 — cerrado.** Test de la pantalla contra
+  `/desperdici|perdiste|fallaste|cancelar|eliminar/i` y test de las cinco formas
+  de la guía, que además excluye «vacío/vacía». Un tramo sin nada es **libre**;
+  un día sin plan se describe, no se reprocha.
+- **57 — cerrado.** Los cuatro números de arriba. Ningún documento GraphQL
+  nuevo: esta tajada no toca `graphql/`.
+
+**Lo que NO pude verificar**
+
+- **El recorrido real (criterio 58).** Está detrás del login, **los agentes no
+  entran con credenciales**, y además el API desplegada en Cloud Run puede no
+  llevar `15463da`: sin ella, `vidaSuggestionsForDate` no devuelve
+  `durationMinutes` y **todas las fichas de los huecos se leerían «sin
+  duración»**. Eso no sería un fallo de esta tajada. Pasos al final.
+- **Que `scrollIntoView` deje la marca en el centro de verdad.** En el test es
+  un espía y en el arnés la página no tiene el scroll de la app. La llamada y su
+  argumento están comprobados; el efecto visual lo ve el usuario.
+- **El rendimiento con un día de treinta bloques.** El arnés llegó a siete.
+- **El tema del navegador del usuario.** Los contrastes se midieron forzando
+  `data-theme` a `light` y a `dark` sobre el arnés, no con la preferencia real
+  del sistema.
+
+**Riesgos — dónde mirar primero**
+
+1. **Cualquier test que monte `vidaRoutes` sin proveedor de sesión.** Hoy ya
+   consulta, así que `useAuthBootstrap` tiene que existir o estar mockeado. Ya
+   pasó dos veces (rutas de Vida en la tajada 1, `AppLayout` en esta). Si
+   aparece un tercer arnés, el síntoma es exactamente «useAuthBootstrap must be
+   used within AuthBootstrapProvider».
+2. **`useVidaDayHours` ganó `refetch`.** Todo mock del hook tiene que traerlo;
+   el typecheck lo caza, pero una rama abierta chocará.
+3. **La ventana de la barra se estira con bloques fuera del horario.** Es
+   deliberado y está probado, pero es la regla menos obvia del archivo: si
+   alguna vez la leyenda no cuadra con lo que se ve, empezar por `windowStart` /
+   `windowEnd`.
+4. **Los porcentajes se calculan con `dayMinutes` del `budget` y los anchos con
+   el mismo número en la página.** Son dos sitios; si alguien cambia uno y no el
+   otro, la barra deja de sumar 100 % **sin que ningún test puro lo note** (el
+   test mide la aritmética, no el `style`).
+5. **`suggestionsForGap` se llama una vez por hueco en cada pintado.** Con la
+   plantilla de un día normal es trivial, pero no está memorizado: si la tajada 3
+   añade estado que repinte a menudo, ahí es donde se nota.
+6. **La píldora «Ahora» lleva un color fijo (`#7c3aed`)**, el único valor
+   literal de esta tajada. Si algún día la paleta violeta cambia, este sitio no
+   se entera solo.
+
+**Lo que descubrí y no toqué** (no es de esta tajada)
+
+- **`ActivityDayPlanItem.activity.category` ya trae icono y color**, así que la
+  agenda no necesita `useActivityCategoriesQuery`. El catálogo sí lo necesita
+  por otra razón (agrupa por categoría), pero conviene saberlo antes de añadir
+  consultas en las tajadas 3 y 4.
+- **`vidaSuggestionsForDate` no dice si el ítem tiene actividad archivada.** Se
+  filtra por `isActive` del `VidaItem`, que es lo que hay; si alguien archiva la
+  actividad sin desactivar el ítem, la ficha seguiría ofreciéndose. No se ha
+  visto ocurrir —`useArchiveActivity` desactiva el ítem— pero queda anotado.
+- **`ActivityDayPlanItem.completedAt` sigue sin usarse**, como mandaba el
+  «fuera de alcance». La agenda lo ignora por completo.
+- Sigue abierto, de FEAT-002: cuatro copias del normalizador de texto y
+  `--color-text-muted` en 2,39:1. **Aquí ninguna de las dos crece.**
+
+**Pasos del recorrido manual** (usuario, con sesión y **con el API desplegada**)
+
+1. En `/app/vida/actividades`, comprobar que al menos tres cosas de la plantilla
+   de **hoy** tengan hora y duración (tajada 1). Si no las tienen, las fichas de
+   los huecos dirán «sin duración» — y eso es correcto, no un fallo.
+2. Ir a `/app/vida/hoy`. Arriba: la fecha y la hora, «te quedan Xh YY hasta las
+   23:00», la barra con la marca de «ahora» en su sitio, la leyenda y una línea
+   de guía que nombre números que se puedan comprobar mirando la agenda.
+3. Dejar la pantalla abierta **un minuto**: el «te quedan» tiene que bajar solo.
+4. Comprobar que la pantalla **abre a la altura de «Ahora»** y que subiendo se
+   ve lo de antes.
+5. Mirar un hueco: sus horas, su tamaño y hasta tres cosas de la plantilla que
+   **quepan** ahí. Lo que ya esté en el plan **no** debe aparecer.
+6. Comprobar que **no hay ningún botón de empezar, terminar ni cronómetro**, y
+   que ninguna ficha hace nada al tocarla (eso llega en la tajada 3).
+7. En escritorio, el lateral «Tu plantilla de \<día\>» con «en el plan» en lo
+   que ya está puesto.
+8. Un día sin plan (si hoy lo tiene, se ve mejor tras la tajada 4): el día
+   entero como un hueco, «Aún no hay plan para hoy» y cuántas cosas trae la
+   plantilla. **Sin botón de armar todavía.**
+9. A 375 px y en tema oscuro: sin scroll horizontal y todo legible.
+
+**Estado del árbol: sin commitear.** El arnés temporal está borrado.
+`graphify update .` corrido (2.882 nodos, 3.130 aristas).
+
+#### Tajada 2 — respuesta a la devolución (2ª entrega)
+
+**Resumen para el revisor:**
+1. **El defecto está arreglado donde tenía que estarlo: en la aritmética pura.**
+   La marca de «ahora» dejó de decidirse en la página y ahora la coloca
+   `buildDayAgenda`, que **parte el hueco que contiene al reloj** y mete una
+   entrada `kind: 'now'` en medio. Existe siempre que `dayStart ≤ ahora ≤
+   dayEnd`; fuera de esa franja no hay marca, y eso también está dicho en un
+   test. Los tres casos que mediste en 0 marcas dan 1, con su `scrollIntoView`.
+2. **Los cuatro hallazgos baratos, cerrados**: la barra ya no rebasa el 100 %
+   con bloques pisados, un hueco empezado ofrece solo lo que le queda, «en 920
+   min» se lee «en 15 h 20 min», y a las 23:30 desapareció el «te quedan 0m».
+3. **Lo que más probablemente rompí esta vez:** `AgendaEntry` tiene ahora **tres
+   variantes** (`block` · `gap` · `now`), así que cualquier `switch`/ternario que
+   asuma dos —el de la barra del presupuesto y el de la agenda ya están
+   arreglados— se comerá la marca o la pintará como si fuera un tramo. Y
+   `AgendaGap` ganó `trackMinutes` e `isPast`: **todo fixture de hueco tiene que
+   traerlos** (el typecheck lo caza, y ya obligó a tocar el `gapOf` del test).
+
+**Qué cambió, archivo por archivo**
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/utils/vida-agenda.utils.ts` | `buildDayAgenda` acepta `nowMinutes` y coloca la marca; `withNowMark` / `makeGap` / `nowMark` privadas; `AgendaNowMark` nuevo y `AgendaEntry` con tres variantes; `AgendaBlock.trackMinutes`, `AgendaGap.trackMinutes` e `isPast`; `DayAgenda.hasNowMark`. `getDayBudget` y `buildGuidanceLine` cuentan con `trackMinutes`. `suggestionsForGap` no ofrece nada en un tramo pasado. |
+| `src/features/vida/utils/vida-agenda.utils.test.ts` | **+13 casos** (29 → 42): el bloque entero «la marca de «ahora» (criterio 20)» con los tres casos devueltos, el borde exacto, fuera de horario, dentro de un bloque y «partir no cambia la suma»; más solapes al 100 %, hueco pasado sin fichas y hueco empezado que ofrece por lo que le queda. |
+| `src/features/vida/pages/VidaHoyPage.tsx` | Fuera `markerBeforeId`. `nowMinutes` entra en `buildDayAgenda` (y en las dependencias del `useMemo`); la lista pinta `entry.kind === 'now'`. El aviso de plantilla vacía va al primer hueco **no pasado**. |
+| `src/features/vida/pages/VidaHoyPage.test.tsx` | **+7 casos** (18 → 25): el bloque «la marca de «Ahora» aguanta todo el día», con las 20:00, el bloque único a las 12:00, hoy sin plan, el hueco partido a las 11:30, las 5:00, las 23:30 y «en 15 h 20 min». Dos aserciones existentes se afinaron porque «9:24» y «Libre de 6:30 – 23:00» ya no son únicos: ahora se busca el encabezado por su `id` y las dos mitades del hueco. |
+| `src/features/vida/components/VidaDayBudget/VidaDayBudget.tsx` | La barra usa `trackMinutes` y salta la marca (no es un tramo). Con el día cerrado no escribe «te quedan 0m»: enseña «planeado X de Y». |
+| `src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx` | Un tramo `isPast` se pinta como el resto fino —con sus minutos, para que la leyenda siga cuadrando— y **sin fichas**. |
+| `src/features/vida/components/VidaAgendaBlock/VidaAgendaBlock.tsx` | «en N min» hasta la hora; a partir de ahí, `formatDurationMinutes`. |
+
+**Por qué así**
+
+- **La regla se fue a `vida-agenda.utils.ts` y no se parcheó en la página.** El
+  defecto era exactamente lo que pasa cuando una decisión de geometría vive en
+  el JSX: no tenía test propio y el único que había (9:24, con tres bloques por
+  delante) era el caso en que la regla acertaba. Ahora es una función pura con
+  ocho casos, y la página solo pinta lo que le llega.
+- **El hueco se parte; el bloque no.** Partir el hueco resuelve el criterio 20 y
+  el hallazgo 3 de una vez: la mitad de después es la que ofrece fichas y ya
+  llega con el tamaño que de verdad queda. Partir un **bloque** habría sido
+  contar lo que está pasando —«llevas 20 de 45 min»—, y eso es F3; con el reloj
+  dentro de un bloque la marca va **justo debajo**, como en el render 03.
+- **`trackMinutes` en vez de recortar al 100 %.** Recortar habría escondido el
+  problema; así cada bloque aporta a la barra lo que no pisaba otro, la tarjeta
+  sigue diciendo su duración real, y `planeado + libre = el día` se mantiene
+  como identidad (criterio 14) también con solapes. De paso la **guía** pasó a
+  contar igual: antes decía «2 bloques · 4h» donde la leyenda decía «planeado
+  3h».
+- **Los tramos pasados no desaparecen.** Se siguen pintando con sus minutos,
+  porque si no la leyenda dejaría de cuadrar con lo que se ve; lo que pierden es
+  la oferta de fichas. Es la misma regla que ya tenían los restos de < 15 min.
+- **«en N min» solo hasta la hora.** El criterio 16 pide literalmente «en N
+  min» y eso es lo que se lee en el caso que describe (el bloque que viene
+  ahora). Más allá de 60 min se usa el formateador largo que ya existía. Lo digo
+  porque es una lectura del criterio, no un capricho.
+- **Los dos violetas (tu hallazgo 1) los dejo como están.** Unificar pide un
+  token nuevo (`--aura-now`) en `_theme-variables.scss`, que es tocar el sistema
+  de diseño para todo el repositorio: tiene su propia decisión y su propio
+  render, y no la tomo dentro de una devolución. Queda anotado.
+
+**Verificación**
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   (los mismos 14)
+pnpm test       → Test Files 1 failed | 83 passed (84) · Tests 2 failed | 779 passed (781)
+                  (los mismos 2 de SearchSelect; +20 tests sobre la 1ª entrega)
+pnpm build      → index 878,72 kB · app-icons 620,20 kB (perezoso) · IconPicker 4,64 kB
+```
+
+877,89 → **878,72 kB** (+0,8 kB). `app-icons` e `IconPicker` intactos.
+
+Arnés temporal (`src/harness-feat003-t2/`, **borrado**; `git status` no lo
+lista) con cinco días sintéticos y el reloj inyectado. Leído del DOM:
+
+| Caso | Marcas «Ahora» | Suma de anchos | Encabezado |
+|---|---|---|---|
+| Ahora **20:00**, último bloque a las 13:00 | **1** | 100,000 % | «te quedan 3h hasta las 23:00» |
+| Ahora **11:30**, en medio de un hueco | **1** | 100,000 % | «te quedan 11h 30 hasta las 23:00» |
+| **Hoy sin plan**, ahora 9:24 | **1** | 100,000 % | «te quedan 13h 36 hasta las 23:00» |
+| Ahora **23:30** (cerrado) | **0** | 100,000 % | «planeado 2h 5 de 16h 30» — **sin «te quedan 0m»** |
+| Bloques pisados 8–10 y 9–11 | 0 (no es hoy) | **100,000 %** (antes 106,06 %) | «planeado 3h de 16h 30» |
+
+Y en el mismo arnés, a 375 px: `scrollWidth` **375** = `clientWidth`; el hueco
+de las 11:30 aparece partido en «Libre 9:45 – 11:30 · 1h 45» (sin fichas) y
+«Libre 11:30 – 13:00 · 1h 30» (con las que caben en 1h 30). Contraste del tramo
+pasado: **7,58:1** en claro y **9,94:1** en oscuro; la píldora «Ahora» sigue en
+5,70:1 en los dos temas.
+
+**Los cinco hallazgos, uno por uno**
+
+- **1 — dos violetas en oscuro: NO arreglado, a propósito.** Pide un token nuevo
+  en el sistema de diseño; es una decisión con alcance fuera de esta tajada.
+- **2 — la barra rebasaba el 100 % con solapes: cerrado.** `trackMinutes`. Test
+  puro que comprueba los anchos, la identidad `planeado + libre = día` y que la
+  tarjeta sigue diciendo 120 min mientras la barra cuenta 60.
+- **3 — el hueco empezado ofrecía de más: cerrado.** Al partirse por «ahora», la
+  mitad de después mide lo que queda; y un tramo pasado no ofrece nada. Dos
+  tests, uno de ellos con una sugerencia de 2 h que deja de caber en el resto de
+  1h 30.
+- **4 — «en 920 min»: cerrado.** «en 15 h 20 min», con test de pantalla.
+- **5 — «te quedan 0m»: cerrado.** Con el día cerrado se lee «planeado 2h 5 de
+  16h 30» y la guía sigue diciendo «Tu día se cerró a las 23:00». Test.
+
+**Lo que descubrí de paso y NO toqué**
+
+- **`formatDurationFromMinutes(125)` da «2h 5», no «2h 05».** Se ve ahora que el
+  encabezado enseña totales cualesquiera. Es el formateador de la **tajada 1**,
+  ya aceptado y con sus tests; cambiarlo tocaría una tajada cerrada por un
+  detalle tipográfico. Queda anotado.
+- **`findLargestGap` sigue recortando por «ahora»** aunque con los huecos ya
+  partidos el recorte casi nunca haga falta. Lo dejo: es la red por si alguien
+  llama a la guía con una agenda construida sin `nowMinutes`.
+
+**Criterio 20 — por qué ahora sí**
+
+La marca ya no depende de que quede algo por empezar: depende solo de que el
+reloj caiga dentro del día. Tests puros para ahora **después del último
+bloque**, ahora **en medio de un hueco entre bloques**, **hoy sin plan**, ahora
+**dentro de un bloque**, los dos **bordes exactos** (`dayStart` y `dayEnd`) y
+**fuera del horario** (5:00 y 23:30, sin marca) — más tres tests de pantalla que
+comprueban que en los tres casos devueltos se pinta «Ahora» y se llama a
+`scrollIntoView({ block: 'center' })`.
+
+**Estado del árbol: sin commitear.** El arnés temporal está borrado.
+`graphify update .` corrido (2.890 nodos, 3.144 aristas).
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — La plantilla con hora y duración, y los ajustes de Vida
@@ -1333,3 +1819,288 @@ tajada 1 de la sección 3, `docs/features/PROTOCOL.md`,
 `git show 15463da:…` en `~/Developer/xavi-platform-node`, y un arnés de revisión
 propio de 7 casos ya borrado.*
 
+
+### Tajada 2 — La agenda del día, en solo lectura
+
+**Veredicto: `returned`.** El criterio 20 no se cumple en la mayor parte del
+día: la marca «Ahora» —y con ella el `scrollIntoView`— **solo existe si queda
+alguna entrada de la agenda que empiece después de ahora**. En cuanto «ahora»
+cae dentro de la última entrada (el hueco que sigue al último bloque), no se
+pinta ninguna marca y la pantalla no abre en ningún sitio. Medido, no deducido.
+Todo lo demás de la tajada está bien hecho y bien probado: lo que se devuelve es
+una regla de una línea en `VidaHoyPage.tsx:159-162`, no la tajada entera.
+
+**Criterios, uno por uno** (contra la sección 1, literal)
+
+| # | Estado | Evidencia con la que lo cerré |
+|---|---|---|
+| 11 | cumplido | `VidaHoyPage.tsx` sustituye el cascarón; `buildDayAgenda` ordena por `startTime` y desempata por `orderIndex` (`vida-agenda.utils.ts:108`), con test propio y test de pantalla. |
+| 12 | cumplido | Test con temporizadores falsos (13h 36 → 13h 35 al avanzar 60 s) y `useVidaNowMinute` con tic de 60 s, probado en sus 3 casos. En mi arnés: a las 5:00 «te quedan 18h hasta las 23:00» (antes del inicio, literal correcto) y a las 23:30 «te quedan 0m». |
+| 13 | cumplido | Test puro: anchos al 100 % y `nowPercent` 0 / 50 / 100. **Salvedad medida** (hallazgo 2): con bloques solapados los anchos suman 106,06 %. |
+| 14 | cumplido | Leyenda como texto real, y `plannedMinutes`/`freeMinutes` salen de la misma lista que pinta la agenda (`getDayBudget:170-189`). Verificado en mi arnés con la ventana estirada: «planeado 1h 35 · libre 16h 45» = 5:30–23:50. |
+| 15 | cumplido | Cinco formas, cada una con test; leí las cinco cadenas (`vida-agenda.utils.ts:233-275`): ninguna reprocha, ninguna dice «vacío». La quinta («ya no queda hueco por delante») es correcta y necesaria. |
+| 16 | cumplido | Hora, cápsula de categoría, nombre, `endTime − startTime` y «en N min» con `findNextBlockId` probado en los tres casos. Hallazgo 4 sobre la legibilidad de «en 920 min». |
+| 17 | cumplido | Test de los tres huecos (antes del primero, entre bloques, después del último) con los bordes del horario. Los restos < 15 min se pintan finos: desviación declarada y coherente con el 14. |
+| 18 | cumplido en su mitad de contenido | Filtra por `durationMinutes` del ítem, excluye por `activityId` contra el plan —**no** por `takenToday`, con test con nombre propio— y tope de 3 con el resto contado. «+ otra cosa» se aplaza a la tajada 3: es el mismo recorte que el arquitecto dejó escrito para el 21, y va dicho en la sección 3. Hallazgo 3 sobre el hueco que ya empezó. |
+| 19 | cumplido | Sin duración: no se filtra por tamaño, va al final y se lee «sin duración» (test). La mitad «al tocarla abre la hoja» es el criterio 25, tajada 3. |
+| **20** | **NO cumplido** | Ver abajo. |
+| 21 | cumplido en su mitad de texto | Tests de «Aún no hay plan… Tu plantilla trae 2 cosas los viernes», del día entero como un hueco y del enlace al catálogo sin plantilla. El botón no se pinta, como mandaba el recorte del arquitecto. |
+| 22 | cumplido | Test que busca empezar/terminar/en marcha/fuera del plan/hecho; y la pantalla no invoca ninguna mutación (lo comprobé leyendo los cuatro componentes: ninguno importa un hook de mutación). |
+| 48 | cumplido en su mitad | `VidaTemplateAside` lista la plantilla del día y marca «en el plan» por `activityId`; sin «Cómo va el día» (D8). |
+| 49 | cumplido | `getCurrentLocalDate` + `getVidaDayOfWeek`/`parseYmdToLocalDate`, que parten la cadena a mano; test del día 18. |
+| 50 | cumplido | Dos tests separados (cualquier consulta en vuelo, y los ajustes en vuelo): esqueleto y ni «Aún no hay plan» ni «Libre». |
+| 51 | cumplido | Test de pantalla con las tres deshabilitadas y test de rutas con el guard **real** en `false`: «Entra para ver tu día» y enlace, sin esqueleto. |
+| 52 | cumplido | Error del plan → «No pudimos cargar tu día» + «Reintentar» que llama a `refetch` de las tres; fallo parcial → aviso que nombra qué falta. Dos tests. |
+| 53 | **queda en comprobación manual** | No lo volví a medir en un navegador real. Lo que sí hice: revisar los cuatro `.module.scss` y la página — `min-width: 0` en todos los contenedores, `text-overflow: ellipsis` en los tres textos largos, sin un solo ancho fijo en `px` y el lateral solo a partir de `@media (min-width: 64rem)`. Estructuralmente no puede desbordar a 375 px, y coincide con el `scrollWidth 375` que midió el constructor. |
+| 54 | cumplido | Mismo razonamiento estructural + la medida del constructor con un nombre de 63 caracteres. |
+| 55 | cumplido, con hallazgo | La tabla de contrastes del constructor es creíble y está medida capa a capa. Hallazgo 1: en oscuro la marca de la barra y la píldora «Ahora» acaban siendo **dos violetas distintos**. |
+| 56 | cumplido | Tests de pantalla y de las cinco formas de la guía contra `/desperdici\|perdiste\|fallaste\|cancelar\|eliminar\|vacío\|vacía/i`; además leí las cadenas a mano. Un tramo sin nada es **libre**. |
+| 57 | cumplido en lo que corrí yo | `pnpm typecheck` limpio · `pnpm lint` **14 errores / 0 warnings** · `pnpm test` **2 fallos de 761** (los dos de `SearchSelect`), corridos enteros por mí. El `pnpm build` **no lo repetí**: me quedo con los 877,89 kB del constructor y con que `app-icons` sigue en 620,20 kB perezoso — ningún archivo nuevo importa de `@fortawesome/free-solid-svg-icons` (lo comprobé). Ningún documento GraphQL nuevo. |
+| 58 | **pendiente del usuario** | Detrás del login y además necesita la API desplegada. No se toca. |
+
+**El criterio 20, con el detalle de cómo lo medí**
+
+La marca se decide en `VidaHoyPage.tsx:159-162`:
+
+```tsx
+const markerBeforeId =
+  nowMinutes === null
+    ? null
+    : (agenda.entries.find((entry) => entry.startMinutes > nowMinutes)?.id ?? null)
+```
+
+Si ninguna entrada **empieza** después de ahora, `markerBeforeId` es `null`: no
+se pinta la fila de «Ahora», `nowRef` nunca se asigna y el efecto del
+`scrollIntoView` sale por `if (!node) return`. Arnés temporal propio
+(`src/features/vida/pages/VidaHoyPage.revisiontmp.test.tsx`, mismos mocks que el
+test del constructor, **ya borrado**):
+
+| Caso | Marcas «Ahora» | `scrollIntoView` |
+|---|---|---|
+| Plan de tres bloques (8:00, 10:00, 13:00), ahora **20:00** | **0** | **0** |
+| Un solo bloque 8:00–8:45, ahora **12:00** | **0** | **0** |
+| **Hoy sin plan** (criterio 21), ahora 9:24 | **0** | — |
+| Plan de tres bloques, ahora 11:30 | 1 | 1 |
+
+El criterio dice «cuando el día mostrado es **hoy** y la hora actual cae
+**dentro del día**». A las 20:00 de un día de 6:30 a 23:00 la hora cae dentro
+del día y no hay nada que enseñar ni a dónde abrir. No es un borde raro: es
+**toda la franja posterior al último bloque** —con el plan del propio test del
+constructor, de las 14:00 a las 23:00, nueve horas— y **el día sin plan entero**,
+que es justamente el estado que el criterio 21 obliga a cuidar en esta tajada.
+El test existente del criterio 20 usa las 9:24 con tres bloques por delante, que
+es el único caso en que la regla acierta.
+
+**Resultado esperado:** que la marca exista siempre que `dayStart ≤ ahora ≤
+dayEnd`, cayendo **dentro** de la entrada que contiene a «ahora» (partir el
+hueco en pasado/futuro, o anclarla dentro del hueco) y no solo antes de la
+siguiente. Con el hueco partido se arregla de paso el hallazgo 3. Y un test por
+cada uno de los tres casos de la tabla.
+
+**Qué miré alrededor (regresiones)**
+
+- **`git diff --stat HEAD -- src/`**: seis archivos modificados —
+  `useVidaDayHours.ts`, `VidaHoyPage.tsx`, `vida.routes.test.tsx`,
+  `vida-date.utils.ts(.test)` y `AppLayout.test.tsx` — más las carpetas nuevas.
+  **FEAT-002 (catálogo, hoja, tarjeta, `VidaActividadesPage`) y la tajada 1 (la
+  hoja con hora y duración, `VidaAjustesPage`, el SDL, `planVidaItemSave`) no se
+  tocan**: no hay por dónde romperlos, y sus tests siguen verdes en la corrida
+  entera.
+- **`graphify explain "useUserSettingsQuery"`** → lo consumen `useVidaDayHours`
+  y `SettingsPage`, y nadie más; `AppLayout` **no** lo usa. Por eso el mock
+  nuevo de `useUserSettings` en `AppLayout.test.tsx` no puede tapar nada de la
+  barra: solo afecta a la página de Vida que ese arnés monta debajo. Abrí el
+  diff entero de ese test: **no se borró ni se cambió ninguna aserción**, solo
+  se añaden dos `vi.mock` y se corrige un comentario. Los cuatro casos de la
+  barra siguen midiendo lo mismo.
+- **`vida.routes.test.tsx`**: se saca `hoy` de la lista de «sigue siendo un
+  cascarón» —una afirmación de F0 que el criterio 11 deroga— y en su lugar entra
+  un caso que comprueba el criterio 51 con el guard **real** en `false`.
+  `plantilla` y `revision` siguen cubiertas. Cambio correcto y bien argumentado.
+- **`useVidaDayHours` ganó `refetch`**: su único consumidor aparte de la agenda
+  es `VidaAjustesPage` (tajada 1); `pnpm typecheck` limpio y sus tests verdes.
+- **Hábitos y `layouts`**: el diff no toca una línea de producto fuera de
+  `src/features/vida/`; el único archivo compartido tocado es un **test**.
+- **El arnés del constructor** (`src/harness-feat003-t2/`) **no existe** en el
+  árbol: `git status` no lo lista. Bien borrado.
+
+**Estados**
+
+Cubiertos y probados: **sin datos** (hoy sin plan y sin plan ni plantilla),
+**cargando** (con el matiz de los ajustes en vuelo), **error con reintento**
+(total y parcial, nombrando qué falta), **sin sesión**, **texto largo**.
+**Móvil 375 px y oscuro**: revisados en el código, no vueltos a medir en
+navegador (ver criterio 53). **Permisos** no aplica: en este producto solo hay
+«con sesión» y «sin sesión», y ese está cubierto.
+
+Hallazgos que **no** motivan la devolución (van escritos, no arreglados):
+
+1. **Dos violetas para la misma idea en tema oscuro.** La marca de la barra usa
+   `var(--aura-ring-to, #7c3aed)` (`VidaDayBudget.module.scss:99`), que en
+   oscuro vale **`#a78bfa`** (`_theme-variables.scss:270`), mientras la píldora
+   «Ahora» lleva `#7c3aed` fijo (`VidaHoyPage.module.scss:94`). El literal está
+   justificado —texto blanco encima, 5,7:1— y **no hay hoy un token de violeta
+   sólido para fondo con texto blanco**: el sistema solo tiene el par del
+   anillo. Aceptable, pero deja la barra y la píldora en tonos distintos en
+   oscuro. Lo coherente sería un token nuevo (`--aura-now`) o que la barra use
+   el mismo literal. Nota aparte: el render 03 describe la marca como **roja**;
+   el violeta es una desviación consciente del dibujo, y me parece bien.
+2. **Con bloques solapados la barra rebasa el 100 %.** Medido: dos bloques
+   8:00–10:00 y 9:00–11:00 dan anchos de 9,09 + 12,12 + 12,12 + 72,73 =
+   **106,06 %**. `buildDayAgenda` los pinta bien (no hay hueco negativo) pero
+   `plannedMinutes` los suma dos veces. D4 dice que la web no los crea y la
+   sección «fuera de alcance» los excluye, pero el API los acepta y un cliente
+   futuro podría meterlos. Basta con recortar el solape al sumar `planned`.
+3. **Un hueco que ya empezó se ofrece por su tamaño entero.** A las 11:30, el
+   hueco 10:30–13:00 sigue diciendo «2h 30» y ofrece fichas de hasta 2h 30
+   cuando solo quedan 1h 30. `findLargestGap` sí recorta por «ahora» para la
+   guía; el hueco pintado no. En solo lectura es una imprecisión; en la tajada
+   3, cuando la ficha coloque de verdad, sería un bloque puesto en el pasado.
+4. **«en 920 min».** El criterio 16 pide «en N min» y eso es lo que hace, pero
+   para un bloque lejano se lee mal. Con `formatDurationFromMinutes` ya en casa,
+   «en 15h 20» cuesta una línea.
+5. **«te quedan 0m hasta las 23:00» a las 23:30**, junto a «Tu día se cerró a
+   las 23:00». No reprocha y es literal, pero sobra.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: ninguna clave de
+caché nueva (`useVidaDayData` compone los hooks que ya hay), ninguna mutación,
+ningún componente de `shared/ui`, ningún normalizador de texto, ningún icono
+importado a pelo, y `--color-text-muted` sigue sin usarse. Las dos desviaciones
+declaradas son razonables: el icono y el color salen de
+`item.activity.category`, que **ya viaja en el plan del día** —lo comprobé en
+`activity-day-plan.graphql.ts`—, lo que evita una consulta entera; y las tres
+utilidades nuevas de `vida-date.utils.ts` son de **fecha**, no de hora, así que
+no contradicen la regla de «dónde NO va» (que hablaba de las de hora), aunque sí
+la frase «ninguna utilidad de fecha nueva»: son 31 líneas, hacían falta y están
+en el sitio correcto.
+
+**Lo que no revisé:** el `pnpm build` (me quedo con la medida del constructor),
+el recorrido real (criterio 58, del usuario y con la API desplegada), el efecto
+visual del `scrollIntoView` y el rendimiento con treinta bloques.
+
+---
+
+*Revisado por `feature-reviewer` el 2026-09-20. Fuentes: la sección 1 entera y
+literal, la sección 2 («Dónde va el código», «Lo que NO se crea», «Dónde NO
+va»), la entrada de la tajada 2 de la sección 3, `docs/features/PROTOCOL.md`,
+`docs/features/ENVIRONMENT.md` y su sonda, `git diff HEAD`, `graphify explain`,
+`docs/vida/assets/03-vida-agenda.html`, la corrida entera de `pnpm typecheck` /
+`lint` / `test`, y un arnés de revisión propio de 8 casos bajo
+`src/features/vida/pages/`, ya borrado.*
+
+#### Tajada 2 — segunda revisión (tras la devolución)
+
+**Veredicto: `accepted`.** El criterio 20 se cumple, y se cumple **donde tenía
+que arreglarse**: la marca dejó de ser un ternario del JSX y es una entrada más
+que coloca `buildDayAgenda`. Reproduje mis tres casos y los cuatro hallazgos
+baratos con un arnés propio de 9 casos (mismos mocks que el test de pantalla,
+ya borrado), y volví a correr la línea base entera.
+
+**Los tres casos devueltos, medidos otra vez**
+
+| Caso | Marcas «Ahora» | `scrollIntoView` | Suma de anchos |
+|---|---|---|---|
+| Ahora **20:00**, último bloque 13:00–14:00 | **1** | **1** | 100,000 % |
+| Ahora **11:30**, en medio del hueco 10:30–13:00 | **1** | **1** | 100,000 % |
+| **Hoy sin plan**, ahora 9:24 | **1** | **1** | — |
+| Reloj **dentro** de un bloque (8:10, bloque 8:00–8:45) | **1** | **1** | 100,000 % |
+| Bordes exactos **6:30** y **23:00** | 1 y 1 | — | — |
+| Fuera del horario (**23:30**) | 0 | — | — |
+
+Las filas que devuelve el DOM confirman que el orden no se rompe y que nada
+desaparece. A las 20:00: `… 13:00 Cocinar y almorzar · 14:00 Libre 14:00 – 20:00
+· 6h · **20:00 Ahora** · 20:00 Libre 20:00 – 23:00 · 3h` con sus fichas — el
+tramo de antes sigue ahí, con sus minutos, y sin fichas por pasado. A las 11:30:
+el hueco aparece partido en «Libre 10:30 – 11:30 · 1h» (sin fichas) y «Libre
+11:30 – 13:00 · 1h 30», que ya solo ofrece lo que cabe en 1h 30 — la de 2 h
+desaparece, que era el hallazgo 3. Con el reloj dentro de un bloque, la marca
+queda **justo debajo** del bloque y el bloque no se parte: coincide con el
+render 03 y deja fuera lo que es F3.
+
+**Los cinco hallazgos**
+
+- **2 — cerrado y comprobado.** Bloques 8:00–10:00 y 9:00–11:00: anchos
+  9,09 + 12,12 + 6,06 + 72,73 = **100,000 %** (antes 106,06 %). La leyenda dice
+  «planeado 3h · libre 13h 30» = 990 min = el día entero, la guía dice «2
+  bloques · 3h» —antes se contradecían— y cada tarjeta sigue diciendo su
+  duración real («2 h» las dos). `trackMinutes` es la solución correcta: no
+  recorta lo que se lee, recorta lo que se cuenta.
+- **3 — cerrado.** Medido arriba. Además un tramo ya pasado no ofrece fichas.
+- **4 — cerrado.** «en 15 h 20 min» en un bloque a 920 minutos. La lectura del
+  criterio 16 («en N min» para el bloque que viene ahora, formateador largo más
+  allá de la hora) me parece la correcta y está declarada.
+- **5 — cerrado.** A las 23:30: «planeado 2h 15 de 16h 30», sin «te quedan 0m»,
+  con la guía «Tu día se cerró a las 23:00».
+- **1 — sigue abierto, y estoy de acuerdo en no tocarlo.** Unificar los dos
+  violetas pide un token nuevo en `_theme-variables.scss`, que es el sistema de
+  diseño de todo el repositorio: es una decisión de diseño con su render, no
+  algo que se decida dentro de una devolución. Queda anotado para quien tome esa
+  decisión, junto con que el render 03 describe la marca como roja.
+
+**Criterios re-verificados**
+
+20 **cumplido** (lo de arriba, más ocho casos puros en
+`vida-agenda.utils.test.ts` y tres de pantalla). 13 y 14 **cumplidos ahora sin
+salvedad**: la identidad `planeado + libre = el día` aguanta también con
+solapes, y la guía cuenta con el mismo número que la leyenda. 16, 17, 18 y 12
+**siguen cumplidos** con el comportamiento nuevo (el hueco partido no cambia la
+suma; el «en N min» del bloque que viene sigue en minutos). 15 y 56: volví a
+leer las cinco formas y la frase nueva del día cerrado — ninguna reprocha.
+21 sigue cerrado en su mitad de texto: el aviso de plantilla vacía se movió al
+primer hueco **no pasado**, que es lo correcto. 50, 51 y 52 intactos.
+
+**Qué miré alrededor (regresiones)**
+
+- **`git diff --stat HEAD -- src/`**: exactamente los mismos seis archivos
+  modificados que en la primera entrega (`VidaHoyPage.tsx` pasa de +240 a +243
+  líneas) y las mismas carpetas nuevas. **Ni FEAT-002 ni la tajada 1 tienen una
+  línea de producto tocada**; sus tests siguen verdes en la corrida entera.
+- **Quién usa lo que cambió de forma**: `graphify explain "buildDayAgenda"` y un
+  `grep` de `AgendaEntry|AgendaGap|trackMinutes` sobre `src/` → los consumidores
+  son `VidaHoyPage.tsx`, `VidaDayBudget.tsx`, `VidaAgendaGap.tsx` y el propio
+  test; nada fuera del módulo. La tercera variante de `AgendaEntry` no puede
+  colarse en ningún `switch` ajeno porque no hay ninguno.
+- **El riesgo que el constructor señaló** (un ternario que asuma dos variantes)
+  lo comprobé en los dos sitios: la barra salta la marca —los anchos suman 100 %
+  y la marca se pinta con `left`, no como tramo— y la lista pinta `kind === 'now'`
+  como fila propia.
+- **Línea base, corrida por mí entera**: `pnpm typecheck` limpio · `pnpm lint`
+  **14 errores / 0 warnings** · `pnpm test` **2 fallos de 781**, y los dos son
+  los de `SearchSelect` (lo confirmé corriendo solo ese archivo: 2 de 2 fallan
+  por su cuenta, y es el único archivo rojo de los 84). El `pnpm build` no lo
+  repetí: +0,8 kB sobre la primera entrega, con `app-icons` e `IconPicker`
+  intactos, es coherente con un cambio que no añade dependencias.
+
+**Hallazgos nuevos, ninguno devuelve la tajada**
+
+1. **Con un bloque planeado antes del inicio del día, la barra enseña la marca y
+   la agenda no.** Medido: bloque 5:30–6:00, día de 6:30 a 23:00, reloj a las
+   **5:45** → 0 marcas en la lista pero sí la marca en la barra (`nowPercent`
+   mira la ventana estirada; `buildDayAgenda` mira el horario de los ajustes).
+   Las dos lecturas son defendibles por separado y el criterio 20 habla de
+   «dentro del día», así que la lista tiene razón; lo que chirría es que no digan
+   lo mismo. Es el reverso exacto del defecto que devolví, en un caso mucho más
+   raro.
+2. **Con bloques solapados, la marca puede quedar fuera de orden de reloj**:
+   bloques 8:00–10:00 y 9:00–11:00 con el reloj a las 9:24 dan «8:00 Uno · 9:24
+   Ahora · 9:00 Dos». Los solapes están fuera de alcance (D4) y la barra ya no
+   miente; queda anotado por si la tajada 3 los permite alguna vez.
+3. **«2h 5» en vez de «2h 05»**, que el propio constructor anotó: es el
+   formateador de la tajada 1, ya aceptada. Confirmo que es de allí y que no se
+   toca desde aquí.
+
+**Lo que sigue sin verificarse** (igual que en la primera revisión, y dicho sin
+disimulo): el recorrido real del criterio 58 —detrás del login y además
+necesitado de `15463da` desplegado en Cloud Run—, los 375 px y el tema oscuro en
+un navegador de verdad (mi comprobación es estructural más la medida del
+constructor), el centrado real del `scrollIntoView` y el rendimiento con treinta
+bloques.
+
+---
+
+*Re-revisado por `feature-reviewer` el 2026-09-20. Fuentes: los criterios 11–22,
+48–57 de la sección 1, la entrada «2ª entrega» de la sección 3, el código de
+`vida-agenda.utils.ts` entero, `git diff HEAD`, `graphify explain`, la corrida
+entera de `pnpm typecheck` / `lint` / `test` (+ `SearchSelect` por separado) y
+un arnés de revisión propio de 9 casos bajo `src/features/vida/pages/`, ya
+borrado.*

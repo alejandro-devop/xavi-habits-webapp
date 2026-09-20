@@ -34,9 +34,30 @@ vi.mock('@/shared/icons', async (importOriginal) => ({
 }))
 
 /**
+ * Desde la tajada 2 de FEAT-003, `/app/vida/hoy` ya no es un título: cruza el
+ * plan del día, la plantilla y los ajustes, y los tres llegan al contexto de
+ * sesión por `useAuthBootstrap`, que este arnés no monta. Se deja el guard en
+ * `false` y los ajustes en la consulta deshabilitada; la pantalla pinta
+ * entonces su «sin sesión», que conserva el `<h1>` —lo único que mira este
+ * test, que es de la barra y no de lo que hay debajo—.
+ */
+vi.mock('@/features/vida/hooks/useVidaQueryGuard', () => ({
+  useVidaQueryGuard: () => false,
+}))
+vi.mock('@/features/settings/hooks/useUserSettings', () => ({
+  useUserSettingsQuery: () => ({
+    data: undefined,
+    isPending: true,
+    isError: false,
+    fetchStatus: 'idle',
+  }),
+  useUpdateUserSettingsMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+}))
+
+/**
  * Las páginas de hábitos piden datos: aquí se sustituyen por cascarones. Lo
  * que se prueba es la barra, no lo que hay debajo. Las de Vida sí son las
- * reales — son un título y nada más.
+ * reales.
  */
 function stub(title: string) {
   return <h1>{title}</h1>

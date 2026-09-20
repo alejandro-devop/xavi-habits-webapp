@@ -4,8 +4,11 @@ import {
   getCurrentLocalDate,
   getCurrentWeekRange,
   getMondayOfWeek,
+  formatDayHeading,
+  getVidaDayOfWeek,
   isFutureDate,
   isToday,
+  parseYmdToLocalDate,
 } from '@/features/vida/utils/vida-date.utils'
 
 afterEach(() => {
@@ -55,5 +58,24 @@ describe('vida-date.utils', () => {
     expect(isFutureDate('2026-09-20')).toBe(true)
     expect(isFutureDate('2026-09-19')).toBe(false)
     expect(isFutureDate('2026-09-18')).toBe(false)
+  })
+})
+
+describe('el día de la semana y el encabezado (FEAT-003, tajada 2)', () => {
+  it('saca el día de la semana de un `YYYY-MM-DD` local', () => {
+    expect(getVidaDayOfWeek('2026-09-18')).toBe('friday')
+    expect(getVidaDayOfWeek('2026-09-20')).toBe('sunday')
+    expect(getVidaDayOfWeek('2026-09-21')).toBe('monday')
+  })
+
+  it('no se va al día anterior por interpretar la cadena en UTC (criterio 49)', () => {
+    // `new Date('2026-09-18')` es medianoche **UTC**: en UTC-5 sería el 17.
+    expect(parseYmdToLocalDate('2026-09-18').getDate()).toBe(18)
+    expect(parseYmdToLocalDate('2026-09-18').getMonth()).toBe(8)
+  })
+
+  it('«Viernes 18»: mayúscula inicial y número del día', () => {
+    expect(formatDayHeading('2026-09-18')).toBe('Viernes 18')
+    expect(formatDayHeading('2026-09-01')).toBe('Martes 1')
   })
 })

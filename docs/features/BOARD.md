@@ -49,6 +49,78 @@ desplegada) y, dentro de él, mirar los 375 px y el tema oscuro: esa medida es d
 segunda mano. Hallazgo abierto: lo que *pinta* un `input type="time"` lo decide
 el idioma del navegador, aunque el **valor** siempre sea `HH:mm` 24 h.
 
+**FEAT-003, tajada 2 `accepted`** (2ª entrega, sin commitear): **`/app/vida/hoy` dejó de
+ser un cascarón.** Arriba el presupuesto —fecha y hora, «te quedan Xh YY hasta
+las 23:00», la barra del día entero con la marca de «ahora», la leyenda con los
+minutos y una línea de guía compuesta con reglas— y debajo la agenda: los
+bloques del `activityDayPlan` ordenados por hora y, entre ellos, los huecos con
+su tamaño y las fichas de la plantilla que caben. En escritorio, «Tu plantilla
+de \<día\>» marcando lo que ya está en el plan. **Todo es lectura**: colocar
+una ficha es la tajada 3, y por eso **no se pinta «+ otra cosa»** —igual que no
+se pinta «Armar desde la plantilla»—; los dos son botones muertos hasta su
+tajada, y queda dicho en la sección 3, no reescrito en el criterio. Línea base
+sin empeorar: typecheck limpio, lint 14/0, `pnpm test` 2 fallos de **761** (los
+dos de `SearchSelect`; +53 tests nuevos), chunk inicial **877,89 kB** (+16,9 kB,
+ninguno de iconos). Dos tests ajenos tocados: `vida.routes.test.tsx` (la
+afirmación de F0 «Hoy sigue siendo un cascarón» queda derogada por el criterio
+11) y `AppLayout.test.tsx` (montaba `vidaRoutes` de verdad y ahora Hoy necesita
+`useAuthBootstrap`: se mockea el guard, sin cambiar ninguna aserción). **Falta
+el recorrido manual del usuario** y, sin `15463da` desplegado, todas las fichas
+de los huecos se leerán «sin duración»: eso no es un fallo de la tajada.
+
+**Devuelta por el criterio 20**, y solo por él: la marca «Ahora» —y con ella el
+salto de apertura— **solo se pinta si queda alguna entrada de la agenda que
+empiece después de ahora**. Medido con un arnés de revisión: a las 20:00 de un
+día con el último bloque a las 14:00, **cero marcas y cero `scrollIntoView`**;
+lo mismo con un solo bloque por la mañana; y en **hoy sin plan** no hay marca a
+ninguna hora, que es justo el estado que el criterio 21 obliga a cuidar aquí. El
+test que hay usa las 9:24 con tres bloques por delante, el único caso en que la
+regla acierta. Se espera que la marca exista siempre que la hora esté entre el
+inicio y el fin del día, cayendo **dentro** del tramo que la contiene. Lo demás
+de la tajada está bien y bien probado —los criterios 11–19, 21, 22, 48 y 49–57
+se cierran con evidencia, y la línea base no empeora (lo corrí entero: 2 fallos
+de 761)—; el arreglo es una regla de una línea en `VidaHoyPage.tsx` más sus
+tests. Cinco hallazgos anotados y no devueltos, en la sección 4: dos violetas
+distintos para «ahora» en tema oscuro, la barra rebasa el 100 % con bloques
+solapados, un hueco que ya empezó se ofrece por su tamaño entero, «en 920 min»
+y «te quedan 0m» a las 23:30.
+
+**Re-entregada** el mismo día: la marca de «ahora» dejó de decidirse en la
+página y la coloca `buildDayAgenda`, que **parte el hueco que contiene al
+reloj** y mete una entrada `kind: 'now'` en medio; existe siempre que
+`dayStart ≤ ahora ≤ dayEnd` y **no** fuera de esa franja, con test para cada
+uno de los tres casos devueltos, para los dos bordes exactos y para fuera del
+horario. Leído del DOM en un arnés: **1 marca** a las 20:00, a las 11:30 y en
+hoy sin plan (antes 0), y **0** a las 23:30. **Cuatro de los cinco hallazgos,
+cerrados de paso**: la barra suma 100,000 % con bloques pisados (antes 106,06 %,
+vía `trackMinutes`, que además hace que la guía y la leyenda digan el mismo
+número), un hueco empezado ofrece solo lo que le queda y uno ya pasado no ofrece
+nada, «en 15 h 20 min» en vez de «en 920 min», y a las 23:30 se lee «planeado 2h
+5 de 16h 30» en vez de «te quedan 0m». **El hallazgo 1 (dos violetas en oscuro)
+queda sin arreglar a propósito**: unificarlos pide un token nuevo en
+`_theme-variables.scss`, que es una decisión de sistema de diseño con su propio
+alcance. Línea base: typecheck limpio, lint 14/0, `pnpm test` 2 fallos de **781**
+(+20 tests), chunk inicial **878,72 kB** (+0,8 kB). Aviso para quien revise:
+`AgendaEntry` tiene ahora **tres** variantes (`block` · `gap` · `now`) y
+`AgendaGap` ganó `trackMinutes` e `isPast`.
+
+**Aceptada en la segunda revisión.** Reproduje con arnés propio los tres casos
+que había devuelto y salen **1 marca «Ahora» y 1 `scrollIntoView`** en los tres,
+más el reloj dentro de un bloque (la marca va justo debajo, el bloque no se
+parte) y los dos bordes exactos; a las 23:30, ninguna, que es lo correcto. Con
+bloques pisados los anchos suman **100,000 %** y la leyenda, la guía y las
+tarjetas ya dicen números coherentes. Línea base corrida entera por mí:
+typecheck limpio, lint 14/0, `pnpm test` **2 fallos de 781** y los dos son los
+de `SearchSelect` (único archivo rojo de 84). Ni FEAT-002 ni la tajada 1 tienen
+una línea de producto tocada, y lo que cambió de forma (`AgendaEntry`,
+`trackMinutes`) no sale del módulo. Tres hallazgos nuevos, todos anotados y
+ninguno devuelve: con un bloque planeado antes del inicio del día la barra
+enseña la marca y la lista no; con bloques solapados la marca puede quedar fuera
+de orden de reloj; y el «2h 5» del formateador de la tajada 1. **Sigue faltando
+el recorrido manual del usuario** (criterio 58, con el API desplegada) y mirar
+los 375 px y el tema oscuro en un navegador de verdad: esa medida es de segunda
+mano. Siguiente: la tajada 3, poner algo en un hueco.
+
 **Dependencia externa de FEAT-003:** el API gana `VidaItem.startTime`,
 `VidaItem.durationMinutes` y `UserSettings.vidaDayStartTime` /
 `vidaDayEndTime`; se construye en `~/Developer/xavi-platform-node` y **no desde

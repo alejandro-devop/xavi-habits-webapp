@@ -1,0 +1,101 @@
+/* Un bloque de la agenda: la canaleta de la hora a la izquierda y la tarjeta de
+   vidrio a la derecha, como en el render. La agenda es una **lista ordenada por
+   hora**, no una cuadrícula: nada de alturas proporcionales a minutos. */
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+/* Ancho fijo para que las horas queden alineadas en columna sin tabla. */
+.gutter {
+  display: flex;
+  position: relative;
+  flex: 0 0 2.75rem;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding-top: 0.85rem;
+}
+
+.time {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.tick {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.1rem;
+  border: 2px solid color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 55%, transparent);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.card {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1rem;
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+/* Mismo tratamiento del color que `VidaActivityCard`: el tinte de la categoría
+   mezclado con el fondo, y el glifo mezclado con el texto para que se lea igual
+   en claro y en oscuro. */
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/* Un nombre de 60 caracteres se recorta: nunca empuja la tarjeta (criterio 54). */
+.name {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0;
+  /* Dato, no decoración: `--color-text-muted` se queda en ~2,4:1 en claro. */
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* «en N min»: lo único que distingue al primero que no ha empezado. No es un
+   botón ni una cuenta atrás — eso es F3. */
+.soon {
+  color: var(--color-primary-hover);
+  font-weight: 600;
+}

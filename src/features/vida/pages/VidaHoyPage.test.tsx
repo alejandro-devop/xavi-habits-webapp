@@ -28,6 +28,8 @@ type Query<T> = {
 
 let planQuery: Query<ActivityDayPlanItem[]>
 let suggestionsQuery: Query<VidaSuggestion[]>
+/** La plantilla entera: de ahí sale «Mañana, \<día\>» del lateral (tajada 5). */
+let itemsQuery: Query<VidaItem[]>
 let settingsQuery: Query<UserSettings>
 let addMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let editMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
@@ -74,6 +76,9 @@ vi.mock('@/features/vida/hooks/useActivities', () => ({
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useVidaSuggestionsForDateQuery: () => suggestionsQuery,
+  // Desde la tajada 5: el bloque «Mañana» del lateral lee la plantilla entera
+  // (`vidaItems`) para saber qué trae **mañana**, que no es el día visto.
+  useVidaItemsQuery: () => itemsQuery,
 }))
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
@@ -168,6 +173,9 @@ beforeEach(() => {
     suggestion('s2', 'Compra de la semana', 240),
   ])
   settingsQuery = ready(SETTINGS)
+  // La plantilla entera, para «Mañana»: vacía por defecto, así el bloque del
+  // lateral no mete ruido en las comprobaciones del día que se mira.
+  itemsQuery = ready([])
 })
 
 afterEach(() => {
@@ -357,12 +365,73 @@ describe('VidaHoyPage — hoy sin plan', () => {
     expect(screen.getByText('Libre 6:30 – 9:24 · 2h 54')).toBeInTheDocument()
   })
 
-  it('«Armar desde la plantilla» NO se pinta todavía: llegaría muerto (tajada 5)', () => {
+  // **Deroga** la afirmación de la tajada 2 («"Armar desde la plantilla" NO se
+  // pinta todavía: llegaría muerto»). Desde la tajada 5 el botón existe y
+  // funciona: es la mitad del criterio 21 que faltaba.
+  it('«Armar desde la plantilla» se ofrece diciendo cuántas cosas trae (criterio 21)', () => {
     planQuery = ready([])
     renderWithProviders(<VidaHoyPage />)
 
-    expect(screen.queryByRole('button', { name: /armar/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /armar/i })).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /armar desde la plantilla \(2 cosas\)/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('armar manda una sola `activityDayPlanSet` con la hora y la duración de cada ítem (41, 42)', () => {
+    planQuery = ready([])
+    suggestionsQuery = ready([
+      suggestion('v1', 'Bañarme', 15, { startTime: '08:00' }),
+      suggestion('v2', 'Pasear', 40, { startTime: '08:30' }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: /armar desde la plantilla/i }))
+
+    expect(setMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(setMutation.mutate.mock.calls[0]?.[0]).toEqual({
+      date: '2026-09-18',
+      items: [
+        { activityId: 'a-v1', startTime: '08:00', endTime: '08:15', orderIndex: 0 },
+        { activityId: 'a-v2', startTime: '08:30', endTime: '09:10', orderIndex: 1 },
+      ],
+    })
+  })
+
+  it('al armar, el aviso de lo ajustado se lee en la agenda con la vía al catálogo (43 y 44)', async () => {
+    planQuery = ready([])
+    suggestionsQuery = ready([
+      suggestion('v1', 'Bañarme', 60, { startTime: '08:00' }),
+      suggestion('v2', 'Pasear', 30, { startTime: '08:30' }),
+      suggestion('v3', 'Leer', null),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: /armar desde la plantilla/i }))
+
+    // El hook enseña el resumen **cuando la mutación sale bien**, no antes.
+    expect(screen.queryByText(/no cabían a su hora/)).not.toBeInTheDocument()
+    const options = setMutation.mutate.mock.calls[0]?.[1] as { onSuccess: () => void }
+    await act(async () => {
+      options.onSuccess()
+    })
+
+    expect(screen.getByText(/1 de 3 no cabían a su hora y quedaron después/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/1 cosa sin hora, puesta al final — ponles una hora en tu plantilla/),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Ver tus actividades' })[0]).toHaveAttribute(
+      'href',
+      '/app/vida/actividades',
+    )
+  })
+
+  it('un día que YA tiene plan no ofrece armar: `Set` lo reemplazaría entero', () => {
+    planQuery = ready([block('b1', 'Bañarme', '08:00', '08:15')])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(
+      screen.queryByRole('button', { name: /armar desde la plantilla/i }),
+    ).not.toBeInTheDocument()
   })
 
   it('sin plantilla y sin plan: no hay fichas vacías, hay enlace al catálogo (criterio 21)', () => {
@@ -716,3 +785,84 @@ describe('VidaHoyPage — cualquier día (tajada 4)', () => {
     )
   })
 })
+
+describe('VidaHoyPage — el lateral pone en el primer hueco donde cabe (criterio 48)', () => {
+  it('coloca con `activityDayPlanItemAdd` al principio del primer hueco que la admite', () => {
+    // 9:24. El plan deja libre 6:30–8:00, 9:00–13:00 y 13:30–23:00; la primera
+    // mitad ya pasó, así que el primer hueco vivo empieza **en ahora**.
+    planQuery = ready([
+      block('b1', 'Bañarme', '08:00', '09:00'),
+      block('b2', 'Cocinar', '13:00', '13:30'),
+    ])
+    suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
+    fireEvent.click(
+      within(aside).getByRole('button', { name: /en el primer hueco donde cabe/i }),
+    )
+
+    expect(addMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(addMutation.mutate).toHaveBeenCalledWith({
+      date: '2026-09-18',
+      activityId: 'a-s1',
+      startTime: '09:24',
+      endTime: '09:44',
+    })
+  })
+
+  it('sin duración en la plantilla, la pone con la de por defecto (30 min)', () => {
+    planQuery = ready([])
+    suggestionsQuery = ready([suggestion('s1', 'Leer', null)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
+    fireEvent.click(
+      within(aside).getByRole('button', { name: /en el primer hueco donde cabe/i }),
+    )
+
+    const call = addMutation.mutate.mock.calls[0]?.[0] as { startTime: string; endTime: string }
+    expect(call.endTime).toBe(minutesLater(call.startTime, 30))
+  })
+
+  it('lo que ya está en el plan no ofrece el botón: se marca «en el plan»', () => {
+    planQuery = ready([block('b1', 'Poner lavadora', '10:00', '10:20', 'a-s1')])
+    suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
+    expect(within(aside).getByText('en el plan')).toBeInTheDocument()
+    expect(
+      within(aside).queryByRole('button', { name: /en el primer hueco donde cabe/i }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('si no cabe en ningún hueco, el botón queda apagado y dice por qué', () => {
+    // El día entero ocupado: 6:30 → 23:00 de un tirón.
+    planQuery = ready([block('b1', 'Todo el día', '06:30', '23:00')])
+    suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
+    const button = within(aside).getByRole('button', { name: /no cabe hoy en ningún rato libre/i })
+    expect(button).toBeDisabled()
+    expect(within(aside).getByText(/No queda un rato de 20m en este día/)).toBeInTheDocument()
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('en un día pasado no hay lateral, así que tampoco hay dónde poner (criterio 38)', () => {
+    viewedDate = '2026-09-17'
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    expect(screen.queryByRole('complementary', { name: /tu plantilla de/i })).not.toBeInTheDocument()
+  })
+})
+
+/** `08:00` + 30 → `08:30`. Solo para leer la aserción de arriba. */
+function minutesLater(time: string, minutes: number): string {
+  const [h = '0', m = '0'] = time.split(':')
+  const total = Number(h) * 60 + Number(m) + minutes
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}

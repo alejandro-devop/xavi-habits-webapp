@@ -11,7 +11,7 @@ The user decides the order, not an agent. The state and slice rules are in
 |---|---|---|---|---|---|
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
-| FEAT-003 | building | 4/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
+| FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -22,6 +22,7 @@ feature in `building` at `3/4` has two accepted and one in progress.
 |---|---|---|---|
 | FEAT-001 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
+| FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 
 FEAT-003 está `planned` con **las ocho decisiones respondidas** (D1…D8 al final
 de la sección 1) y **cinco tajadas** que el arquitecto mantiene tal cual: D6
@@ -230,6 +231,53 @@ igual a hoy se queda en la URL; y el lateral «Tu plantilla de \<día\>» sigue
 en días pasados (**hay que esconderlo en la tajada 5**). Siguiente: la tajada 5,
 la semana y armar desde la plantilla.
 
+**FEAT-003, tajada 5 `returned`** (sin commitear, tras la revisión): **planear dejó de hacerse a
+mano.** Un día vacío que se puede planear ofrece **«Armar desde la plantilla (N
+cosas)»**, que copia la hora y la duración de cada ítem, corre detrás lo que se
+pisaría, encadena al final lo que no tiene hora y **lo dice** («1 de 3 no cabían
+a su hora y quedaron después» · «1 cosa sin hora, puesta al final — ponles una
+hora en tu plantilla», con enlace al catálogo). El lateral de escritorio gana
+**«Mañana, \<día\>»** con «Armar mañana desde la plantilla» (o «Ver mañana»), y
+existe **`/app/vida/semana`**: una línea por día, «Armar» en los vacíos
+editables y «Armar toda la semana desde la plantilla» con confirmación que dice
+cuántos días se arman y cuántos no se tocan — una mutación por día, un solo
+aviso, y si uno falla se lee «Armamos 1 de 2 días» con el día que falló, nunca
+«semana armada». **Los dos avisos de los revisores, atendidos:** el lateral ya
+no se pinta en días pasados (criterio 38) y armar **no pone actividades
+archivadas** (hubo que pedir `status` en la selección de `vida-items`: ese es el
+riesgo número uno de la tajada, porque afecta a las cuatro consultas del módulo,
+no solo a armar). Línea base sin empeorar: typecheck limpio, lint **14/0**,
+`pnpm test` **2 fallos de 918** (los dos de `SearchSelect`; +33 tests), chunk
+inicial **914,52 kB** (+13,3 kB, ninguno de iconos). **Falta el recorrido manual
+del usuario** (criterio 58) y **el cronómetro del criterio 47** — armar mañana en
+menos de un minuto y la semana en menos de cinco—, los dos con la API
+desplegada. Hallazgos anotados y no tocados: «los sábado» (plural de
+`VIDA_DAY_LABELS`, heredado), el bloque «Mañana» se pinta también estando ya en
+mañana, y el criterio 48 sigue sin «ponerla en el primer hueco donde cabe» desde
+la tajada 2.
+
+**FEAT-003, tajada 5 — revisión: `returned`** (2026-09-20). Lo construido
+funciona y la línea base no empeora (typecheck limpio vía `pnpm build` exit 0,
+lint **14/0**, **2 fallos de 918** —los de `SearchSelect`—, chunk inicial
+**914,52 kB** con `app-icons` e `IconPicker` clavados: nada de iconos al
+arranque). Devuelta por dos cosas: **(1) el criterio 48 sigue sin «el botón de
+ponerla en el primer hueco donde cabe»** en el lateral —lo aplazó la tajada 2, no
+lo hizo la 3, lo avisó la 4 y la 5 lo declaró fuera de alcance; como es la última
+tajada, aceptarla entregaría la feature con un criterio explícito sin cumplir, y
+el toque en la ficha de un hueco (criterio 23) no lo cierra: es otra superficie y
+otro comportamiento—; y **(2) la vista de semana ofrece «Armar» sobre un día cuya
+consulta de plan **falló**: `useVidaWeekPlans` no expone `isError`, un fallo se
+lee como «Sin plan todavía» y armar es `activityDayPlanSet`, que reemplaza el día
+entero. Un parpadeo de red puede borrar un plan.** Ocho hallazgos más, ninguno
+motivo de devolución: los contadores de «movidos» y «sin hora» se suben antes de
+comprobar que el bloque cabe (dos frases que se contradicen),
+`usedDefaultDuration` no se pinta en ninguna parte, «(N cosas)» en Hoy no
+descarta las archivadas, los días que no dejan ningún bloque no salen en el
+resumen del lote, «los sábado», y el bloque «Mañana» que se pinta estando ya en
+mañana. **Sigue pendiente del usuario:** el criterio 47 (cronómetro) y el 58 (el
+recorrido entero con su cuenta y la API desplegada). El detalle, en la sección 4
+del dossier.
+
 **Dependencia externa de FEAT-003:** el API gana `VidaItem.startTime`,
 `VidaItem.durationMinutes` y `UserSettings.vidaDayStartTime` /
 `vidaDayEndTime`; se construye en `~/Developer/xavi-platform-node` y **no desde
@@ -238,6 +286,57 @@ contra el servidor: mientras Cloud Run no lleve el cambio, `pnpm test` puede
 estar verde y una consulta real fallar con «campo desconocido» — no es un fallo
 del constructor. El **recorrido real (criterio 58) no se puede hacer hasta que
 esté desplegado**.
+
+**FEAT-003, tajada 5 `in-review` (2ª entrega, sin commitear):** los **dos
+motivos de la devolución, cerrados**. (1) El lateral «Tu plantilla de \<día\>»
+trae ahora, en cada cosa que no está en el plan, **«Ponerla HH:MM»** —el primer
+hueco vivo del día donde cabe, con su duración de plantilla o 30 min, colocando
+con `activityDayPlanItemAdd`— y, si no cabe en ninguno, el botón queda apagado
+diciendo «No queda un rato de 20m en este día»: **el criterio 48 ya está
+entero**. (2) `useVidaWeekPlans` expone **`isError` por día**: un día cuya
+consulta falla se pinta «No pudimos cargar este día» con «Reintentar», **no
+ofrece «Armar» y queda fuera del lote** —un fallo de red ya no puede acabar en
+`activityDayPlanSet` borrando un plan—, y el punto de la tira de Hoy tampoco
+afirma «sin plan» sin saberlo (cierra de paso el hallazgo 1 de la revisión de la
+tajada 4). **Los ocho hallazgos baratos, cerrados**: cada ítem se cuenta una
+sola vez (se acabaron «movido» y «se quedó fuera» sobre el mismo), `0` y
+negativos cuentan como sin duración, la duración por defecto se **dice** («1
+cosa sin duración, puesta a 30 min»), «(N cosas)» ya no cuenta archivadas, los
+días del lote que no dejaron nada salen nombrados, fuera el `<p>` vacío, «los
+sábados» y el bloque «Mañana» escondido estando ya en mañana. Línea base:
+typecheck limpio, lint **14/0**, `pnpm test` **2 fallos de 931** (los dos de
+`SearchSelect`; +13 tests), chunk inicial **916,95 kB** (+15,7 kB sobre la línea
+base, +2,4 sobre la 1ª entrega; `app-icons` e `IconPicker` idénticos). Medido
+esta vez **en el navegador** a 375 px y en oscuro, el lateral y la semana: sin
+scroll horizontal. **Sigue faltando** el criterio 47 (cronómetro) y el 58
+(recorrido con cuenta), los dos detrás del login.
+
+**FEAT-003 `delivered`** (2026-09-20, **sin commitear**). Segunda revisión de la
+tajada 5: **`accepted`**, y con ella las cinco. Comprobé los dos motivos de la
+devolución con arnés propio, no de palabra: el botón del lateral ofrece **el
+primer hueco vivo** —con el reloj dentro del hueco, parte desde **ahora**
+(09:24, no desde las 6:30), y tres «Ponerla» seguidas caen en 09:24, en 10:00 y
+a la tercera el botón se apaga porque solo quedan restos—; y un día de la semana
+cuya consulta falla **no ofrece «Armar» ni entra en el lote**, así que
+`activityDayPlanSet` no lo toca. Los ocho hallazgos baratos, verificados uno a
+uno (contadores tras el encaje, `0` y negativos como «sin duración» con su frase
+pintada, «los sábados»…). Línea base corrida entera por mí: `pnpm build` exit 0
+con chunk inicial **916,95 kB** y `app-icons`/`IconPicker` **idénticos**, lint
+**14/0**, `pnpm test` **2 fallos de 931** (los dos de `SearchSelect`).
+
+**Lo que queda para el usuario, y solo él puede cerrarlo:** el **criterio 47**
+(cronómetro: mañana armado en menos de un minuto, la semana en menos de cinco) y
+el **criterio 58** (el recorrido entero con su cuenta y la API despierta).
+Pasos: ponerles hora y duración a tres o cuatro cosas de la plantilla dejando
+alguna **sin hora** → fijar el inicio y el fin del día en Ajustes de Vida → en
+Hoy, «Armar desde la plantilla (N cosas)» y contrastar el aviso con la agenda →
+**tocar «Ponerla» en tres cosas seguidas** del lateral y ver que cada una cae en
+el primer rato libre que queda, y que con el día lleno el botón se apaga → «Armar
+mañana desde la plantilla» y «Ver mañana» (cronómetro) → «Ver la semana», armar
+un día suelto y después «Armar toda la semana» leyendo la confirmación
+(cronómetro) → y, si se puede provocar, **un día que no cargue**: tiene que
+leerse «No pudimos cargar este día» y no ofrecer «Armar». El detalle y el texto
+para el usuario, en la sección 4 del dossier.
 
 FEAT-002 queda con el **criterio 36 pendiente**: el recorrido real con sesión
 (primer minuto → catálogo → crear con categoría nueva → plantilla → editar →

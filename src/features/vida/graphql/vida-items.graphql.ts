@@ -12,12 +12,18 @@ const VIDA_ITEM_FIELDS = `
   updatedAt
 `
 
-/** Mismo subconjunto de `Activity` que seleccionan los documentos de follow-ups. */
+/**
+ * Mismo subconjunto de `Activity` que seleccionan los documentos de follow-ups,
+ * **más `status`** (FEAT-003, tajada 5): «armar desde la plantilla» no puede
+ * poner en el día una actividad archivada (`status: 'cancelled'`), y el ítem de
+ * plantilla es el único sitio donde eso se puede saber sin una consulta más.
+ */
 const VIDA_ITEM_ACTIVITY_FIELDS = `
   activity {
     id
     title
     description
+    status
     category {
       id
       name

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaAgendaBlock } from '@/features/vida/components/VidaAgendaBlock'
 import { VidaAgendaGap } from '@/features/vida/components/VidaAgendaGap'
@@ -9,9 +9,11 @@ import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
 import { useAddDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
+import { useBuildDayFromTemplate } from '@/features/vida/hooks/useBuildDayFromTemplate'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
+import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import type {
   AgendaBlock,
@@ -31,12 +33,17 @@ import {
   getBlockEditWindow,
   toDayPlanTimes,
 } from '@/features/vida/utils/vida-gap-form.utils'
+import {
+  describeBuildDay,
+  usableTemplateItems,
+} from '@/features/vida/utils/vida-build-day.utils'
 import { minutesToTime } from '@/features/vida/utils/vida-time.utils'
 import {
   VIDA_DAY_LABELS,
   formatDayHeading,
   getCurrentLocalDate,
   getVidaDayOfWeek,
+  pluralDayLabel,
 } from '@/features/vida/utils/vida-date.utils'
 import {
   buildDayStrip,
@@ -71,9 +78,10 @@ function subtitleFor(date: string, isToday: boolean, isPast: boolean): string {
  *
  * **Desde la tajada 3 la pantalla escribe**: un toque en una ficha de un hueco
  * coloca esa cosa al principio del hueco, «+ otra cosa» abre la hoja de tres
- * preguntas, y el «···» de un bloque lo quita o le cambia la hora. Ir a otro
- * día es la tajada 4 y armar desde la plantilla la 5: esos botones siguen sin
- * pintarse, que es mejor que pintarlos muertos.
+ * preguntas, y el «···» de un bloque lo quita o le cambia la hora. La tajada 4
+ * la sacó de «hoy» y la 5 le añade **«Armar desde la plantilla»** en un día
+ * vacío que se pueda planear —la mitad del criterio 21 que faltaba— y la vía a
+ * la vista de semana desde la tira.
  *
  * Y nada de vivir el día (criterio 22): ni «Empezar», ni cronómetro, ni
  * «Terminar», ni barra de sesión, ni etiquetas de ejecutado. Eso es F3, aunque
@@ -143,6 +151,10 @@ export function VidaHoyPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetSession, setSheetSession] = useState(0)
   const addMutation = useAddDayPlanItemMutation()
+  // Armar el día visto desde su plantilla (criterios 21, 41–44). Es una sola
+  // `activityDayPlanSet` y el resumen se pinta aquí, porque lleva un enlace al
+  // catálogo que no cabe en un toast.
+  const buildDay = useBuildDayFromTemplate()
 
   function openSheet(next: SheetState) {
     setSheet(next)
@@ -230,11 +242,19 @@ export function VidaHoyPage() {
   /** La tira se pinta en todos los estados: cambiar de día no depende del día. */
   function strip() {
     return (
-      <VidaDayStrip
-        days={stripDays}
-        plans={weekPlans.byDate}
-        edgeNote={describePlanningWindowEdge(today)}
-      />
+      <div className={styles.stripRow}>
+        <VidaDayStrip
+          days={stripDays}
+          plans={weekPlans.byDate}
+          edgeNote={describePlanningWindowEdge(today)}
+        />
+        {/* La semana entera de un vistazo (tajada 5). Se llega desde aquí y no
+            desde la barra: `app-nav.config.ts` sigue siendo una sola fuente y
+            la píldora encendida sigue siendo «Hoy». */}
+        <Link className={styles.weekLink} to={vidaPaths.semanaForDate(date)}>
+          Ver la semana
+        </Link>
+      </div>
     )
   }
 
@@ -297,7 +317,16 @@ export function VidaHoyPage() {
   }
 
   const hasPlan = agenda.blocks.length > 0
-  const templateCount = suggestions.filter((suggestion) => suggestion.item.isActive !== false).length
+  // Lo que de verdad se puede armar: sin los ítems desactivados **y sin las
+  // actividades archivadas**. Antes solo miraba `isActive`, así que el botón
+  // podía decir «(3 cosas)» y dejar 2 bloques. Es la misma regla que usa la
+  // semana (`templateItemsForDate`).
+  const buildableTemplate = usableTemplateItems(suggestions.map((suggestion) => suggestion.item))
+  const templateCount = buildableTemplate.length
+  // El resumen del último armado, y solo si fue **de este día**: al cambiar de
+  // día no se arrastra el aviso de otro.
+  const buildNotes =
+    buildDay.lastBuild?.date === date ? describeBuildDay(buildDay.lastBuild.summary) : null
 
   // La marca de «Ahora» la coloca `buildDayAgenda`, dentro del tramo que
   // contiene al reloj: aquí solo se pinta. Antes se decidía en esta página
@@ -399,6 +428,28 @@ export function VidaHoyPage() {
             </p>
           ) : null}
 
+          {/* Lo que hubo que ajustar al armar: se lee **en la agenda**, encima
+              de lo que quedó puesto. Nada se pierde en silencio (43 y 44). */}
+          {buildNotes ? (
+            <Alert variant="info" title={buildNotes.headline}>
+              {buildNotes.moved || buildNotes.defaultDuration || buildNotes.dropped ? (
+                <p className={styles.errorText}>
+                  {[buildNotes.moved, buildNotes.defaultDuration, buildNotes.dropped]
+                    .filter(Boolean)
+                    .join(' ')}
+                </p>
+              ) : null}
+              {buildNotes.withoutTime ? (
+                <p className={styles.errorText}>
+                  {buildNotes.withoutTime}{' '}
+                  <Button variant="ghost" size="sm" to={vidaPaths.actividades}>
+                    Ver tus actividades
+                  </Button>
+                </p>
+              ) : null}
+            </Alert>
+          ) : null}
+
           {!hasPlan ? (
             <p className={styles.noPlan}>
               {isPast
@@ -407,9 +458,38 @@ export function VidaHoyPage() {
                   ? 'Aún no hay plan para hoy.'
                   : `Todavía no hay plan para el ${formatDayHeading(date).toLowerCase()}.`}{' '}
               {templateCount > 0
-                ? `Tu plantilla trae ${templateCount} ${templateCount === 1 ? 'cosa' : 'cosas'} los ${dayLabel}.`
+                ? `Tu plantilla trae ${templateCount} ${templateCount === 1 ? 'cosa' : 'cosas'} los ${pluralDayLabel(dayLabel)}.`
                 : 'Tu plantilla todavía no trae nada para este día.'}
             </p>
+          ) : null}
+
+          {/* **Armar desde la plantilla** (criterio 21, su mitad de botón): solo
+              en un día vacío que se pueda planear y con algo que poner. Armar
+              es `activityDayPlanSet`, que reemplaza el día entero: sobre un día
+              ya armado borraría lo hecho, así que ahí no se ofrece. */}
+          {canPlan && !hasPlan && templateCount > 0 ? (
+            <div className={styles.buildRow}>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={buildDay.isPending}
+                onClick={() =>
+                  buildDay.build({
+                    date,
+                    templateItems: buildableTemplate,
+                    dayStart: dayHours.startTime,
+                    dayEnd: dayHours.endTime,
+                  })
+                }
+              >
+                {buildDay.isPending
+                  ? 'Armando…'
+                  : `Armar desde la plantilla (${templateCount} ${templateCount === 1 ? 'cosa' : 'cosas'})`}
+              </Button>
+              <span className={styles.buildNote}>
+                Cada cosa a su hora y con su duración, tal como la tienes en tu plantilla.
+              </span>
+            </div>
           ) : null}
 
           {/* Los dos atajos del día, solo donde se puede planear (criterios 36
@@ -419,7 +499,18 @@ export function VidaHoyPage() {
           {agendaList}
         </div>
 
-        <VidaTemplateAside dayLabel={dayLabel} suggestions={suggestions} planItems={planItems} />
+        {/* El lateral **no se pinta en un día pasado** (criterio 38): desde que
+            lleva «Armar mañana desde la plantilla» dejó de ser solo lectura, y
+            un día pasado se mira y no se toca. */}
+        {canPlan ? (
+          <VidaTemplateAside
+            dayLabel={dayLabel}
+            suggestions={suggestions}
+            planItems={planItems}
+            date={date}
+            agenda={agenda}
+          />
+        ) : null}
       </div>
 
       {sheet && canPlan ? (

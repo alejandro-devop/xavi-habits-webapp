@@ -7,6 +7,7 @@ import { VidaActividadesPage } from '@/features/vida/pages/VidaActividadesPage'
 import { VidaArchivadasPage } from '@/features/vida/pages/VidaArchivadasPage'
 import { VidaCategoriasPage } from '@/features/vida/pages/VidaCategoriasPage'
 import { VidaAjustesPage } from '@/features/vida/pages/VidaAjustesPage'
+import { VidaSemanaPage } from '@/features/vida/pages/VidaSemanaPage'
 
 /**
  * El índice redirige a `hoy` en vez de renderizar la página: así la URL y la
@@ -23,6 +24,13 @@ export const vidaRoutes: RouteObject = {
     {
       path: 'hoy',
       element: <VidaHoyPage />,
+    },
+    {
+      // Hermana de `hoy`, no su hija: es otra mirada sobre los mismos días. No
+      // está en `app-nav.config.ts` a propósito (se llega desde Hoy), así que
+      // la píldora del módulo que se enciende aquí sigue siendo «Hoy».
+      path: 'semana',
+      element: <VidaSemanaPage />,
     },
     {
       path: 'plantilla',

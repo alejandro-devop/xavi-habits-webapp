@@ -442,6 +442,24 @@ export function fitsInGap(gap: AgendaGap, minutes: number | null): boolean {
 }
 
 /**
+ * El **primer hueco del día donde cabe** algo de esa duración (criterio 48).
+ *
+ * Se saltan los tramos que ya pasaron —colocar algo en un rato que ya pasó no
+ * tiene sentido— y los `sliver`, que no llegan al mínimo. El hueco que contiene
+ * al reloj ya viene partido por `buildDayAgenda`, así que la mitad que queda
+ * empieza **en ahora**: un hueco empezado ofrece desde ahora, igual que en la
+ * tajada 3.
+ *
+ * Devuelve `null` cuando no cabe en ninguno; quien llama apaga el botón y dice
+ * por qué, en vez de ofrecer algo que no se puede hacer.
+ */
+export function findFirstFittingGap(gaps: AgendaGap[], minutes: number | null): AgendaGap | null {
+  return (
+    gaps.find((gap) => !gap.isPast && !gap.isSliver && fitsInGap(gap, minutes)) ?? null
+  )
+}
+
+/**
  * Lo que la plantilla puede ofrecer en un hueco (criterios 18 y 19).
  *
  * **La exclusión se calcula contra el plan del día, nunca contra `takenToday`.**

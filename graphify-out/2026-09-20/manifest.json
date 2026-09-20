@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1789924582.3410592,
-    "ast_hash": "14f602929f0c22ba9e3ea3285dce5a34",
+    "mtime": 1789928220.842999,
+    "ast_hash": "dfbc7aab345460ad33853f0cda8a30ff",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2455,8 +2455,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/routes/vida-paths.ts": {
-    "mtime": 1789919749.268218,
-    "ast_hash": "ef9f5c25af5348b84270ebe951c1ebae",
+    "mtime": 1789928055.8450987,
+    "ast_hash": "a4d5d4bfd6de2307e2a5ca6fc0a09458",
     "semantic_hash": ""
   },
   "src/features/vida/routes/vida.routes.test.tsx": {
@@ -2465,8 +2465,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/routes/vida.routes.tsx": {
-    "mtime": 1789919749.268218,
-    "ast_hash": "399441c5c5c78ca9cf8095604425b551",
+    "mtime": 1789928055.8450987,
+    "ast_hash": "6ac1857f9677f53d5ed4fe6ed5bef331",
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/AppLayout.test.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789925259.3029914,
-    "ast_hash": "96285aaa6500f5cf30cf37304048e360",
+    "mtime": 1789927764.7031283,
+    "ast_hash": "403e863c2398d547f57e8a1d9e3be5dc",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1789924022.1048946,
-    "ast_hash": "84d171bbd0dc04b65b5d1e792a6009d8",
+    "mtime": 1789927649.1017792,
+    "ast_hash": "75f2693b8ecddeec821eb1a558c78e58",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2620,8 +2620,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/types/activity-followup.types.ts": {
-    "mtime": 1789800081.3761609,
-    "ast_hash": "39cf714d465057b929e47f952b908272",
+    "mtime": 1789927882.7264009,
+    "ast_hash": "bf7f4560023a5d75db990c504aa57b64",
     "semantic_hash": ""
   },
   "src/features/vida/types/activity.types.ts": {
@@ -2665,8 +2665,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/graphql/vida-items.graphql.ts": {
-    "mtime": 1789919199.17668,
-    "ast_hash": "3f5167275a507ffec3ae46ad42bf6250",
+    "mtime": 1789927882.725401,
+    "ast_hash": "925751cc5baa8325126313dfef7a7fb2",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useActivityDayPlan.test.tsx": {
@@ -2940,8 +2940,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-003-vida-hoy-planear-el-dia.md": {
-    "mtime": 1789925240.7739427,
-    "ast_hash": "7fef6fda541c02c3f840be14244d8bf3",
+    "mtime": 1789927771.222148,
+    "ast_hash": "fb6da0daa865ea32e04a36b23b1ee99c",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaAgendaBlock/VidaAgendaBlock.tsx": {
@@ -2975,8 +2975,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateAside/VidaTemplateAside.tsx": {
-    "mtime": 1789921331.4405246,
-    "ast_hash": "042388c836ba14b0d8604683f946b1fe",
+    "mtime": 1789928620.4962366,
+    "ast_hash": "d624d6d5d2d65a8044943e3cd6e38fb4",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateAside/index.ts": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1789924794.8767107,
-    "ast_hash": "467735e3b05123ec8c238947398fd304",
+    "mtime": 1789928979.2447724,
+    "ast_hash": "c018b38091beb69a299c04446c689e47",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3037,6 +3037,76 @@
   "src/features/vida/utils/vida-gap-form.utils.ts": {
     "mtime": 1789924571.8050253,
     "ast_hash": "ec7fc74d7afe712fa79c3fc6744a7681",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaDayActions/VidaDayActions.tsx": {
+    "mtime": 1789926488.5688863,
+    "ast_hash": "1a38d2c3eef63160a199c786c7f9e6fb",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaDayActions/index.ts": {
+    "mtime": 1789926199.9286165,
+    "ast_hash": "2c8c309855ecb3ab10f5cb610121597c",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaDayStrip/VidaDayStrip.tsx": {
+    "mtime": 1789926312.4191403,
+    "ast_hash": "64a6adc8800db2ad831ff35e30a2621c",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaDayStrip/index.ts": {
+    "mtime": 1789926126.9862516,
+    "ast_hash": "b2911c42ff8a0f65813c560882feea92",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useVidaWeekPlans.test.tsx": {
+    "mtime": 1789926086.4020388,
+    "ast_hash": "ab6860e80dc1f457efa45e67d5d675d5",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useVidaWeekPlans.ts": {
+    "mtime": 1789928042.2361143,
+    "ast_hash": "4cc22a2f09332ec720ca0f5beb30ab97",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-window.utils.test.ts": {
+    "mtime": 1789926175.7274978,
+    "ast_hash": "112064364ffad91e629f9aa26b9cd18e",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-window.utils.ts": {
+    "mtime": 1789926163.3524363,
+    "ast_hash": "f0aa9b01cf0cd15f9212888a5835c4d9",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useBuildDayFromTemplate.ts": {
+    "mtime": 1789927999.9961708,
+    "ast_hash": "cc1a43f2bf3472cda58e46d69895f9f5",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useBuildWeekFromTemplate.ts": {
+    "mtime": 1789928019.8571427,
+    "ast_hash": "648a079a41ef72bdb07be784c22e8dcb",
+    "semantic_hash": ""
+  },
+  "src/features/vida/pages/VidaSemanaPage.test.tsx": {
+    "mtime": 1789929027.6568582,
+    "ast_hash": "12441a93ebf5a311db27f3de9cc25483",
+    "semantic_hash": ""
+  },
+  "src/features/vida/pages/VidaSemanaPage.tsx": {
+    "mtime": 1789928337.2590106,
+    "ast_hash": "2e34be705b7ad62f2e84fe07f062cab7",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-build-day.utils.test.ts": {
+    "mtime": 1789927967.1712239,
+    "ast_hash": "6b0b52196fb2a3949e56b0d8d9bf3c5d",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-build-day.utils.ts": {
+    "mtime": 1789928042.2361143,
+    "ast_hash": "90f0250c57924f12b8e74ff19e8f77c1",
     "semantic_hash": ""
   }
 }

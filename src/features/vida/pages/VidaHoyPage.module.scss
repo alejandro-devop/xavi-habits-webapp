@@ -155,3 +155,49 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* ── La tira y la vía a la semana (tajada 5) ─────────────────────────────── */
+
+.stripRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.stripRow > :first-child {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.weekLink {
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.weekLink:hover,
+.weekLink:focus-visible {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* ── Armar desde la plantilla ────────────────────────────────────────────── */
+
+.buildRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.buildNote {
+  flex: 1 1 12rem;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}

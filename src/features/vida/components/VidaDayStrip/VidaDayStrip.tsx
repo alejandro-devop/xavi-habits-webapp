@@ -36,12 +36,24 @@ export function VidaDayStrip({ days, plans, edgeNote }: VidaDayStripProps) {
         {days.map((day) => {
           const plan = plans[day.date]
           const hasPlan = plan?.hasPlan ?? false
-          const state = plan?.isPending ? 'pending' : hasPlan ? 'plan' : 'empty'
-          const planLabel = plan?.isPending
-            ? 'cargando su plan'
-            : hasPlan
-              ? `con plan, ${plan?.blockCount ?? 0} ${plan?.blockCount === 1 ? 'bloque' : 'bloques'}`
-              : 'sin plan todavía'
+          // **Un día cuya consulta falló no afirma «sin plan»**: el punto se
+          // marca aparte y lo que se oye lo dice con palabras. Era el hallazgo
+          // 1 de la revisión de la tajada 4; en la semana llegó a poder
+          // machacar un plan, aquí solo mentía.
+          const state = plan?.isError
+            ? 'error'
+            : plan?.isPending
+              ? 'pending'
+              : hasPlan
+                ? 'plan'
+                : 'empty'
+          const planLabel = plan?.isError
+            ? 'no pudimos cargar su plan'
+            : plan?.isPending
+              ? 'cargando su plan'
+              : hasPlan
+                ? `con plan, ${plan?.blockCount ?? 0} ${plan?.blockCount === 1 ? 'bloque' : 'bloques'}`
+                : 'sin plan todavía'
 
           return (
             <li className={styles.day} key={day.date}>

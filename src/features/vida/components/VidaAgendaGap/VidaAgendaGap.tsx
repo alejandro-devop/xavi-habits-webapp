@@ -3,6 +3,7 @@ import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import type { AgendaGap, GapSuggestions } from '@/features/vida/utils/vida-agenda.utils'
 import { formatGapRange } from '@/features/vida/utils/vida-agenda.utils'
+import { pluralDayLabel } from '@/features/vida/utils/vida-date.utils'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
 import {
   formatDurationFromMinutes,
@@ -178,7 +179,7 @@ export function VidaAgendaGap({
         ) : showTemplateHint && suggestions.templateCount === 0 ? (
           <>
             <p className={styles.note}>
-              Todavía no tienes nada en tu plantilla para los {dayLabel}.{' '}
+              Todavía no tienes nada en tu plantilla para los {pluralDayLabel(dayLabel)}.{' '}
               <Button variant="ghost" size="sm" to={vidaPaths.actividades}>
                 Ver tus actividades
               </Button>

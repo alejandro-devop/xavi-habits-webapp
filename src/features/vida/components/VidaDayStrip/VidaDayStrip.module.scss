@@ -111,6 +111,14 @@
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
 }
 
+/* Su consulta falló: ni lleno ni vacío, porque **no se sabe**. Lo que se oye
+   lo dice con palabras en el `aria-label`; esto es solo la señal a la vista. */
+.dot[data-state='error'] {
+  background: transparent;
+  outline: 1px dashed color-mix(in srgb, var(--color-danger, #e11d48) 55%, transparent);
+  outline-offset: -1px;
+}
+
 .edge {
   margin: 0;
   color: var(--color-text-secondary);

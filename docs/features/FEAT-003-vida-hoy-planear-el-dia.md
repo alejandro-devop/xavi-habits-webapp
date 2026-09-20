@@ -1,7 +1,7 @@
 ---
 id: FEAT-003
 title: Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos
-status: building
+status: delivered
 architect: yes    # pantalla nueva sin hermana (agenda con geometría de tiempo), el SDL de Vida cambia, y los ajustes de Vida tocan otra feature
 area: features/vida
 requested: 2026-09-20
@@ -389,7 +389,7 @@ hasta que el API desplegada lleve el cambio**, y eso es de él, no de un agente.
 | 2 | **La agenda del día, en solo lectura.** El presupuesto (tiempo que queda, barra del día con la marca de «ahora», leyenda y línea de guía), los bloques del `activityDayPlan` ordenados por hora, los huecos con su tamaño y las sugerencias de la plantilla que caben (sin poder ponerlas aún), apertura en «Ahora», el lateral de escritorio, y todos los estados. Primera vez que el usuario ve su día repartido y dónde tiene sitio. | accepted |
 | 3 | **Poner algo en un hueco.** Un toque en una ficha lo coloca al principio del hueco; «+ otra cosa» abre la hoja de tres preguntas (qué · cuánto · cuándo) con lo que no cabe apagado y el «queda libre después»; quitar un bloque y cambiarle hora o duración. Errores de mutación visibles. | accepted |
 | 4 | **Cualquier día, no solo hoy.** La tira de 7 días con el punto de «tiene plan», el día en la URL, la ventana de esta semana y la siguiente, el día futuro en trazo suave, el día pasado en solo lectura, «copiar del mismo día pasado» y «vaciar y rehacer». Aquí ya se planea mañana a mano. | accepted |
-| 5 | **La semana y armar desde la plantilla.** La vista de semana con una línea por día, «Armar» en los vacíos copiando hora y duración de cada ítem (con el trato explícito de los solapes y de los ítems sin hora) y «Armar toda la semana» sin pisar lo que ya existe. Cierra el criterio de fase. | pending |
+| 5 | **La semana y armar desde la plantilla.** La vista de semana con una línea por día, «Armar» en los vacíos copiando hora y duración de cada ítem (con el trato explícito de los solapes y de los ítems sin hora) y «Armar toda la semana» sin pisar lo que ya existe. Cierra el criterio de fase. | accepted (2ª entrega) |
 
 Cada tajada se revisa sola. La 1 se cierra con tests y con el catálogo, que ya
 existe; la 2 se puede ver entera con un arnés y datos sintéticos; la 3 es la
@@ -766,7 +766,7 @@ código vivo y por eso se rescata por función, con test propio, no se restaura.
 | 2 | **La agenda del día, en solo lectura.** | `utils/vida-agenda.utils.ts` (N) · `hooks/useVidaNowMinute.ts` (N) · `hooks/useVidaDayData.ts` (N) · `components/VidaDayBudget/` (N) · `components/VidaAgendaBlock/` (N) · `components/VidaAgendaGap/` (N) · `components/VidaTemplateAside/` (N) · `pages/VidaHoyPage.tsx` | 11–20, 22, 48 (la mitad «Tu plantilla de \<día\>»), 49–56; **21 solo en su mitad de texto** (ver nota) | accepted (2ª entrega) |
 | 3 | **Poner algo en un hueco.** | `utils/vida-gap-form.utils.ts` (N) · `components/VidaPlaceInGapSheet/` (N) · `components/VidaAgendaGap/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 23–30, y 29/52/56 sobre las mutaciones | accepted |
 | 4 | **Cualquier día, no solo hoy.** | `utils/vida-window.utils.ts` (N) · `hooks/useVidaWeekPlans.ts` (N) · `components/VidaDayStrip/` (N) · `components/VidaDayActions/` (N) · `pages/VidaHoyPage.tsx` · `routes/vida-paths.ts` | 31–38 | accepted |
-| 5 | **La semana y armar desde la plantilla.** | `utils/vida-build-day.utils.ts` (N) · `hooks/useBuildDayFromTemplate.ts` (N) · `hooks/useBuildWeekFromTemplate.ts` (N) · `pages/VidaSemanaPage.tsx` (N) · `components/VidaTemplateAside/` · `components/VidaAgendaGap/` · `routes/vida-paths.ts` · `routes/vida.routes.tsx` | 39–46, 48 (la mitad «Mañana»), y **la mitad de 21 que es el botón**; 47 lo cronometra el usuario | pending |
+| 5 | **La semana y armar desde la plantilla.** | `utils/vida-build-day.utils.ts` (N) · `hooks/useBuildDayFromTemplate.ts` (N) · `hooks/useBuildWeekFromTemplate.ts` (N) · `pages/VidaSemanaPage.tsx` (N) · `components/VidaTemplateAside/` · `components/VidaAgendaGap/` · `routes/vida-paths.ts` · `routes/vida.routes.tsx` | 39–46, 48 (la mitad «Mañana»), y **la mitad de 21 que es el botón**; 47 lo cronometra el usuario | **accepted** (2ª entrega: criterio 48 con su botón, y el día en error fuera del lote — verificados en la segunda revisión) |
 
 **Las cinco tajadas se quedan como las cortó el analista.** Miradas contra el
 código, el corte aguanta: la 1 no depende de ninguna pantalla nueva, la 2 se ve
@@ -2108,6 +2108,399 @@ credenciales, y el API desplegada **sigue sin llevar `15463da`**):
 
 **Estado del árbol:** sin commitear.
 
+### Tajada 5 — La semana y armar desde la plantilla
+
+**Resumen para el revisor:**
+1. **Planear dejó de hacerse a mano.** Un día vacío que se pueda planear ofrece
+   **«Armar desde la plantilla (N cosas)»**: copia la hora y la duración de cada
+   ítem, corre detrás lo que se pisaría, encadena al final lo que no tiene hora
+   y lo **dice** en un aviso dentro de la agenda, con la vía al catálogo. El
+   lateral de escritorio gana **«Mañana, \<día\>»** con «Armar mañana desde la
+   plantilla» (o «Ver mañana» si ya tiene plan), y existe **`/app/vida/semana`**:
+   una línea por día, «Armar» en los vacíos editables y **«Armar toda la semana
+   desde la plantilla»** con confirmación que dice cuántos días y cuántos no se
+   tocan.
+2. Lo nuevo: `utils/vida-build-day.utils.ts` (+ test, 17 casos),
+   `hooks/useBuildDayFromTemplate.ts`, `hooks/useBuildWeekFromTemplate.ts`,
+   `pages/VidaSemanaPage.tsx` (+ `.module.scss` + test, 13 casos). Tocados:
+   `components/VidaTemplateAside/`, `pages/VidaHoyPage.tsx` (+ `.module.scss` y
+   su test), `hooks/useVidaWeekPlans.ts`, `routes/vida-paths.ts`,
+   `routes/vida.routes.tsx`, `graphql/vida-items.graphql.ts` y
+   `types/activity-followup.types.ts`.
+3. **Lo que más probablemente rompí:** (a) **`VidaTemplateAside` dejó de ser un
+   componente tonto**: ahora monta tres consultas (`dayPlan.byDate(mañana)`,
+   `items.list`, ajustes) y una mutación, así que **cualquier test que lo
+   renderice —directa o indirectamente, como `VidaHoyPage.test.tsx`— necesita
+   `useVidaItemsQuery` en el mock de `@/features/vida/hooks/useVidaItems`**; sin
+   él revienta al montar. (b) **`VIDA_ITEM_ACTIVITY_FIELDS` pide ahora
+   `status`**: si el API desplegado no lo aceptara, **las cuatro consultas y las
+   tres mutaciones de `vida-items` fallarían a la vez** —el catálogo, la hoja,
+   las sugerencias de los huecos y la plantilla—, no solo armar. El contrato lo
+   valida contra el SDL vendorizado, pero eso es el SDL, no Render. (c) **Armar
+   es `activityDayPlanSet`, que reemplaza el día entero**: el único muro contra
+   borrar un día ya planeado son las tres condiciones que apagan el botón
+   (`canPlan && !hasPlan && templateCount > 0`, y `canBuild` en la semana). Si
+   alguna se calculara mal, el gesto pasaría de «armar» a «machacar».
+
+**Lo que se construyó**
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/utils/vida-build-day.utils.ts` (+ `.test.ts`, 17 casos) (N) | La pieza central, **pura**: `buildDayFromTemplate(items, { dayStart, dayEnd })` → `{ items, placedCount, totalCount, movedCount, withoutTimeCount, droppedTitles, usedDefaultDuration }`. Además `usableTemplateItems` (quita el ítem desactivado y la actividad archivada), `templateItemsForDate` (los de ese día de la semana), `describeBuildDay` (las frases sueltas, para poder meter el enlace dentro de la de «sin hora») y `plannedMinutesOf`. |
+| `src/features/vida/hooks/useBuildDayFromTemplate.ts` (N) | Un día: calcula, manda **una sola** `activityDayPlanSet` con `useSetActivityDayPlanMutation` —ninguna mutación nueva— y guarda el resumen en `lastBuild` **solo si la mutación fue bien**. Con la plantilla vacía **no llama al API**: `Set` vaciaría el día. |
+| `src/features/vida/hooks/useBuildWeekFromTemplate.ts` (N) | La semana: orquesta sobre `api/` en serie, **un solo toast** y **una invalidación por día armado** al final. Resuelve con `{ done, failed, empty }`; no aborta al primer fallo. Mismo patrón que `useCreateStartingActivities` de FEAT-002. |
+| `src/features/vida/pages/VidaSemanaPage.tsx` (+ `.module.scss`, + `.test.tsx` con 13 casos) (N) | Una línea por día con «Planeado · N bloques · Xh YY» y su barrita, «Ver» a `hoyForDate`, «Armar» en los vacíos editables, y abajo «Armar toda la semana» con `useConfirmDialog`. El resultado se pinta **día por día** en un `Alert`. |
+| `src/features/vida/components/VidaTemplateAside/` (M) | Gana `VidaTomorrowBlock`: «Mañana, \<día\> N» con «Armar mañana desde la plantilla», «Ver mañana» si ya tiene plan, y el resumen de lo ajustado con el enlace al catálogo. |
+| `src/features/vida/pages/VidaHoyPage.tsx` (+ `.module.scss`, + 4 casos en su test) (M) | «Armar desde la plantilla (N cosas)» en el día vacío editable, el `Alert` con lo ajustado, el enlace «Ver la semana» junto a la tira, y **el lateral escondido en días pasados**. |
+| `src/features/vida/hooks/useVidaWeekPlans.ts` (M) | `VidaDayPlanDot` gana `items`: la semana resume con ellos sin pedir nada más. |
+| `src/features/vida/graphql/vida-items.graphql.ts` · `types/activity-followup.types.ts` (M) | `status` en la selección de `activity` de los documentos de `vida-items`, y `status?: ActivityStatus` en `ActivityFollowUpActivityRef` (opcional: los otros documentos no lo piden). |
+| `src/features/vida/routes/vida-paths.ts` · `routes/vida.routes.tsx` (M) | `semana` y `semanaForDate(date)` + la ruta. **No** entra en `app-nav.config.ts`. |
+
+**Por qué así, y qué se descartó**
+
+- **Los dos avisos de los revisores, atendidos.** (a) El lateral «Tu plantilla de
+  \<día\>» **ya no se pinta en un día pasado**: desde que lleva «Armar mañana»
+  dejó de ser lectura, y el criterio 38 dice que un día pasado no se toca. La
+  página lo decide con el mismo `canPlan` del que cuelgan las fichas y el «···»,
+  así que es una sola condición y no una cuarta regla suelta. (b) **Armar no
+  pone actividades archivadas.** Copiar (tajada 4) no puede saberlo porque
+  `ActivityDayPlanItem` no trae `status`; armar sí, porque el `VidaItem` trae su
+  actividad — **pero el documento no pedía `status`**, así que hubo que añadirlo
+  a `VIDA_ITEM_ACTIVITY_FIELDS`. `usableTemplateItems` deja fuera la actividad
+  `cancelled` **y** el `VidaItem` con `isActive: false`. `status` `undefined` se
+  trata como «no se sabe» y **no descarta nada**: los documentos que no lo piden
+  no cambian de comportamiento.
+- **La semana lee la plantilla con `vidaItems`, no con siete
+  `vidaSuggestionsForDate`.** El arquitecto dejó las sugerencias como fuente para
+  las fichas de los huecos, y ahí siguen; pero la semana necesita los siete días
+  a la vez, y `vidaItems` ya trae `days` y la actividad. Son **una** consulta en
+  vez de siete, con una clave que ya existía (`vidaKeys.items.list`). Los dos
+  caminos acaban en los mismos `VidaItem`, y por eso `buildDayFromTemplate` recibe
+  `VidaItem[]` y no `VidaSuggestion[]`: quien tiene sugerencias mapea `.item`.
+- **Armar un día usa el hook de mutación; armar la semana no.** Un día es un
+  gesto y un toast («Plan del día guardado»); siete días por el mismo hook serían
+  **siete toasts** encima del mismo gesto. Por eso la semana orquesta sobre
+  `api/` con un solo aviso e invalidando al final, que es exactamente lo que hace
+  `useCreateStartingActivities` —el único precedente de lote en Vida, y el que el
+  plan manda imitar—. **Es una desviación del plan**, que decía «llama a
+  `useSetActivityDayPlanMutation`» también para la semana.
+- **El aviso de lo ajustado no cabe en un toast**, porque el criterio 44 pide un
+  **enlace al catálogo**. Por eso `useBuildDayFromTemplate` guarda el resumen y
+  la pantalla lo pinta en un `Alert` dentro de la agenda —y el lateral, en su
+  bloque—. El resumen solo se guarda **en el `onSuccess` de la mutación**: si
+  falla, no hay nada que anunciar y el toast de error del hook lo cuenta.
+- **Lo que no cabe antes del fin del día no se pone, pero se nombra.** Un bloque
+  que se saliera del horario rompería la barra del presupuesto (que va de
+  `dayStart` a `dayEnd`) y la leyenda dejaría de cuadrar. Se descarta y se dice
+  por su nombre: «Maratón no cabía antes de que termine tu día». El plan no
+  decidía esto; lo dejaba como «si algo no cabe, se dice».
+- **Un ítem cuya hora cae antes del inicio del día cuenta como movido**: se
+  coloca en `dayStart` y entra en el «N de M no cabían a su hora». Su hora no se
+  respetó, y callarlo sería justo lo que el criterio 43 prohíbe.
+- **La ventana de la semana no tiene flechas mudas**: dos enlaces («Ver la semana
+  que viene» / «Volver a esta semana») y una línea que dice hasta dónde se
+  planea, igual que hizo la tira en la tajada 4. Una fecha fuera de la ventana se
+  **recorta**, no se rechaza.
+- **`/app/vida/semana` no entra en `app-nav.config.ts`**, como mandaba el plan:
+  se llega desde el enlace «Ver la semana» junto a la tira de Hoy, y así la
+  píldora encendida del módulo sigue siendo «Hoy» y la barra no gana un destino
+  que F4 quiere para «Plantilla».
+- **Sin `useMemo` para las siete fechas de la semana**: el compilador de React lo
+  marca como memoización que no puede preservar (error de lint). `useQueries` se
+  apoya en las claves, que son estables.
+- **Nada de lo prohibido:** ninguna mutación nueva, ninguna clave de caché nueva,
+  ninguna invalidación nueva, ningún componente de `shared/ui`, ningún icono a
+  pelo, y **ningún documento GraphQL nuevo** (solo un campo más en una selección
+  que ya existía, cubierto por `contracts.test.ts`).
+
+**Verificación**
+
+*Comprobaciones, corridas enteras al empezar y al terminar:*
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → 14 errores / 0 warnings (los mismos de la línea base;
+                  ninguno en Vida)
+pnpm test       → 2 fallos de 918 — los dos de `SearchSelect`, preexistentes
+                  (línea base: 2 de 885; +33 tests nuevos)
+pnpm build      → chunk inicial 914,52 kB (línea base 901,2 → +13,3 kB),
+                  `app-icons` 620,20 kB perezoso, `IconPicker` 4,64 kB
+                  (ninguno crece: nada de iconos entró al arranque)
+```
+
+*Tests nuevos:* `vida-build-day.utils.test.ts` (17 casos: copia exacta, orden,
+dos que se pisan, cadena de desplazamientos, hora antes del inicio del día, los
+sin hora al final con y sin duración, lo que no cabe, los plurales de las frases
+y que ninguna reprocha), `VidaSemanaPage.test.tsx` (13 casos: las dos formas de
+línea, el día pasado descrito por lo planeado y sin «Armar», armar un día,
+la confirmación de la semana, «Volver» y no «Cancelar», **un día que falla al
+segundo** y el resumen «Armamos 1 de 2 días», el aviso de lo ajustado con su
+enlace, las dos semanas de la ventana y el recorte) y 4 casos nuevos en
+`VidaHoyPage.test.tsx`.
+
+*Test ajeno derogado, y queda dicho:* `VidaHoyPage.test.tsx` tenía
+«"Armar desde la plantilla" NO se pinta todavía: llegaría muerto (tajada 5)»,
+escrito por la tajada 2 **precisamente para esta tajada**. Se sustituye por su
+contrario. Ninguna otra aserción se tocó; sí se añadió `useVidaItemsQuery` al
+mock de `useVidaItems` (lo necesita el lateral) y `itemsQuery = ready([])` al
+`beforeEach`.
+
+*Arnés temporal* (`src/arnes-t5/` + `arnes-t5.html`, **borrados antes de
+reportar**), con `MemoryRouter`, datos sintéticos y la caché de React Query
+sembrada por clave — sin tocar el store de auth ni `localStorage`: el contexto de
+`AuthBootstrap` se proveyó a mano y las consultas quedan deshabilitadas leyendo
+de la caché sembrada.
+
+- **La semana, esta y la que viene:** las siete líneas, «Planeado · 1 bloque ·
+  1h» con su barrita, «Sin plan todavía» + «Tu plantilla trae 3 cosas los
+  lunes», «Armar» solo en los vacíos **editables** (en la semana en curso, con
+  hoy en domingo, **cero** «Armar» y el pie dice «No hay ningún día de esta
+  semana que se pueda armar»; en la siguiente, **5** «Armar» y «5 días están
+  libres… Los 2 que ya tienen plan no se tocan»).
+- **La confirmación** (criterio 45), leída del DOM: «Se armarán 5 días, copiando
+  la hora y la duración de cada cosa de tu plantilla. 2 ya tienen plan y no se
+  tocan.» con «Volver» y «Armar 5 días».
+- **Hoy en un día vacío editable:** «Armar desde la plantilla (3 cosas)» con su
+  línea de apoyo, y el lateral con «Mañana, Lunes 21 · Tu plantilla trae 3 cosas
+  los lunes · Armar mañana desde la plantilla».
+- **Móvil 375 px y tema oscuro** sobre la semana: `scrollWidth` 375 =
+  `clientWidth` 375 (**sin scroll horizontal**, criterio 53), las líneas se
+  apilan, los nombres largos no empujan la fila, y el contraste aguanta
+  (captura mirada).
+
+**Criterios que cierra, uno por uno**
+
+- **21 (su mitad de botón, la que la tajada 2 dejó partida)** — cerrado. «Armar
+  desde la plantilla (3 cosas)» aparece en el día sin plan que se puede planear,
+  dice cuántas cosas trae la plantilla y **funciona**. Test + arnés.
+- **39** — cerrado. Línea por día con día de la semana y número; con plan,
+  «Planeado · N bloques · Xh YY» + barrita + «Ver»; sin plan, «Sin plan todavía»
+  + «Tu plantilla trae N cosas los \<día\>» + «Armar». Tres tests y arnés.
+- **40** — cerrado. Los días pasados se describen por lo **planeado**; el DOM no
+  contiene «seguiste» y no hay barritas de seguido/de más/fuera del plan. Test.
+- **41** — cerrado. `buildDayFromTemplate` copia `startTime` y
+  `durationMinutes`; no encadena, no reparte por franjas, no propone otra hora.
+  Test puro + el test de la página que comprueba el payload literal de la
+  mutación.
+- **42** — cerrado. `setMutation.mutate` / `setActivityDayPlan` llamados **una
+  vez** por día, con la fecha y los ítems; la invalidación por fecha repinta la
+  línea y el punto de la tira sin recargar (misma clave, probado en la tajada 4).
+- **43** — cerrado. El segundo se coloca justo detrás conservando su duración y
+  se cuenta: «1 de 3 no cabían a su hora y quedaron después». Cuatro tests puros
+  (incluida la cadena de tres) + el aviso leído en la pantalla.
+- **44** — cerrado. Los sin hora van al final encadenados, con su duración o con
+  `DEFAULT_BLOCK_MINUTES`, y se lee «1 cosa sin hora, puesta al final — ponles
+  una hora en tu plantilla» con enlace a `/app/vida/actividades`. Tests puros +
+  el `Alert` comprobado en `VidaHoyPage.test.tsx` y en `VidaSemanaPage.test.tsx`.
+- **45** — cerrado. Solo los días sin plan y editables; la confirmación dice
+  cuántos se arman y cuántos no se tocan; test del payload y arnés del diálogo.
+- **46** — cerrado. Con el segundo día fallando: el `Alert` dice **«Armamos 1 de
+  2 días»** —nunca «semana armada»—, nombra el día que falló con su razón y dice
+  «Sigue sin plan»; el primero queda armado. Test.
+- **48 (su mitad «Mañana»)** — cerrado. «Mañana, \<día\> N» con «Armar mañana
+  desde la plantilla», «Ver mañana» cuando ya tiene plan, y sin «Cómo va el día»
+  (D8). Arnés; **no hay test de componente propio del lateral** (ver riesgos).
+- **38 (el aviso del revisor)** — cerrado en lo que faltaba: el lateral **no se
+  pinta** en un día pasado. Cubierto por el test de la tajada 4 que comprueba que
+  un día pasado no tiene nada que tocar, y visto en el arnés.
+- **53, 54, 55, 56** en lo que toca a la semana y a lo nuevo — cerrados: 375 px
+  sin scroll horizontal (medido), texto largo con `overflow-wrap: anywhere` y
+  `min-width: 0`, oscuro legible (captura), y el test de lenguaje sobre el DOM
+  entero de la semana más el de las frases del resumen.
+- **57** — cerrado: ver los cuatro números de arriba.
+
+**Pendiente de prueba manual — no marcado como cumplido**
+
+- **47 (criterio de fase).** Lo cronometra el usuario: **armar mañana en menos de
+  un minuto** y **la semana en menos de cinco**. Pasos: (1) `/app/vida/hoy` en
+  escritorio → lateral → «Armar mañana desde la plantilla» → leer el aviso →
+  «Ver mañana». (2) `/app/vida/hoy` → «Ver la semana» → «Ver la semana que
+  viene» → «Armar toda la semana desde la plantilla» → confirmar → leer el
+  resumen día por día.
+- **58 (el recorrido entero con su cuenta).** Todo `/app/*` está detrás del login
+  y **los agentes no entran con credenciales**: lo de aquí se cierra con tests y
+  arnés. Falta, con la API de Render ya desplegada: armar un día con solapes de
+  verdad y comprobar que el plan queda como dice el aviso; armar la semana con
+  algún día ya planeado y verificar que **no se pisa**; y —lo más importante—
+  que **`status` en la selección de `vida-items` no rompe nada**: abrir el
+  catálogo, la hoja de actividad y las sugerencias de un hueco.
+
+**Riesgos**
+
+- **`status` en `VIDA_ITEM_ACTIVITY_FIELDS` afecta a todo `vida-items`**, no
+  solo a armar. El SDL vendorizado lo admite (`Activity.status: ActivityStatus!`)
+  y `contracts.test.ts` está verde, pero eso valida contra la copia, no contra
+  Render. Es el riesgo número uno de esta tajada.
+- **`VidaTemplateAside` ya no es tonto**: monta consultas y una mutación. Quien
+  lo renderice en un test necesita los mocks; y en escritorio son **tres
+  consultas más** por pintado de Hoy (el plan de mañana comparte clave con su
+  agenda y con su punto de la tira, así que en la práctica es una).
+- **Armar machaca si se ofrece donde no debe.** `canPlan && !hasPlan &&
+  templateCount > 0` en Hoy y `canBuild` en la semana son lo único que separa
+  «armar» de «borrar un día planeado». Merecen una mirada del revisor.
+- **`templateCount` en Hoy cuenta sugerencias activas, pero no descarta las
+  archivadas**; el botón puede decir «(3 cosas)» y armar 2 si una actividad está
+  archivada. No es una mentira peligrosa —el aviso posterior dice cuántos
+  bloques quedaron— pero el número del botón y el resultado pueden no coincidir.
+  Se anota, no se arregla: tocarlo es cambiar también el texto de «sin plan» que
+  la tajada 2 dejó probado.
+- **El resumen de armar no sobrevive a un cambio de día ni a una recarga**: vive
+  en estado de React. Es deliberado (es un aviso de lo que acaba de pasar), pero
+  quien arme y recargue no vuelve a verlo.
+
+**Lo que descubrí y no toqué**
+
+- **«los sábado», «los domingo».** `VIDA_DAY_LABELS` da el día en singular y
+  media docena de sitios lo escriben tras «los». Viene de las tajadas 2 y 4 y lo
+  repiten la semana y el bloque «Mañana»: preferí ser consistente antes que
+  arreglarlo en tres sitios y dejarlo mal en otros cuatro. Es un plural, no un
+  bug, y sale barato en una pasada propia.
+- **El bloque «Mañana» se pinta también cuando el día mirado ya es mañana**: dice
+  «Mañana, Lunes 21» estando en el lunes 21. No es falso —mañana sigue siendo el
+  21— pero se lee raro. No lo arreglé porque esconderlo es una regla más de las
+  que la página ya tiene demasiadas.
+- **El criterio 48 pide, en su primera mitad, «el botón de ponerla en el primer
+  hueco donde cabe»** en el lateral. No está: la tajada 2 no lo construyó y la
+  revisión lo aceptó así. No entra en el alcance de esta tajada; queda dicho para
+  que no se dé por cerrado sin mirarlo.
+
+**Estado del árbol:** sin commitear.
+
+### Tajada 5 — respuesta a la devolución (2ª entrega)
+
+**Resumen para el revisor:**
+1. **Los dos motivos, cerrados.** El lateral trae ahora, en cada cosa que no
+   está en el plan, **«Ponerla HH:MM»** —el primer hueco del día donde cabe, con
+   `activityDayPlanItemAdd`— y, si no cabe en ninguno, el botón queda **apagado
+   diciendo por qué**. Y la semana **ya no puede machacar un plan**:
+   `useVidaWeekPlans` expone `isError` por día, un día en error se pinta «No
+   pudimos cargar este día» con «Reintentar», **no ofrece «Armar»** y **queda
+   fuera del lote**; el punto de la tira de Hoy tampoco afirma «sin plan» sin
+   saberlo.
+2. Los ocho hallazgos baratos, cerrados también: contadores una sola vez por
+   ítem, `durationMinutes: 0` tratado como sin duración, la bandera de duración
+   por defecto **pintada** («1 cosa sin duración, puesta a 30 min»), «(N cosas)»
+   sin archivadas, los días `empty` nombrados en el resumen, el `<p>` vacío
+   fuera, «los sábados» y el bloque «Mañana» escondido cuando el día visto ya es
+   mañana.
+3. **Lo que más probablemente rompí esta vez:** (a) **`VidaTemplateAside` gana
+   dos props obligatorias, `date` y `agenda`**, y una mutación: quien lo monte
+   fuera de `VidaHoyPage` no compila, y el botón coloca **sobre el día visto**,
+   así que si `agenda` no fuera la del mismo `date` pondría el bloque en el día
+   equivocado. (b) **`hasPlan` de `useVidaWeekPlans` ahora es `false` también
+   cuando la consulta falla**: la tira pinta el punto como «error», no como
+   «vacío» — si alguien leyera `hasPlan` sin mirar `isError`, seguiría viendo un
+   día en error como día libre. (c) **`pluralDayLabel` toca cuatro pantallas**
+   (agenda, lateral, Hoy, semana): es un `+ 's'` sobre `VIDA_DAY_LABELS`, pero
+   cualquier test que buscara «los sábado» deja de encontrarlo.
+
+**Lo que se cambió**
+
+| Archivo | Qué |
+|---|---|
+| `components/VidaTemplateAside/VidaTemplateAside.tsx` (+ `.module.scss`) | **`PlaceInFirstGapButton`** por cada ítem que no está en el plan: busca en `agenda.gaps` el primero vivo donde cabe, coloca con `useAddDayPlanItemMutation` (`isPending` apaga los botones contra el doble clic, y el toast y la invalidación por fecha los pone el hook). Sin hueco, botón apagado + «No queda un rato de 20m en este día». El `aria-label` dice **«en el primer hueco donde cabe»**, para que no se confunda con la ficha del criterio 23. Y el bloque «Mañana» no se pinta si el día visto ya es mañana. |
+| `utils/vida-agenda.utils.ts` | `findFirstFittingGap(gaps, minutes)`: el primero que no ha pasado, no es `sliver` y admite esos minutos. Reusa `fitsInGap`. El hueco que contiene al reloj ya viene partido por `buildDayAgenda`, así que uno empezado ofrece **desde ahora**, como en la tajada 3. |
+| `hooks/useVidaWeekPlans.ts` | `VidaDayPlanDot` gana **`isError`**; `hasPlan` pasa a ser `false` cuando la consulta falló (nunca «tiene plan» sobre datos que no llegaron); `VidaWeekPlans` gana `hasError` y `refetch()`, que vuelve a pedir **solo las que fallaron**. |
+| `pages/VidaSemanaPage.tsx` (+ `.module.scss`) | Fila en error con su texto y «Reintentar»; `canBuild` exige `!isError && !isPending`; el botón de la semana se apaga también con `weekPlans.isPending`; el pie dice cuántos días quedaron fuera; el resumen nombra los días **`empty`**. |
+| `components/VidaDayStrip/` (`.tsx` + `.module.scss`) | Cuarto estado del punto: `error`, con su `aria-label` («no pudimos cargar su plan»). Cierra el hallazgo 1 de la revisión de la tajada 4. |
+| `utils/vida-build-day.utils.ts` | Contadores **después** de comprobar el encaje (cada ítem en una sola categoría); `durationOf()` trata `0` y negativos como sin duración; `usedDefaultDuration` → **`defaultDurationCount`**, con su frase en `describeBuildDay`. |
+| `pages/VidaHoyPage.tsx` | `templateCount` sale de `usableTemplateItems` (sin archivadas) y es lo que se arma; el `Alert` ya no pinta un `<p>` vacío; el lateral recibe `date` y `agenda`. |
+| `utils/vida-date.utils.ts` | `pluralDayLabel(label)`: «sábado» → «sábados», «lunes» → «lunes». Usado en la agenda, el lateral, Hoy y la semana. |
+
+**Por qué así**
+
+- **El botón del criterio 48 busca el hueco en la agenda ya construida**, no en
+  una lista de huecos propia: es el mismo reparto que se está pintando, así que
+  lo que el botón promete («Ponerla 13:53») es literalmente lo que se va a ver.
+  Y por eso el lateral necesita `agenda`: pedirle que la calculara otra vez sería
+  tener dos verdades sobre el mismo día.
+- **Se le puso hora al botón** («Ponerla 13:53») en vez de un «Ponerla» a secas:
+  el criterio pide colocar «en el primer hueco donde cabe», y decir cuál es antes
+  de tocar evita la sorpresa de encontrárselo en otro sitio.
+- **Sin hueco, el botón se apaga; no desaparece.** Que algo no quepa hoy es
+  información —y es la señal de que el día está lleno—, no un error que haya que
+  esconder.
+- **Un día en error no es un día vacío, y ahora el tipo lo dice.** El arreglo va
+  en `useVidaWeekPlans` y no en la página, porque el mismo hook alimenta la tira
+  de Hoy: las dos superficies se curan con el mismo campo, y quien lo lea a
+  partir de ahora tiene que decidir qué hace con él.
+- **Los contadores se suben al final del bucle, no al principio.** Era el
+  defecto que hacía que un ítem apareciera a la vez en «no cabían a su hora» y en
+  «se quedó fuera del plan». Ahora cada ítem acaba en **una** categoría: movido,
+  sin hora, con duración por defecto, o descartado.
+- **`defaultDurationCount` se pinta en las tres superficies** (Hoy, el lateral y
+  la semana) o se habría quitado: una bandera calculada que nadie enseña es
+  trabajo muerto.
+
+**Verificación**
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → 14 errores / 0 warnings (línea base, ninguno en Vida)
+pnpm test       → 2 fallos de 931 — los dos de `SearchSelect`, preexistentes
+                  (1ª entrega: 2 de 918; +13 tests)
+pnpm build      → chunk inicial 916,95 kB (línea base 901,2 → +15,7 kB;
+                  1ª entrega 914,52 → +2,4 kB), `app-icons` 620,20 kB e
+                  `IconPicker` 4,64 kB **idénticos**: nada de iconos al arranque
+```
+
+*Tests nuevos (13):*
+
+- **Criterio 48, cinco casos en `VidaHoyPage.test.tsx`:** coloca con el payload
+  literal (`09:24 → 09:44` con el hueco empezado, que es «desde ahora» y no
+  desde las 9:00); sin duración en la plantilla usa 30 min; lo que ya está en el
+  plan enseña «en el plan» y **no** el botón; con el día entero ocupado el botón
+  está **`disabled`** y se lee «No queda un rato de 20m en este día», sin
+  mutación; y en un día pasado no hay lateral, así que no hay dónde poner.
+- **El día en error, tres casos en `VidaSemanaPage.test.tsx`:** no dice «Sin plan
+  todavía», no ofrece «Armar» y «Reintentar» llama al `refetch`; **queda fuera
+  del lote** —un día con plan real cuya consulta falla **no** entra en las
+  llamadas a `activityDayPlanSet`, que es el motivo 2 de la devolución—; y con
+  días en vuelo la pantalla es esqueleto y no hay ningún «Armar».
+- **Los contadores y el cero, cuatro casos puros:** lo que se movería y luego no
+  cabe se cuenta **solo** como descartado (`movedCount` 0, `describeBuildDay`
+  sin la frase); lo sin hora que no cabe no se cuenta como «puesta al final»;
+  `durationMinutes: 0` da `08:00–08:30` y suma a `defaultDurationCount`; una
+  duración negativa, igual.
+- **Un día del lote sin nada que poner** sale nombrado en el resumen.
+
+*Arnés temporal* (`src/arnes-t5b/` + `arnes-t5b.html`, **borrado antes de
+reportar**; misma técnica que la 1ª entrega: caché sembrada por clave y contexto
+de `AuthBootstrap` a mano, sin tocar el store de auth ni `localStorage`):
+
+- **El lateral con el botón**, leído del DOM: tres filas con «Ponerla 13:53»
+  —las tres al primer hueco vivo, que empieza en «ahora»— y «Armar mañana desde
+  la plantilla» debajo.
+- **375 px y tema oscuro, medidos esta vez en el lateral y en la semana:**
+  `scrollWidth` 375 = `clientWidth` 375 en las dos (**sin scroll horizontal**);
+  el lateral cae debajo de la agenda con 343 px de ancho, los nombres largos
+  truncan sin empujar el botón, y «Ponerla 13:53» se lee en oscuro (captura).
+  Esto responde al «no lo medí yo» del criterio 53 de la revisión.
+- **La semana en la semana que viene:** «Tu plantilla trae 3 cosas los
+  **domingos**» — el plural, arreglado y visto.
+
+**Lo que sigue pendiente de prueba manual** — sin cambios respecto a la 1ª
+entrega: el **criterio 47** (cronómetro: mañana en menos de un minuto, la semana
+en menos de cinco) y el **58** (el recorrido entero con su cuenta), los dos
+detrás del login. Al recorrido conviene añadirle ahora **el botón «Ponerla» del
+lateral** —colocar tres cosas seguidas y ver que cada una cae en el primer hueco
+que queda— y, si se puede provocar, **un día de la semana que no cargue**, para
+ver que se lee «No pudimos cargar este día» y que no se ofrece armarlo.
+
+**Riesgos que quedan**
+
+- **`VidaTemplateAside` coloca sobre `date` usando `agenda`**: las dos vienen de
+  la misma página y del mismo día, pero son dos props sueltas y nada las ata.
+- **El botón «Ponerla» no reacciona al minuto que pasa** más que cuando la
+  página se repinta (una vez por minuto, por `useVidaNowMinute`): entre tic y
+  tic puede ofrecer una hora un pelo vieja. El API acepta la hora que se le
+  manda, así que el bloque quedaría un minuto atrás, no mal.
+- **`hasError` se calcula por día pero la semana solo ofrece un `refetch`
+  global** (de las que fallaron). Es suficiente y no inventa nada, pero el botón
+  de una fila reintenta también las otras que fallaron.
+
+**Estado del árbol:** sin commitear.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — La plantilla con hora y duración, y los ajustes de Vida
@@ -3004,3 +3397,366 @@ corrida entera de `pnpm lint` / `pnpm test` / `pnpm build`, un arnés de tests d
 17 casos bajo `src/features/vida/` y un arnés de navegador bajo
 `src/revision-t4/` a 375 px en claro y oscuro. **Los dos arneses están
 borrados** y `git status` no los lista.*
+
+### Tajada 5 — La semana y armar desde la plantilla
+
+**Veredicto: `returned`.** Lo construido funciona y está bien hecho: armar copia
+hora y duración, corre detrás lo que se pisa, encadena al final lo sin hora y lo
+dice; la semana no pisa ningún día con plan; la línea base no empeora. Devuelvo
+por **dos cosas**, y ninguna es de estilo:
+
+1. **El criterio 48 no se cumple.** Pide, literal, que el lateral traiga «cada
+   cosa de la plantilla de ese día, marcando las que ya están en el plan **y con
+   el botón de ponerla en el primer hueco donde cabe**». Ese botón **no existe**
+   en ninguna parte del árbol. No lo cierra ninguna otra vía: el toque en una
+   ficha de la tajada 3 (criterio 23) es otra superficie —la ficha dentro del
+   hueco— y otro comportamiento —el principio de **ese** hueco, no el primero
+   donde cabe—. Como esta es la **última tajada**, aceptarla dejaría la feature
+   en `delivered` con un criterio explícito sin cumplir. El dossier enseña el
+   recorrido del botón: la tajada 2 lo aplazó («es una mutación: tajada 3»), la 3
+   no lo hizo, el constructor de la 4 avisó «ojo para la tajada 5» y la 5 lo
+   declara fuera de alcance. Nadie lo construyó.
+2. **La vista de semana puede machacar un plan si falla una de las siete
+   consultas de día.** `useVidaWeekPlans` no expone `isError`: una consulta que
+   falla devuelve `data: undefined` → `items: []` → `hasPlan: false` →
+   `canBuild: true`. Ese día se lee «Sin plan todavía», enseña «Armar» y entra en
+   `buildable`, y armar es `activityDayPlanSet`, que **reemplaza el día entero**.
+   Un fallo de red en un día ya planeado se convierte en borrarlo. Es el riesgo
+   que el propio constructor marcó («armar machaca si se ofrece donde no debe»);
+   el revisor de la tajada 4 ya lo vio en el punto de la tira, donde solo
+   mentía, y aquí escribe. Hoy no tiene el agujero: `useVidaDayData` distingue
+   el error y el botón cuelga de `!hasPlan` con el plan cargado.
+
+**Criterios, uno por uno** (contra la sección 1 literal; el núcleo puro lo medí
+con un arnés de tests propio bajo `src/features/vida/utils/`, **borrado**, 11
+casos que no repiten los 17 del constructor):
+
+- **21, su mitad de botón — cumplido.** «Armar desde la plantilla (2 cosas)» se
+  pinta en el día vacío y editable, dice cuántas cosas trae y manda **una sola**
+  `activityDayPlanSet` con el payload literal. Visto en `VidaHoyPage.test.tsx` y
+  en el diff. El test de la tajada 2 que afirmaba lo contrario está derogado a
+  propósito y así queda dicho; es legítimo: lo escribió la tajada 2 para esto.
+- **39 — cumplido, con una desviación anotada.** Línea por día con día de la
+  semana y número, «Planeado · N bloques · Xh YY» + barrita + «Ver», y en los
+  vacíos «Sin plan todavía» + «Tu plantilla trae N cosas los \<día\>». La
+  desviación: el «Armar» **no** aparece si ese día la plantilla no trae nada (ni
+  en días pasados, que es el criterio 38). Un botón muerto sería peor; lo
+  registro como decisión, no como incumplimiento.
+- **40 — cumplido.** Los días pasados se describen por lo **planeado**, con la
+  misma línea que los futuros; no hay «seguiste», ni tramos de seguido / de más
+  / fuera del plan. Leído en `VidaSemanaPage.tsx` y en su test.
+- **41 — cumplido.** `buildDayFromTemplate` copia `startTime` y
+  `durationMinutes` tal cual: dos ítems a las 8:00 y 12:00 salen exactamente a
+  las 8:00 y 12:00, con `orderIndex` renumerado 0, 1 por orden de hora.
+- **42 — cumplido.** Una llamada por día (`mutate` una sola vez), y la
+  invalidación por fecha es la misma entrada de caché que la agenda y que el
+  punto de la tira, así que la línea y el punto se repintan sin recargar.
+- **43 — cumplido en el comportamiento, con un recuento que se contradice.**
+  Dos a la misma hora: `08:00–09:00` y `09:00–09:30`, con «1 de 2 no cabían a su
+  hora y quedaron después». Solape parcial (8:00–9:00 y 8:30): el segundo va a
+  `09:00–09:45`, **conservando su duración**. El defecto: los contadores se
+  suben **antes** de comprobar que el bloque cabe, así que un ítem que se mueve y
+  después se descarta se cuenta como movido *y* como descartado. Medido:
+  `22:00 +50` y `22:10 +30` con fin 23:00 → «1 de 2 no cabían a su hora y
+  quedaron después» **y** «Ab no cabía antes de que termine tu día y se quedó
+  fuera del plan», sobre el mismo ítem. No se pierde nada en silencio, pero se
+  afirma algo que no está en el plan.
+- **44 — cumplido, con la misma contradicción.** Sin hora y con duración: al
+  final, encadenado (`09:00–09:45`). Sin hora y sin duración: `DEFAULT_BLOCK_
+  MINUTES` (30 min), y el bloque enseña su duración en la agenda. La frase «1
+  cosa sin hora, puesta al final — ponles una hora en tu plantilla» lleva el
+  enlace a `/app/vida/actividades` en las tres superficies. Contradicción: un
+  ítem sin hora que **no cabe** se cuenta como «puesta al final» y a la vez se
+  nombra como descartado. Y `usedDefaultDuration` se calcula y **no se usa en
+  ninguna pantalla**: si la duración por defecto tiene que ser «visible» como
+  algo más que los 30 min pintados en el bloque, falta decirlo; si no, sobra la
+  bandera.
+- **45 — cumplido.** `canBuild = isEditableDate && sin plan && plantilla > 0`, y
+  la confirmación dice «Se armarán N días, copiando la hora y la duración de cada
+  cosa de tu plantilla. M ya tienen plan y no se tocan», con salida «Volver». Los
+  días con plan no entran en el lote. **Con la salvedad del punto 2 del
+  veredicto**: «sin plan» se decide sobre una consulta que puede haber fallado.
+- **46 — cumplido.** `useBuildWeekFromTemplate` no aborta al primer fallo,
+  acumula `{ done, failed, empty }`, invalida solo los días armados y la pantalla
+  titula «Armamos 1 de 2 días» nombrando el que falló con su razón y «Sigue sin
+  plan». Nunca «semana armada». Un hueco: los días que acaban en `empty` —los
+  que se prometieron en la confirmación pero no dejaron ningún bloque— **no
+  salen en el resumen**; se prometieron 3 y se lee «Armamos 2 días» sin decir qué
+  pasó con el tercero.
+- **47 — pendiente de prueba manual.** Lo cronometra el usuario; no lo doy por
+  cumplido.
+- **48 — NO cumplido.** Su mitad «Mañana» sí: «Mañana, \<día\> N» con «Armar
+  mañana desde la plantilla», «Ver mañana» si ya tiene plan, y sin «Cómo va el
+  día» (D8). Falta el botón «ponerla en el primer hueco donde cabe» (punto 1 del
+  veredicto).
+- **53, 54, 55 — comprobados por estructura, no medidos en un navegador real.**
+  En `VidaSemanaPage.module.scss` y en lo nuevo del lateral no hay un solo ancho
+  fijo en `px`, hay `min-width: 0` en todos los contenedores, `overflow-wrap:
+  anywhere` en los dos textos largos, `flex-wrap: wrap` en las filas, y los
+  colores salen de `--color-text`, `--color-text-secondary`, `--color-primary` y
+  `--color-glass-border` —nunca de `--color-text-muted`, el token de bajo
+  contraste que la sección 2 prohíbe—. No puede desbordar a 375 px, y coincide
+  con el `scrollWidth 375 = clientWidth 375` que midió el constructor. **No lo
+  medí yo en el navegador**: la pantalla está detrás del login y montar un arnés
+  de `VidaSemanaPage` pedía sembrar cuatro proveedores; con la devolución ya
+  decidida, no gasté el turno. Queda dicho, no disimulado.
+- **56 — cumplido** en lo nuevo. Ninguna frase reprocha: «Sin plan todavía»,
+  «libre», «ponles una hora en tu plantilla», «Volver» en vez de «Cancelar». Ni
+  «desperdiciado», ni «perdiste», ni «fallaste», ni «eliminar» sobre un bloque.
+- **57 — cumplido, verificado entero por mí, no leído del reporte:**
+  `pnpm build` **exit 0** (el mismo `tsc -b`) con chunk inicial **914,52 kB**
+  (línea base 901,2 → +13,3 kB), `app-icons` **620,20 kB** y `IconPicker`
+  **4,64 kB** — los dos **idénticos** a la línea base: nada de iconos entró al
+  arranque. `pnpm lint` → **14 errores / 0 warnings**. `pnpm test` → **2 fallos
+  de 918**, los dos de `SearchSelect`, preexistentes. Ningún documento GraphQL
+  nuevo: solo `status` dentro de `VIDA_ITEM_ACTIVITY_FIELDS`, que
+  `contracts.test.ts` ya valida.
+- **58 — pendiente de prueba manual**, y lo seguirá estando: está detrás del
+  login y los agentes no entran con credenciales.
+
+**Lo que se rompió cerca — cómo miré**
+
+- **`graphify explain "VidaTemplateAside"` y `graphify explain
+  "useVidaWeekPlans"`.** El lateral solo lo monta `VidaHoyPage` (por su
+  `index.ts`); el hook de la semana lo llaman `VidaHoyPage` y `VidaSemanaPage`,
+  las dos de esta feature. `VIDA_ITEM_ACTIVITY_FIELDS` no es un nodo del grafo
+  (es una plantilla de cadena), así que ese lo seguí a mano.
+- **El cambio de `VIDA_ITEM_ACTIVITY_FIELDS`, que es lo que el constructor marcó
+  como «lo que más probablemente rompí».** Es **aditivo**: un campo más en una
+  selección que ya existía, heredado por las cuatro consultas y las tres
+  mutaciones de `vida-items` (catálogo, hoja, plantilla y sugerencias de los
+  huecos). En el tipo, `status?: ActivityStatus` es **opcional**, así que ningún
+  consumidor deja de compilar ni cambia de comportamiento: `undefined` es «no se
+  sabe» y `usableTemplateItems` no descarta por él. `contracts.test.ts` verde
+  contra el SDL vendorizado y la suite entera verde. El riesgo que queda es el
+  API real, y **no es mío de comprobar**: el usuario ya confirmó contra Render
+  que el esquema admite la selección.
+- **El lateral dejó de pintarse en días pasados.** Es exactamente lo que pidió la
+  revisión de la tajada 4; no rompe el criterio 48, que no habla de días pasados.
+  En móvil el lateral sigue montándose debajo de la agenda (no hay `media query`
+  que lo oculte), así que «Mañana» y sus tres consultas también viven ahí: no es
+  un fallo —el bloque es útil en móvil— pero no estaba dicho.
+- **`useVidaWeekPlans` ganó `items`**: campo añadido, nadie deja de compilar, y
+  la tira sigue usando `hasPlan`/`blockCount`. Sin regresión.
+- **FEAT-002 y hábitos.** No hay un solo archivo tocado fuera de
+  `src/features/vida/` (`git diff --stat HEAD`): `app-nav.config.ts` intacto —la
+  semana no entra en la barra, como mandaba el plan—, `shared/` intacto, hábitos
+  intacto. El catálogo y la hoja solo cambian por el campo GraphQL de arriba, y
+  sus tests pasan.
+- **`/app/vida/semana` en el navegador** (5173 del usuario, sin sesión): la ruta
+  existe y redirige a `/auth/login` sin romper el router ni la portada.
+
+**Estados**
+
+- **Vacío:** los tres cubiertos —Hoy no pinta el botón sin plantilla, la semana
+  dice «Tu plantilla todavía no trae nada para los \<día\>», el lateral dice
+  «Mañana tu plantilla no trae nada que armar»—. Y con la plantilla vacía **no se
+  llama al API**, que con `Set` habría vaciado el día: bien visto.
+- **Cargando:** esqueleto de siete líneas en la semana, «Mirando cómo viene
+  mañana…» en el lateral.
+- **Error:** el de `vidaItems` en la semana está resuelto (aviso + «Reintentar»);
+  **el de los siete planes del día, no** (punto 2 del veredicto).
+- **Sin sesión:** la semana enseña «Entra para ver tu semana» con la vía a
+  entrar, no un spinner eterno (criterio 51).
+- **Texto largo y móvil 375 px y oscuro:** estructuralmente sanos; sin medición
+  propia en navegador (ver criterio 53).
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: ninguna mutación
+nueva (`activityDayPlanSet` es la de siempre), ninguna clave de caché nueva
+(`vidaKeys.dayPlan.byDate`, `vidaKeys.items.list`, `settingsKeys.my`), ninguna
+invalidación nueva (`invalidateDayPlanQueries` por fecha), ningún componente de
+`shared/ui`, ningún icono a pelo, ningún documento GraphQL nuevo y ninguna
+utilidad de fecha nueva. La desviación del plan —la semana lee `vidaItems` una
+vez en vez de siete `vidaSuggestionsForDate`, y orquesta sobre `api/` como
+`useCreateStartingActivities` en vez de disparar siete veces el hook de
+mutación— está escrita, razonada y **va en la dirección que el plan quería**
+(menos consultas, un solo aviso): la doy por buena.
+
+**Hallazgos que no son motivo de devolución, pero se arreglan de paso**
+
+1. **Los contadores antes de la comprobación de encaje** (criterios 43 y 44):
+   subirlos después de decidir que el bloque cabe quita las dos frases
+   contradictorias.
+2. **`usedDefaultDuration` no se pinta en ninguna parte.** O se dice («le pusimos
+   30 min») o se quita la bandera.
+3. **`templateCount` en Hoy no descarta las archivadas**: el botón puede decir
+   «(3 cosas)» y dejar 2 bloques. La semana ya lo resuelve con
+   `templateItemsForDate`; en Hoy es la misma función.
+4. **`durationMinutes: 0` da un bloque de longitud cero** (`08:00–08:00`):
+   `?? DEFAULT_BLOCK_MINUTES` no atrapa el `0`. El API valida `> 0` al crear el
+   ítem, así que hoy no llega; queda dicho.
+5. **En Hoy, el `Alert` del resumen pinta un `<p>` vacío** cuando no hubo nada
+   que ajustar (`{null} {null}`).
+6. **Los días `empty` del lote no salen en el resumen de la semana** (criterio
+   46): se prometieron 3 y se leen 2, sin decir qué pasó con el tercero.
+7. **«los sábado», «los domingo»** (`VIDA_DAY_LABELS` en singular tras «los»):
+   heredado de las tajadas 2 y 4, y esta tajada lo repite en dos sitios más —la
+   línea de la semana y el bloque «Mañana»—. Sigue mereciendo una pasada propia.
+8. **El bloque «Mañana» se pinta estando ya en mañana.** Confirmado leyendo el
+   componente: `tomorrowOf(today)` no mira el día visto.
+
+**Lo que no revisé:** nada detrás del login (estructural en este proyecto); el
+API real de Render; la medición propia a 375 px y en oscuro de la semana y del
+lateral; y el cronómetro del criterio 47.
+
+---
+
+*Revisado por `feature-reviewer` el 2026-09-20. Fuentes: los criterios 1–58 de
+la sección 1 literales —con 21, 39–48 y 53–58 palabra por palabra—, D6 y D8,
+«Lo que NO se crea» y «Dónde NO va» de la sección 2 y su tabla de tajadas, la
+entrada de la tajada 5 de la sección 3, `git diff HEAD` de los diez archivos,
+`graphify explain` sobre `VidaTemplateAside` y `useVidaWeekPlans`, un arnés de
+11 tests bajo `src/features/vida/utils/` (**borrado**; `git status` no lo
+lista), la corrida entera de `pnpm lint`, `pnpm test` y `pnpm build`, y una
+pestaña en el 5173 del usuario sobre `/app/vida/semana`.*
+
+#### Tajada 5 — segunda revisión (tras la devolución)
+
+**Veredicto: `accepted`.** Los dos motivos de la devolución están cerrados, y no
+de palabra: reproduje los dos con arnés y con la suite. Con esto **la feature se
+entrega**: quedan del usuario el criterio 47 (el cronómetro) y el 58 (el
+recorrido con su cuenta), que son suyos por definición.
+
+**Los dos motivos, comprobados por mí**
+
+- **Criterio 48 — cumplido.** `findFirstFittingGap` busca sobre
+  `agenda.gaps`, la **misma** lista que pinta la pantalla, saltando `isPast` y
+  `isSliver`. Y el hueco que contiene al reloj **sí viene partido**: lo hace
+  `withNowMark` en `vida-agenda.utils.ts:239-271`, que emite
+  `makeGap(inicio, ahora)` + la marca + `makeGap(ahora, fin)`. Medido con arnés
+  propio (11 casos, **borrado**), día con un bloque de 10:30 a 11:00 y el reloj
+  en 9:24: los huecos son `06:30-09:24 (pasado)`, `09:24-10:30` y `11:00-23:00`,
+  y el primero que ofrece es **09:24** — desde ahora, no desde el inicio del
+  día. **Tres «Ponerla» seguidas**, rehaciendo la agenda entre una y otra como
+  hace la invalidación: `09:24→09:39`, luego `10:00→10:15`, y a la tercera **no
+  queda hueco** (el resto son restos por debajo del mínimo) y el botón se apaga.
+  **Día lleno** (un bloque de 06:30 a 23:00): `null` → botón `disabled` con «No
+  queda un rato de 20 min en este día». El `aria-label` dice «en el primer hueco
+  donde cabe», distinto del «Poner X a las HH:MM» del criterio 23: son dos
+  superficies y ahora se distinguen también para quien escucha.
+- **Motivo 2 — cerrado.** `useVidaWeekPlans` expone `isError` por día y
+  `hasPlan` es `!failed && items.length > 0`: **nunca afirma sobre datos que no
+  llegaron**. En `VidaSemanaPage`, `canBuild` exige `!isError && !isPending`, la
+  fila en error se lee «No pudimos cargar este día · Hasta saber qué tiene, no
+  se arma: armar reemplaza el día entero» con «Reintentar», y `buildable` es lo
+  único que entra en el lote. Mi escenario está reproducido literalmente en su
+  test: un lunes **con plan real** cuya consulta falla no aparece en las fechas
+  de `setActivityDayPlan`. El botón de la semana se apaga además con
+  `weekPlans.isPending`, y la tira de Hoy gana el cuarto estado del punto
+  (`error`, con su `aria-label`), que cierra de paso el hallazgo 1 de la
+  revisión de la tajada 4.
+
+**Los ocho hallazgos, verificados uno a uno** (arnés propio, no el del
+constructor):
+
+1. **Contadores tras el encaje — arreglado.** `22:00 +50` y `22:10 +30` con fin
+   23:00: `movedCount: 0`, `droppedTitles: ['Ab']`, y `describeBuildDay` ya
+   **no** dice «1 de 2 no cabían a su hora» sobre un bloque que no está. Igual
+   con el sin hora que no cabe: `withoutTimeCount: 0`, solo descartado. Cada
+   ítem acaba en **una** categoría.
+2. **`durationMinutes: 0` y negativo — arreglado.** Los dos dan bloques de 30
+   min y suman a `defaultDurationCount`.
+3. **La duración por defecto se pinta**: «2 cosas sin duración, puestas a 30
+   min.», en las tres superficies. Esto es lo que faltaba para leer el criterio
+   44 entero («con una por defecto **visible**»).
+4. **«(N cosas)» sin archivadas:** `templateCount` sale de `usableTemplateItems`
+   y es exactamente lo que se arma.
+5. **Los días `empty` salen en el resumen** del lote.
+6. **El `<p>` vacío del `Alert`, fuera.**
+7. **«los sábados»:** `pluralDayLabel` en `vida-date.utils.ts`, invariable de
+   lunes a viernes, usado en las cuatro pantallas.
+8. **El bloque «Mañana» no se pinta estando ya en mañana** (`viewedDate ===
+   tomorrow`).
+
+Y el caso sano no cambió: dos a las 8:00 y uno sin hora dan
+`08:00-09:00`, `09:00-09:30`, `09:30-10:15` con «1 de 3 no cabían a su hora» y
+«1 cosa sin hora, puesta al final», con su enlace.
+
+**Criterios de la tajada**: 21 (mitad botón), 39–46 y **48 entero** cumplidos;
+47 y 58 **siguen en prueba manual** y no los doy por cerrados. 53, 54 y 55: el
+constructor los midió esta vez en navegador (375 px sin scroll horizontal en el
+lateral y en la semana, oscuro con captura) y la estructura que revisé lo
+respalda —sin anchos fijos salvo un `max-width` de aviso, `min-width: 0`,
+`overflow-wrap: anywhere`, y ningún `--color-text-muted`—; el `.noRoomNote` a
+0,625 rem es el texto más pequeño de la pantalla y merece una mirada en el
+recorrido. 56 y 57, cumplidos.
+
+**Qué miré para las regresiones** (y cómo): `git diff HEAD` de los dieciséis
+archivos; `grep` de `hasPlan` y de `byDate[` por todo `src/` —los únicos
+consumidores del hook son `VidaDayStrip` y `VidaSemanaPage`, los dos
+actualizados; `VidaDayActions` y el lateral usan su propio `planItems.length`,
+que no pasa por el hook—; `grep` de `pluralDayLabel` (cuatro pantallas, todo
+aditivo: de lunes a viernes no cambia ni un carácter); y las dos props nuevas
+del lateral, que el `tsc -b` del build garantiza que nadie más le pasa mal
+—`VidaHoyPage` le da `date` y `agenda`, y `agenda` se construye de `planItems`,
+que es el plan **de ese `date`** (`VidaHoyPage.tsx:125-134`)—. Nada fuera de
+`src/features/vida/`: `app-nav.config.ts`, `shared/` y hábitos intactos.
+
+**Línea base, corrida entera por mí:** `pnpm build` **exit 0** (el mismo
+`tsc -b`) con chunk inicial **916,95 kB** (línea base 901,2 → +15,7 kB) y
+`app-icons` **620,20 kB** e `IconPicker` **4,64 kB** *idénticos* a la línea base
+—nada de iconos entró al arranque—; `pnpm lint` **14 errores / 0 warnings**;
+`pnpm test` **2 fallos de 931**, los dos de `SearchSelect`, preexistentes.
+
+**Lo que queda anotado, sin devolver:** el lateral coloca sobre `date` usando
+`agenda` y nada ata las dos props entre sí (hoy correcto en el único sitio que
+lo monta); «Ponerla HH:MM» solo refresca la hora al tic del minuto; el
+`refetch` de una fila reintenta todas las que fallaron; un hueco por debajo del
+mínimo (15 min) nunca se ofrece, aunque la cosa midiera 10 min —es la misma
+regla que el resto de la agenda—; y el pie de la semana dice «día(s)», el único
+plural de la feature resuelto con paréntesis.
+
+**Lo que no revisé:** nada detrás del login (estructural en este proyecto), el
+API real de Render, y la medida de 375 px y oscuro la tomó el constructor, no
+yo: la respaldo por estructura, no por haberla visto.
+
+**Para el usuario**
+
+Ya no hace falta que montes el día a mano. Tu plantilla —lo que sueles hacer
+cada día de la semana, con su hora y su duración— se vuelca al plan de un día
+vacío de un solo toque: **«Armar desde la plantilla»** copia cada cosa a su hora
+tal como la tienes, y cuando dos se pisan corre la segunda justo detrás en vez
+de descartarla, pone al final lo que no tiene hora y te dice, con nombre y
+apellido, lo que hubo que ajustar o lo que no cupo antes de que acabe tu día.
+Desde el lateral del escritorio dejas **mañana** armado sin cambiar de pantalla,
+y cada cosa de tu plantilla que todavía no esté en el plan trae un botón que la
+mete **en el primer rato libre donde cabe**, diciéndote la hora antes de que
+toques; si el día está lleno, el botón se apaga y te dice cuánto rato haría
+falta.
+
+Y hay una pantalla nueva, **tu semana**: una línea por día con lo que tiene
+planeado —cuántos bloques y cuánto suman— y, en los que están vacíos, el botón
+de armarlos. Abajo, **«Armar toda la semana desde la plantilla»** te dice antes
+de hacer nada cuántos días va a armar y cuántos ya tienen plan y no se tocan; si
+alguno falla, los demás se quedan armados y la pantalla te nombra el que no
+pudo. Un día cuyo plan no se pudo cargar **no se arma**: se lee «No pudimos
+cargar este día» con un «Reintentar», porque armar reemplaza el día entero y
+nadie va a hacer eso a ciegas.
+
+**Para probarlo a mano** (con tu cuenta y la API despierta):
+
+1. En **Vida → Actividades**, ponles hora y duración a tres o cuatro cosas de tu
+   plantilla, y deja alguna **sin hora** a propósito.
+2. En **Ajustes de Vida**, fija a qué hora empieza y termina tu día.
+3. En **Hoy**, si el día está vacío, toca **«Armar desde la plantilla (N
+   cosas)»** y lee el aviso: tiene que cuadrar con lo que ves en la agenda.
+4. En el lateral (en escritorio), toca **«Ponerla»** en tres cosas seguidas: cada
+   una debe caer en el primer rato libre que quede, nunca encima de otra. Si el
+   día se llena, el botón se apaga y dice por qué.
+5. En el lateral, **«Armar mañana desde la plantilla»** y luego «Ver mañana».
+   **Crónometra**: tiene que salirte en menos de un minuto (criterio 47).
+6. Toca **«Ver la semana»**, mira las siete líneas, arma un día suelto y después
+   **«Armar toda la semana»**: lee la confirmación antes de aceptar. Cronometra:
+   menos de cinco minutos.
+7. Si puedes, **corta la red un segundo y recarga la semana**: un día que no
+   cargue tiene que leerse «No pudimos cargar este día» y **no** ofrecer
+   «Armar».
+
+---
+
+*Segunda revisión por `feature-reviewer` el 2026-09-20. Fuentes: los criterios
+21, 39–48 y 53–58 de la sección 1 literales, la entrada «2ª entrega» de la
+sección 3, `git diff HEAD`, `vida-agenda.utils.ts:239-271` (el partido del hueco
+del reloj), un arnés de 11 tests bajo `src/features/vida/utils/` (**borrado**;
+`git status` no lo lista) y la corrida entera de `pnpm test`, `pnpm build` y
+`pnpm lint`.*

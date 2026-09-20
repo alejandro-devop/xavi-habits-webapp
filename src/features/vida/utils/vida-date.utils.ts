@@ -111,6 +111,19 @@ export function getVidaDayOfWeek(date: string): VidaDayOfWeek {
   return VIDA_DAY_ORDER[(index + 6) % 7]!
 }
 
+/**
+ * El día de la semana **en plural**, para lo que se dice como costumbre: «los
+ * sábados», «los lunes».
+ *
+ * En español los días de lunes a viernes son invariables (ya acaban en `s`) y
+ * solo sábado y domingo pluralizan. Existe porque media docena de sitios
+ * escriben «los \<día\>» y `VIDA_DAY_LABELS` está en singular: decían «los
+ * sábado».
+ */
+export function pluralDayLabel(label: string): string {
+  return label.endsWith('s') ? label : `${label}s`
+}
+
 /** «Viernes 18»: el día de la semana en mayúscula inicial y el número. */
 export function formatDayHeading(date: string): string {
   const label = VIDA_DAY_LABELS[getVidaDayOfWeek(date)]

@@ -18,4 +18,11 @@ export const vidaPaths = {
    * la única fuente de destinos y la píldora del módulo se enciende igual.
    */
   hoyForDate: (date: string) => `/app/vida/hoy?d=${date}`,
+  /**
+   * La semana de un vistazo (tajada 5). **No entra como píldora en la barra**:
+   * se llega desde la tira de Hoy, y por eso `app-nav.config.ts` no la conoce.
+   */
+  semana: '/app/vida/semana',
+  /** La semana que contiene esa fecha: mismo parámetro `?d=` que Hoy. */
+  semanaForDate: (date: string) => `/app/vida/semana?d=${date}`,
 } as const

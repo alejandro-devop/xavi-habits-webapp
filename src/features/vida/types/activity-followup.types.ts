@@ -1,9 +1,16 @@
-import type { ActivitySubtasksCount } from '@/features/vida/types/activity.types'
+import type { ActivityStatus, ActivitySubtasksCount } from '@/features/vida/types/activity.types'
 
 export interface ActivityFollowUpActivityRef {
   id: string
   title: string
   description?: string | null
+  /**
+   * Opcional porque **no todos los documentos la piden**: la piden los de
+   * `vida-items` (FEAT-003, tajada 5, para no armar el día con una actividad
+   * archivada) y no los de follow-ups ni los del plan del día. Quien la mire
+   * tiene que tratar `undefined` como «no se sabe», nunca como «está viva».
+   */
+  status?: ActivityStatus
   category?: {
     id: string
     name: string

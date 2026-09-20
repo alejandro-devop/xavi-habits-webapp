@@ -12,7 +12,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
-| FEAT-004 | specified | 0/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+| FEAT-004 | planned | 0/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -24,6 +24,42 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-001 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
+
+**FEAT-004 `planned`** (2026-09-20): **cuatro tajadas, sin recorte de alcance y
+con el API intacto**. La referencia es *la misma pantalla que hay que ampliar*
+—`src/features/vida/pages/VidaHoyPage.tsx` con `VidaAgendaBlock`,
+`vida-agenda.utils.ts` y `useVidaDayData`—, más `VidaPlaceInGapSheet` como molde
+de hoja y `useCreateStartingActivities` como molde del «cierra la anterior y
+empieza la nueva» de D4. Las dos hipótesis del analista quedan **confirmadas
+leyendo el repo hermano** (sesión abierta = `duration_minutes IS NULL`;
+`isCompleted` escribe `completed_at` — y **no se escribe**, porque «hecho» se
+deriva de la sesión y dos sitios con la misma verdad se contradicen), y sale una
+tercera que hacía falta para D4: el API **ya impide** dos sesiones abiertas y
+responde 400 **en inglés**, así que cerrar→empezar va en serie y el mensaje se
+traduce. Cuatro decisiones de arquitectura: la barra de sesión vive en un
+**elemento de ruta del módulo** (`routes/VidaModuleLayout.tsx`) y **no** en
+`AppLayout` —que no conoce `/app/vida/semana` ni las archivadas, y el criterio 7
+sí—; `buildDayAgenda` **no gana una cuarta variante**, lo ejecutado es un
+segundo pase puro en `utils/vida-execution.utils.ts` y el bloque gana una prop
+opcional; la sesión abierta se queda en `vidaKeys.followUps.open()` **sin
+`refetchInterval`** (solo este cliente la escribe) y lo único que tictaquea a 1 s
+es el cronómetro, en el cliente; y D7/D8 van a un **store de zustand con
+`persist`** calcado de `habit-identity.store.ts`. Del módulo borrado (`79bece0`)
+se rescatan `useElapsedTimer`, los formatos de cronómetro, `localDateTimeToIso`,
+`calculateDurationMinutes` y la **forma** de `useRunningSessionFinishActions`;
+se tiran los **cinco modales de sesión** (el criterio 38 pide una sola hoja) y
+todo `wasteMinutes`/`wastePercentage`. Se resuelve la **hipótesis abierta del
+«No sé»**: registra la **duración planeada** de ese bloque y, si no la hay o hay
+varios candidatos, **30 min** — nunca «hasta el fin del día», que inventaría
+hasta catorce horas que nadie vivió. Dos recortes escritos: el **criterio 1** se
+parte (la mitad de «ni registrado» necesita el cruce de D1 y cierra en la tajada
+2) y el **16** resuelve el «No sé» con lo mínimo en la 1. **Un aviso para el
+usuario:** el marco B del render está a las **21:40** con el día acabando a las
+23:00 y pinta ya la leyenda de día terminado, mientras el **criterio 24** dice
+que esa forma llega **al cerrarse el día**; manda el criterio, y la diferencia
+queda anotada por si al verlo no le cuadra. Lo único fuera de
+`src/features/vida/`: `shared/ui/Toast` gana una **acción opcional** (aditiva),
+que es lo que sostiene el «añadir una nota» del criterio 5.
 
 FEAT-003 está `planned` con **las ocho decisiones respondidas** (D1…D8 al final
 de la sección 1) y **cinco tajadas** que el arquitecto mantiene tal cual: D6

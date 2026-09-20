@@ -1,7 +1,7 @@
 ---
 id: FEAT-004
 title: Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro
-status: specified
+status: planned
 architect: yes    # concepto nuevo (la sesión viva y su cruce con el plan), superficie global en todo el módulo, y una decisión abierta que puede tocar el API
 area: features/vida
 requested: 2026-09-20
@@ -624,7 +624,488 @@ la exploración fue con `Grep`/`Glob` y lectura por rangos.*
 
 ## 2. The plan — feature-architect
 
-*(pendiente)*
+**Resumen para el constructor:** la referencia es **la propia pantalla que hay
+que ampliar** —`src/features/vida/pages/VidaHoyPage.tsx` + `components/VidaAgendaBlock/`
++ `utils/vida-agenda.utils.ts` + `hooks/useVidaDayData.ts`, lo que dejó FEAT-003—,
+con `components/VidaPlaceInGapSheet/` como molde de hoja y
+`hooks/useCreateStartingActivities.ts` como molde de orquestación para el
+«cierra la anterior y empieza la nueva» de D4. Todo lo nuevo cae dentro de
+`src/features/vida/` **salvo un archivo de `shared/ui`** (`Toast` gana una
+acción opcional, que es lo que sostiene el criterio 5). **No se crea capa de
+datos de follow-ups: existe entera** (`api/activity-followups.api.ts`,
+`graphql/activity-followups.graphql.ts`, `hooks/useActivityFollowUps.ts`,
+`vidaKeys.followUps.*`, `invalidateFollowUpQueries`); lo único que le falta es
+**un documento** (subtareas de sesión) y **arreglarle el vocabulario**.
+`buildDayAgenda` **no gana una cuarta variante**: lo ejecutado vive en un
+archivo hermano, `utils/vida-execution.utils.ts`.
+
+### Lo que ya existe
+
+| Qué | Dónde | Qué significa para esta feature |
+|---|---|---|
+| Las siete operaciones de follow-ups | `hooks/useActivityFollowUps.ts:14,26,38,48,61,75,91` (+ `.test.tsx`) | `open()` con `staleTime: 15 s` y `refetchOnWindowFocus`, `day(date)` **ya deshabilitada en futuro** (`:29`), `range`, `Start`, `Create`, `Update`, `Delete`. **Ninguna consulta ni mutación nueva**, salvo subtareas de sesión. |
+| Las invalidaciones | `utils/invalidate-vida-queries.ts:22` (`invalidateFollowUpQueries`) | Ya invalida `followUps.day(date)`, `followUps.range(semana)`, `followUps.open()` y las actividades. **Cubre entero el criterio 11.** No invalida `dayPlan.byDate` y **está bien**: registrar no toca el plan (criterio 37). |
+| Las claves | `src/shared/api/query-keys.ts:44-50` (`followUps.open/day/range`) y `:52-54` (`dayPlan.byDate`) | **No hace falta ninguna clave nueva.** El cruce sesión↔bloque es cliente: dos consultas ya cacheadas del mismo día, cruzadas en un `useMemo` de la página. |
+| La agenda del plan | `utils/vida-agenda.utils.ts` (`buildDayAgenda`, `AgendaEntry` = `block\|gap\|now`, `getDayBudget`, `trackMinutes` — que ya es quien evita que los anchos pasen del 100 %, `:44-50`) | Se **usa tal cual**; lo ejecutado se calcula **encima** de su salida. Ver «Dónde NO va». |
+| Aritmética de `HH:mm` | `utils/vida-time.utils.ts` (`parseTimeToMinutes`, `minutesToTime`, `calculateEndTime`, `formatDurationFromMinutes`, `formatTimeForDisplay`, `DURATION_PILLS`, `DEFAULT_BLOCK_MINUTES`) | Base de todo. **Le falta lo de instantes** (`fecha + HH:mm → Date`) y los formatos de cronómetro: eso es el rescate de la tajada 1. |
+| El tic de un minuto | `hooks/useVidaNowMinute.ts` | Sigue siendo quien mueve la marca de «ahora» y el «pendiente» del criterio 39. **No sirve de cronómetro** (60 s ≠ criterio 4): el cronómetro es un hook aparte. |
+| Hoja de tres pasos con buscador | `components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx` (`SteppedModal` `ds="aura"` + `mobileSheet`, `key` por apertura, `onSuccess` **local**, `filterActivitiesBySearch` sobre `useActivitiesQuery` sin archivadas) | El paso «qué» se **extrae** a un componente y lo comparten las cuatro entradas del criterio 38. La hoja actual pasa a usarlo: no se copia. |
+| Píldoras de duración | `components/VidaDurationPills/` | Las reutiliza «Registrar tiempo pasado» (criterio 31) y el ajuste de duración del cierre (criterio 6). |
+| Las tres consultas del día | `hooks/useVidaDayData.ts` con su `failed: string[]` | **Es exactamente lo que pide el criterio 58**: se le añade la cuarta consulta y una entrada más en `failed`. No se escribe otro hook de día. |
+| Guarda de sesión, fechas, errores | `hooks/useVidaQueryGuard.ts`, `utils/vida-date.utils.ts`, `utils/vida-error.utils.ts` | Criterios 63 y 64 de fábrica. |
+| `localStorage` con `try/catch` | `src/shared/lib/storage.ts` + el molde vivo `src/features/habits/store/habit-identity.store.ts` (zustand `persist` sobre `storage`, con la limitación «no viaja entre dispositivos» **escrita en la cabecera**) | Es el patrón de D7 y D8. **No se escribe otro envoltorio de `localStorage`.** |
+| Contratos GraphQL | `graphql/contracts.test.ts` + `graphql/schema/activity.schema.graphql:71-103,184,192-196,266-292` | El SDL **ya trae** `ActivityFollowUpSubtask`, `sessionSubtasks`, `activityFollowUpSubtaskEdit` y `ActivityFollowUpSubtaskEditInput`: **no hay que recopiar SDL ni tocar el API**. Solo falta el documento del cliente. |
+| El layout del módulo | `routes/vida.routes.tsx` (el `path: 'vida'` **no tiene `element`**, solo `children`) y `layouts/AppLayout/app-nav.config.ts:101-142` | Ahí cuelga la barra de sesión. Ver la decisión de abajo. |
+
+**Nada de esto existe dos veces.** Dos deudas heredadas que esta feature **no
+agranda**: el normalizador de texto (cuatro copias, hallazgo de FEAT-002) y
+`Popover` sin cierre desde su contenido (hallazgo de FEAT-002).
+
+**Lo que existe y está mal, y hay que corregirlo aquí** (criterios 14 y 59):
+`hooks/useActivityFollowUps.ts:108` dice **«Actividad cancelada»** y
+**«Registro eliminado»**. Las dos palabras están prohibidas en Vida. Se
+reescriben a **«No la guardamos»** (era una sesión abierta) y **«Lo quitamos del
+registro»**. De paso, `:56` dice «Actividad iniciada» → **«En marcha»**, que es
+la palabra del render.
+
+### Las dos hipótesis del servidor: confirmadas
+
+| Hipótesis | Veredicto | Evidencia en `~/Developer/xavi-platform-node` |
+|---|---|---|
+| Sesión abierta = `duration_minutes === null` | **Confirmada** | `src/services/activity-follow-up.service.ts:61` (`const isOpen = row.duration_minutes === null`), `:47` (`CLOSED_FOLLOW_UP_FILTER`), `:332-345` (`getOpenFollowUp` filtra por `duration_minutes IS NULL`). Por eso **«Terminar» es `activityFollowUpEdit` con `durationMinutes`**, y `useUpdateActivityFollowUpMutation:80` ya limpia `followUps.open()` cuando vuelve `isOpen: false`. |
+| `isCompleted` escribe `completed_at` | **Confirmada y se deja quieta** | `activity-day-plan.service.ts:227-228` (`completed_at = NOW()` / `= NULL`). **Esta feature NO la escribe**: con D7 resuelto, «hecho» se deriva de la sesión, y escribir las dos cosas sería **dos sitios con la misma verdad**, que es como nacen las contradicciones. Queda anotado para F5. |
+| ¿El API impide dos sesiones abiertas? | **Sí, y devuelve 400** | `activity-follow-up.service.ts:154-167` (`assertNoOpenFollowUp`) se llama **solo en `start`** (`:296`) y lanza `BadRequestError('You already have an activity in progress. Finish or cancel it before starting another.')` — **en inglés**: si ese mensaje llega a pantalla, se lee horrible. Por eso D4 se orquesta **cerrar → empezar, en serie** y el fallo del cierre aborta el empezar (criterio 15), y el mensaje crudo **no se enseña**: se traduce en `useVidaSessionActions`. |
+| ¿`activityFollowUpAdd` exige que no haya sesión abierta? | **No** | `assertNoOpenFollowUp` no se llama en `add`. **Registrar tiempo pasado y «Lo hice» funcionan con una sesión en marcha.** Es lo que permite que las tajadas 3 y 4 no dependan del estado de la 1. |
+| Mínimo de un minuto | **Confirmada** | `:367-372` (`Duration must be at least 1 minute` en `edit`) y `ActivityFollowUpAddInput.durationMinutes: Int!`. Todo cálculo de duración se cierra con `Math.max(1, …)`. |
+| Medianoche (criterio 63) | **Resuelta por el servidor, con una trampa para el cliente** | `src/shared/utils/activity-follow-up-time.ts:34-48`: el fin se calcula con `dayOffset`, así que una sesión de 23:50 + 20 min queda con `date` = el día de inicio y `endDate` = el siguiente. **La trampa es del cliente:** la duración **no** se puede calcular como «minutos de ahora desde medianoche − `startMinutes`» (da negativo a las 00:10). Se calcula **entre instantes**, desde `date + startTime` local. Eso es `sessionStartInstant` en la tajada 1. |
+| Mientras está abierta, `endTime`/`endDate`/`endDateTime` vienen `null` | **Confirmada** | `:63-79`. El cronómetro **no puede** salir de `endDateTime`: sale de `date` + `startTime`. |
+| `startTime` puede volver `HH:mm:ss` | **Confirmada** | `formatStartTimeForApi` (`:51-59`) devuelve 8 caracteres. Todo lo que lo lea pasa por `normalizeTimeForDisplay`, que ya existe (`vida-time.utils.ts:25`). |
+
+### La hipótesis abierta, resuelta: qué registra el «No sé» (criterio 16)
+
+**Decisión: la duración planeada de ese bloque, y si no la hay, 30 minutos.
+Nunca «hasta el fin del día».**
+
+Una sesión que quedó abierta ayer a las 21:00 con el día acabando a las 23:00
+daría **120 minutos** que nadie vivió; una abierta a las 9:00 daría **catorce
+horas**. Ese número no es «algo razonable»: es tiempo inventado, entra en el
+presupuesto, infla el tramo «de más» y se queda ahí para siempre — justo lo
+contrario de la regla del plan de Vida («el sistema no adivina»). La duración
+planeada, en cambio, **es un número que el propio usuario escribió**.
+
+En `utils/vida-session.utils.ts`, puro y con test:
+
+```
+VIDA_UNKNOWN_SESSION_MINUTES = 30          // = DEFAULT_BLOCK_MINUTES, y se dice en pantalla
+resolveUnknownEndMinutes({ session, plannedMinutes, dayEndTime }): { minutes, reason }
+```
+
+1. `plannedMinutes` (la duración del bloque de ese día con el mismo `activityId`;
+   si hay **varios**, no se adivina: se cae al paso 2) → `reason: 'planned'`.
+2. `VIDA_UNKNOWN_SESSION_MINUTES` → `reason: 'default'`.
+3. En los dos casos se **recorta** para no pasar del `dayEndTime` de ese día, y
+   nunca baja de 1 (mínimo del API).
+
+Y **se dice**, que es la mitad del criterio: «No lo sabíamos, así que anotamos
+**45 min** —lo que tenías planeado—. Puedes cambiarlo cuando quieras.» / «…
+anotamos **30 min**. Puedes cambiarlo cuando quieras.» **La razón no se escribe
+en las notas de la sesión** (es dato del usuario, no del sistema): se dice en
+pantalla en ese momento y la sesión queda editable desde el «···».
+
+### Implementación de referencia
+
+**`src/features/vida/pages/VidaHoyPage.tsx` (con `components/VidaAgendaBlock/`,
+`utils/vida-agenda.utils.ts` y `hooks/useVidaDayData.ts`).** No es una figura
+parecida: **es la misma pantalla**, viva, entregada hace un día y con sus tests.
+Ahí está resuelto lo que esta feature vuelve a necesitar: los cuatro estados
+separados de verdad (sin sesión / cargando / error con reintento / día sin
+plan), el día que sale de `?d=`, la aritmética pura en un `utils` con `Date`
+inyectada y **cero `new Date()` escondido**, y la regla de que un componente de
+agenda es tonto salvo para la mutación que es suya. Se imita eso, no se
+reinventa.
+
+**Tres referencias secundarias, cada una para una cosa concreta:**
+
+- **Hojas:** `components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx` —
+  `SteppedModal` con `ds="aura"` + `mobileSheet`, estado arriba, **`key` por
+  apertura** puesta por quien abre, y el cierre en el `onSuccess` **local** del
+  `mutate` (es lo que sostiene los criterios 12 y 36: la hoja no se cierra ni
+  pierde lo escrito si la mutación falla).
+- **Orquestación de dos mutaciones en serie:**
+  `hooks/useCreateStartingActivities.ts` — **no lanza, resuelve** con
+  `{ created, failed }`, invalida una vez y deja **un solo mensaje**. Es
+  literalmente la forma del criterio 15 (cerrar la anterior → empezar la nueva,
+  y si la primera falla **no se hace la segunda** y se explica).
+- **Barra con tramos y leyenda legible:** `components/VidaDayBudget/` —
+  aritmética en el `utils`, `<div>`s con `width: %`, barra `aria-hidden` y la
+  leyenda con **los minutos como texto real**, que es la «tabla» del gráfico.
+  Las dos formas de D5 se hacen así.
+
+**El cronómetro se rescata de `79bece0`**, con la tabla de abajo. No es código
+vivo: se rescata por función, con test propio.
+
+### Qué se rescata de `79bece0`, función por función
+
+| De dónde | Qué | Dónde va | Veredicto |
+|---|---|---|---|
+| `hooks/useElapsedTimer.ts` (33 líneas) | **el hook entero, adaptado** | `hooks/useVidaElapsed.ts` (N) | **Se rescata.** Ya hace lo correcto: `Date.now() − inicio` en cada tic (**no acumula**, criterio 3), limpia el intervalo al desmontar (criterio 4) y tiene su `.test.ts`. Dos cambios: recibe **`Date`** (el instante que da `sessionStartInstant`) en vez de una cadena ISO —el API no manda ISO de inicio—, y sigue con `1000 ms` para `hhmmss` y `60_000` para `compact`. |
+| `utils/activity-time.utils.ts:186-201` | `formatElapsedHHMMSS`, `formatElapsedCompact` | `utils/vida-session.utils.ts` (N) | **Se rescatan literales.** Son diez líneas puras y ya probadas. |
+| `utils/activity-time.utils.ts:237-251` | `localDateTimeToIso` | ídem, como **`sessionStartInstant(date, startTime): Date`** | **Se rescata la idea, devolviendo `Date`.** Volver a ISO para volver a parsear es un rodeo; y el respaldo `new Date().toISOString()` cuando algo no se entiende **se tira**: una fecha rota que se hace pasar por «ahora» es peor que un `null`. |
+| `utils/activity-time.utils.ts:262-267` | `calculateDurationMinutes` | ídem, como **`elapsedMinutes(startInstant, now)`** | **Se rescata.** Ya trae el `Math.max(1, …)` que pide el API (criterio 5) y el `round`. |
+| `utils/activity-time.utils.ts:253-256` | `isFutureDateTime` | ídem | **Se rescata** (tajada 3: no se registra en el futuro, criterio 32). |
+| `utils/activity-followup-form.ts:58-77` | `validateLogPastActivityForm` y `logPastDurationTotal` | `utils/vida-session.utils.ts` (tajada 3) | **Se rescata la forma, con otros mensajes.** Son los criterios 32 y 36. Las horas/minutos separados se tiran: aquí manda `VidaDurationPills`. |
+| `utils/activity-followup-form.ts` (`finishOpenFollowUpToEditInput`, `startFormToFollowUpStartInput`) | la idea | ídem (`closeSessionInput`, `startSessionInput`) | **Se rescata la idea.** Con `normalizeTimeForApi`, que ya existe; **no** vuelve `normalizeTimeToSeconds` (el API acepta `HH:mm`). |
+| `hooks/useRunningSessionFinishActions.ts` | **la forma del «terminar y seguir»** | `hooks/useVidaSessionActions.ts` (N) | **Se rescata la forma, no el código.** Tiene el encadenado correcto (cerrar → en su `onSuccess`, empezar), que es el criterio 15. Se tira todo lo que arrastra: `todos`, `weekly-routine`, el `ConfirmDialog` de la tarea enlazada. |
+| `components/RunningActivityTimer/` | **la maqueta** | `components/VidaSessionBar/` (N) | **Se reescribe.** La estructura (icono con color de categoría, título, cronómetro `aria-live="polite"`, hora de inicio, acciones) vale; el `Card` centrado no —aquí es una **barra fija** del módulo— y el botón **«Cancelar» desaparece**: en Vida no se cancela (criterios 14 y 59). Se tira `SessionLinkedTodo`. |
+| `components/FinishActivityModal/`, `StartActivityModal/`, `LogPastActivityModal/`, `EditFollowUpModal/`, `CreateFollowUpFromFreeSlotModal/` (~800 líneas) | — | **no se rescatan** | Son cinco modales con cinco formularios distintos sobre el mismo dato, y **el criterio 38 dice justo lo contrario**: una sola hoja de «qué», reutilizada. Además son pre-Aura y no usan `SteppedModal`. Lo que se mira de ellos es **qué preguntan**, y eso ya está en los criterios. |
+| `components/ActivityBitacoraModal/` | — | **no se rescata** | Dependía de tiptap. Las notas son **texto plano** (decisión 4 del plan, criterio 6). |
+| `utils/activity-day-metrics.utils.ts:118-175` (`getDayUsageMetrics`) | **la idea de repartir el día en tramos con porcentajes que suman 100** | `utils/vida-execution.utils.ts` (tajada 2) | **Se rescata la idea, se tira el código.** `wasteMinutes` y `wastePercentage` (`:121,126,145,162`) son **«desperdicio»: prohibido** (criterio 59 y la regla del `ENVIRONMENT.md`). Aquí el tramo del pasado sin registro se llama **«sin dato»** y **tiene salida** (criterio 48). También se tira `DAY_END_TIME = '23:00:00'` (`:10`): el fin del día sale de los ajustes, vía `useVidaDayHours`. |
+| `utils/activity-day-metrics.utils.ts:86-99` (`getUsedMinutesFromFollowUps`) | — | **no se rescata** | Suma duraciones sin mirar solapes, y aquí dos sesiones solapadas harían que la barra pasara del 100 % (criterio 26). Se usa el mismo truco que ya resolvió el caso en el plan: `trackMinutes` sobre un cursor. |
+| `hooks/useRemainingDayTimer.ts`, `useCurrentTimeMarker.ts` | — | **ya rescatados en FEAT-003** | `useVidaNowMinute` existe. No se toca. |
+| `components/ActivityFollowUpCard/`, `ActivityFollowUpTimelineEntry/`, `SessionLinkedTodo/`, `hooks/useStandup.ts`, `utils/invalidate-follow-up-queries.ts` | — | **no se rescatan** | Timeline con alturas en píxeles (descartada, decisión 5), tareas enlazadas (fuera de alcance), standup (otro producto) y la invalidación duplicada que **ya se unificó** en `utils/invalidate-vida-queries.ts`. |
+| **Subtareas de sesión** | — | **no hay nada que rescatar** | Lo busqué: en `79bece0` no hay ni un componente ni un hook de `sessionSubtasks`; la web borrada **nunca las estrenó**. El criterio 10 se escribe de cero, y es pequeño (una lista de casillas y una mutación). |
+
+### Las cuatro decisiones de arquitectura
+
+**1. Dónde vive el estado de la sesión abierta.** En `useActivityOpenFollowUpQuery`
+**tal como está**: `vidaKeys.followUps.open()`, `staleTime: 15 s`,
+`refetchOnWindowFocus: true`. **Sin `refetchInterval` y sin polling por minuto.**
+El valor solo lo cambia este cliente, y las tres mutaciones ya lo escriben en
+caché (`setQueryData` al empezar, `null` al cerrar, y `invalidateFollowUpQueries`
+detrás): un sondeo por minuto serían ~60 peticiones/hora contra una instancia
+Render que se duerme, para leer un dato que acabamos de escribir. **Sobrevive a
+la recarga** porque la verdad está en el servidor y la consulta se rehace al
+montar; **sobrevive a volver de otra pestaña** por `refetchOnWindowFocus`.
+Lo único que tictaquea es el **cronómetro**, y tictaquea **en el cliente**
+(`useVidaElapsed`, 1 s, `Date.now()` contra el instante de inicio): no pide
+nada. *Limitación aceptada y escrita:* una sesión empezada en otro aparato
+tarda en verse lo que tarde el primer foco de ventana.
+
+**2. Dónde vive la barra de sesión (criterio 7).** En un **elemento de ruta del
+módulo**: `routes/VidaModuleLayout.tsx`, que pasa a ser el `element` del
+`path: 'vida'` de `routes/vida.routes.tsx` (hoy ese nodo solo tiene `children`).
+Renderiza `<VidaSessionBar />`, `<VidaStaleSessionPrompt />`, el hueco reservado
+de abajo (criterio 60) y `<Outlet />`.
+
+**No va en `AppLayout`** aunque `AppLayout.tsx:90` ya sepa cuál es el módulo
+activo: obligaría a `layouts/` a montar un componente de `features/vida` con una
+condición que hay que mantener, y la condición **se equivoca justo donde
+importa** — `/app/vida/semana` y `/app/vida/actividades/archivadas` **no están en
+`app-nav.config.ts`** a propósito. El subárbol de rutas es la frontera exacta que
+pide el criterio 7 («todas las pantallas del módulo», «fuera del módulo nada»),
+sale gratis y no se puede desincronizar. **Tampoco va un portal por página**: se
+montaría una vez por pantalla y rompería el criterio 8.
+
+**3. Cómo gana `buildDayAgenda` la capa real.** **Ni cuarta variante de
+`AgendaEntry`, ni campos nuevos en `AgendaBlock`.** `buildDayAgenda` describe
+**el plan**, es puro, está probado y lo usan además `vida-gap-form.utils.ts`,
+`VidaAgendaGap` y `VidaTemplateAside`: meterle lo ejecutado lo convierte en el
+cajón del módulo y arrastra a tres consumidores que no quieren saber nada de
+esto. Lo ejecutado es **un segundo pase puro**, en un archivo hermano:
+
+```
+buildDayExecution({ agenda, followUps, nowMinutes, dayEnd, isPastDay }) → DayExecution
+  byBlockId:    Record<string, BlockExecution>   // la superposición de cada bloque planeado
+  looseSessions: LooseSession[]                  // lo que no es de ningún bloque (criterios 22 y 23)
+  noDataSlices:  NoDataSlice[]                   // pasado sin plan y sin sesión (criterio 47)
+  entries:       ExecutionEntry[]                // agenda + sesiones sueltas + tramos sin dato, en orden de reloj
+  budget:        ExecutionBudget                 // las dos formas de D5, con sus minutos
+  isDayClosed:   boolean
+```
+
+`VidaAgendaBlock` gana **una prop opcional** `execution?: BlockExecution`, que es
+aditivo: sin ella se pinta exactamente como hoy y **el día futuro y el día sin
+nada registrado no cambian una línea** (criterios 27 y 29).
+
+**4. Dónde vive el cruce de D1.** En `utils/vida-execution.utils.ts`, **puro y
+con test**, junto a los dos umbrales del criterio 20:
+
+```
+VIDA_ON_PLAN_TOLERANCE_MINUTES = 5
+VIDA_MOVED_THRESHOLD_MINUTES  = 60
+matchSessionsToBlocks({ blocks, sessions }) → { byBlockId, unmatched }
+```
+
+Un solo pase: para cada sesión ordenada por hora, el bloque **libre** con el
+mismo `activityId` y **menor** `|inicio real − inicio planeado|`; si esa
+distancia supera `VIDA_MOVED_THRESHOLD_MINUTES` la pareja **sigue siendo pareja
+pero es un movido** (criterio 23); si no hay bloque libre con esa actividad, la
+sesión queda `unmatched` y se pinta fuera del plan (criterio 22). Ningún bloque
+recibe dos, ninguna sesión va a dos. El caso de **dos bloques de la misma
+actividad el mismo día** entra en el test con nombre propio, y la limitación de
+D1 se repite en la cabecera del archivo.
+
+**5. El almacenamiento del aparato (D7 y D8).** Un **store de zustand con
+`persist`**, calcado de `src/features/habits/store/habit-identity.store.ts`
+(que ya envuelve `src/shared/lib/storage.ts`, tolerante a fallos y a modo
+privado): `src/features/vida/store/vida-device-notes.store.ts`, clave
+`xavi.vida.device`. Zustand y no un `util` suelto **porque escribir tiene que
+repintar**: una razón que se escribe y no aparece hasta recargar no cierra el
+criterio 43. Dos mapas:
+
+```
+blockedReasons:  Record<`${date}:${dayPlanItemId}`, string>   // D7, criterio 44
+dismissedSlices: Record<`${date}:${startMinutes}-${endMinutes}`, true>  // D8, criterio 49
+```
+
+La cabecera del archivo escribe la limitación, como hizo la de hábitos, y
+apunta a la **«Deuda de portabilidad»** de la sección 1. **No se inventa un
+campo en el API ni se meten estos datos en las notas de una sesión.**
+
+**6. Cómo se reutiliza el «qué» sin duplicarlo (criterio 38).** El paso «qué» de
+`VidaPlaceInGapSheet` (plantilla del día primero + `Input` + `filterActivitiesBySearch`
+sobre `useActivitiesQuery` sin archivadas + la vía a `/app/vida/actividades`)
+**se extrae** a `components/VidaActivityPicker/` en la tajada 3, y
+`VidaPlaceInGapSheet` pasa a usarlo **en la misma tajada**. Extraer y que el
+dueño original lo estrene el mismo día es lo que impide que acaben siendo dos.
+Lo usan: «Empezar algo» y «Registrar tiempo pasado» (tajada 3), «Hice otra cosa»
+y el «¿Qué pasó?» de un tramo sin dato (tajada 4). **No se escribe un quinto
+normalizador de texto.**
+
+**7. El toast con acción (criterio 5).** `shared/ui/Toast` **no tiene acciones
+hoy** (`toast.types.ts` es `{ message, duration }` y `ToastViewport.tsx:46`
+solo pinta el mensaje y la ✕). El criterio pide que el toast del «Terminar»
+traiga **«añadir una nota»**. Se añade `action?: { label: string; onClick: () => void }`
+a `ToastInput`/`ToastItem` y un `<button>` en el viewport: **aditivo**, ningún
+llamante actual cambia. Y como el `onClick` es un cierre de quien conoce la
+sesión, **el toast del cierre lo lanza el llamante, no el hook**:
+`useUpdateActivityFollowUpMutation` gana `options?: { silent?: boolean }` (hoy
+**no lo llama ninguna pantalla**, así que cambiar su firma es gratis).
+
+### Dónde va el código nuevo, archivo por archivo
+
+*Tajada 1 — empezar, el cronómetro y la sesión abierta*
+
+| Archivo | N/M | Qué |
+|---|---|---|
+| `src/features/vida/utils/vida-session.utils.ts` (+ `.test.ts`) | **N** | El rescate puro: `sessionStartInstant(date, startTime): Date \| null`, `elapsedMinutes(start, now)`, `formatElapsedHHMMSS`, `formatElapsedCompact`, `isSessionFromAnotherDay(session, today)`, `startSessionInput(...)`, `closeSessionInput(session, at)` (con `Math.max(1, …)`), `VIDA_UNKNOWN_SESSION_MINUTES = 30` y `resolveUnknownEndMinutes(...)`. **Todo con `now` inyectado**: ni un `new Date()` escondido. Aquí vive la trampa de medianoche del criterio 63. |
+| `src/features/vida/hooks/useVidaElapsed.ts` (+ `.test.ts`) | **N** | Rescate de `79bece0:useElapsedTimer`: tic de **1 s**, `Date.now() − inicio` en cada tic, `clearInterval` al desmontar, `enabled` para no tictaquear sin sesión. Devuelve `{ label, minutes }`. |
+| `src/features/vida/hooks/useVidaOpenSession.ts` (+ `.test.tsx`) | **N** | Envuelve `useActivityOpenFollowUpQuery` (sin tocarla) y deriva `{ session, startInstant, isFromAnotherDay, isDisabled }`. **Una sola consulta para todo el módulo** (criterio 8). |
+| `src/features/vida/hooks/useVidaSessionActions.ts` (+ `.test.tsx`) | **N** | La orquestación, molde `useCreateStartingActivities`: `start({ activityId, date })` → si hay abierta, **cierra primero** con los minutos hasta ahora y **solo en su `onSuccess`** empieza la nueva; si el cierre falla, **no empieza** y devuelve el motivo (criterio 15). `finishNow()` (criterio 5, lanza el toast con acción), `finishWith(values)` (criterio 6), `discard()` (criterio 14), `resolveStale({ minutes })` (criterio 16). Traduce el `BadRequestError` en inglés del API. No lanza: **resuelve**. |
+| `src/features/vida/components/VidaSessionBar/` (`.tsx`, `.module.scss`, `index.ts`, `.test.tsx`) | **N** | Barra fija: icono y color de la categoría, nombre (truncable, criterio 61), cronómetro `aria-live="polite"`, «llevas 52 min · planeado 45» sin color de alarma (criterio 9), **«Terminar»** y «···». Un toque en el nombre → `vidaPaths.hoy`. Sin «Cancelar». |
+| `src/features/vida/components/VidaFinishSessionModal/` (4 archivos) | **N** | El cierre completo: duración con `VidaDurationPills` + libre, notas **texto plano** (`textarea`), subtareas si las hay con su «2 de 5», y **«No era esto — no guardarla»**. Molde `VidaPlaceInGapSheet`: `SteppedModal` `ds="aura"` + `mobileSheet`, `key` por apertura, `onSuccess` **local** (criterio 12). |
+| `src/features/vida/components/VidaStaleSessionPrompt/` (4 archivos) | **N** | La pregunta de D3: «Dejaste "X" en marcha **ayer** a las 21:00 · ¿hasta qué hora la hiciste?», `Input type="time"`, **«No sé»** con su explicación, y la línea de por qué no se puede empezar otra cosa. **No bloquea el resto de la pantalla** (criterio 54). |
+| `src/features/vida/routes/VidaModuleLayout.tsx` (+ `.test.tsx`) | **N** | `<VidaSessionBar/>` + `<VidaStaleSessionPrompt/>` + hueco inferior + `<Outlet/>`. |
+| `src/features/vida/routes/vida.routes.tsx` (+ `vida.routes.test.tsx`) | M | `element: <VidaModuleLayout/>` en el nodo `path: 'vida'`. **Las URL no cambian.** |
+| `src/features/vida/graphql/activity-followups.graphql.ts` | M | `sessionSubtasks { id followUpId activitySubtaskId title isCompleted orderIndex }` **solo en `ACTIVITY_OPEN_FOLLOW_UP_QUERY`** (en el documento del día serían N×subtareas para nada) + `ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION`. |
+| `src/features/vida/api/activity-followups.api.ts` | M | `editActivityFollowUpSubtask(input)`. |
+| `src/features/vida/types/activity-followup.types.ts` | M | `ActivityFollowUpSubtaskEditInput { followUpId, sessionSubtaskId, isCompleted }`. |
+| `src/features/vida/hooks/useActivityFollowUps.ts` (+ `.test.tsx`) | M | `useEditFollowUpSubtaskMutation` (criterio 10); **los tres toasts reescritos** (criterio 14); `{ silent }` en `useUpdateActivityFollowUpMutation`. |
+| `src/features/vida/graphql/contracts.test.ts` | M | El documento nuevo en la lista y en el `toEqual`. **El SDL no se recopia: ya trae todo** (`activity.schema.graphql:184,192-196`). |
+| `src/shared/ui/Toast/toast.types.ts`, `toast.context.tsx`, `ToastViewport.tsx` (+ test) | M | `action?: { label, onClick }`, aditivo. |
+| `src/features/vida/components/VidaAgendaBlock/` (+ `.module.scss`, `.test.tsx`) | M | **«▶ Empezar»** (solo hoy, solo si no está en marcha), el estado «planeado 45 min · en marcha» con cronómetro, el aviso de pasarse, y el «···» con «Terminar y añadir nota» / «No era esto». Inhabilitado mientras la mutación vuela (criterio 13). |
+| `src/features/vida/pages/VidaHoyPage.tsx` (+ `.test.tsx`) | M | Cablea `useVidaOpenSession` + `useVidaSessionActions` a los bloques. |
+
+*Tajada 2 — lo real encima de lo planeado, y el presupuesto por colores*
+
+| Archivo | N/M | Qué |
+|---|---|---|
+| `src/features/vida/utils/vida-execution.utils.ts` (+ `.test.ts`) | **N** | Los dos umbrales, `matchSessionsToBlocks`, `describeBlockExecution` (`on-plan` · `longer` · `shorter` · `shifted` · `moved` · `running`), `buildDayExecution`, `getExecutedBudget` (las dos formas de D5, con `trackMinutes` sobre cursor para que sumen 100 %, criterio 26) e `isDayClosed(nowMinutes, dayEnd, isPastDay)`. **Puro, `now` inyectado.** |
+| `src/features/vida/hooks/useVidaDayData.ts` (+ `.test.tsx`) | M | Cuarta consulta: `useActivityDayFollowUpsQuery(date)` (ya existe y ya se apaga en futuros). Devuelve `followUps`, `isFollowUpsError`, y `failed` gana **«lo que viviste»** — que es, literal, el criterio 58. |
+| `src/features/vida/components/VidaAgendaBlock/` | M | Prop `execution?: BlockExecution`: «✓ calcado», «+11 min», «empezó +5», las **horas reales** y la sombra del movido. |
+| `src/features/vida/components/VidaPlanVsRealBar/` (4 archivos) | **N** | La barrita del criterio 21, con «plan 30 · real 41» como **texto real**. |
+| `src/features/vida/components/VidaAgendaSession/` (4 archivos) | **N** | Una sesión que no es de ningún bloque: punteado, «fuera del plan» / «40 min tarde», sus horas y su duración. |
+| `src/features/vida/components/VidaDayBudget/` (+ `.module.scss`, `.test.tsx`) | M | Las **dos formas** con sus minutos y la línea que **explica el cambio** (criterio 25). |
+| `src/features/vida/pages/VidaHoyPage.tsx` | M | Recorre `execution.entries` en vez de `agenda.entries`. |
+
+*Tajada 3 — registrar lo que se sale*
+
+| Archivo | N/M | Qué |
+|---|---|---|
+| `src/features/vida/components/VidaActivityPicker/` (4 archivos) | **N** | **Extraído** del paso «qué» de `VidaPlaceInGapSheet` (criterio 38). |
+| `src/features/vida/components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx` | M | Pasa a usar `VidaActivityPicker`. **Mismo día, o son dos.** |
+| `src/features/vida/components/VidaLogSessionSheet/` (4 archivos) | **N** | «Registrar tiempo pasado» (qué · a qué hora · cuánto, con `VidaDurationPills`) y «Empezar algo» (solo «qué», **sin duración**), y la **corrección** de una sesión ya registrada (criterio 35). Una hoja, tres modos. |
+| `src/features/vida/utils/vida-session.utils.ts` (+ `.test.ts`) | M | `validateLogPast(...)` (rescate), `logSessionInput(...)`. |
+| `src/features/vida/components/VidaDayActions/` (+ `.test.tsx`) | M | «Empezar algo» (solo hoy) y «Registrar tiempo pasado» (hoy y pasados; **ninguno en futuros**, criterio 32). |
+| `src/features/vida/components/VidaAgendaSession/` | M | El «···»: corregir y **«Quitar del registro»** con `ConfirmDialog` y salida **«Volver»**. |
+| `src/features/vida/pages/VidaHoyPage.tsx` | M | Cablea la hoja. |
+
+*Tajada 4 — pendiente, las tres salidas, sin dato y la frase de cierre*
+
+| Archivo | N/M | Qué |
+|---|---|---|
+| `src/features/vida/store/vida-device-notes.store.ts` (+ `.test.ts`) | **N** | D7 y D8, molde `habit-identity.store.ts`. |
+| `src/features/vida/utils/vida-execution.utils.ts` (+ `.test.ts`) | M | `pending` / `not-done` según D9, `noDataSlices` con su mínimo `VIDA_NO_DATA_MIN_MINUTES = 30` (criterio 48) y **`buildDayClosingLine(...)`** con sus cuatro variantes del criterio 51 — puro, y es donde se prueba que **ninguna** usa una palabra de culpa. |
+| `src/features/vida/components/VidaBlockOutcomes/` (4 archivos) | **N** | Las tres salidas, **mismo peso visual**, y el campo de razón de «No se pudo». |
+| `src/features/vida/components/VidaAgendaNoData/` (4 archivos) | **N** | El tramo «sin dato» con sus horas y «¿Qué pasó?» → `VidaLogSessionSheet` con hora y duración **ya puestas**, o «dejarlo así». |
+| `src/features/vida/components/VidaAgendaBlock/` | M | «pendiente» / «no hecho», «en su lugar, X» con su vía, y la razón en una línea corta. |
+| `src/features/vida/components/VidaDayBudget/` | M | La frase de cierre. |
+| `src/features/vida/pages/VidaHoyPage.tsx` | M | Cablea las salidas y el store. |
+
+### Lo que NO se crea
+
+- **Ninguna consulta ni mutación de follow-ups**, salvo el documento de
+  subtareas de sesión: las siete existen con sus tests.
+- **Ninguna clave en `query-keys.ts` y ninguna invalidación nueva.**
+  `followUps.open/day/range` e `invalidateFollowUpQueries` cubren los criterios
+  8 y 11 enteros.
+- **Nada de SDL**: `activity.schema.graphql` ya trae subtareas de sesión y su
+  mutación. **El API no se toca** (confirmado en las dos direcciones).
+- **Ningún hook de día nuevo**: `useVidaDayData` se amplía.
+- **Ningún `buildDayAgenda` paralelo**, ni cuarta variante de `AgendaEntry`.
+- **Ningún envoltorio de `localStorage`**: `shared/lib/storage.ts` + zustand
+  `persist`.
+- **Ningún buscador ni normalizador de texto nuevo**: `VidaActivityPicker` es
+  una **extracción**, no una copia.
+- **Ningún componente de `shared/ui` nuevo**: `SteppedModal`, `Popover`,
+  `ConfirmDialog`, `Alert`, `Toast`, `IconButton`, `Button`, `Card`, `Badge`,
+  `AppIcon`, `Skeleton`, `Input` ya están. A `Toast` se le **añade** una prop.
+- **Ningún icono importado a pelo de `@fortawesome/free-solid-svg-icons`.**
+- **Ninguna ruta nueva** (criterio «sin pantallas nuevas»): `VidaModuleLayout`
+  es un `element` sobre la ruta que ya existe.
+
+### Dónde NO va
+
+- **La barra de sesión NO va en `AppLayout`.** Razones arriba; la corta es que
+  `app-nav.config.ts` no conoce `/app/vida/semana` ni las archivadas, y el
+  criterio 7 sí.
+- **Lo ejecutado NO entra en `utils/vida-agenda.utils.ts`.** Ese archivo
+  describe el plan y lo importan `vida-gap-form.utils.ts`, `VidaAgendaGap` y
+  `VidaTemplateAside`, a los que esto no les incumbe.
+- **La sesión abierta NO se guarda en `localStorage` ni en un store de
+  cliente.** La verdad es del servidor (`duration_minutes IS NULL`) y duplicarla
+  en el aparato es el segundo sitio que se contradice — justo el error que el
+  criterio 3 quiere evitar. Lo que sí es del aparato son **las dos cosas de D7 y
+  D8**, y porque el API no tiene dónde ponerlas.
+- **El cronómetro NO sale de `useVidaNowMinute`** (tictaquea a 60 s; el criterio
+  4 pide un segundo) ni acumula tics: `Date.now()` contra el instante de inicio.
+- **«Hecho» NO se escribe en `ActivityDayPlanItem.isCompleted`.** Se deriva de
+  la sesión (D7). Escribir las dos es dos verdades.
+- **La razón de «No se pudo» NO va en `notes` de ninguna sesión** ni en un campo
+  inventado del API (criterio 44).
+- **`durationMinutes` NO se calcula restando minutos desde medianoche.** A las
+  00:10 daría negativo (criterio 63): se calcula entre instantes.
+- **NO se toca `SearchSelect`** (2 tests rojos en la línea base) ni se arregla
+  `Popover` ni `--color-text-muted`: hallazgos abiertos de FEAT-002, cada uno
+  con su propia tarea.
+- **NO se deriva nada del historial de otras semanas** (F6): «4 de 5 días», «a
+  tu ritmo real» y «sueles tardar N» están dibujados en el render 04-B y **no
+  entran** (criterio 29).
+- **NO se restauran los cinco modales de `79bece0`**: el criterio 38 pide una
+  hoja, no cinco.
+- **NO se usa `clientId`** (idempotencia offline): explícitamente fuera de
+  alcance.
+
+### Las tajadas, con sus archivos
+
+| # | Qué hace | Archivos | Criterios que cierra | Estado |
+|---|---|---|---|---|
+| 1 | **Empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo.** | `utils/vida-session.utils.ts` (N) · `hooks/useVidaElapsed.ts` (N) · `hooks/useVidaOpenSession.ts` (N) · `hooks/useVidaSessionActions.ts` (N) · `components/VidaSessionBar/` (N) · `components/VidaFinishSessionModal/` (N) · `components/VidaStaleSessionPrompt/` (N) · `routes/VidaModuleLayout.tsx` (N) · `routes/vida.routes.tsx` · `graphql/activity-followups.graphql.ts` · `api/activity-followups.api.ts` · `types/activity-followup.types.ts` · `hooks/useActivityFollowUps.ts` · `graphql/contracts.test.ts` · `shared/ui/Toast/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 2–17, **1 a medias** (ver el recorte), 54, 59 (los tres toasts), 64, y la parte de 60/61/63 que toca la barra y el cierre | pending |
+| 2 | **Lo real encima de lo planeado, y el presupuesto por colores.** | `utils/vida-execution.utils.ts` (N) · `hooks/useVidaDayData.ts` · `components/VidaAgendaBlock/` · `components/VidaPlanVsRealBar/` (N) · `components/VidaAgendaSession/` (N) · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | **la otra mitad de 1**, 18–29, 53, 55, 57, 58, 62 | pending |
+| 3 | **Registrar lo que se sale.** | `components/VidaActivityPicker/` (N) · `components/VidaPlaceInGapSheet/` · `components/VidaLogSessionSheet/` (N) · `utils/vida-session.utils.ts` · `components/VidaDayActions/` · `components/VidaAgendaSession/` · `pages/VidaHoyPage.tsx` | 30–38, 56 | pending |
+| 4 | **Lo que falta: pendiente, las tres salidas, sin dato y la frase de cierre.** | `store/vida-device-notes.store.ts` (N) · `utils/vida-execution.utils.ts` · `components/VidaBlockOutcomes/` (N) · `components/VidaAgendaNoData/` (N) · `components/VidaAgendaBlock/` · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | 39–52, 60, 61, 65; **66 lo cierra el usuario** | pending |
+
+**Las cuatro tajadas se quedan como las cortó el analista.** Miradas contra el
+código, el corte aguanta y el reordenado de D7 era el correcto: la 1 no necesita
+el cruce, la 2 es solo lectura sobre lo que la 1 escribe, la 3 escribe la hoja y
+la 4 la usa cuatro veces. **Dos recortes, y quedan escritos:**
+
+> **El criterio 1 se parte entre la tajada 1 y la 2.** «Un bloque que no está
+> **en marcha**» se puede saber en la 1 con `activityOpenFollowUp` y el
+> `activityId` del bloque. «Ni **registrado**» **no**: saber que ese bloque ya
+> tiene su sesión cerrada **es el cruce de D1**, que es la tajada 2. En la 1,
+> «▶ Empezar» se esconde en el bloque en marcha y en los días futuros y pasados;
+> en la 2 se esconde también en el que ya tiene sesión. **La mitad de los días
+> (hoy / futuro / pasado) cierra en la 1; la mitad de «registrado» cierra en la
+> 2.** No reescribo el criterio: lo parto y lo digo.
+
+> **El criterio 16 no usa el cruce completo.** La sesión de otro día necesita la
+> duración planeada de aquel día para el «No sé», y el cruce de D1 llega en la
+> 2. En la tajada 1 se resuelve con lo mínimo y **sin adivinar**:
+> `useActivityDayPlanQuery(session.date)` —clave que ya existe— y el bloque con
+> el mismo `activityId`; **si hay más de uno, no se elige**: cae a los 30
+> minutos. Cuando la 2 traiga `matchSessionsToBlocks`, esto no cambia: la
+> función que decide (`resolveUnknownEndMinutes`) ya recibe `plannedMinutes`
+> desde fuera.
+
+### Cómo se verifica cada tajada
+
+Los agentes **no entran con credenciales** (`docs/features/ENVIRONMENT.md`): todo
+lo de `/app/*` se comprueba con **tests + arnés temporal**, y el recorrido real
+es del usuario (criterio 66) **con la API despierta**. Escrito así, sin
+disimular.
+
+- **Siempre, en toda tajada:** `pnpm typecheck` limpio, `pnpm lint` no peor que
+  **14 errores / 0 warnings**, `pnpm test` sin fallos nuevos sobre los **2** de
+  `SearchSelect`, y **`pnpm build`** al cerrar (no solo `typecheck`: es la
+  lección de la tajada 3 de FEAT-003, y el chunk inicial no crece por iconos).
+  `graphify update .` después de tocar código.
+- **El cronómetro, con temporizadores falsos.** `vi.useFakeTimers()` +
+  `vi.setSystemTime(...)`: criterio 3 (se monta 40 min después del inicio y
+  marca 40:00, **no** 00:00), criterio 4 (avanzar 1 s repinta; desmontar deja
+  `vi.getTimerCount()` en 0), criterio 63 (inicio 23:50, `setSystemTime` 00:10
+  del día siguiente → **20 min**, positivo, y la fecha que se manda es la del
+  inicio).
+- **Tajada 1:** el grueso son tests puros de `vida-session.utils.ts` (3, 5, 15,
+  16, 17, 63) — ahí se cierra el «No sé» con sus tres casos (planeado / varios
+  bloques / ninguno) y el recorte contra el fin del día.
+  `useVidaSessionActions.test.tsx` con `QueryClient` y **mutación que falla**:
+  el cierre falla → **no se empieza** la nueva y no quedan dos abiertas
+  (criterio 15); `start` dos veces seguidas → **una** llamada (criterio 13).
+  `pnpm test src/features/vida/graphql/contracts.test.ts` es el juez del
+  documento nuevo. Los toasts prohibidos, con un test que busca «cancelad»,
+  «elimin» en el módulo entero (criterios 14 y 59). Arnés temporal para la barra
+  a **375 px** con un nombre de ~60 caracteres (criterios 60 y 61), comprobando
+  que el último bloque de la agenda **no queda tapado**.
+- **Tajada 2:** casi todo test puro de `vida-execution.utils.ts` (19, 20, 22,
+  23, 24, 26), con **caso con nombre** para los dos bloques de la misma
+  actividad y para dos sesiones solapadas (los anchos suman 100). Tests de
+  componente para 18, 21, 25, 27, 29 y **58** (falla solo `activityDayFollowUps`
+  → se lee «falta lo que viviste», el plan se sigue viendo y **no se afirma «no
+  hecho»**). Arnés para 62 (tema oscuro: las **dos** leyendas y el violeta de
+  «en marcha» frente a la marca de «ahora» — si hace falta un token nuevo **se
+  anota, no se improvisa**).
+- **Tajada 3:** tests puros de `validateLogPast` (32, 36) y test de hoja con
+  mutación que falla (36: no se cierra, no pierde lo elegido, y en la agenda
+  **no queda una sesión fantasma**). El criterio 38 se comprueba **por
+  estructura**: un test que afirma que `VidaPlaceInGapSheet` y
+  `VidaLogSessionSheet` importan **el mismo** `VidaActivityPicker`. Y 37 con un
+  espía: registrar **no llama** a ninguna mutación de `activityDayPlan`.
+- **Tajada 4:** test puro de `buildDayClosingLine` con sus cuatro variantes
+  (51), incluida la comprobación de que **ninguna** contiene «desperdici»,
+  «perdiste», «fallaste» ni «vacío»; `noDataSlices` con el mínimo de 30 (48) y
+  con el futuro **excluido** (50). El store con `localStorage` simulado **y con
+  `localStorage` que lanza** (49: no se rompe nada). D9 con `setSystemTime` a
+  tres horas distintas (39).
+- **Renders como referencia visual:**
+  `http://localhost:5173/docs/vida/assets/04-vida-planeado-ejecutado.html`
+  (**marco B**) y `…/03-vida-agenda.html`. Con la ventana oculta:
+  `document.getAnimations().forEach(a => a.finish())` y
+  `dispatchEvent(new Event('scroll'))` tras `scrollTo`.
+
+### Lo que no pude averiguar, y un aviso
+
+- **No probé ni una llamada real.** Todo lo del servidor sale de leer
+  `~/Developer/xavi-platform-node` (servicio, SDL y utilidades de tiempo), no de
+  una respuesta. Las cuatro confirmaciones de arriba son firmes como lectura de
+  código; el recorrido real sigue siendo el criterio 66, del usuario.
+- **Aviso sobre el render y el criterio 24.** El **marco B** está fechado a las
+  **21:40** con el día acabando a las **23:00** —o sea, **día aún en marcha**— y
+  sin embargo pinta la leyenda de día terminado (*seguido · de más · fuera del
+  plan · sin dato*) **y además** «te queda 1h 20». El criterio 24 dice que esa
+  leyenda aparece **cuando el día se cierra**. **No reescribo el criterio: manda
+  él**, y la línea «te queda …» se conserva en las dos formas (no estorba a
+  ninguna). Pero la diferencia es real y la decide el usuario si al verlo no le
+  cuadra: o el render adelanta el cambio de forma, o el criterio 24 manda y el
+  marco B se lee como «el día ya terminó».
+- **El coste de la cuarta consulta por día** (`activityDayFollowUps` dentro de
+  `useVidaDayData`) no está medido. Es una consulta pequeña con `staleTime: 30 s`
+  y la misma clave que usa la barra: no debería notarse, pero queda anotado.
+- **No hay `graphify-out/reflections/LESSONS.md`** en este repositorio: no había
+  memoria previa que leer. `graphify query` sobre los términos de la feature
+  devolvió sobre todo documentación (`docs/activities-domain.md`) y tipos; la
+  exploración útil fue `git ls-tree` sobre `79bece0` y lectura por rangos.
+
+---
+
+*Escrito por `feature-architect` el 2026-09-20. Fuentes: la sección 1 entera,
+`docs/features/PROTOCOL.md`, `docs/features/ENVIRONMENT.md`, la sección 2 de
+`FEAT-002` y de `FEAT-003` (y las secciones 3 y 4 de sus cinco tajadas),
+`docs/vida/PLAN.md` (F3 y las decisiones 4, 8, 9, 11, 12 y 13), los renders 03 y
+04-B, el código vivo de `src/features/vida/`, `src/shared/ui/Toast/` y
+`src/features/habits/store/`, `git show 79bece0:…` función por función, y
+`~/Developer/xavi-platform-node` (`activity-follow-up.service.ts`,
+`activity-day-plan.service.ts`, `shared/utils/activity-follow-up-time.ts`).*
 
 ## 3. Construction — feature-builder
 

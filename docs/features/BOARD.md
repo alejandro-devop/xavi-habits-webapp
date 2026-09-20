@@ -12,6 +12,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
+| FEAT-004 | specified | 0/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -346,3 +347,23 @@ detrás del login; los pasos están al final del dossier.
 FEAT-001 queda con el **criterio 10 pendiente**: el recorrido real con sesión
 (cambiar de Hábitos a Vida y volver). No es de ningún agente — está detrás del
 login; los pasos están al final del dossier.
+
+**FEAT-004 `specified`** (2026-09-20): F3 del plan de Vida, «Hoy: vivir el día»,
+sobre la misma agenda que dejó FEAT-003. **66 criterios y cuatro tajadas**, con
+**las diez decisiones respondidas** (D1…D10 al final de la sección 1) y **el API
+sin tocar**: 1 empezar/terminar con cronómetro y la sesión visible en todo el
+módulo · 2 lo real encima de lo planeado y el presupuesto **en dos formas** (día
+en marcha / día terminado) · 3 registrar lo que se sale, en cualquier día de la
+tira · 4 «pendiente» y «no hecho», las **tres salidas** de un bloque que no se
+hizo, los tramos «sin dato» y la frase de cierre. `architect: yes`. La capa de
+follow-ups de F0 **existe y está sin estrenar** (`hooks/useActivityFollowUps.ts`):
+sesión abierta = `durationMinutes === null` y «Terminar» es
+`activityFollowUpEdit`. **D7 se amplió y reordenó las tajadas**: el usuario pidió
+poder decir **qué otra cosa hizo**, así que un bloque no hecho ofrece «Lo hice»,
+**«Hice otra cosa»** y **«No se pudo»** — y como «Hice otra cosa» necesita la
+hoja de elegir actividad, registrar (3) va **antes** del rescate (4). **Dos
+deudas de portabilidad a Flutter, dichas en pantalla**: el «dejarlo así» de un
+tramo sin dato (D8) y la razón de un «No se pudo» (D7) se guardan **en el
+aparato**, porque el API no tiene dónde. El cruce real↔planeado es **de cliente**
+(D1): con dos bloques de la misma actividad el mismo día puede cambiar la pareja,
+y está escrito como limitación conocida. Siguiente: el `feature-architect`.

@@ -12,11 +12,10 @@ No hay cadena de bugs en este repositorio (`docs/bugs/` no existe): este es el
 | Servicio | Dirección | Quién lo levanta |
 |---|---|---|
 | La web (Vite dev) | `http://localhost:5173` | **el usuario** — suele estar arriba todo el día |
-| La API (GraphQL + auth REST) | `https://xavi-api-wqpmywszuq-uc.a.run.app` | nadie: es `xavi-platform-node` desplegado en Cloud Run |
+| La API (GraphQL + auth REST) | `https://xavi-api-9om1.onrender.com` | nadie: es `xavi-platform-node` desplegado en Render (free: se duerme tras 15 min sin tráfico y tarda ~1 min en despertar). Cloud Run (`xavi-api-wqpmywszuq-uc.a.run.app`) sigue vivo como respaldo, misma base de Neon |
 
 La API vive en otro repositorio (`~/Developer/xavi-platform-node`, el esquema
-en `src/graphql/modules/`). **No se toca** desde aquí: ningún dossier de este
-repo pide cambios de backend.
+en `src/graphql/modules/`). **Casi no se toca** desde aquí: la única excepción hasta hoy es FEAT-003 (hora y duración en la plantilla). Un push a `main` de ese repo despliega a la vez a Cloud Run (con job de migraciones contra Neon) y a Render (auto-deploy, sin migraciones al arrancar): como comparten base, el job de Cloud Run migra para los dos.
 
 **Los agentes no levantan ni paran nada.** Si el 5173 no responde, va en el
 reporte y se sigue con lo que no dependa de él. Para mirar una pantalla se

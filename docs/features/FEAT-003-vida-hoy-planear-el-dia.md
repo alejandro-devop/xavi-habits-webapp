@@ -1,7 +1,7 @@
 ---
 id: FEAT-003
 title: Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos
-status: specified
+status: planned
 architect: yes    # pantalla nueva sin hermana (agenda con geometría de tiempo), el SDL de Vida cambia, y los ajustes de Vida tocan otra feature
 area: features/vida
 requested: 2026-09-20
@@ -532,7 +532,322 @@ superada por D6**), `docs/vida/assets/03-vida-agenda.html`,
 
 ## 2. El plan — feature-architect
 
-*(pendiente)*
+**Resumen para el constructor:** la referencia es el propio módulo Vida de
+FEAT-002 —`src/features/vida/pages/VidaActividadesPage.tsx` +
+`components/VidaActivitySheet/`— para páginas, hojas y estados; y
+`src/features/habits/components/HabitPanel/` + `utils/habit-panel.utils.ts`
+**solo** para la figura «aritmética pura en un `utils` + geometría pintada a
+mano + tabla oculta accesible», que es lo único parecido a la barra del día que
+hay vivo en el repo. Todo lo nuevo de esta feature cae dentro de
+`src/features/vida/` salvo cuatro archivos de `src/features/settings/` (dos
+campos más en el documento, el tipo y el SDL vendorizado) y una entrada
+`settings` para el módulo Vida en `src/layouts/AppLayout/app-nav.config.ts`.
+**No se crea capa de datos del plan del día ni de la plantilla: ya existen
+enteras y con tests** (`hooks/useActivityDayPlan.ts`, `hooks/useVidaItems.ts`,
+`hooks/useSaveVidaItemForActivity.ts`, `vidaKeys` y las invalidaciones).
+
+### Lo que ya existe
+
+| Qué | Dónde | Qué significa para esta feature |
+|---|---|---|
+| Las cinco operaciones del plan del día | `src/features/vida/hooks/useActivityDayPlan.ts:26,35,48,66,81` (+`.test.tsx`) | `useActivityDayPlanQuery(date)` ya consulta **fechas futuras a propósito**, y `Set`/`ItemAdd`/`ItemEdit`/`ItemRemove` ya invalidan y dan toast. **Ninguna mutación nueva.** |
+| La plantilla | `hooks/useVidaItems.ts`, `hooks/useSaveVidaItemForActivity.ts:64` (`planVidaItemSave`, puro y probado) | Se **amplía** con dos campos; no se reescribe. |
+| Claves de caché | `src/shared/api/query-keys.ts:44-70` (`vidaKeys.dayPlan.byDate`, `items.suggestions(date)`, `items.list`) y `:150` (`settingsKeys.my()`) | **Cubren las cuatro consultas por día y los siete días de la tira.** No hace falta ninguna clave nueva (ver «Dónde NO va»). |
+| Invalidaciones | `src/features/vida/utils/invalidate-vida-queries.ts:64,76` | `invalidateDayPlanQueries` ya invalida **solo esa fecha**, que es exactamente lo que pide la tira. |
+| Ajustes | `src/features/settings/hooks/useUserSettings.ts:16,27` + `graphql/user-settings.graphql.ts` + `types/user-settings.types.ts` + `api/user-settings.api.ts`, exportados en `src/features/settings/index.ts:3` | `useUserSettingsQuery` tiene `staleTime: 5 min` y clave propia: **la hipótesis «los ajustes se consultan una vez por sesión» ya está resuelta**, no se toca. El documento pide 5 de los 12 campos del API: añadir 2 es barato. |
+| Guardas de sesión | `hooks/useVidaQueryGuard.ts` | Es lo que sostiene el criterio 51; se usa tal cual. |
+| Fechas locales | `utils/vida-date.utils.ts` (`formatDateToYmd`, `getCurrentLocalDate`, `getMondayOfWeek`, `getCurrentWeekRange`, `isFutureDate`, `isToday`, `VIDA_DAY_*`) | Criterio 49 resuelto de fábrica. **Le falta todo lo de `HH:mm`.** |
+| Texto para buscar | `utils/vida-text.utils.ts`, `utils/activity-filters.ts` (`filterActivitiesBySearch`) | El buscador de «qué» (criterio 25) reutiliza `filterActivitiesBySearch`. **No se escribe un quinto normalizador** (ya hay cuatro copias: hallazgo abierto de FEAT-002). |
+| Contratos GraphQL | `src/features/vida/graphql/contracts.test.ts` | Es el **único** arnés de contrato del repo. `activity.schema.graphql` aporta los bloques base (`type Query`, `type Mutation`, escalares); los demás SDL son `extend`. |
+| La hoja con pasos y la tarjeta | `components/VidaActivitySheet/VidaActivitySheet.tsx` (410 líneas, con la lógica de «no pisar un `VidaItem` en vuelo» en los comentarios de cabecera y en `:95-110`) y `components/VidaActivityCard/` | Se amplían. **Leer la cabecera antes de tocar la hoja**: el `templateDraft` se *deriva*, no se copia con `useEffect`. |
+| Geometría de tiempo | **no existe nada en `src/`** | Confirmado: ni un componente pinta posiciones derivadas de horas. Lo más parecido vivo es `HabitPanel` (SVG a mano + `habit-panel.utils.ts` puro). |
+| Aritmética de tiempo borrada | `git show 79bece0:src/features/activities/utils/activity-time.utils.ts` (494 líneas), `…/activity-day-metrics.utils.ts`, `…/activity-free-slot-form.ts`, `…/hooks/useCurrentTimeMarker.ts`, `…/hooks/useRemainingDayTimer.ts` | Se rescata **por función**, no por archivo. Tabla abajo. |
+
+**Nada existe dos veces** en lo que toca esta feature, salvo el normalizador de
+texto (cuatro copias, hallazgo ya anotado en FEAT-002 y que aquí **no crece**).
+
+### Qué se rescata de `79bece0`, función por función
+
+| De dónde | Qué | Dónde va | Por qué |
+|---|---|---|---|
+| `activity-time.utils.ts:130-160` | `parseTimeToMinutes`/`timeToMinutes`, `minutesToTime`, `normalizeTimeForDisplay`, `normalizeTimeForApi` | `src/features/vida/utils/vida-time.utils.ts` (nuevo) | Es la base de todo. Copiar el cuerpo, quitar `normalizeTimeToSeconds` (el plan del día habla `HH:mm`, no `HH:mm:ss`). |
+| `activity-time.utils.ts:196-207` | `formatDurationMinutes` | ídem | «40 min» / «2 h 30». El render usa la forma corta de `activity-day-metrics.utils.ts:78` (`formatDurationFromMinutes`: «2h 30», «45m»): **se rescata esa**, que es la que dibuja el render. |
+| `activity-time.utils.ts:268-274` | `calculateEndTime(startTime, durationMinutes)` | ídem | Es lo que convierte «hora + duración» en el `endTime` que pide `ActivityDayPlanItemAddInput`. Quitar el `_date` muerto y el `% 24` (aquí nada cruza medianoche: el día acaba en `vidaDayEndTime`). |
+| `activity-time.utils.ts:339-383` | la forma de `getFreeSlotsBetweenFollowUps` | `utils/vida-agenda.utils.ts` (nuevo, tajada 2) | **Se reescribe, no se copia**: aquélla solo daba huecos *entre* registros (`if (dayFollowUps.length < 2) return []`) y aquí hacen falta también el de antes del primer bloque y el de después del último (criterio 17), y los bordes son `vidaDayStartTime`/`vidaDayEndTime`, no `00:00`/`24:00`. Se conserva la idea del cursor y del `id` derivado de las horas. |
+| `activity-time.utils.ts:399-437` | `isStartTimeInsideSlot`, `getMaxDurationForStartTime`, `validateFollowUpInsideSlot` | `utils/vida-gap-form.utils.ts` (nuevo, tajada 3) | Son literalmente los criterios 26 y 27. Se rescatan casi tal cual, cambiando los mensajes al lenguaje del criterio 56. |
+| `activity-free-slot-form.ts` | la forma del formulario de hueco | ídem | Molde para «qué · cuánto · cuándo»; el contenido cambia (tres preguntas, no un registro). |
+| `hooks/useCurrentTimeMarker.ts` | entero (14 líneas) | `hooks/useVidaNowMinute.ts` (nuevo) | Ya tictaquea **cada 60 s**, que es justo el criterio 12. Devuelve minutos desde medianoche además de la etiqueta, porque la barra y la marca lo necesitan como número. |
+| `hooks/useRemainingDayTimer.ts` | **la idea, no el código** | ídem | Tictaquea **cada segundo** (era un cronómetro) y depende de `DAY_END_TIME = '23:00:00'` *hardcodeado* y de una ventana «23:00 de ayer → 23:00 de hoy» que aquí no vale: la ventana es `vidaDayStartTime → vidaDayEndTime` de los ajustes. Un intervalo de 1 s repintando el presupuesto entero es coste sin criterio que lo pida. |
+| `activity-day-metrics.utils.ts` | `formatDurationFromMinutes` y la idea de `getDayUsageMetrics` | `utils/vida-agenda.utils.ts` | **Se tira** `wasteMinutes`/`wastePercentage`: es «desperdicio», prohibido por el criterio 56 y por la regla de producto del `ENVIRONMENT.md`. En F2 los tramos son **planeado** y **libre** y nada más. |
+| todo lo demás del archivo (mes, timeline con alturas en px, `buildTimelineItems`, ISO↔local, `formatElapsedHHMMSS`) | — | **no se rescata** | Alturas proporcionales en píxeles = cuadrícula de horas, descartada (decisión 5 del plan). Lo de ISO y cronómetro es F3. |
+
+### Hipótesis del analista: confirmadas y tiradas
+
+| Hipótesis | Veredicto | Evidencia |
+|---|---|---|
+| `vidaSuggestionsForDate` es la fuente de las fichas | **Confirmada**, con una corrección importante | `xavi-platform-node/src/services/vida.service.ts:279-295`: filtra por el día de la semana de la fecha y sirve **cualquier fecha**. Pero `takenToday` sale de `vidaTakenToday`, que es el «ya lo tomé hoy» de F1 — en un día futuro es **siempre `false`** y **no dice si la actividad está en el plan**. Por tanto **la exclusión del criterio 18 se calcula contra `activityDayPlan(date)`** (por `activityId`), nunca contra `takenToday`. Confundirlos es el error caro de esta feature. |
+| Hueco mínimo 15 min | **Confirmada, con matiz** | `MIN_GAP_MINUTES = 15` para pintar la **tarjeta** de hueco con fichas. Los restos de menos de 15 min **no desaparecen**: se pintan como una línea fina con sus minutos, porque si no, la leyenda (criterio 14) dejaría de cuadrar con lo que se ve. |
+| Duración por defecto 30 min (criterio 44) | **Confirmada** | `DEFAULT_BLOCK_MINUTES = 30`, exportada de `vida-time.utils.ts` y **nombrada en pantalla** («30 min por defecto»). |
+| Tira de 7 días empezando dos días antes | **Confirmada, recortada a la ventana** | Es lo que dibuja el render 04 (JUE 17 … MIÉ 23 con el 18 elegido). Pero D5 manda: la ventana es de **hoy** al **domingo de la semana que viene**, así que la tira se recorta contra ese borde en vez de ofrecer días que no se pueden abrir (criterio 35). El pasado de la tira es navegable en solo lectura (criterio 38). |
+| El API no valida solapes | **Confirmada** | `grep -niE "overlap|solap|conflict"` en `xavi-platform-node/src/services/activity-day-plan.service.ts` y `src/validators/schemas/activity-day-plan.schemas.ts`: **cero coincidencias**. D4 la sostiene **el cliente**, entera. |
+| `activityDayPlanSet` reemplaza el día entero | **Confirmada** | Está en el SDL vendorizado: `src/features/vida/graphql/schema/activity-day-plan.schema.graphql:44` («Reemplaza (atómicamente) el plan del día»). Sirve para armar y para vaciar; añadir un bloque suelto va por `ItemAdd`. |
+| Los ajustes se cachean una vez por sesión | **Confirmada y ya hecha** | `useUserSettingsQuery` con `staleTime: 5 min` sobre `settingsKeys.my()`. No se toca. |
+
+### Implementación de referencia
+
+**`src/features/vida/pages/VidaActividadesPage.tsx` (271 líneas) con
+`src/features/vida/components/VidaActivitySheet/` y
+`components/VidaActivityCard/`.** No por ser el mejor código del repo, sino
+porque es **la misma figura** y está vivo y probado: una página que cruza tres
+consultas y resuelve el cruce en un `Map` (`:78-84`), componentes tontos que no
+mutan, los cuatro estados separados de verdad (cargando / sin sesión / error con
+reintento / vacío), una hoja `SteppedModal` con `ds="aura"` + `mobileSheet`
+—que es literalmente la hoja inferior del render— montada con una **`key` por
+apertura** (`:47,52-58`) y con el `onSuccess` **local** para que un fallo de
+mutación no cierre la hoja. Los criterios 29, 50, 51, 52 y 53 se cierran
+imitándola; los tests `VidaActividadesPage.test.tsx` y
+`VidaActivitySheet.test.tsx` son el molde.
+
+**Referencia secundaria, solo para la geometría:**
+`src/features/habits/components/HabitPanel/` + `utils/habit-panel.utils.ts`.
+Es lo único vivo que pinta números derivados: toda la aritmética en un `utils`
+puro con su test y el dibujo a mano, con **tabla oculta obligatoria** en
+`ChartPanel` para que lo que se ve en una barra también se pueda leer. La barra
+del día (criterios 13 y 14) se hace así: porcentajes calculados en
+`vida-agenda.utils.ts`, `<div>`s con `width: %`, y la leyenda con los minutos
+como texto real —no `title`— para que sea la «tabla» del gráfico.
+
+**Para lo de tiempo, la referencia es `79bece0`** con la tabla de arriba; no es
+código vivo y por eso se rescata por función, con test propio, no se restaura.
+
+### Dónde va el código nuevo, archivo por archivo
+
+*Tajada 1 — la plantilla con hora y duración, y los ajustes de Vida*
+
+| Archivo | Nuevo/Modificado | Qué |
+|---|---|---|
+| `src/features/vida/graphql/schema/vida.schema.graphql` | M | **Recopiar literal** la cadena `gql` de `~/Developer/xavi-platform-node/src/graphql/modules/vida/vida.schema.ts` (commit `15463da`). Cabecera: `Copiado: 2026-09-20` y el commit de origen. No editar a mano campo por campo. |
+| `src/features/settings/graphql/schema/user-settings.schema.graphql` | **N** | Copia literal de `userSettingsTypeDefs` (mismo commit). Es autocontenido: solo referencia `DateTime` y hace `extend type Query`/`Mutation`. |
+| `src/features/vida/graphql/contracts.test.ts` | M | Añadir el SDL de ajustes a `buildSchema([...])` (`:31`) y los dos documentos de `@/features/settings/graphql/user-settings.graphql` a la lista de `:50-84`, con `MY_SETTINGS_QUERY` y `UPDATE_MY_SETTINGS_MUTATION` en el `toEqual`. **Aquí y no en un arnés nuevo en `settings/`**: los bloques base (`type Query`, `type Mutation`, escalares) viven solo en `activity.schema.graphql`; un test propio para ajustes tendría que inventárselos. Añadir también un caso «con dientes» sobre `UserSettings`. |
+| `src/features/vida/graphql/vida-items.graphql.ts` | M | `startTime` y `durationMinutes` dentro de `VIDA_ITEM_FIELDS` (`:1-11`): entra solo en un sitio y lo heredan las cuatro consultas y mutaciones, incluida `VIDA_SUGGESTIONS_FOR_DATE_QUERY` (criterio 18). |
+| `src/features/settings/graphql/user-settings.graphql.ts` | M | `vidaDayStartTime` y `vidaDayEndTime` en las dos selecciones. |
+| `src/features/settings/types/user-settings.types.ts` | M | Los dos campos en `UserSettings` (`string \| null`) y en `UpdateUserSettingsInput` (`?: string \| null`). |
+| `src/features/vida/types/vida-item.types.ts` | M | `startTime: string \| null` y `durationMinutes: number \| null` en `VidaItem`; opcionales en `VidaItemCreateInput` y `VidaItemUpdateInput`, documentando que **`null` limpia** en update y que `durationMinutes` es entero > 0 (lo valida el API: `vida.service.ts:217-220`). |
+| `src/features/vida/utils/vida-time.utils.ts` (+ `.test.ts`) | **N** | El rescate de `79bece0`: `parseTimeToMinutes`, `minutesToTime`, `normalizeTimeForDisplay/ForApi`, `calculateEndTime`, `formatDurationFromMinutes`, `isValidHhMm`, `isEndAfterStart`, y las constantes `DURATION_PILLS = [15, 30, 45, 60]`, `DEFAULT_BLOCK_MINUTES = 30`, `MIN_GAP_MINUTES = 15`, `VIDA_DAY_START_FALLBACK = '06:30'`, `VIDA_DAY_END_FALLBACK = '23:00'`. **Archivo hermano de `vida-date.utils.ts`, no dentro de él** (ver «Dónde NO va»). |
+| `src/features/vida/hooks/useSaveVidaItemForActivity.ts` (+ `.test.tsx`) | M | `SaveVidaItemForActivityInput` gana `startTime: string \| null` y `durationMinutes: number \| null`; `planVidaItemSave` los compara para decidir `nothing` y los manda en `create` y en `update`. Las tres reglas de FEAT-002 (no crear un segundo ítem, reactivar el desactivado, no llamar si nada cambió) **siguen siendo las mismas y sus tests no se tocan**: se añaden casos. |
+| `src/features/vida/components/VidaDurationPills/` (`.tsx`, `.module.scss`, `index.ts`, `.test.tsx`) | **N** | Las píldoras **15 · 30 · 45 · 1h · libre** con «libre» abriendo un campo en minutos. Sale a componente desde el primer día porque la tajada 3 la reutiliza **con píldoras apagadas** (criterio 26): prop `maxMinutes` opcional. |
+| `src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx` (+ `.module.scss`, `.test.tsx`) | M | Dentro del bloque `styles.template` (`:277-325`), tras la fila de días: «a qué hora» (`Input type="time"`, 24 h) y `VidaDurationPills`. Se **derivan** de `vidaItem` igual que `days`, ampliando `TemplateDraft` (`:24-27`) — **no** con `useEffect`. Los dos son opcionales (criterio 5): guardar sin ellos no se bloquea. |
+| `src/features/vida/components/VidaActivityCard/VidaActivityCard.tsx` (+ `.module.scss`, `.test.tsx`) | M | En el bloque de `vidaItem` (`:110-134`): «8:00 · 40 min ·» antes de las siete letras, y «sin hora» discreto con la vía a la hoja cuando `startTime` es `null`. Ojo al criterio 54: la línea tiene que poder truncar. |
+| `src/features/vida/hooks/useVidaDayHours.ts` (+ `.test.tsx`) | **N** | Envuelve `useUserSettingsQuery` y devuelve `{ startTime, endTime, isDefault, isPending, isError }` aplicando los respaldos 06:30 / 23:00. **Única fuente** de los criterios 9 y 50: nadie más lee los ajustes. |
+| `src/features/vida/pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`) | **N** | Dos campos `HH:mm`, validación «fin posterior a inicio» (criterio 10), `Alert` de error sin perder lo escrito, y la frase de «esto es el valor por defecto» cuando vienen nulos. Molde: `src/pages/app/SettingsPage/SettingsPage.tsx`. Guarda con `useUpdateUserSettingsMutation` tal cual. |
+| `src/features/vida/routes/vida-paths.ts` | M | `ajustes: '/app/vida/ajustes'`. |
+| `src/features/vida/routes/vida.routes.tsx` (+ `vida.routes.test.tsx`) | M | La ruta `ajustes`. |
+| `src/layouts/AppLayout/app-nav.config.ts` | M | Bloque `settings: [...]` para el módulo `vida` (`:100-135`) con **una** entrada: «Ajustes de Vida», icono `sliders`/`gear`, keywords `['vida','ajustes','horario','día']`. Es **una sola fuente**: de ahí salen el popover «Ajustes» del módulo y `⌘K`. |
+
+*Tajada 2 — la agenda del día, en solo lectura*
+
+| Archivo | Nuevo/Modificado | Qué |
+|---|---|---|
+| `src/features/vida/utils/vida-agenda.utils.ts` (+ `.test.ts`) | **N** | El corazón puro: `buildDayAgenda({ planItems, dayStart, dayEnd, now })` → lista ordenada de `{ kind: 'block' \| 'gap' \| 'sliver' \| 'now' }` con sus minutos; `getDayBudget(...)` → `{ plannedMinutes, freeMinutes, plannedPercent, freePercent, nowPercent, remainingMinutes }`; `buildGuidanceLine(...)` (criterio 15, con sus cuatro variantes y **ninguna palabra de reproche**); `fitsInGap(gap, minutes)` y `suggestionsForGap(suggestions, gap, planItems)` (excluye por `activityId` presente en el plan y ordena las **sin duración** al final, criterios 18 y 19). Todo con `Date` inyectable para poder probarlo. |
+| `src/features/vida/hooks/useVidaNowMinute.ts` | **N** | Rescate de `useCurrentTimeMarker`: tic de 60 s, devuelve `{ minutes, label }`, y **no tictaquea** si el día mostrado no es hoy (criterio 33). |
+| `src/features/vida/hooks/useVidaDayData.ts` (+ `.test.tsx`) | **N** | Junta `useActivityDayPlanQuery(date)`, `useVidaSuggestionsForDateQuery(date)` y `useVidaDayHours()`, y devuelve un estado por consulta para que el criterio 52 pueda decir **qué falta** en vez de dejar la pantalla a medias. Usa las claves que ya existen; **no crea ninguna**. |
+| `src/features/vida/components/VidaDayBudget/` (`.tsx`, `.module.scss`, `index.ts`, `.test.tsx`) | **N** | Fecha y hora, «te quedan Xh YY hasta las 23:00», barra proporcional con la marca de «ahora», leyenda con minutos (**texto real**, es la tabla del gráfico) y la línea de guía. |
+| `src/features/vida/components/VidaAgendaBlock/` | **N** | Hora, icono y color de la categoría —**el mismo cruce por `Map` que hace `VidaActividadesPage:79`**—, nombre, duración y «en N min» en el primero que no ha empezado. Sin nada de vivir el día (criterio 22). |
+| `src/features/vida/components/VidaAgendaGap/` | **N** | «Libre 10:30 – 13:00 · 2h 30» + hasta 3 fichas + «+ otra cosa» (en la tajada 2 las fichas **no colocan nada**: son lectura). |
+| `src/features/vida/components/VidaTemplateAside/` | **N** | El lateral de escritorio: «Tu plantilla de \<día\>» marcando lo que ya está en el plan (criterio 48). «Mañana» llega en la tajada 5. |
+| `src/features/vida/pages/VidaHoyPage.tsx` (+ `.module.scss`, `.test.tsx`) | M (sustituye el cascarón de 6 líneas) | Compone lo anterior. Criterio 20: `ref` en la marca de «ahora» + `scrollIntoView({ block: 'center' })` una sola vez al montar, **sin** ocultar lo anterior. |
+
+*Tajada 3 — poner algo en un hueco*
+
+| Archivo | Nuevo/Modificado | Qué |
+|---|---|---|
+| `src/features/vida/utils/vida-gap-form.utils.ts` (+ `.test.ts`) | **N** | Rescate de `79bece0:activity-time.utils.ts:399-437`: duraciones posibles en un hueco (criterio 26), horas ofrecidas dentro del hueco (criterio 27), «queda libre después» (criterio 28) y el `endTime` que se manda al API. |
+| `src/features/vida/components/VidaPlaceInGapSheet/` (`.tsx`, `.module.scss`, `index.ts`, `.test.tsx`) | **N** | La hoja de tres preguntas. Mismo molde que `VidaActivitySheet`: `SteppedModal` `ds="aura"` + `mobileSheet`, `key` por apertura, `onSuccess` local (criterio 29). «Qué» = plantilla del día primero + buscador con `filterActivitiesBySearch` sobre `useActivitiesQuery` sin archivadas. |
+| `src/features/vida/components/VidaAgendaGap/` | M | Un toque en una ficha llama a `useAddDayPlanItemMutation` con `startTime` = inicio del hueco (criterio 23). |
+| `src/features/vida/components/VidaAgendaBlock/` | M | El «···» (`Popover` + `IconButton icon="ellipsis"`, igual que `VidaActivityCard:137-143`) con «Quitar del plan» (`useRemoveDayPlanItemMutation`, con `useConfirmDialog` y botón de salida «Volver», nunca «Cancelar») y «Cambiar hora o duración» (`useEditDayPlanItemMutation`, reusando `vida-gap-form.utils.ts` con el hueco **ampliado** al espacio del propio bloque). |
+| `src/features/vida/pages/VidaHoyPage.tsx` | M | Cablea la hoja y el hueco elegido. |
+
+*Tajada 4 — cualquier día, no solo hoy*
+
+| Archivo | Nuevo/Modificado | Qué |
+|---|---|---|
+| `src/features/vida/utils/vida-window.utils.ts` (+ `.test.ts`) | **N** | La ventana de D5 (`getPlanningWindow()` → `{ from: hoy, to: domingo de la semana siguiente }`, sobre `getMondayOfWeek`), `buildDayStrip(selectedDate)` (7 días desde dos antes, recortados a la ventana), `isEditableDate(date)` (criterio 38) y `sameWeekdayLastWeek(date)` (criterio 36). |
+| `src/features/vida/hooks/useVidaWeekPlans.ts` (+ `.test.tsx`) | **N** | Los puntos de la tira: `useQueries` con **`vidaKeys.dayPlan.byDate(d)` para cada día**, la misma clave y la misma `queryFn` que `useActivityDayPlanQuery`. Así el día abierto es un acierto de caché, `invalidateDayPlanQueries` sigue valiendo para los dos y **no se inventa ninguna clave de rango**. |
+| `src/features/vida/components/VidaDayStrip/` | **N** | La tira con el punto rayado / vacío y el borde explicado (criterio 35). |
+| `src/features/vida/pages/VidaHoyPage.tsx` | M | El día visto sale de `useSearchParams()`: **`/app/vida/hoy?d=YYYY-MM-DD`** (sin parámetro = hoy). Recarga y «atrás» salen gratis; la píldora «Hoy» sigue encendida porque la ruta no cambia. |
+| `src/features/vida/routes/vida-paths.ts` | M | `hoyForDate(date)` → `/app/vida/hoy?d=<date>` — un solo sitio construye la URL. |
+| `src/features/vida/components/VidaDayActions/` | **N** | «Copiar del \<mismo día\> pasado» (lee `vidaKeys.dayPlan.byDate(date - 7)` y escribe con `useSetActivityDayPlanMutation`; apagado y explicado si aquel día no tuvo plan) y «Vaciar y rehacer» (`useConfirmDialog` nombrando cuántos bloques; `activityDayPlanSet` con `items: []`). Solo en hoy y futuros. |
+
+*Tajada 5 — la semana y armar desde la plantilla*
+
+| Archivo | Nuevo/Modificado | Qué |
+|---|---|---|
+| `src/features/vida/utils/vida-build-day.utils.ts` (+ `.test.ts`) | **N** | La pieza central, **pura**: `buildDayFromTemplate(suggestions, { dayStart, dayEnd })` → `{ items: ActivityDayPlanSetItemInput[], movedCount, withoutTimeCount, droppedCount }`. Copia hora y duración del ítem (criterio 41), corre detrás lo que se pisaría conservando su duración y lo cuenta (criterio 43), y encadena al final los que no tienen hora con su duración o con `DEFAULT_BLOCK_MINUTES` (criterio 44). Si algo no cabe antes de `dayEnd`, **se dice**, no se descarta en silencio. |
+| `src/features/vida/hooks/useBuildDayFromTemplate.ts` (+ `.test.tsx`) | **N** | Un día: lee `vidaSuggestionsForDate(date)`, llama a `useSetActivityDayPlanMutation` **una sola vez** (criterio 42) y devuelve el resumen para el mensaje. |
+| `src/features/vida/hooks/useBuildWeekFromTemplate.ts` (+ `.test.tsx`) | **N** | La semana: solo los días **sin plan**, en serie, acumulando `{ done[], failed[] }` para el criterio 46. No aborta al primer fallo y **no anuncia lo que no pasó**. |
+| `src/features/vida/pages/VidaSemanaPage.tsx` (+ `.module.scss`, `.test.tsx`) | **N** | Una línea por día (criterio 39), «Ver» → `vidaPaths.hoyForDate(d)`, «Armar» en los vacíos, y «Armar toda la semana» con el aviso previo (criterio 45). Los días pasados se describen por lo **planeado** (criterio 40). |
+| `src/features/vida/routes/vida-paths.ts`, `routes/vida.routes.tsx` | M | `semana: '/app/vida/semana'` + su ruta. **No** entra como píldora en la barra: se llega desde la tira de Hoy. La barra la define F4 con «Plantilla». |
+| `src/features/vida/components/VidaTemplateAside/` | M | Gana el bloque «Mañana» con «Armar mañana desde la plantilla» (criterio 48). |
+| `src/features/vida/components/VidaAgendaGap/`, `VidaHoyPage.tsx` | M | El día sin plan gana el botón «Armar desde la plantilla» (ver la nota de recorte del criterio 21 más abajo). |
+
+### Lo que NO se crea
+
+- **Ninguna mutación, `api` ni documento GraphQL del plan del día**: los cinco
+  existen en `graphql/activity-day-plan.graphql.ts`, `api/activity-day-plan.api.ts`
+  y `hooks/useActivityDayPlan.ts`, con tests.
+- **Ningún hook de ajustes nuevo ni clave de caché de ajustes**:
+  `useUserSettingsQuery` / `useUpdateUserSettingsMutation` y `settingsKeys.my()`
+  se usan tal cual (criterio 8). `useVidaDayHours` es un envoltorio de lectura,
+  no otra consulta.
+- **Ninguna clave nueva en `query-keys.ts`.** Las tres consultas por día y los
+  siete días de la tira caben en `vidaKeys.dayPlan.byDate`,
+  `vidaKeys.items.suggestions`, `vidaKeys.activities.list` y `settingsKeys.my`.
+- **Ninguna invalidación nueva**: `invalidateDayPlanQueries` (por fecha) e
+  `invalidateVidaItemQueries` (por prefijo, arrastra las sugerencias de
+  cualquier fecha) ya cubren todo lo que esta feature escribe.
+- **Ningún componente de `shared/ui`**: `SteppedModal`, `Popover`, `IconButton`,
+  `ConfirmDialog`, `Alert`, `Skeleton`, `EmptyState`, `Input`, `FormField`,
+  `Switch`, `Button`, `Card`, `AppIcon`, `Badge` ya están.
+- **Ningún normalizador de texto ni buscador nuevo**: `filterActivitiesBySearch`
+  y `normalizeVidaText`. (Y no se añade la quinta copia del normalizador.)
+- **Ningún icono nuevo importado a pelo de Font Awesome**: los del cromo entran
+  de uno en uno por `@/shared/icons`.
+- **Ninguna utilidad de fecha nueva**: `vida-date.utils.ts` ya da todo lo de
+  `YYYY-MM-DD`, lunes de la semana y día de la semana.
+
+### Dónde NO va
+
+- **Las utilidades de hora NO van dentro de `vida-date.utils.ts`.** Ese archivo
+  lo importa la capa de datos entera (hooks, invalidaciones, la hoja, la
+  tarjeta); meterle 200 líneas de geometría de pantalla lo convierte en un
+  cajón. Van en `utils/vida-time.utils.ts` (formato y aritmética de `HH:mm`) y
+  `utils/vida-agenda.utils.ts` (huecos, presupuesto y guía), que importan de
+  `vida-date.utils.ts` y no al revés.
+- **El día visto NO va como segmento de ruta** (`/app/vida/hoy/:date`).
+  Obligaría a una segunda entrada en `vida.routes.tsx` y a decidir qué hace la
+  píldora de `app-nav.config.ts` —que es **una sola fuente** de destinos— con
+  una URL que no está en la lista. Con `?d=` la ruta sigue siendo una,
+  `vidaPaths.hoy` no se duplica y la píldora se enciende igual.
+- **Los ajustes de Vida NO van en `/app/settings`** (es la cuenta, no el
+  módulo) **ni en una hoja desde Hoy** (se abrirían y cerrarían para dos campos
+  que casi nunca cambian, y no tendrían URL). Van en `/app/vida/ajustes`, en el
+  popover «Ajustes» del módulo, **exactamente como Categorías/Medidas/Mi
+  Persona en hábitos** (`app-nav.config.ts:73-95`).
+- **`/app/vida/categorias` NO se mueve** al popover de ajustes en esta feature
+  aunque «encajaría»: hoy se llega desde el pie del catálogo
+  (`VidaActividadesPage.tsx:217`) y cambiarlo es tocar FEAT-002 sin criterio que
+  lo pida. Se anota, no se hace.
+- **NO se usa `SearchSelect`** para el buscador de «qué»: tiene **2 tests
+  fallando en la línea base** y arrastrarlo mete ruido en el criterio 57. Un
+  `Input` + `filterActivitiesBySearch`, como el catálogo.
+- **NO se arregla `Popover`** (no se cierra desde su contenido; queda pintado
+  sobre el `ConfirmDialog`; `role="dialog"` sin nombre). Es un hallazgo abierto
+  de FEAT-002, afecta también a hábitos, y arreglarlo es **otra tarea con su
+  propio dossier**. Aquí se imita el comportamiento que ya hay.
+- **NO se toca `--color-text-muted`** (2,39:1 en claro, hallazgo abierto de
+  FEAT-002). Lo nuevo usa `--color-text-secondary` para lo que tenga que leerse,
+  como ya hizo la tajada 3 de FEAT-002.
+- **NO se restaura `activity-time.utils.ts` entero** ni sus tipos
+  `activity-timeline.types.ts`: alturas en píxeles proporcionales a minutos son
+  una cuadrícula de horas, descartada por la decisión 5 del plan de Vida. La
+  agenda es una **lista ordenada por hora**.
+- **NO se deriva nada del historial** (D1): ni «sueles tardar 55 min», ni «a tu
+  ritmo real», ni «movido aquí», ni «4 de 5 días», ni el «seguiste N de M» de la
+  semana. Están dibujados en los renders y son F5/F6.
+- **NO se pinta ningún tramo de ejecutado** ni los colores *hecho · en marcha ·
+  seguido · de más · fuera del plan · sin dato*: en F2 la leyenda tiene dos
+  tramos, **planeado** y **libre** (criterios 14 y 22).
+
+### Las tajadas, con sus archivos
+
+| # | Qué hace | Archivos | Criterios que cierra | Estado |
+|---|---|---|---|---|
+| 1 | **La plantilla con hora y duración, y los ajustes de Vida.** | `graphql/schema/vida.schema.graphql` · `settings/graphql/schema/user-settings.schema.graphql` (N) · `graphql/contracts.test.ts` · `graphql/vida-items.graphql.ts` · `settings/graphql/user-settings.graphql.ts` · `settings/types/user-settings.types.ts` · `types/vida-item.types.ts` · `utils/vida-time.utils.ts` (N) · `hooks/useSaveVidaItemForActivity.ts` · `hooks/useVidaDayHours.ts` (N) · `components/VidaDurationPills/` (N) · `components/VidaActivitySheet/` · `components/VidaActivityCard/` · `pages/VidaAjustesPage.tsx` (N) · `routes/vida-paths.ts` · `routes/vida.routes.tsx` · `layouts/AppLayout/app-nav.config.ts` | 1–10, y la parte de 53–57 que toca la hoja, la tarjeta y los ajustes | pending |
+| 2 | **La agenda del día, en solo lectura.** | `utils/vida-agenda.utils.ts` (N) · `hooks/useVidaNowMinute.ts` (N) · `hooks/useVidaDayData.ts` (N) · `components/VidaDayBudget/` (N) · `components/VidaAgendaBlock/` (N) · `components/VidaAgendaGap/` (N) · `components/VidaTemplateAside/` (N) · `pages/VidaHoyPage.tsx` | 11–20, 22, 48 (la mitad «Tu plantilla de \<día\>»), 49–56; **21 solo en su mitad de texto** (ver nota) | pending |
+| 3 | **Poner algo en un hueco.** | `utils/vida-gap-form.utils.ts` (N) · `components/VidaPlaceInGapSheet/` (N) · `components/VidaAgendaGap/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 23–30, y 29/52/56 sobre las mutaciones | pending |
+| 4 | **Cualquier día, no solo hoy.** | `utils/vida-window.utils.ts` (N) · `hooks/useVidaWeekPlans.ts` (N) · `components/VidaDayStrip/` (N) · `components/VidaDayActions/` (N) · `pages/VidaHoyPage.tsx` · `routes/vida-paths.ts` | 31–38 | pending |
+| 5 | **La semana y armar desde la plantilla.** | `utils/vida-build-day.utils.ts` (N) · `hooks/useBuildDayFromTemplate.ts` (N) · `hooks/useBuildWeekFromTemplate.ts` (N) · `pages/VidaSemanaPage.tsx` (N) · `components/VidaTemplateAside/` · `components/VidaAgendaGap/` · `routes/vida-paths.ts` · `routes/vida.routes.tsx` | 39–46, 48 (la mitad «Mañana»), y **la mitad de 21 que es el botón**; 47 lo cronometra el usuario | pending |
+
+**Las cinco tajadas se quedan como las cortó el analista.** Miradas contra el
+código, el corte aguanta: la 1 no depende de ninguna pantalla nueva, la 2 se ve
+entera con datos sintéticos, la 3 es la primera que escribe plan, la 4 solo
+cambia de dónde sale la fecha y la 5 es una pantalla más una operación por
+lotes. **Un solo recorte, y queda escrito:**
+
+> **El criterio 21 se parte entre la tajada 2 y la 5.** En la 2, «hoy sin plan»
+> se lee entero —el día es un hueco, se dice cuántas cosas trae la plantilla ese
+> día y, si no hay plantilla, se enlaza al catálogo— pero **el botón «Armar
+> desde la plantilla» no puede funcionar**: armar es `vida-build-day.utils.ts` +
+> `activityDayPlanSet`, que son la tajada 5. Pintar un botón muerto en la 2
+> sería peor que no pintarlo. La mitad que es texto cierra en la 2; el botón
+> cierra en la 5 junto a los criterios 41–44. No reescribo el criterio: lo parto
+> y lo digo.
+
+### Cómo se verifica cada tajada
+
+Los agentes **no entran con credenciales** (`docs/features/ENVIRONMENT.md`), así
+que todo lo de `/app/*` se comprueba con **tests + arnés temporal**, y el
+recorrido real es del usuario (criterio 58) **y además necesita el API
+desplegada**. Escrito así, sin disimular.
+
+- **Siempre, en toda tajada:** `pnpm typecheck` (limpio), `pnpm lint` (no peor
+  que 14 errores / 0 warnings), `pnpm test` (sin fallos nuevos sobre los 2 de
+  `SearchSelect`), y `pnpm build` al cerrar (el chunk inicial no crece por
+  iconos). `graphify update .` después de tocar código.
+- **Tajada 1:** `pnpm test src/features/vida/graphql/contracts.test.ts` es el
+  juez de los criterios 1 y 57 — y **es el único sitio donde se entera de que el
+  SDL cambió**. Tests de `planVidaItemSave` (2, 4, 5), de la hoja (3, 5) y de la
+  tarjeta (6). Los ajustes (7–10) con test de página + arnés. **Aviso:** con el
+  SDL recopiado, `pnpm test` puede estar verde mientras Cloud Run rechaza los
+  campos nuevos; eso **no es un fallo del constructor**.
+- **Tajada 2:** el grueso son tests puros de `vida-agenda.utils.ts` (13, 14, 15,
+  17, 18, 19) — ahí se cierran los números sin pintar nada. Luego tests de
+  componente para 11, 12, 16, 20, 21, 22 y **arnés temporal** (`.html` + `.tsx`
+  bajo `src/`, `MemoryRouter`, datos sintéticos, **borrado antes de reportar**)
+  para 53 (375 px), 54 (nombre de ~60 caracteres), 55 (tema oscuro, contrastes
+  medidos) y 56 (el DOM no contiene «desperdici», «perdiste», «fallaste»,
+  «vacío» como reproche, «cancelar», «eliminar»). Con la ventana oculta:
+  `document.getAnimations().forEach(a => a.finish())` y `dispatchEvent(new
+  Event('scroll'))` tras `scrollTo`.
+- **Tajada 3:** tests puros de `vida-gap-form.utils.ts` (26, 27, 28) y tests de
+  la hoja con `QueryClient` y mutación que falla (29: la hoja no se cierra, no
+  pierde lo elegido, y la agenda no queda con un bloque fantasma). 30 con el
+  test del «···».
+- **Tajada 4:** tests puros de `vida-window.utils.ts` (31, 35, 36, 38) con
+  `Date` inyectada, y test de página con `MemoryRouter` en
+  `/app/vida/hoy?d=…` (34). 32 y 33 con `useQueries` mockeado.
+- **Tajada 5:** `vida-build-day.utils.ts` es todo test puro (41, 43, 44) —
+  incluido el caso de dos ítems que se pisan y el de tres sin hora. 45 y 46 con
+  mutación que falla al tercer día: se comprueba que **no** se anuncia «semana
+  armada». 47 y 58 **los cronometra y los recorre el usuario**.
+- **Renders como referencia visual:** `http://localhost:5173/docs/vida/assets/03-vida-agenda.html`
+  y `…/04-vida-planeado-ejecutado.html` (marcos **A** y **C**; el **B** es F3).
+
+### Lo que no pude averiguar
+
+- **Si la API desplegada ya lleva `15463da`.** Leí el commit en el repo hermano
+  (SDL, resolvers, servicio y validadores: `startTime` sale siempre `HH:mm`,
+  `null` limpia en update, `durationMinutes > 0` se valida en
+  `vida.service.ts:217-220`), pero **no probé una consulta real**: está detrás
+  del login. El criterio 58 sigue siendo del usuario.
+- **El comportamiento de `takenToday` en un día futuro lo deduje del código del
+  servicio**, no de una respuesta real. La conclusión —que no sirve para saber
+  si algo está en el plan— es firme igualmente: sale de `vidaTakenToday`, que es
+  otra tabla.
+- **El coste real de siete `useActivityDayPlanQuery` a la vez** (tira de días)
+  no está medido: son siete consultas pequeñas con `staleTime: 30 s` y caché
+  compartida con el día abierto, pero si en la tajada 4 se nota, la alternativa
+  es pedir solo el día visto y llenar los puntos perezosamente. Queda anotado.
+
+---
+
+*Escrito por `feature-architect` el 2026-09-20. Fuentes: la sección 1 entera,
+`docs/features/PROTOCOL.md`, `docs/features/ENVIRONMENT.md`, `docs/vida/PLAN.md`
+(F2 y las decisiones 3, 5, 8, 9, 10, 12 y 13), las secciones 2–4 de
+`FEAT-001` y `FEAT-002`, los renders 03 y 04 abiertos en el navegador, el código
+vivo de `src/features/vida/`, `src/features/settings/` y `src/shared/api/`,
+`git show 79bece0:…` para lo de tiempo, y el commit `15463da` de
+`~/Developer/xavi-platform-node`.*
 
 ## 3. Construcción — feature-builder
 

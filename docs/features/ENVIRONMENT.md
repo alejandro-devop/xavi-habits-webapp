@@ -101,8 +101,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 647** (`SearchSelect` ×2, preexistentes) |
-| Paquete | `pnpm build` | chunk inicial **853,2 kB** + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 708** (`SearchSelect` ×2, preexistentes) |
+| Paquete | `pnpm build` | chunk inicial **861,0 kB** + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 **La regla es «no peor que la línea base».** Los tres primeros se corren
 enteros antes de empezar y al terminar; el build al terminar. Un test que se

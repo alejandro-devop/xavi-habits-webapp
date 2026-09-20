@@ -33,8 +33,8 @@ else
   echo "  grafo: no"
 fi
 
-echo "== Línea base (no se ejecuta aquí; tarda) =="
-echo "  pnpm typecheck  → limpio"
-echo "  pnpm lint       → 14 errores / 0 warnings (preexistentes)"
-echo "  pnpm test       → 2 fallos de 530 (SearchSelect ×2, preexistentes)"
-echo "  pnpm build      → chunk inicial 817,6 kB + app-icons 620 kB (perezoso)"
+echo "== Línea base (no se ejecuta aquí; tarda) — leída de ENVIRONMENT.md =="
+# La única fuente es la tabla de ENVIRONMENT.md: así la sonda no envejece aparte.
+grep -E '^\| (Tipos|Linter|Tests|Paquete) \|' "$ROOT/docs/features/ENVIRONMENT.md" \
+  | sed -E 's/\*\*//g; s/^\| ([^|]+) \| `([^`]+)` \| (.*) \|$/  \2  → \3/'
+

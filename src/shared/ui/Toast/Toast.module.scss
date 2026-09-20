@@ -57,6 +57,32 @@
   line-height: 1.4;
 }
 
+/* La acción opcional del aviso (FEAT-004, criterio 5). Subrayada y con el color
+   del texto: tiene que leerse como algo que se puede tocar, sin competir con el
+   mensaje ni parecer un botón primario. */
+.action {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
 .dismiss {
   flex-shrink: 0;
   border: none;

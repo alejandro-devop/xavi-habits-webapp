@@ -1,0 +1,12 @@
+/* El módulo entero. Sin la sesión en marcha no cambia nada de lo que había: el
+   `padding-bottom` solo aparece cuando la barra está puesta. */
+.root {
+  min-width: 0;
+}
+
+/* El hueco reservado (criterio 60): la barra es `position: fixed`, así que sin
+   esto taparía el último bloque de la agenda y los botones de una hoja abierta
+   en 375 px. Es la altura de la barra más su separación del borde. */
+.root[data-session-bar='on'] {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}

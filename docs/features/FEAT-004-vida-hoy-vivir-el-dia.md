@@ -1,7 +1,7 @@
 ---
 id: FEAT-004
 title: Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro
-status: planned
+status: building
 architect: yes    # concepto nuevo (la sesión viva y su cruce con el plan), superficie global en todo el módulo, y una decisión abierta que puede tocar el API
 area: features/vida
 requested: 2026-09-20
@@ -990,7 +990,7 @@ sesión, **el toast del cierre lo lanza el llamante, no el hook**:
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **Empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo.** | `utils/vida-session.utils.ts` (N) · `hooks/useVidaElapsed.ts` (N) · `hooks/useVidaOpenSession.ts` (N) · `hooks/useVidaSessionActions.ts` (N) · `components/VidaSessionBar/` (N) · `components/VidaFinishSessionModal/` (N) · `components/VidaStaleSessionPrompt/` (N) · `routes/VidaModuleLayout.tsx` (N) · `routes/vida.routes.tsx` · `graphql/activity-followups.graphql.ts` · `api/activity-followups.api.ts` · `types/activity-followup.types.ts` · `hooks/useActivityFollowUps.ts` · `graphql/contracts.test.ts` · `shared/ui/Toast/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 2–17, **1 a medias** (ver el recorte), 54, 59 (los tres toasts), 64, y la parte de 60/61/63 que toca la barra y el cierre | pending |
+| 1 | **Empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo.** | `utils/vida-session.utils.ts` (N) · `hooks/useVidaElapsed.ts` (N) · `hooks/useVidaOpenSession.ts` (N) · `hooks/useVidaSessionActions.ts` (N) · `components/VidaSessionBar/` (N) · `components/VidaFinishSessionModal/` (N) · `components/VidaStaleSessionPrompt/` (N) · `routes/VidaModuleLayout.tsx` (N) · `routes/vida.routes.tsx` · `graphql/activity-followups.graphql.ts` · `api/activity-followups.api.ts` · `types/activity-followup.types.ts` · `hooks/useActivityFollowUps.ts` · `graphql/contracts.test.ts` · `shared/ui/Toast/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 2–17, **1 a medias** (ver el recorte), 54, 59 (los tres toasts), 64, y la parte de 60/61/63 que toca la barra y el cierre | **accepted** (2026-09-20; 10 y 66 quedan en el recorrido manual) |
 | 2 | **Lo real encima de lo planeado, y el presupuesto por colores.** | `utils/vida-execution.utils.ts` (N) · `hooks/useVidaDayData.ts` · `components/VidaAgendaBlock/` · `components/VidaPlanVsRealBar/` (N) · `components/VidaAgendaSession/` (N) · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | **la otra mitad de 1**, 18–29, 53, 55, 57, 58, 62 | pending |
 | 3 | **Registrar lo que se sale.** | `components/VidaActivityPicker/` (N) · `components/VidaPlaceInGapSheet/` · `components/VidaLogSessionSheet/` (N) · `utils/vida-session.utils.ts` · `components/VidaDayActions/` · `components/VidaAgendaSession/` · `pages/VidaHoyPage.tsx` | 30–38, 56 | pending |
 | 4 | **Lo que falta: pendiente, las tres salidas, sin dato y la frase de cierre.** | `store/vida-device-notes.store.ts` (N) · `utils/vida-execution.utils.ts` · `components/VidaBlockOutcomes/` (N) · `components/VidaAgendaNoData/` (N) · `components/VidaAgendaBlock/` · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | 39–52, 60, 61, 65; **66 lo cierra el usuario** | pending |
@@ -1109,8 +1109,476 @@ disimular.
 
 ## 3. Construction — feature-builder
 
-*(pendiente)*
+### Tajada 1 — empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo
+
+**Resumen para el revisor:**
+1. `/app/vida/hoy` ya deja **empezar un bloque de hoy**, ver el **cronómetro** (que
+   sobrevive a una recarga porque cuenta contra el `startTime` del servidor) y
+   **terminarlo de un toque**, con el cierre completo —duración, notas en texto
+   plano, subtareas— en el «···»; la sesión en marcha se ve en **todas** las
+   pantallas de Vida desde un elemento de ruta nuevo, `routes/VidaModuleLayout.tsx`.
+2. Lo escrito: 8 archivos nuevos de código + 3 de test, 14 modificados, uno de
+   ellos fuera de Vida (`shared/ui/Toast`, prop `action` **aditiva**).
+3. **Lo que más probablemente rompí, en orden:** (a) **`vidaRoutes` ahora tiene
+   `element`** — todas las pantallas del módulo pasan por un componente que
+   monta tres hooks; si `VidaModuleLayout` fallara, **cae el módulo entero**, no
+   una pantalla; (b) **el layout de `VidaAgendaBlock`**: le puse
+   `flex-wrap: wrap` y `flex: 1 1 8rem` al cuerpo para que el cronómetro no
+   aplastara el nombre a «O…» en 375 px — eso toca **todos** los bloques, también
+   los que no tienen sesión; (c) **`useUpdateActivityFollowUpMutation` y
+   `useStartActivityFollowUpMutation` cambiaron de firma** (parámetro `options`
+   opcional) y **los tres toasts de sesión cambiaron de texto**: si algún test
+   ajeno los leía, se entera.
+
+**Qué se construyó**
+
+*Lo puro y los hooks*
+
+- `src/features/vida/utils/vida-session.utils.ts` (**N**, + `.test.ts` con 35
+  casos). El rescate de `79bece0`: `sessionStartInstant`, `followUpStartInstant`,
+  `elapsedMinutes`, `formatElapsedHHMMSS` / `formatElapsedCompact` (literales),
+  `isSessionFromAnotherDay`, `describeOverPlan`, `startSessionInput`,
+  `closeSessionInput`, `minutesUntilEndTime`, `translateSessionError`,
+  `VIDA_UNKNOWN_SESSION_MINUTES = 30` y `resolveUnknownEndMinutes`. **`now`
+  siempre inyectado**; ni un `new Date()` escondido. Aquí vive la trampa de
+  medianoche: todo se calcula **entre instantes**.
+- `src/features/vida/hooks/useVidaElapsed.ts` (**N**, + `.test.tsx`). El
+  cronómetro: tic de 1 s, `Date.now() − inicio` en cada tic, `clearInterval` al
+  desmontar, y **sin intervalo** cuando no hay sesión.
+- `src/features/vida/hooks/useVidaOpenSession.ts` (**N**). Envuelve
+  `useActivityOpenFollowUpQuery` **sin tocarla** y deriva
+  `{ session, startInstant, isFromAnotherDay, isDisabled, isPending }`. Exporta
+  además `useVidaSessionPlannedMinutes` (ver desviaciones).
+- `src/features/vida/hooks/useVidaSessionActions.ts` (**N**, + `.test.tsx` con 12
+  casos). La orquestación, molde `useCreateStartingActivities`: **no lanza,
+  resuelve**. `start` cierra la anterior y **solo en el éxito** empieza la nueva;
+  `finishNow`, `finishWith`, `discard`, `resolveStale`.
+- `src/features/vida/hooks/useVidaSessionUi.ts` (**N**, no estaba en el plan; ver
+  desviaciones). El contexto que deja al bloque de la agenda abrir el modal que
+  monta el layout.
+
+*Lo que se ve*
+
+- `src/features/vida/components/VidaSessionBar/` (**N**, 3 archivos). Barra fija
+  abajo: icono con el color de la categoría, nombre truncable que enlaza a Hoy,
+  cronómetro `aria-live="polite"`, «llevas 52 min · planeado 45» **sin color de
+  alarma**, «Terminar» y «···». **Sin «Cancelar».**
+- `src/features/vida/components/VidaFinishSessionModal/` (**N**, 3 archivos). El
+  cierre completo: `VidaDurationPills` + `textarea` + subtareas con «1 de 2», y
+  «No era esto — no guardarla» con `ConfirmDialog` cuya salida es «Volver».
+- `src/features/vida/components/VidaStaleSessionPrompt/` (**N**, 3 archivos). La
+  pregunta de D3, **tarjeta y no modal**.
+- `src/features/vida/routes/VidaModuleLayout.tsx` (**N**, + `.test.tsx` con 9
+  casos) y `VidaModuleLayout.module.scss`: barra + pregunta + modal + hueco
+  reservado abajo + `Outlet`.
+- `src/features/vida/components/VidaAgendaBlock/` (**M**): «▶ Empezar», el estado
+  «planeado 45 min · en marcha» con cronómetro, el aviso de pasarse, y
+  «Terminar y añadir una nota» en el «···». Todo detrás de props opcionales.
+- `src/features/vida/pages/VidaHoyPage.tsx` (**M**, + 7 tests nuevos en su
+  `.test.tsx`): cablea la sesión a los bloques.
+
+*La capa de datos y el vocabulario*
+
+- `graphql/activity-followups.graphql.ts`, `api/…`, `types/…`,
+  `hooks/useActivityFollowUps.ts` (**M**): `sessionSubtasks` **solo** en
+  `ACTIVITY_OPEN_FOLLOW_UP_QUERY`, `ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION`,
+  `editActivityFollowUpSubtask`, `useEditFollowUpSubtaskMutation`, `options.silent`
+  en `start` y `update`, y **los tres toasts reescritos**: «Actividad iniciada» →
+  **«En marcha»**, «Actividad cancelada» → **«No la guardamos»**, «Registro
+  eliminado» → **«Lo quitamos del registro»**.
+- `graphql/contracts.test.ts` (**M**): el documento nuevo en la lista. **Ningún
+  SDL recopiado**: `activity.schema.graphql` ya traía todo.
+- `src/features/vida/vida-vocabulary.test.ts` (**N**, no estaba en el plan): lee
+  el módulo entero con `import.meta.glob(?raw)`, **le quita los comentarios** y
+  comprueba que no queda ninguna palabra de culpa ni «cancelar»/«eliminar».
+- `src/shared/ui/Toast/` (**M**, 4 archivos): `action?: { label, onClick }`,
+  aditivo. Ningún llamante actual cambia.
+
+**Por qué así, y qué se descartó**
+
+- **La barra en un elemento de ruta y no en `AppLayout`**, como mandaba el plan.
+  La frontera del criterio 7 es el subárbol de rutas y no se puede
+  desincronizar; `app-nav.config.ts` no conoce `/app/vida/semana`.
+- **La sesión abierta no se guarda en el cliente.** La verdad es
+  `duration_minutes IS NULL` en el servidor; el cronómetro tictaquea en el
+  cliente contra `Date.now()` y **no pide nada**. Sin `refetchInterval`.
+- **«Terminar» no pregunta nada** (D2) y el toast lleva la acción. Para eso los
+  hooks ganaron `silent` y el toast lo lanza `useVidaSessionActions`, que sí
+  conoce la sesión. Descartado: que el hook genérico supiera de notas.
+- **El «No sé» anota la duración planeada, o 30 min.** Descartado «hasta el fin
+  del día»: en una sesión abierta a las 9:00 habrían sido **catorce horas** que
+  nadie vivió. Está probado con ese caso.
+- **El cierre→empezar es en serie y aborta**. Descartado empezar primero: el API
+  devuelve 400 y quedaría la primera sin cerrar.
+- **El mensaje del API en inglés no llega a pantalla.** Traducido en una función
+  pura; lo que no conocemos cae en el texto nuestro, que sí está en el
+  vocabulario del módulo.
+
+**Desviaciones del plan, dichas**
+
+1. **Dos archivos que el plan no listaba.** `hooks/useVidaSessionUi.ts` (contexto
+   con `openFinishModal`) y `vida-vocabulary.test.ts`. El primero existe porque
+   entre el layout del módulo y el bloque de la agenda hay un `Outlet`: sin él
+   habría **dos** `VidaFinishSessionModal` montados —uno en el layout y otro en la
+   página—, que son dos estados que se contradicen. El segundo es el test que el
+   plan pedía «que busque "cancelad" y "elimin" en el módulo entero»; lo que no
+   dijo es dónde vive.
+2. **`useVidaSessionPlannedMinutes` vive dentro de `useVidaOpenSession.ts`**, no
+   en un archivo propio. Es el recorte del criterio 16 que el arquitecto ya
+   escribió (el bloque de ese día con el mismo `activityId`; con más de uno,
+   `null`), y lo usan los criterios 9 y 16. No abre ninguna consulta nueva.
+3. **`useStartActivityFollowUpMutation` también ganó `{ silent }`**; el plan solo
+   lo pedía para `update`. Sin eso, «empezar con otra en marcha» dejaría **dos**
+   toasts sobre un solo gesto, y el criterio 15 pide que se diga **una** cosa.
+4. **El «···» de la barra es un `IconButton` directo, no un `Popover`.** Con un
+   solo destino —el cierre completo—, un menú de un ítem es un clic de más. La
+   etiqueta accesible dice a dónde lleva.
+5. **`VidaAgendaBlock` cambió su layout para todos los bloques**, no solo para el
+   que está en marcha: `flex-wrap: wrap` en `.card` y `flex: 1 1 8rem` en `.body`.
+   Medido en el arnés a 375 px: sin eso el nombre se leía «O…» y «planeado 45
+   min» se apilaba palabra a palabra. Sin sesión no hay nada que envolver y la
+   tarjeta se ve igual que antes.
+6. **Un test de FEAT-003 quedó derogado**, como pasó con el de F0 en la tajada 2
+   de aquella feature: `VidaHoyPage.test.tsx` afirmaba «no hay nada de vivir el
+   día (criterio 22)» y los criterios 1, 2, 3 y 5 de **esta** piden lo contrario.
+   Se reescribió a lo que **sí** sigue siendo cierto —no hay etiquetas de
+   ejecutado, que son la tajada 2— con la derogación explicada encima. **No se
+   borró: se acotó.**
+7. **El violeta de «en marcha» usa `--aura-ring-to`**, el mismo token que la
+   marca de «Ahora» de FEAT-003, y no un token nuevo. El hallazgo abierto de
+   FEAT-003 sobre los dos violetas en oscuro **sigue abierto**: se mira en la
+   tajada 2, que es donde está el criterio 62 con las dos leyendas delante.
+
+**Verificación**
+
+Línea base, antes y después (`docs/features/ENVIRONMENT.md`):
+
+| Qué | Antes | Después |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 errores / 0 warnings** (mismos archivos) |
+| `pnpm test` | 2 fallos de 931 | **2 fallos de 1005** (los mismos `SearchSelect`; **+74 tests**) |
+| `pnpm build` | chunk inicial 917,0 kB | **934,79 kB** (+17,8 kB; `app-icons` sigue en 620,20 kB y `IconPicker` en 4,64 kB: **ninguno de iconos**) |
+
+Los tres nuevos ficheros de test y lo que cierran:
+
+- `vida-session.utils.test.ts` — 35 casos. Criterio 3 (una fecha rota da `null`,
+  no «ahora»), 5 (`Math.max(1, …)`), **63** (23:50 → 00:10 son **20 min**, en
+  positivo, y `closeSessionInput` **no toca `date`**), 17 (empezar a las 9:05 un
+  bloque de las 9:00 registra **9:05**), 16 (los tres casos del «No sé»:
+  planeado / por defecto / recortado al fin del día, más «una sesión de las 9:00
+  **no** anota 840 min»), 9 y 59 (ningún texto con palabra de culpa).
+- `useVidaElapsed.test.tsx` — temporizadores falsos. Criterio 3 (se monta 40 min
+  después y marca **40:00**, no 00:00; y con el reloj movido media hora y **un
+  solo tic** marca 00:30:01, no 00:00:01 → **no acumula**), criterio 4 (avanzar
+  1 s repinta; al desmontar `vi.getTimerCount()` vuelve a su valor de antes),
+  criterio 63.
+- `useVidaSessionActions.test.tsx` — `QueryClient` de verdad y el `api` mockeado.
+  Criterio 15 en sus dos mitades (**cierra la anterior con 38 min y deja un solo
+  mensaje**, «Terminamos «Organizar la casa» a las 10:08. En marcha: Leer un
+  rato»; y **si el cierre falla, `activityFollowUpStart` no se llama** y la
+  sesión sigue en caché), criterio 13 (`start` dos veces en el mismo tic →
+  **una** llamada), 16 (con una de otro día no se empieza nada), 5 (el toast
+  lleva acción), 12 (`finishWith` **resuelve** el fallo en vez de lanzarlo).
+- `VidaModuleLayout.test.tsx` — 9 casos: criterios 7, 8, 9, 14, 16, 54, 60, 64.
+- `VidaHoyPage.test.tsx` — 7 casos nuevos: criterios 1 (hoy sí, futuro no, pasado
+  no), 2, 3, 5, 9, 16.
+- `vida-vocabulary.test.ts` — 8 casos sobre el módulo entero.
+- `contracts.test.ts` — 75 casos, con el documento nuevo dentro.
+
+**Mirado en el navegador** (arnés temporal `arnes-sesion-vida.html` +
+`src/arnes-sesion-vida.tsx`, **ya borrado**, con `MemoryRouter` y datos
+sintéticos), a **375 px y en tema oscuro**, con un nombre de **56 caracteres**:
+
+- La barra de sesión: nombre recortado con puntos suspensivos, cronómetro
+  `00:52:04` corriendo, «Terminar» y «···» enteros. `document.documentElement.scrollWidth === clientWidth === 375`:
+  **cero scroll horizontal** (criterios 60 y 61).
+- El bloque en marcha: «planeado 45 min · **en marcha**» en violeta, «llevas 52
+  min · planeado 45» en el tono de dato, y el cronómetro con «Terminar» bajando a
+  su propia línea. **Sin el arreglo de `flex-wrap` esto se leía «O…»**: es la
+  desviación 5.
+- El cierre completo: «CUÁNTO DURÓ» con las píldoras, «NOTAS», «SUBTAREAS 1 de
+  2» con sus dos casillas, «No era esto — no guardarla» a la izquierda y
+  «Volver»/«Guardar» a la derecha, sin desbordar.
+- La pregunta de otro día: «Dejaste «…» en marcha el jueves 17 a las 21:00 ·
+  ¿Hasta qué hora la hiciste?», el campo de hora, «Guardar», «No sé», y las dos
+  líneas que explican **qué se va a anotar** («anotamos 45 min —lo que tenías
+  planeado—») y **qué bloquea**. Ninguna palabra prohibida en todo el nodo.
+
+**Criterios, uno a uno**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 1 | **a medias, como dijo el plan** | La mitad de los días cierra: hoy sí, futuro no, pasado no (3 tests en `VidaHoyPage.test.tsx`). La mitad de «ni registrado» **necesita el cruce de D1** y es la tajada 2. |
+| 2 | ✅ | `startSessionInput` + test de la página: `start('a-b2')` sin recargar. |
+| 3 | ✅ | `useVidaElapsed.test.tsx` (40:00 al montar; no acumula) y el test de la página (00:24:00). |
+| 4 | ✅ | `vi.getTimerCount()` vuelve a su valor al desmontar; 1 s repinta. |
+| 5 | ✅ | `finishNow` cierra con los minutos del cronómetro sin diálogo, y el toast lleva «añadir una nota» (`hasAction: true`). |
+| 6 | ✅ | `VidaFinishSessionModal`, visto en el arnés; se llega desde el «···» de la barra, el del bloque y el toast. |
+| 7 | ✅ | `VidaModuleLayout` es el `element` de `path: 'vida'`: **todas** sus pantallas, incluidas `semana` y `actividades/archivadas`. Fuera del módulo no se monta. |
+| 8 | ✅ | Una sola `useActivityOpenFollowUpQuery` (misma clave, deduplicada); al cerrar, `setQueryData(open, null)` la quita sin recargar. |
+| 9 | ✅ | «llevas 84 min · planeado 30» en el bloque y en la barra, sin `dialog`, sin `alert`, sin color de alarma. |
+| 10 | ⚠️ **parcial** | El documento, el tipo, el `api`, la mutación y la lista con «1 de 2» están y se ven en el arnés. **No se pudo probar con datos reales** (ver abajo). |
+| 11 | ✅ | `invalidateFollowUpQueries` ya lo cubría; no se añadió ninguna invalidación. |
+| 12 | ✅ | `finishWith` resuelve `{ ok: false, message }`, el modal pinta el `Alert` y **no se cierra**; `start` que falla deja la sesión en caché. |
+| 13 | ✅ | Guardia con `ref` **síncrona**: dos toques en el mismo tic → una llamada. |
+| 14 | ✅ | «No era esto — no guardarla» con salida «Volver»; los dos toasts heredados reescritos y comprobados. |
+| 15 | ✅ | Los dos tests del cierre→empezar, con el mensaje único. |
+| 16 | ✅ | `VidaStaleSessionPrompt` + `resolveUnknownEndMinutes` con sus tres casos; nunca «hasta el fin del día». |
+| 17 | ✅ | `startSessionInput` con `now` inyectado. |
+| 54 | ✅ | Tarjeta, no modal (`queryByRole('dialog')` vacío); dice de qué día es y qué bloquea. |
+| 59 | ✅ (lo de esta tajada) | `vida-vocabulary.test.ts`. **Con cuatro excepciones nombradas** (ver hallazgos). |
+| 60, 61, 63 | ✅ en lo que toca a la barra y el cierre | Arnés a 375 px, nombre de 56 caracteres, cero scroll horizontal; medianoche probada en puro. |
+| 64 | ✅ | `isDisabled` no pinta barra ni pregunta ni `aria-busy`. |
+| 65 | ✅ | La tabla de la línea base. |
+| 66 | **pendiente del usuario** | Ver abajo. |
+
+**Lo que no pude comprobar, sin disimular**
+
+- **Ni una llamada real al API.** Los agentes no entran con credenciales
+  (`ENVIRONMENT.md`) y todo `/app/*` está detrás del login. Lo del servidor está
+  probado contra el `api` mockeado y contra el SDL vendorizado, no contra una
+  respuesta. Durante esta sesión la sonda dio la API de Render **OCUPADO**
+  (dormida): tampoco habría servido.
+- **Las subtareas de sesión (criterio 10) no se han visto con datos del
+  servidor.** El SDL las tiene, el contrato valida y la lista se pinta en el
+  arnés; que `activityFollowUpSubtaskEdit` devuelva lo que esperamos **está sin
+  comprobar**. Es lo más frágil de la tajada. Además, el catálogo (F1) no crea
+  subtareas, así que es un caso que casi no ocurre hoy.
+- **El toast con acción no se ha tocado con el dedo**: está probado por unidad
+  (`hasAction`) y el botón existe en el viewport, pero nadie ha pulsado «añadir
+  una nota» sobre una sesión real.
+- **Recarga de verdad**: el criterio 3 está probado con temporizadores falsos y
+  por construcción (la verdad es del servidor), no recargando el navegador con
+  sesión.
+
+**Recorrido manual, para el usuario** (criterio 66, con la API despierta):
+
+1. En `/app/vida/hoy`, un bloque de hoy → **▶ Empezar**. Aparece la barra abajo y
+   el bloque dice «planeado N min · en marcha» con el cronómetro.
+2. Ve a `/app/vida/plantilla`, a `/app/vida/actividades` y a `/app/vida/semana`:
+   **la barra sigue ahí**. Entra en `/app/habits/my-day`: **no está**.
+3. **Recarga** la página: el cronómetro **no vuelve a cero**.
+4. Deja pasar el tiempo planeado: el bloque y la barra dicen «llevas N min ·
+   planeado M». **Nada interrumpe.**
+5. **Terminar** de un toque → toast «Anotado: N min…» con **«añadir una nota»**.
+   Púlsalo: se abre el cierre completo sobre esa misma sesión; escribe una nota y
+   guarda.
+6. Empieza un bloque y, **sin terminarlo**, empieza otro: un solo aviso que dice
+   «Terminamos «X» a las HH:MM. En marcha: Y».
+7. Empieza algo y, desde el «···» de la barra, usa **«No era esto — no
+   guardarla»**: el diálogo sale con «Volver» y nunca dice «cancelar».
+8. **Lo de ayer:** deja una sesión abierta y vuelve al día siguiente. Tiene que
+   salir la pregunta arriba del módulo —**no un cronómetro de catorce horas**— y
+   el «No sé» tiene que decir **antes** cuántos minutos va a anotar.
+9. A 375 px y en oscuro, comprueba que la barra **no tapa** el último bloque de
+   la agenda.
+
+**Hallazgos, sin tocarlos**
+
+- **Cuatro «cancelar»/«eliminar» anteriores a esta feature siguen en el módulo** y
+  están nombrados en `vida-vocabulary.test.ts`: el botón «Cancelar» de
+  `VidaActivitySheet` y de `CreateVidaCategoryStep`, y los toasts «Actividad
+  eliminada» (`useActivities`) y «Categoría eliminada» (`useActivityCategories`).
+  El criterio 59 habla de **la sesión y el bloque**, así que quedan fuera de esta
+  tajada; si el vocabulario de Vida manda también en el catálogo, es una tarea
+  aparte. El test lo dice en voz alta y **falla si alguien los arregla y olvida
+  quitar la excepción**.
+- **`useVidaSessionPlannedMinutes` pide `activityDayPlan` del día de la sesión.**
+  Para hoy es la misma consulta que ya pide la pantalla (gratis); para una sesión
+  **de otro día** es una consulta más, y solo mientras la pregunta esté en
+  pantalla. Anotado por si en la tajada 2 conviene moverla.
+- **El chunk inicial creció 17,8 kB** y ninguno es de iconos. El módulo Vida no
+  está en `lazy`, así que todo lo nuevo entra en el arranque; si el paquete
+  empieza a preocupar, el corte natural es el módulo entero, no esta tajada.
+- **Un detalle del cronómetro al cambiar de sesión:** `useVidaElapsed` guarda los
+  milisegundos en estado y el primer tic llega dentro del efecto, así que al
+  saltar de una sesión a otra puede haber **un fotograma** con el valor de la
+  anterior. No se ve a simple vista y no toca ningún criterio; queda escrito.
+
+**Estado del árbol:** sin commitear. 14 archivos modificados y 11 nuevos bajo
+`src/`, más este dossier y `BOARD.md`. El arnés temporal está **borrado**
+(`arnes-sesion-vida.html` y `src/arnes-sesion-vida.tsx`). `graphify update .`
+corrido: 3117 nodos, 3512 aristas.
 
 ## 4. Review — feature-reviewer
 
-*(pendiente)*
+### Tajada 1 — empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo
+
+**Veredicto: `accepted`.** Los criterios que la tajada 1 tenía asignados en la
+tabla del arquitecto (2–17, la mitad de días del 1, 54, 59 en sus tres toasts,
+64 y la parte de 60/61/63 que toca la barra y el cierre) están cumplidos con
+evidencia; **no encontré ninguna regresión**; y lo que queda pendiente es lo que
+**estructuralmente** no puede hacer un agente en este repositorio (`ENVIRONMENT.md`:
+todo `/app/*` está detrás del login) más el criterio 66, que es del usuario. Se
+acepta con **siete hallazgos escritos**, ninguno de los cuales incumple un
+criterio de esta tajada; **dos de ellos los tiene que cerrar la tajada 2** y van
+nombrados como tales.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del constructor)
+
+| # | Veredicto del revisor | Cómo lo comprobé |
+|---|---|---|
+| 1 | **cumplido a medias, y así lo repartió el plan** | `canStart = isToday && …` en `VidaHoyPage.tsx`, y sin `onStart` el bloque no pinta el botón: tres tests de la página (hoy sí, futuro no, pasado no). La otra mitad —«ni registrado»— la tabla de la sección 2 se la da explícitamente a la tajada 2 («la otra mitad de 1»). **No la doy por cerrada.** |
+| 2 | cumplido | `startSessionInput(activityId, now)` manda `activityId`, `date` local y `HH:mm`; la página llama `start(block.item.activityId)` y el repintado sale de `setQueryData(followUps.open())`, sin recarga. |
+| 3 | cumplido | Leído en el código, no solo en el test: `useVidaElapsed` recibe el **instante** de `sessionStartInstant(session.date, session.startTime)` —dato del servidor— y cada tic es `Date.now() − startMs`, nunca un acumulador. La sesión **no** se guarda en cliente (`useVidaOpenSession`), así que remontar tras una recarga la vuelve a pedir y el cronómetro parte del mismo instante. El primer tic es síncrono dentro del efecto: montarse 40 min después marca 40:00. |
+| 4 | cumplido | `window.setInterval(tick, 1000)` con `clearInterval` en el retorno del efecto, y `startMs === null` → **no se monta intervalo** (los bloques que no están en marcha pasan `null`). |
+| 5 | cumplido | `finishNow` cierra con `elapsedMinutes` (mínimo 1) sin diálogo de por medio, y lanza el toast con `action: { label: 'añadir una nota' }` que abre `VidaFinishSessionModal` sobre la sesión **ya cerrada** (`onAddNote(closed)`, con el `ActivityFollowUp` que devuelve el propio `edit`). Como es el mismo `id`, **edita, no crea otra**. Ver el hallazgo 2 sobre el redondeo y el 3 sobre los 4 s del toast. |
+| 6 | cumplido | `VidaFinishSessionModal`: `VidaDurationPills` + libre, `textarea` (texto plano, no vuelve tiptap), subtareas con «N de M» si las hay, y **validación de duración**: `durationMinutes === null || < 1` → «Dinos cuánto duró: como mínimo un minuto», sin llamar al API. Tres puertas al mismo modal montado **una vez** (barra, «···» del bloque, toast). |
+| 7 | cumplido | `vida.routes.tsx`: `element: <VidaModuleLayout />` en el nodo `path: 'vida'`, con `hoy`, `semana`, `plantilla`, `revision`, `actividades`, `actividades/archivadas`, `categorias` y `ajustes` como hijas — las ocho, incluidas las dos que `app-nav.config.ts` no conoce. Fuera del subárbol no se monta nada: ninguna ruta de hábitos lo toca. El índice sigue siendo `Navigate to="hoy"` y **ninguna URL cambió**. |
+| 8 | cumplido | Una sola `useActivityOpenFollowUpQuery` envuelta en `useVidaOpenSession`, misma clave `vidaKeys.followUps.open()` y mismo `staleTime`: React Query deduplica la del layout y la de la página. Al cerrar, `useUpdateActivityFollowUpMutation` hace `setQueryData(open, null)` y la barra desaparece sin recargar. |
+| 9 | cumplido | `describeOverPlan` devuelve «llevas 52 min · planeado 45» y nada más: sin `dialog`, sin `role="alert"`, y `.overPlan` usa `--color-text-secondary`, **no** un color de alarma. Visto en el arnés (abajo) y en el test de la página. |
+| 10 | **construido, sin confirmar contra el API** | El documento `sessionSubtasks` está **solo** en `ACTIVITY_OPEN_FOLLOW_UP_QUERY`, el `contracts.test.ts` valida la mutación nueva contra el SDL vendorizado, el modal pinta la lista con «N de M» y **no pinta sección si no hay**. Lo que nadie ha visto es una respuesta real de `activityFollowUpSubtaskEdit`. **Se queda en el recorrido manual del criterio 66**, no lo apruebo por simpatía. |
+| 11 | cumplido | Ninguna invalidación nueva: `invalidateFollowUpQueries(queryClient, { date, activityId })` en `start`, `update` y `delete`, como ya estaba. |
+| 12 | cumplido | `finishWith` **resuelve** `{ ok:false, message }` y el modal pinta el `Alert` sin cerrarse ni vaciar el `textarea` (el estado vive arriba del `SteppedModal`); en el fallo no se toca la caché, así que la sesión sigue abierta. En `start` fallido tampoco hay `setQueryData`: el bloque no se queda «en marcha». |
+| 13 | cumplido | Doble guardia en `useVidaSessionActions`: `busyRef` (síncrona, cierra la puerta en el mismo tic) + `isBusy` de estado, que llega al `disabled` de «▶ Empezar» y «Terminar» por `isSessionBusy`. |
+| 14 | cumplido | «No era esto — no guardarla» en el pie del cierre, `ConfirmDialog` con `cancelLabel: 'Volver'` y `confirmLabel: 'No guardarla'`; los dos toasts heredados dicen ahora «No la guardamos» / «Lo quitamos del registro». |
+| 15 | cumplido | Leído en `start`: si hay `session`, `await closeMutation` **primero**; el `catch` del cierre hace `return` **antes** de `startMutation`, así que un cierre fallido no empieza nada; y el único toast que se emite es el compuesto («Terminamos «X» a las 10:08. En marcha: Y»), porque las dos mutaciones van en `silent`. |
+| 16 y 54 | cumplido | `isSessionFromAnotherDay(session, getCurrentLocalDate())` compara el `date` local que el propio cliente escribió al empezar; con él, `hasBar` es falso y `hasPrompt` verdadero: **no hay cronómetro de catorce horas**. `VidaStaleSessionPrompt` es una `section`, no un `dialog`: el resto de la pantalla se usa. Dice de qué día es («ayer» / «el jueves 17»), **dice antes cuántos minutos anota el «No sé»**, dice qué bloquea, y no tiene ninguna salida de «cancelar» ni de descartar. `resolveUnknownEndMinutes` → planeada, si no 30, recortado al fin del día y nunca < 1; `useVidaSessionPlannedMinutes` cruza **por actividad y por el día de la sesión** y con más de un bloque candidato devuelve `null` (cae a 30) en vez de adivinar. Y `start` con una sesión de otro día devuelve `{ ok:false }` sin llamar al API. |
+| 17 | cumplido | La hora sale de `now`, no del bloque; el bloque solo aporta el `activityId`. |
+| 59 (lo de esta tajada) | cumplido | Los tres toasts reescritos, y `vida-vocabulary.test.ts` **tiene dientes**: falla si el glob se queda corto (`> 40` archivos), quita comentarios antes de mirar, y el test de los cuatro heredados **falla si alguien los arregla y olvida borrar la excepción**. Nada nuevo dice «cancelar» ni «eliminar». |
+| 64 | cumplido | `isDisabled = isPending && fetchStatus === 'idle'`: sin sesión de usuario no se pinta barra, ni pregunta, ni hueco reservado, ni esqueleto eterno. |
+| 60, 61, 63 (su parte) | cumplido | Medido, no deducido: ver «lo que miré en el navegador». Medianoche está probada en puro y `closeSessionInput` no toca `date`. |
+| 65 | cumplido, **medido por mí** | `pnpm test`: **2 fallos de 1005**, los dos de `SearchSelect` (preexistentes). `pnpm lint`: **14 errores / 0 warnings**, los mismos archivos de la línea base. `pnpm build`: **934,79 kB** el chunk inicial, `app-icons` **620,20 kB** y `IconPicker` **4,64 kB** — **intactos: el crecimiento no es de iconos**. El build pasa, así que `tsc -b` está limpio. |
+| 66 | **pendiente del usuario**, como estaba | Nadie entró con credenciales y la API de Render estaba dormida. Queda en el recorrido de abajo. |
+
+**Qué miré para ver si rompí algo cerca** (cómo busqué, no solo el resultado)
+
+1. **El grafo primero**, sabiendo lo que puede y lo que no: `graphify explain
+   "VidaAgendaBlock"` da sus nueve aristas y `query` sobre quién lo importa;
+   como el constructor corrió `graphify update .`, el grafo refleja **el árbol
+   de ahora**, así que para «¿quién dependía de esto antes?» lo confirmé con
+   `grep -rln VidaAgendaBlock src/` y abriendo el archivo. Resultado: **el único
+   que lo renderiza es `VidaHoyPage.tsx`**. Esto acota mucho el riesgo de la
+   desviación 5 (el `flex-wrap` para todos los bloques): no lo usan ni la semana,
+   ni la plantilla, ni el lateral.
+2. **Lo que el constructor marcó como «lo que más probablemente rompí»**, en su
+   orden. (a) `vidaRoutes` con `element`: abrí `vida.routes.tsx` entero y
+   comprobé que las ocho hijas siguen colgando del mismo nodo, que el índice
+   sigue redirigiendo a `hoy` y que ninguna URL cambia; los 1005 tests incluyen
+   los de rutas de FEAT-001/003 y pasan. (b) El layout del bloque: medido en el
+   navegador (abajo). (c) Las firmas de `useStartActivityFollowUpMutation` /
+   `useUpdateActivityFollowUpMutation`: el parámetro es opcional con valor por
+   defecto `{}` — `git grep` da como únicos llamantes `useVidaSessionActions` y
+   los tests; nadie más los pasaba.
+3. **`shared/ui/Toast`, que es lo único fuera de Vida.** Leí el diff entero: la
+   prop es opcional en `ToastInput`/`ToastItem` y el `<button>` del viewport va
+   detrás de `toast.action ? … : null`. Los llamantes de hábitos
+   (`useHabits`, `useHabitFollowUps`, `useHabitCategories`, `useHabitMeasures`,
+   `useHabitPurposes`, `useHabitIdentityClaim`) no pasan `action` y se pintan
+   exactamente igual; la suite de `Toast` pasa.
+4. **Lo que convive en la misma pantalla:** el «···» del bloque (quitar del plan
+   y cambiar hora, FEAT-003, tajadas 2 y 5) sigue ahí y solo gana un ítem
+   **cuando el bloque está en marcha**; el «en N min» del siguiente bloque, la
+   marca de «ahora» y los huecos no se tocaron (el `<>…</>` nuevo solo envuelve
+   la línea de meta).
+
+**Lo que miré en el navegador** (arnés temporal `arnes-revision-bloques.html` +
+`src/arnes-revision-bloques.tsx`, míos, **ya borrados**; `MemoryRouter`, datos
+sintéticos, seis bloques: plano, plano con «···», nombre de 58 caracteres,
+«▶ Empezar», en marcha y en marcha con nombre largo):
+
+- **375 px, con el contenedor a lo que mide la agenda de verdad (343 px):**
+  `document.documentElement.scrollWidth === clientWidth === 375` — **cero scroll
+  horizontal**. Los bloques **sin sesión** miden **67 px de alto y una sola
+  fila**, igual que antes del cambio; el de «▶ Empezar» sube a 106 px porque el
+  botón baja a su línea, y el que está en marcha a 127 px. El nombre **nunca
+  pasa de una línea** (23 px) ni con 58 caracteres: se recorta con puntos
+  suspensivos, que es justo lo que la desviación 5 vino a arreglar.
+- **Escritorio (contenedor de 720 px):** los cuatro bloques sin sesión y el de
+  «▶ Empezar» miden **67 px, una fila**; los de en marcha, 88 px por la línea de
+  «llevas … · planeado …». Es decir, **el `flex-wrap` no se activa nunca en un
+  bloque de FEAT-003**: no hay regresión visual en las tajadas 2–5.
+- Leído en pantalla: «planeado 30 min · **en marcha**», «llevas 52 min · planeado
+  30», el cronómetro corriendo en `00:52:xx` y «Terminar» — sin nada rojo ni
+  ningún diálogo.
+
+**Estados: los que apliquen a esta tajada y los que faltan**
+
+- **Sin datos (no hay sesión):** construido. No se pinta barra, ni pregunta, ni
+  hueco; los bloques quedan como los dejó FEAT-003 con su «▶ Empezar».
+- **Cargando la sesión abierta:** `useVidaOpenSession` **deriva** `isPending`,
+  pero `VidaModuleLayout` **no lo usa**: mientras la consulta vuela no se pinta
+  nada. No afirma nada falso (no dice «no hay nada en marcha»), así que no
+  incumple ningún criterio de esta tajada; el criterio 57 es de la tajada 2.
+  **Queda como hallazgo** por si en la 2 conviene un hueco reservado.
+- **Error al cargar la sesión abierta:** **es el estado que falta** (hallazgo 1).
+- **Error al terminar:** construido y comprobado en el código: la barra **no
+  desaparece** (no se toca la caché) y el mensaje va traducido al español.
+- **Sin permisos / sin sesión de usuario:** construido (criterio 64).
+- **Texto largo:** medido, 58 caracteres, una línea, sin desbordar.
+- **Móvil 375 px:** medido, sin scroll horizontal.
+- **Tema oscuro:** **no lo revisé yo.** El arnés no reproduce fielmente los
+  tokens de Aura fuera de la página, y el criterio que manda aquí (62, las dos
+  leyendas y los dos violetas) es de la tajada 2. Queda dicho, no disimulado.
+
+**¿Duplica algo que ya existía?** (contra la sección 2)
+
+No. Lo comprobé pieza a pieza contra «Lo que NO se crea» y «Dónde NO va»:
+ninguna consulta ni mutación de follow-ups nueva salvo el documento de subtareas
+que el plan sí pedía; ninguna clave de `query-keys.ts` ni invalidación nueva;
+cero SDL recopiado; ningún `buildDayAgenda` paralelo ni cuarta variante de
+`AgendaEntry` (la agenda no se tocó); ningún componente nuevo de `shared/ui` —a
+`Toast` se le **añadió** una prop, que es lo que el plan autorizaba—; ningún
+icono importado a pelo; ninguna ruta nueva; la sesión abierta **no** se guarda en
+`localStorage` ni en un store; el cronómetro **no** sale de `useVidaNowMinute`;
+`isCompleted` no se escribe. Los dos archivos que el plan no listaba
+(`useVidaSessionUi.ts` y `vida-vocabulary.test.ts`) **no duplican nada**: el
+primero es un contexto de 20 líneas que existe justo para que el modal **no** se
+monte dos veces, y el segundo es el test que el plan pedía sin decir dónde vivía.
+
+**Hallazgos, ninguno bloqueante de esta tajada**
+
+1. **El error de la consulta de la sesión abierta no se ve por ninguna parte.**
+   Si `activityOpenFollowUp` falla, `session` es `null`: no hay barra, no hay
+   pregunta y no hay aviso. La persona puede tocar «▶ Empezar» y comerse el 400
+   del API, que `translateSessionError` traduce a «Ya tenías algo en marcha.
+   Termínalo y vuelve a empezar.» — un callejón sin salida, porque **no hay
+   ninguna barra que permita terminarla**. Ningún criterio de la tajada 1 lo
+   pide (el 58 es de la 2 y habla de `activityDayFollowUps`), pero es el hueco
+   más real que encontré. **Para la tajada 2.**
+2. **Dos bloques de la misma actividad el mismo día se pintan los dos «en
+   marcha»**, con dos cronómetros y dos «Terminar», porque `isRunning` compara
+   solo `activityId`. Es el «Pasear a las mascotas ×2» que D1 ya nombra, y el
+   cruce que lo arregla (`matchSessionsToBlocks`) **es de la tajada 2**: queda
+   escrito aquí para que no se cierre la 2 sin mirarlo.
+3. **El toast con «añadir una nota» dura 4 s** (`DEFAULT_DURATION`), que es poco
+   para una acción que hay que decidir; `finishNow` no pasa `duration`. Cuesta un
+   parámetro y no toca ningún criterio.
+4. **El cronómetro trunca y el guardado redondea.** `useVidaElapsed.minutes` es
+   `Math.floor` y `elapsedMinutes` (lo que se manda) es `Math.round`: con
+   00:45:40 en pantalla se anotan 46 min. El toast dice el número que se guardó,
+   así que no engaña, pero son dos reglas para el mismo minuto.
+5. **La hora escrita a mano en la pregunta de otro día no tiene tope.**
+   `minutesUntilEndTime` interpreta cualquier hora anterior al inicio como cruce
+   de medianoche: quien empezó a las 21:00 y teclea `2:00` en vez de `22:00`
+   anota **5 horas** sin que nada lo avise. El «No sé» sí está recortado al fin
+   del día; la vía tecleada no. El criterio 16 no lo exige.
+6. **El modal abierto desde el toast se titula «Terminar «X»»** aunque la sesión
+   ya esté cerrada y lo que se vaya a hacer sea añadir una nota. Es solo el
+   texto del encabezado.
+7. **Subtareas en una sesión ya cerrada:** `useEditFollowUpSubtaskMutation`
+   invalida `followUps.open()`, que para una sesión cerrada ya es `null`; además
+   el `ActivityFollowUp` que devuelve `edit` no trae `sessionSubtasks`, así que
+   por ahí la sección no se pinta. No rompe nada hoy (el catálogo no crea
+   subtareas), pero es el segundo flanco del criterio 10 sin confirmar.
+
+Y quedan en pie, dichos por el constructor y confirmados por mí: los **cuatro
+«cancelar»/«eliminar» heredados del catálogo** (fuera del criterio 59, que habla
+de la sesión y el bloque), la **consulta extra** de `useVidaSessionPlannedMinutes`
+cuando la sesión es de otro día, los **17,8 kB** de chunk inicial y el fotograma
+del cronómetro al saltar de una sesión a otra.
+
+**Lo que no revisé, y no lo disimulo:** ni una llamada real al API (el login es
+el límite estructural de este repositorio, `ENVIRONMENT.md`), las subtareas de
+sesión contra datos de verdad, el toast pulsado con el dedo sobre una sesión
+real, una recarga de navegador con sesión iniciada, y el tema oscuro de la barra
+y el modal dentro de la aplicación. Los cinco están en el recorrido manual.
+
+**Recorrido manual que le queda al usuario** (criterio 66, con la API despierta;
+Render tarda ~1 min en despertar): el que escribió el constructor en la sección
+3, sus nueve pasos, y **dos que añado yo**: (10) en el paso 5, fíjate en si te da
+tiempo a pulsar «añadir una nota» antes de que el aviso se vaya; (11) si tienes
+dos bloques de la misma actividad el mismo día, mira si al empezar uno se ponen
+**los dos** en marcha — está anotado como hallazgo 2 y lo cierra la tajada 2.
+

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
+import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { VidaItem, VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import { renderWithProviders } from '@/test/render'
 
@@ -84,6 +85,62 @@ vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
   useUpdateUserSettingsMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
+
+/* ── La sesión viva (FEAT-004, tajada 1) ──────────────────────────────────
+ *
+ * Se mockean los **dos hooks de sesión** y no la consulta: lo que esta pantalla
+ * tiene que hacer bien es **cablear** la sesión a los bloques (quién enseña
+ * «▶ Empezar», quién está en marcha y con qué `activityId` se llama a `start`).
+ * La orquestación de verdad —cerrar la anterior antes de empezar, el fallo que
+ * aborta— tiene su propio test en `useVidaSessionActions.test.tsx`.
+ */
+let openSession: {
+  session: ActivityFollowUp | null
+  startInstant: Date | null
+  isFromAnotherDay: boolean
+  isDisabled: boolean
+  isPending: boolean
+}
+let startSession: ReturnType<typeof vi.fn>
+let finishSession: ReturnType<typeof vi.fn>
+
+vi.mock('@/features/vida/hooks/useVidaOpenSession', () => ({
+  useVidaOpenSession: () => openSession,
+  useVidaSessionPlannedMinutes: () => null,
+}))
+vi.mock('@/features/vida/hooks/useVidaSessionActions', () => ({
+  useVidaSessionActions: () => ({
+    session: openSession.session,
+    isFromAnotherDay: openSession.isFromAnotherDay,
+    isBusy: false,
+    start: startSession,
+    finishNow: finishSession,
+    finishWith: vi.fn(),
+    discard: vi.fn(),
+    resolveStale: vi.fn(),
+  }),
+}))
+
+/** Una sesión abierta sobre el bloque `b2` («Leer un rato»), empezada a las 9:00. */
+function openFollowUp(activityId: string, startTime = '09:00'): ActivityFollowUp {
+  return {
+    id: 'f1',
+    activityId,
+    date: '2026-09-18',
+    startTime,
+    durationMinutes: null,
+    isOpen: true,
+    endTime: null,
+    endDate: null,
+    endDateTime: null,
+    notes: null,
+    activity: {
+      id: activityId,
+      title: 'Leer un rato',
+      category: { id: 'c1', name: 'Cuidado', color: '#10B981', icon: 'heart' },
+    },
+  }
+}
 
 function ready<T>(data: T): Query<T> {
   return { data, isPending: false, isError: false, fetchStatus: 'idle', refetch: vi.fn() }
@@ -176,6 +233,15 @@ beforeEach(() => {
   // La plantilla entera, para «Mañana»: vacía por defecto, así el bloque del
   // lateral no mete ruido en las comprobaciones del día que se mira.
   itemsQuery = ready([])
+  openSession = {
+    session: null,
+    startInstant: null,
+    isFromAnotherDay: false,
+    isDisabled: false,
+    isPending: false,
+  }
+  startSession = vi.fn().mockResolvedValue({ ok: true })
+  finishSession = vi.fn().mockResolvedValue({ ok: true })
 })
 
 afterEach(() => {
@@ -255,13 +321,19 @@ describe('VidaHoyPage — el día con plan', () => {
     expect(screen.getByText('Bañarme')).toBeInTheDocument()
   })
 
-  it('no hay nada de vivir el día (criterio 22)', () => {
+  /**
+   * **Derogado por FEAT-004, tajada 1.** El criterio 22 de FEAT-003 decía que en
+   * esta pantalla no había nada de vivir el día —ni «Empezar», ni cronómetro, ni
+   * «Terminar»— porque eso era F3. F3 llegó: los criterios 1, 2, 3 y 5 de
+   * FEAT-004 piden exactamente lo contrario, y están probados abajo. Lo que
+   * **sigue** sin existir aquí es lo de la tajada 2: las etiquetas de ejecutado.
+   */
+  it('todavía no hay etiquetas de ejecutado: eso es la tajada 2 (FEAT-003, criterio 22)', () => {
     renderWithProviders(<VidaHoyPage />)
 
-    for (const palabra of [/empezar/i, /terminar/i, /en marcha/i, /fuera del plan/i, /hecho/i]) {
+    for (const palabra of [/fuera del plan/i, /calcado/i, /sin dato/i]) {
       expect(screen.queryByText(palabra)).not.toBeInTheDocument()
     }
-    expect(screen.queryByRole('button', { name: /empezar/i })).not.toBeInTheDocument()
   })
 
   it('el lateral de escritorio marca lo que ya está en el plan (criterio 48)', () => {
@@ -866,3 +938,108 @@ function minutesLater(time: string, minutes: number): string {
   const total = Number(h) * 60 + Number(m) + minutes
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
 }
+
+describe('VidaHoyPage — empezar y terminar un bloque (FEAT-004, tajada 1)', () => {
+  it('criterio 1 — en hoy cada bloque trae «▶ Empezar»', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getAllByRole('button', { name: '▶ Empezar' })).toHaveLength(PLAN.length)
+  })
+
+  it('criterio 1 — en un día futuro no se empieza nada', () => {
+    viewedDate = '2026-09-19'
+    plansByDate['2026-09-19'] = [block('c1', 'Leer un rato', '10:00', '10:30')]
+    planQuery = ready(plansByDate['2026-09-19']!)
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.queryByRole('button', { name: '▶ Empezar' })).not.toBeInTheDocument()
+  })
+
+  it('criterio 1 — en un día pasado tampoco: ahí se registra', () => {
+    viewedDate = '2026-09-17'
+    plansByDate['2026-09-17'] = [block('p1', 'Leer un rato', '10:00', '10:30')]
+    planQuery = ready(plansByDate['2026-09-17']!)
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    expect(screen.queryByRole('button', { name: '▶ Empezar' })).not.toBeInTheDocument()
+  })
+
+  it('criterio 2 y 17 — «Empezar» manda el `activityId` del bloque y la pantalla no recarga', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getAllByRole('button', { name: '▶ Empezar' })[1]!)
+
+    // El segundo bloque del plan es «Leer un rato» (`a-b2`). La hora la pone
+    // `startSessionInput` con el reloj, no el bloque: eso se prueba en el test
+    // puro del `utils`.
+    expect(startSession).toHaveBeenCalledWith('a-b2')
+  })
+
+  it('criterio 3 — el bloque en marcha se lee «planeado … · en marcha» con el cronómetro', () => {
+    openSession = {
+      session: openFollowUp('a-b2'),
+      // Empezó a las 9:00 y el reloj del test son las 9:24: el cronómetro tiene
+      // que marcar 24 minutos, no cero (no cuenta desde que se montó).
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('en marcha')).toBeInTheDocument()
+    expect(screen.getByText('00:24:00')).toBeInTheDocument()
+    // Y ese bloque ya no ofrece empezar: los otros dos sí.
+    expect(screen.getAllByRole('button', { name: '▶ Empezar' })).toHaveLength(PLAN.length - 1)
+  })
+
+  it('criterio 5 — «Terminar» es un solo toque y no pregunta nada', () => {
+    openSession = {
+      session: openFollowUp('a-b2'),
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Terminar' }))
+
+    expect(finishSession).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('criterio 9 — pasarse del plan se dice y no interrumpe', () => {
+    // «Leer un rato» tiene 30 min planeados y lleva 84: 9:00 → 9:24 no basta,
+    // así que la sesión empieza a las 8:00.
+    openSession = {
+      session: openFollowUp('a-b2', '08:00'),
+      startInstant: new Date(2026, 8, 18, 8, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('llevas 84 min · planeado 30')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('criterio 16 — con una sesión de otro día sin responder no se ofrece empezar', () => {
+    openSession = {
+      session: { ...openFollowUp('a-otra'), date: '2026-09-17' },
+      startInstant: new Date(2026, 8, 17, 21, 0, 0),
+      isFromAnotherDay: true,
+      isDisabled: false,
+      isPending: false,
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.queryByRole('button', { name: '▶ Empezar' })).not.toBeInTheDocument()
+  })
+})

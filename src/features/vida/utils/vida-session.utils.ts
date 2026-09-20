@@ -1,0 +1,255 @@
+/**
+ * La sesión viva del módulo Vida: instantes, cronómetro y las entradas del API.
+ *
+ * Archivo **hermano** de `vida-time.utils.ts` (que es `HH:mm` y minutos, sin
+ * fechas) y de `vida-date.utils.ts` (que es `YYYY-MM-DD`, sin horas). Aquí vive
+ * lo único que necesita **las dos a la vez**: el instante en que empezó una
+ * sesión. Nada de React, nada del API: funciones puras y sus constantes, con
+ * `now` **siempre inyectado** — ni un `new Date()` escondido.
+ *
+ * Rescatado función por función de
+ * `git show 79bece0:src/features/activities/utils/activity-time.utils.ts`:
+ * `formatElapsedHHMMSS` y `formatElapsedCompact` (líneas 186-201) literales,
+ * `localDateTimeToIso` (237-251) como `sessionStartInstant` —devolviendo `Date`
+ * en vez de una cadena ISO que habría que volver a parsear— y
+ * `calculateDurationMinutes` (262-267) como `elapsedMinutes`. Lo que **no**
+ * volvió: el respaldo `new Date().toISOString()` cuando la fecha no se entiende
+ * (una fecha rota disfrazada de «ahora» es peor que un `null`) y
+ * `normalizeTimeToSeconds` (el API acepta `HH:mm`).
+ *
+ * **La trampa de medianoche (criterio 63).** La duración de una sesión abierta
+ * *no* se puede calcular como «minutos de ahora desde medianoche − minutos de
+ * inicio»: una que empezó a las 23:50 daría −1420 a las 00:10. Se calcula
+ * **entre instantes**, desde `date + startTime` local, y por eso existe
+ * `sessionStartInstant`.
+ */
+
+import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import type {
+  ActivityFollowUpEditInput,
+  ActivityFollowUpStartInput,
+} from '@/features/vida/types/activity-followup.types'
+import { formatDateToYmd } from '@/features/vida/utils/vida-date.utils'
+import {
+  DEFAULT_BLOCK_MINUTES,
+  normalizeTimeForApi,
+  normalizeTimeForDisplay,
+  parseTimeToMinutes,
+} from '@/features/vida/utils/vida-time.utils'
+
+const MS_PER_SECOND = 1000
+const MS_PER_MINUTE = 60 * MS_PER_SECOND
+const MINUTES_PER_DAY = 24 * 60
+
+function pad2(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+/* ── El instante ────────────────────────────────────────────────────────── */
+
+/**
+ * `YYYY-MM-DD` + `HH:mm` (o `HH:mm:ss`, que es lo que a veces devuelve el API)
+ * → el `Date` **local** de ese momento. `null` si la fecha no se entiende: sin
+ * instante no hay cronómetro, y eso se dice, no se inventa.
+ */
+export function sessionStartInstant(date: string, startTime: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date.trim())
+  if (!match) return null
+  const [hours, minutes] = normalizeTimeForDisplay(startTime).split(':').map(Number)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null
+  const instant = new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+    hours,
+    minutes,
+    0,
+    0,
+  )
+  return Number.isNaN(instant.getTime()) ? null : instant
+}
+
+/** El instante en que empezó una sesión, o `null` si sus datos no dan para uno. */
+export function followUpStartInstant(session: ActivityFollowUp | null | undefined): Date | null {
+  if (!session) return null
+  return sessionStartInstant(session.date, session.startTime)
+}
+
+/**
+ * Los minutos que lleva (o duró) una sesión, entre dos instantes.
+ *
+ * **Nunca menos de 1**: el API rechaza duraciones de cero (`Duration must be at
+ * least 1 minute`), así que «lo empecé y lo terminé sin querer» se registra
+ * como un minuto en vez de fallar.
+ */
+export function elapsedMinutes(start: Date, now: Date): number {
+  const diff = now.getTime() - start.getTime()
+  if (Number.isNaN(diff)) return 1
+  return Math.max(1, Math.round(diff / MS_PER_MINUTE))
+}
+
+/** Una sesión que empezó **otro día** (criterio 16). `today` es `YYYY-MM-DD` local. */
+export function isSessionFromAnotherDay(
+  session: ActivityFollowUp | null | undefined,
+  today: string,
+): boolean {
+  if (!session) return false
+  return session.date < today
+}
+
+/* ── Cómo se lee el cronómetro ──────────────────────────────────────────── */
+
+/** `00:24:11`. Rescatado literal de `79bece0` (líneas 186-193). */
+export function formatElapsedHHMMSS(elapsedMs: number): string {
+  const totalSeconds = Math.max(0, Math.floor(elapsedMs / MS_PER_SECOND))
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  return `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`
+}
+
+/** `24m`, `1h`, `1h 24m`. Rescatado literal de `79bece0` (líneas 195-201). */
+export function formatElapsedCompact(elapsedMs: number): string {
+  const totalMinutes = Math.max(0, Math.floor(elapsedMs / MS_PER_MINUTE))
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  if (hours === 0) return `${minutes}m`
+  if (minutes === 0) return `${hours}h`
+  return `${hours}h ${minutes}m`
+}
+
+/**
+ * «llevas 52 min · planeado 45» (criterio 9). Sin color de alarma y sin
+ * reproche: es un dato, no un aviso. Cuando no hay nada planeado, solo el
+ * «llevas».
+ */
+export function describeOverPlan(
+  elapsedMinutesCount: number,
+  plannedMinutes: number | null,
+): string | null {
+  if (plannedMinutes === null || plannedMinutes <= 0) return null
+  if (elapsedMinutesCount <= plannedMinutes) return null
+  return `llevas ${elapsedMinutesCount} min · planeado ${plannedMinutes}`
+}
+
+/* ── Lo que se le manda al API ──────────────────────────────────────────── */
+
+/**
+ * Empezar **ahora**: la fecha y la hora salen del reloj, no del bloque
+ * (criterio 17: empezar a las 9:05 un bloque de las 9:00 registra 9:05).
+ */
+export function startSessionInput(activityId: string, now: Date): ActivityFollowUpStartInput {
+  return {
+    activityId,
+    date: formatDateToYmd(now),
+    startTime: normalizeTimeForApi(`${pad2(now.getHours())}:${pad2(now.getMinutes())}`),
+  }
+}
+
+/**
+ * Cerrar una sesión abierta **a esta hora**: `activityFollowUpEdit` con los
+ * minutos entre su inicio y `at`. Sin instante de inicio no se adivina: un
+ * minuto, que es el mínimo del API y un número visiblemente raro.
+ */
+export function closeSessionInput(session: ActivityFollowUp, at: Date): ActivityFollowUpEditInput {
+  const start = followUpStartInstant(session)
+  return {
+    id: session.id,
+    durationMinutes: start ? elapsedMinutes(start, at) : 1,
+  }
+}
+
+/* ── La sesión que quedó abierta de otro día (D3, criterio 16) ──────────── */
+
+/**
+ * Lo que registra el «No sé» cuando el bloque de aquel día no dice nada.
+ * Es `DEFAULT_BLOCK_MINUTES`, y **se dice en pantalla**.
+ */
+export const VIDA_UNKNOWN_SESSION_MINUTES = DEFAULT_BLOCK_MINUTES
+
+export type UnknownEndReason = 'planned' | 'default'
+
+export type UnknownEndResult = {
+  minutes: number
+  reason: UnknownEndReason
+  /** Si hubo que recortar para no pasarse de la hora de fin de aquel día. */
+  clamped: boolean
+}
+
+/**
+ * «No sé hasta qué hora la hice»: **la duración planeada de ese bloque y, si no
+ * la hay, 30 minutos. Nunca hasta el fin del día.**
+ *
+ * Una sesión abierta ayer a las 21:00 con el día acabando a las 23:00 daría 120
+ * minutos que nadie vivió; una abierta a las 9:00 daría catorce horas. Ese
+ * número no es «algo razonable»: es tiempo inventado que entra en el
+ * presupuesto y se queda ahí. La duración planeada, en cambio, la escribió el
+ * propio usuario.
+ *
+ * `plannedMinutes` llega **de fuera** (en la tajada 1, el único bloque de aquel
+ * día con el mismo `activityId`; si hay varios, `null`, que no se adivina).
+ * Cuando la tajada 2 traiga el cruce de D1, esta función no cambia.
+ */
+export function resolveUnknownEndMinutes(params: {
+  startTime: string
+  plannedMinutes: number | null
+  dayEndTime: string
+}): UnknownEndResult {
+  const { startTime, plannedMinutes, dayEndTime } = params
+  const wanted =
+    plannedMinutes !== null && plannedMinutes > 0 ? plannedMinutes : VIDA_UNKNOWN_SESSION_MINUTES
+  const reason: UnknownEndReason =
+    plannedMinutes !== null && plannedMinutes > 0 ? 'planned' : 'default'
+
+  const startMinutes = parseTimeToMinutes(startTime)
+  const endMinutes = parseTimeToMinutes(dayEndTime)
+  // Un día que acaba antes de que empezara la sesión (empezó a las 23:30 con el
+  // día cerrando a las 23:00) no recorta nada: recortaría a cero.
+  const room = endMinutes > startMinutes ? endMinutes - startMinutes : null
+
+  if (room !== null && wanted > room) {
+    return { minutes: Math.max(1, room), reason, clamped: true }
+  }
+  return { minutes: Math.max(1, wanted), reason, clamped: false }
+}
+
+/**
+ * Los minutos entre la hora de inicio de la sesión y la hora de fin que la
+ * persona escribe a mano. Si la hora de fin es anterior o igual, se entiende
+ * que cruzó medianoche (criterio 63: nunca una duración negativa).
+ */
+export function minutesUntilEndTime(startTime: string, endTime: string): number {
+  const start = parseTimeToMinutes(startTime)
+  const end = parseTimeToMinutes(endTime)
+  // La misma hora no es «un día entero»: es un rato corto que se queda en el
+  // mínimo del API. Cruzar medianoche es que la de fin sea **anterior**.
+  if (end === start) return 1
+  const diff = end > start ? end - start : end + MINUTES_PER_DAY - start
+  return Math.max(1, diff)
+}
+
+/* ── Lo que dice el API cuando algo sale mal ────────────────────────────── */
+
+/**
+ * El API responde **en inglés** (`You already have an activity in progress.
+ * Finish or cancel it before starting another.`, `Duration must be at least 1
+ * minute`): si eso llega a pantalla, se lee horrible y encima usa «cancel», que
+ * en Vida está prohibido. Se traduce aquí, que es puro y se prueba.
+ */
+export function translateSessionError(error: unknown, fallback: string): string {
+  const raw = error instanceof Error ? error.message.trim() : ''
+  if (!raw) return fallback
+  if (/already have an activity in progress/i.test(raw)) {
+    return 'Ya tenías algo en marcha. Termínalo y vuelve a empezar.'
+  }
+  if (/duration must be at least/i.test(raw)) {
+    return 'Una sesión dura como mínimo un minuto.'
+  }
+  if (/not found/i.test(raw)) {
+    return 'No encontramos esa sesión. Vuelve a cargar la pantalla.'
+  }
+  // Cualquier otro mensaje del servidor se queda fuera de la pantalla: está en
+  // inglés y puede traer «cancel». Se dice lo nuestro, que sí está en el
+  // vocabulario del módulo. El mensaje crudo sigue en la consola del error.
+  return fallback
+}

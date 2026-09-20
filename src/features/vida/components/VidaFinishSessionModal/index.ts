@@ -1,0 +1,1 @@
+export { VidaFinishSessionModal } from './VidaFinishSessionModal'

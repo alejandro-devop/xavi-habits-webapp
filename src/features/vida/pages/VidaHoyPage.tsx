@@ -12,6 +12,9 @@ import { useAddDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayP
 import { useBuildDayFromTemplate } from '@/features/vida/hooks/useBuildDayFromTemplate'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
+import { useVidaOpenSession } from '@/features/vida/hooks/useVidaOpenSession'
+import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActions'
+import { useVidaSessionUi } from '@/features/vida/hooks/useVidaSessionUi'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
@@ -107,6 +110,19 @@ export function VidaHoyPage() {
   // cosa», sin «···», sin copiar ni vaciar. Se mira.
   const canPlan = isEditableDate(date, today)
   const { minutes: nowMinutes, label: nowLabel } = useVidaNowMinute(isToday)
+  // La sesión en marcha (FEAT-004, tajada 1). Es **la misma** consulta que lee
+  // la barra del módulo: `vidaKeys.followUps.open()`, cacheada y deduplicada
+  // por React Query (criterio 8). El cierre completo lo abre el layout, que es
+  // quien monta el modal.
+  const openSession = useVidaOpenSession()
+  const { openFinishModal } = useVidaSessionUi()
+  const sessionActions = useVidaSessionActions({ onAddNote: openFinishModal })
+  // «▶ Empezar» solo en **hoy**: en un día futuro no ha llegado y en uno pasado
+  // se registra, que es la tajada 3 (criterio 1, su mitad de días). La otra
+  // mitad —esconderlo también en el bloque que **ya tiene** sesión— necesita el
+  // cruce de D1 y llega en la tajada 2.
+  const canStart = isToday && !openSession.isDisabled && !openSession.isFromAnotherDay
+  const runningActivityId = openSession.session?.activityId ?? null
   const { planItems, suggestions, dayHours, isDisabled, isPending, isPlanError, failed, refetch } =
     useVidaDayData(date)
 
@@ -358,6 +374,20 @@ export function VidaHoyPage() {
                 // hay nada que quitar ni que cambiar de hora (criterio 38).
                 date={canPlan ? date : null}
                 onEdit={canPlan ? editBlock : undefined}
+                isRunning={
+                  runningActivityId !== null && entry.item.activityId === runningActivityId
+                }
+                sessionStartInstant={openSession.startInstant}
+                onStart={
+                  canStart && entry.item.activityId !== runningActivityId
+                    ? (block) => void sessionActions.start(block.item.activityId)
+                    : undefined
+                }
+                onFinish={() => void sessionActions.finishNow()}
+                onOpenFinishModal={
+                  openSession.session ? () => openFinishModal(openSession.session!) : undefined
+                }
+                isSessionBusy={sessionActions.isBusy}
               />
             ) : (
               <VidaAgendaGap

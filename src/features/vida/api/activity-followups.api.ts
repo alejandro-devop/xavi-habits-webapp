@@ -4,6 +4,7 @@ import {
   ACTIVITY_FOLLOW_UP_EDIT_MUTATION,
   ACTIVITY_FOLLOW_UP_REMOVE_MUTATION,
   ACTIVITY_FOLLOW_UP_START_MUTATION,
+  ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION,
   ACTIVITY_FOLLOW_UPS_IN_DATES_QUERY,
   ACTIVITY_OPEN_FOLLOW_UP_QUERY,
 } from '@/features/vida/graphql/activity-followups.graphql'
@@ -13,6 +14,8 @@ import type {
   ActivityFollowUpEditInput,
   ActivityFollowUpInput,
   ActivityFollowUpStartInput,
+  ActivityFollowUpSubtask,
+  ActivityFollowUpSubtaskEditInput,
   ActivityFollowUpsDateGroup,
 } from '@/features/vida/types/activity-followup.types'
 import { graphqlRequest } from '@/shared/api/graphql-client'
@@ -43,6 +46,10 @@ type ActivityFollowUpEditData = {
 
 type ActivityFollowUpRemoveData = {
   activityFollowUpRemove: boolean
+}
+
+type ActivityFollowUpSubtaskEditData = {
+  activityFollowUpSubtaskEdit: ActivityFollowUpSubtask
 }
 
 export async function getActivityOpenFollowUp(): Promise<ActivityFollowUp | null> {
@@ -105,4 +112,14 @@ export async function deleteActivityFollowUp(id: string): Promise<boolean> {
     { id },
   )
   return data.activityFollowUpRemove
+}
+
+export async function editActivityFollowUpSubtask(
+  input: ActivityFollowUpSubtaskEditInput,
+): Promise<ActivityFollowUpSubtask> {
+  const data = await graphqlRequest<
+    ActivityFollowUpSubtaskEditData,
+    { input: ActivityFollowUpSubtaskEditInput }
+  >(ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION, { input })
+  return data.activityFollowUpSubtaskEdit
 }

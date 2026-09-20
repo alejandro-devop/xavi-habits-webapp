@@ -1,6 +1,11 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { ToastViewport } from '@/shared/ui/Toast/ToastViewport'
-import type { ToastInput, ToastItem, ToastPosition, ToastVariant } from '@/shared/ui/Toast/toast.types'
+import type {
+  ToastInput,
+  ToastItem,
+  ToastPosition,
+  ToastVariant,
+} from '@/shared/ui/Toast/toast.types'
 
 const DEFAULT_DURATION = 4000
 
@@ -41,7 +46,10 @@ export function ToastProvider({ children, position = 'top-right', ds }: ToastPro
   const show = useCallback((variant: ToastVariant, input: ToastInput) => {
     const id = nextToastId()
     const duration = input.duration ?? DEFAULT_DURATION
-    setToasts((prev) => [...prev, { id, variant, message: input.message, duration }])
+    setToasts((prev) => [
+      ...prev,
+      { id, variant, message: input.message, duration, action: input.action },
+    ])
     if (duration > 0) {
       window.setTimeout(() => dismiss(id), duration)
     }

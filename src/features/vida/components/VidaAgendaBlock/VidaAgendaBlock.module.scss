@@ -37,9 +37,15 @@
 
 .card {
   display: flex;
+  /* Con la sesión en marcha, el cronómetro y «Terminar» no caben al lado del
+     nombre en 375 px: en vez de aplastar el nombre hasta «O…», la fila **se
+     parte** y las acciones bajan a su propia línea (criterio 60). Sin sesión no
+     hay nada que envolver y la tarjeta se ve exactamente igual que antes. */
   flex: 1;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.7rem;
+  row-gap: 0.45rem;
   min-width: 0;
   padding: 0.7rem 0.8rem;
   border: 1px solid var(--color-glass-border);
@@ -66,7 +72,10 @@
 
 .body {
   display: flex;
-  flex: 1;
+  /* Base de 8rem: por debajo de eso el nombre se lee «O…» y la duración se
+     apila letra a letra. Cuando no cabe, lo que se va a la línea siguiente son
+     las acciones, no el nombre. */
+  flex: 1 1 8rem;
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
@@ -146,5 +155,61 @@
   &:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+}
+
+/* ── La sesión viva (FEAT-004, tajada 1) ─────────────────────────────────── */
+
+/* «en marcha»: violeta del lenguaje Aura, el mismo que el render 03. Es una
+   etiqueta de estado, no una alarma. */
+.live {
+  /* El mismo violeta que usa la marca de «ahora» de FEAT-003
+     (`VidaHoyPage.module.scss`): `--aura-ring-to`. No se inventa un token
+     nuevo — el hallazgo abierto de FEAT-003 sobre los dos violetas en oscuro
+     sigue anotado y se mira en la tajada 2, con la leyenda entera delante. */
+  color: var(--aura-ring-to, #7c3aed);
+  font-weight: 700;
+}
+
+/* «llevas 52 min · planeado 45» (criterio 9). **Sin color de alarma**: mismo
+   tono que cualquier otro dato del bloque. Pasarse del plan no es un fallo. */
+.overPlan {
+  margin: 0.1rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* El cronómetro y «Terminar», a la derecha de la tarjeta. En 375 px el nombre
+   ya se recorta con puntos suspensivos, así que esto nunca se sale. */
+.running {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: auto;
+}
+
+.timer {
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.start {
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+@media (max-width: 24rem) {
+  .running {
+    gap: 0.35rem;
+  }
+
+  .timer {
+    font-size: 0.75rem;
   }
 }

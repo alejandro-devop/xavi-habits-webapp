@@ -1,0 +1,110 @@
+/* La barra de la sesión en marcha: fija abajo, en todas las pantallas del
+   módulo Vida. Abajo y no arriba porque arriba ya están `AppLayout` y las
+   píldoras del módulo, y una tercera franja superior dejaría la agenda mirando
+   por una rendija en un móvil de 375 px. */
+.root {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 0 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 44rem;
+  min-width: 0;
+  padding: 0.55rem 0.6rem 0.55rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 35%, var(--color-glass-border));
+  border-radius: 1.1rem;
+  background: var(--aura-glass-1, var(--color-surface));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg, var(--shadow-md));
+  pointer-events: auto;
+}
+
+.identity {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+  }
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Un nombre de 60 caracteres se recorta: nunca empuja el cronómetro fuera de la
+   barra (criterio 61). */
+.name {
+  overflow: hidden;
+  max-width: 100%;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* «desde las 9:00» o «llevas 52 min · planeado 45». Dato, no alarma: mismo tono
+   que cualquier otro `meta` del módulo, sin rojo y sin negrita (criterio 9). */
+.meta {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timer {
+  flex: 0 0 auto;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+@media (max-width: 24rem) {
+  .bar {
+    gap: 0.45rem;
+    padding-left: 0.55rem;
+  }
+
+  .timer {
+    font-size: 0.875rem;
+  }
+}

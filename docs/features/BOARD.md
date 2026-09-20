@@ -12,7 +12,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
-| FEAT-004 | planned | 0/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+| FEAT-004 | building | 2/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -24,6 +24,47 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-001 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
+
+**FEAT-004, tajada 1 `accepted`** (2026-09-20, revisada; **sin commitear**: la
+construcción está en la sección 3 del dossier y la revisión en la 4): **la sesión viva existe.** «▶ Empezar» en un bloque de
+hoy abre la sesión, el **cronómetro** cuenta contra el `startTime` del servidor
+—así que **recargar no lo reinicia**—, «Terminar» es **un toque** y su toast
+ofrece **«añadir una nota»**, y el cierre completo —duración, notas en texto
+plano, subtareas— vive en el «···» de la barra y del bloque. La sesión se ve en
+**todas** las pantallas de Vida desde `routes/VidaModuleLayout.tsx`, que pasa a
+ser el `element` del nodo `path: 'vida'` (**ninguna URL cambia**), y fuera del
+módulo no se pinta nada. Empezar con otra en marcha **cierra la anterior y lo
+dice en un solo mensaje**, y si ese cierre falla **la nueva no se empieza**. La
+que quedó abierta de otro día **se pregunta** en vez de enseñar un cronómetro de
+catorce horas, y el «No sé» anota **la duración planeada, o 30 min — nunca hasta
+el fin del día**. Los tres toasts heredados quedaron reescritos («En marcha»,
+«No la guardamos», «Lo quitamos del registro») y un test nuevo lee el módulo
+entero buscando vocabulario de culpa. Línea base sin empeorar: typecheck limpio,
+lint **14/0**, `pnpm test` 2 fallos de **1005** (los dos de `SearchSelect`; **+74
+tests**), chunk inicial **934,79 kB** (+17,8 kB, **ninguno de iconos**). Lo único
+fuera de Vida: `shared/ui/Toast` gana una **acción opcional**. **Falta el
+recorrido manual del usuario** (criterio 66, con la API despierta) y, dentro de
+él, lo que ningún agente pudo tocar: **las subtareas de sesión contra el API de
+verdad** (criterio 10, lo más frágil) y el botón del toast pulsado sobre una
+sesión real. Tres desviaciones dichas: un contexto nuevo
+(`hooks/useVidaSessionUi.ts`) para que el modal se monte **una vez**, `silent`
+también en `useStartActivityFollowUpMutation` —si no, un gesto dejaba dos
+avisos—, y `VidaAgendaBlock` envolviendo su fila en 375 px, que **afecta a todos
+los bloques**. Un test de FEAT-003 quedó **derogado y acotado**, no borrado: el
+que decía «no hay nada de vivir el día».
+
+**La revisión de la tajada 1** (sección 4 del dossier) la **acepta**: midió otra
+vez la línea base (`pnpm test` **2 de 1005**, `pnpm lint` **14/0**, `pnpm build`
+**934,79 kB** con `app-icons` y `IconPicker` intactos) y **no encontró ninguna
+regresión** — el único que renderiza `VidaAgendaBlock` es `VidaHoyPage`, así que
+el `flex-wrap` no toca ni la semana ni la plantilla, y medido en un arnés a
+**375 px y a 720 px** un bloque sin sesión sigue midiendo **una sola fila**. Deja
+**siete hallazgos** sin tocar código, dos de ellos **para la tajada 2**: si la
+consulta de la sesión abierta **falla** no se ve nada (ni barra, ni aviso, y
+«Empezar» acaba en un callejón sin salida), y **dos bloques de la misma actividad
+el mismo día se pintan los dos «en marcha»** hasta que llegue el cruce de D1.
+Siguen pendientes del usuario el **recorrido manual** (criterio 66) y, dentro de
+él, las **subtareas de sesión contra el API de verdad** (criterio 10).
 
 **FEAT-004 `planned`** (2026-09-20): **cuatro tajadas, sin recorte de alcance y
 con el API intacto**. La referencia es *la misma pantalla que hay que ampliar*

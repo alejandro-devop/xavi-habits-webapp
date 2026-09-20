@@ -29,10 +29,28 @@ const FOLLOW_UP_ACTIVITY_FIELDS = `
   }
 `
 
+/**
+ * Las subtareas de la sesión, **solo aquí** (criterio 10): en el documento del
+ * día serían N sesiones × sus subtareas para no pintarlas en ninguna parte.
+ */
+const SESSION_SUBTASK_FIELDS = `
+  sessionSubtasks {
+    id
+    followUpId
+    activitySubtaskId
+    title
+    isCompleted
+    orderIndex
+    createdAt
+    updatedAt
+  }
+`
+
 export const ACTIVITY_OPEN_FOLLOW_UP_QUERY = `
   query ActivityOpenFollowUp {
     activityOpenFollowUp {
       ${FOLLOW_UP_FIELDS}
+      ${SESSION_SUBTASK_FIELDS}
       ${FOLLOW_UP_ACTIVITY_FIELDS}
     }
   }
@@ -96,5 +114,20 @@ export const ACTIVITY_FOLLOW_UP_EDIT_MUTATION = `
 export const ACTIVITY_FOLLOW_UP_REMOVE_MUTATION = `
   mutation ActivityFollowUpRemove($id: ID!) {
     activityFollowUpRemove(id: $id)
+  }
+`
+
+export const ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION = `
+  mutation ActivityFollowUpSubtaskEdit($input: ActivityFollowUpSubtaskEditInput!) {
+    activityFollowUpSubtaskEdit(input: $input) {
+      id
+      followUpId
+      activitySubtaskId
+      title
+      isCompleted
+      orderIndex
+      createdAt
+      updatedAt
+    }
   }
 `

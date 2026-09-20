@@ -42,6 +42,21 @@ export function ToastViewport({ ds }: ToastViewportProps) {
             layout
           >
             <span className={styles.message}>{toast.message}</span>
+            {/* La acción va **antes** de la ✕ y cierra el aviso al usarse: si se
+                quedara abierto detrás del modal que abre, taparía lo que la
+                persona acaba de pedir (FEAT-004, criterio 5). */}
+            {toast.action ? (
+              <button
+                type="button"
+                className={styles.action}
+                onClick={() => {
+                  toast.action?.onClick()
+                  dismiss(toast.id)
+                }}
+              >
+                {toast.action.label}
+              </button>
+            ) : null}
             <button
               type="button"
               className={styles.dismiss}

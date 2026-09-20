@@ -1,0 +1,104 @@
+import { useMemo, useState } from 'react'
+import { Outlet } from 'react-router'
+import { VidaFinishSessionModal } from '@/features/vida/components/VidaFinishSessionModal'
+import { VidaSessionBar } from '@/features/vida/components/VidaSessionBar'
+import { VidaStaleSessionPrompt } from '@/features/vida/components/VidaStaleSessionPrompt'
+import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
+import {
+  useVidaOpenSession,
+  useVidaSessionPlannedMinutes,
+} from '@/features/vida/hooks/useVidaOpenSession'
+import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActions'
+import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
+import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import styles from './VidaModuleLayout.module.scss'
+
+/**
+ * El elemento de ruta del módulo Vida: lo que se ve **en todas** sus pantallas.
+ *
+ * Aquí viven la **barra de la sesión en marcha** (criterio 7), la **pregunta por
+ * la sesión que quedó abierta de otro día** (criterio 16), el **cierre completo**
+ * (criterio 6) y el hueco reservado abajo para que la barra no tape el último
+ * bloque de la agenda ni los botones de una hoja (criterio 60).
+ *
+ * **Por qué aquí y no en `AppLayout`.** El subárbol de rutas es la frontera
+ * exacta que pide el criterio 7 —«todas las pantallas del módulo», «fuera del
+ * módulo, nada»—, sale gratis y no se puede desincronizar. `AppLayout` sabe cuál
+ * es el módulo activo, pero lo sabe por `app-nav.config.ts`, que **no conoce**
+ * `/app/vida/semana` ni `/app/vida/actividades/archivadas` (están fuera a
+ * propósito): la condición se equivocaría justo donde importa. Y tampoco un
+ * portal por página: se montaría una vez por pantalla y rompería el criterio 8.
+ *
+ * **Una sola consulta para todo el módulo** (criterio 8): `useVidaOpenSession`
+ * envuelve `vidaKeys.followUps.open()`, que ya estaba cacheada. Las URL no
+ * cambian: este componente es el `element` de un nodo de ruta que ya existía.
+ */
+export function VidaModuleLayout() {
+  const { session, startInstant, isFromAnotherDay, isDisabled } = useVidaOpenSession()
+  const plannedMinutes = useVidaSessionPlannedMinutes(session)
+  const dayHours = useVidaDayHours()
+
+  // La sesión que se está cerrando con detalle. Puede ser la abierta (desde el
+  // «···») o una **recién cerrada** (desde el «añadir una nota» del toast), y
+  // por eso es su propio estado y no `session`.
+  const [finishing, setFinishing] = useState<ActivityFollowUp | null>(null)
+  const [finishOpen, setFinishOpen] = useState(false)
+  // Una `key` por apertura, como en `VidaActividadesPage`: la hoja se remonta
+  // limpia sin que nadie tenga que vaciarla a mano.
+  const [finishSession, setFinishSession] = useState(0)
+
+  function openFinish(target: ActivityFollowUp) {
+    setFinishing(target)
+    setFinishSession((value) => value + 1)
+    setFinishOpen(true)
+  }
+
+  const actions = useVidaSessionActions({ onAddNote: openFinish })
+  // Lo que el bloque en marcha de la agenda necesita del layout: abrir el
+  // cierre completo. Va por contexto porque entre los dos hay un `Outlet`.
+  const sessionUi = useMemo(() => ({ openFinishModal: openFinish }), [])
+
+  // Sin sesión de usuario no se pinta nada de esto (criterio 64): ni barra, ni
+  // pregunta, ni hueco reservado.
+  const hasBar = !isDisabled && session !== null && !isFromAnotherDay
+  const hasPrompt = !isDisabled && session !== null && isFromAnotherDay
+
+  return (
+    <div className={styles.root} data-session-bar={hasBar ? 'on' : undefined}>
+      {hasPrompt && session ? (
+        <VidaStaleSessionPrompt
+          session={session}
+          plannedMinutes={plannedMinutes}
+          dayEndTime={dayHours.endTime}
+          onResolve={actions.resolveStale}
+        />
+      ) : null}
+
+      <VidaSessionUiContext.Provider value={sessionUi}>
+        <Outlet />
+      </VidaSessionUiContext.Provider>
+
+      {hasBar && session ? (
+        <VidaSessionBar
+          session={session}
+          startInstant={startInstant}
+          plannedMinutes={plannedMinutes}
+          isBusy={actions.isBusy}
+          onFinish={() => void actions.finishNow()}
+          onOpenFinishModal={() => openFinish(session)}
+        />
+      ) : null}
+
+      {finishing ? (
+        <VidaFinishSessionModal
+          key={finishSession}
+          open={finishOpen}
+          onClose={() => setFinishOpen(false)}
+          session={finishing}
+          onSave={actions.finishWith}
+          onDiscard={actions.discard}
+        />
+      ) : null}
+    </div>
+  )
+}

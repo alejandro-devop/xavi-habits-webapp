@@ -1,0 +1,68 @@
+/* La pregunta de la sesión que quedó abierta otro día. Tarjeta de vidrio arriba
+   del módulo, **no un modal**: lo único que bloquea es empezar otra cosa, y el
+   resto de la pantalla se puede usar (criterio 54). */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 0.85rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 32%, var(--color-glass-border));
+  border-radius: 1rem;
+  background: var(--aura-glass-1, var(--color-surface));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  /* Un nombre largo se reparte en líneas: aquí no se recorta, porque es la
+     frase que identifica lo que se está preguntando (criterio 61). */
+  overflow-wrap: anywhere;
+}
+
+.question {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.fieldLabel {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger, #dc2626);
+  font-size: 0.8125rem;
+}

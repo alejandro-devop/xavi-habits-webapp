@@ -78,6 +78,16 @@ export interface ActivityFollowUpEditInput {
   notes?: string | null
 }
 
+/**
+ * Marcar o desmarcar una subtarea **de esta ejecución** (criterio 10). No crea
+ * ni borra nada: las subtareas se crean en la actividad, no desde aquí.
+ */
+export interface ActivityFollowUpSubtaskEditInput {
+  followUpId: string
+  sessionSubtaskId: string
+  isCompleted: boolean
+}
+
 export interface ActivityFollowUpsDateGroup {
   date: string
   followUps: ActivityFollowUp[]

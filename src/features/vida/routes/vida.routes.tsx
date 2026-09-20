@@ -6,6 +6,7 @@ import { VidaRevisionPage } from '@/features/vida/pages/VidaRevisionPage'
 import { VidaActividadesPage } from '@/features/vida/pages/VidaActividadesPage'
 import { VidaArchivadasPage } from '@/features/vida/pages/VidaArchivadasPage'
 import { VidaCategoriasPage } from '@/features/vida/pages/VidaCategoriasPage'
+import { VidaAjustesPage } from '@/features/vida/pages/VidaAjustesPage'
 
 /**
  * El índice redirige a `hoy` en vez de renderizar la página: así la URL y la
@@ -44,6 +45,10 @@ export const vidaRoutes: RouteObject = {
     {
       path: 'categorias',
       element: <VidaCategoriasPage />,
+    },
+    {
+      path: 'ajustes',
+      element: <VidaAjustesPage />,
     },
   ],
 }

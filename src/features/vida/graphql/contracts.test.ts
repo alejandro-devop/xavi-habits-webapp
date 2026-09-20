@@ -3,11 +3,13 @@ import { describe, expect, it } from 'vitest'
 import activityDayPlanSdl from '@/features/vida/graphql/schema/activity-day-plan.schema.graphql?raw'
 import activitySdl from '@/features/vida/graphql/schema/activity.schema.graphql?raw'
 import vidaSdl from '@/features/vida/graphql/schema/vida.schema.graphql?raw'
+import userSettingsSdl from '@/features/settings/graphql/schema/user-settings.schema.graphql?raw'
 import * as activityCategoryDocuments from '@/features/vida/graphql/activity-categories.graphql'
 import * as activityDayPlanDocuments from '@/features/vida/graphql/activity-day-plan.graphql'
 import * as activityFollowUpDocuments from '@/features/vida/graphql/activity-followups.graphql'
 import * as activityDocuments from '@/features/vida/graphql/activities.graphql'
 import * as vidaItemDocuments from '@/features/vida/graphql/vida-items.graphql'
+import * as userSettingsDocuments from '@/features/settings/graphql/user-settings.graphql'
 
 /**
  * Contrato de la capa de datos de Vida contra el esquema real del backend.
@@ -20,14 +22,22 @@ import * as vidaItemDocuments from '@/features/vida/graphql/vida-items.graphql'
  * No es una comprobación por regex: se construye el esquema y se valida cada
  * documento con `validate` de `graphql`, que es lo mismo que hará el servidor.
  *
- * **Un solo esquema con los tres SDL.** `activity-day-plan` y `vida` hacen
- * `extend type Query`/`Mutation` y referencian `Activity` y `DateTime`: por
- * separado no levantan. Los bloques base (Query/Mutation vacíos, escalares,
- * tipos ajenos reducidos) viven **solo** en `activity.schema.graphql`; los dos
- * SDL nuevos son copia literal sin añadidos.
+ * **Un solo esquema con los cuatro SDL.** `activity-day-plan`, `vida` y
+ * `user-settings` hacen `extend type Query`/`Mutation` y referencian `Activity`
+ * y `DateTime`: por separado no levantan. Los bloques base (Query/Mutation
+ * vacíos, escalares, tipos ajenos reducidos) viven **solo** en
+ * `activity.schema.graphql`; los otros tres son copia literal sin añadidos.
+ *
+ * **`user-settings` vive aquí aunque sea de `features/settings`** (FEAT-003,
+ * tajada 1): el módulo Vida es quien estrenó `vidaDayStartTime` /
+ * `vidaDayEndTime`, y un arnés propio en `settings/` tendría que inventarse los
+ * bloques base que solo existen en `activity.schema.graphql`. Es el único
+ * esquema combinado del repositorio; si algún día `settings` crece, se mueve.
  */
 
-const schema = buildSchema([activitySdl, activityDayPlanSdl, vidaSdl].join('\n'))
+const schema = buildSchema(
+  [activitySdl, activityDayPlanSdl, vidaSdl, userSettingsSdl].join('\n'),
+)
 
 function documentsOf(module: Record<string, unknown>): [string, string][] {
   return Object.entries(module)
@@ -35,13 +45,25 @@ function documentsOf(module: Record<string, unknown>): [string, string][] {
     .sort(([a], [b]) => a.localeCompare(b))
 }
 
-const documents = [
+/**
+ * Los documentos **del módulo Vida**. Son los que además tienen prohibido
+ * arrastrar nada del módulo de tareas.
+ */
+const vidaDocuments = [
   ...documentsOf(activityDocuments),
   ...documentsOf(activityCategoryDocuments),
   ...documentsOf(activityFollowUpDocuments),
   ...documentsOf(activityDayPlanDocuments),
   ...documentsOf(vidaItemDocuments),
 ]
+
+/**
+ * Los de ajustes se validan igual, pero **no** pasan por la regla de «nada de
+ * tareas»: `standupTodoFolderId` es un campo legítimo de `UserSettings` que ya
+ * se pedía antes de Vida. Sacarlo de la selección para contentar a un test
+ * sería romper la cuenta de otra feature.
+ */
+const documents = [...vidaDocuments, ...documentsOf(userSettingsDocuments)]
 
 describe('contratos GraphQL de Vida contra el esquema real', () => {
   it('exporta los documentos que la capa de datos usa', () => {
@@ -77,6 +99,8 @@ describe('contratos GraphQL de Vida contra el esquema real', () => {
       'VIDA_SUGGESTIONS_FOR_DATE_QUERY',
       'VIDA_TAKEN_TODAY_QUERY',
       'VIDA_UNMARK_TAKEN_TODAY_MUTATION',
+      'MY_SETTINGS_QUERY',
+      'UPDATE_MY_SETTINGS_MUTATION',
     ])
   })
 
@@ -85,7 +109,7 @@ describe('contratos GraphQL de Vida contra el esquema real', () => {
     expect(errors.map((error) => error.message)).toEqual([])
   })
 
-  it.each(documents)('%s no arrastra nada del módulo de tareas', (_name, document) => {
+  it.each(vidaDocuments)('%s no arrastra nada del módulo de tareas', (_name, document) => {
     expect(document).not.toMatch(/todo/i)
     expect(document).not.toMatch(/standup/i)
   })
@@ -124,7 +148,7 @@ describe('contratos GraphQL de Vida contra el esquema real', () => {
   })
 
   it('los SDL nuevos son copia literal: no repiten los bloques base', () => {
-    for (const sdl of [activityDayPlanSdl, vidaSdl]) {
+    for (const sdl of [activityDayPlanSdl, vidaSdl, userSettingsSdl]) {
       expect(sdl).toContain('extend type Query')
       expect(sdl).toContain('extend type Mutation')
       expect(sdl).not.toMatch(/^type Query \{/m)
@@ -143,6 +167,44 @@ describe('contratos GraphQL de Vida contra el esquema real', () => {
     expect(String(dayPlanItem?.toString())).toBe('ActivityDayPlanItem')
     expect(activityDayPlanSdl).toContain('activity: Activity!')
     expect(vidaSdl).toContain('activity: Activity')
+  })
+
+  it('la plantilla de Vida trae hora y duración en el tipo y en los dos inputs', () => {
+    // El prerrequisito entero de FEAT-003: si el SDL se recopia sin esto, la
+    // tajada 1 no tiene dónde guardar nada y se entera aquí.
+    for (const block of ['type VidaItem', 'input VidaItemCreateInput', 'input VidaItemUpdateInput']) {
+      const section = vidaSdl.slice(vidaSdl.indexOf(`${block} {`))
+      const body = section.slice(0, section.indexOf('\n  }'))
+      expect(body).toContain('startTime: String')
+      expect(body).toContain('durationMinutes: Int')
+    }
+  })
+
+  it('los ajustes traen el horario del día de Vida, y no es obligatorio', () => {
+    const userSettings = schema.getType('UserSettings')
+    expect(userSettings).toBeDefined()
+    // Anulables a propósito: nulos por defecto, y el cliente pone 06:30 / 23:00.
+    expect(userSettingsSdl).toContain('vidaDayStartTime: String')
+    expect(userSettingsSdl).toContain('vidaDayEndTime: String')
+    expect(userSettingsSdl).not.toContain('vidaDayStartTime: String!')
+    expect(userSettingsSdl).not.toContain('vidaDayEndTime: String!')
+  })
+
+  it('la comprobación tiene dientes en los ajustes', () => {
+    const errors = validate(
+      schema,
+      parse(`
+        query MySettingsConCampoInventado {
+          mySettings {
+            userId
+            vidaDayDuration
+          }
+        }
+      `),
+    )
+    expect(errors.map((error) => error.message)).toEqual([
+      'Cannot query field "vidaDayDuration" on type "UserSettings". Did you mean "vidaDayEndTime" or "vidaDayStartTime"?',
+    ])
   })
 
   it('la comprobación tiene dientes también en los módulos nuevos', () => {

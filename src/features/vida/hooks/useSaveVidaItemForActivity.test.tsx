@@ -33,6 +33,8 @@ function buildVidaItem(overrides: Partial<VidaItem> = {}): VidaItem {
     userId: 1,
     activityId: 'a1',
     days: ['monday', 'wednesday', 'friday'],
+    startTime: null,
+    durationMinutes: null,
     notes: 'Con calma',
     isActive: true,
     orderIndex: 0,
@@ -65,6 +67,8 @@ describe('planVidaItemSave', () => {
         item: null,
         inTemplate: true,
         days: ['friday', 'monday'],
+        startTime: null,
+        durationMinutes: null,
       }),
     ).toEqual({ kind: 'create', input: { activityId: 'a1', days: ['monday', 'friday'] } })
   })
@@ -76,8 +80,19 @@ describe('planVidaItemSave', () => {
         item: buildVidaItem(),
         inTemplate: true,
         days: ['tuesday'],
+        startTime: null,
+        durationMinutes: null,
       }),
-    ).toEqual({ kind: 'update', input: { id: 'v1', days: ['tuesday'], isActive: true } })
+    ).toEqual({
+      kind: 'update',
+      input: {
+        id: 'v1',
+        days: ['tuesday'],
+        isActive: true,
+        startTime: null,
+        durationMinutes: null,
+      },
+    })
   })
 
   it('encendido sobre un ítem desactivado: lo reactiva con sus días (criterios 19 y 20)', () => {
@@ -87,22 +102,46 @@ describe('planVidaItemSave', () => {
         item: buildVidaItem({ isActive: false }),
         inTemplate: true,
         days: ['monday', 'wednesday', 'friday'],
+        startTime: null,
+        durationMinutes: null,
       }),
     ).toEqual({
       kind: 'update',
-      input: { id: 'v1', days: ['monday', 'wednesday', 'friday'], isActive: true },
+      input: {
+        id: 'v1',
+        days: ['monday', 'wednesday', 'friday'],
+        isActive: true,
+        startTime: null,
+        durationMinutes: null,
+      },
     })
   })
 
   it('apagado con ítem activo: se desactiva, no se borra ni pierde la nota (criterio 20)', () => {
     expect(
-      planVidaItemSave({ activityId: 'a1', item: buildVidaItem(), inTemplate: false, days: [] }),
+      planVidaItemSave({
+        activityId: 'a1',
+        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        inTemplate: false,
+        days: [],
+        startTime: null,
+        durationMinutes: null,
+      }),
+      // Apagar **no** limpia la hora ni la duración: se quedan donde están,
+      // como los días y la nota.
     ).toEqual({ kind: 'update', input: { id: 'v1', isActive: false } })
   })
 
   it('apagado sin ítem, o con uno ya desactivado: no se llama a nadie', () => {
     expect(
-      planVidaItemSave({ activityId: 'a1', item: null, inTemplate: false, days: [] }),
+      planVidaItemSave({
+        activityId: 'a1',
+        item: null,
+        inTemplate: false,
+        days: [],
+        startTime: null,
+        durationMinutes: null,
+      }),
     ).toEqual({ kind: 'nothing' })
     expect(
       planVidaItemSave({
@@ -110,6 +149,8 @@ describe('planVidaItemSave', () => {
         item: buildVidaItem({ isActive: false }),
         inTemplate: false,
         days: [],
+        startTime: null,
+        durationMinutes: null,
       }),
     ).toEqual({ kind: 'nothing' })
   })
@@ -121,8 +162,111 @@ describe('planVidaItemSave', () => {
         item: buildVidaItem(),
         inTemplate: true,
         days: ['friday', 'wednesday', 'monday'],
+        startTime: null,
+        durationMinutes: null,
       }),
     ).toEqual({ kind: 'nothing' })
+  })
+
+  // ── FEAT-003, tajada 1: la plantilla aprende la hora ──────────────────────
+
+  it('crear con hora y duración las manda; sin ellas no manda los campos (criterios 3 y 5)', () => {
+    expect(
+      planVidaItemSave({
+        activityId: 'a1',
+        item: null,
+        inTemplate: true,
+        days: ['monday'],
+        startTime: '08:00',
+        durationMinutes: 40,
+      }),
+    ).toEqual({
+      kind: 'create',
+      input: { activityId: 'a1', days: ['monday'], startTime: '08:00', durationMinutes: 40 },
+    })
+
+    expect(
+      planVidaItemSave({
+        activityId: 'a1',
+        item: null,
+        inTemplate: true,
+        days: ['monday'],
+        startTime: null,
+        durationMinutes: null,
+      }),
+    ).toEqual({ kind: 'create', input: { activityId: 'a1', days: ['monday'] } })
+  })
+
+  it('cambiar solo la hora actualiza EL MISMO ítem, no crea otro (criterio 4)', () => {
+    expect(
+      planVidaItemSave({
+        activityId: 'a1',
+        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        inTemplate: true,
+        days: ['monday', 'wednesday', 'friday'],
+        startTime: '09:15',
+        durationMinutes: 40,
+      }),
+    ).toEqual({
+      kind: 'update',
+      input: {
+        id: 'v1',
+        days: ['monday', 'wednesday', 'friday'],
+        isActive: true,
+        startTime: '09:15',
+        durationMinutes: 40,
+      },
+    })
+  })
+
+  it('quitar la hora manda null explícito: omitirla dejaría la vieja puesta', () => {
+    expect(
+      planVidaItemSave({
+        activityId: 'a1',
+        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        inTemplate: true,
+        days: ['monday', 'wednesday', 'friday'],
+        startTime: null,
+        durationMinutes: null,
+      }),
+    ).toEqual({
+      kind: 'update',
+      input: {
+        id: 'v1',
+        days: ['monday', 'wednesday', 'friday'],
+        isActive: true,
+        startTime: null,
+        durationMinutes: null,
+      },
+    })
+  })
+
+  it('misma hora y misma duración: sigue sin haber viaje (criterio 2)', () => {
+    expect(
+      planVidaItemSave({
+        activityId: 'a1',
+        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        inTemplate: true,
+        days: ['friday', 'wednesday', 'monday'],
+        startTime: '08:00',
+        durationMinutes: 40,
+      }),
+    ).toEqual({ kind: 'nothing' })
+  })
+
+  it('una duración que no es un entero positivo se trata como «no tiene»', () => {
+    for (const bad of [0, -30, Number.NaN]) {
+      expect(
+        planVidaItemSave({
+          activityId: 'a1',
+          item: null,
+          inTemplate: true,
+          days: ['monday'],
+          startTime: '   ',
+          durationMinutes: bad,
+        }),
+      ).toEqual({ kind: 'create', input: { activityId: 'a1', days: ['monday'] } })
+    }
   })
 })
 
@@ -132,7 +276,14 @@ describe('useSaveVidaItemForActivity', () => {
     const onSuccess = vi.fn()
 
     result.current.save(
-      { activityId: 'a1', item: null, inTemplate: true, days: ['monday'] },
+      {
+        activityId: 'a1',
+        item: null,
+        inTemplate: true,
+        days: ['monday'],
+        startTime: null,
+        durationMinutes: null,
+      },
       { onSuccess },
     )
 
@@ -155,6 +306,8 @@ describe('useSaveVidaItemForActivity', () => {
       item: buildVidaItem(),
       inTemplate: false,
       days: [],
+      startTime: null,
+      durationMinutes: null,
     })
 
     expect(createVidaItem.mutate).not.toHaveBeenCalled()
@@ -166,7 +319,14 @@ describe('useSaveVidaItemForActivity', () => {
     const onSuccess = vi.fn()
 
     result.current.save(
-      { activityId: 'a1', item: null, inTemplate: false, days: [] },
+      {
+        activityId: 'a1',
+        item: null,
+        inTemplate: false,
+        days: [],
+        startTime: null,
+        durationMinutes: null,
+      },
       { onSuccess },
     )
 

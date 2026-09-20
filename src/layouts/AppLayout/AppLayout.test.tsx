@@ -102,8 +102,8 @@ describe('AppLayout', () => {
       .map((link) => link.textContent)
     expect(vidaSections).toEqual(['Hoy', 'Plantilla', 'Revisión', 'Actividades'])
     expect(screen.getByRole('heading', { level: 1, name: 'Hoy' })).toBeInTheDocument()
-    // Vida no tiene ajustes de módulo: el popover no se pinta.
-    expect(screen.queryByRole('button', { name: /^Ajustes de/ })).not.toBeInTheDocument()
+    // Desde FEAT-003 Vida tiene su popover «Ajustes», con un solo destino.
+    expect(screen.getByRole('button', { name: 'Ajustes de vida' })).toBeInTheDocument()
 
     await user.click(within(modulesNav()).getByRole('link', { name: 'Hábitos' }))
 

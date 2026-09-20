@@ -159,3 +159,55 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* ── La hora y la duración, junto a las casillas ─────────────────────────── */
+
+/* «8:00 · 40 min · L M X J V» en una sola línea. `flex-wrap` es la red de los
+   375 px y de los nombres largos: si no cabe, las casillas bajan de línea en
+   vez de empujar la tarjeta (criterios 53 y 54). */
+.template {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+/* Después de la hora va el separador que la une a las casillas, como en el
+   criterio: «8:00 · 40 min · L M X J V». */
+.schedule,
+.scheduleMissing {
+  max-width: 100%;
+  overflow: hidden;
+  /* `--color-text-secondary` y no `--color-text-muted`: el apagado del tema
+     claro se queda en ~2,4:1 y esto es dato, no decoración. */
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &::after {
+    content: ' ·';
+  }
+}
+
+/* «sin hora» es un enlace, no un aviso: lleva a ponérsela. */
+.scheduleMissing {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}

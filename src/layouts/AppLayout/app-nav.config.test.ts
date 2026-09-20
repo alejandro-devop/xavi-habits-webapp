@@ -122,8 +122,11 @@ describe('appModules', () => {
       vidaPaths.revision,
       vidaPaths.actividades,
     ])
-    // Vida no tiene ajustes de módulo en F0: la barra no pinta el popover.
-    expect(vida?.settings).toBeUndefined()
+    // Desde FEAT-003 (tajada 1) Vida sí tiene ajustes de módulo, y son **uno**:
+    // el horario del día. La píldora «Ajustes» sale de aquí, igual que en
+    // hábitos, y `⌘K` lo ofrece por la misma lista.
+    expect(vida?.settings?.map((section) => section.label)).toEqual(['Ajustes de Vida'])
+    expect(vida?.settings?.map((section) => section.to)).toEqual([vidaPaths.ajustes])
   })
 
   it('reconoce el módulo activo por el prefijo de la URL', () => {

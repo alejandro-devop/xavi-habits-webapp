@@ -48,6 +48,8 @@ function buildVidaItem(overrides: Partial<VidaItem> = {}): VidaItem {
     userId: 1,
     activityId: 'a1',
     days: ['monday', 'wednesday'],
+    startTime: null,
+    durationMinutes: null,
     notes: null,
     isActive: true,
     orderIndex: 0,

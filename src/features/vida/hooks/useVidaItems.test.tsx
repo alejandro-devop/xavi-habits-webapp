@@ -59,6 +59,8 @@ const vidaItem = {
   userId: 1,
   activityId: '7',
   days: ['monday', 'wednesday'] as VidaDayOfWeek[],
+  startTime: null,
+  durationMinutes: null,
   notes: null,
   isActive: true,
   orderIndex: 0,

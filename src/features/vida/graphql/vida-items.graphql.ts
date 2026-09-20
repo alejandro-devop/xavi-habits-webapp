@@ -3,6 +3,8 @@ const VIDA_ITEM_FIELDS = `
   userId
   activityId
   days
+  startTime
+  durationMinutes
   notes
   isActive
   orderIndex

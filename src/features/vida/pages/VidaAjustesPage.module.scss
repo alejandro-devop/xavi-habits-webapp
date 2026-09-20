@@ -1,0 +1,87 @@
+/* Los ajustes del módulo: dos campos de hora en una tarjeta de vidrio. Mismo
+   contenedor que `VidaCategoriasPage`, que es la otra pantalla pequeña del
+   módulo: no se inventa un panel distinto para lo mismo. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+  border-color: var(--color-glass-border);
+  background: var(--color-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+/* En columna a 375 px y en fila cuando hay sitio: dos campos de hora no ganan
+   nada apilados en escritorio, y apilados es lo único que cabe en un móvil. */
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+@media (min-width: 30rem) {
+  .fields {
+    flex-direction: row;
+    gap: 1.25rem;
+  }
+
+  .fields > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.hint {
+  margin: 0;
+  /* `--color-text-secondary` y no `--color-text-muted`: el apagado del tema
+     claro se queda en ~2,4:1 y esto explica de dónde salen las horas. */
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.8125rem;
+}
+
+.saved {
+  margin: 0;
+  color: var(--color-primary-hover);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

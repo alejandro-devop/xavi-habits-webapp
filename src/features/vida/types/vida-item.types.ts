@@ -24,6 +24,14 @@ export interface VidaItem {
   userId: number
   activityId: string
   days: VidaDayOfWeek[]
+  /**
+   * Hora local de inicio, **siempre `HH:mm`** cuando no es nula (el API la
+   * normaliza). `null` mientras el ítem no tenga hora: los ítems creados antes
+   * de FEAT-003 son todos así y siguen siendo válidos.
+   */
+  startTime: string | null
+  /** Duración en minutos, **entero > 0** cuando no es nula. */
+  durationMinutes: number | null
   notes: string | null
   isActive: boolean
   orderIndex: number
@@ -54,6 +62,10 @@ export interface VidaSuggestion {
 export interface VidaItemCreateInput {
   activityId: string
   days: VidaDayOfWeek[]
+  /** `HH:mm`. Opcional: un ítem sin hora es legal. */
+  startTime?: string | null
+  /** Entero > 0; lo valida el API (`vida.service.ts`). Opcional. */
+  durationMinutes?: number | null
   notes?: string | null
   orderIndex?: number
   /** UUID v7 del cliente para idempotencia offline. Hoy nadie lo emite. */
@@ -63,6 +75,13 @@ export interface VidaItemCreateInput {
 export interface VidaItemUpdateInput {
   id: string
   days?: VidaDayOfWeek[]
+  /**
+   * `HH:mm` para ponerla, **`null` para limpiarla**. Omitir el campo deja la
+   * que hubiera: no es lo mismo que mandar `null`.
+   */
+  startTime?: string | null
+  /** Entero > 0 para ponerla, **`null` para limpiarla**. Omitir la deja igual. */
+  durationMinutes?: number | null
   notes?: string | null
   isActive?: boolean
   orderIndex?: number

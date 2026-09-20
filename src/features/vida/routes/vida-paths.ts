@@ -8,4 +8,6 @@ export const vidaPaths = {
   archivadas: '/app/vida/actividades/archivadas',
   /** Categorías es hermana del catálogo, no su hija: se gestiona sola. */
   categorias: '/app/vida/categorias',
+  /** El horario del día: en el popover «Ajustes» del módulo, como en hábitos. */
+  ajustes: '/app/vida/ajustes',
 } as const

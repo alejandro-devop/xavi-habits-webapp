@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { VidaActivitySheet } from '@/features/vida/components/VidaActivitySheet'
@@ -83,6 +83,8 @@ function buildVidaItem(overrides: Partial<VidaItem> = {}): VidaItem {
     userId: 1,
     activityId: 'a1',
     days: ['monday', 'wednesday', 'friday'],
+    startTime: null,
+    durationMinutes: null,
     notes: 'Con calma',
     isActive: true,
     orderIndex: 0,
@@ -301,6 +303,10 @@ describe('VidaActivitySheet', () => {
       id: 'v1',
       days: ['monday', 'tuesday', 'wednesday'],
       isActive: true,
+      // Desde FEAT-003 viajan siempre, y el `null` explícito es lo que las
+      // limpiaría: este ítem no tenía ni hora ni duración y sigue sin tenerlas.
+      startTime: null,
+      durationMinutes: null,
     })
     act(() => updateVidaItem.mutate.mock.calls[0][1].onSuccess())
     expect(onClose).toHaveBeenCalledTimes(1)
@@ -343,6 +349,115 @@ describe('VidaActivitySheet', () => {
       id: 'v1',
       days: ['monday', 'wednesday', 'friday'],
       isActive: true,
+      startTime: null,
+      durationMinutes: null,
+    })
+  })
+
+  // ── FEAT-003, tajada 1: «a esta hora hago esto, este tiempo» ──────────────
+
+  it('con el interruptor encendido aparecen «a qué hora» y las píldoras (criterio 3)', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+
+    // Apagado no se ve nada de horario: es parte del bloque de plantilla.
+    expect(screen.queryByLabelText(/A qué hora/)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('switch', { name: /Ponerla en mi plantilla/ }))
+
+    expect(screen.getByLabelText(/A qué hora/)).toHaveAttribute('type', 'time')
+    for (const pill of ['15', '30', '45', '1h', 'libre']) {
+      expect(screen.getByRole('button', { name: pill })).toBeInTheDocument()
+    }
+  })
+
+  it('al crear, la hora y la duración elegidas llegan al VidaItem (criterio 3)', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+
+    await user.type(screen.getByLabelText('Cómo la llamas'), 'Estirar')
+    await user.click(screen.getByRole('button', { name: 'Casa' }))
+    await user.click(screen.getByRole('switch', { name: /Ponerla en mi plantilla/ }))
+    await user.click(screen.getByRole('button', { name: 'lunes' }))
+    fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '08:00' } })
+    await user.click(screen.getByRole('button', { name: '45' }))
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    act(() => createActivity.mutate.mock.calls[0][1].onSuccess(buildActivity()))
+
+    expect(createVidaItem.mutate.mock.calls[0][0]).toEqual({
+      activityId: 'a1',
+      days: ['monday'],
+      startTime: '08:00',
+      durationMinutes: 45,
+    })
+  })
+
+  it('editando, la hora y la duración vienen puestas y actualizan EL MISMO ítem (criterio 4)', async () => {
+    const user = userEvent.setup()
+    renderSheet({
+      activity: buildActivity(),
+      vidaItem: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+    })
+
+    // Vienen puestas: ni el campo vacío ni una píldora inventada.
+    expect(screen.getByLabelText(/A qué hora/)).toHaveValue('08:00')
+    expect(screen.getByRole('button', { name: 'libre' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('spinbutton')).toHaveValue(40)
+
+    fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '09:15' } })
+    await user.click(screen.getByRole('button', { name: '30' }))
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    act(() => updateActivity.mutate.mock.calls[0][1].onSuccess(buildActivity()))
+
+    expect(createVidaItem.mutate).not.toHaveBeenCalled()
+    expect(updateVidaItem.mutate).toHaveBeenCalledTimes(1)
+    expect(updateVidaItem.mutate.mock.calls[0][0]).toEqual({
+      id: 'v1',
+      days: ['monday', 'wednesday', 'friday'],
+      isActive: true,
+      startTime: '09:15',
+      durationMinutes: 30,
+    })
+  })
+
+  it('con días y sin hora se guarda igual: las dos son opcionales (criterio 5)', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+
+    await user.type(screen.getByLabelText('Cómo la llamas'), 'Leer')
+    await user.click(screen.getByRole('button', { name: 'Casa' }))
+    await user.click(screen.getByRole('switch', { name: /Ponerla en mi plantilla/ }))
+    await user.click(screen.getByRole('button', { name: 'martes' }))
+    await user.click(screen.getByRole('button', { name: 'Crear' }))
+
+    act(() => createActivity.mutate.mock.calls[0][1].onSuccess(buildActivity()))
+
+    // Ni error ni campos señalados: un ítem sin hora es legal.
+    expect(createVidaItem.mutate.mock.calls[0][0]).toEqual({
+      activityId: 'a1',
+      days: ['tuesday'],
+    })
+  })
+
+  it('quitar la hora de un ítem que la tenía manda el null que la limpia', async () => {
+    const user = userEvent.setup()
+    renderSheet({
+      activity: buildActivity(),
+      vidaItem: buildVidaItem({ startTime: '08:00', durationMinutes: 30 }),
+    })
+
+    fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '' } })
+    await user.click(screen.getByRole('button', { name: '30' }))
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    act(() => updateActivity.mutate.mock.calls[0][1].onSuccess(buildActivity()))
+
+    expect(updateVidaItem.mutate.mock.calls[0][0]).toEqual({
+      id: 'v1',
+      days: ['monday', 'wednesday', 'friday'],
+      isActive: true,
+      startTime: null,
+      durationMinutes: null,
     })
   })
 

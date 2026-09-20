@@ -1,7 +1,7 @@
 ---
 id: FEAT-003
 title: Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos
-status: planned
+status: building
 architect: yes    # pantalla nueva sin hermana (agenda con geometría de tiempo), el SDL de Vida cambia, y los ajustes de Vida tocan otra feature
 area: features/vida
 requested: 2026-09-20
@@ -385,7 +385,7 @@ hasta que el API desplegada lleve el cambio**, y eso es de él, no de un agente.
 
 | # | What it does | State |
 |---|---|---|
-| 1 | **La plantilla con hora y duración, y los ajustes de Vida.** Prerrequisito de todo lo demás: SDL recopiado y contratos verdes, tipos y hooks de `vida-items` con `startTime`/`durationMinutes`, la hoja de F1 gana «a qué hora» y «cuánto» (15 · 30 · 45 · 1h · libre), la tarjeta del catálogo los enseña, y una pantalla/hoja de ajustes de Vida con el inicio y el fin del día. Ya es útil sola: la plantilla deja de ser una lista sin orden y pasa a ser un día. | pending |
+| 1 | **La plantilla con hora y duración, y los ajustes de Vida.** Prerrequisito de todo lo demás: SDL recopiado y contratos verdes, tipos y hooks de `vida-items` con `startTime`/`durationMinutes`, la hoja de F1 gana «a qué hora» y «cuánto» (15 · 30 · 45 · 1h · libre), la tarjeta del catálogo los enseña, y una pantalla/hoja de ajustes de Vida con el inicio y el fin del día. Ya es útil sola: la plantilla deja de ser una lista sin orden y pasa a ser un día. | accepted |
 | 2 | **La agenda del día, en solo lectura.** El presupuesto (tiempo que queda, barra del día con la marca de «ahora», leyenda y línea de guía), los bloques del `activityDayPlan` ordenados por hora, los huecos con su tamaño y las sugerencias de la plantilla que caben (sin poder ponerlas aún), apertura en «Ahora», el lateral de escritorio, y todos los estados. Primera vez que el usuario ve su día repartido y dónde tiene sitio. | pending |
 | 3 | **Poner algo en un hueco.** Un toque en una ficha lo coloca al principio del hueco; «+ otra cosa» abre la hoja de tres preguntas (qué · cuánto · cuándo) con lo que no cabe apagado y el «queda libre después»; quitar un bloque y cambiarle hora o duración. Errores de mutación visibles. | pending |
 | 4 | **Cualquier día, no solo hoy.** La tira de 7 días con el punto de «tiene plan», el día en la URL, la ventana de esta semana y la siguiente, el día futuro en trazo suave, el día pasado en solo lectura, «copiar del mismo día pasado» y «vaciar y rehacer». Aquí ya se planea mañana a mano. | pending |
@@ -762,7 +762,7 @@ código vivo y por eso se rescata por función, con test propio, no se restaura.
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **La plantilla con hora y duración, y los ajustes de Vida.** | `graphql/schema/vida.schema.graphql` · `settings/graphql/schema/user-settings.schema.graphql` (N) · `graphql/contracts.test.ts` · `graphql/vida-items.graphql.ts` · `settings/graphql/user-settings.graphql.ts` · `settings/types/user-settings.types.ts` · `types/vida-item.types.ts` · `utils/vida-time.utils.ts` (N) · `hooks/useSaveVidaItemForActivity.ts` · `hooks/useVidaDayHours.ts` (N) · `components/VidaDurationPills/` (N) · `components/VidaActivitySheet/` · `components/VidaActivityCard/` · `pages/VidaAjustesPage.tsx` (N) · `routes/vida-paths.ts` · `routes/vida.routes.tsx` · `layouts/AppLayout/app-nav.config.ts` | 1–10, y la parte de 53–57 que toca la hoja, la tarjeta y los ajustes | pending |
+| 1 | **La plantilla con hora y duración, y los ajustes de Vida.** | `graphql/schema/vida.schema.graphql` · `settings/graphql/schema/user-settings.schema.graphql` (N) · `graphql/contracts.test.ts` · `graphql/vida-items.graphql.ts` · `settings/graphql/user-settings.graphql.ts` · `settings/types/user-settings.types.ts` · `types/vida-item.types.ts` · `utils/vida-time.utils.ts` (N) · `hooks/useSaveVidaItemForActivity.ts` · `hooks/useVidaDayHours.ts` (N) · `components/VidaDurationPills/` (N) · `components/VidaActivitySheet/` · `components/VidaActivityCard/` · `pages/VidaAjustesPage.tsx` (N) · `routes/vida-paths.ts` · `routes/vida.routes.tsx` · `layouts/AppLayout/app-nav.config.ts` | 1–10, y la parte de 53–57 que toca la hoja, la tarjeta y los ajustes | accepted |
 | 2 | **La agenda del día, en solo lectura.** | `utils/vida-agenda.utils.ts` (N) · `hooks/useVidaNowMinute.ts` (N) · `hooks/useVidaDayData.ts` (N) · `components/VidaDayBudget/` (N) · `components/VidaAgendaBlock/` (N) · `components/VidaAgendaGap/` (N) · `components/VidaTemplateAside/` (N) · `pages/VidaHoyPage.tsx` | 11–20, 22, 48 (la mitad «Tu plantilla de \<día\>»), 49–56; **21 solo en su mitad de texto** (ver nota) | pending |
 | 3 | **Poner algo en un hueco.** | `utils/vida-gap-form.utils.ts` (N) · `components/VidaPlaceInGapSheet/` (N) · `components/VidaAgendaGap/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 23–30, y 29/52/56 sobre las mutaciones | pending |
 | 4 | **Cualquier día, no solo hoy.** | `utils/vida-window.utils.ts` (N) · `hooks/useVidaWeekPlans.ts` (N) · `components/VidaDayStrip/` (N) · `components/VidaDayActions/` (N) · `pages/VidaHoyPage.tsx` · `routes/vida-paths.ts` | 31–38 | pending |
@@ -851,8 +851,485 @@ vivo de `src/features/vida/`, `src/features/settings/` y `src/shared/api/`,
 
 ## 3. Construcción — feature-builder
 
-*(pendiente)*
+### Tajada 1 — La plantilla con hora y duración, y los ajustes de Vida
+
+**Resumen para el revisor:**
+1. La plantilla de Vida dejó de ser una bolsa de cosas por día: cada `VidaItem`
+   puede decir **a qué hora** y **cuánto**, se pone desde la hoja del catálogo
+   con las píldoras 15 · 30 · 45 · 1h · libre, se lee en la tarjeta («8:00 ·
+   40 min · L M X J V») y hay una pantalla nueva, `/app/vida/ajustes`, con el
+   inicio y el fin del día sobre `useUserSettings`.
+2. Vive en `src/features/vida/` salvo tres archivos de `src/features/settings/`
+   (SDL vendorizado nuevo, dos campos en el documento y dos en el tipo) y una
+   entrada `settings` para Vida en `src/layouts/AppLayout/app-nav.config.ts`.
+3. **Lo que más probablemente rompí:** `planVidaItemSave` ahora manda
+   **siempre** `startTime` y `durationMinutes` en el `update`, y `null` es lo
+   que los **limpia** en el API. Cualquier futuro caller que no pase los dos
+   campos borrará la hora del ítem sin querer — hoy el único caller es
+   `VidaActivitySheet` y sí los pasa, pero es la trampa de este cambio. Segundo
+   sospechoso: `UserSettings` ganó dos campos **obligatorios** en el tipo, así
+   que todo fixture de ajustes de cualquier feature tiene que traerlos.
+
+**Lo que se construyó**
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/graphql/schema/vida.schema.graphql` | SDL **recopiado literal** del repo hermano (commit `15463da`) con un script, no a mano: se extrae la cadena `gql` de `vidaTypeDefs` y se pega bajo la cabecera, que ahora dice `Copiado: 2026-09-20` y el commit de origen. |
+| `src/features/settings/graphql/schema/user-settings.schema.graphql` (N) | Igual, con `userSettingsTypeDefs`. Autocontenido: solo referencia `DateTime` y hace `extend type Query`/`Mutation`. |
+| `src/features/vida/graphql/contracts.test.ts` | El esquema combinado pasa de tres SDL a cuatro; los dos documentos de ajustes entran en la lista; tres casos nuevos: hora y duración en el tipo y en los dos inputs, el horario de Vida anulable en `UserSettings`, y «dientes» sobre `UserSettings`. |
+| `src/features/vida/graphql/vida-items.graphql.ts` | `startTime` y `durationMinutes` dentro de `VIDA_ITEM_FIELDS`: entran en un sitio y los heredan las cuatro consultas y mutaciones, **incluida** `VIDA_SUGGESTIONS_FOR_DATE_QUERY` (lo que necesita el criterio 18 de la tajada 2). |
+| `src/features/settings/graphql/user-settings.graphql.ts`, `types/user-settings.types.ts` | `vidaDayStartTime` / `vidaDayEndTime` en las dos selecciones, en `UserSettings` (obligatorios, `string \| null`) y en `UpdateUserSettingsInput` (opcionales). |
+| `src/features/vida/types/vida-item.types.ts` | `startTime: string \| null` y `durationMinutes: number \| null` en `VidaItem`; opcionales en los dos inputs, documentando que **`null` limpia** en update y que la duración es entero > 0. |
+| `src/features/vida/utils/vida-time.utils.ts` (+ `.test.ts`, 15 casos) | El rescate de `79bece0` función por función: `normalizeTimeForDisplay/ForApi`, `parseTimeToMinutes`, `minutesToTime`, `isValidHhMm`, `isEndAfterStart`, `calculateEndTime`, `formatDurationFromMinutes`, `formatDurationMinutes`, `formatTimeForDisplay`, y las constantes `DURATION_PILLS`, `DEFAULT_BLOCK_MINUTES`, `MIN_GAP_MINUTES`, `VIDA_DAY_START_FALLBACK`, `VIDA_DAY_END_FALLBACK`. Archivo **hermano** de `vida-date.utils.ts`. |
+| `src/features/vida/hooks/useSaveVidaItemForActivity.ts` (+ test, 6 casos nuevos) | `SaveVidaItemForActivityInput` gana los dos campos; se comparan para decidir `nothing`; al **crear** no se manda lo que no hay, al **actualizar** se manda `null` explícito para limpiar. Las tres reglas de FEAT-002 siguen idénticas. |
+| `src/features/vida/components/VidaDurationPills/` (N, 8 tests) | 15 · 30 · 45 · 1h · libre; «libre» abre un campo en minutos; `maxMinutes` apaga lo que no cabe y lo dice (lo reutiliza la tajada 3). Volver a tocar la elegida la quita: la duración es opcional. |
+| `src/features/vida/components/VidaActivitySheet/` (+ `.module.scss`, 5 tests nuevos) | Dentro del bloque «Ponerla en mi plantilla», tras la fila de días: «A qué hora» (`Input type="time"`) y `VidaDurationPills`. `TemplateDraft` crece a cuatro campos y los cuatro se **derivan** de `vidaItem` —nada de `useEffect`—, con un único `patchTemplate`. |
+| `src/features/vida/components/VidaActivityCard/` (+ `.module.scss`, 3 tests nuevos) | «8:00 · 40 min ·» antes de las siete letras. Sin hora: «sin hora» subrayado, que **abre la hoja** (`onEdit`). La línea envuelve con `flex-wrap` y trunca. |
+| `src/features/vida/hooks/useVidaDayHours.ts` (+ test, 7 casos) (N) | Envoltorio de lectura sobre `useUserSettingsQuery`: `{ startTime, endTime, isDefault, saved, isPending, isError, isDisabled }` con los respaldos 06:30 / 23:00. **Única fuente** de los criterios 9 y 50. |
+| `src/features/vida/pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`, 12 tests) (N) | Dos campos y nada más, validación «fin posterior a inicio», `Alert` de error sin perder lo escrito y la frase de «es el valor por defecto». |
+| `src/features/vida/routes/vida-paths.ts`, `routes/vida.routes.tsx` (+ test) | `ajustes: '/app/vida/ajustes'` y su ruta. |
+| `src/layouts/AppLayout/app-nav.config.ts` (+ los dos tests de `layouts`) | Bloque `settings` para el módulo `vida` con **una** entrada, «Ajustes de Vida», icono `sliders`. De ahí salen el popover «Ajustes» del módulo y `⌘K`: una sola fuente. |
+
+**Por qué así, y qué se descartó**
+
+- **El SDL se recopió con un script**, extrayendo la cadena `gql` del commit
+  `15463da` con una expresión regular, precisamente para no editarlo campo por
+  campo: el riesgo conocido de este arnés es que alguien «arregle» el SDL a mano
+  para que pase un test.
+- **El SDL de ajustes se valida en `contracts.test.ts` de Vida y no en un arnés
+  propio de `settings/`**, como mandaba el plan: los bloques base (`type Query`,
+  `type Mutation`, escalares) viven solo en `activity.schema.graphql` y un test
+  propio tendría que inventárselos. Queda dicho en la cabecera del test.
+- **Desviación del plan, pequeña y a propósito:** `vida-time.utils.ts` exporta
+  **dos** formateadores de duración, no uno. `formatDurationFromMinutes` es la
+  forma corta del render («2h 30», «45m») y la usará la agenda; pero el
+  criterio 6 pide literalmente «8:00 · **40 min**» en la tarjeta, así que se
+  rescató también `formatDurationMinutes` (la forma larga) para ese sitio. Son
+  siete líneas y evitan que la tarjeta contradiga su criterio.
+- **Segunda desviación:** el plan no pedía `formatTimeForDisplay`. Existe porque
+  los renders de Vida escriben «8:00» y no «08:00», y esa decisión tiene que
+  estar en un solo sitio antes de que la tajada 2 pinte cincuenta horas.
+- **`planVidaItemSave` recibe los dos campos como obligatorios**, no opcionales.
+  Opcionales habrían dejado los tests de FEAT-002 intactos, pero un caller que
+  se olvidara de pasarlos **limpiaría** la hora del ítem en silencio. Con el
+  tipo obligatorio, el compilador lo caza. El precio es que los `toEqual` de dos
+  tests de FEAT-002 crecieron con `startTime: null, durationMinutes: null`: las
+  reglas no cambiaron, el payload sí, y está comentado en el test.
+- **Apagar el interruptor no limpia la hora ni la duración.** Se quedan donde
+  están, igual que los días y la nota (criterio 20 de FEAT-002). Hay un test.
+- **`UserSettings` gana los dos campos como obligatorios en el tipo** (`string
+  \| null`) porque el documento los pide siempre: hacerlos opcionales habría
+  dejado pasar un fixture incompleto sin que nadie se enterara. Eso obligó a
+  tocar los fixtures de `VidaItem` de siete archivos de test, todos mecánicos.
+- **Los dos tests que afirmaban «Vida no tiene ajustes de módulo»**
+  (`app-nav.config.test.ts:126` y `AppLayout.test.tsx:106`) **se invirtieron**:
+  ahora comprueban que hay exactamente una entrada y que apunta a
+  `vidaPaths.ajustes`. Era una afirmación de F0 que esta tajada deroga por
+  criterio 7, no un test que estorbara.
+- **`vida.routes.test.tsx` mockea `useUserSettings`** además de
+  `useVidaQueryGuard`: la pantalla de ajustes llega al contexto de sesión por
+  `useAuthBootstrap`, que ese arnés no monta. Se devuelve la consulta
+  deshabilitada, que es el «sin sesión» del resto.
+- **Nada de lo prohibido:** ni normalizador de texto nuevo (sigue habiendo
+  cuatro copias, hallazgo abierto de FEAT-002, y aquí **no crece**), ni arreglo
+  de `Popover`, ni `--color-text-muted` —todo lo nuevo que hay que leer usa
+  `--color-text-secondary`—, ni iconos importados a pelo de Font Awesome, ni
+  clave de caché nueva, ni hook de ajustes nuevo.
+
+**Verificación**
+
+Línea base (antes de empezar, los tres enteros):
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)
+pnpm test       → Test Files 1 failed | 76 passed (77) · Tests 2 failed | 645 passed (647)
+                  (SearchSelect ×2, preexistentes)
+```
+
+Al cerrar:
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   (los mismos 14)
+pnpm test       → Test Files 1 failed | 80 passed (81) · Tests 2 failed | 706 passed (708)
+                  (los mismos 2 de SearchSelect; +61 tests nuevos, 0 fallos nuevos)
+pnpm build      → index 861,01 kB · app-icons 620,20 kB (perezoso) · IconPicker 4,64 kB
+```
+
+El chunk inicial pasa de **853,2 kB a 861,01 kB (+7,8 kB)**: es la pantalla
+nueva, el componente de píldoras y las utilidades de hora. **No crece por
+iconos** — `app-icons` sigue en 620,20 kB perezoso y `IconPicker` en 4,64 kB,
+que es lo que pedía el criterio 57.
+
+Arnés temporal (`src/harness-feat003-t1/`, `.html` + `.tsx`, `MemoryRouter`,
+datos sintéticos, **borrado**; `git status` ya no lo lista) servido por el Vite
+del usuario en `http://localhost:5173`. Con él, a 375 px:
+
+- La tarjeta con «8:00 · 40 min · L M X J V S D» y otra con un nombre de 63
+  caracteres y «sin hora ·»: `document.documentElement.scrollWidth` **375** =
+  `clientWidth` **375**, y `scrollWidth - clientWidth` de las dos tarjetas = **0**.
+  El nombre largo trunca con elipsis y las casillas bajan de línea.
+- La hoja abierta: «A qué hora», las cinco píldoras y el campo de minutos caben,
+  y «Guardar» se ve sin hacer scroll dentro de la hoja.
+- Los ajustes: los dos campos y la frase «06:30 y 23:00 son el horario por
+  defecto: todavía no has elegido el tuyo».
+
+Contrastes medidos en el DOM (componiendo el alfa de cada capa; AA pide 4,5:1):
+
+| Qué | Claro | Oscuro |
+|---|---|---|
+| Tarjeta «8:00 · 40 min» | 16,38:1 | 17,57:1 |
+| Tarjeta «sin hora» | 16,38:1 | 17,57:1 |
+| Píldora apagada («15») | 7,34:1 | 6,66:1 |
+| Píldora elegida («libre») | 5,45:1 | 11,56:1 |
+| Ajustes, «es el valor por defecto» | 7,44:1 | 8,59:1 |
+
+**Criterios que cierra, uno por uno**
+
+- **1 — cerrado.** SDL recopiado de `15463da` con fecha y origen en la cabecera;
+  `VIDA_ITEM_FIELDS` pide los dos campos; el SDL de ajustes es nuevo y sus dos
+  documentos entran en la lista de `contracts.test.ts`.
+  `pnpm test src/features/vida/graphql/contracts.test.ts` → **73 passed**.
+- **2 — cerrado.** Tipos con los dos campos; `planVidaItemSave` los propaga al
+  crear y al actualizar. Los tres tests de FEAT-002 (no crear un segundo ítem,
+  reactivar el desactivado, no llamar si nada cambió) siguen verdes, más
+  «misma hora y misma duración: sigue sin haber viaje».
+- **3 — cerrado.** Test «con el interruptor encendido aparecen “a qué hora” y
+  las píldoras» (`type="time"` + 15 · 30 · 45 · 1h · libre) y «al crear, la hora
+  y la duración elegidas llegan al `VidaItem`» (`{ startTime: '08:00',
+  durationMinutes: 45 }`). «libre» abre el campo en minutos: test propio del
+  componente. **Con una salvedad, abajo en riesgos: el formato que *pinta* un
+  `input type="time"` lo decide el navegador, no nosotros.**
+- **4 — cerrado.** Test «editando, la hora y la duración vienen puestas y
+  actualizan EL MISMO ítem»: `createVidaItem.mutate` no se llama,
+  `updateVidaItem.mutate` una vez con `{ id: 'v1', … }`. Lo de «sin recargar» lo
+  sostiene la invalidación de F0, que no se tocó.
+- **5 — cerrado.** Test «con días y sin hora se guarda igual»: el payload es
+  `{ activityId, days }` y no hay error ni campo señalado. Los ítems de F1
+  (`startTime: null`) siguen siendo válidos: son los fixtures de todos los demás
+  tests.
+- **6 — cerrado.** Tres tests de la tarjeta: con hora y duración se lee
+  «8:00 · 40 min»; con hora y sin duración **no se inventa** ninguna; sin hora se
+  lee «sin hora» y tocarlo llama a `onEdit` (abre la hoja). Visto también en el
+  arnés a 375 px.
+- **7 — cerrado.** `/app/vida/ajustes`, en el popover «Ajustes» del módulo
+  (`app-nav.config.ts`, una sola fuente, también `⌘K`). Test: los dos campos son
+  `type="time"` y **no hay ningún otro control** (`textbox`, `switch` y
+  `spinbutton` a cero).
+- **8 — cerrado en lo que se puede desde aquí.** Test: guardar llama a
+  `updateMySettings` con **exactamente** `{ vidaDayStartTime, vidaDayEndTime }`.
+  «Al salir y volver se ve lo guardado» lo sostiene
+  `useUpdateUserSettingsMutation`, que escribe la respuesta en
+  `settingsKeys.my()` y no se tocó; hay un test que simula esa vuelta. **La ida y
+  vuelta real contra el API es del criterio 58.**
+- **9 — cerrado.** Con los dos nulos se ven 06:30 y 23:00 y se lee «06:30 y 23:00
+  son el horario por defecto: todavía no has elegido el tuyo». Con horario
+  guardado, el suyo y sin esa frase. Siete tests más en `useVidaDayHours`,
+  incluido medio horario guardado y un horario imposible.
+- **10 — cerrado.** Fin no posterior al inicio: no se llama a la mutación, sale
+  `role="alert"` con el motivo, el campo queda `aria-invalid` y lo escrito sigue
+  ahí. Dos horas iguales tampoco valen. Con la mutación en error se ve el `Alert`
+  y el valor tecleado no se pierde.
+- **53, 54, 55 — cerrados en la parte que toca esta tajada** (hoja, tarjeta y
+  ajustes): medidas de arriba. La agenda y la vista de semana no existen todavía.
+- **56 — cerrado en esta tajada.** «sin hora» es una invitación con la vía para
+  ponérsela, no un reproche; test de la tarjeta y test de la pantalla de ajustes
+  contra la lista de palabras.
+- **57 — cerrado.** Los cuatro números de arriba, y los dos documentos nuevos en
+  la lista de `contracts.test.ts`.
+
+**Lo que NO pude verificar**
+
+- **El recorrido real (criterio 58).** Está detrás del login y **los agentes no
+  entran con credenciales**; además el API desplegada en Cloud Run todavía puede
+  no llevar `15463da`. Con el SDL recopiado, `pnpm test` está verde mientras una
+  consulta real podría fallar con «campo desconocido»: eso no sería un fallo de
+  esta tajada, sería el despliegue. Pasos al final de esta entrada.
+- **Que `updateMySettings` acepte de verdad los dos campos nuevos.** Se validó
+  contra el SDL vendorizado, no contra el servidor.
+- **Cómo pinta la hora el navegador del usuario.** Ver riesgos.
+
+**Riesgos — dónde mirar primero**
+
+1. **`planVidaItemSave` manda `null` para limpiar.** El `update` lleva ahora
+   siempre los dos campos. Si alguien añade un caller y se olvida de pasarlos,
+   el tipo no compila (son obligatorios), pero si los pasa mal —`''`, `0`— se
+   normalizan a `null` y **borran** la hora del ítem. Está probado, pero es el
+   sitio donde un error se pierde de vista.
+2. **`UserSettings` creció con dos campos obligatorios.** Cualquier fixture de
+   ajustes en cualquier feature tiene que traerlos; el typecheck lo caza, pero
+   si alguien tiene una rama abierta con un fixture de `UserSettings`, chocará.
+3. **El formato visible de «a qué hora» lo decide el navegador.** El criterio 3
+   dice «HH:mm, 24 h» y el **valor** siempre lo es —es lo que va al API y lo que
+   comprueban los tests—, pero un `input type="time"` **pinta** en el formato del
+   idioma del navegador: en el navegador de verificación (`en-US`) se lee
+   «06:30 AM». Forzar 24 h exigiría un control propio, que no estaba en el plan
+   y no lo decido yo. **Queda anotado para el revisor y para el usuario**: si se
+   quiere 24 h siempre, es un cambio con su propia decisión.
+4. **Los dos tests de `layouts` invertidos.** Si alguien esperaba que Vida no
+   tuviera popover de ajustes, ahora lo tiene. Es el criterio 7, pero toca la
+   barra, que es compartida con hábitos.
+5. **El bloque de plantilla de la hoja creció a cuatro campos derivados.** La
+   regla de «derivar, no copiar con `useEffect`» se mantuvo y hay un único
+   `patchTemplate`, pero es el código con más historia de FEAT-002 y donde un
+   fallo sería sutil: el síntoma sería la hoja mintiendo sobre lo guardado.
+
+**Lo que descubrí y no toqué** (no es de esta tajada)
+
+- **`useUpdateUserSettingsMutation` invalida `habitKeys.all` con
+  `refetchType: 'all'`** en cada guardado. Guardar el horario de Vida refresca
+  todas las consultas de hábitos sin necesidad. No lo toco: es de
+  `features/settings` y lo usa la pantalla de cuenta.
+- **El SDL de `UserSettings` tiene 12 campos y el documento pide 8.** Los cuatro
+  que faltan (`habitReminderEnabled`, `habitReminderTime`,
+  `dayStartReminderEnabled`, `dayStartReminderTime`, `houseworkActivityId`) no
+  los usa nadie en la web. Queda anotado, no se piden.
+- **`vidaSuggestionsForDate` ya devuelve hora y duración** dentro de `item` sin
+  tocar nada más, porque el documento hereda `VIDA_ITEM_FIELDS`. La tajada 2 se
+  lo encuentra hecho.
+
+**Pasos del recorrido manual** (usuario, con sesión y **con el API desplegada**)
+
+1. `/app/vida/actividades` → «···» de una actividad que ya esté en la plantilla
+   → **Editar**. El interruptor viene encendido y los días marcados.
+2. Poner «A qué hora» = `08:00` y tocar la píldora **45**. Guardar.
+3. La tarjeta tiene que leerse **«8:00 · 45 min · L M X J V»** sin recargar.
+4. Volver a **Editar**: la hora y la duración vienen puestas. Cambiar a
+   `09:15` y **libre → 50**. Guardar. La tarjeta dice «9:15 · 50 min».
+5. Crear una actividad nueva con el interruptor encendido, **un día y sin hora**:
+   tiene que guardarse igual, y la tarjeta leer «sin hora · …».
+6. Tocar **«sin hora»** en la tarjeta: abre la hoja.
+7. Píldora **«Ajustes»** del módulo Vida (o `⌘K` → «Ajustes de Vida») →
+   `/app/vida/ajustes`. La primera vez se lee que 06:30 y 23:00 son el valor por
+   defecto.
+8. Poner fin **anterior** al inicio y Guardar: no guarda, señala y lo dice.
+9. Poner `07:00` / `22:30` y Guardar. Salir a Hoy y volver: siguen puestos y ya
+   no aparece la frase del valor por defecto.
+
+**Estado del árbol: sin commitear.** El arnés temporal está borrado. `graphify
+update .` corrido (2.821 nodos, 3.041 aristas).
 
 ## 4. Revisión — feature-reviewer
 
-*(pendiente)*
+### Tajada 1 — La plantilla con hora y duración, y los ajustes de Vida
+
+**Veredicto: `accepted`.** Los diez criterios de la tajada se comprueban contra
+la sección 1 literal, no contra el resumen del constructor; la línea base no
+empeora; el caso que más podía romper —que editar solo los días borrara la hora
+de un ítem que ya la tenía— **no se cumple: la hora y la duración sobreviven**,
+y lo comprobé con un arnés propio, no leyendo los tests de quien lo construyó.
+Quedan **cuatro hallazgos** anotados abajo (ninguno devuelve la tajada) y el
+recorrido real del criterio 58, que sigue siendo del usuario y además necesita
+el API desplegada.
+
+**Cómo verifiqué** (todo con el árbol tal como lo dejó el constructor, sin
+tocar código de producto):
+
+- `npx vitest run src/features/vida src/features/settings src/layouts` →
+  **25 archivos, 299 tests, 0 fallos**.
+- `pnpm typecheck` → limpio. `pnpm lint` → **14 errores / 0 warnings** (los
+  mismos preexistentes). `pnpm test` → **2 fallos de 708**, los dos de
+  `SearchSelect`. Coincide con la línea base del `ENVIRONMENT.md`.
+- **Arnés de revisión propio**: `src/revision-feat003-tajada1.test.tsx`
+  (7 casos, montando `VidaActivitySheet` de verdad con las mutaciones
+  mockeadas). **Los 7 pasaron** y el archivo está **borrado**; su contenido está
+  resumido aquí, caso por caso, para que se pueda rehacer.
+- **El SDL vendorizado contra su origen real**: extraje la cadena `gql` de
+  `git show 15463da:src/graphql/modules/vida/vida.schema.ts` y de
+  `…/user-settings/user-settings.schema.ts` en `~/Developer/xavi-platform-node`
+  y las comparé carácter a carácter con los dos `.graphql` de este repo
+  (ignorando la cabecera de comentarios): **idénticas**. No es «parece copiado»:
+  es copiado.
+
+**Criterios, uno por uno**
+
+- **1 — cumplido.** SDL recopiado y **verificado contra el repo hermano**
+  (arriba); cabecera con `Copiado: 2026-09-20` y el commit `15463da`.
+  `VIDA_ITEM_FIELDS` pide `startTime` y `durationMinutes`; el SDL de ajustes es
+  nuevo y sus dos documentos están en la lista de `contracts.test.ts`.
+- **2 — cumplido.** `VidaItem` lleva los dos campos; `planVidaItemSave` los
+  propaga al crear y al actualizar. Las tres reglas de FEAT-002 siguen vivas y
+  las comprobé además de lado: **editar solo el nombre de una actividad cuyo
+  ítem ya tenía hora no llama a ninguna mutación de plantilla** (plan
+  `nothing`), así que la hora no viaja ni se limpia por un guardado que no la
+  tocaba.
+- **3 — cumplido, con un hallazgo de formato.** Con el interruptor encendido
+  aparecen «A qué hora» (`input type="time"`) y las píldoras 15 · 30 · 45 · 1h ·
+  libre; «libre» abre el campo en minutos; lo elegido llega al `VidaItem`. El
+  **valor** es siempre `HH:mm` 24 h. Lo que **pinta** el control lo decide el
+  idioma del navegador (hallazgo 1).
+- **4 — cumplido.** Editando, la hora y la duración vienen puestas y se
+  actualiza **el mismo** ítem (`updateVidaItem` una vez con `id: 'v1'`,
+  `createVidaItem` ninguna). «Sin recargar» lo sostiene la invalidación de F0,
+  que no se tocó.
+- **5 — cumplido, y comprobado en los cuatro cruces.** Con días y sin hora se
+  guarda (`{ activityId, days }`). **Con hora y sin duración** el payload es
+  `{ activityId, days, startTime: '07:10' }` — no se inventa duración ni se
+  bloquea. **Con duración y sin hora**, `{ activityId, days, durationMinutes:
+  15 }`. Y un ítem de F1 (`startTime: null`) abre la hoja con el campo vacío,
+  ninguna píldora pulsada, y al marcar un día más se guarda con `startTime:
+  null, durationMinutes: null`: los ítems viejos siguen siendo legales.
+- **6 — cumplido.** La tarjeta lee «8:00 · 40 min ·» delante de las siete
+  casillas; con hora y sin duración no inventa ninguna; sin hora lee «sin hora»
+  como **botón subrayado que llama a `onEdit`**, es decir, abre la hoja. No se
+  pinta ninguna hora inventada.
+- **7 — cumplido.** `/app/vida/ajustes` con exactamente dos campos (el test
+  cuenta `textbox`, `switch` y `spinbutton` a cero), colgando del bloque
+  `settings` del módulo `vida` en `app-nav.config.ts` — **una sola fuente**: de
+  ahí salen el popover «Ajustes» del módulo (comprobado en `AppLayout.test.tsx`)
+  y `⌘K` (`createCommandActions` junta `sections` + `settings`,
+  `app-nav.config.ts:163`).
+- **8 — cumplido hasta donde llega un agente.** Guardar llama a
+  `updateMySettings` con **exactamente** `{ vidaDayStartTime, vidaDayEndTime }`,
+  sobre `useUpdateUserSettingsMutation` tal cual; no hay hook ni clave nueva. La
+  ida y vuelta real contra el API es del criterio 58.
+- **9 — cumplido.** Con los dos nulos se ven 06:30 y 23:00 y se lee «06:30 y
+  23:00 son el horario por defecto: todavía no has elegido el tuyo». Con horario
+  guardado, el suyo y sin la frase. `useVidaDayHours` además **no se fía de un
+  horario roto**: medio horario o un fin anterior al inicio caen al respaldo y
+  se declaran respaldo.
+- **10 — cumplido.** Fin no posterior al inicio (y dos horas iguales): no se
+  llama a la mutación, sale un `role="alert"` con el motivo, los campos quedan
+  `aria-invalid` y **lo escrito sigue ahí**. Con la mutación en error se ve un
+  `Alert` que dice que lo puesto sigue ahí, y el borrador no se suelta.
+- **53, 54 — cumplidos en lo que toca esta tajada, con matiz de método.** La
+  medición a 375 px es la del constructor (arnés ya borrado); yo la respaldo
+  leyendo el CSS, que es donde estaría el fallo: `flex-wrap` + `min-width: 0` +
+  `text-overflow: ellipsis` en la línea de la tarjeta, la hoja en columna, los
+  dos campos de ajustes apilados hasta 30rem, y ni un ancho fijo salvo el campo
+  de minutos (5,5rem). El test de la tarjeta con un nombre de 60 caracteres está
+  y pasa. **No repetí la medida en navegador**: queda dicho, no disimulado.
+- **55 — no verificado por mí.** Los contrastes en oscuro son los que midió el
+  constructor. Lo que sí comprobé es la regla de la que salen: nada nuevo usa
+  `--color-text-muted`; todo lo que hay que leer usa `--color-text-secondary`,
+  y las píldoras encendidas usan `--color-primary-hover` con su razón escrita.
+- **56 — cumplido.** «sin hora» es una invitación con la vía para ponérsela, no
+  un reproche; hay test de lista de palabras en la tarjeta y en la pantalla de
+  ajustes.
+- **57 — cumplido.** Typecheck limpio, lint 14/0, 2 fallos de 708 (los dos de
+  siempre), y los dos documentos nuevos en la lista de `contracts.test.ts`. El
+  chunk inicial (861,01 kB, +7,8 kB) es la pantalla nueva y las utilidades: el
+  criterio pide que **no crezca por iconos**, y `app-icons` sigue en 620,20 kB
+  perezoso.
+- **58 — pendiente, y no es de un agente.** Está detrás del login y además
+  necesita `15463da` desplegado en Cloud Run. Los pasos están al final de la
+  sección 3.
+
+**El contrato tiene dientes de verdad**
+
+El criterio 1 se apoya entero en `contracts.test.ts`, así que comprobé que **no
+es un test que pase siempre**: construí el esquema con el SDL vendorizado
+**mutilado** —quitando `startTime`/`durationMinutes` de `vida.schema.graphql`, y
+`vidaDayStartTime`/`vidaDayEndTime` de `user-settings.schema.graphql`— y validé
+contra él los documentos reales del módulo. En los dos casos salieron errores de
+validación nombrando los campos que faltaban. Es decir: si mañana alguien recopia
+un SDL viejo, los documentos dejan de validar y el test lo canta. (Además, el
+test del constructor afirma los campos sobre el texto del SDL, que es la segunda
+red.)
+
+**Lo que pudo romperse cerca, y cómo lo busqué**
+
+- **`graphify explain "planVidaItemSave"` y `explain "useSaveVidaItemForActivity"`**:
+  el único llamador vivo es `VidaActivitySheet`. Lo confirmé abriendo el árbol
+  (`grep -rln` sobre `src/` sin tests): `VidaActivitySheet.tsx` y nada más. El
+  riesgo número 1 del constructor —que el `update` manda siempre los dos campos
+  y `null` limpia— **existe pero está contenido**: el tipo obliga a pasarlos y el
+  único llamador los deriva del propio `vidaItem`. El caso concreto que más me
+  preocupaba, **editar solo los días**, lo probé de punta a punta: ítem con
+  `08:00` y 45 min, marco «martes», guardo → `{ id: 'v1', days: [...4 días],
+  isActive: true, startTime: '08:00', durationMinutes: 45 }`. No se borra nada.
+- **`UserSettings` ganó dos campos obligatorios.** Consumidores en `src/`:
+  `user-settings.api.ts`, `settings/index.ts`, `SettingsPage.tsx`, y lo nuevo de
+  Vida. `pnpm typecheck` limpio dice que ningún fixture ni pantalla se quedó
+  corto; `SettingsPage` (la cuenta) no construye el objeto, lo consume. Nada roto.
+- **FEAT-002 (catálogo, archivar, categorías).** Los 25 archivos de test de
+  `features/vida` pasan, incluidos `VidaActividadesPage`, `VidaArchivadasPage`,
+  `VidaCategoriasPage`, `useArchiveActivity` y `vida-catalog.utils`. La tarjeta
+  cambió de estructura interna (ahora la hora y los días van dentro de un
+  contenedor común) pero conserva `role="img"` con «En tu plantilla: …», que es
+  de lo que colgaban los tests de F1/F2.
+- **Hábitos y `layouts`.** `app-nav.config.ts` **solo añade** el bloque
+  `settings` del módulo `vida`: el de hábitos no se toca. Los tests de `⌘K`
+  siguen comprobando que los seis destinos de hábitos están en el mismo orden y
+  delante de todo, y pasan. Los **dos tests invertidos** (`app-nav.config.test.ts`
+  y `AppLayout.test.tsx`) afirmaban «Vida no tiene ajustes de módulo», que es
+  exactamente lo que el **criterio 7 deroga**: la inversión es legítima y ahora
+  afirman algo más fuerte (una entrada, y apunta a `vidaPaths.ajustes`).
+- **Rutas.** `vida.routes.test.tsx` añade `/app/vida/ajustes` a la tabla de
+  títulos y mockea `useUserSettings` porque el arnés no monta `useAuthBootstrap`;
+  el mock devuelve la consulta **deshabilitada**, o sea que esa prueba está
+  recorriendo el estado «sin sesión» de la pantalla, que es el que pide el
+  criterio 51. Las cuatro rutas de F0/F1 siguen renderizando su título.
+
+**Estados**
+
+- **Sin datos / primera vez:** cubierto — es justo el criterio 9 (nulos → 06:30
+  y 23:00 dichos como valor por defecto).
+- **Cargando:** cubierto en ajustes con esqueleto y **sin pintar las horas por
+  defecto** (criterio 50 adelantado). En la hoja, la plantilla en vuelo sigue
+  bloqueando el bloque entero, y el de hora y duración vive dentro de esa guarda.
+- **Error:** cubierto en los dos sentidos — error al **cargar** (Alert y aun así
+  se puede escribir y guardar) y error al **guardar** (Alert, no se pierde lo
+  escrito, no se cierra nada).
+- **Sin permisos / sin sesión:** cubierto en ajustes con mensaje y botón de
+  entrar; nada de spinner eterno.
+- **Texto largo:** cubierto en la tarjeta (60 caracteres, truncado).
+- **Móvil 375 px:** medido por el constructor, respaldado por mí leyendo el CSS;
+  **no repetido en navegador** (hallazgo de método, no de producto).
+- **Tema oscuro:** los contrastes son los del constructor; yo solo verifiqué la
+  regla de variables. Entra en el recorrido manual.
+
+**¿Duplica algo que ya existía?** (contra la sección 2)
+
+No. Comprobado uno por uno contra «Lo que NO se crea» y «Dónde NO va»: no hay
+mutación ni documento nuevo del plan del día; **no hay hook de ajustes nuevo**
+(`useVidaDayHours` es lectura sobre `useUserSettingsQuery`) ni clave de caché
+nueva; ni invalidación nueva; ni componente de `shared/ui` nuevo; ni quinto
+normalizador de texto; ni iconos de Font Awesome a pelo; las utilidades de hora
+van en `vida-time.utils.ts` **hermano** de `vida-date.utils.ts`, no dentro; los
+ajustes van en `/app/vida/ajustes` y no en `/app/settings` ni en una hoja;
+`/app/vida/categorias` no se movió; `Popover` y `--color-text-muted` siguen sin
+tocarse. Las dos desviaciones que el constructor declara —dos formateadores de
+duración y `formatTimeForDisplay`— son **siete líneas cada una**, están
+justificadas por el texto literal del criterio 6 y por los renders, y no
+duplican nada vivo: no existía aritmética de tiempo en `src/`.
+
+**Hallazgos (no devuelven la tajada, quedan escritos)**
+
+1. **El formato que pinta «A qué hora» lo decide el navegador.** El criterio 3
+   dice «HH:mm, 24 h»; el **valor** siempre lo es, pero un `input type="time"`
+   en un navegador `en-US` se lee «06:30 AM». Es el primer `type="time"` del
+   repo, así que no hay precedente que seguir. Forzar 24 h siempre sería un
+   control propio: **es una decisión del usuario**, no del revisor. Lo mismo
+   aplica a los dos campos de `/app/vida/ajustes`.
+2. **`useUpdateUserSettingsMutation` invalida `habitKeys.all` con
+   `refetchType: 'all'`.** Guardar el horario de Vida refresca todas las
+   consultas de hábitos. Lo vio el constructor y no lo tocó, y hace bien: es de
+   `features/settings` y lo comparte la pantalla de cuenta. Merece su propio
+   dossier si molesta.
+3. **El SDL vendorizado de `UserSettings` tiene 12 campos y el documento pide
+   8.** Correcto y deliberado: el SDL es copia literal y el documento pide lo que
+   usa. No es deuda, es la forma del arnés; queda dicho para que nadie lo
+   «arregle».
+4. **Mi medición de 375 px y de tema oscuro es de segunda mano.** El arnés del
+   constructor ya estaba borrado (como manda el protocolo) y rehacerlo habría
+   consumido la revisión entera. Lo digo en vez de firmarlo: el recorrido manual
+   del usuario es quien lo cierra de verdad.
+
+**Lo que no revisé**
+
+- El recorrido real con sesión (criterio 58) y la ida y vuelta contra el API
+  desplegada: **están fuera del alcance de un agente en este proyecto**.
+- La apariencia real en móvil y en oscuro, por lo dicho en el hallazgo 4.
+- Las tajadas 2 a 5: no existen todavía.
+
+---
+
+*Revisado por `feature-reviewer` el 2026-09-20. Fuentes: la sección 1 entera y
+literal, la sección 2 («Lo que NO se crea» y «Dónde NO va»), la entrada de la
+tajada 1 de la sección 3, `docs/features/PROTOCOL.md`,
+`docs/features/ENVIRONMENT.md`, el árbol sin commitear, `graphify explain`,
+`git show 15463da:…` en `~/Developer/xavi-platform-node`, y un arnés de revisión
+propio de 7 casos ya borrado.*
+

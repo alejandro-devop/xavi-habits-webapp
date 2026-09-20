@@ -5,7 +5,8 @@
 #
 # Origen : xavi-platform-node/src/graphql/modules/vida/vida.schema.ts
 #          (la cadena `gql` de `vidaTypeDefs`, copiada literal)
-# Copiado: 2026-09-19
+# Copiado: 2026-09-20 (commit 15463da del repo hermano: hora y duración en la
+#          plantilla)
 #
 # Aquí no se añade nada: este módulo hace `extend type Query`/`extend type
 # Mutation` y referencia `Activity` y `DateTime`, que aporta
@@ -31,6 +32,14 @@
     userId: Int!
     activityId: ID!
     days: [VidaDayOfWeek!]!
+    """
+    Hora local de inicio, formato HH:mm. Null mientras el ítem no tenga hora.
+    """
+    startTime: String
+    """
+    Duración en minutos (entero positivo). Null mientras el ítem no tenga duración.
+    """
+    durationMinutes: Int
     notes: String
     isActive: Boolean!
     orderIndex: Int!
@@ -78,6 +87,14 @@
   input VidaItemCreateInput {
     activityId: ID!
     days: [VidaDayOfWeek!]!
+    """
+    Hora local de inicio, formato HH:mm. Opcional.
+    """
+    startTime: String
+    """
+    Duración en minutos (entero positivo). Opcional.
+    """
+    durationMinutes: Int
     notes: String
     orderIndex: Int
     """UUID v7 del cliente para idempotencia offline."""
@@ -87,6 +104,14 @@
   input VidaItemUpdateInput {
     id: ID!
     days: [VidaDayOfWeek!]
+    """
+    Hora local HH:mm (o null para limpiar).
+    """
+    startTime: String
+    """
+    Duración en minutos, entero positivo (o null para limpiar).
+    """
+    durationMinutes: Int
     notes: String
     isActive: Boolean
     orderIndex: Int

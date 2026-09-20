@@ -86,6 +86,8 @@ const archivedItem: VidaItem = {
   userId: 1,
   activityId: 'a1',
   days: ['monday', 'friday'],
+  startTime: null,
+  durationMinutes: null,
   notes: 'después de comer',
   isActive: false,
   orderIndex: 0,

@@ -46,6 +46,8 @@ const vidaItem: VidaItem = {
   userId: 1,
   activityId: 'a1',
   days: ['monday', 'wednesday', 'friday'],
+  startTime: null,
+  durationMinutes: null,
   notes: null,
   isActive: true,
   orderIndex: 0,
@@ -84,6 +86,33 @@ function findConfirmDialog() {
 }
 
 describe('VidaActivityCard', () => {
+  // ── FEAT-003, tajada 1: la plantilla se lee como una agenda ───────────────
+
+  it('enseña la hora y la duración junto a los días (criterio 6)', () => {
+    renderCard({ vidaItem: { ...vidaItem, startTime: '08:00', durationMinutes: 40 } })
+
+    // «8:00», sin cero a la izquierda, y «40 min» — como el criterio.
+    expect(screen.getByText('8:00 · 40 min')).toBeInTheDocument()
+    expect(screen.getByLabelText(/En tu plantilla/)).toBeInTheDocument()
+  })
+
+  it('con hora y sin duración no se inventa ninguna (criterio 6)', () => {
+    renderCard({ vidaItem: { ...vidaItem, startTime: '08:00', durationMinutes: null } })
+
+    expect(screen.getByText('8:00')).toBeInTheDocument()
+    expect(screen.queryByText(/min/)).not.toBeInTheDocument()
+  })
+
+  it('sin hora se lee «sin hora» y esa es la vía para ponérsela (criterio 6)', async () => {
+    const user = userEvent.setup()
+    const onEdit = vi.fn()
+    renderCard({ vidaItem, onEdit })
+
+    const link = screen.getByRole('button', { name: /sin hora/ })
+    await user.click(link)
+    expect(onEdit).toHaveBeenCalledTimes(1)
+  })
+
   it('pinta siete casillas L M X J V S D y marca las del VidaItem activo', () => {
     const { container } = renderCard({ vidaItem })
 

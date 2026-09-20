@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CreateVidaCategoryStep } from '@/features/vida/components/CreateVidaCategoryStep'
+import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
 import { useCreateActivityMutation, useUpdateActivityMutation } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import { useSaveVidaItemForActivity } from '@/features/vida/hooks/useSaveVidaItemForActivity'
@@ -10,6 +11,7 @@ import {
   VIDA_DAY_ORDER,
   VIDA_DAY_SHORT_LABELS,
 } from '@/features/vida/utils/vida-date.utils'
+import { normalizeTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
@@ -23,6 +25,10 @@ import styles from './VidaActivitySheet.module.scss'
 type TemplateDraft = {
   inTemplate: boolean
   days: VidaDayOfWeek[]
+  /** `HH:mm` o `''` si no tiene hora: es lo que da y toma un `input type="time"`. */
+  startTime: string
+  /** Minutos, o `null` si no tiene duración. */
+  durationMinutes: number | null
 }
 
 type VidaActivitySheetProps = {
@@ -49,7 +55,8 @@ type VidaActivitySheetProps = {
 /**
  * La hoja de crear y editar una actividad. Dos campos obligatorios —cómo la
  * llamas y a qué categoría pertenece, que es quien le da el icono y el color— y
- * un bloque opcional: ponerla en tu plantilla con los días que suele tocar.
+ * un bloque opcional: ponerla en tu plantilla con los días que suele tocar, **a
+ * qué hora y cuánto** (FEAT-003: la plantilla es una agenda, no una bolsa).
  *
  * Se monta con una `key` por apertura (ver `VidaActividadesPage`): así cada vez
  * que se abre parte limpia sin un efecto que copie las props al estado.
@@ -71,8 +78,10 @@ type VidaActivitySheetProps = {
  * que la plantilla aún viajaba nacía con el interruptor apagado y, al guardar,
  * desactivaba un `VidaItem` que nadie había tocado.
  *
- * Lo que **no** trae: «archivar» (tajada 4). La duración típica no llega nunca:
- * no hay dónde guardarla (D2).
+ * Lo que **no** trae: «archivar» (tajada 4). La hora y la duración **sí**
+ * llegaron, en FEAT-003: el API las guarda en el `VidaItem` y las dos son
+ * opcionales —marcar días sin hora sigue siendo legal y no bloquea el guardado
+ * (criterio 5)—.
  */
 export function VidaActivitySheet({
   open,
@@ -105,6 +114,14 @@ export function VidaActivitySheet({
   // `VidaItem` desactivado es justo lo contrario (criterio 20).
   const inTemplate = templateDraft?.inTemplate ?? Boolean(vidaItem?.isActive)
   const days = templateDraft?.days ?? vidaItem?.days ?? []
+  // La hora y la duración se derivan igual que los días: nada de `useEffect`.
+  // El API devuelve `HH:mm`, pero normalizamos por si alguna vez trae segundos:
+  // un `input type="time"` con `08:00:00` se queda vacío sin decir nada.
+  const startTime =
+    templateDraft?.startTime ??
+    (vidaItem?.startTime ? normalizeTimeForDisplay(vidaItem.startTime) : '')
+  const durationMinutes =
+    templateDraft !== null ? templateDraft.durationMinutes : (vidaItem?.durationMinutes ?? null)
   // Editando y con la plantilla en vuelo, lo que hay **no se sabe**. Al crear no
   // hay nada que saber: una actividad que no existe no está en ninguna plantilla.
   const templateUnknown = isTemplatePending && isEditing
@@ -121,20 +138,33 @@ export function VidaActivitySheet({
   const activityFailed = createMutation.isError || updateMutation.isError
   const templateFailed = templateSave.isError
 
+  /** Un solo sitio donde nace el borrador: los cuatro campos, siempre juntos. */
+  function patchTemplate(patch: Partial<TemplateDraft>) {
+    setTemplateDraft({ inTemplate, days, startTime, durationMinutes, ...patch })
+  }
+
   function toggleDay(day: VidaDayOfWeek) {
     setDaysError(null)
     const next = days.includes(day) ? days.filter((other) => other !== day) : [...days, day]
-    setTemplateDraft({ inTemplate, days: next })
+    patchTemplate({ days: next })
   }
 
   function toggleTemplate(checked: boolean) {
     setDaysError(null)
-    setTemplateDraft({ inTemplate: checked, days })
+    patchTemplate({ inTemplate: checked })
   }
 
   function saveTemplateFor(target: Activity) {
     templateSave.save(
-      { activityId: target.id, item: vidaItem, inTemplate, days },
+      {
+        activityId: target.id,
+        item: vidaItem,
+        inTemplate,
+        days,
+        // Vacío es «no tiene hora», no un error: el hook ya lo entiende así.
+        startTime: startTime || null,
+        durationMinutes,
+      },
       { onSuccess: onClose },
     )
   }
@@ -324,6 +354,35 @@ export function VidaActivitySheet({
                   {daysError}
                 </p>
               ) : null}
+
+              {/* «A esta hora hago esto, este tiempo»: las dos son opcionales y
+                  guardar sin ellas no se bloquea (criterio 5). */}
+              <div className={styles.schedule}>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="vida-activity-start-time">
+                    A qué hora <span className={styles.labelHint}>· opcional</span>
+                  </label>
+                  <Input
+                    id="vida-activity-start-time"
+                    type="time"
+                    value={startTime}
+                    disabled={isMutating}
+                    onChange={(event) => patchTemplate({ startTime: event.target.value })}
+                  />
+                </div>
+
+                <div className={styles.field}>
+                  <span className={styles.label} id="vida-activity-duration-label">
+                    Cuánto <span className={styles.labelHint}>· opcional, en minutos</span>
+                  </span>
+                  <VidaDurationPills
+                    label="Cuánto dura"
+                    value={durationMinutes}
+                    disabled={isMutating}
+                    onChange={(minutes) => patchTemplate({ durationMinutes: minutes })}
+                  />
+                </div>
+              </div>
             </>
           ) : null}
         </div>

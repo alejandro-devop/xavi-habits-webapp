@@ -18,9 +18,23 @@ import { ToastProvider } from '@/shared/ui/Toast'
  * piden sus mutaciones en el cuerpo del componente —antes de cualquier
  * return— y esas mutaciones avisan con un toast cuando fallan. En la app lo
  * pone `AppProviders`; aquí se monta a mano.
+ *
+ * `useUserSettings` (FEAT-003) se mockea por lo mismo pero un escalón más
+ * abajo: no pasa por `useVidaQueryGuard` sino por `useAuthBootstrap`, que aquí
+ * no está montado. Se devuelve la consulta deshabilitada —`isPending` con
+ * `fetchStatus: 'idle'`—, que es el «sin sesión» del resto de las pantallas.
  */
 vi.mock('@/features/vida/hooks/useVidaQueryGuard', () => ({
   useVidaQueryGuard: () => false,
+}))
+vi.mock('@/features/settings/hooks/useUserSettings', () => ({
+  useUserSettingsQuery: () => ({
+    data: undefined,
+    isPending: true,
+    isError: false,
+    fetchStatus: 'idle',
+  }),
+  useUpdateUserSettingsMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
 
 function renderAt(initialEntry: string) {
@@ -46,6 +60,7 @@ describe('vidaRoutes', () => {
     [vidaPaths.actividades, 'Actividades'],
     [vidaPaths.archivadas, 'Archivadas'],
     [vidaPaths.categorias, 'Categorías'],
+    [vidaPaths.ajustes, 'Ajustes de Vida'],
   ])('%s renderiza el título «%s»', (path, title) => {
     renderAt(path)
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument()

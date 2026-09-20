@@ -206,3 +206,13 @@
   gap: 0.625rem;
   min-height: 2.25rem;
 }
+
+/* «A qué hora» y «cuánto», debajo de la fila de días. En columna: a 375 px un
+   `input type="time"` y cinco píldoras no caben en la misma línea, y en
+   escritorio tampoco ganan nada por estar juntos. */
+.schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+}

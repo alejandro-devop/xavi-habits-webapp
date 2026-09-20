@@ -132,6 +132,15 @@ export const appModules: readonly AppModule[] = [
         keywords: ['vida', 'actividades', 'catálogo'],
       },
     ],
+    settings: [
+      {
+        id: 'vida-ajustes',
+        to: vidaPaths.ajustes,
+        label: 'Ajustes de Vida',
+        icon: 'sliders',
+        keywords: ['vida', 'ajustes', 'horario', 'día'],
+      },
+    ],
   },
 ]
 

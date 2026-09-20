@@ -1,0 +1,88 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# SDL vendorizado. NO se edita a mano para "arreglar" un test: si el test falla,
+# el desfase está en nuestros documentos o el backend cambió y hay que volver a
+# copiar este archivo.
+#
+# Origen : xavi-platform-node/src/graphql/modules/user-settings/user-settings.schema.ts
+#          (la cadena `gql` de `userSettingsTypeDefs`, copiada literal)
+# Copiado: 2026-09-20 (commit 15463da del repo hermano: vidaDayStartTime y
+#          vidaDayEndTime)
+#
+# Aquí no se añade nada: este módulo hace `extend type Query`/`extend type
+# Mutation` y referencia `DateTime`, que aporta `activity.schema.graphql`. Lo
+# valida `src/features/vida/graphql/contracts.test.ts`, que es el único sitio
+# del repo donde vive el esquema combinado.
+# ─────────────────────────────────────────────────────────────────────────────
+
+  type UserSettings {
+    userId: Int!
+    hideHiddenHabits: Boolean!
+    sleepActivityCategoryId: ID
+    habitReminderEnabled: Boolean!
+    """
+    Hora local del recordatorio diario de hábitos, formato HH:mm.
+    """
+    habitReminderTime: String
+    dayStartReminderEnabled: Boolean!
+    """
+    Hora local del recordatorio diario para iniciar el día, formato HH:mm.
+    """
+    dayStartReminderTime: String
+    """
+    Carpeta de todos destino al crear tareas desde My Stand up.
+    """
+    standupTodoFolderId: ID
+    """
+    Activity canónica para el wizard Housework (organizar la casa).
+    """
+    houseworkActivityId: ID
+    """
+    Hora local en que empieza el día de Vida, formato HH:mm. Si es null el cliente usa 06:30.
+    """
+    vidaDayStartTime: String
+    """
+    Hora local en que termina el día de Vida, formato HH:mm. Si es null el cliente usa 23:00.
+    """
+    vidaDayEndTime: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  extend type Query {
+    mySettings: UserSettings!
+  }
+
+  extend type Mutation {
+    updateMySettings(input: UpdateUserSettingsInput!): UserSettings!
+  }
+
+  input UpdateUserSettingsInput {
+    hideHiddenHabits: Boolean
+    sleepActivityCategoryId: ID
+    habitReminderEnabled: Boolean
+    """
+    Hora local HH:mm (o null para limpiar).
+    """
+    habitReminderTime: String
+    dayStartReminderEnabled: Boolean
+    """
+    Hora local HH:mm (o null para limpiar).
+    """
+    dayStartReminderTime: String
+    """
+    ID de carpeta de todos (o null para limpiar).
+    """
+    standupTodoFolderId: ID
+    """
+    ID de Activity canónica Housework (o null para limpiar).
+    """
+    houseworkActivityId: ID
+    """
+    Hora local HH:mm en que empieza el día de Vida (o null para limpiar).
+    """
+    vidaDayStartTime: String
+    """
+    Hora local HH:mm en que termina el día de Vida (o null para limpiar).
+    """
+    vidaDayEndTime: String
+  }

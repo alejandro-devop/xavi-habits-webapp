@@ -6,6 +6,10 @@ import {
   VIDA_DAY_ORDER,
   VIDA_DAY_SHORT_LABELS,
 } from '@/features/vida/utils/vida-date.utils'
+import {
+  formatDurationMinutes,
+  formatTimeForDisplay,
+} from '@/features/vida/utils/vida-time.utils'
 import { useArchiveActivity } from '@/features/vida/hooks/useArchiveActivity'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
@@ -56,6 +60,17 @@ export function VidaActivityCard({
   const { confirm } = useConfirmDialog()
   const { archive, isPending: isArchiving } = useArchiveActivity()
   const days = vidaItem?.days ?? []
+  // La plantilla es una agenda: la hora y la duración se leen **junto a** los
+  // días, no en otra línea. Si el ítem no las tiene, no se inventa ninguna
+  // (criterio 6): se dice «sin hora» y se ofrece ponérsela.
+  const startTime = vidaItem?.startTime ? formatTimeForDisplay(vidaItem.startTime) : null
+  const durationMinutes = vidaItem?.durationMinutes ?? null
+  const scheduleLabel = [
+    startTime ?? 'sin hora',
+    durationMinutes !== null ? formatDurationMinutes(durationMinutes) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ')
   const colorStyle = color ? ({ '--vida-category-color': color } as CSSProperties) : undefined
 
   /**
@@ -106,25 +121,41 @@ export function VidaActivityCard({
       <div className={styles.body}>
         <p className={styles.name}>{activity.title}</p>
         {vidaItem ? (
-          <span
-            className={styles.days}
-            role="img"
-            aria-label={`En tu plantilla: ${formatDaysLabel(days)}`}
-          >
-            {VIDA_DAY_ORDER.map((day) => {
-              const isOn = days.includes(day)
-              return (
-                <i
-                  key={day}
-                  aria-hidden
-                  data-day={day}
-                  data-on={isOn ? 'true' : 'false'}
-                  className={[styles.day, isOn ? styles.dayOn : ''].filter(Boolean).join(' ')}
-                >
-                  {VIDA_DAY_SHORT_LABELS[day]}
-                </i>
-              )
-            })}
+          <span className={styles.template}>
+            {startTime ? (
+              <span className={styles.schedule}>{scheduleLabel}</span>
+            ) : (
+              // Discreto, y con la vía: abre la misma hoja que «Editar». No es
+              // un reproche, es una invitación (criterio 56).
+              <button
+                type="button"
+                className={styles.scheduleMissing}
+                onClick={() => onEdit(activity)}
+              >
+                {scheduleLabel}
+                <span className={styles.srOnly}> — ponle una hora a {activity.title}</span>
+              </button>
+            )}
+            <span
+              className={styles.days}
+              role="img"
+              aria-label={`En tu plantilla: ${formatDaysLabel(days)}`}
+            >
+              {VIDA_DAY_ORDER.map((day) => {
+                const isOn = days.includes(day)
+                return (
+                  <i
+                    key={day}
+                    aria-hidden
+                    data-day={day}
+                    data-on={isOn ? 'true' : 'false'}
+                    className={[styles.day, isOn ? styles.dayOn : ''].filter(Boolean).join(' ')}
+                  >
+                    {VIDA_DAY_SHORT_LABELS[day]}
+                  </i>
+                )
+              })}
+            </span>
           </span>
         ) : isTemplatePending ? (
           <span className={styles.daysPending} aria-busy="true">

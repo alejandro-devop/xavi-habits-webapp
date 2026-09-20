@@ -1,0 +1,1 @@
+export { VidaDurationPills } from './VidaDurationPills'

@@ -388,7 +388,7 @@ hasta que el API desplegada lleve el cambio**, y eso es de él, no de un agente.
 | 1 | **La plantilla con hora y duración, y los ajustes de Vida.** Prerrequisito de todo lo demás: SDL recopiado y contratos verdes, tipos y hooks de `vida-items` con `startTime`/`durationMinutes`, la hoja de F1 gana «a qué hora» y «cuánto» (15 · 30 · 45 · 1h · libre), la tarjeta del catálogo los enseña, y una pantalla/hoja de ajustes de Vida con el inicio y el fin del día. Ya es útil sola: la plantilla deja de ser una lista sin orden y pasa a ser un día. | accepted |
 | 2 | **La agenda del día, en solo lectura.** El presupuesto (tiempo que queda, barra del día con la marca de «ahora», leyenda y línea de guía), los bloques del `activityDayPlan` ordenados por hora, los huecos con su tamaño y las sugerencias de la plantilla que caben (sin poder ponerlas aún), apertura en «Ahora», el lateral de escritorio, y todos los estados. Primera vez que el usuario ve su día repartido y dónde tiene sitio. | accepted |
 | 3 | **Poner algo en un hueco.** Un toque en una ficha lo coloca al principio del hueco; «+ otra cosa» abre la hoja de tres preguntas (qué · cuánto · cuándo) con lo que no cabe apagado y el «queda libre después»; quitar un bloque y cambiarle hora o duración. Errores de mutación visibles. | accepted |
-| 4 | **Cualquier día, no solo hoy.** La tira de 7 días con el punto de «tiene plan», el día en la URL, la ventana de esta semana y la siguiente, el día futuro en trazo suave, el día pasado en solo lectura, «copiar del mismo día pasado» y «vaciar y rehacer». Aquí ya se planea mañana a mano. | pending |
+| 4 | **Cualquier día, no solo hoy.** La tira de 7 días con el punto de «tiene plan», el día en la URL, la ventana de esta semana y la siguiente, el día futuro en trazo suave, el día pasado en solo lectura, «copiar del mismo día pasado» y «vaciar y rehacer». Aquí ya se planea mañana a mano. | accepted |
 | 5 | **La semana y armar desde la plantilla.** La vista de semana con una línea por día, «Armar» en los vacíos copiando hora y duración de cada ítem (con el trato explícito de los solapes y de los ítems sin hora) y «Armar toda la semana» sin pisar lo que ya existe. Cierra el criterio de fase. | pending |
 
 Cada tajada se revisa sola. La 1 se cierra con tests y con el catálogo, que ya
@@ -765,7 +765,7 @@ código vivo y por eso se rescata por función, con test propio, no se restaura.
 | 1 | **La plantilla con hora y duración, y los ajustes de Vida.** | `graphql/schema/vida.schema.graphql` · `settings/graphql/schema/user-settings.schema.graphql` (N) · `graphql/contracts.test.ts` · `graphql/vida-items.graphql.ts` · `settings/graphql/user-settings.graphql.ts` · `settings/types/user-settings.types.ts` · `types/vida-item.types.ts` · `utils/vida-time.utils.ts` (N) · `hooks/useSaveVidaItemForActivity.ts` · `hooks/useVidaDayHours.ts` (N) · `components/VidaDurationPills/` (N) · `components/VidaActivitySheet/` · `components/VidaActivityCard/` · `pages/VidaAjustesPage.tsx` (N) · `routes/vida-paths.ts` · `routes/vida.routes.tsx` · `layouts/AppLayout/app-nav.config.ts` | 1–10, y la parte de 53–57 que toca la hoja, la tarjeta y los ajustes | accepted |
 | 2 | **La agenda del día, en solo lectura.** | `utils/vida-agenda.utils.ts` (N) · `hooks/useVidaNowMinute.ts` (N) · `hooks/useVidaDayData.ts` (N) · `components/VidaDayBudget/` (N) · `components/VidaAgendaBlock/` (N) · `components/VidaAgendaGap/` (N) · `components/VidaTemplateAside/` (N) · `pages/VidaHoyPage.tsx` | 11–20, 22, 48 (la mitad «Tu plantilla de \<día\>»), 49–56; **21 solo en su mitad de texto** (ver nota) | accepted (2ª entrega) |
 | 3 | **Poner algo en un hueco.** | `utils/vida-gap-form.utils.ts` (N) · `components/VidaPlaceInGapSheet/` (N) · `components/VidaAgendaGap/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 23–30, y 29/52/56 sobre las mutaciones | accepted |
-| 4 | **Cualquier día, no solo hoy.** | `utils/vida-window.utils.ts` (N) · `hooks/useVidaWeekPlans.ts` (N) · `components/VidaDayStrip/` (N) · `components/VidaDayActions/` (N) · `pages/VidaHoyPage.tsx` · `routes/vida-paths.ts` | 31–38 | pending |
+| 4 | **Cualquier día, no solo hoy.** | `utils/vida-window.utils.ts` (N) · `hooks/useVidaWeekPlans.ts` (N) · `components/VidaDayStrip/` (N) · `components/VidaDayActions/` (N) · `pages/VidaHoyPage.tsx` · `routes/vida-paths.ts` | 31–38 | accepted |
 | 5 | **La semana y armar desde la plantilla.** | `utils/vida-build-day.utils.ts` (N) · `hooks/useBuildDayFromTemplate.ts` (N) · `hooks/useBuildWeekFromTemplate.ts` (N) · `pages/VidaSemanaPage.tsx` (N) · `components/VidaTemplateAside/` · `components/VidaAgendaGap/` · `routes/vida-paths.ts` · `routes/vida.routes.tsx` | 39–46, 48 (la mitad «Mañana»), y **la mitad de 21 que es el botón**; 47 lo cronometra el usuario | pending |
 
 **Las cinco tajadas se quedan como las cortó el analista.** Miradas contra el
@@ -1870,6 +1870,244 @@ El chunk inicial pasa de **878,72 kB a 892,42 kB (+13,7 kB)**: la hoja, la
 aritmética del encaje y los dos menús. **No crece por iconos** — `app-icons`
 sigue en 620,20 kB perezoso y `IconPicker` en 4,64 kB (criterio 57).
 
+### Tajada 4 — Cualquier día, no solo hoy
+
+**Resumen para el revisor:**
+1. `/app/vida/hoy` dejó de ser solo hoy: arriba hay una **tira de siete días**
+   con un punto rayado en los que tienen plan, el día visto viaja en la URL
+   (`?d=YYYY-MM-DD`), un **día futuro** enseña la misma agenda contando
+   «planeado 4h 20 de 16h 30» sin marca de «ahora» ni «te quedan», y un **día
+   pasado** es **solo lectura**: sin fichas, sin «+ otra cosa», sin «···», y con
+   una línea que lo dice sin reprochar nada. En los días que sí se planean
+   aparecen los dos atajos: **«Copiar del \<día\> pasado»** y **«Vaciar y
+   rehacer»**, los dos con `activityDayPlanSet`.
+2. Lo nuevo vive todo en `src/features/vida/`: `utils/vida-window.utils.ts`,
+   `hooks/useVidaWeekPlans.ts`, `components/VidaDayStrip/`,
+   `components/VidaDayActions/`, más `pages/VidaHoyPage.tsx` y
+   `routes/vida-paths.ts`. **Ninguna mutación, ninguna clave de caché, ninguna
+   invalidación y ningún componente de `shared/ui` nuevos.**
+3. **Lo que más probablemente rompí:** (a) **`VidaHoyPage` ya no monta sin
+   router**: usa `useSearchParams`, así que un test que la renderice sin
+   `MemoryRouter` revienta —y quien mockee `@/features/vida/hooks/useActivityDayPlan`
+   tiene que devolver también `useSetActivityDayPlanMutation` **y** hacer que
+   `useActivityDayPlanQuery` responda **por fecha**, porque ahora se pide un
+   segundo día (el de la semana pasada)—. (b) **Siete consultas más al abrir la
+   pantalla**: los puntos de la tira son siete `dayPlan.byDate`; comparten caché
+   con la agenda, pero el coste real contra el API **no está medido**. (c) La
+   página decide `canPlan` **una vez** y de ahí cuelgan las fichas, el «···», la
+   hoja y los dos atajos: si `canPlan` se calculara mal, un día pasado pasaría a
+   ser editable de golpe en cuatro sitios a la vez.
+
+**Lo que se construyó**
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/utils/vida-window.utils.ts` (+ `.test.ts`, 24 casos) (N) | El calendario de la tajada, **puro y con el «hoy» inyectado**: `getPlanningWindow` (D5), `isInPlanningWindow`, `clampToPlanningWindow`, `isEditableDate` (D3), `sameWeekdayLastWeek` (D7), `buildDayStrip` (siete días desde dos antes, recortados a la ventana), `planItemsToSetItems` (copiar un día en la forma de `activityDayPlanSet`) y `describePlanningWindowEdge` (la frase del borde). |
+| `src/features/vida/hooks/useVidaWeekPlans.ts` (+ `.test.tsx`, 5 casos) (N) | Los puntos de la tira con `useQueries`, **misma clave y misma `queryFn`** que `useActivityDayPlanQuery`. El día abierto es un acierto de caché —lo prueba un test— y por eso `invalidateDayPlanQueries(date)` refresca a la vez la agenda y su punto: es la misma entrada. |
+| `src/features/vida/components/VidaDayStrip/` (`.tsx`, `.module.scss`, `index.ts`) (N) | La tira. Cada día es un **`Link`** a `?d=…`, no un botón: el «atrás», recargar y abrir en otra pestaña salen gratis. El punto es decorativo y lo que se oye es el `aria-label` («sábado 19 · con plan, 2 bloques»). Scroll horizontal **propio** si aprieta el ancho. |
+| `src/features/vida/components/VidaDayActions/` (`.tsx`, `.module.scss`, `index.ts`) (N) | «Copiar del \<día\> pasado» (solo en días sin plan, apagado y explicado si aquel día no tuvo) y «Vaciar y rehacer» (solo si hay bloques, con `useConfirmDialog` nombrando cuántos). Las dos con `useSetActivityDayPlanMutation`, que ya avisa por toast al ir bien y al fallar. |
+| `src/features/vida/pages/VidaHoyPage.tsx` (+ `.module.scss`, + `.test.tsx` con 13 casos nuevos) (M) | El día sale de `useSearchParams()`, recortado a la ventana; `canPlan` decide fichas, «···», hoja y atajos; el día que no es hoy va en **trazo suave**; el subtítulo y el texto de «sin plan» cambian con el día; el auto-scroll a «Ahora» se recuerda **por fecha**. |
+| `src/features/vida/routes/vida-paths.ts` (M) | `hoyForDate(date)`. **Un solo sitio** construye `?d=`. |
+
+**Por qué así, y qué se descartó**
+
+- **La ventana va de lunes de esta semana a domingo de la siguiente, y no de
+  hoy en adelante. Es la única desviación del plan, y es deliberada.** El
+  arquitecto escribió `getPlanningWindow()` → `{ from: hoy, … }`. Con ese
+  `from`, **ningún día pasado sería alcanzable** y el criterio 38 —«un día
+  pasado es solo lectura»— no tendría cómo cumplirse: el render del marco C
+  enseña el jueves 17 en la tira con hoy en el viernes 18. D5 dice «esta semana
+  y la que viene», que es un rango de días, no «de hoy en adelante». Así que la
+  **ventana** (dónde se puede *mirar*) empieza el lunes, y **planear** lo
+  limita `isEditableDate`, que sigue siendo `date >= hoy`. Los criterios 35, 37
+  y 38 quedan los tres en pie.
+- **La tira contra el borde se desliza, no encoge.** Mirando el lunes 14 salen
+  lunes→domingo; mirando el domingo 27 salen los siete anteriores a él. Nunca
+  hay un día pintado al que no se pueda ir, y **no hay flechas de semana
+  anterior/siguiente**: el borde se explica con una línea («Se planea esta
+  semana y la que viene: hasta el domingo 27»), que es lo que pide el criterio
+  35 en vez de un botón muerto.
+- **Un día de fuera de la ventana se recorta, no se rechaza.** Entrar con
+  `?d=2026-11-30` deja ver el domingo 27 con su frase, en vez de una pantalla
+  vacía o un error. Lo que no tiene forma de fecha cae en hoy.
+- **«Copiar» solo en días sin plan (D7) porque `activityDayPlanSet` reemplaza el
+  día entero**: ofrecerlo sobre un día ya armado sería borrar lo hecho sin
+  decirlo. Y por lo mismo, **«Vaciar y rehacer» solo aparece si hay bloques**:
+  vaciar un día vacío no es nada.
+- **La confirmación de vaciar dice «Vaciar el día», no «Vaciar y rehacer».** Es
+  el nombre del botón el que lleva el vocabulario del render; repetirlo dentro
+  del diálogo dejaba **dos controles con el mismo nombre** en la pantalla a la
+  vez. Ni «eliminar» ni «cancelar» en ninguno de los dos: la salida es
+  **«Volver»** (criterios 30 y 56).
+- **En un día pasado el hueco no ofrece nada, ni siquiera como texto.** La
+  tajada 3 dejó `VidaAgendaGap` pintando las fichas como `<span>` cuando no hay
+  `onPlaceSuggestion`; para el criterio 38 eso seguía siendo «fichas en los
+  huecos», así que la página le pasa una lista de sugerencias **vacía**
+  (`NO_SUGGESTIONS`) y apaga el aviso de plantilla. El componente no cambió.
+- **El lateral «Tu plantilla de \<día\>» sigue apareciendo en un día pasado**:
+  es lectura y en esta tajada no tiene ningún botón. **Ojo para la tajada 5**:
+  cuando gane «ponerla en el primer hueco donde cabe» tendrá que esconderse (o
+  perder el botón) en días pasados, o romperá el criterio 38.
+- **El «trazo suave» del criterio 33 se hace con el borde, nunca con el texto**:
+  `.agenda[data-tone='plan']` pone las tarjetas en `dashed` y baja el relleno;
+  los contrastes de lo que se lee no se tocan (criterio 55).
+- **El auto-scroll a «Ahora» se recuerda por fecha** y no una vez por montaje:
+  al ir a otro día y volver a hoy, la marca vuelve a existir y hay que volver a
+  ella. Antes de este cambio, volver dejaba la agenda arriba del todo.
+- **Nada de lo prohibido:** ninguna mutación nueva, ningún documento GraphQL,
+  **ninguna clave de caché nueva** (los siete días son `vidaKeys.dayPlan.byDate`),
+  ninguna invalidación nueva, ningún componente de `shared/ui`, ningún icono
+  importado a pelo, y el día visto **no** entró como segmento de ruta.
+
+**Verificación**
+
+Línea base (antes de empezar, los tres enteros):
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)
+pnpm test       → Test Files 1 failed | 85 passed (86) · Tests 2 failed | 841 passed (843)
+                  (SearchSelect ×2, preexistentes)
+```
+
+Al cerrar:
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   (los mismos 14)
+pnpm test       → Test Files 1 failed | 87 passed (88) · Tests 2 failed | 883 passed (885)
+                  (los mismos 2 de `SearchSelect`; +42 tests nuevos, 0 fallos nuevos)
+pnpm build      → index 901,19 kB · app-icons 620,20 kB (perezoso) · IconPicker 4,64 kB
+```
+
+El chunk inicial pasa de **892,42 kB a 901,19 kB (+8,8 kB)**: la tira, los dos
+atajos y el calendario. **No crece por iconos** — `app-icons` y `IconPicker`
+siguen clavados (criterio 57).
+
+**Arnés temporal** (`src/harness-feat003-t4/`, `.html` + `.tsx`, `MemoryRouter`,
+datos sintéticos, **borrado**; `git status` ya no lo lista), servido por el Vite
+del usuario en `http://localhost:5173`, a **375 px** y en los dos temas, con la
+tira, un día futuro con plan, un día futuro vacío y un día pasado, y un nombre
+de 60 caracteres («Revisar el correo y contestar lo que quedó pendiente de
+ayer») en un bloque y en una ficha:
+
+- **375 px:** `document.documentElement.scrollWidth` **375** = `clientWidth`
+  **375**, con la tira, los tres días y el diálogo de vaciar abierto. Los siete
+  días caben sin tener que desplazar nada.
+- **La tira, leída del DOM:** `JUE 17 · HOY 18 · SÁB 19 · DOM 20 · LUN 21 · MAR
+  22 · MIÉ 23`, con `data-state` = `plan, plan, plan, empty, empty, empty,
+  empty` — los tres primeros son los que el arnés dio por planeados (criterio
+  32) —, el sábado 19 con `aria-current="page"` y la línea «Se planea esta
+  semana y la que viene: hasta el domingo 27.»
+- **Día futuro con plan:** «SÁBADO 19 · planeado 1h 40 de 16h 30», leyenda
+  «planeado 1h 40 / libre 14h 50», **sin** «te quedan», **sin** «Ahora» y
+  **sin** «en N min» (criterio 33). Las tarjetas del día salen con borde
+  `dashed` — medido con `getComputedStyle(...).borderStyle` — y el texto con su
+  contraste de siempre.
+- **Día pasado:** la agenda entera **no tiene ni un `<button>`**
+  (`ol[data-tone] button` → **0**), no aparece «+ otra cosa» ni ninguna ficha, y
+  se lee «Este día ya pasó: aquí queda como lo planeaste, para mirarlo. Los días
+  de atrás no se cambian.» (criterios 38 y 56).
+- **Vaciar y rehacer:** el diálogo dice «¿Vaciar el plan de este día?» y «Se van
+  2 bloques y el día queda libre para rehacerlo. Tus actividades y tu plantilla
+  siguen donde estaban.», con botones **«Volver»** y **«Vaciar el día»**. Ni
+  «eliminar» ni «cancelar» en toda la pantalla.
+- **Tema oscuro:** el número del día seleccionado da **19,3:1** sobre su fondo,
+  la línea del borde de la ventana **9,5:1**, y el punto rayado sigue
+  distinguiéndose del punto vacío (gradiente contra relleno plano al 12 %).
+- **Lo que el arnés NO pudo enseñar:** «Copiar del \<día\> pasado» **con datos**.
+  El botón lee el plan de la semana pasada con la consulta real, que está detrás
+  del guard de sesión; **no se tocó el store de auth** para falsearla, porque
+  escribe en el `localStorage` del 5173 y ahí vive la sesión del usuario. En el
+  arnés se vio su estado de espera («Mirando qué tenías ese día…», apagado); el
+  estado con datos, el apagado con motivo y el `mutate` exacto se comprueban en
+  los tests de página.
+
+**Criterios que cierra, uno por uno**
+
+- **31 — la tira de 7 días, con hoy marcado y un toque que cambia de día.**
+  `vida-window.utils.test.ts` («son siete días y empiezan dos antes del que se
+  mira», «marca hoy, el seleccionado y los pasados por separado», «pinta las
+  etiquetas del render») + `VidaHoyPage.test.tsx` («la tira trae siete días…»,
+  con `aria-current` en el que se ve, y «un toque en otro día cambia lo que
+  muestra la agenda», que navega de verdad dentro del `MemoryRouter`). Visto en
+  el arnés.
+- **32 — el punto: rayado con plan, vacío sin él.** `useVidaWeekPlans.test.tsx`
+  («marca con plan solo los días que traen bloques, y cuenta cuántos») +
+  `VidaHoyPage.test.tsx`, que lee los `data-state` y comprueba que el nombre
+  accesible dice «con plan, 1 bloque» / «sin plan todavía». En el arnés,
+  `plan, plan, plan, empty, empty, empty, empty`.
+- **33 — un día futuro cuenta planeado frente a libre, sin «ahora».**
+  `VidaHoyPage.test.tsx` («criterio 33 — …»): el presupuesto dice «planeado 30m
+  de 16h 30», no hay «te quedan», no hay «Ahora», no hay «en N min» y el
+  encabezado no trae la hora. El trazo suave, medido en el arnés.
+- **34 — el día visto va en la URL.** `VidaHoyPage.test.tsx` monta
+  `/app/vida/hoy?d=2026-09-19` y sale el sábado 19 con su plan. Recargar es ese
+  mismo montaje; el «atrás» funciona porque la tira son `Link`, no `onClick`
+  —**esto último no se probó con un `history.back()` real**: queda en el
+  recorrido manual.
+- **35 — la ventana es esta semana y la que viene, y el borde se explica.**
+  `vida-window.utils.test.ts` (ventana, recorte por los dos lados, la tira
+  deslizándose contra el borde) + `VidaHoyPage.test.tsx`, que entra con
+  `?d=2026-11-30`, ve el domingo 27, lee la frase del borde y comprueba que
+  **no hay ningún botón** de «anterior/siguiente».
+- **36 — «Copiar del \<día\> pasado».** Tres tests de página: trae los bloques
+  del mismo día de la semana anterior con sus horas («Trae 2 bloques, con sus
+  horas.» y el `mutate` exacto con `orderIndex` renumerado), **apagado y con
+  motivo** si aquel día no tuvo plan, y **no se ofrece** en un día que ya tiene
+  plan (D7). La conversión, en `vida-window.utils.test.ts`.
+- **37 — «Vaciar y rehacer» con confirmación nombrando cuántos bloques.** Test
+  de página: aparece el diálogo con «Se van 3 bloques», la mutación **no** ha
+  salido todavía, y al confirmar sale **una sola** llamada
+  `{ date, items: [] }`. Segundo test para el vocabulario («Volver», nunca
+  «Cancelar» ni «eliminar»). Solo está en hoy y futuros: en el día pasado el
+  test comprueba que no existe.
+- **38 — un día pasado es solo lectura.** Test de página: ni fichas ni «+ otra
+  cosa» dentro de la agenda, ni «Más opciones» (el «···»), ni «Copiar», ni
+  «Vaciar»; y la frase que lo dice sin reproche, con el DOM comprobado contra
+  `desperdici|perdiste|fallaste|no cumpliste`. En el arnés, **cero botones** en
+  la agenda de ese día.
+- **53, 55, 56 (lo que esta tajada añade)** — 375 px sin scroll horizontal, tema
+  oscuro medido y vocabulario sin reproche: arriba, en el arnés.
+- **57 — línea base no empeorada:** arriba. El chunk crece 8,8 kB de código
+  propio, no de iconos.
+
+**Lo que queda pendiente de prueba manual** (los agentes no entran con
+credenciales, y el API desplegada **sigue sin llevar `15463da`**):
+
+1. Entrar en `/app/vida/hoy` y ver la tira con los puntos de los días que de
+   verdad tienen plan.
+2. Tocar el día de mañana: la agenda cambia, la URL queda en
+   `/app/vida/hoy?d=<mañana>` y la píldora «Hoy» sigue encendida.
+3. **Recargar** ahí: se ve el mismo día. Pulsar **«atrás»**: vuelve al día
+   anterior de la tira (esto es lo único del criterio 34 que no se probó).
+4. En un día futuro **sin plan**, «Copiar del \<día\> pasado»: comprobar que
+   dice cuántos bloques trae, que al tocarlo aparecen con sus horas, y que el
+   punto de ese día en la tira **se llena sin recargar**.
+5. En un día futuro **con plan**, «Vaciar y rehacer» → «Vaciar el día»: el día
+   queda libre y su punto se vacía.
+6. Ir a un día pasado (por la tira): comprobar que no hay nada que tocar.
+7. Escribir a mano `?d=2027-01-01`: tiene que verse el domingo del borde con su
+   frase, no una pantalla rota.
+
+**Riesgos**
+
+- **Siete consultas al abrir.** Comparten caché con la agenda y llevan
+  `staleTime` de 30 s, pero el coste real **no está medido** contra el API. La
+  salida, si se nota, es pedir solo el día visto y llenar los puntos
+  perezosamente: `useVidaWeekPlans` cambiaría por dentro sin tocar a quien
+  llama.
+- **Quien monte `VidaHoyPage` necesita router y los mocks nuevos** (ver el punto
+  3 del resumen). Ya le pasó a `VidaHoyPage.test.tsx` en esta misma tajada.
+- **`VidaDayActions` llama a `useActivityDayPlanQuery` de un día que puede estar
+  fuera de la ventana** (la semana pasada). Es una lectura y el API la admite,
+  pero es la única consulta del módulo que se sale del rango que la pantalla
+  deja navegar.
+- **El lateral de plantilla en días pasados** (ver arriba): hoy es inocuo,
+  en la tajada 5 dejará de serlo.
+
+**Estado del árbol:** sin commitear.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — La plantilla con hora y duración, y los ajustes de Vida
@@ -2552,4 +2790,217 @@ de la sección 2, la entrada de la tajada 3 de la sección 3, `git diff HEAD`,
 de `pnpm typecheck` ×2 / `lint` / `test` / `build`, un arnés de encaje de 8
 casos bajo `src/features/vida/utils/` y un arnés de navegador bajo
 `src/revision-t3/` a 375 px en claro y oscuro. **Los dos arneses están
+borrados** y `git status` no los lista.*
+
+### Tajada 4 — Cualquier día, no solo hoy
+
+**Veredicto: `accepted`.** Los ocho criterios de la tajada (31–38) se cumplen
+como los escribió el analista, y la parte de 53, 55, 56 y 57 que esta tajada
+toca también. No encontré ninguna regresión en las tajadas 1–3 ni en FEAT-002.
+Cinco hallazgos, ninguno de ellos motivo de devolución; el más serio es el punto
+de la tira cuando **falla** una de las siete consultas, que afirma «sin plan
+todavía» sin saberlo.
+
+**Criterios, uno por uno** (contra la sección 1 literal, no contra el resumen
+del constructor; mi propio arnés de tests bajo `src/`, **borrado**, 17 casos,
+15 verdes y 2 reescritos en un segundo archivo por los `fakeTimers`):
+
+- **31 — la tira de 7 días, hoy marcado, el visto resaltado, un toque cambia de
+  día.** Cumplido. Con el reloj en el viernes 18 y `?d=2026-09-19`, la tira sale
+  `Jue 17 · Hoy 18 · Sáb 19 · Dom 20 · Lun 21 · Mar 22 · Mié 23`: siete, dos
+  antes del visto, la etiqueta **«Hoy»** en el 18 aunque el resaltado esté en el
+  19, y `aria-current="page"` en el 19. Un toque en el domingo 20 cambia el
+  encabezado, el plan y el resaltado (verificado en `MemoryRouter`, no solo en
+  el DOM).
+- **32 — el punto: rayado con plan, vacío sin él.** Cumplido. Con el hook real
+  y un `QueryClient` de verdad, un día con bloques da `hasPlan: true` y su
+  `data-state="plan"`; los vacíos, `empty`. El punto es decorativo y el nombre
+  accesible dice «con plan, 3 bloques» / «sin plan todavía»: **se lee sin
+  color**. Y viene del **plan del día**, no de la plantilla — el hook solo pide
+  `dayPlan.byDate`, no mira sugerencias.
+- **33 — día futuro: planeado frente a libre, sin «ahora».** Cumplido. En
+  `?d=2026-09-19` el presupuesto dice «planeado 30m de 16h 30», el encabezado no
+  trae la hora, no hay «te quedan», ni «Ahora», ni «en N min»
+  (`useVidaNowMinute(isToday)` devuelve `null` y `budget.remainingMinutes` cae a
+  `null`). El trazo suave es `.agenda[data-tone='plan']` sobre el **borde**, no
+  sobre el texto.
+- **34 — el día visto va en la URL; recargar y el «atrás».** Cumplido en lo que
+  se puede comprobar sin navegador de verdad. `?d=YYYY-MM-DD` pinta ese día
+  (recargar es ese mismo montaje) y, con un `Probe` que llama `navigate(-1)` y
+  `navigate(+1)` dentro del `MemoryRouter`, el **atrás** vuelve del domingo 20 a
+  hoy —URL, encabezado y `aria-current` de la tira, los tres— y el **adelante**
+  regresa al 20. Como son `Link`, el historial es real. **Pendiente del
+  recorrido manual:** el `history.back()` del navegador de verdad.
+- **35 — la ventana es esta semana y la que viene; el borde se explica.**
+  Cumplido, **con la desviación del plan aceptada**: la ventana va del **lunes
+  de esta semana** al domingo de la siguiente. Leído contra el criterio literal
+  —«la ventana de planeación es esta semana y la que viene»— el lunes es lo que
+  el criterio dice; con el `from: hoy` que escribió el arquitecto, el criterio
+  **38** sería inalcanzable (ningún día pasado se podría abrir). Planear sigue
+  limitado a hoy y futuros por `isEditableDate`. Comprobado por mi lado:
+  `?d=2026-09-31`, `?d=2026-13-45` y `?d=2027-…` caen en **Domingo 27** con la
+  frase «Se planea esta semana y la que viene: hasta el domingo 27.»;
+  `?d=0001-01-01` cae en **Lunes 14**; no hay botones de semana anterior o
+  siguiente.
+- **36 — «Copiar del \<día\> pasado».** Cumplido. El origen es el **mismo día de
+  la semana anterior exacto** (`sameWeekdayLastWeek` = −7 días, probado también
+  cruzando el cambio de mes). Con dos bloques el 13, el botón del día 20 dice
+  «Trae 2 bloques, con sus horas.» y el `mutate` sale **exactamente**
+  `{ date: '2026-09-20', items: [{activityId, startTime, endTime, orderIndex}
+  ×2] }`: sin `id`, sin `completedAt`, sin `date` por bloque, ordenado por hora,
+  `orderIndex` renumerado 0,1 y el `07:00:00` viejo normalizado a `07:00`. Si
+  aquel día no tuvo plan, el botón queda **apagado** y dice «Ese domingo no
+  tuviste plan, así que no hay nada que traer». En un día que ya tiene plan, el
+  botón **no existe** (D7iii).
+- **37 — «Vaciar y rehacer» con confirmación que nombra cuántos bloques.**
+  Cumplido. Solo se pinta si el día **tiene** bloques y solo en días editables;
+  el diálogo dice «Se van N bloques…», la mutación no sale hasta confirmar y al
+  confirmar es una sola llamada `{ date, items: [] }` —`activityDayPlanSet` con
+  lista vacía, ninguna mutación nueva—. Vocabulario: **«Volver»** y «Vaciar el
+  día»; ni «eliminar» ni «cancelar» en ninguna de las dos acciones (criterios 30
+  y 56).
+- **38 — un día pasado es solo lectura.** Cumplido. En `?d=2026-09-16` con
+  plan: **cero `<button>` dentro del `<ol>` de la agenda**, ninguna ficha
+  (la página pasa `NO_SUGGESTIONS`), ningún «+ otra cosa», ningún «···», ni
+  «Copiar» ni «Vaciar», y la línea «Este día ya pasó: aquí queda como lo
+  planeaste, para mirarlo.» sin `desperdici|perdiste|fallaste|no cumpliste` en
+  todo el documento. `isEditableDate` lo decide con **fecha local**
+  (`getCurrentLocalDate`): a las 23:59:30 del 18, el 18 es editable y el 17 no;
+  a las 00:00:30 del 19, el 18 ya no lo es y el 19 sí. Sin corrimiento UTC.
+- **53 (lo que añade esta tajada) — 375 px.** Cumplido, medido por mí en el
+  navegador del usuario con un arnés propio (`src/revision-t4/`, **borrado**):
+  `documentElement.scrollWidth` **375** = `clientWidth`, ni un elemento con
+  `right > 375`, los siete días **caben** (`ul.scrollWidth` 343 =
+  `clientWidth` 343) y la tira lleva su **propio** `overflow-x: auto` para
+  cuando no quepan.
+- **55 — oscuro.** Cumplido a la vista y con el DOM: en oscuro se distinguen el
+  día seleccionado (fondo mint al 14 % + borde), la etiqueta «HOY» en mint, el
+  número, la frase del borde y las dos notas de los atajos. (Mis proporciones de
+  contraste numéricas no son fiables porque las variables salen en `oklab()` y
+  `color(srgb …)`; lo que sostengo es la lectura del render en los dos temas.)
+- **56 — lenguaje.** Cumplido: «libre», «Volver», «Vaciar el día», «Ese sábado
+  no tuviste plan, así que no hay nada que traer», «Este día ya pasó… Los días
+  de atrás no se cambian». Nada de reproche en el día pasado ni en el día sin
+  plan.
+- **57 — línea base.** Cumplido, corrido entero por mí: `pnpm lint` → **14
+  errores / 0 warnings** (los mismos); `pnpm test` → **2 fallos de 885**
+  (`SearchSelect` ×2, preexistentes); `pnpm build` → `index` **901,19 kB**,
+  `app-icons` **620,20 kB**, `IconPicker` **4,64 kB** —los dos últimos clavados
+  en la línea base: **el chunk no crece por iconos**—. Ningún documento GraphQL
+  nuevo, así que `contracts.test.ts` no cambia.
+- **58 — el recorrido con la cuenta real:** sigue **pendiente**, como manda
+  `ENVIRONMENT.md`. Los siete pasos del constructor valen; añado dos abajo.
+
+**Qué miré alrededor** (y cómo):
+
+- `graphify explain "VidaHoyPage"`, `"VidaAgendaGap"` y `"vidaPaths"` sobre el
+  grafo — que aquí **ya está actualizado al árbol sucio**, así que sirve para
+  «quién depende de esto» y no para «¿duplicó algo?».
+- **Quién más usa lo que se tocó.** `vidaPaths` lo importan ocho archivos
+  (páginas de Vida, `app-nav.config.ts` y sus tests): `hoyForDate` es **nuevo y
+  lo usa solo la tira**, y `hoy` **no se duplicó** —sigue siendo una sola
+  entrada y `app-nav.config.ts:104,108` la única fuente de destinos—. Como
+  `?d=` es *search*, no *pathname*, la píldora «Hoy» del módulo se enciende
+  igual (`NavLink` compara ruta, no consulta); `AppLayout.test.tsx` y
+  `app-nav.config.test.ts` siguen verdes.
+- **Lo que vive al lado en la misma pantalla.** `VidaAgendaBlock` y
+  `VidaAgendaGap` **no se tocaron** (`git status` lo confirma) y no los usa
+  nadie más que `VidaHoyPage`: el día pasado se apaga desde la página pasando
+  `date={null}`, `onEdit`/`onPlaceSuggestion`/`onOpenSheet` sin definir y
+  `NO_SUGGESTIONS` — los tres prop ya eran opcionales desde la tajada 3, así que
+  no hubo cambio de contrato.
+- **Lo que el constructor señaló como «lo que más probablemente rompí».** (a)
+  `VidaHoyPage` sin router: los 88 archivos de test pasan, y el único que la
+  monta es `VidaHoyPage.test.tsx`, que ya trae `MemoryRouter` por
+  `renderWithProviders`. (b) Las siete consultas: **medidas**. Con el hook real,
+  abrir la tira son **7** llamadas y moverse un día es **1 más (8)**, no 14: la
+  clave `vidaKeys.dayPlan.byDate` y el `staleTime` de 30 s hacen que los seis
+  días compartidos sean acierto de caché. (c) `canPlan`: los cuatro sitios que
+  cuelgan de él los comprobé a la vez en el día pasado (cero botones en la
+  agenda, sin «···», sin atajos, hoja apagada con `sheet && canPlan`).
+- **La agenda de hoy (tajadas 2 y 3) sigue igual**: `data-tone` solo se pone
+  cuando el día **no** es hoy, y los 42 tests de las tajadas 2 y 3 de
+  `VidaHoyPage.test.tsx` pasan sin tocarse. Hábitos y FEAT-002: ni un archivo
+  modificado fuera de `src/features/vida/`.
+
+**Estados que nadie construye:**
+
+- **Sin datos** — cubierto: día sin plan con texto propio para hoy, para un
+  futuro y para un pasado; la tira con todos los puntos vacíos.
+- **Cargando** — parcial, **hallazgo**: la página pinta la tira también en el
+  esqueleto (bien), pero el punto en `pending` es un círculo al **8 %** de
+  opacidad frente al **12 %** del vacío, sin movimiento: a la vista es el mismo
+  punto. Solo el `aria-label` («cargando su plan») distingue. No lo pide ningún
+  criterio —el 50 habla de la pantalla del día—, pero mientras carga la tira
+  **parece afirmar** «sin plan».
+- **Error** — **hallazgo, el más serio.** Si una de las siete consultas falla,
+  `useVidaWeekPlans` la da por `hasPlan: false` e `isPending: false`: el punto
+  queda vacío y el nombre accesible dice «sin plan todavía» de un día que sí
+  puede tener plan. Medido con el hook real y una promesa rechazada. El criterio
+  52 cubre las consultas del día visto, no las de la tira, así que no devuelvo
+  por esto; pero es una afirmación falsa y conviene un tercer estado
+  («no se pudo mirar»).
+- **Sin permisos / sin sesión** — cubierto: el guard deshabilita las siete
+  consultas y el hook las trata aparte (`isPending` + `fetchStatus: 'idle'`), así
+  que los puntos se quedan quietos en vez de girar para siempre; la pantalla
+  sigue dando el mensaje de entrar (criterio 51, test de la tajada 2, verde).
+- **Texto largo** — cubierto: un título de 60 caracteres en el arnés a 375 px no
+  produce scroll horizontal.
+- **Móvil** — cubierto arriba (criterio 53).
+
+**¿Duplica algo que ya existía?** No. Contra «Lo que NO se crea» y «Dónde NO
+va» de la sección 2: ninguna mutación ni documento GraphQL nuevos (los dos
+atajos usan `useSetActivityDayPlanMutation`, que ya existía); **ninguna clave de
+caché nueva** —comprobado con el hook real: los siete días escriben en
+`vidaKeys.dayPlan.byDate`, la misma entrada que la agenda—; ninguna invalidación
+nueva (`invalidateDayPlanQueries(date)` del `onSuccess` de la mutación refresca
+agenda, presupuesto y punto a la vez); ningún componente de `shared/ui` nuevo
+(usa `Button` y `useConfirmDialog`); ninguna utilidad de fecha duplicada
+(`vida-window.utils.ts` importa `vida-date.utils.ts` y `vida-time.utils.ts`, no
+al revés); ningún icono a pelo de Font Awesome; y el día visto **no** entró como
+segmento de ruta.
+
+**Hallazgos (no devuelven la tajada, quedan escritos):**
+
+1. **El punto de un día cuya consulta falló dice «sin plan todavía».** Ver
+   arriba. Falta un estado «no se pudo mirar» en `VidaDayPlanDot`.
+2. **El punto `pending` no se distingue del vacío a simple vista** (8 % vs
+   12 %, sin animación).
+3. **Copiar no mira si la actividad está archivada.** `ActivityDayPlanItem` no
+   trae el `status` de la actividad, así que `planItemsToSetItems` manda el
+   `activityId` tal cual y **quien decide es el backend**. No lo pide el
+   criterio 36 y no hay forma de saberlo en cliente sin una consulta más, pero
+   **nadie lo decidió**: va al recorrido manual (paso 9) y, si el API lo
+   rechaza, es una decisión para la tajada 5 o un dossier propio.
+4. **`?d=` igual a hoy se queda en la URL** (`/app/vida/hoy?d=2026-09-18`), no
+   se limpia. Es inocuo —la píldora sigue encendida y la pantalla es la misma—;
+   lo anoto porque cambia lo que el usuario copia y pega.
+5. **Formas raras de `?d=` caen en hoy en silencio**: `?d=manana`,
+   `?d=2026-9-18` (sin el cero) o `?d=` vacío. Es lo que decidió el
+   constructor y no rompe nada; queda dicho para que nadie lo lea como un bug.
+   Confirmo además el aviso del constructor: **el lateral «Tu plantilla de
+   \<día\>» sigue apareciendo en días pasados** —hoy solo lleva un enlace al
+   catálogo, así que no rompe el 38, pero **en la tajada 5 hay que esconderlo o
+   quitarle el botón**.
+
+**Lo que no revisé:** el «atrás» de un navegador real (lo hice con
+`MemoryRouter`); «Copiar» contra el API de verdad; y cualquier cosa detrás del
+login, que en este proyecto es estructural. Pasos manuales que añado a los siete
+del constructor:
+
+8. Con la tira abierta, **cortar la red un segundo** y recargar: mirar qué
+   pintan los puntos (hallazgo 1).
+9. Archivar una actividad que estaba en el plan de la semana pasada y usar
+   **«Copiar del \<día\> pasado»** en el mismo día de esta: ver si el API lo
+   admite o lo rechaza (hallazgo 3).
+
+---
+
+*Revisado por `feature-reviewer` el 2026-09-20. Fuentes: los criterios 31–38 y
+53–58 de la sección 1 literales, D3, D5 y D7, «Lo que NO se crea» y «Dónde NO
+va» de la sección 2, la entrada de la tajada 4 de la sección 3, `git diff HEAD`,
+`graphify explain` sobre `VidaHoyPage` / `VidaAgendaGap` / `vidaPaths`, la
+corrida entera de `pnpm lint` / `pnpm test` / `pnpm build`, un arnés de tests de
+17 casos bajo `src/features/vida/` y un arnés de navegador bajo
+`src/revision-t4/` a 375 px en claro y oscuro. **Los dos arneses están
 borrados** y `git status` no los lista.*

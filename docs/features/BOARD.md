@@ -11,7 +11,7 @@ The user decides the order, not an agent. The state and slice rules are in
 |---|---|---|---|---|---|
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
-| FEAT-003 | building | 3/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
+| FEAT-003 | building | 4/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -173,6 +173,62 @@ distinta — **cerrar una tajada con `pnpm build`, no solo con `pnpm typecheck`*
 (va para `ENVIRONMENT.md`, que no toco). **Sigue faltando el recorrido manual
 del usuario** (criterio 58, con el API desplegada). Siguiente: la tajada 4,
 cualquier día y no solo hoy.
+
+**FEAT-003, tajada 4 `accepted`** (sin commitear): **Hoy ya no es solo hoy.**
+Arriba de la agenda hay una **tira de siete días** —dos antes del que se mira—
+con su día de la semana, su número, «Hoy» marcado y un **punto rayado** en los
+que tienen plan; el día visto viaja en la URL (`/app/vida/hoy?d=YYYY-MM-DD`, sin
+duplicar la ruta ni la píldora). Un **día futuro** enseña la misma agenda en
+trazo suave y el presupuesto cuenta **planeado frente a libre** («planeado 1h 40
+de 16h 30»), sin marca de «ahora», sin «en N min» y sin «te quedan». Un **día
+pasado** es **solo lectura**: cero botones en su agenda —ni fichas, ni «+ otra
+cosa», ni «···»— y una línea que lo dice sin reproche. En los días que sí se
+planean hay dos atajos con `activityDayPlanSet`: **«Copiar del \<día\> pasado»**
+(solo en días sin plan, diciendo cuántos bloques trae, apagado con motivo si
+aquel día no tuvo) y **«Vaciar y rehacer»** (con confirmación que nombra cuántos
+bloques; salida «Volver», nunca «Cancelar»). Los siete puntos usan **la misma
+clave** que la agenda (`vidaKeys.dayPlan.byDate`): ni clave ni invalidación
+nuevas, y el día abierto es un acierto de caché. Línea base sin empeorar:
+typecheck limpio, lint 14/0, `pnpm test` 2 fallos de **885** (los de
+`SearchSelect`; +42 tests), chunk inicial **901,19 kB** (+8,8 kB, ninguno de
+iconos). **Una desviación del plan, dicha:** la ventana de D5 va del **lunes de
+esta semana** al domingo de la siguiente, y no «de hoy en adelante» como escribió
+el arquitecto — con `from: hoy` ningún día pasado sería alcanzable y el criterio
+38 no tendría cómo cumplirse; planear sigue limitado a hoy y futuros por
+`isEditableDate`. Avisos para quien revise: **`VidaHoyPage` ya no monta sin
+router** (usa `useSearchParams`) y quien mockee `useActivityDayPlan` tiene que
+dar `useSetActivityDayPlanMutation` y responder **por fecha**; el lateral «Tu
+plantilla de \<día\>» sigue pintándose en días pasados (inocuo hoy, **no** en la
+tajada 5, cuando gane botón); y **«Copiar» con datos no se pudo ver en el arnés**
+—leerlo exigía falsear la sesión y eso escribe en el `localStorage` del 5173—:
+está cubierto por tests. **Falta el recorrido manual del usuario** (criterio 58,
+con el API desplegada, que aún no lleva `15463da`); los siete pasos están al
+final de la sección 3, e incluyen el único trozo del criterio 34 que no se probó:
+el «atrás» del navegador.
+
+**Revisión de la tajada 4 — `accepted`.** Los criterios 31–38 se cumplen contra
+el texto literal del analista, comprobados con un arnés de tests propio (17
+casos, borrado) y un arnés de navegador a 375 px en los dos temas (borrado): la
+tira con «Hoy» marcado aunque se mire otro día, el punto que sale del **plan** y
+no de la plantilla, el día futuro con «planeado X de Y» y sin «ahora», el día
+pasado con **cero botones** en su agenda, el `?d=` raro que se recorta al
+domingo 27 con su frase, el «atrás»/«adelante» del historial dentro de
+`MemoryRouter`, el `mutate` exacto de copiar (sin `id` ni `isCompleted`, con
+`orderIndex` renumerado) y el de vaciar (`items: []`). **La desviación de D5 se
+acepta**: la ventana desde el lunes de esta semana es lo que el criterio 35 dice
+literalmente y es lo único que hace alcanzable el criterio 38; planear sigue
+atado a `isEditableDate`, con fecha **local** (probado en los dos lados de la
+medianoche). Línea base corrida entera por el revisor: lint **14/0**, test **2
+fallos de 885**, build **901,19 kB** con `app-icons` y `IconPicker` clavados.
+Sin regresiones: nadie más usa `VidaAgendaBlock`/`VidaAgendaGap`, `vidaPaths.hoy`
+**no se duplicó** y las siete consultas de la tira son **7 al abrir y 1 más al
+moverse un día** (misma clave, acierto de caché). **Hallazgos abiertos:** si una
+de las siete consultas **falla**, el punto afirma «sin plan todavía» sin saberlo;
+el punto «cargando» no se distingue del vacío a la vista; copiar no mira si la
+actividad está **archivada** (decide el backend, nadie lo decidió aquí); `?d=`
+igual a hoy se queda en la URL; y el lateral «Tu plantilla de \<día\>» sigue
+en días pasados (**hay que esconderlo en la tajada 5**). Siguiente: la tajada 5,
+la semana y armar desde la plantilla.
 
 **Dependencia externa de FEAT-003:** el API gana `VidaItem.startTime`,
 `VidaItem.durationMinutes` y `UserSettings.vidaDayStartTime` /

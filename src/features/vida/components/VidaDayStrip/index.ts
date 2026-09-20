@@ -1,0 +1,1 @@
+export { VidaDayStrip } from './VidaDayStrip'

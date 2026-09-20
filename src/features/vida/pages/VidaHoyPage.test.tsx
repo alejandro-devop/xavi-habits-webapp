@@ -32,15 +32,37 @@ let settingsQuery: Query<UserSettings>
 let addMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let editMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let removeMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+let setMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+/** Planes de **otros** días: la tira y «Copiar del <día> pasado» los leen. */
+let plansByDate: Record<string, ActivityDayPlanItem[]>
+/** El día que la página está mirando; las demás fechas salen de `plansByDate`. */
+let viewedDate: string
 
 // Las tres mutaciones del plan del día entran en el mock desde la tajada 3: la
 // página coloca desde una ficha, la hoja pone y edita, y el «···» del bloque
 // quita. Sin ellas, montar la página revienta en el primer hook.
 vi.mock('@/features/vida/hooks/useActivityDayPlan', () => ({
-  useActivityDayPlanQuery: () => planQuery,
+  // Por fecha desde la tajada 4: la página pide el día visto y `VidaDayActions`
+  // pide el mismo día de la semana pasada, y no pueden responder lo mismo.
+  useActivityDayPlanQuery: (date: string) =>
+    date === viewedDate ? planQuery : ready(plansByDate[date] ?? []),
   useAddDayPlanItemMutation: () => addMutation,
   useEditDayPlanItemMutation: () => editMutation,
   useRemoveDayPlanItemMutation: () => removeMutation,
+  useSetActivityDayPlanMutation: () => setMutation,
+}))
+// Los puntos de la tira: el hook tiene su propio test con `useQueries` de
+// verdad (`useVidaWeekPlans.test.tsx`); aquí importa lo que la tira pinta.
+vi.mock('@/features/vida/hooks/useVidaWeekPlans', () => ({
+  useVidaWeekPlans: (dates: string[]) => ({
+    byDate: Object.fromEntries(
+      dates.map((date) => {
+        const items = date === viewedDate ? (planQuery.data ?? []) : (plansByDate[date] ?? [])
+        return [date, { date, hasPlan: items.length > 0, blockCount: items.length, isPending: false }]
+      }),
+    ),
+    isPending: false,
+  }),
 }))
 vi.mock('@/features/vida/hooks/useActivities', () => ({
   useActivitiesQuery: () => ({
@@ -135,6 +157,9 @@ beforeEach(() => {
   // jsdom no implementa `scrollIntoView`; lo que se comprueba es que se llama.
   Element.prototype.scrollIntoView = vi.fn()
   addMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  setMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  plansByDate = {}
+  viewedDate = '2026-09-18'
   editMutation = { mutate: vi.fn(), isPending: false, isError: false }
   removeMutation = { mutate: vi.fn(), isPending: false, isError: false }
   planQuery = ready(PLAN)
@@ -490,5 +515,204 @@ describe('VidaHoyPage — poner algo en un hueco (tajada 3)', () => {
     expect(screen.queryByRole('heading', { name: 'Qué' })).not.toBeInTheDocument()
     // La ventana es el bloque más lo libre de al lado: de las 6:30 a las 10:00.
     expect(screen.getByText(/hasta las 10:00 «Leer un rato»/)).toBeInTheDocument()
+  })
+})
+
+/**
+ * Tajada 4 — cualquier día, no solo hoy (criterios 31–38).
+ *
+ * El reloj sigue clavado en el **viernes 18 de septiembre de 2026 a las 9:24**,
+ * así que la ventana de D5 va del lunes 14 al domingo 27.
+ */
+describe('VidaHoyPage — cualquier día (tajada 4)', () => {
+  function block19(id: string, title: string, startTime: string, endTime: string) {
+    return { ...block(id, title, startTime, endTime), date: '2026-09-19' }
+  }
+
+  it('criterio 31 — la tira trae siete días, con su día de la semana y su número', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const strip = screen.getByRole('navigation', { name: 'Elige el día' })
+    const days = within(strip).getAllByRole('link')
+    expect(days).toHaveLength(7)
+    // Dos antes del que se mira: miércoles 16 … martes 22.
+    expect(days[0]).toHaveAccessibleName(/miércoles 16/)
+    expect(days[6]).toHaveAccessibleName(/martes 22/)
+    // Hoy va marcado.
+    expect(within(strip).getByText('Hoy')).toBeInTheDocument()
+    expect(days[2]).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('criterio 32 — bajo cada día hay un punto: rayado con plan, vacío sin él', () => {
+    plansByDate = { '2026-09-19': [block19('p1', 'Leer', '09:00', '09:30')] }
+    const { container } = renderWithProviders(<VidaHoyPage />)
+
+    const strip = screen.getByRole('navigation', { name: 'Elige el día' })
+    // El punto es decorativo; lo que se oye es el nombre del enlace.
+    expect(within(strip).getByRole('link', { name: /sábado 19/ })).toHaveAccessibleName(
+      /con plan, 1 bloque/,
+    )
+    expect(within(strip).getByRole('link', { name: /lunes 21/ })).toHaveAccessibleName(
+      /sin plan todavía/,
+    )
+    const dots = container.querySelectorAll('[data-state]')
+    expect(Array.from(dots).filter((dot) => dot.getAttribute('data-state') === 'plan')).toHaveLength(
+      2, // el sábado 19 y el propio viernes 18, que sí tiene plan
+    )
+  })
+
+  it('criterio 34 — el día visto sale de la URL: `?d=YYYY-MM-DD`', () => {
+    plansByDate = { '2026-09-19': [block19('p1', 'Leer un rato', '09:00', '09:30')] }
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.getByText('Sábado 19')).toBeInTheDocument()
+    expect(screen.getByText('Leer un rato')).toBeInTheDocument()
+  })
+
+  it('criterio 31 — un toque en otro día cambia lo que muestra la agenda', () => {
+    plansByDate = { '2026-09-19': [block19('p1', 'Leer un rato', '09:00', '09:30')] }
+    renderWithProviders(<VidaHoyPage />)
+
+    const strip = screen.getByRole('navigation', { name: 'Elige el día' })
+    fireEvent.click(within(strip).getByRole('link', { name: /sábado 19/ }))
+
+    expect(screen.getByText('Sábado 19')).toBeInTheDocument()
+    expect(screen.getByText('Leer un rato')).toBeInTheDocument()
+  })
+
+  it('criterio 33 — un día futuro cuenta planeado frente a libre, sin «ahora» ni «te quedan»', () => {
+    plansByDate = { '2026-09-19': [block19('p1', 'Leer un rato', '09:00', '09:30')] }
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    const budget = document.getElementById('vida-budget-heading')?.closest('section')
+    expect(budget).toHaveTextContent('planeado 30m de 16h 30')
+    expect(screen.queryByText(/te quedan/i)).not.toBeInTheDocument()
+    expect(screen.queryByText('Ahora')).not.toBeInTheDocument()
+    expect(screen.queryByText(/en \d+ min/)).not.toBeInTheDocument()
+    expect(document.getElementById('vida-budget-heading')).not.toHaveTextContent('9:24')
+  })
+
+  it('criterio 35 — fuera de la ventana no se navega: se recorta y se explica', () => {
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-11-30'] },
+    })
+
+    // Recortado al domingo 27, que es el último día alcanzable.
+    expect(screen.getByText('Domingo 27')).toBeInTheDocument()
+    expect(
+      screen.getByText('Se planea esta semana y la que viene: hasta el domingo 27.'),
+    ).toBeInTheDocument()
+    // Y no hay ningún botón de «semana siguiente» que no lleve a ninguna parte.
+    expect(screen.queryByRole('button', { name: /siguiente|anterior/i })).not.toBeInTheDocument()
+  })
+
+  it('criterio 36 — «Copiar del <día> pasado» dice cuántos bloques trae y los trae', () => {
+    plansByDate = {
+      '2026-09-12': [
+        { ...block('v1', 'Compra de la semana', '10:00', '11:00'), date: '2026-09-12' },
+        { ...block('v2', 'Leer un rato', '18:00', '18:30'), date: '2026-09-12' },
+      ],
+    }
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.getByText('Trae 2 bloques, con sus horas.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Copiar del sábado pasado' }))
+
+    expect(setMutation.mutate).toHaveBeenCalledWith({
+      date: '2026-09-19',
+      items: [
+        { activityId: 'a-v1', startTime: '10:00', endTime: '11:00', orderIndex: 0 },
+        { activityId: 'a-v2', startTime: '18:00', endTime: '18:30', orderIndex: 1 },
+      ],
+    })
+  })
+
+  it('criterio 36 — si aquel día no tuvo plan, el botón está apagado y dice por qué', () => {
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.getByRole('button', { name: 'Copiar del sábado pasado' })).toBeDisabled()
+    expect(
+      screen.getByText('Ese sábado no tuviste plan, así que no hay nada que traer.'),
+    ).toBeInTheDocument()
+  })
+
+  it('criterio 36 — en un día que ya tiene plan, copiar no se ofrece (D7)', () => {
+    plansByDate = {
+      '2026-09-19': [block19('p1', 'Leer un rato', '09:00', '09:30')],
+      '2026-09-12': [{ ...block('v1', 'Compra', '10:00', '11:00'), date: '2026-09-12' }],
+    }
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.queryByRole('button', { name: /copiar del/i })).not.toBeInTheDocument()
+  })
+
+  it('criterio 37 — «Vaciar y rehacer» pide confirmación nombrando cuántos bloques', async () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vaciar y rehacer' }))
+
+    expect(screen.getByText('¿Vaciar el plan de este día?')).toBeInTheDocument()
+    expect(screen.getByText(/Se van 3 bloques/)).toBeInTheDocument()
+    expect(setMutation.mutate).not.toHaveBeenCalled()
+
+    // Confirmar deja el día sin plan con **una sola** operación.
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Vaciar el día' }))
+    })
+    expect(setMutation.mutate).toHaveBeenCalledWith({ date: '2026-09-18', items: [] })
+  })
+
+  it('criterio 37 — la salida del diálogo es «Volver», nunca «Cancelar» (criterio 56)', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vaciar y rehacer' }))
+
+    expect(screen.getByRole('button', { name: 'Volver' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /cancelar|eliminar/i })).not.toBeInTheDocument()
+  })
+
+  it('criterio 38 — un día pasado es solo lectura: ni fichas, ni «+ otra cosa», ni «···»', () => {
+    plansByDate = {
+      '2026-09-17': [{ ...block('x1', 'Leer un rato', '09:00', '09:30'), date: '2026-09-17' }],
+    }
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    expect(screen.getByText('Jueves 17')).toBeInTheDocument()
+    // Ni fichas —ni siquiera como texto— ni «+ otra cosa» en la agenda
+    // (criterio 38). El lateral «Tu plantilla de jueves» sigue siendo lectura y
+    // por eso se mira **dentro** de la agenda, no en toda la página.
+    const agendaList = document.querySelector('ol[data-tone]')
+    expect(agendaList).not.toBeNull()
+    expect(within(agendaList as HTMLElement).queryByText('Poner lavadora')).toBeNull()
+    expect(within(agendaList as HTMLElement).queryByText('+ otra cosa')).toBeNull()
+    expect(screen.queryByRole('button', { name: /^poner /i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /más opciones/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /copiar del/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Vaciar y rehacer' })).not.toBeInTheDocument()
+  })
+
+  it('criterio 38 — y lo dice sin reprochar nada (criterio 56)', () => {
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    expect(
+      screen.getByText(/Este día ya pasó: aquí queda como lo planeaste, para mirarlo/),
+    ).toBeInTheDocument()
+    expect(document.body.textContent ?? '').not.toMatch(
+      /desperdici|perdiste|fallaste|no cumpliste/i,
+    )
   })
 })

@@ -10,4 +10,12 @@ export const vidaPaths = {
   categorias: '/app/vida/categorias',
   /** El horario del día: en el popover «Ajustes» del módulo, como en hábitos. */
   ajustes: '/app/vida/ajustes',
+  /**
+   * Otro día en la misma pantalla: `?d=YYYY-MM-DD` (tajada 4 de FEAT-003).
+   *
+   * **Un solo sitio construye esta URL.** El día visto no es un segmento de
+   * ruta a propósito: así `hoy` no se duplica, `app-nav.config.ts` sigue siendo
+   * la única fuente de destinos y la píldora del módulo se enciende igual.
+   */
+  hoyForDate: (date: string) => `/app/vida/hoy?d=${date}`,
 } as const

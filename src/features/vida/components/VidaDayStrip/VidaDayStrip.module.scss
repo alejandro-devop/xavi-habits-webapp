@@ -1,0 +1,118 @@
+/* La tira de días de Hoy. Mismo vidrio que el presupuesto, más plana: es
+   navegación, no contenido. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+/* A 375 px los siete días caben repartidos; si el idioma o el ancho aprietan,
+   la tira hace scroll **ella sola** y no arrastra la página (criterio 53). */
+.days {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.days::-webkit-scrollbar {
+  display: none;
+}
+
+.day {
+  flex: 1 1 0;
+  min-width: 2.75rem;
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.4rem 0.15rem 0.35rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.85rem;
+  background: var(--aura-glass-1);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.link:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  color: var(--color-text);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* El día que se está viendo: relleno sólido y borde mint, como el render. */
+.link[data-selected='true'] {
+  border-color: color-mix(in srgb, var(--color-primary) 55%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--aura-glass-2, transparent));
+  color: var(--color-text);
+}
+
+/* Un día pasado se lee, pero se nota que no se toca (D3). El contraste sigue
+   siendo el de texto secundario: no se apaga hasta hacerlo ilegible. */
+.link[data-past='true'] .number {
+  font-weight: 600;
+}
+
+.weekday {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.link[data-today='true'] .weekday {
+  color: var(--color-primary-strong, var(--color-primary));
+}
+
+.number {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+/* El punto: rayado con plan, hueco sin él (criterio 32). Las rayas son las
+   mismas del tramo «planeado» de la barra del presupuesto: el mismo dato se
+   dibuja igual en los dos sitios. */
+.dot {
+  margin-top: 0.15rem;
+  width: 1rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.dot[data-state='plan'] {
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary) 70%, transparent) 0 3px,
+    color-mix(in srgb, var(--color-primary) 25%, transparent) 3px 6px
+  );
+}
+
+.dot[data-state='pending'] {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.edge {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+}

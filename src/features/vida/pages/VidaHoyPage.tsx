@@ -1,15 +1,23 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaAgendaBlock } from '@/features/vida/components/VidaAgendaBlock'
 import { VidaAgendaGap } from '@/features/vida/components/VidaAgendaGap'
+import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
+import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
 import { useAddDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
+import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
-import type { AgendaBlock, AgendaGap } from '@/features/vida/utils/vida-agenda.utils'
+import type {
+  AgendaBlock,
+  AgendaGap,
+  GapSuggestions,
+} from '@/features/vida/utils/vida-agenda.utils'
 import {
   buildDayAgenda,
   buildGuidanceLine,
@@ -26,10 +34,16 @@ import {
 import { minutesToTime } from '@/features/vida/utils/vida-time.utils'
 import {
   VIDA_DAY_LABELS,
+  formatDayHeading,
   getCurrentLocalDate,
   getVidaDayOfWeek,
-  isToday as isTodayDate,
 } from '@/features/vida/utils/vida-date.utils'
+import {
+  buildDayStrip,
+  clampToPlanningWindow,
+  describePlanningWindowEdge,
+  isEditableDate,
+} from '@/features/vida/utils/vida-window.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 import { Card } from '@/shared/ui/Card'
@@ -39,6 +53,18 @@ import { Skeleton } from '@/shared/ui/Skeleton'
 import styles from './VidaHoyPage.module.scss'
 
 const SUBTITLE = 'Tu día repartido, y dónde te queda sitio.'
+
+/** Un hueco de un día pasado no ofrece nada: se mira (D3, criterio 38). */
+const NO_SUGGESTIONS: GapSuggestions = { visible: [], hiddenCount: 0, templateCount: 0 }
+
+/** El subtítulo cambia con el día que se mira: la pantalla sigue siendo «Hoy». */
+function subtitleFor(date: string, isToday: boolean, isPast: boolean): string {
+  if (isToday) return SUBTITLE
+  const heading = formatDayHeading(date).toLowerCase()
+  return isPast
+    ? `Así quedó planeado el ${heading}.`
+    : `Estás planeando el ${heading}: cómo va a quedar y dónde te queda sitio.`
+}
 
 /**
  * Hoy: el presupuesto del día arriba y la agenda debajo.
@@ -58,13 +84,30 @@ const SUBTITLE = 'Tu día repartido, y dónde te queda sitio.'
  * cargando, error con reintento, y el día sin plan.
  */
 export function VidaHoyPage() {
-  // La fecha es **local**: a las 23:30 sigue siendo hoy (criterio 49). El día
-  // visto sale de la URL en la tajada 4; aquí es siempre hoy.
-  const date = getCurrentLocalDate()
-  const isToday = isTodayDate(date)
+  // La fecha es **local**: a las 23:30 sigue siendo hoy (criterio 49).
+  //
+  // El día visto sale de la URL: `?d=YYYY-MM-DD` (criterio 34). Recargar y el
+  // «atrás» del navegador salen gratis, la ruta sigue siendo una —y por eso la
+  // píldora «Hoy» del módulo sigue encendida—, y lo que venga fuera de la
+  // ventana de D5 se recorta a su borde en vez de dejar la pantalla en blanco.
+  const [searchParams] = useSearchParams()
+  const today = getCurrentLocalDate()
+  const date = clampToPlanningWindow(searchParams.get('d'), today)
+  const isToday = date === today
+  const isPast = date < today
+  // Un día pasado **no se toca** (D3, criterio 38): sin fichas, sin «+ otra
+  // cosa», sin «···», sin copiar ni vaciar. Se mira.
+  const canPlan = isEditableDate(date, today)
   const { minutes: nowMinutes, label: nowLabel } = useVidaNowMinute(isToday)
   const { planItems, suggestions, dayHours, isDisabled, isPending, isPlanError, failed, refetch } =
     useVidaDayData(date)
+
+  // La tira: siete días desde dos antes del que se mira, con un punto por día.
+  // Cada punto es **la misma consulta** que la agenda de ese día
+  // (`vidaKeys.dayPlan.byDate`), así que el día abierto no se pide dos veces y
+  // escribir en un día refresca su punto sin invalidación nueva.
+  const stripDays = useMemo(() => buildDayStrip(date, today), [date, today])
+  const weekPlans = useVidaWeekPlans(useMemo(() => stripDays.map((day) => day.date), [stripDays]))
 
   const dayLabel = VIDA_DAY_LABELS[getVidaDayOfWeek(date)]
 
@@ -169,17 +212,30 @@ export function VidaHoyPage() {
   // si se repitiera con cada tic del minuto, la pantalla daría saltos mientras
   // se lee.
   const nowRef = useRef<HTMLLIElement | null>(null)
-  const hasScrolledToNow = useRef(false)
+  // Por día, y no una sola vez en la vida del componente: al volver de otro día
+  // la marca de «Ahora» vuelve a existir y hay que ir a ella otra vez.
+  const scrolledForDate = useRef<string | null>(null)
   useEffect(() => {
-    if (hasScrolledToNow.current) return
+    if (scrolledForDate.current === date) return
     const node = nowRef.current
     if (!node) return
-    hasScrolledToNow.current = true
+    scrolledForDate.current = date
     node.scrollIntoView({ block: 'center' })
-  }, [agenda])
+  }, [agenda, date])
 
   function header() {
-    return <PageHeader title="Hoy" subtitle={SUBTITLE} />
+    return <PageHeader title="Hoy" subtitle={subtitleFor(date, isToday, isPast)} />
+  }
+
+  /** La tira se pinta en todos los estados: cambiar de día no depende del día. */
+  function strip() {
+    return (
+      <VidaDayStrip
+        days={stripDays}
+        plans={weekPlans.byDate}
+        edgeNote={describePlanningWindowEdge(today)}
+      />
+    )
   }
 
   if (isDisabled) {
@@ -208,6 +264,7 @@ export function VidaHoyPage() {
     return (
       <div className={styles.root}>
         {header()}
+        {strip()}
         <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
           <Skeleton width="100%" height={112} radius="1.25rem" />
           {[0, 1, 2].map((row) => (
@@ -226,6 +283,7 @@ export function VidaHoyPage() {
     return (
       <div className={styles.root}>
         {header()}
+        {strip()}
         <Alert variant="danger" title="No pudimos cargar tu día">
           <p className={styles.errorText}>
             Revisa tu conexión e inténtalo otra vez; tu plan sigue guardado.
@@ -246,7 +304,10 @@ export function VidaHoyPage() {
   // —«la primera entrada que empieza después de ahora»— y por eso desaparecía
   // media jornada; es el defecto por el que volvió la tajada.
   const agendaList = (
-    <ol className={styles.agenda}>
+    // En un día que no es hoy la agenda va en **trazo más suave** (criterio
+    // 33): es un plan, no lo que está pasando. Se apagan los bordes, no el
+    // texto: el contraste de lo que se lee no se toca (criterio 55).
+    <ol className={styles.agenda} data-tone={isToday ? undefined : 'plan'}>
       {agenda.entries.map((entry) => {
         if (entry.kind === 'now') {
           return (
@@ -264,17 +325,30 @@ export function VidaHoyPage() {
                 block={entry}
                 isNext={entry.id === nextBlockId}
                 nowMinutes={nowMinutes}
-                date={date}
-                onEdit={editBlock}
+                // Sin `date` el bloque no pinta el «···»: en un día pasado no
+                // hay nada que quitar ni que cambiar de hora (criterio 38).
+                date={canPlan ? date : null}
+                onEdit={canPlan ? editBlock : undefined}
               />
             ) : (
               <VidaAgendaGap
                 gap={entry}
                 dayLabel={dayLabel}
-                showTemplateHint={entry.id === firstRealGapId}
-                suggestions={suggestionsForGap({ suggestions, gap: entry, planItems })}
-                onPlaceSuggestion={placeSuggestion}
-                onOpenSheet={(gap) => openSheet({ kind: 'place', gapWindow: gapToWindow(gap) })}
+                showTemplateHint={canPlan && entry.id === firstRealGapId}
+                // En un día pasado el hueco **no ofrece nada**: ni fichas, ni
+                // «+ otra cosa» (criterio 38). Ofrecer algo para un rato que ya
+                // pasó sería un control que no lleva a ninguna parte.
+                suggestions={
+                  canPlan
+                    ? suggestionsForGap({ suggestions, gap: entry, planItems })
+                    : NO_SUGGESTIONS
+                }
+                onPlaceSuggestion={canPlan ? placeSuggestion : undefined}
+                onOpenSheet={
+                  canPlan
+                    ? (gap) => openSheet({ kind: 'place', gapWindow: gapToWindow(gap) })
+                    : undefined
+                }
                 isPlacing={addMutation.isPending}
               />
             )}
@@ -287,6 +361,7 @@ export function VidaHoyPage() {
   return (
     <div className={styles.root}>
       {header()}
+      {strip()}
 
       {failed.length > 0 ? (
         // Una consulta caída y las otras no: se dice **qué** falta en vez de
@@ -314,14 +389,32 @@ export function VidaHoyPage() {
             nowLabel={nowLabel}
           />
 
+          {/* Un día pasado se dice **sin reproche** (D3, criterio 56): se
+              cuenta lo que es, no lo que faltó. Lo que no se registró se
+              arregla en F3, no aquí. */}
+          {isPast ? (
+            <p className={styles.readOnly}>
+              Este día ya pasó: aquí queda como lo planeaste, para mirarlo. Los días de atrás no se
+              cambian.
+            </p>
+          ) : null}
+
           {!hasPlan ? (
             <p className={styles.noPlan}>
-              Aún no hay plan para hoy.{' '}
+              {isPast
+                ? `Ese ${dayLabel} no llegó a tener plan.`
+                : isToday
+                  ? 'Aún no hay plan para hoy.'
+                  : `Todavía no hay plan para el ${formatDayHeading(date).toLowerCase()}.`}{' '}
               {templateCount > 0
                 ? `Tu plantilla trae ${templateCount} ${templateCount === 1 ? 'cosa' : 'cosas'} los ${dayLabel}.`
                 : 'Tu plantilla todavía no trae nada para este día.'}
             </p>
           ) : null}
+
+          {/* Los dos atajos del día, solo donde se puede planear (criterios 36
+              y 37): en un día pasado esta fila no existe. */}
+          {canPlan ? <VidaDayActions date={date} planItems={planItems} /> : null}
 
           {agendaList}
         </div>
@@ -329,7 +422,7 @@ export function VidaHoyPage() {
         <VidaTemplateAside dayLabel={dayLabel} suggestions={suggestions} planItems={planItems} />
       </div>
 
-      {sheet ? (
+      {sheet && canPlan ? (
         <VidaPlaceInGapSheet
           key={sheetSession}
           open={sheetOpen}

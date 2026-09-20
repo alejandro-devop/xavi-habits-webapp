@@ -51,6 +51,25 @@
   line-height: 1.5;
 }
 
+/* Un día pasado: se dice que se mira y no se toca, sin reproche (D3). Mismo
+   tamaño que el resto del texto secundario; no es una advertencia. */
+.readOnly {
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px dashed var(--color-glass-border);
+  border-radius: 0.85rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Un día que no es hoy va en **trazo suave** (criterio 33): se apaga el borde
+   y el relleno de las tarjetas, nunca el texto. */
+.agenda[data-tone='plan'] > li > :is(article, section) {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--aura-glass-1) 70%, transparent);
+}
+
 /* ── La marca de «Ahora» ─────────────────────────────────────────────────── */
 
 /* Una línea de violeta con su píldora, como en el render. No es un separador

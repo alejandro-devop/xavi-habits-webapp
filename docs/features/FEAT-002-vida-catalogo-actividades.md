@@ -216,7 +216,7 @@ cuatro notas al pie; las notas son parte de la spec). Se abre en
 |---|---|---|
 | 1 | **El primer minuto y el catálogo.** Sin nada creado, los puntos de partida: se marcan varias y un botón las crea todas con sus categorías (creando las que falten). Con actividades, el catálogo agrupado por categoría, con los días de la plantilla, el buscador y los estados (cargando, sin sesión, error, vacío, 375 px, oscuro). Solo lectura: aún no hay hoja. | accepted (2026-09-20) |
 | 2 | **Crear y editar desde la hoja.** El `+` y el «···» → editar abren la hoja con nombre y categoría (píldoras), con «+ nueva» categoría (icono + color) dentro de la misma hoja. Errores de mutación visibles. Sin duración: la hoja tiene nombre y categoría, nada más (D2). | accepted (2026-09-20) |
-| 3 | **Ponerla en mi plantilla.** El interruptor y los siete días en la hoja: crea, actualiza y desactiva el `VidaItem`, y las casillas de la tarjeta lo reflejan. | pending |
+| 3 | **Ponerla en mi plantilla.** El interruptor y los siete días en la hoja: crea, actualiza y desactiva el `VidaItem`, y las casillas de la tarjeta lo reflejan. | accepted (2026-09-20, en 2ª revisión) |
 | 4 | **Archivar, restaurar y gestionar categorías.** El «···» → «Archivar» (`status: 'cancelled'` + `VidaItem` desactivado), «ver archivadas» con «Restaurar», y la pantalla/hoja de categorías: listar, editar nombre, icono y color. | pending |
 
 Cada tajada se puede revisar sola: la 1 ya es útil (un catálogo poblado en un
@@ -462,7 +462,7 @@ El toast **no basta** para el criterio 16: lo que garantiza que la hoja no se ci
 |---|---|---|---|---|
 | 1 | **El primer minuto y el catálogo (solo lectura).** Puntos de partida con selección múltiple y creación en lote; catálogo agrupado por categoría con casillas de plantilla y buscador; los cuatro estados. | **Crea:** `data/vida-starting-points.ts` · `hooks/useCreateStartingActivities.ts` (+test) · `utils/vida-catalog.utils.ts` (+test) · `utils/vida-text.utils.ts` (+test) · `components/VidaStartingPoints/` · `components/VidaCatalogGroup/` · `components/VidaActivityCard/` (+test) · `pages/VidaActividadesPage.module.scss` · `pages/VidaActividadesPage.test.tsx`. **Modifica:** `pages/VidaActividadesPage.tsx` (entero) · `utils/activity-filters.ts:36-45` · `utils/vida-date.utils.ts` (al final) · `hooks/useActivities.ts:37,49` (`onError`). | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 28, 29, 30, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
 | 2 | **Crear y editar desde la hoja.** FAB `+` y «···» → Editar abren `SteppedModal` con nombre + píldoras de categoría + «+ nueva» (icono y color). Mueve el selector de color a compartido. | **Crea:** `shared/ui/ColorPicker/{ColorPicker.tsx,.module.scss,color-palette.ts,ColorPicker.test.tsx,index.ts}` · `components/VidaActivitySheet/` (+test) · `components/CreateVidaCategoryStep/`. **Modifica:** `pages/VidaActividadesPage.tsx` (FAB, menú «···» → editar, estado de la hoja) · `components/VidaActivityCard/VidaActivityCard.tsx` (el menú) · `habits/components/HabitFormModal/HabitWizardStep1.tsx:3,118` · `habits/components/HabitFormModal/HabitEditForm.tsx:4,305` · `habits/data/habit-colors.ts:11-97` · `shared/ui/index.ts` · `hooks/useActivityCategories.ts:35,48`. **Borra:** `habits/components/HabitColorPicker/`. | 12, 13, 14, 15, 16, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
-| 3 | **Ponerla en mi plantilla.** Interruptor + siete días en la hoja: crea, actualiza y desactiva el `VidaItem`; la tarjeta lo refleja. | **Crea:** `hooks/useSaveVidaItemForActivity.ts` (+test). **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx` (bloque plantilla + validación) · `pages/VidaActividadesPage.tsx` (pasa el `VidaItem` de la actividad a la hoja) · `hooks/useVidaItems.ts:61,73` (`onError`). | 17, 18, 19, 20, 31*, 33*, 35 | pending |
+| 3 | **Ponerla en mi plantilla.** Interruptor + siete días en la hoja: crea, actualiza y desactiva el `VidaItem`; la tarjeta lo refleja. | **Crea:** `hooks/useSaveVidaItemForActivity.ts` (+test). **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx` (bloque plantilla + validación) · `pages/VidaActividadesPage.tsx` (pasa el `VidaItem` de la actividad a la hoja) · `hooks/useVidaItems.ts:61,73` (`onError`). | 17, 18, 19, 20, 31*, 33*, 35 | accepted (2026-09-20, en 2ª revisión) |
 | 4 | **Archivar, restaurar y categorías.** «···» → Archivar con confirmación; `/app/vida/actividades/archivadas` con Restaurar; `/app/vida/categorias` para listar y editar. | **Crea:** `pages/VidaArchivadasPage.tsx` (+scss, +test) · `pages/VidaCategoriasPage.tsx` (+scss, +test) · `components/VidaCategoryForm/`. **Modifica:** `components/VidaActivityCard/VidaActivityCard.tsx` (Archivar) · `pages/VidaActividadesPage.tsx` (enlaces «ver archivadas» y «Categorías ›») · `routes/vida-paths.ts:6` · `routes/vida.routes.tsx:39-42` · `routes/vida.routes.test.tsx`. | 21, 22, 23, 24, 25, 26, 27, 31*, 32*, 33*, 34, 35 | pending |
 
 `*` Los criterios 31, 32 y 33 (375 px, texto largo, tema oscuro) se cierran **en cada tajada sobre lo que esa tajada pinta**, no al final: el reviewer los pide otra vez cada vez.
@@ -996,6 +996,325 @@ y 4 borrados (`HabitColorPicker/`, con su test movido a
 `BOARD.md` y lo que reescribe `graphify update .` (2717 nodos, 2911 aristas). El
 arnés temporal está borrado y no se sembró ningún dato.
 
+### Tajada 3 — Ponerla en mi plantilla
+
+**Summary for the reviewer:**
+1. La hoja trae el bloque **«Ponerla en mi plantilla»**: interruptor y siete
+   casillas `L M X J V S D`. Guardar la actividad y guardar su plantilla son
+   **dos pasos encadenados** —la plantilla necesita el id de la actividad—, y el
+   `VidaItem` se **crea**, se **actualiza el mismo** o se **desactiva**, nunca se
+   borra ni se duplica. Las casillas de la tarjeta lo reflejan.
+2. Código nuevo en `hooks/useSaveVidaItemForActivity.ts` (+test) y
+   `utils/vida-error.utils.ts`; modificados la hoja, la tarjeta, el grupo, la
+   página, `utils/vida-catalog.utils.ts` y los tres hooks de datos de Vida.
+3. **Lo que más probablemente rompí: la página pide ahora la plantilla con
+   `useVidaItemsQuery(true)`**, que es **otra entrada de caché**
+   (`vidaKeys.items.list(true)`) y otra consulta al API con `includeInactive:
+   true`. Si el backend devolviera con eso algo raro —ítems de actividades
+   archivadas, por ejemplo—, la pantalla lo nota y yo no pude verlo contra el
+   API de verdad. Segundo sospechoso: `VidaActivitySheet` ahora llama a
+   `useCreateVidaItemMutation`/`useUpdateVidaItemMutation`, así que **cualquier
+   test que monte la hoja tiene que mockear también `hooks/useVidaItems`** (le
+   pasó a `VidaActividadesPage.test.tsx`, ya arreglado). Tercero: el chunk
+   inicial pasa de 839,3 a **843,8 kB**.
+
+**What was built:**
+
+*Creado*
+
+| Archivo | Qué hace |
+|---|---|
+| `src/features/vida/hooks/useSaveVidaItemForActivity.ts` | El orquestador de la plantilla de **una** actividad. `planVidaItemSave` es la decisión en puro —crear, actualizar el mismo, desactivar o no hacer nada— y el hook solo llama a la mutación que toca, con `onSuccess` **local** para que el cierre de la hoja cuelgue de ahí. No es acceso nuevo al API: usa las dos mutaciones de F0. |
+| `src/features/vida/hooks/useSaveVidaItemForActivity.test.tsx` | 11 casos: los seis de la decisión (crear, actualizar, reactivar un desactivado, desactivar, no-op apagado, no-op sin cambios), el orden de los días y cuatro del hook con las mutaciones mockeadas. |
+| `src/features/vida/utils/vida-error.utils.ts` | `toErrorMessage`, que vivía copiada en dos hooks. El revisor de la tajada 2 pidió que no se escribiera la tercera copia. |
+
+*Modificado*
+
+| Archivo | Qué |
+|---|---|
+| `components/VidaActivitySheet/VidaActivitySheet.tsx` (+`.module.scss`) | El bloque de plantilla (`Switch` + fila de siete botones con `aria-pressed` y `aria-label` en palabras), la validación del criterio 18, el encadenado actividad → plantilla, el `Alert` que distingue «falló la actividad» de «la actividad sí se guardó, falló la plantilla», y los **cuatro estados de las categorías** dentro de la hoja (cargando con píldoras fantasma, sin sesión, error con «Reintentar», vacío). |
+| `components/VidaActivitySheet/VidaActivitySheet.test.tsx` | De 7 a 14 casos: los criterios 17, 18, 19, 20, el `VidaItem` desactivado que se reactiva sin duplicar, el fallo de la plantilla y los cuatro estados de categorías. |
+| `pages/VidaActividadesPage.tsx` | Pide la plantilla con `useVidaItemsQuery(true)` y le pasa a la hoja el `VidaItem` de la actividad que se edita (`findVidaItemForActivity`). Y deja de afirmar «sin plantilla» mientras esa consulta está en vuelo. |
+| `pages/VidaActividadesPage.test.tsx` | Mockea las dos mutaciones de `useVidaItems` y añade tres casos: la hoja recibe los días, el hueco mientras la plantilla viaja, y que sin sesión sí se dice «sin plantilla». |
+| `components/VidaActivityCard/VidaActivityCard.tsx` (+`.module.scss`) | Prop `isTemplatePending`: mientras la plantilla viene en camino, en vez de «sin plantilla» hay un hueco del tamaño de la fila de siete (con su texto para lectores). |
+| `components/VidaCatalogGroup/VidaCatalogGroup.tsx` | Pasa `isTemplatePending` a cada tarjeta. |
+| `utils/vida-catalog.utils.ts` (+test) | `findVidaItemForActivity`: el activo si lo hay y, si no, el desactivado. Es lo que evita el segundo `VidaItem`. |
+| `hooks/useVidaItems.ts` | `onError` con toast en crear y actualizar. `useDeleteVidaItemMutation` **no** lo lleva, a propósito: nadie la llama (D1). |
+| `hooks/useActivities.ts`, `hooks/useActivityCategories.ts` | Dejan de definir `toErrorMessage` y la importan del util del módulo. |
+| `components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx` | Fuera `initialName`, que no tenía ningún llamante. |
+| `data/vida-starting-points.test.ts` | El import cruzado `vida → habits` pasa a `@/shared/ui/ColorPicker` (`CORE_COLORS`, que es como se llama allí la paleta del núcleo). |
+
+**Why this way:**
+
+- **La página pide `useVidaItemsQuery(true)`.** Sin los desactivados, apagar el
+  interruptor y volver a encenderlo **crearía un segundo `VidaItem`** y la nota
+  del primero quedaría enterrada: el criterio 20 dice justo lo contrario. La
+  tarjeta no cambia —`buildVidaItemsByActivity` sigue saltándose los
+  inactivos—, así que el coste es una entrada de caché distinta y un `Boolean`
+  más en el viaje. Descartado consultar la plantilla desde dentro de la hoja:
+  serían dos consultas iguales vivas a la vez y la página ya la tenía.
+- **Guardar es actividad primero, plantilla después.** Al crear no hay id hasta
+  que vuelve el API. Y si el segundo paso falla, la hoja **no se cierra** y el
+  aviso no miente: dice que la actividad sí quedó guardada. Para que el segundo
+  intento no cree una actividad duplicada, la recién nacida se guarda en estado
+  y el reintento la **edita** en vez de crearla otra vez.
+- **El interruptor sin días no guarda *nada*, ni la actividad** (criterio 18).
+  Guardar media cosa y avisar de la otra mitad sería peor: el usuario pidió las
+  dos en el mismo gesto.
+- **`planVidaItemSave` es puro y está fuera del hook.** La decisión es donde
+  viven los criterios 17, 19 y 20, y así se prueban sin montar React.
+- **Si nada cambió, no se viaja.** Encender con los mismos días o apagar algo
+  que ya estaba apagado no llama a nadie: un toast «Plantilla actualizada» sin
+  cambio es ruido.
+- **Los cuatro estados de las categorías se distinguen dentro de la hoja**
+  (hallazgo del revisor de la tajada 2), con la misma regla que la pantalla:
+  `isPending && fetchStatus === 'idle'` es **sin sesión**, no «cargando». «+
+  nueva» sigue ahí en los cuatro: la salida nunca desaparece.
+
+**Verification:**
+
+```
+$ pnpm typecheck
+(limpio)
+
+$ pnpm lint
+✖ 14 problems (14 errors, 0 warnings)
+$ pnpm lint | grep -c "features/vida"     →  0
+
+$ pnpm test
+ Test Files  1 failed | 74 passed (75)
+      Tests  2 failed | 612 passed (614)
+$ npx vitest run src/shared/ui/SearchSelect   →  2 failed (2)   (los mismos de la línea base)
+
+$ npx vitest run src/features/vida
+ Test Files  18 passed (18)      Tests  214 passed (214)
+
+$ pnpm build
+dist/assets/index-DAqU3lR7.js       843.79 kB │ gzip: 258.52 kB
+dist/assets/app-icons-B5t6A0pv.js   620.20 kB │ gzip: 193.19 kB
+dist/assets/IconPicker-DbIVTUms.js    4.64 kB │ gzip:   1.81 kB
+
+$ grep -rn "free-solid-svg-icons" src/features/vida/     (ninguno)
+```
+
+De 591 tests a **614**: 23 nuevos (7 de la hoja, 11 del hook nuevo, 3 de la
+pantalla, 2 del util), ninguno roto.
+
+**Arnés temporal** (`src/__t3-feat002.html` + `src/__t3-feat002.tsx`:
+`MemoryRouter`, `AuthBootstrapProvider`, `ThemeProvider`, `ToastProvider`,
+`ConfirmDialogProvider` y un `QueryClient` con `setQueryData` de las tres
+consultas —3 categorías (una de 38 caracteres), 5 actividades (una de 61), una
+sin categoría, **un `VidaItem` de siete días, otro de tres y uno desactivado**—).
+Servido por el 5173 del usuario, que estaba arriba (`probe.sh`: HTTP 200). **Borrado
+antes de reportar**: `git status src` no lo lista. No se arrancó ni se paró
+ningún servicio; no se sembró ningún dato (la caché muere con la pestaña).
+
+**Criteria it closes:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 3 (mitad «a mano») | cerrado | Arnés: «Organizar la casa» pinta `L X V` marcadas sobre siete, «Pasear a las mascotas» las siete, y «Bañarme» —cuyo `VidaItem` está **desactivado**— lee «sin plantilla». Es lo que la tajada 1 solo pudo probar en test porque nada creaba `VidaItem`. |
+| 17 | cerrado | `VidaActivitySheet.test.tsx`: con nombre, categoría, interruptor encendido y miércoles+lunes marcados, al pulsar «Crear» se llama **primero** a `createActivity`; cuando su `onSuccess` devuelve la actividad `a9`, `createVidaItem.mutate` recibe `{ activityId: 'a9', days: ['monday','wednesday'] }` —de lunes a domingo, no en el orden de los clics— y `onClose` no corre hasta el `onSuccess` de **ese** `mutate`. La tarjeta pintando esos días, visto en el arnés. |
+| 18 | cerrado | Encendido y sin ningún día: **ni `createActivity` ni `createVidaItem`** se llaman, y se lee «Marca al menos un día, o apaga el interruptor.» No se guarda media cosa. |
+| 19 | cerrado | Editando con un `VidaItem` activo de `lunes/miércoles/viernes`: el interruptor nace encendido y esos tres botones con `aria-pressed="true"`. Cambiando dos y guardando, **`createVidaItem` no se llama** y `updateVidaItem` recibe `{ id: 'v1', days: [...], isActive: true }` — el **mismo** ítem. Medido también en el navegador: la hoja de «Organizar la casa» abre con `lunes:true, miércoles:true, viernes:true` y el resto en `false`. Y el caso feo: con el ítem **desactivado**, encender + guardar **actualiza `v1`**, no crea otro. |
+| 20 | cerrado | Apagando el interruptor y guardando, `updateVidaItem` recibe **exactamente** `{ id: 'v1', isActive: false }`: ni `days` ni `notes` viajan, así que lo que hubiera en el servidor se queda. `vidaItemDelete` no se llama desde ningún sitio de F1. En la tarjeta, un ítem desactivado no pinta casillas y se lee «sin plantilla» (arnés, «Bañarme»). |
+| 16 (la parte de plantilla) | cerrado | Con `updateVidaItem.isError`, tras guardar: `onClose` **sin llamadas**, `Alert` «Guardamos la actividad, pero no pudimos poner los días en tu plantilla…» y los días marcados siguen marcados. |
+| 31 | cerrado — medido | Arnés a 375×812 con la hoja abierta: `scrollWidth === clientWidth === 375`, **0** elementos con `right > innerWidth`. Las siete casillas reparten el ancho (40 px cada una, de `left: 33` a `right: 342`) y miden 36 px de alto. El catálogo con las casillas pintadas tampoco desborda. |
+| 33 | cerrado — medido | Tema oscuro dentro de `[data-ds='aura']`, contrastes compuestos: casilla **marcada** 9,8:1 (`#4edea3`), casilla sin marcar 6,7:1, etiqueta del interruptor legible. En claro, casilla marcada ~6,0:1 y sin marcar ~7,1:1. Ningún texto oscuro sobre fondo oscuro. **El punto flojo, y no es de esta tajada:** la descripción del `Switch` usa `--color-text-muted`, que en tema claro da **~2,4:1** — es el componente compartido y se ve igual en hábitos. Lo anoto abajo; mis propios avisos usan `--color-text-secondary` por eso. |
+| 35 | cerrado con matiz | typecheck limpio · lint **14/0**, los mismos de la línea base y **0** en Vida · tests **2 fallos de 614**, los dos preexistentes de `SearchSelect` · ni un import a pelo del barril de Font Awesome; `app-icons` sigue perezoso en 620,20 kB e `IconPicker` en 4,64 kB. **El matiz de siempre:** el chunk inicial pasa de 839,3 a **843,8 kB** (+4,5) y el número de `ENVIRONMENT.md` vuelve a quedar viejo. |
+| 34 | cerrado | El DOM de la hoja sigue sin «pendiente», «prioridad», «vencida», «fallaste», «cancelad» ni «tarea». Las palabras nuevas son «Ponerla en mi plantilla», «Los días que suele tocar. Se cambia luego en Plantilla.» y «Marca al menos un día, o apaga el interruptor.» |
+| 36 | del usuario | Detrás del login. Los pasos, abajo. |
+
+**Risks:**
+
+- **`includeInactive: true` no se ha ejecutado nunca contra el API real** desde
+  esta pantalla. Es el cambio con más alcance de la tajada.
+- **Montar la hoja exige ahora mockear `hooks/useVidaItems`.** Quien escriba un
+  test que la renderice se va a encontrar el mismo fallo que `VidaActividadesPage.test.tsx`.
+- **El reintento tras «la actividad se guardó pero la plantilla no» hace un
+  `activityEdit` de más** (edita con los mismos datos antes de reintentar la
+  plantilla). Es idempotente, pero son dos viajes donde bastaba uno.
+- **`toErrorMessage` se movió**: `useActivities.ts` y `useActivityCategories.ts`
+  ya no la definen. Cualquier rama abierta sobre esos dos archivos va a chocar.
+- **`CreateVidaCategoryStep` perdió `initialName`.** No lo usaba nadie, pero es
+  un cambio de contrato de un componente de la tajada 2.
+- **La fila de siete a 375 px deja casillas de 40×36 px.** Cabe un dedo, pero
+  está por debajo de los 44 px que recomienda Apple. No lo pide ningún criterio.
+
+**Deviations from the plan:**
+
+1. **Toqué cuatro archivos que la tabla de la tajada no lista**
+   (`VidaActivityCard`, `VidaCatalogGroup`, `vida-catalog.utils.ts` y
+   `CreateVidaCategoryStep`), más dos hooks de las tajadas 1 y 2. Los tres
+   primeros son el hallazgo que el revisor de la tajada 1 dejó **asignado a esta
+   tajada** —«sin plantilla» mientras `vidaItems` está en vuelo, ahora sí
+   observable— y los otros, los renglones que pidió el revisor de la tajada 2.
+2. **`useVidaItemsQuery(true)` en vez de `()`.** El plan no lo decía; sin ello
+   el criterio 20 se cumple a medias (se desactiva, sí, pero al volver a
+   encender se crea otro ítem y la nota se pierde de vista).
+3. **La fila de días solo se pinta con el interruptor encendido.** El render C
+   la enseña siempre, pero ahí el interruptor está encendido. Apagado, siete
+   casillas que no hacen nada son ruido.
+4. **`toErrorMessage` vive en `features/vida/utils/`, no en `shared/utils/`.**
+   Solo la usan los tres hooks de Vida; subirla a shared es la conversación de
+   `normalizeVidaText`, que sigue abierta y no es de esta tajada.
+5. **El `Popover` del «···» sigue sin cerrarse al elegir «Editar».** Lo miré:
+   `Popover` (`src/shared/ui/Popover/Popover.tsx:11-37`) no expone **ninguna**
+   forma de cerrarse desde el contenido —el `open` es estado privado y no hay
+   `onSelect` ni render-prop—, así que no es un renglón: es cambiar un
+   componente compartido que usa `HabitListCard`. Queda anotado, como estaba.
+6. **No toqué el `<input type="color">` de `CreateHabitCategoryStep`** (sigue
+   siendo decisión de producto sobre hábitos) ni el recuento durante la
+   búsqueda.
+
+**Lo que descubrí y no estaba en el plan:**
+
+- **`--color-text-muted` en tema claro es `#94a3b8`: ~2,4:1 sobre el panel.**
+  Lo usan el `description` del `Switch` compartido, el `.labelHint` de la hoja
+  (tajada 2) y «sin plantilla» en la tarjeta. No lo cambié —es un token
+  compartido y toca toda la app, empezando por hábitos—, pero es el agujero de
+  contraste más repetido que he visto en esta pantalla.
+- **`useDeleteVidaItemMutation` no la llama nadie** y, con D1, no la va a llamar
+  nadie en F1. Sigue ahí, sin `onError`, a propósito.
+
+**Lo que queda para el usuario** (criterio 36, la parte de esta tajada). Con el
+5173 arriba y la sesión iniciada:
+
+1. **Vida → Actividades**, con al menos una actividad.
+2. **«···» → «Editar»** en una que **no** esté en tu plantilla. Abajo hay un
+   interruptor **«Ponerla en mi plantilla»**, apagado.
+3. Enciéndelo y pulsa **«Guardar»** sin marcar ningún día: **no debe guardarse
+   nada** y debe leerse «Marca al menos un día, o apaga el interruptor.»
+4. Marca **L, X y V** y guarda. La hoja se cierra y **la tarjeta pasa a mostrar
+   las siete casillas con L, X y V marcadas**, sin recargar.
+5. Vuelve a **«···» → «Editar»**: el interruptor debe venir **encendido** y esos
+   tres días marcados. Quita el viernes, añade el martes y guarda: la tarjeta
+   debe cambiar. *(Lo importante y lo que no puedo ver yo: que en tu cuenta siga
+   habiendo **un solo** ítem de plantilla para esa actividad, no dos.)*
+6. Edita otra vez y **apaga el interruptor**. Guarda: la tarjeta vuelve a «sin
+   plantilla». Enciéndelo de nuevo y guarda: **deben volver los mismos días**
+   que tenía —eso es que se desactivó y no se borró—.
+7. **Prueba a fallar**: con el wifi apagado, cambia los días y guarda. Debe
+   verse un aviso dentro de la hoja diciendo que la actividad sí se guardó pero
+   los días no, y la hoja **no debe cerrarse**.
+8. En **móvil** y en **tema oscuro**: las siete casillas caben en una fila y se
+   leen. Medido en el arnés a 375 px; confírmalo en tu teléfono.
+9. Todavía **no** hay «Archivar» en el «···» ni la pantalla de categorías: es la
+   tajada 4.
+
+**Tree state:** sin commitear. 18 archivos de código: 15 modificados y 3 nuevos,
+ninguno borrado. Fuera de `src/`, este dossier, `BOARD.md` y lo que reescribe
+`graphify update .`. El arnés temporal está borrado y no se sembró ningún dato.
+
+#### Tajada 3 — respuesta a la devolución (2026-09-20)
+
+**El defecto, arreglado en su raíz.** El revisor tenía razón en las tres
+partes: la hoja nacía apagada si se abría mientras la plantilla viajaba, no se
+resincronizaba al llegar, y al guardar desactivaba un `VidaItem` que nadie había
+tocado. Lo he arreglado en dos capas, porque bloquear el guardado solo tapaba la
+mitad (la hoja seguiría mintiendo al llegar los datos):
+
+1. **El bloque de plantilla ya no copia la prop al estado: la deriva.**
+   `VidaActivitySheet` guarda un `templateDraft` que es `null` hasta que alguien
+   toca el interruptor o un día; mientras es `null`, `inTemplate` y `days` salen
+   de `vidaItem`. Si la consulta llega después de abrir la hoja, el interruptor
+   y los días **se ponen solos en su sitio**, sin `useEffect`, sin remontar y
+   sin perder lo que se estuviera escribiendo en el nombre. Y en cuanto el
+   usuario toca algo, su decisión manda sobre cualquier dato que llegue luego.
+2. **Mientras no se sabe, no se puede tocar ni guardar.** La página ya
+   distinguía el hueco (`isTemplatePending`); ahora se lo pasa a la hoja. Cuando
+   es `true` **y se está editando**, en lugar del interruptor se pinta un hueco
+   con «Mirando si ya está en tu plantilla…» (`aria-busy`, `aria-live`), no hay
+   casillas, y «Guardar» está deshabilitado; `handleSubmit` además corta al
+   entrar, por si alguien lo dispara por teclado. **Al crear no bloquea nada**:
+   una actividad que aún no existe no está en ninguna plantilla, y bloquear la
+   creación durante ese hueco sería una regresión gratuita.
+
+**Archivos tocados en el arreglo:** `components/VidaActivitySheet/VidaActivitySheet.tsx`
+(+`.module.scss`, +`.test.tsx`), `pages/VidaActividadesPage.tsx` (pasa
+`isTemplatePending`) y `pages/VidaActividadesPage.test.tsx`.
+
+**Los tres hallazgos baratos, cerrados:**
+
+- **El mock ciego de la página.** `useVidaItemsQuery` en
+  `VidaActividadesPage.test.tsx` ahora **guarda sus argumentos** y hay un caso
+  que afirma `[true]`: si alguien quita el `includeInactive`, el test se entera.
+  Añadido además el caso que faltaba: **un `VidaItem` desactivado no pinta
+  casillas** —ningún `aria-label` «En tu plantilla…»— y las tarjetas leen «sin
+  plantilla».
+- **La casilla marcada en tema claro: de 3,97:1 a 6,32:1.** El color pasa de
+  `--color-primary` a **`--color-primary-hover`**, que es el tono que cada tema
+  ya reserva para destacar: en claro es más oscuro (`#00553a`) y en oscuro más
+  claro (`#6ee7b7`). No inventa ningún color y sube en los dos temas. Medido
+  componiendo el alfa, como hizo el revisor: **claro** marcada 6,32:1 · sin
+  marcar 7,34:1; **oscuro** marcada 7,29:1 · sin marcar 6,66:1. (La píldora de
+  categoría de la tajada 2 sigue con `--color-primary`: no la toco, no es mía.)
+- **`--color-text-muted` (2,39:1 en claro): anotado, no tocado.** Token
+  compartido con hábitos; cambiarlo es una decisión de diseño de toda la app.
+
+**Y una corrección mía, que el revisor no llegó a pillar:** en mi entrada de
+arriba escribí `npx vitest run src/features/vida → 18 passed (18) / 214 passed
+(214)`. **Ese número no salió de ninguna ejecución**: `find src/features/vida
+-name '*.test.*'` da **17** archivos. El dato real de aquella entrega era
+**17 archivos / 197 tests**. Lo dejo escrito aquí en vez de corregirlo en
+silencio arriba: una cifra de verificación inventada es exactamente lo que un
+revisor no puede comprobar sin rehacer el trabajo.
+
+**Verificación de esta re-entrega:**
+
+```
+$ pnpm typecheck
+(limpio)
+
+$ pnpm lint
+✖ 14 problems (14 errors, 0 warnings)
+$ pnpm lint | grep -c "features/vida"     →  0
+
+$ npx vitest run src/features/vida
+ Test Files  17 passed (17)      Tests  200 passed (200)
+
+$ pnpm test
+ FAIL  src/shared/ui/SearchSelect/SearchSelect.test.tsx > SearchSelect > filters options by search query
+ FAIL  src/shared/ui/SearchSelect/SearchSelect.test.tsx > SearchSelect > selects an option
+ Test Files  1 failed | 74 passed (75)
+      Tests  2 failed | 618 passed (620)
+
+$ pnpm build
+dist/assets/index-LxnIRc-r.js       844.21 kB │ gzip: 258.64 kB
+dist/assets/app-icons-NhtMn4oC.js   620.20 kB │ gzip: 193.19 kB
+dist/assets/IconPicker-DJKmAWRy.js    4.64 kB │ gzip:   1.81 kB
+```
+
+De 614 a **620** tests: 6 nuevos (3 de la hoja, 3 de la pantalla), ninguno roto,
+los 2 fallos siguen siendo los de `SearchSelect`. El chunk inicial pasa de 843,8
+a **844,2 kB**.
+
+**Los tests que cubren el defecto** (son la red que faltaba):
+
+| Test | Qué afirma |
+|---|---|
+| `VidaActivitySheet.test.tsx` → «con la plantilla en vuelo no se puede tocar ni guardar, y al llegar se pone sola» | Con `isTemplatePending` y editando: **no hay `switch`**, se lee «Mirando si ya está en tu plantilla…» y «Guardar» está `disabled`; el clic forzado **no llama** a `updateActivity` ni a `updateVidaItem`. Tras un `rerender` con el `VidaItem` ya cargado —**sin remontar**—, el interruptor sale **encendido** con lunes, miércoles y viernes marcados y «Guardar» habilitado. Y guardando sin tocar nada, `updateVidaItem` **no se llama**: ya no se desactiva lo que nadie apagó. |
+| `VidaActivitySheet.test.tsx` → «lo que el usuario toca manda sobre lo que llegue después» | Tocado el interruptor y el jueves, una llegada posterior con otro `VidaItem` **no** le pisa la decisión. |
+| `VidaActivitySheet.test.tsx` → «creando, la plantilla en vuelo no bloquea nada» | Con `isTemplatePending` y sin actividad, el interruptor está y «Crear» funciona. |
+| `VidaActividadesPage.test.tsx` → «editar mientras la plantilla viaja no deja guardar» | El recorrido entero desde la pantalla: «···» → «Editar» en el hueco abre la hoja con el estado de carga y «Guardar» deshabilitado. |
+| `VidaActividadesPage.test.tsx` → «pide la plantilla con los desactivados incluidos» | `useVidaItemsQuery` recibe `[true]`. |
+| `VidaActividadesPage.test.tsx` → «un VidaItem desactivado no pinta casillas» | Ningún «En tu plantilla…»; todas «sin plantilla». |
+
+**Arnés temporal** (`src/__t3b-feat002.html` + `.tsx`, con un modo `?hueco=1` que
+monta la hoja con `isTemplatePending`): a 375×812, el estado de carga no
+desborda (`scrollWidth === clientWidth === 375`, **0** elementos fuera), «Guardar»
+sale `disabled`, hay `aria-busy` y **cero** `role="switch"`; el aviso se lee a
+7,05:1. Contrastes de las casillas medidos en los dos temas (arriba). **Borrado
+antes de reportar**; no se arrancó ni se paró ningún servicio.
+
+**Lo que sigue sin poder verificar yo:** el recorrido real con sesión (criterio
+36) y qué devuelve el API con `includeInactive: true`. Para el usuario, los
+pasos son los mismos de la entrega anterior, **más uno**: entra en Vida →
+Actividades **recargando la página** y toca el «···» → «Editar» de una actividad
+lo más rápido que puedas, antes de que las casillas aparezcan. La hoja debe
+decir «Mirando si ya está en tu plantilla…» y **no** dejarte guardar hasta que
+sepa qué hay; cuando lo sepa, el interruptor debe aparecer en su sitio.
+
 ## 4. Review — feature-reviewer
 
 *(una entrada por tajada)*
@@ -1330,3 +1649,207 @@ y la sesión iniciada):
    de color sigue siendo el de siempre. Es lo que esta tajada movió de sitio.
 9. Todavía **no** hay «ponerla en mi plantilla» (tajada 3) ni «Archivar»
    (tajada 4).
+
+### Tajada 3 — Ponerla en mi plantilla
+
+**Veredicto: devuelta**, por un solo defecto concreto y reproducible: **la hoja
+de editar nace con el interruptor apagado si se abre mientras la consulta de
+plantilla está en vuelo, y al guardar desactiva el `VidaItem` que el usuario no
+tocó**. Rompe el criterio 19 en ese hueco y deshace la plantilla sin que nadie
+lo haya pedido. Todo lo demás de la tajada está comprobado y en pie; el arreglo
+es pequeño y no exige rehacer nada.
+
+**Criterios, uno a uno** (contra la sección 1, literal):
+
+| # | Estado | Cómo lo comprobé |
+|---|---|---|
+| 3 (mitad «a mano») | **cumplido** | Arnés propio (no el del constructor) con tres `VidaItem` sembrados: «Organizar la casa» pinta `L* M X* J V* S D` (`data-on="true"` en lunes, miércoles y viernes) con `aria-label="En tu plantilla: lunes, miércoles y viernes"`; la de siete, las siete; **«Bañarme», cuyo `VidaItem` está desactivado, lee «sin plantilla»** — que es la comprobación que pedía la desviación 1. |
+| 17 | **cumplido en lo verificable** | `planVidaItemSave` sin ítem y encendido devuelve `{kind:'create', input:{activityId, days ordenados}}` (`useSaveVidaItemForActivity.ts:69`), y el `onSuccess` local encadena actividad → plantilla. La tarjeta pintando los días la vi en el arnés (fila anterior). El viaje real contra el API queda en el criterio 36. |
+| 18 | **cumplido — medido en navegador** | Con el interruptor encendido y los tres días desmarcados, pulsando «Guardar»: **cero llamadas** (`window.fetch` interceptado: lista vacía), `role="alert"` con «Marca al menos un día, o apaga el interruptor.» y la hoja abierta. No se guarda ni la actividad. |
+| 19 | **NO cumplido** | La mitad buena, verificada en navegador: abriendo «···» → «Editar» sobre «Organizar la casa» con su `VidaItem` activo, el interruptor nace **encendido** y `aria-pressed="true"` exactamente en lunes, miércoles y viernes; cambiar días llama a `updateVidaItem` con el **mismo** `id` y nunca a `createVidaItem` (`planVidaItemSave`, rama `if (!item) …` / `return {kind:'update', input:{id: item.id …}}`). **Lo que falla es el arranque:** ver «Lo que rompe» abajo. |
+| 20 | **cumplido en lo verificable** | Apagado con ítem activo → `{kind:'update', input:{id, isActive:false}}`: ni `days` ni `notes` viajan, así que la nota no se pierde. `vidaItemDelete` **no se llama desde ninguna parte de la interfaz**: `grep` sobre `src/` deja `useDeleteVidaItemMutation` y `VIDA_ITEM_DELETE_MUTATION` sin un solo llamante fuera de `api/` y del propio hook. El criterio se cumple salvo por el mismo defecto de arranque, que lo dispara **sin que el usuario apague nada**. |
+| 31 (375 px) | **cumplido — medido** | Arnés a 375×812 con la hoja abierta: `scrollWidth === clientWidth === 375` y **cero** elementos con `right > innerWidth`. Las siete casillas miden 38×34 px y van de `left: 39` a `right: 335`. (El «···» dentro de la tarjeta ya se midió en la tajada 1 y esta tajada no movió esa esquina.) |
+| 33 (oscuro) | **cumplido, con un lunar heredado** | Contrastes medidos componiendo el alfa sobre el fondo real (el cálculo ingenuo miente con `color(srgb … / .18)`). **Oscuro:** casilla marcada 10,3:1, sin marcar 6,7:1, descripción del `Switch` 4,8:1. **Claro:** sin marcar 7,3:1, marcada **3,97:1** (el constructor reportó ~6,0 — su medida es optimista; sigue por encima de 3:1 y es texto de 34 px, así que no lo devuelvo) y la descripción del `Switch` **2,39:1**, que confirma el hallazgo de `--color-text-muted`. Token compartido: hallazgo, no de esta tajada. |
+| 34 | **cumplido** | El texto de la hoja y del catálogo no trae «pendiente», «prioridad», «vencida», «cancelad», «tarea» ni culpa. |
+| 35 | **cumplido** | `npx vitest run src/features/vida src/features/habits/components/HabitFormModal src/shared/ui` → **2 fallos de 263**, los dos de `SearchSelect` de la línea base; el resto verde. Typecheck, lint y build los reporta el constructor y no los repito enteros; el chunk sube a 843,8 kB (+4,5) y `ENVIRONMENT.md` queda otra vez viejo: es del usuario decidir si se recalibra. |
+| 36 | **del usuario** | Detrás del login. Sigue pendiente entero. |
+
+**Lo que rompe (el motivo de la devolución):**
+
+`VidaActividadesPage` monta la hoja con `key={sheetSession}`, así que el estado
+del interruptor se fija **en el momento de abrir**:
+`useState(Boolean(vidaItem?.isActive))`. Pero la página pinta el catálogo en
+cuanto llegan las **actividades**, mientras `useVidaItemsQuery(true)` puede
+seguir en vuelo — es justamente el hueco que esta tajada enseña con el esqueleto
+de la tarjeta. Si el usuario abre «···» → «Editar» en ese hueco:
+
+1. `vidaItem` llega `null` → el interruptor nace **apagado** y sin días, aunque
+   la actividad **sí** esté en la plantilla (criterio 19: «los días vienen
+   marcados» — no vienen).
+2. Cuando la consulta termina, la prop cambia pero el estado **no se resincroniza**
+   (a propósito: no hay efecto que copie props a estado). La hoja queda
+   contradiciendo a la tarjeta.
+3. Al guardar, `saveTemplateFor` usa **la prop de ese momento** —ya cargada— con
+   `inTemplate: false`: `planVidaItemSave` devuelve
+   `{kind:'update', input:{id, isActive:false}}` y **desactiva la plantilla que
+   el usuario no tocó**.
+
+Reproducido en el navegador con el arnés sin sembrar `vidaItems`: se abre
+«Editar» sobre «Organizar la casa», `#vida-activity-template.checked === false`;
+se siembra entonces la plantilla y la tarjeta pasa a decir «En tu plantilla:
+lunes, miércoles y viernes» mientras la hoja **sigue con el interruptor
+apagado**. El último paso (qué mutación sale) no pude verlo en vivo porque sin
+sesión `activityEdit` se corta antes en el guard de auth —salió el toast «Debes
+iniciar sesión para continuar.»—, pero la rama es determinista y está en una
+función pura: `planVidaItemSave({item: <activo>, inTemplate: false})` →
+`isActive: false`. Es exactamente la mitad del criterio 20 disparándose sin que
+nadie apague nada.
+
+No es el fin del mundo —se desactiva, no se borra, y los días vuelven— pero es
+una pérdida silenciosa de lo que el usuario había puesto, y la tajada ya sabe
+distinguir ese hueco (`isTemplatePending` existe y se pasa a la tarjeta). Basta
+con que la hoja lo sepa también: que no se pueda abrir editar mientras la
+plantilla viaja, o que la hoja reciba `isTemplatePending` y no deje guardar
+hasta que sepa lo que hay. Lo dejo sin decidir: es del constructor.
+
+**Qué rompió al lado (cómo lo busqué, no solo qué salió):**
+
+- **El grafo no servía para esta pregunta:** el constructor corrió
+  `graphify update .`, así que `graphify-out/` refleja el árbol **con** el
+  cambio (`explain "toErrorMessage"` devuelve el nodo nuevo con grado 1). Para
+  «¿quién dependía de esto antes?» usé `git grep … HEAD`, que sí es el estado
+  previo.
+- **`toErrorMessage` movida a `utils/vida-error.utils.ts`:** `git grep
+  toErrorMessage HEAD -- src` da **solo** `useActivities.ts` y
+  `useActivityCategories.ts`, las dos copias privadas que desaparecen. Nadie más
+  la importaba: el movimiento no deja a nadie colgado.
+- **`CreateVidaCategoryStep` pierde `initialName`:** `git grep initialName HEAD`
+  saca ocho sitios, **todos de hábitos** (`CreateHabitCategoryStep`,
+  `CreateHabitMeasureStep`, `HabitFormStepButtons`, `HabitWizardStep1/2`) más el
+  de Vida, que **nadie le pasaba**. Sin llamantes: no rompe la tajada 2.
+- **`useVidaItemsQuery(true)` y las invalidaciones (la desviación 1):**
+  `vidaKeys.items.list(includeInactive)` cuelga de `items.all()`
+  (`query-keys.ts:59-63`) e `invalidateVidaItemQueries` invalida
+  `vidaKeys.items.all()` — React Query invalida **por prefijo**, así que la
+  entrada nueva `list(true)` queda alcanzada por las dos mutaciones. Confirmado
+  abriendo los dos archivos. Y el catálogo **no** pinta como «en plantilla» un
+  ítem desactivado: `buildVidaItemsByActivity` hace `if (!item.isActive)
+  continue` y el arnés lo enseña («Bañarme» → «sin plantilla»). Único consumidor
+  de la consulta en todo `src/`: esta página.
+- **Lo de al lado en la pantalla (tajadas 1 y 2):** en el arnés siguen en pie el
+  recuento «4 actividades · 2 categorías», los grupos por categoría con «Sin
+  categoría» al final, el «···» → «Editar» abriendo con nombre y categoría
+  puestos, «+ nueva» y el FAB. El buscador y los puntos de partida no los pisé a
+  mano; sus tests pasan (`src/features/vida`: 18 archivos, verde salvo lo dicho).
+- **Hábitos:** lo que esta tajada rozaba de hábitos era el `initialName` (no era
+  de hábitos) y nada más; `src/features/habits/components/HabitFormModal` y
+  `src/shared/ui` pasan enteros salvo los dos `SearchSelect` de siempre.
+- **El `Popover` que no se cierra al elegir «Editar»** (desviación 3): lo miré
+  en el navegador y el popover **sí** desaparece del DOM al abrirse la hoja
+  (`[role="menu"]` ya no está). Lo que quedará por ver es si reaparece al cerrar
+  la hoja; con sesión lo dirá el usuario. Queda como estaba: anotado, no
+  bloqueante.
+
+**Estados sin construir:** vacío, cargando, error y sin sesión **sí** están —los
+cuatro de las categorías dentro de la hoja y el hueco de la tarjeta mientras
+viaja la plantilla—, y precisamente el estado «cargando» es el que destapa el
+defecto de arriba: está pintado en la tarjeta y **no** está atendido en la hoja.
+Texto largo: el nombre de 61 caracteres y la categoría de 48 no desbordan a 375
+px (cero elementos fuera del viewport). Permisos no aplica (la pantalla entera
+está tras el login; sin sesión hay mensaje). Lo que **no** se ha visto nunca:
+qué devuelve el API con `includeInactive: true` de verdad, y los reintentos tras
+un fallo de plantilla.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: no hay documento
+GraphQL nuevo, ni clave en `vidaKeys`, ni nada en `invalidate-vida-queries.ts`,
+ni hook de consulta nuevo —`useSaveVidaItemForActivity` es un orquestador sobre
+las dos mutaciones de F0, como el plan autorizaba—, ni selector de iconos, ni
+paleta. `vida-error.utils.ts` va en el sentido contrario: **borra** dos copias
+en vez de escribir una tercera. `findVidaItemForActivity` no pisa a
+`buildVidaItemsByActivity`: una es para la hoja (incluye el desactivado) y la
+otra para la tarjeta (solo activos), y el comentario lo dice.
+
+**Hallazgos que no devuelven la tajada** (quedan escritos, no se arreglan aquí):
+
+1. `--color-text-muted` en tema claro: **2,39:1** medido en la descripción del
+   `Switch`. Confirmado; es token compartido con hábitos y toca la app entera.
+2. La casilla marcada en **tema claro** da 3,97:1, no los ~6,0 reportados. Por
+   encima de 3:1 y en texto grande: aceptable, pero el número del dossier estaba
+   optimista.
+3. Las casillas de día a 375 px miden 38×34 px, por debajo de los 44 px
+   recomendados. Ningún criterio lo pide; el constructor ya lo anotó.
+4. `VidaActividadesPage.test.tsx` mockea `useVidaItemsQuery: () => vidaItemsState`
+   **ignorando el argumento**: si alguien quita el `true` de la página, ningún
+   test se entera. La desviación con más alcance de la tajada no tiene red.
+
+#### Tajada 3 — segunda revisión (2026-09-20)
+
+**Veredicto: aceptada.** El defecto por el que devolví está arreglado en la
+raíz, no tapado, y lo he reproducido paso por paso: el hueco ya no puede
+desactivar un `VidaItem` que nadie tocó. Lo comprobé con mi propio arnés
+—`VidaActivitySheet` montada con `isTemplatePending` y `vidaItem` como mandos,
+más la página entera con datos sembrados—, no releyendo los tests del
+constructor.
+
+**El defecto, cerrado. Los cuatro escenarios, medidos en el navegador:**
+
+| Escenario | Qué vi |
+|---|---|
+| **Editar con la plantilla en vuelo** | **Ningún** `role="switch"` ni `input[type=checkbox]` en la hoja, ninguna casilla, `aria-busy="true"`, se lee «Mirando si ya está en tu plantilla…» y «Guardar» sale `disabled`. No hay forma de guardar, así que no hay forma de desactivar nada. |
+| **Llega la consulta** | Sin remontar la hoja (solo cambian las props): el interruptor aparece **encendido**, `aria-pressed="true"` exactamente en lunes, miércoles y viernes, y «Guardar» se habilita. La hoja se pone sola en su sitio, que era la otra mitad del problema. |
+| **El usuario toca antes de que llegue** | Encendido el interruptor y marcado **jueves**, la llegada posterior de un `VidaItem` con lunes/miércoles/viernes **no le pisa nada**: sigue `jueves:true` y los otros seis en `false`. Lo tocado manda. |
+| **Crear con la plantilla en vuelo** | Con `activity = null` el interruptor **está**, no hay estado de carga y **«Crear» está habilitado**: no se bloquea lo que no hay que bloquear. |
+
+Y la raíz: `inTemplate` y `days` ya no se copian a `useState`, se derivan de
+`vidaItem` mientras `templateDraft` sea `null` (`VidaActivitySheet.tsx:106-108`),
+con `templateUnknown = isTemplatePending && isEditing` cortando en
+`handleSubmit` y deshabilitando el botón. Es exactamente donde estaba el fallo.
+
+**Criterios de la tajada, revisados otra vez:**
+
+- **19 — ahora cumplido.** Las dos mitades: la hoja abre con los días marcados
+  cuando la plantilla ya está, y en el hueco no miente ni deja guardar. Guardar
+  sin tocar nada tras la llegada no llama a `updateVidaItem` (`planVidaItemSave`
+  devuelve `nothing` con el ítem activo y los mismos días).
+- **17, 18, 20, 3 (mitad «a mano»), 31, 34** — se mantienen; nada de lo tocado
+  los roza. Vuelvo a ver en el arnés «4 actividades · 2 categorías», los grupos,
+  `aria-label="En tu plantilla: lunes, miércoles y viernes"` en la tarjeta, y el
+  «···» → «Editar» abriendo con nombre («Organizar la casa») y categoría
+  («Casa») ya puestos: **tajadas 1 y 2 en pie**.
+- **33 — cumplido y mejor.** Medido por mí componiendo el alfa: casilla marcada
+  de la hoja **5,45:1 en claro** (era 3,97) y **11,56:1 en oscuro**; sin marcar
+  7,34 y 6,66. Mi número en claro no es el 6,32 del constructor —yo mido sobre
+  el fondo apilado de la hoja, él sobre el panel— pero va en la misma dirección
+  y pasa AA. El cambio es de token (`--color-primary-hover`), no un color nuevo.
+- **35 — cumplido, corrido por mí entero:** `pnpm typecheck` limpio · `pnpm
+  lint` **14 errores / 0 warnings** (los mismos de la línea base) · `pnpm test`
+  **2 fallos de 620**, los dos de `SearchSelect` · `npx vitest run
+  src/features/vida` **17 archivos / 200 tests, todos verdes**. Coincide con lo
+  reportado. El chunk queda en 844,2 kB (línea base del `ENVIRONMENT.md`: 839,3):
+  sigue siendo decisión del usuario recalibrar ese número.
+- **36 — sigue pendiente entero**, y ahora con un paso más: recargar y abrir
+  «Editar» antes de que aparezcan las casillas.
+
+**Los tres hallazgos que dejé:** el mock ciego de `useVidaItemsQuery` tiene
+ahora su caso (`«pide la plantilla con los desactivados incluidos
+(includeInactive)»`) y hay otro que afirma que un `VidaItem` desactivado no
+pinta casillas; el contraste de la casilla marcada subió; `--color-text-muted`
+queda anotado y sin tocar, que es lo correcto para un token compartido. Los
+cuatro tests que cubren el hueco existen y pasan: los busqué por nombre en
+`VidaActivitySheet.test.tsx:392,439,463` y `VidaActividadesPage.test.tsx:376`.
+
+**La corrección de la cifra inventada** (214 tests que nunca se ejecutaron; el
+dato real era 197) está escrita por el constructor en su respuesta, no
+sustituida en silencio arriba. Así es como debe quedar.
+
+**Hallazgo nuevo, que no devuelve nada y no es de esta tajada:** las letras del
+día **marcadas en la tarjeta** (`VidaActivityCard.module.scss`, código de la
+tajada 1) siguen con `--color-primary` sobre fondo teñido al 20 %: **3,89:1 en
+tema claro** (11,43:1 en oscuro, que es lo que pide el criterio 33). El arreglo
+de la hoja no llegó hasta ahí y ahora las dos casillas —la de la hoja y la de la
+tarjeta— tienen tonos distintos en claro. Es media línea de SCSS y la misma
+variable; que lo recoja quien haga la tajada 4.
+
+**Lo que sigue sin verse nunca:** el API real con `includeInactive: true`, el
+reintento tras «la actividad se guardó pero la plantilla no», y el recorrido con
+sesión. Está detrás del login y no entro con credenciales.

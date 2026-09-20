@@ -6,6 +6,7 @@ import type {
   ActivityCategoryInput,
 } from '@/features/vida/types/activity-category.types'
 import { invalidateActivityCategoryQueries } from '@/features/vida/utils/invalidate-vida-queries'
+import { toErrorMessage } from '@/features/vida/utils/vida-error.utils'
 import { vidaKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
 
@@ -14,11 +15,9 @@ import { useToast } from '@/shared/ui/Toast'
  * Mismo criterio que en `useActivities.ts`: va en el hook y no en cada
  * pantalla, para que la siguiente no se lo olvide. **No basta** para el
  * criterio 16: lo que mantiene la hoja abierta es que el cierre vive en el
- * `onSuccess` local del `mutate`, no aquí.
+ * `onSuccess` local del `mutate`, no aquí. El mensaje lo arma
+ * `toErrorMessage`, compartido por los tres hooks de Vida.
  */
-function toErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message.trim() ? error.message : fallback
-}
 
 export function useActivityCategoriesQuery() {
   const enabled = useVidaQueryGuard()

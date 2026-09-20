@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { HABIT_CORE_COLORS } from '@/features/habits/data/habit-colors'
 import {
   findStartingCategory,
   getRecommendedStartingPointIds,
@@ -7,6 +6,7 @@ import {
   VIDA_STARTING_POINTS,
 } from '@/features/vida/data/vida-starting-points'
 import { appIcons } from '@/shared/icons/app-icons'
+import { CORE_COLORS } from '@/shared/ui/ColorPicker'
 
 const catalogNames = new Set(appIcons.map((entry) => entry.name))
 
@@ -78,7 +78,7 @@ describe('VIDA_STARTING_CATEGORIES', () => {
   })
 
   it('usa exactamente los colores del núcleo de la paleta: violeta, ámbar, azul y menta', () => {
-    const coreByName = new Map(HABIT_CORE_COLORS.map((color) => [color.name, color.hex]))
+    const coreByName = new Map(CORE_COLORS.map((color) => [color.name, color.hex]))
 
     expect(VIDA_STARTING_CATEGORIES.map((category) => category.color)).toEqual([
       coreByName.get('violet'),

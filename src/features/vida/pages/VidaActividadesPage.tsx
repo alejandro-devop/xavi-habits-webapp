@@ -12,6 +12,7 @@ import {
   buildVidaItemsByActivity,
   countCatalogCategories,
   excludeArchivedActivities,
+  findVidaItemForActivity,
   groupActivitiesByCategory,
 } from '@/features/vida/utils/vida-catalog.utils'
 import { Alert } from '@/shared/ui/Alert'
@@ -65,10 +66,22 @@ export function VidaActividadesPage() {
     refetch,
   } = useActivitiesQuery({ page: 1, limit: CATALOG_LIMIT })
   const { data: categories = [] } = useActivityCategoriesQuery()
-  const { data: vidaItems = [], isPending: isVidaItemsPending } = useVidaItemsQuery()
+  // Con los desactivados: la tarjeta solo pinta los activos, pero la hoja
+  // necesita el apagado para reactivar **el mismo** `VidaItem` en vez de crear
+  // otro (criterios 19 y 20).
+  const {
+    data: vidaItems = [],
+    isPending: isVidaItemsPending,
+    fetchStatus: vidaItemsFetchStatus,
+  } = useVidaItemsQuery(true)
 
   const activities = useMemo(() => excludeArchivedActivities(data?.activities ?? []), [data])
   const vidaItemsByActivity = useMemo(() => buildVidaItemsByActivity(vidaItems), [vidaItems])
+  // Mientras la plantilla está en vuelo, la tarjeta **no afirma** «sin
+  // plantilla»: sería mentira durante ese hueco y luego cambiaría sola. Con la
+  // sesión caída la consulta queda `idle` y entonces sí se afirma: no va a
+  // llegar nada. Es el hallazgo que dejó el revisor de la tajada 1.
+  const isTemplatePending = isVidaItemsPending && vidaItemsFetchStatus !== 'idle'
 
   const allGroups = useMemo(
     () => groupActivitiesByCategory(activities, categories),
@@ -200,12 +213,13 @@ export function VidaActividadesPage() {
           />
         </Card>
       ) : (
-        <div className={styles.groups} aria-busy={isVidaItemsPending}>
+        <div className={styles.groups} aria-busy={isTemplatePending}>
           {visibleGroups.map((group) => (
             <VidaCatalogGroup
               key={group.id}
               group={group}
               vidaItemsByActivity={vidaItemsByActivity}
+              isTemplatePending={isTemplatePending}
               onEdit={openEditSheet}
             />
           ))}
@@ -222,6 +236,8 @@ export function VidaActividadesPage() {
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         activity={editing}
+        vidaItem={editing ? findVidaItemForActivity(vidaItems, editing.id) : null}
+        isTemplatePending={isTemplatePending}
       />
     </div>
   )

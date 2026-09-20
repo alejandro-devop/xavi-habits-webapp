@@ -12,8 +12,6 @@ import styles from './CreateVidaCategoryStep.module.scss'
 type Props = {
   /** Se llama con el id de la categoría recién creada, para dejarla elegida. */
   onCreated: (categoryId: string) => void
-  /** Nombre sugerido por quien abre el paso. */
-  initialName?: string
 }
 
 /**
@@ -26,11 +24,11 @@ type Props = {
  * no por la rueda del sistema: en Vida el color de la categoría es lo que pinta
  * la cápsula de cada tarjeta y tiene que leerse en los dos temas.
  */
-export function CreateVidaCategoryStep({ onCreated, initialName = '' }: Props) {
+export function CreateVidaCategoryStep({ onCreated }: Props) {
   const { pop } = useModalStep()
   const createMutation = useCreateActivityCategoryMutation()
 
-  const [name, setName] = useState(initialName)
+  const [name, setName] = useState('')
   const [icon, setIcon] = useState<string | null>(null)
   const [color, setColor] = useState<string | null>(null)
   const [nameError, setNameError] = useState<string | null>(null)

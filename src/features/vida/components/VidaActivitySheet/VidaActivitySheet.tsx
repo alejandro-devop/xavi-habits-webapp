@@ -2,26 +2,54 @@ import { useState } from 'react'
 import { CreateVidaCategoryStep } from '@/features/vida/components/CreateVidaCategoryStep'
 import { useCreateActivityMutation, useUpdateActivityMutation } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
+import { useSaveVidaItemForActivity } from '@/features/vida/hooks/useSaveVidaItemForActivity'
 import type { Activity } from '@/features/vida/types/activity.types'
+import type { VidaDayOfWeek, VidaItem } from '@/features/vida/types/vida-item.types'
+import {
+  VIDA_DAY_LABELS,
+  VIDA_DAY_ORDER,
+  VIDA_DAY_SHORT_LABELS,
+} from '@/features/vida/utils/vida-date.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import { FormField } from '@/shared/ui/FormField'
 import { Input } from '@/shared/ui/Input'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import { SteppedModal, useModalStep } from '@/shared/ui/SteppedModal'
+import { Switch } from '@/shared/ui/Switch'
 import styles from './VidaActivitySheet.module.scss'
+
+type TemplateDraft = {
+  inTemplate: boolean
+  days: VidaDayOfWeek[]
+}
 
 type VidaActivitySheetProps = {
   open: boolean
   onClose: () => void
   /** `null` o nada, se crea. Con actividad, se edita con sus datos ya puestos. */
   activity?: Activity | null
+  /**
+   * El `VidaItem` de esa actividad, **activo o desactivado**. La página lo
+   * resuelve con un mapa: la hoja no consulta la plantilla por su cuenta.
+   * Desactivado sigue importando: es lo que evita crear un segundo `VidaItem`
+   * al volver a encender el interruptor (criterios 19 y 20).
+   */
+  vidaItem?: VidaItem | null
+  /**
+   * La plantilla todavía viene en camino: `vidaItem` es `null` porque **no se
+   * sabe**, no porque no haya. Mientras dure, el bloque de plantilla no se
+   * puede tocar y no se puede guardar; y en cuanto llega, lo que se pinta sale
+   * de la prop sin que nadie tenga que resincronizar nada.
+   */
+  isTemplatePending?: boolean
 }
 
 /**
- * La hoja de crear y editar una actividad. Dos campos y los dos obligatorios:
- * cómo la llamas y a qué categoría pertenece —la categoría es quien le da el
- * icono y el color a la tarjeta—.
+ * La hoja de crear y editar una actividad. Dos campos obligatorios —cómo la
+ * llamas y a qué categoría pertenece, que es quien le da el icono y el color— y
+ * un bloque opcional: ponerla en tu plantilla con los días que suele tocar.
  *
  * Se monta con una `key` por apertura (ver `VidaActividadesPage`): así cada vez
  * que se abre parte limpia sin un efecto que copie las props al estado.
@@ -33,15 +61,32 @@ type VidaActivitySheetProps = {
  * se queda abierta con lo escrito y el fallo se lee dentro (criterio 16). El
  * toast del hook avisa, pero no es lo que sostiene el criterio.
  *
- * Lo que **no** trae esta tajada: el interruptor «ponerla en mi plantilla» con
- * sus siete días (tajada 3) y «archivar» (tajada 4). La duración típica no
- * llega nunca: no hay dónde guardarla (D2).
+ * Guardar son **dos pasos encadenados**: primero la actividad, después su
+ * plantilla —que necesita el id de la actividad, y al crear ese id no existe
+ * hasta que vuelve el API—. Si el segundo falla, la hoja no se cierra y lo dice
+ * sin mentir: la actividad **sí** quedó guardada.
+ *
+ * El bloque de plantilla se **deriva** de `vidaItem` hasta que alguien lo toca,
+ * y mientras `isTemplatePending` no deja guardar: abrir «Editar» en el hueco en
+ * que la plantilla aún viajaba nacía con el interruptor apagado y, al guardar,
+ * desactivaba un `VidaItem` que nadie había tocado.
+ *
+ * Lo que **no** trae: «archivar» (tajada 4). La duración típica no llega nunca:
+ * no hay dónde guardarla (D2).
  */
-export function VidaActivitySheet({ open, onClose, activity = null }: VidaActivitySheetProps) {
+export function VidaActivitySheet({
+  open,
+  onClose,
+  activity = null,
+  vidaItem = null,
+  isTemplatePending = false,
+}: VidaActivitySheetProps) {
   const isEditing = Boolean(activity)
-  const { data: categories = [] } = useActivityCategoriesQuery()
+  const categoriesQuery = useActivityCategoriesQuery()
+  const categories = categoriesQuery.data ?? []
   const createMutation = useCreateActivityMutation()
   const updateMutation = useUpdateActivityMutation()
+  const templateSave = useSaveVidaItemForActivity()
 
   // Parte de cero al crear y de lo que ya tiene la actividad al editar. No hay
   // ningún efecto que sincronice esto: quien abre la hoja la monta con una
@@ -50,30 +95,84 @@ export function VidaActivitySheet({ open, onClose, activity = null }: VidaActivi
   // sería una cascada de renders y el linter del repositorio la marca.
   const [name, setName] = useState(activity?.title ?? '')
   const [categoryId, setCategoryId] = useState<string | null>(activity?.categoryId ?? null)
+  // El bloque de plantilla **no copia la prop al estado**: la deriva mientras
+  // nadie lo haya tocado. Si la consulta de la plantilla llega después de abrir
+  // la hoja —el hueco que la tarjeta ya pintaba—, el interruptor y los días se
+  // ponen solos en su sitio; copiarlo en `useState` dejaba la hoja mintiendo y,
+  // al guardar, desactivaba un `VidaItem` que nadie tocó.
+  const [templateDraft, setTemplateDraft] = useState<TemplateDraft | null>(null)
+  // Encendido solo si la actividad está **de verdad** en la plantilla: un
+  // `VidaItem` desactivado es justo lo contrario (criterio 20).
+  const inTemplate = templateDraft?.inTemplate ?? Boolean(vidaItem?.isActive)
+  const days = templateDraft?.days ?? vidaItem?.days ?? []
+  // Editando y con la plantilla en vuelo, lo que hay **no se sabe**. Al crear no
+  // hay nada que saber: una actividad que no existe no está en ninguna plantilla.
+  const templateUnknown = isTemplatePending && isEditing
   const [nameError, setNameError] = useState<string | null>(null)
   const [categoryError, setCategoryError] = useState<string | null>(null)
+  const [daysError, setDaysError] = useState<string | null>(null)
+  // Si la actividad se creó y la plantilla falló, el segundo intento **no**
+  // puede crear otra actividad. Se recuerda la que nació y se la trata como si
+  // hubiera llegado por props: el reintento la edita y vuelve a por la plantilla.
+  const [createdActivity, setCreatedActivity] = useState<Activity | null>(null)
 
-  const isMutating = createMutation.isPending || updateMutation.isPending
-  const hasFailed = createMutation.isError || updateMutation.isError
+  const isMutating =
+    createMutation.isPending || updateMutation.isPending || templateSave.isPending
+  const activityFailed = createMutation.isError || updateMutation.isError
+  const templateFailed = templateSave.isError
+
+  function toggleDay(day: VidaDayOfWeek) {
+    setDaysError(null)
+    const next = days.includes(day) ? days.filter((other) => other !== day) : [...days, day]
+    setTemplateDraft({ inTemplate, days: next })
+  }
+
+  function toggleTemplate(checked: boolean) {
+    setDaysError(null)
+    setTemplateDraft({ inTemplate: checked, days })
+  }
+
+  function saveTemplateFor(target: Activity) {
+    templateSave.save(
+      { activityId: target.id, item: vidaItem, inTemplate, days },
+      { onSuccess: onClose },
+    )
+  }
 
   function handleSubmit() {
+    // Con la plantilla en vuelo no se guarda: lo que saliera de aquí sería una
+    // decisión tomada sobre datos que todavía no han llegado.
+    if (templateUnknown) return
+
     const trimmed = name.trim()
     const missingName = !trimmed
     const missingCategory = !categoryId
+    // Encendido y sin ningún día no se guarda nada: ni la actividad (criterio 18).
+    const missingDays = inTemplate && days.length === 0
 
     setNameError(missingName ? 'Ponle un nombre: es cómo la vas a reconocer.' : null)
     setCategoryError(missingCategory ? 'Elige una categoría: le da el icono y el color.' : null)
-    // Nada sale hacia la API si falta alguno de los dos (criterio 12).
-    if (missingName || missingCategory) return
+    setDaysError(missingDays ? 'Marca al menos un día, o apaga el interruptor.' : null)
+    // Nada sale hacia la API si falta alguno de los tres (criterios 12 y 18).
+    if (missingName || missingCategory || missingDays) return
 
-    if (activity) {
+    const existing = activity ?? createdActivity
+    if (existing) {
       updateMutation.mutate(
-        { id: activity.id, title: trimmed, categoryId },
-        { onSuccess: onClose },
+        { id: existing.id, title: trimmed, categoryId },
+        { onSuccess: () => saveTemplateFor(existing) },
       )
       return
     }
-    createMutation.mutate({ title: trimmed, categoryId }, { onSuccess: onClose })
+    createMutation.mutate(
+      { title: trimmed, categoryId },
+      {
+        onSuccess: (created) => {
+          setCreatedActivity(created)
+          saveTemplateFor(created)
+        },
+      },
+    )
   }
 
   const footer = (
@@ -86,7 +185,7 @@ export function VidaActivitySheet({ open, onClose, activity = null }: VidaActivi
         className={styles.submit}
         onClick={handleSubmit}
         isLoading={isMutating}
-        disabled={isMutating}
+        disabled={isMutating || templateUnknown}
       >
         {isEditing ? 'Guardar' : 'Crear'}
       </Button>
@@ -128,6 +227,17 @@ export function VidaActivitySheet({ open, onClose, activity = null }: VidaActivi
             role="group"
             aria-labelledby="vida-activity-category-label"
           >
+            {categoriesQuery.isPending && categoriesQuery.fetchStatus !== 'idle' ? (
+              // Cargando de verdad: tres píldoras fantasma. Sin esto, una hoja
+              // que aparece con solo «+ nueva» parece una hoja rota.
+              <span className={styles.optionsLoading} aria-busy="true" aria-live="polite">
+                <span className={styles.srOnly}>Cargando tus categorías…</span>
+                {[0, 1, 2].map((pill) => (
+                  <Skeleton key={pill} width={84} height={30} radius="999px" />
+                ))}
+              </span>
+            ) : null}
+
             {categories.map((category) => {
               const isSelected = category.id === categoryId
               return (
@@ -158,6 +268,9 @@ export function VidaActivitySheet({ open, onClose, activity = null }: VidaActivi
               }}
             />
           </div>
+
+          <CategoriesHint query={categoriesQuery} hasCategories={categories.length > 0} />
+
           {categoryError ? (
             <p className={styles.error} role="alert">
               {categoryError}
@@ -165,16 +278,104 @@ export function VidaActivitySheet({ open, onClose, activity = null }: VidaActivi
           ) : null}
         </div>
 
-        {hasFailed ? (
+        <div className={styles.template}>
+          {templateUnknown ? (
+            <div className={styles.templateLoading} aria-busy="true" aria-live="polite">
+              <Skeleton width={34} height={20} radius="999px" />
+              <p className={styles.hint}>Mirando si ya está en tu plantilla…</p>
+            </div>
+          ) : (
+            <Switch
+              id="vida-activity-template"
+              label="Ponerla en mi plantilla"
+              description="Los días que suele tocar. Se cambia luego en Plantilla."
+              checked={inTemplate}
+              disabled={isMutating}
+              onChange={(event) => toggleTemplate(event.target.checked)}
+            />
+          )}
+
+          {inTemplate && !templateUnknown ? (
+            <>
+              <div
+                className={styles.days}
+                role="group"
+                aria-label="Días de la plantilla"
+              >
+                {VIDA_DAY_ORDER.map((day) => {
+                  const isOn = days.includes(day)
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      className={[styles.day, isOn ? styles.dayOn : ''].filter(Boolean).join(' ')}
+                      aria-pressed={isOn}
+                      aria-label={VIDA_DAY_LABELS[day]}
+                      disabled={isMutating}
+                      onClick={() => toggleDay(day)}
+                    >
+                      <span aria-hidden>{VIDA_DAY_SHORT_LABELS[day]}</span>
+                    </button>
+                  )
+                })}
+              </div>
+              {daysError ? (
+                <p className={styles.error} role="alert">
+                  {daysError}
+                </p>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+
+        {activityFailed || templateFailed ? (
           <Alert variant="danger">
-            {isEditing
-              ? 'No pudimos guardar los cambios. Revisa la conexión y vuelve a intentarlo; lo que escribiste sigue aquí.'
-              : 'No pudimos crear la actividad. Revisa la conexión y vuelve a intentarlo; lo que escribiste sigue aquí.'}
+            {templateFailed
+              ? isEditing || createdActivity
+                ? 'Guardamos la actividad, pero no pudimos poner los días en tu plantilla. Vuelve a intentarlo; lo que marcaste sigue aquí.'
+                : 'No pudimos guardar los días en tu plantilla. Vuelve a intentarlo; lo que marcaste sigue aquí.'
+              : isEditing
+                ? 'No pudimos guardar los cambios. Revisa la conexión y vuelve a intentarlo; lo que escribiste sigue aquí.'
+                : 'No pudimos crear la actividad. Revisa la conexión y vuelve a intentarlo; lo que escribiste sigue aquí.'}
           </Alert>
         ) : null}
       </div>
     </SteppedModal>
   )
+}
+
+type CategoriesHintProps = {
+  query: ReturnType<typeof useActivityCategoriesQuery>
+  hasCategories: boolean
+}
+
+/**
+ * Cargando, sin sesión, error y vacío **se ven distintos** dentro de la hoja.
+ * Antes los cuatro se leían igual —la etiqueta y solo «+ nueva»—, que es el
+ * agujero que dejó anotado el revisor de la tajada 2. La salida siempre existe:
+ * «+ nueva» sigue ahí en los cuatro casos.
+ */
+function CategoriesHint({ query, hasCategories }: CategoriesHintProps) {
+  // Sin sesión la consulta queda deshabilitada: `isPending` con
+  // `fetchStatus: 'idle'`. Mirar solo `isPending` sería un esqueleto eterno.
+  if (query.isPending && query.fetchStatus === 'idle') {
+    return <p className={styles.hint}>Entra en tu cuenta para ver tus categorías.</p>
+  }
+  if (query.isPending) return null
+  if (query.isError) {
+    return (
+      <p className={styles.hint} role="alert">
+        No pudimos cargar tus categorías.{' '}
+        <button type="button" className={styles.hintAction} onClick={() => void query.refetch()}>
+          Reintentar
+        </button>
+      </p>
+    )
+  }
+  if (!hasCategories) {
+    return <p className={styles.hint}>Todavía no tienes ninguna: créala con «+ nueva».</p>
+  }
+  return null
 }
 
 type NewVidaCategoryButtonProps = {

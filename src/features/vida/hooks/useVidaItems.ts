@@ -12,12 +12,19 @@ import {
   invalidateVidaItemQueries,
   invalidateVidaTakenTodayQueries,
 } from '@/features/vida/utils/invalidate-vida-queries'
+import { toErrorMessage } from '@/features/vida/utils/vida-error.utils'
 import { vidaKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
 
 /**
- * La plantilla Vida y lo tomado de ella. Ninguna pantalla consume esto todavía
- * (F0): existe para que F1–F5 no lo improvisen.
+ * La plantilla Vida y lo tomado de ella. Desde la tajada 3 de F1 la consume el
+ * catálogo: las casillas de cada tarjeta y el interruptor de la hoja.
+ *
+ * `onError` con toast en crear y actualizar —las dos que estrena la hoja—; el
+ * mensaje lo arma `toErrorMessage`, compartido por los tres hooks de Vida.
+ * `useDeleteVidaItemMutation` sigue sin `onError` **a propósito**: nadie la
+ * llama (D1 dice que nada se borra) y añadirle un toast sería adornar código
+ * muerto.
  *
  * `VidaItemCreateInput.clientId` (UUID v7, idempotencia offline) existe en el
  * esquema y **ningún hook lo genera**: la web es el piloto y no hay modo
@@ -64,6 +71,9 @@ export function useCreateVidaItemMutation() {
       invalidateVidaItemQueries(queryClient)
       toast.success('Añadido a tu plantilla')
     },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos añadirla a tu plantilla'))
+    },
   })
 }
 
@@ -75,6 +85,9 @@ export function useUpdateVidaItemMutation() {
     onSuccess: () => {
       invalidateVidaItemQueries(queryClient)
       toast.success('Plantilla actualizada')
+    },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos guardar tu plantilla'))
     },
   })
 }

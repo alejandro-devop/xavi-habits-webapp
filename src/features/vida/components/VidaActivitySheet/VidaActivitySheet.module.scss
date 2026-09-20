@@ -97,3 +97,112 @@
 .submit {
   margin-left: auto;
 }
+
+/* Cargando las categorías: píldoras fantasma en la misma fila, para que la
+   hoja no aparezca con solo «+ nueva» y parezca rota. */
+.optionsLoading {
+  display: contents;
+}
+
+.hint {
+  margin: 0;
+  /* `--color-text-secondary` y no `--color-text-muted`: el apagado del tema
+     claro se queda en ~2,4:1 y esto es un aviso que hay que poder leer. */
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.hintAction {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* El bloque de la plantilla: el interruptor del render C y, debajo, la fila de
+   siete. Separado por una línea para que se lea como «lo opcional». */
+.template {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--color-glass-border);
+  min-width: 0;
+}
+
+/* Siete botones que reparten el ancho: a 375 px caben sin desbordar porque
+   ninguno tiene ancho fijo. */
+.days {
+  display: flex;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.day {
+  flex: 1 1 0;
+  min-width: 0;
+  /* 0.65rem arriba y abajo deja la casilla en ~40 px de alto: un dedo cabe. */
+  padding: 0.65rem 0;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.6rem;
+  background: var(--aura-glass-1);
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* El verde de la píldora elegida, pero un punto más contrastado: sobre el
+   fondo teñido al 18 %, `--color-primary` se queda en 3,97:1 en tema claro.
+   `--color-primary-hover` es más oscuro en claro y más claro en oscuro —el
+   tono que cada tema reserva para cuando hace falta destacar—, y sube a AA en
+   los dos sin inventar ningún color. */
+.dayOn {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary-hover);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Mientras no se sabe si ya está en la plantilla: un hueco del tamaño del
+   interruptor y una línea que lo dice. Ni encendido ni apagado, que las dos
+   serían una afirmación. */
+.templateLoading {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.25rem;
+}

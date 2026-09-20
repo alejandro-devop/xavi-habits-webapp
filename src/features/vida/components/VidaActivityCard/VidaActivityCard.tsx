@@ -9,6 +9,7 @@ import {
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { IconButton } from '@/shared/ui/IconButton'
 import { Popover } from '@/shared/ui/Popover'
+import { Skeleton } from '@/shared/ui/Skeleton'
 import styles from './VidaActivityCard.module.scss'
 
 type VidaActivityCardProps = {
@@ -22,6 +23,12 @@ type VidaActivityCardProps = {
   color: string | null
   /** El `VidaItem` **activo**, si lo hay. Sin él, la tarjeta dice «sin plantilla». */
   vidaItem?: VidaItem | null
+  /**
+   * La plantilla viene en otra consulta y puede llegar después que las
+   * actividades. Mientras está en vuelo la tarjeta **no afirma** «sin
+   * plantilla» —sería mentira durante ese hueco—: enseña un hueco.
+   */
+  isTemplatePending?: boolean
   /** El «···» → «Editar». Abre la hoja de la página: la tarjeta no muta nada. */
   onEdit: (activity: Activity) => void
 }
@@ -41,6 +48,7 @@ export function VidaActivityCard({
   icon,
   color,
   vidaItem,
+  isTemplatePending = false,
   onEdit,
 }: VidaActivityCardProps) {
   const days = vidaItem?.days ?? []
@@ -86,6 +94,11 @@ export function VidaActivityCard({
                 </i>
               )
             })}
+          </span>
+        ) : isTemplatePending ? (
+          <span className={styles.daysPending} aria-busy="true">
+            <Skeleton width={92} height={12} radius="0.35rem" />
+            <span className={styles.srOnly}>Cargando tu plantilla…</span>
           </span>
         ) : (
           <p className={styles.meta}>sin plantilla</p>

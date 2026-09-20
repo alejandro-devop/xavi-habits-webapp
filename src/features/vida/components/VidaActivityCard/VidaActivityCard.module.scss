@@ -139,3 +139,21 @@
     cursor: not-allowed;
   }
 }
+
+/* El hueco de las casillas mientras la plantilla está en vuelo: mide como la
+   fila de siete para que la tarjeta no dé un salto cuando llegue. */
+.daysPending {
+  display: inline-flex;
+  align-items: center;
+  height: 1rem;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

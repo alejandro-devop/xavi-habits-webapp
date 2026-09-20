@@ -48,6 +48,21 @@ export function buildVidaItemsByActivity(items: VidaItem[]): Map<string, VidaIte
   return byActivity
 }
 
+/**
+ * El `VidaItem` de una actividad **para la hoja**: el activo si lo hay y, si no,
+ * el desactivado. La tarjeta solo mira el activo (`buildVidaItemsByActivity`);
+ * la hoja necesita también el apagado, porque es lo que evita crear un segundo
+ * `VidaItem` al volver a encender el interruptor y lo que conserva su nota
+ * (criterios 19 y 20). Por eso la página pide la plantilla con `includeInactive`.
+ */
+export function findVidaItemForActivity(
+  items: VidaItem[],
+  activityId: string,
+): VidaItem | null {
+  const own = items.filter((item) => item.activityId === activityId)
+  return own.find((item) => item.isActive) ?? own[0] ?? null
+}
+
 type GroupAccumulator = {
   group: VidaCatalogGroupModel
   orderIndex: number

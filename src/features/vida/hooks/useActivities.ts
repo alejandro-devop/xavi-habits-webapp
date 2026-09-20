@@ -8,18 +8,16 @@ import type {
 } from '@/features/vida/types/activity.types'
 import { serializeActivityFilters } from '@/features/vida/utils/activity-filters'
 import { invalidateActivityQueries } from '@/features/vida/utils/invalidate-vida-queries'
+import { toErrorMessage } from '@/features/vida/utils/vida-error.utils'
 import { vidaKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
 
 /**
- * `onError` con toast en las mutaciones que estrena F1. Lo dejaron anotado los
- * tres revisores de F0: sin él, una mutación que falla no dice nada y el
- * usuario cree que guardó. Va en el hook y no en cada pantalla para que la
- * siguiente no se lo olvide.
+ * `onError` con toast en las mutaciones que estrena F1: sin él, una mutación
+ * que falla no dice nada y el usuario cree que guardó. Va en el hook y no en
+ * cada pantalla para que la siguiente no se lo olvide. El mensaje lo arma
+ * `toErrorMessage`, compartido por los tres hooks de Vida.
  */
-function toErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error && error.message.trim() ? error.message : fallback
-}
 
 export function useActivitiesQuery(filters: ActivityFilters = {}) {
   const enabled = useVidaQueryGuard()

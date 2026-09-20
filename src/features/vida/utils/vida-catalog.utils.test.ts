@@ -6,6 +6,7 @@ import {
   buildVidaItemsByActivity,
   countCatalogCategories,
   excludeArchivedActivities,
+  findVidaItemForActivity,
   groupActivitiesByCategory,
   UNCATEGORIZED_GROUP_ID,
 } from '@/features/vida/utils/vida-catalog.utils'
@@ -83,6 +84,24 @@ describe('buildVidaItemsByActivity', () => {
 
     expect(byActivity.get('a1')?.days).toEqual(['monday', 'wednesday'])
     expect(byActivity.has('a2')).toBe(false)
+  })
+})
+
+describe('findVidaItemForActivity', () => {
+  it('prefiere el activo cuando la actividad tiene dos', () => {
+    const items = [
+      buildVidaItem({ id: 'viejo', isActive: false }),
+      buildVidaItem({ id: 'vivo', isActive: true }),
+    ]
+
+    expect(findVidaItemForActivity(items, 'a1')?.id).toBe('vivo')
+  })
+
+  it('devuelve el desactivado si es el único: es lo que evita crear un segundo', () => {
+    const items = [buildVidaItem({ id: 'dormido', isActive: false })]
+
+    expect(findVidaItemForActivity(items, 'a1')?.id).toBe('dormido')
+    expect(findVidaItemForActivity(items, 'otra')).toBeNull()
   })
 })
 

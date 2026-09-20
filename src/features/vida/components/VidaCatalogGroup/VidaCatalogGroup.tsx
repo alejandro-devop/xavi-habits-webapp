@@ -12,6 +12,8 @@ type VidaCatalogGroupProps = {
   group: VidaCatalogGroupModel
   /** `activityId → VidaItem` activo, resuelto una sola vez en la página. */
   vidaItemsByActivity: Map<string, VidaItem>
+  /** La plantilla todavía viene en camino: la tarjeta no afirma «sin plantilla». */
+  isTemplatePending?: boolean
   /** Se lo pasa a cada tarjeta: el «···» → «Editar» abre la hoja de la página. */
   onEdit: (activity: Activity) => void
 }
@@ -19,6 +21,7 @@ type VidaCatalogGroupProps = {
 export function VidaCatalogGroup({
   group,
   vidaItemsByActivity,
+  isTemplatePending = false,
   onEdit,
 }: VidaCatalogGroupProps) {
   const colorStyle = group.color
@@ -44,6 +47,7 @@ export function VidaCatalogGroup({
             icon={group.icon ?? UNCATEGORIZED_GROUP_ICON}
             color={group.color}
             vidaItem={vidaItemsByActivity.get(activity.id) ?? null}
+            isTemplatePending={isTemplatePending}
             onEdit={onEdit}
           />
         ))}

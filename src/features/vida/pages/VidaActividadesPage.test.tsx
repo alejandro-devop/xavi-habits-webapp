@@ -32,7 +32,8 @@ let sheetMutation: ReturnType<typeof buildMutation>
 
 let activitiesState: QueryState
 let categoriesState: { data: ActivityCategory[] }
-let vidaItemsState: { data: VidaItem[]; isPending: boolean }
+let vidaItemsState: { data: VidaItem[]; isPending: boolean; fetchStatus: string }
+let vidaItemsQueryArgs: unknown[][]
 
 vi.mock('@/features/vida/hooks/useActivities', () => ({
   useActivitiesQuery: () => activitiesState,
@@ -44,7 +45,15 @@ vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
   useCreateActivityCategoryMutation: () => sheetMutation,
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
-  useVidaItemsQuery: () => vidaItemsState,
+  // Se guarda el argumento: si alguien quita el `includeInactive`, el test se
+  // entera (la hoja dejaría de ver los `VidaItem` desactivados).
+  useVidaItemsQuery: (...args: unknown[]) => {
+    vidaItemsQueryArgs.push(args)
+    return vidaItemsState
+  },
+  // La hoja las pide para el bloque de plantilla (tajada 3): aquí no mutan nada.
+  useCreateVidaItemMutation: () => sheetMutation,
+  useUpdateVidaItemMutation: () => sheetMutation,
 }))
 
 function buildActivity(overrides: Partial<Activity> = {}): Activity {
@@ -105,7 +114,8 @@ beforeEach(() => {
   sheetMutation = buildMutation()
   activitiesState = loaded()
   categoriesState = { data: categories }
-  vidaItemsState = { data: [], isPending: false }
+  vidaItemsState = { data: [], isPending: false, fetchStatus: 'idle' }
+  vidaItemsQueryArgs = []
 })
 
 function groupHeadings() {
@@ -273,6 +283,108 @@ describe('VidaActividadesPage', () => {
       'aria-pressed',
       'true',
     )
+  })
+
+  it('la hoja de editar recibe el VidaItem de esa actividad, con sus días (criterio 19)', async () => {
+    const user = userEvent.setup()
+    vidaItemsState = {
+      data: [
+        {
+          id: 'v1',
+          userId: 1,
+          activityId: 'a3',
+          days: ['monday', 'friday'],
+          notes: null,
+          isActive: true,
+          orderIndex: 0,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      isPending: false,
+      fetchStatus: 'idle',
+    }
+    renderWithProviders(<VidaActividadesPage />)
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+
+    const sheet = await screen.findByRole('dialog', { name: /Editar actividad/ })
+    expect(
+      within(sheet).getByRole('switch', { name: /Ponerla en mi plantilla/ }),
+    ).toBeChecked()
+    expect(within(sheet).getByRole('button', { name: 'lunes' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(within(sheet).getByRole('button', { name: 'martes' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('mientras la plantilla está en vuelo, ninguna tarjeta afirma «sin plantilla»', () => {
+    vidaItemsState = { data: [], isPending: true, fetchStatus: 'fetching' }
+    renderWithProviders(<VidaActividadesPage />)
+
+    // La consulta de la plantilla va por su cuenta: afirmarlo antes de que
+    // llegue sería mentira durante ese hueco (hallazgo del revisor, tajada 1).
+    expect(screen.queryByText('sin plantilla')).not.toBeInTheDocument()
+    expect(screen.getAllByText('Cargando tu plantilla…')).toHaveLength(activities.length)
+  })
+
+  it('sin sesión la plantilla no llega nunca y la tarjeta sí lo dice', () => {
+    vidaItemsState = { data: [], isPending: true, fetchStatus: 'idle' }
+    renderWithProviders(<VidaActividadesPage />)
+
+    expect(screen.getAllByText('sin plantilla')).toHaveLength(activities.length)
+  })
+
+  it('pide la plantilla con los desactivados incluidos (includeInactive)', () => {
+    renderWithProviders(<VidaActividadesPage />)
+
+    // Sin esto, apagar el interruptor y volver a encenderlo crearía un segundo
+    // `VidaItem` y la nota del primero quedaría enterrada (criterios 19 y 20).
+    expect(vidaItemsQueryArgs.length).toBeGreaterThan(0)
+    expect(vidaItemsQueryArgs[0]).toEqual([true])
+  })
+
+  it('un VidaItem desactivado no pinta casillas: la tarjeta dice «sin plantilla»', () => {
+    vidaItemsState = {
+      data: [
+        {
+          id: 'v1',
+          userId: 1,
+          activityId: 'a3',
+          days: ['monday', 'friday'],
+          notes: 'Con calma',
+          isActive: false,
+          orderIndex: 0,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      isPending: false,
+      fetchStatus: 'idle',
+    }
+    renderWithProviders(<VidaActividadesPage />)
+
+    expect(screen.queryByLabelText(/En tu plantilla/)).not.toBeInTheDocument()
+    expect(screen.getAllByText('sin plantilla')).toHaveLength(activities.length)
+  })
+
+  it('editar mientras la plantilla viaja no deja guardar (y no desactiva nada)', async () => {
+    const user = userEvent.setup()
+    vidaItemsState = { data: [], isPending: true, fetchStatus: 'fetching' }
+    renderWithProviders(<VidaActividadesPage />)
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+
+    const sheet = await screen.findByRole('dialog', { name: /Editar actividad/ })
+    expect(within(sheet).getByText('Mirando si ya está en tu plantilla…')).toBeInTheDocument()
+    expect(within(sheet).queryByRole('switch')).not.toBeInTheDocument()
+    expect(within(sheet).getByRole('button', { name: 'Guardar' })).toBeDisabled()
   })
 
   it('«Categorías ›» sigue sin existir: llega en la tajada 4', () => {

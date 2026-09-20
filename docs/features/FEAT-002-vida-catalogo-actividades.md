@@ -215,7 +215,7 @@ cuatro notas al pie; las notas son parte de la spec). Se abre en
 | # | What it does | State |
 |---|---|---|
 | 1 | **El primer minuto y el catálogo.** Sin nada creado, los puntos de partida: se marcan varias y un botón las crea todas con sus categorías (creando las que falten). Con actividades, el catálogo agrupado por categoría, con los días de la plantilla, el buscador y los estados (cargando, sin sesión, error, vacío, 375 px, oscuro). Solo lectura: aún no hay hoja. | accepted (2026-09-20) |
-| 2 | **Crear y editar desde la hoja.** El `+` y el «···» → editar abren la hoja con nombre y categoría (píldoras), con «+ nueva» categoría (icono + color) dentro de la misma hoja. Errores de mutación visibles. Sin duración: la hoja tiene nombre y categoría, nada más (D2). | pending |
+| 2 | **Crear y editar desde la hoja.** El `+` y el «···» → editar abren la hoja con nombre y categoría (píldoras), con «+ nueva» categoría (icono + color) dentro de la misma hoja. Errores de mutación visibles. Sin duración: la hoja tiene nombre y categoría, nada más (D2). | accepted (2026-09-20) |
 | 3 | **Ponerla en mi plantilla.** El interruptor y los siete días en la hoja: crea, actualiza y desactiva el `VidaItem`, y las casillas de la tarjeta lo reflejan. | pending |
 | 4 | **Archivar, restaurar y gestionar categorías.** El «···» → «Archivar» (`status: 'cancelled'` + `VidaItem` desactivado), «ver archivadas» con «Restaurar», y la pantalla/hoja de categorías: listar, editar nombre, icono y color. | pending |
 
@@ -461,7 +461,7 @@ El toast **no basta** para el criterio 16: lo que garantiza que la hoja no se ci
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
 | 1 | **El primer minuto y el catálogo (solo lectura).** Puntos de partida con selección múltiple y creación en lote; catálogo agrupado por categoría con casillas de plantilla y buscador; los cuatro estados. | **Crea:** `data/vida-starting-points.ts` · `hooks/useCreateStartingActivities.ts` (+test) · `utils/vida-catalog.utils.ts` (+test) · `utils/vida-text.utils.ts` (+test) · `components/VidaStartingPoints/` · `components/VidaCatalogGroup/` · `components/VidaActivityCard/` (+test) · `pages/VidaActividadesPage.module.scss` · `pages/VidaActividadesPage.test.tsx`. **Modifica:** `pages/VidaActividadesPage.tsx` (entero) · `utils/activity-filters.ts:36-45` · `utils/vida-date.utils.ts` (al final) · `hooks/useActivities.ts:37,49` (`onError`). | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 28, 29, 30, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
-| 2 | **Crear y editar desde la hoja.** FAB `+` y «···» → Editar abren `SteppedModal` con nombre + píldoras de categoría + «+ nueva» (icono y color). Mueve el selector de color a compartido. | **Crea:** `shared/ui/ColorPicker/{ColorPicker.tsx,.module.scss,color-palette.ts,ColorPicker.test.tsx,index.ts}` · `components/VidaActivitySheet/` (+test) · `components/CreateVidaCategoryStep/`. **Modifica:** `pages/VidaActividadesPage.tsx` (FAB, menú «···» → editar, estado de la hoja) · `components/VidaActivityCard/VidaActivityCard.tsx` (el menú) · `habits/components/HabitFormModal/HabitWizardStep1.tsx:3,118` · `habits/components/HabitFormModal/HabitEditForm.tsx:4,305` · `habits/data/habit-colors.ts:11-97` · `shared/ui/index.ts` · `hooks/useActivityCategories.ts:35,48`. **Borra:** `habits/components/HabitColorPicker/`. | 12, 13, 14, 15, 16, 31*, 32*, 33*, 34, 35 | pending |
+| 2 | **Crear y editar desde la hoja.** FAB `+` y «···» → Editar abren `SteppedModal` con nombre + píldoras de categoría + «+ nueva» (icono y color). Mueve el selector de color a compartido. | **Crea:** `shared/ui/ColorPicker/{ColorPicker.tsx,.module.scss,color-palette.ts,ColorPicker.test.tsx,index.ts}` · `components/VidaActivitySheet/` (+test) · `components/CreateVidaCategoryStep/`. **Modifica:** `pages/VidaActividadesPage.tsx` (FAB, menú «···» → editar, estado de la hoja) · `components/VidaActivityCard/VidaActivityCard.tsx` (el menú) · `habits/components/HabitFormModal/HabitWizardStep1.tsx:3,118` · `habits/components/HabitFormModal/HabitEditForm.tsx:4,305` · `habits/data/habit-colors.ts:11-97` · `shared/ui/index.ts` · `hooks/useActivityCategories.ts:35,48`. **Borra:** `habits/components/HabitColorPicker/`. | 12, 13, 14, 15, 16, 31*, 32*, 33*, 34, 35 | accepted (2026-09-20) |
 | 3 | **Ponerla en mi plantilla.** Interruptor + siete días en la hoja: crea, actualiza y desactiva el `VidaItem`; la tarjeta lo refleja. | **Crea:** `hooks/useSaveVidaItemForActivity.ts` (+test). **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx` (bloque plantilla + validación) · `pages/VidaActividadesPage.tsx` (pasa el `VidaItem` de la actividad a la hoja) · `hooks/useVidaItems.ts:61,73` (`onError`). | 17, 18, 19, 20, 31*, 33*, 35 | pending |
 | 4 | **Archivar, restaurar y categorías.** «···» → Archivar con confirmación; `/app/vida/actividades/archivadas` con Restaurar; `/app/vida/categorias` para listar y editar. | **Crea:** `pages/VidaArchivadasPage.tsx` (+scss, +test) · `pages/VidaCategoriasPage.tsx` (+scss, +test) · `components/VidaCategoryForm/`. **Modifica:** `components/VidaActivityCard/VidaActivityCard.tsx` (Archivar) · `pages/VidaActividadesPage.tsx` (enlaces «ver archivadas» y «Categorías ›») · `routes/vida-paths.ts:6` · `routes/vida.routes.tsx:39-42` · `routes/vida.routes.test.tsx`. | 21, 22, 23, 24, 25, 26, 27, 31*, 32*, 33*, 34, 35 | pending |
 
@@ -750,6 +750,252 @@ nuevos—, **todos** bajo `src/features/vida/`; fuera de ahí solo este dossier,
 temporal (el 5173 estaba apagado), así que no hay nada que borrar, y no se
 sembró ningún dato de prueba.
 
+### Tajada 2 — Crear y editar desde la hoja
+
+**Summary for the reviewer:**
+1. El catálogo deja de ser de solo lectura: un **FAB «+»** abre la hoja de
+   **nueva actividad** (nombre + píldoras de categoría + «+ nueva» con icono y
+   color) y el **«···»** de cada tarjeta abre **la misma hoja** con los datos ya
+   puestos. Los dos campos son obligatorios y, si la mutación falla, la hoja
+   **no se cierra ni pierde lo escrito**.
+2. Código nuevo en `src/features/vida/components/{VidaActivitySheet,CreateVidaCategoryStep}`
+   y en `src/shared/ui/ColorPicker/`, adonde **se mudó** `HabitColorPicker` con
+   su paleta y su test; hábitos lo importa ahora de shared y
+   `habit-colors.ts` se quedó en re-exportador + `pickInitialHabitColor`.
+3. **Lo que más probablemente rompí: hábitos.** `HabitColorPicker` ya no existe
+   y `habit-colors.ts` no contiene la paleta, solo la re-exporta desde
+   `@/shared/ui/ColorPicker/color-palette`. Si alguien tenía una rama abierta
+   sobre esos archivos, le va a chocar. Los dos consumidores del repo
+   (`HabitWizardStep1`, `HabitEditForm`) están migrados y sus tests siguen
+   verdes, pero **el paso de categoría de hábitos —`CreateHabitCategoryStep`—
+   sigue con su `<input type="color">`**: no lo toqué (ver «Desviaciones»).
+   Segundo sospechoso: `VidaActivityCard` ahora **exige** `onEdit`, así que
+   cualquier render de la tarjeta sin esa prop no compila. Tercero: el chunk
+   inicial pasa de 833,0 a **839,3 kB**.
+
+**What was built:**
+
+*Creado*
+
+| Archivo | Qué hace |
+|---|---|
+| `src/shared/ui/ColorPicker/color-palette.ts` | La paleta de 17 tonos en dos niveles, tal cual venía de `habit-colors.ts` (mismos hexadecimales: hay datos guardados con ellos), con `normalizeColor` y `findPaletteColor`. Archivo de datos: aquí no entra React. |
+| `src/shared/ui/ColorPicker/ColorPicker.tsx` (+`.module.scss`) | El selector, idéntico al que era `HabitColorPicker`: grupo de radios, flechas, cada muestra con su nombre en español y el color de fuera de la paleta enseñado al principio. Solo cambia el nombre, la variable CSS (`--color-picker-swatch`) y la etiqueta por defecto, que pasa de «Color del hábito» a «Color». |
+| `src/shared/ui/ColorPicker/ColorPicker.test.tsx` | El test de `HabitColorPicker`, movido con `git mv` y reapuntado a `./color-palette`. Mismas 6 pruebas, ninguna recortada. |
+| `src/shared/ui/ColorPicker/index.ts` | Barril: el componente y la paleta. |
+| `src/features/vida/components/CreateVidaCategoryStep/` | «+ nueva» categoría **dentro de la hoja**: nombre + `IconPicker` (el diferido del barril) + `ColorPicker`. Al crear, `onCreated(id)` + `pop()`; si falla, `Alert` y el paso se queda abierto. |
+| `src/features/vida/components/VidaActivitySheet/` (+`.test.tsx`) | La hoja: `SteppedModal` con `ds="aura"` y `mobileSheet`, nombre, píldoras de categoría, «+ nueva», validación de los dos campos y `Alert` de fallo. El mismo componente crea y edita. 7 casos de test. |
+
+*Modificado*
+
+| Archivo | Qué |
+|---|---|
+| `src/features/habits/data/habit-colors.ts` | Deja de contener la paleta: re-exporta `HABIT_COLORS`, `HABIT_CORE_COLORS`, `HABIT_EXTENDED_COLORS`, `findHabitColor`, `normalizeHabitColor` y los tipos desde `@/shared/ui/ColorPicker/color-palette`, y **se queda con `pickInitialHabitColor`**, que es dominio de hábitos. `habit-colors.test.ts` **no se tocó** y sigue verde. |
+| `src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx:3,118` | `HabitColorPicker` → `ColorPicker` de `@/shared/ui/ColorPicker`. Ya pasaba `label="Color del hábito"`. |
+| `src/features/habits/components/HabitFormModal/HabitEditForm.tsx:4,305` | Ídem, **más `label="Color del hábito"` explícito**: antes lo heredaba del valor por defecto del componente de hábitos, y el de shared es genérico. Sin eso, el `aria-label` del grupo habría cambiado en silencio. |
+| `src/shared/ui/index.ts` | Exporta `ColorPicker`. |
+| `src/features/vida/hooks/useActivityCategories.ts:12-21,42-44,58-60` | `onError` con toast en crear y actualizar categoría, con el mismo `toErrorMessage` que `useActivities.ts`. |
+| `src/features/vida/components/VidaActivityCard/VidaActivityCard.tsx` (+`.module.scss`) | El menú «···»: `Popover` + `IconButton icon="ellipsis"` con una entrada, «Editar», igual que `HabitListCard:138-173`. Prop `onEdit` **obligatoria**. «Archivar» se cuelga aquí en la tajada 4. |
+| `src/features/vida/components/VidaCatalogGroup/VidaCatalogGroup.tsx` | Pasa `onEdit` a cada tarjeta. No decide nada: la hoja vive en la página. |
+| `src/features/vida/pages/VidaActividadesPage.tsx` (+`.module.scss`) | El FAB «+», el estado de la hoja (`sheetOpen`, `editing`, `sheetSession`) y el montaje de `VidaActivitySheet`. El FAB solo aparece en el catálogo lleno: en los puntos de partida no, como en el render. |
+| `src/features/vida/pages/VidaActividadesPage.test.tsx` | El caso «la tajada 1 es de solo lectura» se parte en tres: el FAB abre la hoja vacía, el «···» la abre rellena, y «Categorías ›» sigue sin existir (tajada 4). Los mocks de hooks crecen con las tres mutaciones que usa la hoja. |
+| `src/features/vida/components/VidaActivityCard/VidaActivityCard.test.tsx` | `onEdit` en el render base + un caso nuevo para el «···» → «Editar». |
+
+*Borrado*
+
+`src/features/habits/components/HabitColorPicker/` entero (`.tsx`, `.module.scss`,
+`index.ts`; el test se movió). No queda ni una referencia en `src/`.
+
+**Why this way:**
+
+- **La hoja se resetea con una `key`, no con un `useEffect`.** La primera
+  versión copiaba las props al estado en un efecto al abrir y el linter del
+  repositorio lo marcó (`Calling setState synchronously within an effect`, el
+  error 15 sobre los 14 de la línea base). La página lleva un contador
+  `sheetSession` que sube en cada apertura y se lo pasa como `key`: la hoja se
+  remonta y nace limpia —incluido el estado de error de las mutaciones—, y al
+  cerrar se queda montada para que la animación de salida se vea. Descartado
+  montar/desmontar la hoja con `sheetOpen`: mata la animación de cierre.
+- **El estado del formulario vive en `VidaActivitySheet`, no dentro del
+  `SteppedModal`.** Es lo que hace que el criterio 14 se cumpla: `SteppedModal`
+  **desmonta** el contenido de abajo al apilar un paso (`currentContent =
+  current?.content ?? children`), así que un estado que viviera ahí se perdería.
+  `HabitCreateWizard` lo resuelve igual, con `values` por encima del modal.
+- **El cierre va en el `onSuccess` local del `mutate`, no en el hook**
+  (criterio 16). El toast del `onError` del hook avisa, pero no es lo que
+  sostiene el criterio: si nadie invoca el `onSuccess` local, la hoja
+  sencillamente no se cierra. El test lo comprueba llamando al callback a mano.
+- **Un solo componente para crear y editar.** El render dice «editar es la
+  misma hoja». Cambia el título, el texto del botón y a qué mutación se llama;
+  nada más. Descartado el reparto de hábitos (wizard para crear, formulario
+  plano para editar): aquí son dos campos, no hay conversación que tener.
+- **La paleta se mudó al submódulo `color-palette.ts` y `habit-colors.ts` la
+  re-exporta**, en vez de mover el archivo entero. Así `habit-colors.test.ts`
+  —que es quien fija los ΔE en OKLab de los 17 tonos— no se toca ni se mueve, y
+  `pickInitialHabitColor` se queda donde pertenece. `habit-colors.ts` importa
+  del submódulo y no del barril a propósito: el barril arrastra React.
+- **El «···» es un `Popover` con `role="dialog"`**, igual que en hábitos. Efecto
+  colateral para quien escriba tests: con el menú abierto hay **dos** elementos
+  con ese rol, así que la hoja se busca por nombre
+  (`findByRole('dialog', { name: /Editar actividad/ })`).
+
+**Verification:**
+
+```
+$ pnpm typecheck
+> tsc -b --noEmit
+(limpio)
+
+$ pnpm lint
+✖ 14 problems (14 errors, 0 warnings)
+$ pnpm lint | grep -c "features/vida"      →  0   (tras quitar el useEffect)
+
+$ pnpm test
+ Test Files  1 failed | 73 passed (74)
+      Tests  2 failed | 589 passed (591)
+(los 2 fallos siguen siendo SearchSelect.test.tsx, preexistentes)
+
+$ pnpm vitest run src/features/vida
+ Test Files  16 passed (16)
+      Tests  171 passed (171)
+
+$ pnpm vitest run src/shared/ui/ColorPicker src/features/habits
+ (verde: el test movido y los de hábitos, incluido habit-colors.test.ts)
+
+$ pnpm build
+dist/assets/index-DVKiRyR4.js       839.30 kB │ gzip: 257.41 kB
+dist/assets/app-icons-DCN7AUFR.js   620.20 kB │ gzip: 193.19 kB
+dist/assets/IconPicker-B0YfeKFm.js    4.64 kB │ gzip:   1.81 kB
+
+$ grep -rn "free-solid-svg-icons" src/features/vida/ src/shared/ui/ColorPicker/
+(ninguno)
+$ grep -rn "HabitColorPicker" src
+(solo un comentario de cabecera en ColorPicker.tsx que dice de dónde viene)
+```
+
+De 581 tests a **591**: 10 nuevos (7 de la hoja, 1 del menú de la tarjeta, 2 de
+la pantalla), ninguno roto, ninguno perdido en la mudanza del `ColorPicker`.
+
+**Arnés temporal** (`src/__t2-feat002.html` + `src/__t2-feat002.tsx`, con
+`MemoryRouter`, `AuthBootstrapProvider`, `ThemeProvider`, `ToastProvider` y un
+`QueryClient` con `setQueryData` para las tres consultas: 3 categorías —una de
+34 caracteres—, 5 actividades —una de 61—, una sin categoría y un `VidaItem`).
+Servido por el 5173 del usuario, que esta vez **sí estaba arriba** (`probe.sh`:
+HTTP 200). **Borrado antes de reportar**: `git status src` no lo lista. No se
+arrancó ni se paró ningún servicio y no se sembró ningún dato: la caché del
+`QueryClient` del arnés muere con la pestaña.
+
+**Criteria it closes:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 12 | cerrado | `VidaActivitySheet.test.tsx`: con categoría y sin nombre, `createActivity.mutate` **sin llamadas** y se lee «Ponle un nombre: es cómo la vas a reconocer.»; con el nombre a tres espacios y sin categoría, tampoco envía y se leen **los dos** avisos. En el arnés a 375 px, pulsar «Crear» con la categoría puesta y el nombre vacío pinta solo el aviso del nombre (contraste 6,0:1). |
+| 13 | cerrado | Con nombre y categoría, `mutate` se llama **una vez** con `{ title: 'Regar las plantas', categoryId: 'casa' }` y `onClose` **no** se ha llamado todavía; al invocar el `onSuccess` local, `onClose` se llama una vez. El refresco sin recargar lo da `invalidateActivityQueries` del hook de F0, que no se tocó. |
+| 14 | cerrado | «+ nueva» apila el paso: cabecera «Nueva categoría», `radiogroup` «Color de la categoría» con **17** radios y el `IconPicker`. Escribiendo «Plantas» y eligiendo Menta, `createActivityCategory` recibe `{ name: 'Plantas', color: '#10b981' }`; al volver, la píldora «Plantas» queda `aria-pressed="true"` y el campo de la hoja **sigue diciendo «Regar las plantas»**. Visto también en el arnés. |
+| 15 | cerrado | `VidaActivityCard.test.tsx`: el «···» abre el menú y «Editar» devuelve la actividad. `VidaActividadesPage.test.tsx`: desde el «···» de «Bañarme» la hoja abre con «Editar actividad», el nombre puesto y la píldora «Yo» marcada. `VidaActivitySheet.test.tsx`: al guardar llama a **`useUpdateActivityMutation`** (nunca a la de crear) con `{ id, title, categoryId: 'yo' }`; el cambio de grupo lo hace `groupActivitiesByCategory` al reagrupar tras invalidar. |
+| 16 | cerrado | Con `createMutation.isError`, tras pulsar «Crear»: `onClose` **sin llamadas**, `Alert` «No pudimos crear la actividad…», el campo **conserva** «Regar las plantas» y la píldora sigue marcada. El toast del `onError` del hook es aviso, no mecanismo. El paso de «+ nueva» tiene su propio `Alert` y tampoco hace `pop()` si falla. |
+| 31 | cerrado — medido | Arnés a 375×812. Catálogo: `scrollWidth === clientWidth === 375`, **0** elementos con `right > innerWidth`, y el «···» de las cinco tarjetas en `right: 344` contra un borde de tarjeta en `359` — **dentro**. Con la hoja abierta: `scrollWidth` sigue en 375 y 0 desbordes; las píldoras envuelven y la más larga acaba en `right: 297`. El paso de «+ nueva» con los 17 colores cabe en tres filas sin desbordar. |
+| 32 | cerrado — medido | Nombre de 61 caracteres y categoría de 34: el nombre se recorta con elipsis, el «···» no se mueve (sigue en 344) y no hay scroll horizontal. En la hoja, la píldora de 34 caracteres ocupa su propia línea y no desborda. Más el caso de DOM que ya había en los tests. |
+| 33 | cerrado — medido | Arnés en oscuro dentro de `[data-ds='aura']`, contrastes calculados sobre el fondo compuesto: título de la hoja 14,9:1 · descripción y etiquetas 7,9:1 · píldora **elegida** 10,3:1 · píldora sin elegir 6,7:1 · «+ nueva» 4,8:1. En claro, la píldora elegida sale **4,6:1** (`#006c49` sobre `primary@18%` compuesto contra el panel opaco `rgb(244,247,251)`) — pasa AA por poco y queda anotado como el punto más justo de la pantalla. Ningún texto oscuro sobre fondo oscuro. |
+| 34 | cerrado | Test de la hoja: el DOM pintado no contiene «pendiente», «prioridad», «vencida», «fallaste», «cancelad» ni «tarea». Las palabras son «Cómo la llamas», «Categoría · le da el icono y el color», «+ nueva», «Crear», «Guardar», «Cancelar», «Editar». |
+| 35 | cerrado con matiz | typecheck limpio · lint **14/0**, los mismos de la línea base y ninguno en Vida ni en el `ColorPicker` · tests **2 fallos de 591**, los dos preexistentes · ni un import a pelo del barril de Font Awesome, `app-icons` sigue perezoso en **620,20 kB** e `IconPicker` en 4,64 kB. **El matiz:** el chunk inicial pasa de 833,0 a **839,3 kB** (+6,3). No es por iconos —el criterio habla de iconos y ahí está limpio—, es el código de la hoja; pero el número de `ENVIRONMENT.md` vuelve a quedar viejo. |
+| 36 | del usuario | Detrás del login. Los pasos, abajo. |
+
+Los criterios 1-11 son de la tajada 1 (aceptada) y 17-27 de las tajadas 3 y 4.
+
+**Risks:**
+
+- **La mudanza del `ColorPicker` toca hábitos, que es la parte viva del repo.**
+  `habit-colors.ts` ya no define la paleta: la re-exporta. Todo lo que importaba
+  de ahí sigue compilando y `habit-colors.test.ts` sigue verde sin tocarlo, pero
+  cualquier rama abierta sobre ese archivo o sobre `HabitColorPicker/` va a
+  chocar al fusionar.
+- **`VidaActivityCard` exige `onEdit`.** Se hizo obligatoria a propósito (una
+  tarjeta sin menú no es la tarjeta del render), pero es un cambio de contrato
+  de un componente de la tajada 1.
+- **El `Popover` no se cierra al elegir «Editar»**, igual que en `HabitListCard`.
+  Se queda abierto detrás de la hoja. Es el comportamiento de la referencia, no
+  lo cambié; si molesta, es un arreglo de `Popover` y afecta a hábitos también.
+- **La hoja no avisa de nombres repetidos.** Crear dos actividades con el mismo
+  nombre está permitido y nadie lo cuestiona. No lo pide ningún criterio.
+- **El FAB es `position: fixed`** y se solapa con el final de la lista si se
+  hace scroll hasta abajo del todo. En el arnés no tapa ninguna tarjeta, pero
+  con muchas actividades la última puede quedar debajo. Queda dicho.
+- **`useActivityCategories` estrena `onError`**: quien ya consumiera esas
+  mutaciones en silencio ahora ve un toast. Los únicos consumidores son de esta
+  tajada.
+
+**Deviations from the plan:**
+
+1. **No arreglé el `<input type="color">` de `CreateHabitCategoryStep.tsx`.**
+   El plan decía que, una vez movido el `ColorPicker`, «cambiar esa línea es de
+   un renglón». No lo es: son un `<label>`, un `<input type="color">` y un
+   `Input` de texto libre (líneas 71-91) los que habría que quitar, y con ellos
+   se va **la posibilidad de escribir un hexadecimal a mano**, que hoy existe
+   en hábitos. Además **ningún test cubre ese paso** (`git grep
+   CreateHabitCategoryStep -- '*.test.tsx'` → nada), así que el cambio entraría
+   sin red. Lo dejo anotado tal cual: **sigue siendo un bug latente** —el paso
+   de categoría de hábitos ofrece 16 millones de colores donde el resto de la
+   app ofrece 17— y ahora el arreglo es trivial de escribir (`ColorPicker` ya
+   está en shared), pero es una decisión de producto sobre hábitos, no un
+   detalle de esta tajada.
+2. **No unifiqué `normalizeVidaText`.** El revisor de la tajada 1 pedía mirarlo
+   al mover el `ColorPicker`, «si es una unificación de un renglón limpia». No
+   lo es: son **cuatro** implementaciones con firmas distintas
+   (`vida-text.utils.ts:13`, `habits/utils/habit-list.utils.ts:38`,
+   `habits/utils/habit-form.utils.ts:285`, `shared/icons/icon-search.ts:8`), dos
+   de ellas privadas del archivo, y unificarlas es tocar hábitos y el catálogo
+   de iconos en la misma tajada en la que ya estoy moviendo el selector de
+   color — justo lo que `ENVIRONMENT.md` avisa que contamina la línea base.
+   Sitio propuesto cuando alguien lo haga: `src/shared/utils/text.ts`, y el
+   momento natural es la tajada 4, que ya vuelve a tocar hábitos-cero.
+3. **`HabitEditForm` recibe `label="Color del hábito"` explícito.** El plan
+   hablaba solo de cambiar el import y la etiqueta del componente; hacía falta
+   esa línea para que el `aria-label` del grupo de radios no cambiara al pasar
+   la etiqueta por defecto de «Color del hábito» a «Color».
+4. **El reseteo de la hoja se hace con `key` desde la página.** El plan no decía
+   cómo; la vía obvia (`useEffect`) añade un error de lint sobre la línea base.
+5. **`VidaActivitySheet.test.tsx` tuvo que usar `findBy*` en el paso apilado.**
+   `SteppedModal` mueve la cabecera y el cuerpo con dos `AnimatePresence`
+   distintas, así que el título del paso nuevo aparece **antes** que su
+   contenido. Quien escriba el test de la tajada 3 se va a encontrar lo mismo.
+6. **El recuento «N actividades · M categorías» durante la búsqueda no se
+   tocó**, como se pidió: sigue siendo el del catálogo entero. Es el hallazgo
+   que dejó el revisor de la tajada 1 y no es de esta tajada.
+
+**Lo que queda para el usuario** (criterio 36, la parte de esta tajada). Con el
+5173 arriba y la sesión iniciada:
+
+1. Vida → **Actividades**, con al menos una actividad creada.
+2. Pulsa el botón **«+»** de abajo a la derecha. Debe abrirse la hoja **Nueva
+   actividad** con «Cómo la llamas» vacío y las píldoras de tus categorías.
+3. Pulsa **«Crear»** sin escribir nada: no debe crear nada y debe señalar los
+   dos campos que faltan. Escribe un nombre y pulsa otra vez: debe seguir
+   pidiendo la categoría.
+4. Toca **«+ nueva»**: se apila el paso de categoría con nombre, icono y **17
+   colores** (no la rueda del sistema). Crea una. Al volver, esa categoría debe
+   quedar **marcada** y el nombre que escribiste **seguir ahí**.
+5. Pulsa **«Crear»**: la hoja se cierra y la actividad aparece en su grupo sin
+   recargar.
+6. Abre el **«···»** de una tarjeta → **«Editar»**: la misma hoja con el nombre
+   y la categoría puestos. Cámbiale la categoría y guarda: la tarjeta debe
+   **cambiar de grupo**.
+7. **Prueba a fallar**: con el móvil en modo avión (o el wifi apagado), pulsa
+   «Crear». Debe verse un aviso dentro de la hoja, **la hoja no debe cerrarse** y
+   lo escrito debe seguir ahí. Esto es lo único que no pude probar contra el
+   servidor de verdad: en los tests se fuerza el fallo a mano.
+8. En **móvil** y en **tema oscuro**: la hoja ancla abajo, las píldoras
+   envuelven y todo se lee. Medido en el arnés a 375 px; confírmalo en tu
+   teléfono.
+9. La hoja **todavía no** trae «ponerla en mi plantilla» con sus días: es la
+   tajada 3. Ni «Archivar» en el «···»: es la 4.
+
+**Tree state:** sin commitear. 21 archivos de código: 11 modificados, 10 nuevos
+y 4 borrados (`HabitColorPicker/`, con su test movido a
+`src/shared/ui/ColorPicker/ColorPicker.test.tsx`). Fuera de `src/`, este dossier,
+`BOARD.md` y lo que reescribe `graphify update .` (2717 nodos, 2911 aristas). El
+arnés temporal está borrado y no se sembró ningún dato.
+
 ## 4. Review — feature-reviewer
 
 *(una entrada por tajada)*
@@ -908,3 +1154,179 @@ arriba—, así que sirve tal cual):
    «Bañarme». Escribe **«zzz»**: «Sin resultados» y un botón para limpiar.
 5. Todas las tarjetas dirán **«sin plantilla»**: es lo correcto en esta tajada.
 6. No hay botón `+` ni «Categorías ›»: llegan en las tajadas 2 y 4.
+
+---
+
+### Tajada 2 — Crear y editar desde la hoja
+
+**Veredicto: aceptada.** Los cinco criterios propios de la tajada (12, 13, 14,
+15, 16) se cumplen, y los cuatro transversales que se vuelven a pedir en cada
+tajada (31, 32, 33, 34) los volví a medir yo sobre lo que esta tajada pinta —la
+hoja—, no sobre el informe. La mudanza del `ColorPicker` a `shared/ui` no rompió
+hábitos. Quedan seis hallazgos anotados, ninguno de ellos motivo de devolución.
+
+**Lo que hice para revisar.** Línea base entera por mi cuenta: `pnpm typecheck`
+limpio; `pnpm lint` **14 errores / 0 warnings** (los mismos de
+`ENVIRONMENT.md`, ninguno en `features/vida` ni en `shared/ui/ColorPicker`);
+`pnpm test` **2 fallos de 591**, los dos de `SearchSelect.test.tsx`,
+preexistentes; `pnpm build` → `index` **839,30 kB** (gzip 257,41), `app-icons`
+**620,20 kB** perezoso e `IconPicker` **4,64 kB**, idénticos a lo reportado. Y un
+**arnés propio** (`src/__rev-t2.{html,tsx}`, borrado: `git status src` no lo
+lista) que monta `VidaActivitySheet` con `QueryClientProvider` +
+`setQueryData(vidaKeys.categories.list(), …)`, cuatro categorías —una de 44
+caracteres— y una variante `?empty=1` sin ninguna.
+
+**Criterios, uno a uno** (contra la sección 1, literal):
+
+| # | Veredicto | Cómo lo comprobé |
+|---|---|---|
+| 12 | **cumplido** | En el arnés a 375 px, pulsando «Crear» con la hoja vacía se leen **los dos** avisos a la vez: «Ponle un nombre: es cómo la vas a reconocer.» y «Elige una categoría: le da el icono y el color.»; al tocar una píldora el aviso de categoría desaparece. Que no salga nada hacia la API lo fijan los tests (`createActivity.mutate` sin llamadas, también con el nombre a tres espacios). `handleSubmit` (`VidaActivitySheet.tsx:59-77`) valida con `name.trim()` y `!categoryId` **antes** de cualquier `mutate`. |
+| 13 | **cumplido** | `createMutation.mutate({title, categoryId}, { onSuccess: onClose })`: el cierre cuelga del `onSuccess` **local**. El refresco sin recargar lo da `invalidateActivityQueries` en el `onSuccess` del hook de F0, que esta tajada no tocó (`useActivities.ts:48-55`). Test: `mutate` una vez, `onClose` aún no; tras invocar el `onSuccess`, `onClose` una vez. |
+| 14 | **cumplido, con una comprobación que no pude hacer en el navegador** | El estado (`name`, `categoryId`) vive en `VidaActivitySheet`, **por encima** del `SteppedModal`, así que apilar el paso no lo toca: el reparto es correcto y es lo que sostiene el criterio. El test lo verifica de punta a punta (17 radios en el paso, `createActivityCategory` con `{name:'Plantas', color:'#10b981'}`, al volver la píldora `aria-pressed="true"` y el campo **sigue** con «Regar las plantas»). En mi arnés el paso apilado **no llegó a pintarse**: la cabecera cambió a «←» pero el contenido se quedó en el de abajo. La causa es del entorno, no del código —`document.visibilityState === 'hidden'`, así que las dos `AnimatePresence` del `SteppedModal` no avanzan un solo fotograma; `ENVIRONMENT.md` y el protocolo avisan de esto—. Lo dejo dicho, no disimulado: el paso «+ nueva» lo confirma el usuario en el recorrido (paso 4). |
+| 15 | **cumplido en la parte comprobable** | La hoja es la misma: `activity` presente → título «Editar actividad», campos precargados desde las props y `updateMutation` (nunca la de crear) con `{id, title, categoryId}`. El «···» de la tarjeta (`VidaActivityCard.tsx`) solo llama a `onEdit(activity)`: no muta nada. **El «cambia de grupo» lo comprobé por lectura, no ejecutándolo**: depende de que `invalidateActivityQueries` refresque y de que `groupActivitiesByCategory` (tajada 1, con sus tests) reagrupe. Va al recorrido manual. |
+| 16 | **cumplido** | Nada cierra la hoja salvo el `onSuccess` local; con `isError` se pinta un `Alert variant="danger"` **dentro** de la hoja y el estado del formulario no se toca (test: `onClose` sin llamadas, el campo conserva el texto, la píldora sigue marcada). El paso de categoría tiene su propio `Alert` y **no hace `pop()`** si la mutación falla (`CreateVidaCategoryStep.tsx:47-58`), así que tampoco se pierde lo escrito ahí. El `onError` con toast nuevo en `useActivityCategories.ts` es aviso, no mecanismo, y está bien colocado: en el hook, como los de `useActivities.ts`. |
+| 31 | **cumplido — medido por mí** | Arnés a 375×812: `scrollWidth === clientWidth === 375` con la hoja abierta y **0** elementos con `right > 375` o `left < 0`. La hoja ocupa 8→368. |
+| 32 | **cumplido — medido por mí** | Categoría de 44 caracteres: la píldora envuelve a su propia línea y termina en `right: 336`, dentro de la hoja; sin scroll horizontal. `.option` lleva `max-width: 100%` + `text-overflow: ellipsis`, y `.options` `flex-wrap`. |
+| 33 | **cumplido — medido por mí** | Tema oscuro, contrastes compuestos sobre el panel: título 14,9:1 · píldora elegida 9,8:1 · píldora sin elegir 7,9:1 · «+ nueva» 4,8:1 · aviso de error 9,8:1. Ningún texto oscuro sobre fondo oscuro. El punto más justo sigue siendo el que anotó el constructor: la píldora elegida en tema **claro**, 4,6:1 — pasa AA, pero es el que primero se rompería si alguien toca `--color-primary`. |
+| 34 | **cumplido** | El texto pintado que leí en el navegador es «Nueva actividad», «Dos cosas: cómo la llamas y a qué categoría pertenece», «Cómo la llamas», «Categoría · le da el icono y el color», «+ nueva», «Cancelar», «Crear». Ni culpa ni gestión de proyectos. El test lo fija por lista negra. |
+| 35 | **cumplido con el matiz del paquete** | Mis cuatro comandos, arriba. Ni un import a pelo de `@fortawesome/free-solid-svg-icons` en `features/vida` ni en `shared/ui/ColorPicker`; `app-icons` sigue perezoso. El chunk inicial pasa de 833,0 a **839,3 kB** (+6,3): no es por iconos —que es lo que el criterio fija—, es el código de la hoja. La **línea base de `ENVIRONMENT.md` vuelve a quedar vieja**; no la toco (no es mía), queda dicho por segunda vez. |
+| 36 | **del usuario** | Estructural: la pantalla está tras el login y los agentes no entran con credenciales. Pasos abajo. |
+
+**Qué rompí buscando romper** (dónde miré, no solo el resultado):
+
+- **El grafo no servía para esta pregunta.** `graphify explain "HabitColorPicker"`
+  → «No node matching». El constructor corrió `graphify update .` después de
+  mover el archivo, así que el grafo ya refleja el árbol de **después** y la
+  pregunta «quién dependía de esto» no tiene a quién preguntársela ahí. La hice
+  contra HEAD, que es el estado anterior: `git grep -l HabitColorPicker HEAD -- src`
+  → cinco archivos (el propio componente, su índice, su test, `HabitWizardStep1`
+  y `HabitEditForm`); `git grep -l habit-colors HEAD -- src` → seis
+  (`HabitCreateWizard`, `HabitFormModal.test`, `habit-colors.test.ts`,
+  `vida-starting-points.test.ts` y los dos del selector). **Los dos consumidores
+  de componente están migrados; los cuatro de la paleta siguen importando de
+  `data/habit-colors`, que re-exporta**, y no se tocaron.
+- **La paleta es la misma, hexadecimal a hexadecimal.** Comparé los 17 colores
+  de `HEAD:habit-colors.ts` con `shared/ui/ColorPicker/color-palette.ts`
+  ordenados: **idénticos**. Importaba porque hay hábitos guardados con esos
+  valores y `habit-colors.test.ts` fija los ΔE en OKLab: ese test no se tocó y
+  pasa.
+- **El componente también.** `diff` entre el `HabitColorPicker.tsx` de HEAD y el
+  `ColorPicker.tsx` nuevo: solo cambian el nombre, los imports, la variable CSS
+  (`--habit-swatch` → `--color-picker-swatch`, renombrada también en el `.scss`)
+  y la etiqueta por defecto. El cambio de etiqueta es el único con efecto
+  observable y está compensado con el `label="Color del hábito"` explícito en
+  `HabitEditForm` — correcto: sin eso el `aria-label` del `radiogroup` habría
+  cambiado en silencio.
+- **Ningún import cruzado nuevo de `features/vida` a `features/habits`:** grep
+  sobre `src/features/vida` y `src/shared/ui/ColorPicker` → solo comentarios de
+  procedencia… **salvo uno real, que ya venía de la tajada 1**:
+  `src/features/vida/data/vida-starting-points.test.ts:2` importa
+  `HABIT_CORE_COLORS` de `@/features/habits/data/habit-colors`. Funciona (es la
+  re-exportación) y es un test, pero ahora que la paleta vive en shared ese
+  import **debería apuntar a `@/shared/ui/ColorPicker/color-palette`**. Hallazgo,
+  no regresión: no lo introdujo esta tajada.
+- **Lo que vive al lado en la misma pantalla:** `VidaActivityCard` estrena una
+  prop **obligatoria** (`onEdit`) y `VidaCatalogGroup` la encadena. Comprobé que
+  no hay ningún otro sitio que renderice la tarjeta (solo el grupo y sus tests),
+  así que el cambio de contrato no deja a nadie sin compilar — y `pnpm typecheck`
+  lo confirma.
+- **Lo que el constructor señaló como más probable roto** era hábitos: es donde
+  empecé. `pnpm vitest run src/features/habits src/shared/ui/ColorPicker` entra
+  en el total verde de los 589 y `habit-colors.test.ts` sigue intacto en el árbol
+  (`git status` no lo lista).
+- **Los toasts salen de los hooks, no del api:** ningún componente de esta
+  tajada importa de `features/vida/api/`; los únicos que lo hacen son los propios
+  hooks y `useCreateStartingActivities`, que **sigue siendo el único** que se
+  salta el toast por mutación y da uno agregado (`:144,151`) con su comentario de
+  por qué. El `onError` nuevo está solo en las dos mutaciones de categoría que
+  estrena la hoja.
+- **La plantilla no se adelantó:** grep de `Switch`, «plantilla», `days` y
+  `VidaItem` en `VidaActivitySheet/` y `CreateVidaCategoryStep/` → **nada** fuera
+  de la línea del comentario que dice que llega en la tajada 3. `useVidaItems.ts`
+  no se tocó (sigue sin `onError`, que es de la tajada 3). El FAB no aparece en
+  los puntos de partida: se pinta después de los cuatro `return` tempranos
+  (`isPending && fetchStatus==='idle'`, `isPending`, `isError`, `activityCount===0`).
+- **El FAB es el primero de la app** (`position: fixed`, `z-index: 20`). Miré si
+  choca con algo del cromo: `AppLayout` solo tiene una barra **sticky arriba**,
+  no hay barra inferior, así que no tapa navegación. Lo que sí puede tapar es la
+  última tarjeta al final del scroll, como el propio constructor avisó.
+
+**Estados que nadie construye:**
+
+- **Vacío / cargando / error de las categorías, dentro de la hoja: los tres se
+  ven igual y ninguno se explica.** `const { data: categories = [] } = useActivityCategoriesQuery()`
+  descarta `isLoading` y `isError`, así que mientras cargan, si fallan o si no
+  hay ninguna, la hoja pinta la etiqueta «Categoría» y **solo «+ nueva»**.
+  Medido con la variante `?empty=1` del arnés. No devuelvo por esto —los
+  criterios 28-30 son de la pantalla y se cerraron en la tajada 1, y la hoja deja
+  una salida (crear una categoría)—, pero es el agujero de la tajada: una hoja
+  que aparece sin píldoras mientras la consulta está en vuelo parece una hoja
+  rota, y con la sesión caída no dice nada. **Hallazgo para la tajada 3**, que
+  vuelve a abrir este archivo.
+- **Texto largo y móvil:** medidos arriba, bien.
+- **Sin permisos:** no aplica por dentro de la hoja (la pantalla entera ya lo
+  resuelve con el mensaje de sesión del criterio 29, tajada 1).
+- **Error de mutación:** construido y probado (criterio 16). Es el único estado
+  de fallo que esta tajada tenía que traer, y está.
+
+**¿Duplica algo que ya existía?** (contra la sección 2) No.
+`SteppedModal`, `FormField`, `Input`, `Button`, `Alert`, `Popover`,
+`IconButton`, `AppIcon` e `IconPicker` salen todos de `shared/ui` —el
+`IconPicker` **del barril**, que es el diferido, no de `IconPicker/IconPicker`—.
+Ningún documento GraphQL nuevo, ninguna clave nueva en `vidaKeys`, nada nuevo en
+`invalidate-vida-queries.ts`, ninguna paleta nueva: se **movió** la que había,
+que es exactamente lo que decía «Where it does NOT go». `pickInitialHabitColor`
+se quedó en hábitos, como estaba escrito. Dos cosas se repiten y las anoto sin
+devolver por ellas: `toErrorMessage` es ahora **idéntica** en `useActivities.ts`
+y `useActivityCategories.ts` (dos copias de tres líneas, candidata al
+`src/shared/utils/text.ts` que el constructor propone), y `CreateVidaCategoryStep`
+acepta un `initialName` que **nadie le pasa** — o se usa (prellenar la categoría
+con lo escrito sería un detalle bonito) o sobra.
+
+**Hallazgos** (ninguno devuelve la tajada):
+
+1. Vacío/cargando/error de categorías dentro de la hoja, indistinguibles (arriba).
+2. `vida-starting-points.test.ts:2` debería importar la paleta de shared.
+3. `toErrorMessage` duplicada en dos hooks.
+4. `initialName` sin ningún llamante en `CreateVidaCategoryStep`.
+5. El `<input type="color">` de `CreateHabitCategoryStep.tsx:71-91` **sigue ahí**:
+   hábitos ofrece 16 millones de colores donde el resto de la app ofrece 17.
+   Doy por buena la desviación del constructor —quitarlo se lleva por delante el
+   hexadecimal a mano y no hay ni un test que cubra ese paso—, pero ahora es una
+   decisión de producto sobre hábitos que conviene tomar, no olvidar.
+6. El `Popover` del «···» no se cierra al elegir «Editar» y se queda abierto
+   detrás de la hoja. Es el comportamiento de `HabitListCard`, así que arreglarlo
+   es tocar hábitos: no es de esta tajada.
+
+**Lo que no revisé:** el recorrido real con sesión (criterio 36, estructural), el
+paso apilado de «+ nueva» **pintado** en un navegador (ventana oculta, sin
+fotogramas: solo por test y por lectura), y el «cambia de grupo» del criterio 15
+ejecutado contra datos reales.
+
+**Veredicto: aceptada** — los cinco criterios de la tajada se cumplen con
+evidencia, los cuatro transversales los volví a medir sobre la hoja, la línea
+base no empeora y la mudanza del selector de color no dejó ni un consumidor
+roto en hábitos.
+
+**Para el usuario — los pasos de esta tajada** (criterio 36; con tu 5173 arriba
+y la sesión iniciada):
+
+1. **Vida → Actividades**, con al menos una actividad en el catálogo.
+2. Toca el **«+»** de abajo a la derecha: se abre **Nueva actividad**.
+3. Pulsa **«Crear»** con la hoja vacía: no debe crearse nada y deben señalarse
+   los dos campos. Escribe un nombre y vuelve a pulsar: debe seguir pidiendo la
+   categoría.
+4. Toca **«+ nueva»**: se apila el paso de categoría con nombre, icono y **17
+   colores**. Créala. Al volver, esa categoría debe quedar **marcada** y el
+   nombre que escribiste **seguir ahí**. *(Esto es lo que no pude ver pintado:
+   míralo con atención.)*
+5. Pulsa **«Crear»**: la hoja se cierra y la actividad aparece en su grupo sin
+   recargar.
+6. Abre el **«···»** de una tarjeta → **«Editar»**, cámbiale la categoría y
+   guarda: la tarjeta debe **cambiar de grupo**. *(Tampoco pude ejecutarlo.)*
+7. **Prueba a fallar**: con el wifi apagado, pulsa «Crear». Debe verse el aviso
+   dentro de la hoja, **la hoja no debe cerrarse** y lo escrito debe seguir ahí.
+8. De paso, en **hábitos**: crea un hábito y edita otro, y mira que el selector
+   de color sigue siendo el de siempre. Es lo que esta tajada movió de sitio.
+9. Todavía **no** hay «ponerla en mi plantilla» (tajada 3) ni «Archivar»
+   (tajada 4).

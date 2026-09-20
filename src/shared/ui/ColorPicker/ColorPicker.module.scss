@@ -17,7 +17,7 @@
   padding: 0;
   border: 1px solid color-mix(in srgb, var(--color-text) 16%, transparent);
   border-radius: var(--radius-full);
-  background: var(--habit-swatch);
+  background: var(--color-picker-swatch);
   cursor: pointer;
   transition:
     transform $duration-fast $ease-out,
@@ -48,7 +48,7 @@
 .swatchSelected {
   box-shadow:
     0 0 0 2px var(--color-surface),
-    0 0 0 4px var(--habit-swatch);
+    0 0 0 4px var(--color-picker-swatch);
 }
 
 .check {

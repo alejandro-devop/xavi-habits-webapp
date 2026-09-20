@@ -1,6 +1,6 @@
 import type { HabitTemplate } from '@/features/habits/data/habit-templates'
 import { HABIT_TEMPLATES } from '@/features/habits/data/habit-templates'
-import { HabitColorPicker } from '@/features/habits/components/HabitColorPicker'
+import { ColorPicker } from '@/shared/ui/ColorPicker'
 import type { HabitCategory } from '@/features/habits/types/habit.types'
 import type { HabitFormValues } from '@/features/habits/utils/habit-form.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -115,7 +115,7 @@ export function HabitWizardStep1({
         <span className={styles.label}>
           Color <span className={styles.labelHint}>· ya te elegimos uno</span>
         </span>
-        <HabitColorPicker
+        <ColorPicker
           value={values.color}
           onChange={(color) => patch({ color })}
           disabled={disabled}

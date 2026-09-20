@@ -1575,8 +1575,8 @@
     "semantic_hash": ""
   },
   "src/shared/ui/index.ts": {
-    "mtime": 1789883068.9343348,
-    "ast_hash": "4b87de0408d55b2f6c88dcc0b86da0f2",
+    "mtime": 1789772216.8704596,
+    "ast_hash": "8fca50b3d9e7f856da29c231b75ff848",
     "semantic_hash": ""
   },
   "src/shared/utils/assert.ts": {
@@ -2160,8 +2160,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitEditForm.tsx": {
-    "mtime": 1789883068.8743348,
-    "ast_hash": "0cbf5cda3cf8f774d5b8efc92f74c653",
+    "mtime": 1789735061.4715693,
+    "ast_hash": "f16d331628b7019d1ce45fd5d9c036c9",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitFormModal.test.tsx": {
@@ -2190,8 +2190,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitWizardStep1.tsx": {
-    "mtime": 1789883068.8273351,
-    "ast_hash": "37e5397f4ba7f387c8df35c782f1e29a",
+    "mtime": 1789735017.7334573,
+    "ast_hash": "4fc37e8650873426bfebab2d6ee5636c",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFormModal/HabitWizardStep2.tsx": {
@@ -2309,14 +2309,29 @@
     "ast_hash": "5e1a81b5552e971b51c461c8b8b834b7",
     "semantic_hash": ""
   },
+  "src/features/habits/components/HabitColorPicker/HabitColorPicker.test.tsx": {
+    "mtime": 1789777986.9425504,
+    "ast_hash": "5731dc6e39f388d701e4aaae0ec8d0ec",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/HabitColorPicker.tsx": {
+    "mtime": 1789778078.7966208,
+    "ast_hash": "81eae080250da757ca5274abcd310691",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitColorPicker/index.ts": {
+    "mtime": 1789734991.224387,
+    "ast_hash": "aa93d97efda54cfa754404e7693c2722",
+    "semantic_hash": ""
+  },
   "src/features/habits/data/habit-colors.test.ts": {
     "mtime": 1789777945.50454,
     "ast_hash": "ef3ed7057ed221bfc9d388705e653227",
     "semantic_hash": ""
   },
   "src/features/habits/data/habit-colors.ts": {
-    "mtime": 1789883060.299358,
-    "ast_hash": "8029d8b7f5f659b685e53cfc6ead35b2",
+    "mtime": 1789777909.089543,
+    "ast_hash": "bdfb6158574562adbe4824498d7cbd98",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/ChartPanel.tsx": {
@@ -2435,8 +2450,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaActividadesPage.tsx": {
-    "mtime": 1789883478.6048324,
-    "ast_hash": "d571d490389d7fdae8e38ccff3a2d21c",
+    "mtime": 1789818443.066828,
+    "ast_hash": "3765fa9c83a0bd613506ed50276a979d",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
@@ -2480,13 +2495,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789880521.4255846,
-    "ast_hash": "b37e5beafa03b741355c55bbf4a34ba9",
+    "mtime": 1789817929.902828,
+    "ast_hash": "6bdcf44f359ceae9f420e0a2bfc89c42",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1789882796.4999025,
-    "ast_hash": "4a5f545960cccae806886bc02a4016ed",
+    "mtime": 1789817862.1418507,
+    "ast_hash": "1cbf967f88dcf9037de69bd4113414da",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2595,8 +2610,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useActivityCategories.ts": {
-    "mtime": 1789883080.961302,
-    "ast_hash": "0bf25e68e7d63cd639567d0e53f4ca70",
+    "mtime": 1789800185.5394163,
+    "ast_hash": "ddc8ec0a3e0d20fdeea75f5cc163c45b",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useActivityFollowUps.test.tsx": {
@@ -2700,13 +2715,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivityCard/VidaActivityCard.test.tsx": {
-    "mtime": 1789883239.6588264,
-    "ast_hash": "cbe0ae8a814a290423a9d15277de5a7c",
+    "mtime": 1789818476.5728352,
+    "ast_hash": "1b3732c565629a7c8fc1c949fb20ce13",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivityCard/VidaActivityCard.tsx": {
-    "mtime": 1789883179.5700157,
-    "ast_hash": "d4d7abce4daef4ec85ee0b17b2bf9d8c",
+    "mtime": 1789818291.305804,
+    "ast_hash": "840cba1de3b469409c9f8d6d09f1ef44",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivityCard/index.ts": {
@@ -2715,8 +2730,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaCatalogGroup/VidaCatalogGroup.tsx": {
-    "mtime": 1789883207.8209279,
-    "ast_hash": "4bd1b24a3abb0f8fb186ac109b6fb1f0",
+    "mtime": 1789818355.7628124,
+    "ast_hash": "4e87d6df5fb9c2b978019c990db7416f",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaCatalogGroup/index.ts": {
@@ -2760,8 +2775,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaActividadesPage.test.tsx": {
-    "mtime": 1789883386.046327,
-    "ast_hash": "7f30d7fc5cbdb5590f98fb65044ee71a",
+    "mtime": 1789879788.709354,
+    "ast_hash": "0b4c547998bc8806d2a0a1e385614896",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-catalog.utils.test.ts": {
@@ -2785,8 +2800,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-002-vida-catalogo-actividades.md": {
-    "mtime": 1789882856.3438103,
-    "ast_hash": "92357a20f82c8a87cf675a812f3173ce",
+    "mtime": 1789817923.1178298,
+    "ast_hash": "b3500cf5a940389f75705b107c13f2b8",
     "semantic_hash": ""
   },
   "docs/vida/assets/05-vida-catalogo.html": {
@@ -2797,51 +2812,6 @@
   "graphify-out/memory/query_20260919_113656_vida_activities_categories_hooks_useactivities.md": {
     "mtime": 1789817816.8788705,
     "ast_hash": "014eb290a2ce289b021f156533a4e7de",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx": {
-    "mtime": 1789883124.4041798,
-    "ast_hash": "731c7f2adb27b9304bc9c33981fd9a1f",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/CreateVidaCategoryStep/index.ts": {
-    "mtime": 1789883124.40918,
-    "ast_hash": "f5aa79d1d1064c2603ad7b2ed39d0e62",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx": {
-    "mtime": 1789883309.1285956,
-    "ast_hash": "ed21da7cbd22032da378a017b153c31a",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx": {
-    "mtime": 1789883478.6038325,
-    "ast_hash": "3a63c6ae4d56fcb624ed741073f0857c",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/VidaActivitySheet/index.ts": {
-    "mtime": 1789883162.4880674,
-    "ast_hash": "0a5e8eb8ac9a8aff06963d7b0c6cd230",
-    "semantic_hash": ""
-  },
-  "src/shared/ui/ColorPicker/ColorPicker.test.tsx": {
-    "mtime": 1789883060.2863579,
-    "ast_hash": "904cb44cd054ccd1f7d884546438b75b",
-    "semantic_hash": ""
-  },
-  "src/shared/ui/ColorPicker/ColorPicker.tsx": {
-    "mtime": 1789883032.3064308,
-    "ast_hash": "b7dafb83191867da1a72484bc65eb9e5",
-    "semantic_hash": ""
-  },
-  "src/shared/ui/ColorPicker/color-palette.ts": {
-    "mtime": 1789883012.365481,
-    "ast_hash": "447a02beb3eec25cc10306385c049281",
-    "semantic_hash": ""
-  },
-  "src/shared/ui/ColorPicker/index.ts": {
-    "mtime": 1789883032.3174307,
-    "ast_hash": "563b6bf03ef753b84389c3b8f909bdb9",
     "semantic_hash": ""
   }
 }

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { VidaActivityCard } from '@/features/vida/components/VidaActivityCard'
+import type { Activity } from '@/features/vida/types/activity.types'
 import type { VidaItem } from '@/features/vida/types/vida-item.types'
 import {
   UNCATEGORIZED_GROUP_ICON,
@@ -11,9 +12,15 @@ type VidaCatalogGroupProps = {
   group: VidaCatalogGroupModel
   /** `activityId → VidaItem` activo, resuelto una sola vez en la página. */
   vidaItemsByActivity: Map<string, VidaItem>
+  /** Se lo pasa a cada tarjeta: el «···» → «Editar» abre la hoja de la página. */
+  onEdit: (activity: Activity) => void
 }
 
-export function VidaCatalogGroup({ group, vidaItemsByActivity }: VidaCatalogGroupProps) {
+export function VidaCatalogGroup({
+  group,
+  vidaItemsByActivity,
+  onEdit,
+}: VidaCatalogGroupProps) {
   const colorStyle = group.color
     ? ({ '--vida-category-color': group.color } as CSSProperties)
     : undefined
@@ -37,6 +44,7 @@ export function VidaCatalogGroup({ group, vidaItemsByActivity }: VidaCatalogGrou
             icon={group.icon ?? UNCATEGORIZED_GROUP_ICON}
             color={group.color}
             vidaItem={vidaItemsByActivity.get(activity.id) ?? null}
+            onEdit={onEdit}
           />
         ))}
       </div>

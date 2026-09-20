@@ -7,6 +7,8 @@ import {
   VIDA_DAY_SHORT_LABELS,
 } from '@/features/vida/utils/vida-date.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
+import { IconButton } from '@/shared/ui/IconButton'
+import { Popover } from '@/shared/ui/Popover'
 import styles from './VidaActivityCard.module.scss'
 
 type VidaActivityCardProps = {
@@ -20,6 +22,8 @@ type VidaActivityCardProps = {
   color: string | null
   /** El `VidaItem` **activo**, si lo hay. Sin él, la tarjeta dice «sin plantilla». */
   vidaItem?: VidaItem | null
+  /** El «···» → «Editar». Abre la hoja de la página: la tarjeta no muta nada. */
+  onEdit: (activity: Activity) => void
 }
 
 /** «lunes, miércoles y viernes»: la fila de letras sola no se lee en voz alta. */
@@ -32,9 +36,27 @@ function formatDaysLabel(days: VidaItem['days']): string {
   return `${names.slice(0, -1).join(', ')} y ${names.at(-1)}`
 }
 
-export function VidaActivityCard({ activity, icon, color, vidaItem }: VidaActivityCardProps) {
+export function VidaActivityCard({
+  activity,
+  icon,
+  color,
+  vidaItem,
+  onEdit,
+}: VidaActivityCardProps) {
   const days = vidaItem?.days ?? []
   const colorStyle = color ? ({ '--vida-category-color': color } as CSSProperties) : undefined
+
+  // El menú de la tarjeta. Por ahora una sola entrada: «Archivar» llega en la
+  // tajada 4 y se cuelga aquí mismo.
+  const menu = (
+    <ul className={styles.menu}>
+      <li>
+        <button type="button" className={styles.menuItem} onClick={() => onEdit(activity)}>
+          Editar
+        </button>
+      </li>
+    </ul>
+  )
 
   return (
     <article className={styles.card} style={colorStyle}>
@@ -68,6 +90,15 @@ export function VidaActivityCard({ activity, icon, color, vidaItem }: VidaActivi
         ) : (
           <p className={styles.meta}>sin plantilla</p>
         )}
+      </div>
+
+      <div className={styles.more}>
+        <Popover
+          triggerLabel={`Más opciones de ${activity.title}`}
+          trigger={<IconButton icon="ellipsis" size="sm" tabIndex={-1} aria-hidden />}
+          content={menu}
+          placement="bottom-end"
+        />
       </div>
     </article>
   )

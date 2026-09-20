@@ -92,3 +92,50 @@
   background: color-mix(in srgb, var(--color-primary) 20%, transparent);
   color: var(--color-primary);
 }
+
+/* ── El «···» ────────────────────────────────────────────────────────────── */
+
+/* `flex: 0 0 auto` + `margin-left: auto`: el menú se queda pegado al borde
+   derecho de la tarjeta por largo que sea el nombre (criterios 31 y 32). */
+.more {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menuItem {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: -2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}

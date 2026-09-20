@@ -24,15 +24,24 @@ type QueryState = {
 
 const refetch = vi.fn()
 
+/** La hoja se monta con la pantalla: sus mutaciones no hacen nada aquí. */
+function buildMutation() {
+  return { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false }
+}
+let sheetMutation: ReturnType<typeof buildMutation>
+
 let activitiesState: QueryState
 let categoriesState: { data: ActivityCategory[] }
 let vidaItemsState: { data: VidaItem[]; isPending: boolean }
 
 vi.mock('@/features/vida/hooks/useActivities', () => ({
   useActivitiesQuery: () => activitiesState,
+  useCreateActivityMutation: () => sheetMutation,
+  useUpdateActivityMutation: () => sheetMutation,
 }))
 vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
   useActivityCategoriesQuery: () => categoriesState,
+  useCreateActivityCategoryMutation: () => sheetMutation,
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useVidaItemsQuery: () => vidaItemsState,
@@ -93,6 +102,7 @@ function loaded(list: Activity[] = activities, total = list.length): QueryState 
 
 beforeEach(() => {
   refetch.mockReset()
+  sheetMutation = buildMutation()
   activitiesState = loaded()
   categoriesState = { data: categories }
   vidaItemsState = { data: [], isPending: false }
@@ -236,10 +246,38 @@ describe('VidaActividadesPage', () => {
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
   })
 
-  it('la tajada 1 es de solo lectura: ni FAB «+» ni «Categorías ›»', () => {
+  it('el FAB «+» abre la hoja de crear, vacía (criterios 12 y 13)', async () => {
+    const user = userEvent.setup()
     renderWithProviders(<VidaActividadesPage />)
 
-    expect(screen.queryByRole('button', { name: /Nueva actividad|^\+$/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Nueva actividad' }))
+
+    const sheet = await screen.findByRole('dialog', { name: /Nueva actividad/ })
+    expect(within(sheet).getByRole('heading', { name: 'Nueva actividad' })).toBeInTheDocument()
+    expect(within(sheet).getByLabelText('Cómo la llamas')).toHaveValue('')
+  })
+
+  it('el «···» de una tarjeta abre la misma hoja ya rellena (criterio 15)', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<VidaActividadesPage />)
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+
+    // El «···» es un `Popover`, que también es `dialog`: se busca por nombre.
+    const sheet = await screen.findByRole('dialog', { name: /Editar actividad/ })
+    expect(within(sheet).getByRole('heading', { name: 'Editar actividad' })).toBeInTheDocument()
+    expect(within(sheet).getByLabelText('Cómo la llamas')).toHaveValue('Bañarme')
+    expect(within(sheet).getByRole('button', { name: 'Yo' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('«Categorías ›» sigue sin existir: llega en la tajada 4', () => {
+    renderWithProviders(<VidaActividadesPage />)
+
     expect(screen.queryByText(/Categorías ›/)).not.toBeInTheDocument()
   })
 

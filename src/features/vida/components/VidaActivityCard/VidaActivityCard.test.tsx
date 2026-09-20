@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 import { VidaActivityCard } from '@/features/vida/components/VidaActivityCard'
 import type { Activity } from '@/features/vida/types/activity.types'
 import type { VidaItem } from '@/features/vida/types/vida-item.types'
@@ -41,6 +42,7 @@ function renderCard(props: Partial<Parameters<typeof VidaActivityCard>[0]> = {})
       activity={buildActivity()}
       icon="house-chimney"
       color="#8b5cf6"
+      onEdit={vi.fn()}
       {...props}
     />,
   )
@@ -79,6 +81,18 @@ describe('VidaActivityCard', () => {
     renderCard({ activity: buildActivity({ title: longTitle }) })
 
     expect(screen.getByText(longTitle)).toBeInTheDocument()
+  })
+
+  it('el «···» abre «Editar» y devuelve la actividad (criterio 15)', async () => {
+    const user = userEvent.setup()
+    const onEdit = vi.fn()
+    renderCard({ onEdit })
+
+    await user.click(screen.getByRole('button', { name: 'Más opciones de Organizar la casa' }))
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+
+    expect(onEdit).toHaveBeenCalledTimes(1)
+    expect(onEdit.mock.calls[0][0]).toMatchObject({ id: 'a1', title: 'Organizar la casa' })
   })
 
   it('no dice ni una palabra de culpa ni de gestión de proyectos', () => {

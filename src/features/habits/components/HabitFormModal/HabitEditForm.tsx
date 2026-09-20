@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import type { Habit } from '@/features/habits/types/habit.types'
-import { HabitColorPicker } from '@/features/habits/components/HabitColorPicker'
+import { ColorPicker } from '@/shared/ui/ColorPicker'
 import { habitsPaths } from '@/features/habits/routes/habits-paths'
 import { useHabitCategoriesQuery, useHabitMeasuresQuery } from '@/features/habits/hooks/useHabits'
 import { useUpdateHabitMutation } from '@/features/habits/hooks/useHabits'
@@ -302,10 +302,11 @@ export function HabitEditForm({ habit, open, onClose }: Props) {
         */}
         <div className={styles.colorRow}>
           <span className={styles.colorLabel}>Color</span>
-          <HabitColorPicker
+          <ColorPicker
             value={values.color}
             onChange={(color) => patch({ color })}
             disabled={isMutating}
+            label="Color del hábito"
           />
         </div>
 

@@ -6,6 +6,7 @@ export { Badge, type BadgeVariant } from '@/shared/ui/Badge'
 export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from '@/shared/ui/Button'
 export { Card } from '@/shared/ui/Card'
 export { Checkbox } from '@/shared/ui/Checkbox'
+export { ColorPicker } from '@/shared/ui/ColorPicker'
 export {
   CommandPalette,
   CommandPaletteProvider,

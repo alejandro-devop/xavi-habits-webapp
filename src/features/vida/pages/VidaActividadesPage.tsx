@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { authPaths } from '@/features/auth/router/auth-paths'
+import { VidaActivitySheet } from '@/features/vida/components/VidaActivitySheet'
 import { VidaCatalogGroup } from '@/features/vida/components/VidaCatalogGroup'
 import { VidaStartingPoints } from '@/features/vida/components/VidaStartingPoints'
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import { useVidaItemsQuery } from '@/features/vida/hooks/useVidaItems'
+import type { Activity } from '@/features/vida/types/activity.types'
 import { filterActivitiesBySearch } from '@/features/vida/utils/activity-filters'
 import {
   buildVidaItemsByActivity,
@@ -34,6 +36,26 @@ const CATALOG_LIMIT = 200
 
 export function VidaActividadesPage() {
   const [search, setSearch] = useState('')
+  // La hoja: abierta sin actividad es «crear»; con actividad, «editar». Vive en
+  // la página y no en la tarjeta para que sea la misma hoja en los dos caminos.
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [editing, setEditing] = useState<Activity | null>(null)
+  // Una `key` por apertura: la hoja se remonta y parte limpia sin que nadie
+  // tenga que vaciarla a mano. Se queda montada al cerrar para que la
+  // animación de salida se vea.
+  const [sheetSession, setSheetSession] = useState(0)
+
+  function openCreateSheet() {
+    setEditing(null)
+    setSheetSession((session) => session + 1)
+    setSheetOpen(true)
+  }
+
+  function openEditSheet(activity: Activity) {
+    setEditing(activity)
+    setSheetSession((session) => session + 1)
+    setSheetOpen(true)
+  }
 
   const {
     data,
@@ -184,10 +206,23 @@ export function VidaActividadesPage() {
               key={group.id}
               group={group}
               vidaItemsByActivity={vidaItemsByActivity}
+              onEdit={openEditSheet}
             />
           ))}
         </div>
       )}
+
+      <button type="button" className={styles.fab} onClick={openCreateSheet}>
+        <AppIcon name="plus" size="sm" decorative />
+        <span className={styles.srOnly}>Nueva actividad</span>
+      </button>
+
+      <VidaActivitySheet
+        key={sheetSession}
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        activity={editing}
+      />
     </div>
   )
 }

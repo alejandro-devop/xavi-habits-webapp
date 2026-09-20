@@ -1,12 +1,8 @@
 import { useRef, type CSSProperties, type KeyboardEvent } from 'react'
-import type { HabitColor } from '@/features/habits/data/habit-colors'
-import {
-  HABIT_COLORS,
-  findHabitColor,
-  normalizeHabitColor,
-} from '@/features/habits/data/habit-colors'
+import type { PaletteColor } from './color-palette'
+import { PALETTE_COLORS, findPaletteColor, normalizeColor } from './color-palette'
 import { AppIcon } from '@/shared/ui/AppIcon'
-import styles from './HabitColorPicker.module.scss'
+import styles from './ColorPicker.module.scss'
 
 type Props = {
   value: string | null
@@ -26,30 +22,33 @@ type Props = {
  * paleta. Es un grupo de radios de verdad: se recorre con flechas y cada
  * muestra se anuncia **con su nombre en español**, que es justo lo que hace
  * legítimo que dos extendidos se parezcan entre sí.
+ *
+ * Era `HabitColorPicker`. Se mudó a `shared/ui` en FEAT-002 (tajada 2), cuando
+ * el catálogo de Vida pidió el mismo selector para el color de una categoría.
  */
-export function HabitColorPicker({
+export function ColorPicker({
   value,
   onChange,
   disabled = false,
-  label = 'Color del hábito',
+  label = 'Color',
   className,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null)
 
-  const selectedHex = normalizeHabitColor(value)
-  const known = findHabitColor(selectedHex)
+  const selectedHex = normalizeColor(value)
+  const known = findPaletteColor(selectedHex)
 
-  // Un hábito creado antes de esta paleta puede llevar un color de fuera. No se
-  // le quita ni se le cambia a escondidas: se enseña tal cual, al principio de
-  // la fila, para que se vea que ya tiene uno.
+  // Algo creado antes de esta paleta puede llevar un color de fuera. No se le
+  // quita ni se le cambia a escondidas: se enseña tal cual, al principio de la
+  // fila, para que se vea que ya tiene uno.
   // Se comporta como un extendido: se enseña y se puede elegir, pero nunca
   // entra en el sorteo —ni siquiera es de la paleta—.
-  const legacy: HabitColor | null =
+  const legacy: PaletteColor | null =
     selectedHex && !known
       ? { name: 'current', label: 'Color actual', hex: selectedHex, tier: 'extended' }
       : null
 
-  const options: HabitColor[] = legacy ? [legacy, ...HABIT_COLORS] : [...HABIT_COLORS]
+  const options: PaletteColor[] = legacy ? [legacy, ...PALETTE_COLORS] : [...PALETTE_COLORS]
 
   const selectedIndex = options.findIndex((option) => option.hex === selectedHex)
   // Sin selección, el primero es el que recibe el tabulador: entrar al grupo
@@ -103,7 +102,7 @@ export function HabitColorPicker({
             className={[styles.swatch, isSelected ? styles.swatchSelected : '']
               .filter(Boolean)
               .join(' ')}
-            style={{ '--habit-swatch': option.hex } as CSSProperties}
+            style={{ '--color-picker-swatch': option.hex } as CSSProperties}
             onClick={() => onChange(option.hex)}
             onKeyDown={(event) => handleKeyDown(event, index)}
           >

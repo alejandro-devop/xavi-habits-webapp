@@ -9,6 +9,17 @@ import { invalidateActivityCategoryQueries } from '@/features/vida/utils/invalid
 import { vidaKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
 
+/**
+ * `onError` con toast en las mutaciones que estrena la hoja de F1 (tajada 2).
+ * Mismo criterio que en `useActivities.ts`: va en el hook y no en cada
+ * pantalla, para que la siguiente no se lo olvide. **No basta** para el
+ * criterio 16: lo que mantiene la hoja abierta es que el cierre vive en el
+ * `onSuccess` local del `mutate`, no aquí.
+ */
+function toErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message.trim() ? error.message : fallback
+}
+
 export function useActivityCategoriesQuery() {
   const enabled = useVidaQueryGuard()
   return useQuery({
@@ -39,6 +50,9 @@ export function useCreateActivityCategoryMutation() {
       invalidateActivityCategoryQueries(queryClient)
       toast.success('Categoría creada')
     },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos crear la categoría'))
+    },
   })
 }
 
@@ -51,6 +65,9 @@ export function useUpdateActivityCategoryMutation() {
     onSuccess: (_data, variables) => {
       invalidateActivityCategoryQueries(queryClient, { id: variables.id })
       toast.success('Categoría actualizada')
+    },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos guardar la categoría'))
     },
   })
 }

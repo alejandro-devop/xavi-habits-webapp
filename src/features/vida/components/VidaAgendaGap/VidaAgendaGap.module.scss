@@ -67,23 +67,68 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
+  min-width: 0;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* La ficha pasó de ser el `li` a ser un botón dentro de él: sin esto el `li`
+   crece con el nombre y a 375 px aparece scroll horizontal (criterios 53 y 54).
+   Medido en el arnés: 491 px de ancho antes, 375 después. */
+.chips > li {
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Desde la tajada 3 una ficha es un botón: tocarla coloca (criterio 23). El
+   `font: inherit` y el fondo son el reseteo del botón; la forma es la misma que
+   tenía como texto, para que la pantalla no cambie de aspecto al ganar acción.
+   44 px de alto mínimo: es un objetivo táctil de dedo, no de ratón. */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   max-width: 100%;
   min-width: 0;
+  min-height: 2rem;
   padding: 0.3rem 0.55rem;
   border: 1px solid var(--color-glass-border);
   border-radius: 999px;
   background: var(--aura-glass-1);
   color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 60%, var(--color-text));
+  font-family: inherit;
   font-size: 0.75rem;
+  text-align: left;
+  overflow: hidden;
+}
+
+button.chip {
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-glass-border));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+/* «+ otra cosa»: la misma píldora en trazo discontinuo, como «+ nueva» en la
+   hoja del catálogo. */
+.chipMore {
+  border-style: dashed;
+  background: none;
+  color: var(--color-text-secondary);
+  font-weight: 600;
 }
 
 .chipName {

@@ -387,7 +387,7 @@ hasta que el API desplegada lleve el cambio**, y eso es de él, no de un agente.
 |---|---|---|
 | 1 | **La plantilla con hora y duración, y los ajustes de Vida.** Prerrequisito de todo lo demás: SDL recopiado y contratos verdes, tipos y hooks de `vida-items` con `startTime`/`durationMinutes`, la hoja de F1 gana «a qué hora» y «cuánto» (15 · 30 · 45 · 1h · libre), la tarjeta del catálogo los enseña, y una pantalla/hoja de ajustes de Vida con el inicio y el fin del día. Ya es útil sola: la plantilla deja de ser una lista sin orden y pasa a ser un día. | accepted |
 | 2 | **La agenda del día, en solo lectura.** El presupuesto (tiempo que queda, barra del día con la marca de «ahora», leyenda y línea de guía), los bloques del `activityDayPlan` ordenados por hora, los huecos con su tamaño y las sugerencias de la plantilla que caben (sin poder ponerlas aún), apertura en «Ahora», el lateral de escritorio, y todos los estados. Primera vez que el usuario ve su día repartido y dónde tiene sitio. | accepted |
-| 3 | **Poner algo en un hueco.** Un toque en una ficha lo coloca al principio del hueco; «+ otra cosa» abre la hoja de tres preguntas (qué · cuánto · cuándo) con lo que no cabe apagado y el «queda libre después»; quitar un bloque y cambiarle hora o duración. Errores de mutación visibles. | pending |
+| 3 | **Poner algo en un hueco.** Un toque en una ficha lo coloca al principio del hueco; «+ otra cosa» abre la hoja de tres preguntas (qué · cuánto · cuándo) con lo que no cabe apagado y el «queda libre después»; quitar un bloque y cambiarle hora o duración. Errores de mutación visibles. | accepted |
 | 4 | **Cualquier día, no solo hoy.** La tira de 7 días con el punto de «tiene plan», el día en la URL, la ventana de esta semana y la siguiente, el día futuro en trazo suave, el día pasado en solo lectura, «copiar del mismo día pasado» y «vaciar y rehacer». Aquí ya se planea mañana a mano. | pending |
 | 5 | **La semana y armar desde la plantilla.** La vista de semana con una línea por día, «Armar» en los vacíos copiando hora y duración de cada ítem (con el trato explícito de los solapes y de los ítems sin hora) y «Armar toda la semana» sin pisar lo que ya existe. Cierra el criterio de fase. | pending |
 
@@ -764,7 +764,7 @@ código vivo y por eso se rescata por función, con test propio, no se restaura.
 |---|---|---|---|---|
 | 1 | **La plantilla con hora y duración, y los ajustes de Vida.** | `graphql/schema/vida.schema.graphql` · `settings/graphql/schema/user-settings.schema.graphql` (N) · `graphql/contracts.test.ts` · `graphql/vida-items.graphql.ts` · `settings/graphql/user-settings.graphql.ts` · `settings/types/user-settings.types.ts` · `types/vida-item.types.ts` · `utils/vida-time.utils.ts` (N) · `hooks/useSaveVidaItemForActivity.ts` · `hooks/useVidaDayHours.ts` (N) · `components/VidaDurationPills/` (N) · `components/VidaActivitySheet/` · `components/VidaActivityCard/` · `pages/VidaAjustesPage.tsx` (N) · `routes/vida-paths.ts` · `routes/vida.routes.tsx` · `layouts/AppLayout/app-nav.config.ts` | 1–10, y la parte de 53–57 que toca la hoja, la tarjeta y los ajustes | accepted |
 | 2 | **La agenda del día, en solo lectura.** | `utils/vida-agenda.utils.ts` (N) · `hooks/useVidaNowMinute.ts` (N) · `hooks/useVidaDayData.ts` (N) · `components/VidaDayBudget/` (N) · `components/VidaAgendaBlock/` (N) · `components/VidaAgendaGap/` (N) · `components/VidaTemplateAside/` (N) · `pages/VidaHoyPage.tsx` | 11–20, 22, 48 (la mitad «Tu plantilla de \<día\>»), 49–56; **21 solo en su mitad de texto** (ver nota) | accepted (2ª entrega) |
-| 3 | **Poner algo en un hueco.** | `utils/vida-gap-form.utils.ts` (N) · `components/VidaPlaceInGapSheet/` (N) · `components/VidaAgendaGap/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 23–30, y 29/52/56 sobre las mutaciones | pending |
+| 3 | **Poner algo en un hueco.** | `utils/vida-gap-form.utils.ts` (N) · `components/VidaPlaceInGapSheet/` (N) · `components/VidaAgendaGap/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 23–30, y 29/52/56 sobre las mutaciones | accepted |
 | 4 | **Cualquier día, no solo hoy.** | `utils/vida-window.utils.ts` (N) · `hooks/useVidaWeekPlans.ts` (N) · `components/VidaDayStrip/` (N) · `components/VidaDayActions/` (N) · `pages/VidaHoyPage.tsx` · `routes/vida-paths.ts` | 31–38 | pending |
 | 5 | **La semana y armar desde la plantilla.** | `utils/vida-build-day.utils.ts` (N) · `hooks/useBuildDayFromTemplate.ts` (N) · `hooks/useBuildWeekFromTemplate.ts` (N) · `pages/VidaSemanaPage.tsx` (N) · `components/VidaTemplateAside/` · `components/VidaAgendaGap/` · `routes/vida-paths.ts` · `routes/vida.routes.tsx` | 39–46, 48 (la mitad «Mañana»), y **la mitad de 21 que es el botón**; 47 lo cronometra el usuario | pending |
 
@@ -1596,6 +1596,280 @@ comprueban que en los tres casos devueltos se pinta «Ahora» y se llama a
 **Estado del árbol: sin commitear.** El arnés temporal está borrado.
 `graphify update .` corrido (2.890 nodos, 3.144 aristas).
 
+### Tajada 3 — Poner algo en un hueco
+
+**Resumen para el revisor:**
+1. La agenda de Hoy **ya escribe**: un toque en una ficha de un hueco la coloca
+   al principio de ese hueco con su duración (`activityDayPlanItemAdd`), **«+
+   otra cosa»** abre la hoja **«Poner algo a las HH:MM»** con las tres preguntas
+   —qué (plantilla primero, luego buscador sin tildes), cuánto (15 · 30 · 45 ·
+   1h · libre, apagando lo que no cabe) y cuándo (horas dentro del hueco más
+   «otra hora»)— diciendo cuánto queda libre después; y el «···» de un bloque lo
+   **quita del plan** o le **cambia la hora o la duración**.
+2. Todo lo nuevo vive en `src/features/vida/`: un `utils` puro
+   (`vida-gap-form.utils.ts`), la hoja `VidaPlaceInGapSheet/`, y los cambios en
+   `VidaAgendaGap`, `VidaAgendaBlock`, `VidaHoyPage` y los hooks del plan del
+   día. Fuera del módulo no se toca nada.
+3. **Lo que más probablemente rompí:** (a) **`VidaAgendaGap` cambió de forma**:
+   la ficha pasó de ser el `<li>` a ser un `<button>` dentro de él, y eso ya
+   produjo scroll horizontal a 375 px hasta que el `li` ganó `min-width: 0`
+   —cualquier test o arnés que consultara `li.chip` ahora falla—. (b)
+   **`VidaAgendaBlock` ya no es puro**: llama a `useRemoveDayPlanItemMutation` y
+   a `useConfirmDialog`, así que **montarlo sin `QueryClient` ni
+   `ConfirmDialogProvider` revienta**, y quien mockee
+   `@/features/vida/hooks/useActivityDayPlan` tiene que devolver **las cuatro**
+   funciones (le pasó a `VidaHoyPage.test.tsx`). (c) Los cuatro hooks del plan
+   del día ganaron `onError` con toast: un test que cuente toasts verá uno más
+   cuando una mutación falle.
+
+**Lo que se construyó**
+
+| Archivo | Qué |
+|---|---|
+| `src/features/vida/utils/vida-gap-form.utils.ts` (+ `.test.ts`, 38 casos) (N) | El encaje, **puro**: `GapWindow` (el espacio libre donde algo tiene que caber), `gapToWindow`, `getBlockEditWindow` (el bloque **más lo libre de cada lado**, para editarlo sin pisar al vecino), `isStartTimeInsideWindow`, `getMaxDurationForStartTime`, `durationPillsForWindow`, `fitsInWindow`, `buildStartTimeOptions`, `validatePlacement`, `getPlacementLeftovers` / `describeLeftovers`, `describeWindow` y `toDayPlanTimes`. Rescate de `79bece0:activity-time.utils.ts:399-437` con los mensajes reescritos al criterio 56. |
+| `src/features/vida/components/VidaPlaceInGapSheet/` (`.tsx`, `.module.scss`, `index.ts`, `.test.tsx`, 17 casos) (N) | La hoja de tres preguntas. Molde de `VidaActivitySheet`: `SteppedModal` `ds="aura"` + `mobileSheet`, estado arriba, **`key` por apertura** y cierre en el `onSuccess` **local** del `mutate`. Hace de hoja de **poner** (`ItemAdd`) y de **cambiar hora o duración** (`ItemEdit`), que solo se diferencian en que «qué» no se pregunta. |
+| `src/features/vida/components/VidaAgendaGap/` (M) | Las fichas son botones: con duración colocan, **sin duración abren la hoja** (criterio 19). Y aparece **«+ otra cosa»**, también cuando el hueco no tiene nada que ofrecer —un hueco sigue siendo sitio—. Sin `onPlaceSuggestion` las fichas vuelven a ser texto: es lo que deja pintar un día pasado en solo lectura (tajada 4). |
+| `src/features/vida/components/VidaAgendaBlock/` (M) | El «···» con «Cambiar hora o duración» y «Quitar del plan», copiando el `Popover` + `IconButton` + `useConfirmDialog` de `VidaActivityCard`. La salida del diálogo es **«Volver»**, nunca «Cancelar». Sin `date` no se pinta el menú. |
+| `src/features/vida/pages/VidaHoyPage.tsx` (+ `.test.tsx`, +7 casos) (M) | Cablea las dos vías: `placeSuggestion` (ficha → `ItemAdd` al principio del hueco) y `editBlock` (bloque → hoja con `getBlockEditWindow`). El estado de la hoja es **una sola variable** (`SheetState`), para que no exista «editando un bloque dentro del hueco de otro». |
+| `src/features/vida/hooks/useActivityDayPlan.ts` (M) | `onError` con `toErrorMessage` en las cuatro mutaciones, igual que `useActivities`. Sin él, colocar desde una ficha —que no abre ninguna hoja— fallaba **en silencio**. |
+
+**Por qué así, y qué se descartó**
+
+- **Una sola hoja para poner y para editar, y no dos.** El criterio 30 pide
+  cambiar hora o duración «con las mismas restricciones de encaje»: son
+  literalmente las preguntas «cuánto» y «cuándo» de la hoja de poner sobre otra
+  ventana. Dos componentes habrían sido dos sitios donde equivocarse con D4. La
+  diferencia está en un `editing` opcional: con él no se pregunta «qué» y se
+  guarda con `ItemEdit`.
+- **`GapWindow` es el único guardián de D4**, y por eso la ventana de edición
+  **se lee de la agenda ya construida** (`getBlockEditWindow`) en vez de
+  recalcularse: el reparto que valida es exactamente el que se está viendo. Si
+  algo cabe en la ventana, no pisa a nadie ni se sale del día, porque los huecos
+  salen de `buildDayAgenda` entre los bordes del horario de los ajustes.
+- **Un hueco que ya empezó ofrece desde ahora sin ninguna regla nueva**: la
+  tajada 2 ya parte el hueco que contiene al reloj, así que la mitad que se
+  puede usar **empieza en «ahora»** y `buildStartTimeOptions` la etiqueta «ahora
+  mismo». Los tramos `isPast` no ofrecen nada, que ya era así.
+- **«+ otra cosa» también aparece cuando no hay fichas.** El criterio 18 lo
+  nombra junto a las sugerencias, pero un hueco cuya plantilla ya está entera en
+  el plan seguiría siendo sitio libre; dejarlo sin salida habría sido un hueco
+  que no se puede usar.
+- **Las duraciones que no caben se apagan, no desaparecen** (criterio 26), y el
+  campo de «libre» lleva `max` con lo que cabe y lo dice en texto («Aquí caben
+  40 min»). `VidaDurationPills` ya tenía la prop `maxMinutes` desde la tajada 1:
+  no hizo falta tocarlo.
+- **Tres desviaciones del plan, dichas:**
+  1. **`durationPillsForWindow` existe pero la hoja no la usa**: las píldoras las
+     apaga `VidaDurationPills` con `maxMinutes`, que ya estaba hecho. La función
+     se queda porque es la que prueba el criterio 26 sin pintar nada, y la
+     tajada 5 la necesita para decidir qué cabe al armar.
+  2. **`onError` en `useActivityDayPlan.ts`**, que el plan no pedía. Sin toast de
+     error, el camino «un toque en una ficha» no tiene **dónde** enseñar un
+     fallo: no abre hoja. Es el patrón del propio módulo (`useActivities`), no
+     uno nuevo.
+  3. **La hoja excluye de «qué» lo que ya está en el plan**, igual que las
+     fichas del hueco. El criterio 25 no lo pide; se hace por coherencia con el
+     18 y porque repetir una actividad el mismo día es raro. **El buscador no lo
+     excluye**: quien quiera ponerla dos veces, la encuentra.
+- **El buscador es `Input` + `filterActivitiesBySearch`**, con la misma clave de
+  caché que el catálogo (`{ page: 1, limit: CATALOG_LIMIT }`). **No se usa
+  `SearchSelect`** (dos tests rojos en la línea base) ni se añade ningún
+  normalizador: `normalizeVidaText` ya quita las tildes.
+- **Nada de lo prohibido:** ni mutación nueva, ni documento GraphQL, ni clave de
+  caché, ni invalidación nueva (`invalidateDayPlanQueries` por fecha ya refresca
+  agenda, huecos y presupuesto), ni componente de `shared/ui`, ni arreglo de
+  `Popover`, ni `--color-text-muted`, ni un icono importado a pelo.
+
+**Verificación**
+
+Línea base (antes de empezar, los tres enteros):
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)
+pnpm test       → Test Files 1 failed | 83 passed (84) · Tests 2 failed | 779 passed (781)
+                  (SearchSelect ×2, preexistentes)
+```
+
+Al cerrar:
+
+```
+pnpm typecheck  → limpio
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   (los mismos 14)
+pnpm test       → Test Files 1 failed | 85 passed (86) · Tests 2 failed | 841 passed (843)
+                  (los mismos 2 de `SearchSelect`; +62 tests nuevos, 0 fallos nuevos)
+pnpm build      → index 892,42 kB · app-icons 620,20 kB (perezoso) · IconPicker 4,64 kB
+```
+
+**Arnés temporal** (`src/harness-feat003-t3/`, `.html` + `.tsx`, `MemoryRouter`,
+datos sintéticos, **borrado**; `git status` ya no lo lista), servido por el Vite
+del usuario en `http://localhost:5173`, a **375 px** y en los dos temas, con un
+nombre de 60 caracteres («Revisar el correo y contestar lo que quedó pendiente
+de ayer») en una ficha:
+
+- **375 px:** `document.documentElement.scrollWidth` **375** = `clientWidth`
+  **375**, con la hoja abierta y con el menú del bloque desplegado. **Antes de
+  arreglarlo eran 491 px**: la ficha dejó de ser el `li` y el `li` crecía con el
+  nombre. Es el defecto que encontró este arnés y está arreglado con
+  `min-width: 0` en `.chips > li` y `.options > li`.
+- **La hoja entera cabe sin scroll interno**: «Volver» y «Poner» se ven a 375 px
+  sin desplazar nada dentro de la hoja (criterio 53).
+- **Las tres preguntas, vistas**: «Qué» con las tres fichas de la plantilla y el
+  buscador, «Cuánto» con `15 · 30 · 45 · 1h · libre` y «Aquí caben 2 h 30 min»,
+  «Cuándo» con `10:30 · al principio del hueco`, `11:00`, `11:30`, `12:00` y
+  «otra hora».
+- **Elegido todo**, la hoja dice «Poner lavadora · 10:30 · 20m» y «Queda libre 2h
+  10 antes de Cocinar y almorzar».
+- **Editando** «Leer un rato» (10:00–10:30), la ventana es de **8:45 a 13:00**
+  —el bloque más lo libre de cada lado—, «Qué» no se pregunta, la duración viene
+  en 30 y se lee «Queda libre 2h 30 antes de Cocinar y almorzar, y 1h 15 antes
+  de empezar».
+- **El «···»** despliega «Cambiar hora o duración» y «Quitar del plan».
+
+Contrastes medidos en el DOM componiendo el alfa de cada capa (AA pide 4,5:1):
+
+| Qué | Claro | Oscuro |
+|---|---|---|
+| «Qué» / «Cuánto» / «Cuándo» | 7,05:1 | 7,88:1 |
+| Ficha elegida en «qué» | 8,28:1 | 10,93:1 |
+| Píldora de hora sin elegir | 7,34:1 | 6,66:1 |
+| Píldora elegida y su pista («· al principio del hueco») | 8,28:1 | 10,93:1 |
+| «Queda libre …» | 7,34:1 | 6,66:1 |
+| La línea de la previsualización | 17,29:1 | 12,59:1 |
+| «Aquí caben 2 h 30 min» | 7,05:1 | 7,88:1 |
+| «+ otra cosa» | 6,96:1 | 9,94:1 |
+| Duración de una ficha del hueco | 7,30:1 | 9,05:1 |
+
+Las píldoras **apagadas** se distinguen por opacidad 0,5 sobre la encendida, que
+es el mismo tratamiento que ya usan los días de la hoja del catálogo; no es texto
+que haya que leer para decidir, es un control deshabilitado.
+
+**Criterios que cierra, uno por uno**
+
+- **23 — cerrado.** Test de página: un toque en la ficha «Poner lavadora» llama
+  a `ItemAdd` **una vez** con `{ date: '2026-09-18', activityId: 'a-s1',
+  startTime: '10:30', endTime: '10:50' }`. Y en el hueco que ya empezó, con el
+  reloj a las 9:24, sale `startTime: '09:24'`: nunca una hora del pasado. La
+  agenda, los huecos y el presupuesto se rehacen con
+  `invalidateDayPlanQueries(date)` del propio hook — **sin recargar** y sin
+  estado duplicado.
+- **24 — cerrado.** «+ otra cosa» abre «Poner algo a las 10:30» con el subtítulo
+  «Hueco de 2h 30 · hasta las 13:00 «Cocinar y almorzar»», y con el hueco final
+  del día, «Hueco de 2h 30 · hasta el final del día». Tests de hoja y de página,
+  más el arnés.
+- **25 — cerrado.** Tres `heading`: «Qué», «Cuánto», «Cuándo». «Poner» nace
+  deshabilitado y se habilita al resolver las tres. La duración de la plantilla
+  viene **preseleccionada** (`aria-pressed=true` en la píldora de 45) y se puede
+  cambiar. El buscador encuentra «Bañarme» escribiendo **«banar»**.
+- **26 — cerrado.** En un hueco de 40 min, `15` y `30` quedan habilitadas y `45`
+  y `1h` **deshabilitadas**; «libre» lleva `max=40`, dice «Aquí caben 40 min» y,
+  tecleando 90, «Poner» sigue apagado y se lee «Desde las 10:00 caben 40 min.
+  Elige menos tiempo o empieza antes». Más 9 casos puros de
+  `durationPillsForWindow` y `getMaxDurationForStartTime`.
+- **27 — cerrado.** «Cuándo» ofrece `10:30 · al principio del hueco`, `11:00`,
+  `11:30`, `12:00` y «otra hora»; el test puro comprueba que **todas** las horas
+  ofrecidas caen dentro de la ventana y que en un hueco corto no se ofrece una
+  hora donde ya no cabría nada. «Otra hora» lleva `min=10:30` / `max=12:59` y,
+  tecleando las 19:00, «Poner» se apaga, se lee «Esa hora se sale de este rato
+  libre. Aquí cabe algo entre las 10:30 y las 13:00» y **`ItemAdd` no se llama**.
+- **28 — cerrado.** «Queda libre 1h 45 antes de Cocinar y almorzar» bajo la
+  previsualización «Bañarme · 10:30 · 45m». Cinco casos puros: con bloque
+  después, sin él («antes del final del día»), con resto por delante, y llenando
+  el hueco entero («Con esto el rato queda completo»).
+- **29 — cerrado en lo que se puede comprobar sin API.** Con la mutación en
+  error: `onClose` **no** se llama, se lee «No pudimos ponerlo en tu día. Vuelve
+  a intentarlo; lo que elegiste sigue aquí», la actividad y la duración **siguen
+  elegidas** y `mutate` salió **una sola vez** (nada de un segundo bloque). El
+  bloque fantasma no puede existir porque **no hay actualización optimista**: la
+  agenda solo cambia cuando la invalidación trae el plan del servidor. El toast
+  de error lo añaden los hooks. **Contra el API real lo cierra el usuario**
+  (criterio 58).
+- **30 — cerrado.** El «···» da «Quitar del plan» (con confirmación que nombra la
+  actividad y salida «Volver»; la mutación **no** sale hasta confirmar) y
+  «Cambiar hora o duración», que abre la hoja sin «qué», con la ventana del
+  bloque, y guarda con `ItemEdit` `{ itemId, startTime, endTime }` — nunca con
+  `ItemAdd`. Test puro: mover el bloque dentro de su ventana llega justo hasta el
+  vecino y **un minuto más ya no cabe** (D4). En pantalla no aparece «cancelar»
+  ni «eliminar».
+- **52 (la parte de mutaciones) — cerrado.** Los cuatro hooks del plan del día
+  avisan por toast cuando fallan, con `toErrorMessage`, que es el mismo mensaje
+  humano que usa el resto de Vida.
+- **53 — cerrado a 375 px** con el arnés: `scrollWidth` 375 = `clientWidth`, y
+  «Poner» visible sin scroll dentro de la hoja. **En un teléfono de verdad lo
+  mira el usuario** (criterio 58).
+- **54 — cerrado.** Un nombre de 60 caracteres trunca con puntos suspensivos en
+  la ficha del hueco y en la de la hoja, sin desbordar.
+- **55 — cerrado** con los contrastes de arriba, medidos en los dos temas.
+- **56 — cerrado.** Test que pasa los tres mensajes de `validatePlacement` y el
+  DOM entero de la hoja por `/desperdici|perdiste|fallaste|vací|cancelar|
+  eliminar/i`. La salida se llama «Volver»; quitar un bloque es «Quitar del
+  plan».
+- **57 — cerrado** con los números de arriba.
+- **58 — no cerrado, y no se puede desde aquí.** Está detrás del login y además
+  **el API desplegado todavía no lleva `15463da`**: sin él, las fichas de los
+  huecos se leen «sin duración» y colocar desde una ficha no tendrá duración que
+  copiar. Los pasos del recorrido están al final de esta entrada.
+
+**Riesgos**
+
+- **`VidaAgendaGap` y `VidaAgendaBlock` cambiaron de forma**, y el segundo dejó
+  de ser puro: necesita `QueryClient` y `ConfirmDialogProvider`. Cualquier arnés
+  o test que los monte a pelo se cae.
+- **El solape lo sostiene entero el cliente.** Si alguien llama a `ItemAdd` sin
+  pasar por `validatePlacement` —o si el plan llega con bloques pisados, que el
+  API acepta—, la ventana que se calcule será la que enseñe la agenda, no la
+  «verdadera». `getBlockEditWindow` se comporta bien en ese caso (se queda en el
+  bloque), pero no lo arregla.
+- **Dos toques rápidos en dos fichas distintas** colocan las dos: `isPlacing`
+  apaga las fichas mientras hay una en vuelo, pero entre el `click` y el
+  `isPending` hay un render. Lo peor que pasa es que las dos caben al principio
+  del mismo hueco y **se pisan** hasta el siguiente refresco.
+- **`describeWindow` llama «hueco» también a la ventana de edición**, que incluye
+  el propio bloque («Hueco de 4h 15» al editar uno de 30 min dentro de un rato
+  libre de 4h 15). Es cierto como espacio disponible, pero la palabra puede
+  chirriar; se deja así para no inventar un segundo texto.
+- **La hoja pide `useActivitiesQuery` siempre**, aunque no se busque nada. Es la
+  misma clave que el catálogo y `staleTime` de 30 s, así que normalmente es un
+  acierto de caché; en frío es una consulta más al abrir la hoja.
+
+**Lo que descubrí y no estaba en el plan** (anotado, no tocado)
+
+- El `Popover` de este repositorio **no se cierra desde su contenido**: al elegir
+  «Cambiar hora o duración» el menú se queda pintado detrás de la hoja. Es el
+  hallazgo abierto de FEAT-002 y se imita el comportamiento que ya hay.
+- Un `input type="time"` **pinta** «10:00 AM» o «10:00» según el idioma del
+  navegador, aunque el valor sea `HH:mm` 24 h. Hallazgo abierto de la tajada 1;
+  se ve igual en «otra hora».
+
+**Recorrido manual pendiente (criterio 58, con el API desplegada)**
+
+1. `/app/vida/hoy` con plan: toca una ficha de un hueco → el bloque aparece a la
+   hora del hueco, el presupuesto baja y la ficha desaparece de ese hueco.
+2. Toca una ficha **sin duración** → abre la hoja con esa actividad puesta y sin
+   duración elegida.
+3. «+ otra cosa» → elige algo del buscador, una duración que no quepa (tiene que
+   estar apagada), una hora con «otra hora» fuera del hueco (tiene que negarse) y
+   una dentro → «Poner».
+4. En el bloque nuevo, «···» → «Cambiar hora o duración»: alárgalo hasta pisar el
+   siguiente (tiene que negarse) y hasta justo antes (tiene que dejar).
+5. «···» → «Quitar del plan» → confirma y comprueba que el rato vuelve a estar
+   libre.
+6. Con el avión activado o sin red, repite el paso 3: la hoja **no** se cierra,
+   se lee el aviso dentro y sale un toast.
+
+**Estado del árbol:** sin commitear.
+
+
+*Nota sobre el build:* `pnpm typecheck` (`tsc -b --noEmit`) pasó con un
+`TS2783` que **solo** salió en `pnpm build` (`tsc -b`) —dos claves repetidas en
+un ayudante del test de la hoja—. Arreglado y vuelto a construir; queda anotado
+porque significa que **el typecheck de este repo no es equivalente al del
+build**, y confiar solo en el primero deja pasar errores.
+
+El chunk inicial pasa de **878,72 kB a 892,42 kB (+13,7 kB)**: la hoja, la
+aritmética del encaje y los dos menús. **No crece por iconos** — `app-icons`
+sigue en 620,20 kB perezoso y `IconPicker` en 4,64 kB (criterio 57).
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — La plantilla con hora y duración, y los ajustes de Vida
@@ -2104,3 +2378,178 @@ bloques.
 entera de `pnpm typecheck` / `lint` / `test` (+ `SearchSelect` por separado) y
 un arnés de revisión propio de 9 casos bajo `src/features/vida/pages/`, ya
 borrado.*
+
+### Tajada 3 — Poner algo en un hueco
+
+**Veredicto: `accepted`.** Los ocho criterios de la tajada (23–30) se cumplen, y
+las partes de 52–57 que le tocan también. Lo comprobé contra la sección 1
+literal, no contra el resumen: corrí la línea base entera yo mismo, escribí un
+arnés de encaje propio con los bordes que no estaban en los 38 casos del
+constructor, y monté la hoja en el navegador del usuario a 375 px y en oscuro.
+Cambiar hora y duración **no es alcance añadido**: el criterio 30 lo pide con
+`activityDayPlanItemEdit` y la fila de la tajada en las dos tablas cierra 23–30.
+
+**Criterios, uno por uno**
+
+- **23 — cumplido.** El test de página fija `{ date, activityId, startTime:
+  '10:30', endTime: '10:50' }` con una sola llamada, y el hueco que ya empezó
+  coloca a las `09:24`. La actualización es por invalidación
+  (`vidaKeys.dayPlan.byDate`, ya probada en `useActivityDayPlan.test.tsx`), y
+  agenda, huecos y presupuesto salen todos del mismo `useVidaDayData`: no hay
+  estado duplicado que pueda quedarse viejo.
+- **24 — cumplido.** Visto en el navegador, no solo en test: «Poner algo a las
+  10:30» con «Hueco de 2h 30 · hasta las 13:00 «Cocinar y almorzar»». La
+  variante «hasta el final del día» está en `describeWindow` y en su test.
+- **25 — cumplido.** Los tres `heading` («Qué», «Cuánto», «Cuándo») y «Poner»
+  deshabilitado hasta tener las tres: lo medí en vivo —con actividad elegida,
+  11:00 y 45 min el botón se habilita; sin actividad, con hora y duración
+  válidas, sigue apagado—. El buscador es `Input` + `filterActivitiesBySearch`.
+- **26 — cumplido, y las píldoras están deshabilitadas de verdad, no atenuadas.**
+  En el DOM, con la hora en 12:50 dentro del hueco de 10:30–13:00: `15:OFF
+  30:OFF 45:OFF 1h:OFF`, atributo `disabled` en el `<button>`
+  (`VidaDurationPills.tsx:62`), «Aquí caben 10 min» y el aviso «Desde las 12:50
+  caben 10 min. Elige menos tiempo o empieza antes». El campo «libre» lleva
+  `max` y `Number.parseInt`, así que 0, negativo y no entero no llegan al API:
+  se vuelven `null`.
+- **27 — cumplido.** «Cuándo» ofreció `10:30 · al principio del hueco`, `11:00`,
+  `11:30`, `12:00` y «otra hora», con `min=10:30` y `max=12:59` en el
+  `input type="time"`. En mi arnés de encaje, todas las horas ofrecidas de un
+  hueco ya empezado (9:24–10:00) validan, y la primera trae «ahora mismo».
+- **28 — cumplido.** En vivo: «Poner lavadora · 11:00 · 45m» y «Queda libre 1h
+  15 antes de Cocinar y almorzar, y 30m antes de empezar».
+- **29 — cumplido en lo comprobable sin API.** El cierre cuelga del `onSuccess`
+  **local** del `mutate` (`VidaPlaceInGapSheet.tsx:171-174`), el `Alert` vive
+  dentro de la hoja y no hay actualización optimista en ninguno de los cuatro
+  hooks, así que un bloque fantasma no tiene por dónde aparecer. **Con el API
+  real lo cierra el usuario** (criterio 58).
+- **30 — cumplido.** «···» → «Quitar del plan» (confirmación que nombra la
+  actividad, salida «Volver», la mutación no sale hasta confirmar) y «Cambiar
+  hora o duración» → la misma hoja sin «Qué», con `getBlockEditWindow` y
+  guardando con `ItemEdit`. **Sobre el «¿valida contra los otros bloques o solo
+  contra el hueco?»:** valida contra la ventana, y la ventana **se deriva de la
+  agenda ya pintada** —el bloque más el hueco pegado a cada lado, cortada por el
+  bloque vecino (`vida-gap-form.utils.ts:74-107`)—, así que es lo mismo que
+  validar contra los vecinos. Con dos bloques pisados llegados del API la
+  ventana se encoge al propio bloque: no arregla el solape, pero tampoco lo
+  propaga.
+- **52 (mutaciones) — cumplido.** Los cuatro hooks avisan por toast con
+  `toErrorMessage`. La desviación está bien traída: colocar desde una ficha no
+  abre ninguna hoja donde leer un fallo.
+- **53 — cumplido, medido por mí.** Arnés propio bajo `src/revision-t3/`
+  (borrado) servido por el Vite del usuario, viewport 375×812: `scrollWidth`
+  375 = `clientWidth` 375 con la hoja abierta, **cero elementos** con borde
+  derecho más allá de 376 px, y «Poner» en `bottom` 768/787 de 812, visible sin
+  desplazar dentro de la hoja. Con un nombre de 60 caracteres en un bloque, en
+  una ficha del hueco y en una opción de la hoja a la vez.
+- **54 — cumplido** en esa misma medida.
+- **55 — cumplido.** Con `data-theme="dark"` y la hoja abierta: «Cuánto» /
+  «Cuándo» / «Aquí caben» 7,88:1 y la línea de previsualización 13,72:1,
+  coincidiendo con la tabla del constructor. Sin scroll horizontal en oscuro.
+- **56 — cumplido.** Ni «cancelar» ni «eliminar» en pantalla; «Quitar del plan»
+  y «Volver»; los tres mensajes de `validatePlacement` dicen qué **sí** cabe.
+- **57 — cumplido, corrido entero por mí:** `pnpm typecheck` limpio (dos veces),
+  `pnpm lint` **14 errores / 0 warnings** (los mismos), `pnpm test` **2 fallos
+  de 843** (`SearchSelect` ×2, preexistentes), `pnpm build` **index 892,42 kB**
+  con `app-icons` 620,20 kB perezoso e `IconPicker` 4,64 kB: **el crecimiento no
+  es por iconos**. Ningún documento GraphQL nuevo.
+- **58 — sigue abierto y no se puede cerrar desde aquí.** Login y además
+  `15463da` en Cloud Run. Los pasos están en la sección 3.
+
+**El encaje, con los bordes que faltaban** (arnés propio de 8 casos bajo
+`src/features/vida/utils/`, ya borrado):
+
+| Caso | Resultado |
+|---|---|
+| hora = inicio del hueco, duración = hueco entero (10:30 + 150 en 10:30–13:00) | cabe |
+| hora = fin − duración (12:30 + 30) | cabe |
+| un minuto más (12:30 + 31) | no cabe, «Desde las 12:30 caben 30 min…» |
+| 10:29 y 13:00 | fuera; 12:59 + 1 sí |
+| duración 0, negativa y `null` | no cabe, sin reproche |
+| hueco empezado 9:24–10:00 con reloj en 9:24 | `9:24 · ahora mismo`, `9:30`, `9:45`; las tres validan; máximo 36 min |
+| `toDayPlanTimes('22:30', 30)` | `22:30 → 23:00` |
+| cruce de medianoche forzado (`23:30` + 60) | se recorta a `23:59`; y por validación no se llega ahí, porque la ventana acaba en el fin del día |
+
+**Qué rompí buscando, y qué encontré**
+
+- **`graphify explain "useActivityDayPlan"` y `graphify query` sobre las tres
+  mutaciones:** 72 nodos, y fuera de `VidaHoyPage`, `VidaAgendaBlock`,
+  `VidaPlaceInGapSheet` y su propio test **no hay nadie**. Confirmado a mano con
+  `grep -rn "VidaAgendaBlock\|VidaAgendaGap" src/`: solo `VidaHoyPage` los monta.
+  El grafo ya incluye la hoja nueva (el constructor corrió `graphify update .`),
+  así que para «¿quién dependía de esto antes?» lo contrasté además con
+  `git diff HEAD`.
+- **Lo que el constructor marcó como más probable:** los tres. (a) `li.chip`
+  dejó de existir: ningún test ajeno lo consulta. (b) `VidaAgendaBlock` ya no es
+  puro: el único montaje fuera de su propio test es `VidaHoyPage.test.tsx`, que
+  ya mockea las cuatro funciones; mi arnés lo confirmó al reventar hasta que
+  puse `QueryClient` + `ConfirmDialogProvider` (y `AuthBootstrapProvider`, que
+  arrastra `useActivitiesQuery`). (c) Nadie cuenta toasts en los tests del
+  módulo.
+- **Tajadas 1 y 2:** la corrida entera de `pnpm test` pasa sus 841; la agenda de
+  solo lectura, la marca de «Ahora» y el presupuesto siguen saliendo de
+  `buildDayAgenda`/`getDayBudget`, que no se tocaron (`git diff HEAD` no los
+  lista). FEAT-002 tampoco: fuera de `src/features/vida/` no hay ni un archivo
+  cambiado.
+- **Regresión encontrada: ninguna.**
+
+**Estados**
+
+Comprobados: hueco sin fichas (sigue ofreciendo «+ otra cosa»), plantilla vacía
+(el aviso con el enlace al catálogo **más** «+ otra cosa»), buscador sin
+resultados («Nada con ese nombre. Puedes crearla en Actividades.»), error de
+mutación (`Alert` dentro + toast, sin cerrar), móvil 375 px y oscuro con la hoja
+abierta. Sin sesión lo sostiene la tajada 2 —la pantalla no llega a pintar la
+agenda— y no cambió.
+
+Lo que queda como hallazgo, sin devolver nada:
+
+1. **Si `useActivitiesQuery` falla**, el buscador de «qué» dice «Nada con ese
+   nombre» en vez de decir que la búsqueda no se pudo cargar. Es la esquina del
+   criterio 52 que nadie pidió para la hoja.
+2. **Elegir una segunda actividad no trae su duración de plantilla** si ya había
+   una puesta (`chooseActivity` solo preselecciona con `durationMinutes ===
+   null`). Defendible —no pisa una elección a mano— pero el criterio 25 se lee
+   como que la duración acompaña a lo elegido.
+3. **Una píldora puede quedar «elegida y apagada» a la vez** (`aria-pressed` y
+   `disabled`) al mover la hora a un sitio donde ya no cabe. El aviso lo explica
+   y «Poner» está apagado, así que nadie guarda nada imposible.
+4. **`durationPillsForWindow` no la usa ningún componente**: hoy solo vive en
+   sus tests. El constructor lo declaró y la reserva para la tajada 5.
+5. **Dos toques muy rápidos en dos fichas distintas** pueden colar dos bloques
+   que se pisen hasta el siguiente refresco; `isPlacing` los apaga, pero entre
+   el `click` y el `isPending` hay un render. Ya está en los riesgos de la
+   sección 3.
+6. **`pnpm typecheck` no es equivalente a `pnpm build`.** Los dos son `tsc -b`
+   sobre las mismas referencias y el único cambio es `--noEmit`; en mi corrida
+   los dos salieron limpios, así que el `TS2783` que se coló era estado
+   incremental (`.tsbuildinfo`), no cobertura distinta. **Va para
+   `ENVIRONMENT.md`, que no toco:** el cierre de una tajada se hace con `pnpm
+   build`, no solo con `pnpm typecheck`.
+
+**¿Duplica algo que ya existía?** No. Contra «Lo que NO se crea» de la sección 2:
+ninguna mutación, `api` ni documento GraphQL nuevo; ninguna clave de caché ni
+invalidación nueva; ningún componente de `shared/ui` (reutiliza `SteppedModal`,
+`Input`, `Alert`, `Skeleton`, `Button`, `Popover`, `IconButton`,
+`ConfirmDialog`, `AppIcon`); ningún normalizador ni buscador nuevo
+(`filterActivitiesBySearch`); ninguna utilidad de fecha nueva; ningún icono a
+pelo de Font Awesome. Y contra «Dónde NO va»: no se usa `SearchSelect`, no se
+arregla `Popover`, no se toca `--color-text-muted`, no se restaura
+`activity-time.utils.ts` —de él se rescatan tres funciones reescritas, que es lo
+que el plan pedía— y no se pinta nada de ejecutado. `VidaDurationPills` se
+reutiliza con `maxMinutes`, que ya existía.
+
+**Lo que sigue sin verificarse, dicho sin disimulo:** el recorrido real del
+criterio 58 (login + `15463da` en Cloud Run), el comportamiento en un teléfono
+de verdad —mi medida es un viewport emulado de 375×812—, el fallo de red de
+verdad (paso 6 del recorrido) y qué hace el API si dos bloques llegan pisados.
+
+---
+
+*Revisado por `feature-reviewer` el 2026-09-20. Fuentes: los criterios 23–30 y
+52–58 de la sección 1 literales, D1 y D4, «Lo que NO se crea» y «Dónde NO va»
+de la sección 2, la entrada de la tajada 3 de la sección 3, `git diff HEAD`,
+`graphify explain` / `query` sobre los hooks del plan del día, la corrida entera
+de `pnpm typecheck` ×2 / `lint` / `test` / `build`, un arnés de encaje de 8
+casos bajo `src/features/vida/utils/` y un arnés de navegador bajo
+`src/revision-t3/` a 375 px en claro y oscuro. **Los dos arneses están
+borrados** y `git status` no los lista.*

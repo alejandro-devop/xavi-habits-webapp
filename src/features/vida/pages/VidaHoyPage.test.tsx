@@ -1,4 +1,4 @@
-import { act, screen, within } from '@testing-library/react'
+import { act, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
@@ -29,9 +29,26 @@ type Query<T> = {
 let planQuery: Query<ActivityDayPlanItem[]>
 let suggestionsQuery: Query<VidaSuggestion[]>
 let settingsQuery: Query<UserSettings>
+let addMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+let editMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+let removeMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 
+// Las tres mutaciones del plan del día entran en el mock desde la tajada 3: la
+// página coloca desde una ficha, la hoja pone y edita, y el «···» del bloque
+// quita. Sin ellas, montar la página revienta en el primer hook.
 vi.mock('@/features/vida/hooks/useActivityDayPlan', () => ({
   useActivityDayPlanQuery: () => planQuery,
+  useAddDayPlanItemMutation: () => addMutation,
+  useEditDayPlanItemMutation: () => editMutation,
+  useRemoveDayPlanItemMutation: () => removeMutation,
+}))
+vi.mock('@/features/vida/hooks/useActivities', () => ({
+  useActivitiesQuery: () => ({
+    data: { activities: [], total: 0 },
+    isPending: false,
+    fetchStatus: 'idle',
+    isError: false,
+  }),
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useVidaSuggestionsForDateQuery: () => suggestionsQuery,
@@ -117,6 +134,9 @@ beforeEach(() => {
   vi.setSystemTime(new Date(2026, 8, 18, 9, 24, 0))
   // jsdom no implementa `scrollIntoView`; lo que se comprueba es que se llama.
   Element.prototype.scrollIntoView = vi.fn()
+  addMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  editMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  removeMutation = { mutate: vi.fn(), isPending: false, isError: false }
   planQuery = ready(PLAN)
   suggestionsQuery = ready([
     suggestion('s1', 'Poner lavadora', 20),
@@ -380,5 +400,95 @@ describe('VidaHoyPage — los estados', () => {
     expect(screen.getByText(/No pudimos cargar lo que trae tu plantilla/)).toBeInTheDocument()
     // Y la agenda se pinta igual: el plan sí cargó.
     expect(screen.getByText('Bañarme')).toBeInTheDocument()
+  })
+})
+
+describe('VidaHoyPage — poner algo en un hueco (tajada 3)', () => {
+  it('criterio 23 — un toque en una ficha la coloca al principio del hueco', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    // El hueco de 10:30 a 13:00 ofrece «Poner lavadora» (20 min, cabe).
+    fireEvent.click(screen.getByRole('button', { name: /Poner Poner lavadora a las 10:30/ }))
+
+    expect(addMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(addMutation.mutate.mock.calls[0][0]).toEqual({
+      date: '2026-09-18',
+      activityId: 'a-s1',
+      startTime: '10:30',
+      endTime: '10:50',
+    })
+  })
+
+  it('criterio 23 — el hueco que ya empezó coloca desde ahora, no desde antes', () => {
+    // Entre el bloque de las 8:45 y el de las 10:00 hay hueco, y el reloj (9:24)
+    // cae dentro: `buildDayAgenda` lo parte y la mitad de después empieza en el
+    // reloj. Colocar ahí no puede llevar la hora al pasado.
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: /Poner Poner lavadora a las 9:24/ }))
+
+    expect(addMutation.mutate.mock.calls[0][0]).toMatchObject({
+      startTime: '09:24',
+      endTime: '09:44',
+    })
+  })
+
+  it('criterio 19 — una ficha sin duración no coloca nada: abre la hoja', () => {
+    suggestionsQuery = ready([suggestion('s3', 'Estirar la espalda', null)])
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(
+      screen.getAllByRole('button', {
+        name: /Poner Estirar la espalda aquí, eligiendo cuánto dura/,
+      })[0],
+    )
+
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+    expect(screen.getByRole('heading', { name: 'Cuánto' })).toBeInTheDocument()
+  })
+
+  it('criterio 24 — «+ otra cosa» abre la hoja con el subtítulo del hueco', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Poner otra cosa a las 10:30/ })[0])
+
+    expect(screen.getByText('Poner algo a las 10:30')).toBeInTheDocument()
+    expect(
+      screen.getByText('Hueco de 2h 30 · hasta las 13:00 «Cocinar y almorzar»'),
+    ).toBeInTheDocument()
+  })
+
+  it('criterio 30 — el «···» de un bloque ofrece quitar del plan y cambiar la hora', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+
+    expect(screen.getByRole('button', { name: 'Quitar del plan' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cambiar hora o duración' })).toBeInTheDocument()
+    // Nunca «cancelar» ni «eliminar» (criterios 30 y 56).
+    expect(screen.queryByRole('button', { name: /eliminar|cancelar/i })).not.toBeInTheDocument()
+  })
+
+  it('criterio 30 — quitar pide confirmación antes de tocar nada', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar del plan' }))
+
+    // El diálogo aparece y la mutación **todavía no** ha salido.
+    expect(screen.getByText('¿Quitar «Bañarme» de tu plan?')).toBeInTheDocument()
+    expect(removeMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 30 — «Cambiar hora o duración» abre la hoja con el bloque puesto', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cambiar hora o duración' }))
+
+    expect(screen.getByRole('heading', { name: 'Cambiar hora o duración' })).toBeInTheDocument()
+    // «Qué» no se pregunta: el bloque ya es esa actividad.
+    expect(screen.queryByRole('heading', { name: 'Qué' })).not.toBeInTheDocument()
+    // La ventana es el bloque más lo libre de al lado: de las 6:30 a las 10:00.
+    expect(screen.getByText(/hasta las 10:00 «Leer un rato»/)).toBeInTheDocument()
   })
 })

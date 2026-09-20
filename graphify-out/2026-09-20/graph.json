@@ -942,7 +942,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "loginform_loginform_test",
-      "community": 25,
+      "community": 10,
       "norm_label": "loginform.test.tsx"
     },
     {
@@ -952,7 +952,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "loginform_loginform_test_mutate",
-      "community": 25,
+      "community": 10,
       "norm_label": "mutate"
     },
     {
@@ -962,7 +962,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "loginform_loginform_test_renderloginform",
-      "community": 25,
+      "community": 10,
       "norm_label": "renderloginform()"
     },
     {
@@ -1112,7 +1112,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "sessionexpiredmodal_sessionexpiredmodal_test",
-      "community": 25,
+      "community": 10,
       "norm_label": "sessionexpiredmodal.test.tsx"
     },
     {
@@ -1122,7 +1122,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "sessionexpiredmodal_sessionexpiredmodal_test_rendermodal",
-      "community": 25,
+      "community": 10,
       "norm_label": "rendermodal()"
     },
     {
@@ -1132,7 +1132,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "sessionexpiredmodal_sessionexpiredmodal_test_loginandexpire",
-      "community": 25,
+      "community": 10,
       "norm_label": "loginandexpire()"
     },
     {
@@ -2422,7 +2422,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "archivedhabitcard_archivedhabitcard",
-      "community": 505,
+      "community": 222,
       "norm_label": "archivedhabitcard.tsx"
     },
     {
@@ -2432,7 +2432,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "archivedhabitcard_archivedhabitcard_props",
-      "community": 505,
+      "community": 222,
       "norm_label": "props"
     },
     {
@@ -2442,7 +2442,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "archivedhabitcard_archivedhabitcard_archivedhabitcard",
-      "community": 505,
+      "community": 222,
       "norm_label": "archivedhabitcard()"
     },
     {
@@ -2452,7 +2452,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "archivedhabitcard_index",
-      "community": 505,
+      "community": 222,
       "norm_label": "index.ts"
     },
     {
@@ -2462,7 +2462,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitcategorystep_createhabitcategorystep",
-      "community": 59,
+      "community": 60,
       "norm_label": "createhabitcategorystep.tsx"
     },
     {
@@ -2472,7 +2472,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "createhabitcategorystep_createhabitcategorystep_props",
-      "community": 59,
+      "community": 60,
       "norm_label": "props"
     },
     {
@@ -2482,7 +2482,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "createhabitcategorystep_createhabitcategorystep_createhabitcategorystep",
-      "community": 59,
+      "community": 60,
       "norm_label": "createhabitcategorystep()"
     },
     {
@@ -2492,7 +2492,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitcategorystep_index",
-      "community": 59,
+      "community": 60,
       "norm_label": "index.ts"
     },
     {
@@ -2542,7 +2542,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitpurposestep_createhabitpurposestep",
-      "community": 557,
+      "community": 59,
       "norm_label": "createhabitpurposestep.tsx"
     },
     {
@@ -2552,7 +2552,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "createhabitpurposestep_createhabitpurposestep_props",
-      "community": 557,
+      "community": 59,
       "norm_label": "props"
     },
     {
@@ -2562,7 +2562,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "createhabitpurposestep_createhabitpurposestep_createhabitpurposestep",
-      "community": 557,
+      "community": 59,
       "norm_label": "createhabitpurposestep()"
     },
     {
@@ -2572,7 +2572,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitpurposestep_index",
-      "community": 557,
+      "community": 59,
       "norm_label": "index.ts"
     },
     {
@@ -2792,7 +2792,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid_getcellclass",
-      "community": 391,
+      "community": 429,
       "norm_label": "getcellclass()"
     },
     {
@@ -2822,7 +2822,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell",
-      "community": 225,
+      "community": 429,
       "norm_label": "habitdaycell.tsx"
     },
     {
@@ -2832,7 +2832,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_day_labels",
-      "community": 225,
+      "community": 429,
       "norm_label": "day_labels"
     },
     {
@@ -2842,7 +2842,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_props",
-      "community": 225,
+      "community": 429,
       "norm_label": "props"
     },
     {
@@ -2852,7 +2852,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "habitdaycell_habitdaycell_habitdaycell",
-      "community": 225,
+      "community": 429,
       "norm_label": "habitdaycell()"
     },
     {
@@ -2862,7 +2862,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdaycell_index",
-      "community": 225,
+      "community": 429,
       "norm_label": "index.ts"
     },
     {
@@ -2962,7 +2962,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test",
-      "community": 93,
+      "community": 47,
       "norm_label": "habitdayrow.test.tsx"
     },
     {
@@ -2972,7 +2972,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_addmutate",
-      "community": 93,
+      "community": 47,
       "norm_label": "addmutate"
     },
     {
@@ -2982,7 +2982,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_removemutate",
-      "community": 93,
+      "community": 47,
       "norm_label": "removemutate"
     },
     {
@@ -2992,7 +2992,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_days",
-      "community": 93,
+      "community": 47,
       "norm_label": "days"
     },
     {
@@ -3002,7 +3002,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_buildentry",
-      "community": 93,
+      "community": 47,
       "norm_label": "buildentry()"
     },
     {
@@ -3012,7 +3012,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_renderrow",
-      "community": 93,
+      "community": 47,
       "norm_label": "renderrow()"
     },
     {
@@ -3022,7 +3022,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow",
-      "community": 43,
+      "community": 429,
       "norm_label": "habitdayrow.tsx"
     },
     {
@@ -3032,7 +3032,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_habitdayrowprops",
-      "community": 43,
+      "community": 429,
       "norm_label": "habitdayrowprops"
     },
     {
@@ -3042,7 +3042,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_getmicrocopy",
-      "community": 43,
+      "community": 429,
       "norm_label": "getmicrocopy()"
     },
     {
@@ -3052,7 +3052,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_habitdayrow",
-      "community": 43,
+      "community": 429,
       "norm_label": "habitdayrow()"
     },
     {
@@ -3062,7 +3062,7 @@
       "source_location": "L320",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_toggleprogressring",
-      "community": 43,
+      "community": 429,
       "norm_label": "toggleprogressring()"
     },
     {
@@ -3862,7 +3862,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton",
-      "community": 230,
+      "community": 429,
       "norm_label": "habitlifelinebutton.tsx"
     },
     {
@@ -3872,7 +3872,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton_props",
-      "community": 230,
+      "community": 429,
       "norm_label": "props"
     },
     {
@@ -3882,7 +3882,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "habitlifelinebutton_habitlifelinebutton_habitlifelinebutton",
-      "community": 230,
+      "community": 429,
       "norm_label": "habitlifelinebutton()"
     },
     {
@@ -3892,7 +3892,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitlifelinebutton_index",
-      "community": 230,
+      "community": 429,
       "norm_label": "index.ts"
     },
     {
@@ -3942,7 +3942,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard_test",
-      "community": 63,
+      "community": 47,
       "norm_label": "habitlistcard.test.tsx"
     },
     {
@@ -3952,7 +3952,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard_test_days",
-      "community": 63,
+      "community": 47,
       "norm_label": "days"
     },
     {
@@ -3962,7 +3962,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard_test_buildhabit",
-      "community": 63,
+      "community": 47,
       "norm_label": "buildhabit()"
     },
     {
@@ -3972,7 +3972,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard_test_buildfollowups",
-      "community": 63,
+      "community": 47,
       "norm_label": "buildfollowups()"
     },
     {
@@ -3982,7 +3982,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "habitlistcard_habitlistcard_test_rendercard",
-      "community": 63,
+      "community": 47,
       "norm_label": "rendercard()"
     },
     {
@@ -4292,7 +4292,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitpanel_habitdifficultychart",
-      "community": 77,
+      "community": 63,
       "norm_label": "habitdifficultychart.tsx"
     },
     {
@@ -4302,7 +4302,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "habitpanel_habitdifficultychart_ticks",
-      "community": 77,
+      "community": 63,
       "norm_label": "ticks"
     },
     {
@@ -4312,7 +4312,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "habitpanel_habitdifficultychart_props",
-      "community": 77,
+      "community": 63,
       "norm_label": "props"
     },
     {
@@ -4322,7 +4322,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "habitpanel_habitdifficultychart_format",
-      "community": 77,
+      "community": 63,
       "norm_label": "format()"
     },
     {
@@ -4332,7 +4332,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "habitpanel_habitdifficultychart_habitdifficultychart",
-      "community": 77,
+      "community": 63,
       "norm_label": "habitdifficultychart()"
     },
     {
@@ -4362,7 +4362,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "habitpanel_habitgoalchart_habitgoalchart",
-      "community": 77,
+      "community": 93,
       "norm_label": "habitgoalchart()"
     },
     {
@@ -4412,7 +4412,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitpanel_habitpanel",
-      "community": 77,
+      "community": 93,
       "norm_label": "habitpanel.tsx"
     },
     {
@@ -4422,7 +4422,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "habitpanel_habitpanel_props",
-      "community": 77,
+      "community": 93,
       "norm_label": "props"
     },
     {
@@ -4432,7 +4432,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "habitpanel_habitpanel_followupsfor",
-      "community": 77,
+      "community": 54,
       "norm_label": "followupsfor()"
     },
     {
@@ -4442,7 +4442,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "habitpanel_habitpanel_measureunit",
-      "community": 41,
+      "community": 93,
       "norm_label": "measureunit()"
     },
     {
@@ -4452,7 +4452,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "habitpanel_habitpanel_habitpanel",
-      "community": 41,
+      "community": 93,
       "norm_label": "habitpanel()"
     },
     {
@@ -4462,7 +4462,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitpanel_habitpaneltiles",
-      "community": 77,
+      "community": 199,
       "norm_label": "habitpaneltiles.tsx"
     },
     {
@@ -4472,7 +4472,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "habitpanel_habitpaneltiles_props",
-      "community": 77,
+      "community": 199,
       "norm_label": "props"
     },
     {
@@ -4482,7 +4482,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "habitpanel_habitpaneltiles_days",
-      "community": 77,
+      "community": 199,
       "norm_label": "days()"
     },
     {
@@ -4492,7 +4492,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "habitpanel_habitpaneltiles_comebackhelper",
-      "community": 77,
+      "community": 199,
       "norm_label": "comebackhelper()"
     },
     {
@@ -4502,7 +4502,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "habitpanel_habitpaneltiles_habitpaneltiles",
-      "community": 77,
+      "community": 199,
       "norm_label": "habitpaneltiles()"
     },
     {
@@ -4582,7 +4582,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitpanel_habitweeklycompliancechart",
-      "community": 77,
+      "community": 63,
       "norm_label": "habitweeklycompliancechart.tsx"
     },
     {
@@ -4592,7 +4592,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "habitpanel_habitweeklycompliancechart_props",
-      "community": 77,
+      "community": 63,
       "norm_label": "props"
     },
     {
@@ -4602,7 +4602,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "habitpanel_habitweeklycompliancechart_xfor",
-      "community": 77,
+      "community": 63,
       "norm_label": "xfor()"
     },
     {
@@ -4612,7 +4612,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "habitpanel_habitweeklycompliancechart_yfor",
-      "community": 77,
+      "community": 63,
       "norm_label": "yfor()"
     },
     {
@@ -4622,7 +4622,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "habitpanel_habitweeklycompliancechart_formatdifficulty",
-      "community": 77,
+      "community": 63,
       "norm_label": "formatdifficulty()"
     },
     {
@@ -4632,7 +4632,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "habitpanel_habitweeklycompliancechart_habitweeklycompliancechart",
-      "community": 77,
+      "community": 63,
       "norm_label": "habitweeklycompliancechart()"
     },
     {
@@ -4642,7 +4642,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitpanel_index",
-      "community": 41,
+      "community": 93,
       "norm_label": "index.ts"
     },
     {
@@ -5502,7 +5502,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "hooks_usehabitcategories_usehabitcategoryqueryguard",
-      "community": 23,
+      "community": 60,
       "norm_label": "usehabitcategoryqueryguard()"
     },
     {
@@ -5512,7 +5512,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups",
-      "community": 43,
+      "community": 429,
       "norm_label": "usehabitfollowups.ts"
     },
     {
@@ -5522,7 +5522,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_followupmutationcontext",
-      "community": 43,
+      "community": 429,
       "norm_label": "followupmutationcontext"
     },
     {
@@ -5532,7 +5532,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_invalidateafterfollowupchange",
-      "community": 43,
+      "community": 429,
       "norm_label": "invalidateafterfollowupchange()"
     },
     {
@@ -5542,7 +5542,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_useaddhabitfollowupmutation",
-      "community": 43,
+      "community": 429,
       "norm_label": "useaddhabitfollowupmutation()"
     },
     {
@@ -5552,7 +5552,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_useupdatehabitfollowupmutation",
-      "community": 43,
+      "community": 429,
       "norm_label": "useupdatehabitfollowupmutation()"
     },
     {
@@ -5562,7 +5562,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "hooks_usehabitfollowups_useremovehabitfollowupmutation",
-      "community": 43,
+      "community": 429,
       "norm_label": "useremovehabitfollowupmutation()"
     },
     {
@@ -5652,7 +5652,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usehabitlifelineaction",
-      "community": 43,
+      "community": 429,
       "norm_label": "usehabitlifelineaction.ts"
     },
     {
@@ -5662,7 +5662,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "hooks_usehabitlifelineaction_spendlifelineargs",
-      "community": 43,
+      "community": 429,
       "norm_label": "spendlifelineargs"
     },
     {
@@ -5672,7 +5672,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "hooks_usehabitlifelineaction_usehabitlifelineaction",
-      "community": 43,
+      "community": 429,
       "norm_label": "usehabitlifelineaction()"
     },
     {
@@ -5732,7 +5732,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes",
-      "community": 557,
+      "community": 39,
       "norm_label": "usehabitpurposes.ts"
     },
     {
@@ -5742,7 +5742,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_usehabitpurposequeryguard",
-      "community": 557,
+      "community": 23,
       "norm_label": "usehabitpurposequeryguard()"
     },
     {
@@ -5752,7 +5752,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_getpurposeerrormessage",
-      "community": 557,
+      "community": 39,
       "norm_label": "getpurposeerrormessage()"
     },
     {
@@ -5762,7 +5762,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_usehabitpurposesquery",
-      "community": 557,
+      "community": 13,
       "norm_label": "usehabitpurposesquery()"
     },
     {
@@ -5772,7 +5772,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_usecreatehabitpurposemutation",
-      "community": 557,
+      "community": 39,
       "norm_label": "usecreatehabitpurposemutation()"
     },
     {
@@ -5782,7 +5782,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_useupdatehabitpurposemutation",
-      "community": 557,
+      "community": 39,
       "norm_label": "useupdatehabitpurposemutation()"
     },
     {
@@ -5792,7 +5792,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_useremovehabitpurposemutation",
-      "community": 557,
+      "community": 39,
       "norm_label": "useremovehabitpurposemutation()"
     },
     {
@@ -5862,7 +5862,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "hooks_usehabits_usehabitfollowupsindatesquery",
-      "community": 65,
+      "community": 13,
       "norm_label": "usehabitfollowupsindatesquery()"
     },
     {
@@ -5912,7 +5912,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "hooks_usehabits_usedeletehabitmutation",
-      "community": 505,
+      "community": 13,
       "norm_label": "usedeletehabitmutation()"
     },
     {
@@ -6012,7 +6012,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "pages_habitdetailpage_habitdetailpage",
-      "community": 65,
+      "community": 13,
       "norm_label": "habitdetailpage()"
     },
     {
@@ -6082,7 +6082,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitmydaypage",
-      "community": 65,
+      "community": 391,
       "norm_label": "habitmydaypage.tsx"
     },
     {
@@ -6092,7 +6092,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "pages_habitmydaypage_empty_follow_up_map",
-      "community": 65,
+      "community": 391,
       "norm_label": "empty_follow_up_map"
     },
     {
@@ -6102,7 +6102,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "pages_habitmydaypage_weekday_initials",
-      "community": 65,
+      "community": 391,
       "norm_label": "weekday_initials"
     },
     {
@@ -6112,7 +6112,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "pages_habitmydaypage_registertarget",
-      "community": 65,
+      "community": 391,
       "norm_label": "registertarget"
     },
     {
@@ -6122,7 +6122,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "pages_habitmydaypage_habitmydaypage",
-      "community": 65,
+      "community": 391,
       "norm_label": "habitmydaypage()"
     },
     {
@@ -6132,7 +6132,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitpersonapage",
-      "community": 557,
+      "community": 39,
       "norm_label": "habitpersonapage.tsx"
     },
     {
@@ -6142,7 +6142,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "pages_habitpersonapage_habitpersonapage",
-      "community": 557,
+      "community": 39,
       "norm_label": "habitpersonapage()"
     },
     {
@@ -6242,7 +6242,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitslistpage",
-      "community": 200,
+      "community": 13,
       "norm_label": "habitslistpage.tsx"
     },
     {
@@ -6252,7 +6252,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "pages_habitslistpage_empty_follow_up_map",
-      "community": 200,
+      "community": 13,
       "norm_label": "empty_follow_up_map"
     },
     {
@@ -6262,7 +6262,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "pages_habitslistpage_readstoredview",
-      "community": 200,
+      "community": 13,
       "norm_label": "readstoredview()"
     },
     {
@@ -6272,7 +6272,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "pages_habitslistpage_habitslistpage",
-      "community": 200,
+      "community": 13,
       "norm_label": "habitslistpage()"
     },
     {
@@ -7752,7 +7752,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "utils_habit_list_utils_hasactivehabitfilters",
-      "community": 200,
+      "community": 88,
       "norm_label": "hasactivehabitfilters()"
     },
     {
@@ -8232,7 +8232,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_buildweeklycompliance",
-      "community": 65,
+      "community": 391,
       "norm_label": "buildweeklycompliance()"
     },
     {
@@ -8322,7 +8322,7 @@
       "source_location": "L409",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_composereading",
-      "community": 41,
+      "community": 93,
       "norm_label": "composereading()"
     },
     {
@@ -8342,7 +8342,7 @@
       "source_location": "L441",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_builddifficultyseries",
-      "community": 65,
+      "community": 391,
       "norm_label": "builddifficultyseries()"
     },
     {
@@ -8352,7 +8352,7 @@
       "source_location": "L462",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_hasanydifficulty",
-      "community": 41,
+      "community": 93,
       "norm_label": "hasanydifficulty()"
     },
     {
@@ -8372,7 +8372,7 @@
       "source_location": "L476",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_shouldshowgoalchart",
-      "community": 429,
+      "community": 41,
       "norm_label": "shouldshowgoalchart()"
     },
     {
@@ -8382,7 +8382,7 @@
       "source_location": "L481",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_buildgoalseries",
-      "community": 429,
+      "community": 41,
       "norm_label": "buildgoalseries()"
     },
     {
@@ -8392,7 +8392,7 @@
       "source_location": "L499",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_formatamount",
-      "community": 77,
+      "community": 93,
       "norm_label": "formatamount()"
     },
     {
@@ -8512,7 +8512,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "utils_habit_progress_utils_followuphasnotes",
-      "community": 225,
+      "community": 429,
       "norm_label": "followuphasnotes()"
     },
     {
@@ -8592,7 +8592,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_habit_stats_utils",
-      "community": 77,
+      "community": 54,
       "norm_label": "habit-stats.utils.ts"
     },
     {
@@ -8602,7 +8602,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_habitdaytotals",
-      "community": 77,
+      "community": 54,
       "norm_label": "habitdaytotals"
     },
     {
@@ -8612,7 +8612,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_habitstreaksummary",
-      "community": 77,
+      "community": 54,
       "norm_label": "habitstreaksummary"
     },
     {
@@ -8622,7 +8622,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_habitstarsummary",
-      "community": 77,
+      "community": 54,
       "norm_label": "habitstarsummary"
     },
     {
@@ -8632,7 +8632,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_habitcategorytally",
-      "community": 77,
+      "community": 54,
       "norm_label": "habitcategorytally"
     },
     {
@@ -8642,7 +8642,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_islifeline",
-      "community": 77,
+      "community": 54,
       "norm_label": "islifeline()"
     },
     {
@@ -8652,7 +8652,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_gethabitdaytotals",
-      "community": 77,
+      "community": 54,
       "norm_label": "gethabitdaytotals()"
     },
     {
@@ -8662,7 +8662,7 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_gethabitstreaksummary",
-      "community": 77,
+      "community": 54,
       "norm_label": "gethabitstreaksummary()"
     },
     {
@@ -8672,7 +8672,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_getstarhabit",
-      "community": 77,
+      "community": 54,
       "norm_label": "getstarhabit()"
     },
     {
@@ -8682,7 +8682,7 @@
       "source_location": "L127",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_countentriesbycategory",
-      "community": 77,
+      "community": 54,
       "norm_label": "countentriesbycategory()"
     },
     {
@@ -8692,7 +8692,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_filterentriesbycategory",
-      "community": 77,
+      "community": 54,
       "norm_label": "filterentriesbycategory()"
     },
     {
@@ -8702,7 +8702,7 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "utils_habit_stats_utils_buildfollowupsbyhabit",
-      "community": 77,
+      "community": 54,
       "norm_label": "buildfollowupsbyhabit()"
     },
     {
@@ -8712,7 +8712,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_habit_type_utils",
-      "community": 224,
+      "community": 65,
       "norm_label": "habit-type.utils.ts"
     },
     {
@@ -8722,7 +8722,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "utils_habit_type_utils_habit_type_labels",
-      "community": 224,
+      "community": 65,
       "norm_label": "habit_type_labels"
     },
     {
@@ -8732,7 +8732,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utils_habit_type_utils_habit_type_icons",
-      "community": 224,
+      "community": 65,
       "norm_label": "habit_type_icons"
     },
     {
@@ -8742,7 +8742,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "utils_habit_type_utils_gethabittypelabel",
-      "community": 224,
+      "community": 65,
       "norm_label": "gethabittypelabel()"
     },
     {
@@ -8752,7 +8752,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "utils_habit_type_utils_pad2",
-      "community": 224,
+      "community": 65,
       "norm_label": "pad2()"
     },
     {
@@ -8762,7 +8762,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utils_habit_type_utils_formatlocaldatetoymd",
-      "community": 224,
+      "community": 65,
       "norm_label": "formatlocaldatetoymd()"
     },
     {
@@ -8782,7 +8782,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "utils_habit_type_utils_getyesterdaystring",
-      "community": 224,
+      "community": 65,
       "norm_label": "getyesterdaystring()"
     },
     {
@@ -8802,7 +8802,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "utils_habit_type_utils_getmondayofweek",
-      "community": 65,
+      "community": 391,
       "norm_label": "getmondayofweek()"
     },
     {
@@ -8882,7 +8882,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "utils_habit_week_utils_isfutureweek",
-      "community": 65,
+      "community": 391,
       "norm_label": "isfutureweek()"
     },
     {
@@ -8892,7 +8892,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getmydayfocusdate",
-      "community": 65,
+      "community": 391,
       "norm_label": "getmydayfocusdate()"
     },
     {
@@ -8962,7 +8962,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getvisibledays",
-      "community": 63,
+      "community": 47,
       "norm_label": "getvisibledays()"
     },
     {
@@ -9322,7 +9322,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "api_activities_api",
-      "community": 11,
+      "community": 43,
       "norm_label": "activities.api.ts"
     },
     {
@@ -9332,7 +9332,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "api_activities_api_activitiesdata",
-      "community": 11,
+      "community": 43,
       "norm_label": "activitiesdata"
     },
     {
@@ -9342,7 +9342,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "api_activities_api_activitydata",
-      "community": 11,
+      "community": 43,
       "norm_label": "activitydata"
     },
     {
@@ -9352,7 +9352,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "api_activities_api_activityadddata",
-      "community": 11,
+      "community": 43,
       "norm_label": "activityadddata"
     },
     {
@@ -9362,7 +9362,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "api_activities_api_activityeditdata",
-      "community": 11,
+      "community": 43,
       "norm_label": "activityeditdata"
     },
     {
@@ -9372,7 +9372,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "api_activities_api_activityremovedata",
-      "community": 11,
+      "community": 43,
       "norm_label": "activityremovedata"
     },
     {
@@ -9382,7 +9382,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "api_activities_api_activitycompletedata",
-      "community": 11,
+      "community": 43,
       "norm_label": "activitycompletedata"
     },
     {
@@ -9392,7 +9392,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "api_activities_api_getactivities",
-      "community": 11,
+      "community": 43,
       "norm_label": "getactivities()"
     },
     {
@@ -9402,7 +9402,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "api_activities_api_getactivity",
-      "community": 11,
+      "community": 43,
       "norm_label": "getactivity()"
     },
     {
@@ -9412,7 +9412,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "api_activities_api_createactivity",
-      "community": 11,
+      "community": 43,
       "norm_label": "createactivity()"
     },
     {
@@ -9422,7 +9422,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "api_activities_api_updateactivity",
-      "community": 11,
+      "community": 43,
       "norm_label": "updateactivity()"
     },
     {
@@ -9432,7 +9432,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "api_activities_api_removeactivity",
-      "community": 11,
+      "community": 43,
       "norm_label": "removeactivity()"
     },
     {
@@ -9442,7 +9442,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "api_activities_api_completeactivity",
-      "community": 11,
+      "community": 43,
       "norm_label": "completeactivity()"
     },
     {
@@ -9992,7 +9992,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createvidacategorystep_createvidacategorystep",
-      "community": 186,
+      "community": 59,
       "norm_label": "createvidacategorystep.tsx"
     },
     {
@@ -10002,7 +10002,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "createvidacategorystep_createvidacategorystep_props",
-      "community": 186,
+      "community": 59,
       "norm_label": "props"
     },
     {
@@ -10012,7 +10012,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "createvidacategorystep_createvidacategorystep_createvidacategorystep",
-      "community": 186,
+      "community": 59,
       "norm_label": "createvidacategorystep()"
     },
     {
@@ -10022,7 +10022,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createvidacategorystep_index",
-      "community": 186,
+      "community": 59,
       "norm_label": "index.ts"
     },
     {
@@ -10032,7 +10032,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_test",
-      "community": 168,
+      "community": 47,
       "norm_label": "vidaactivitycard.test.tsx"
     },
     {
@@ -10042,7 +10042,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_test_updateactivity",
-      "community": 168,
+      "community": 47,
       "norm_label": "updateactivity"
     },
     {
@@ -10052,7 +10052,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_test_updatevidaitem",
-      "community": 168,
+      "community": 47,
       "norm_label": "updatevidaitem"
     },
     {
@@ -10062,7 +10062,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_test_buildactivity",
-      "community": 168,
+      "community": 47,
       "norm_label": "buildactivity()"
     },
     {
@@ -10072,7 +10072,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_test_vidaitem",
-      "community": 168,
+      "community": 47,
       "norm_label": "vidaitem"
     },
     {
@@ -10082,7 +10082,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_test_rendercard",
-      "community": 168,
+      "community": 47,
       "norm_label": "rendercard()"
     },
     {
@@ -10092,7 +10092,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_test_findconfirmdialog",
-      "community": 168,
+      "community": 47,
       "norm_label": "findconfirmdialog()"
     },
     {
@@ -10152,7 +10152,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test",
-      "community": 199,
+      "community": 47,
       "norm_label": "vidaactivitysheet.test.tsx"
     },
     {
@@ -10162,7 +10162,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_mutationstub",
-      "community": 199,
+      "community": 47,
       "norm_label": "mutationstub"
     },
     {
@@ -10172,7 +10172,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_buildmutation",
-      "community": 199,
+      "community": 47,
       "norm_label": "buildmutation()"
     },
     {
@@ -10182,7 +10182,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_buildcategory",
-      "community": 199,
+      "community": 47,
       "norm_label": "buildcategory()"
     },
     {
@@ -10192,7 +10192,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_buildactivity",
-      "community": 199,
+      "community": 47,
       "norm_label": "buildactivity()"
     },
     {
@@ -10202,7 +10202,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_buildvidaitem",
-      "community": 199,
+      "community": 47,
       "norm_label": "buildvidaitem()"
     },
     {
@@ -10212,7 +10212,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_rendersheet",
-      "community": 54,
+      "community": 47,
       "norm_label": "rendersheet()"
     },
     {
@@ -10352,7 +10352,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendagap_vidaagendagap",
-      "community": 44,
+      "community": 49,
       "norm_label": "vidaagendagap.tsx"
     },
     {
@@ -10362,17 +10362,17 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "vidaagendagap_vidaagendagap_vidaagendagapprops",
-      "community": 44,
+      "community": 49,
       "norm_label": "vidaagendagapprops"
     },
     {
       "label": "VidaAgendaGap()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx",
-      "source_location": "L41",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "vidaagendagap_vidaagendagap_vidaagendagap",
-      "community": 44,
+      "community": 49,
       "norm_label": "vidaagendagap()"
     },
     {
@@ -10382,7 +10382,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendagap_index",
-      "community": 44,
+      "community": 49,
       "norm_label": "index.ts"
     },
     {
@@ -10499,7 +10499,7 @@
       "label": "VidaDayBudget()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaDayBudget/VidaDayBudget.tsx",
-      "source_location": "L39",
+      "source_location": "L43",
       "_origin": "ast",
       "id": "vidadaybudget_vidadaybudget_vidadaybudget",
       "community": 44,
@@ -10902,7 +10902,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useactivities",
-      "community": 20,
+      "community": 25,
       "norm_label": "useactivities.ts"
     },
     {
@@ -10912,7 +10912,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivitiesquery",
-      "community": 89,
+      "community": 25,
       "norm_label": "useactivitiesquery()"
     },
     {
@@ -10922,7 +10922,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivityquery",
-      "community": 20,
+      "community": 25,
       "norm_label": "useactivityquery()"
     },
     {
@@ -10942,7 +10942,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "hooks_useactivities_useupdateactivitymutation",
-      "community": 20,
+      "community": 25,
       "norm_label": "useupdateactivitymutation()"
     },
     {
@@ -10952,7 +10952,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "hooks_useactivities_usedeleteactivitymutation",
-      "community": 20,
+      "community": 25,
       "norm_label": "usedeleteactivitymutation()"
     },
     {
@@ -10962,7 +10962,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "hooks_useactivities_usecompleteactivitymutation",
-      "community": 20,
+      "community": 25,
       "norm_label": "usecompleteactivitymutation()"
     },
     {
@@ -11012,7 +11012,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_useactivitycategoriesquery",
-      "community": 89,
+      "community": 186,
       "norm_label": "useactivitycategoriesquery()"
     },
     {
@@ -11232,7 +11232,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_useactivityopenfollowupquery",
-      "community": 7,
+      "community": 109,
       "norm_label": "useactivityopenfollowupquery()"
     },
     {
@@ -11242,7 +11242,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_useactivitydayfollowupsquery",
-      "community": 32,
+      "community": 109,
       "norm_label": "useactivitydayfollowupsquery()"
     },
     {
@@ -11302,7 +11302,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usearchiveactivity",
-      "community": 20,
+      "community": 25,
       "norm_label": "usearchiveactivity.ts"
     },
     {
@@ -11312,7 +11312,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "hooks_usearchiveactivity_usearchiveactivity",
-      "community": 20,
+      "community": 25,
       "norm_label": "usearchiveactivity()"
     },
     {
@@ -11752,7 +11752,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "hooks_usevidaitems_usevidaitemsquery",
-      "community": 89,
+      "community": 25,
       "norm_label": "usevidaitemsquery()"
     },
     {
@@ -12192,7 +12192,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidaarchivadaspage",
-      "community": 89,
+      "community": 25,
       "norm_label": "vidaarchivadaspage.tsx"
     },
     {
@@ -12202,7 +12202,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "pages_vidaarchivadaspage_vidaarchivadaspage",
-      "community": 89,
+      "community": 25,
       "norm_label": "vidaarchivadaspage()"
     },
     {
@@ -12292,7 +12292,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidacategoriaspage",
-      "community": 89,
+      "community": 186,
       "norm_label": "vidacategoriaspage.tsx"
     },
     {
@@ -12302,7 +12302,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "pages_vidacategoriaspage_vidacategoriaspage",
-      "community": 89,
+      "community": 186,
       "norm_label": "vidacategoriaspage()"
     },
     {
@@ -12312,7 +12312,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidahoypage_test",
-      "community": 222,
+      "community": 47,
       "norm_label": "vidahoypage.test.tsx"
     },
     {
@@ -12322,7 +12322,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "pages_vidahoypage_test_query",
-      "community": 222,
+      "community": 47,
       "norm_label": "query"
     },
     {
@@ -12332,7 +12332,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "pages_vidahoypage_test_ready",
-      "community": 222,
+      "community": 47,
       "norm_label": "ready()"
     },
     {
@@ -12342,7 +12342,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "pages_vidahoypage_test_block",
-      "community": 222,
+      "community": 47,
       "norm_label": "block()"
     },
     {
@@ -12352,7 +12352,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "pages_vidahoypage_test_suggestion",
-      "community": 222,
+      "community": 47,
       "norm_label": "suggestion()"
     },
     {
@@ -12362,7 +12362,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "pages_vidahoypage_test_settings",
-      "community": 222,
+      "community": 47,
       "norm_label": "settings"
     },
     {
@@ -12372,8 +12372,18 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "pages_vidahoypage_test_plan",
-      "community": 222,
+      "community": 47,
       "norm_label": "plan"
+    },
+    {
+      "label": "renderAt()",
+      "file_type": "code",
+      "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
+      "source_location": "L239",
+      "_origin": "ast",
+      "id": "pages_vidahoypage_test_renderat",
+      "community": 47,
+      "norm_label": "renderat()"
     },
     {
       "label": "VidaHoyPage.tsx",
@@ -12382,7 +12392,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidahoypage",
-      "community": 101,
+      "community": 227,
       "norm_label": "vidahoypage.tsx"
     },
     {
@@ -12392,7 +12402,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "pages_vidahoypage_vidahoypage",
-      "community": 101,
+      "community": 227,
       "norm_label": "vidahoypage()"
     },
     {
@@ -12462,7 +12472,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "routes_vida_routes_test",
-      "community": 25,
+      "community": 10,
       "norm_label": "vida.routes.test.tsx"
     },
     {
@@ -12472,7 +12482,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "routes_vida_routes_test_renderat",
-      "community": 25,
+      "community": 10,
       "norm_label": "renderat()"
     },
     {
@@ -12912,7 +12922,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_activity_filters",
-      "community": 11,
+      "community": 25,
       "norm_label": "activity-filters.ts"
     },
     {
@@ -12922,7 +12932,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "utils_activity_filters_default_activity_filters",
-      "community": 11,
+      "community": 25,
       "norm_label": "default_activity_filters"
     },
     {
@@ -12932,7 +12942,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "utils_activity_filters_serializeactivityfilters",
-      "community": 11,
+      "community": 25,
       "norm_label": "serializeactivityfilters()"
     },
     {
@@ -12942,7 +12952,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "utils_activity_filters_tographqlactivityvariables",
-      "community": 11,
+      "community": 43,
       "norm_label": "tographqlactivityvariables()"
     },
     {
@@ -12952,7 +12962,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "utils_activity_filters_filteractivitiesbysearch",
-      "community": 11,
+      "community": 25,
       "norm_label": "filteractivitiesbysearch()"
     },
     {
@@ -13059,7 +13069,7 @@
       "label": "block()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
-      "source_location": "L27",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_test_block",
       "community": 231,
@@ -13069,7 +13079,7 @@
       "label": "suggestion()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
-      "source_location": "L49",
+      "source_location": "L50",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_test_suggestion",
       "community": 231,
@@ -13079,11 +13089,21 @@
       "label": "gapOf()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
-      "source_location": "L72",
+      "source_location": "L73",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_test_gapof",
       "community": 231,
       "norm_label": "gapof()"
+    },
+    {
+      "label": "agendaAt()",
+      "file_type": "code",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
+      "source_location": "L162",
+      "_origin": "ast",
+      "id": "utils_vida_agenda_utils_test_agendaat",
+      "community": 101,
+      "norm_label": "agendaat()"
     },
     {
       "label": "vida-agenda.utils.ts",
@@ -13109,17 +13129,27 @@
       "label": "AgendaGap",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L46",
+      "source_location": "L53",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_agendagap",
       "community": 101,
       "norm_label": "agendagap"
     },
     {
+      "label": "AgendaNowMark",
+      "file_type": "code",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "utils_vida_agenda_utils_agendanowmark",
+      "community": 101,
+      "norm_label": "agendanowmark"
+    },
+    {
       "label": "AgendaEntry",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L62",
+      "source_location": "L93",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_agendaentry",
       "community": 101,
@@ -13129,7 +13159,7 @@
       "label": "DayAgenda",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L64",
+      "source_location": "L95",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_dayagenda",
       "community": 101,
@@ -13139,7 +13169,7 @@
       "label": "BuildDayAgendaInput",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L74",
+      "source_location": "L107",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_builddayagendainput",
       "community": 101,
@@ -13149,17 +13179,47 @@
       "label": "buildDayAgenda()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L94",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_builddayagenda",
-      "community": 49,
+      "community": 101,
       "norm_label": "builddayagenda()"
+    },
+    {
+      "label": "makeGap()",
+      "file_type": "code",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L208",
+      "_origin": "ast",
+      "id": "utils_vida_agenda_utils_makegap",
+      "community": 101,
+      "norm_label": "makegap()"
+    },
+    {
+      "label": "nowMark()",
+      "file_type": "code",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L227",
+      "_origin": "ast",
+      "id": "utils_vida_agenda_utils_nowmark",
+      "community": 101,
+      "norm_label": "nowmark()"
+    },
+    {
+      "label": "withNowMark()",
+      "file_type": "code",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L239",
+      "_origin": "ast",
+      "id": "utils_vida_agenda_utils_withnowmark",
+      "community": 101,
+      "norm_label": "withnowmark()"
     },
     {
       "label": "DayBudget",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L144",
+      "source_location": "L275",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_daybudget",
       "community": 101,
@@ -13169,7 +13229,7 @@
       "label": "GetDayBudgetInput",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L157",
+      "source_location": "L288",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_getdaybudgetinput",
       "community": 101,
@@ -13179,37 +13239,37 @@
       "label": "getDayBudget()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L170",
+      "source_location": "L304",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_getdaybudget",
-      "community": 101,
+      "community": 227,
       "norm_label": "getdaybudget()"
     },
     {
       "label": "formatGapRange()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L192",
+      "source_location": "L330",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_formatgaprange",
-      "community": 44,
+      "community": 49,
       "norm_label": "formatgaprange()"
     },
     {
       "label": "findLargestGap()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L201",
+      "source_location": "L339",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_findlargestgap",
-      "community": 44,
+      "community": 101,
       "norm_label": "findlargestgap()"
     },
     {
       "label": "GuidanceInput",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L217",
+      "source_location": "L355",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_guidanceinput",
       "community": 101,
@@ -13219,17 +13279,17 @@
       "label": "buildGuidanceLine()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L233",
+      "source_location": "L371",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_buildguidanceline",
-      "community": 44,
+      "community": 49,
       "norm_label": "buildguidanceline()"
     },
     {
       "label": "GapSuggestion",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L277",
+      "source_location": "L417",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_gapsuggestion",
       "community": 101,
@@ -13239,7 +13299,7 @@
       "label": "GapSuggestions",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L283",
+      "source_location": "L423",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_gapsuggestions",
       "community": 101,
@@ -13249,7 +13309,7 @@
       "label": "SuggestionsForGapInput",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L291",
+      "source_location": "L431",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_suggestionsforgapinput",
       "community": 101,
@@ -13259,7 +13319,7 @@
       "label": "fitsInGap()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L299",
+      "source_location": "L439",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_fitsingap",
       "community": 101,
@@ -13269,7 +13329,7 @@
       "label": "suggestionsForGap()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L315",
+      "source_location": "L455",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_suggestionsforgap",
       "community": 101,
@@ -13279,10 +13339,10 @@
       "label": "findNextBlockId()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
-      "source_location": "L362",
+      "source_location": "L514",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_findnextblockid",
-      "community": 101,
+      "community": 227,
       "norm_label": "findnextblockid()"
     },
     {
@@ -13712,7 +13772,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "utils_vida_time_utils_minutestotime",
-      "community": 44,
+      "community": 49,
       "norm_label": "minutestotime()"
     },
     {
@@ -13752,7 +13812,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "utils_vida_time_utils_formatdurationfromminutes",
-      "community": 44,
+      "community": 49,
       "norm_label": "formatdurationfromminutes()"
     },
     {
@@ -13772,7 +13832,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "utils_vida_time_utils_formattimefordisplay",
-      "community": 44,
+      "community": 49,
       "norm_label": "formattimefordisplay()"
     },
     {
@@ -13842,7 +13902,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "applayout_applayout_test_renderapp",
-      "community": 54,
+      "community": 47,
       "norm_label": "renderapp()"
     },
     {
@@ -14842,7 +14902,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "feedback_apperrorboundary_apperrorboundary",
-      "community": 190,
+      "community": 10,
       "norm_label": "apperrorboundary"
     },
     {
@@ -14852,7 +14912,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "feedback_apperrorboundary_apperrorboundary_getderivedstatefromerror",
-      "community": 190,
+      "community": 10,
       "norm_label": ".getderivedstatefromerror()"
     },
     {
@@ -14862,7 +14922,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "feedback_apperrorboundary_apperrorboundary_componentdidcatch",
-      "community": 190,
+      "community": 10,
       "norm_label": ".componentdidcatch()"
     },
     {
@@ -14872,7 +14932,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "feedback_apperrorboundary_apperrorboundary_handlereset",
-      "community": 190,
+      "community": 10,
       "norm_label": ".handlereset()"
     },
     {
@@ -14882,7 +14942,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "feedback_apperrorboundary_apperrorboundary_render",
-      "community": 25,
+      "community": 10,
       "norm_label": ".render()"
     },
     {
@@ -15022,7 +15082,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useclickoutside",
-      "community": 59,
+      "community": 168,
       "norm_label": "useclickoutside.ts"
     },
     {
@@ -15032,7 +15092,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "hooks_useclickoutside_useclickoutside",
-      "community": 59,
+      "community": 168,
       "norm_label": "useclickoutside()"
     },
     {
@@ -15112,7 +15172,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useescapekey",
-      "community": 59,
+      "community": 168,
       "norm_label": "useescapekey.ts"
     },
     {
@@ -15122,7 +15182,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "hooks_useescapekey_useescapekey",
-      "community": 59,
+      "community": 168,
       "norm_label": "useescapekey()"
     },
     {
@@ -15222,7 +15282,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usemediaquery",
-      "community": 200,
+      "community": 391,
       "norm_label": "usemediaquery.ts"
     },
     {
@@ -15232,7 +15292,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "hooks_usemediaquery_usemediaquery",
-      "community": 200,
+      "community": 391,
       "norm_label": "usemediaquery()"
     },
     {
@@ -17212,7 +17272,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialog_test",
-      "community": 505,
+      "community": 13,
       "norm_label": "confirmdialog.test.tsx"
     },
     {
@@ -17222,7 +17282,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialog_test_trigger",
-      "community": 505,
+      "community": 13,
       "norm_label": "trigger()"
     },
     {
@@ -17292,7 +17352,7 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "confirmdialog_confirmdialogprovider_useconfirmdialog",
-      "community": 505,
+      "community": 13,
       "norm_label": "useconfirmdialog()"
     },
     {
@@ -17352,7 +17412,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "connectionindicator_connectionindicator_test",
-      "community": 25,
+      "community": 10,
       "norm_label": "connectionindicator.test.tsx"
     },
     {
@@ -17362,7 +17422,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "connectionindicator_connectionindicator_test_renderindicator",
-      "community": 25,
+      "community": 10,
       "norm_label": "renderindicator()"
     },
     {
@@ -17532,7 +17592,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "drawer_drawer",
-      "community": 42,
+      "community": 190,
       "norm_label": "drawer.tsx"
     },
     {
@@ -17542,7 +17602,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "drawer_drawer_drawerside",
-      "community": 42,
+      "community": 190,
       "norm_label": "drawerside"
     },
     {
@@ -17552,7 +17612,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "drawer_drawer_drawervariant",
-      "community": 42,
+      "community": 190,
       "norm_label": "drawervariant"
     },
     {
@@ -17562,7 +17622,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "drawer_drawer_drawersize",
-      "community": 42,
+      "community": 190,
       "norm_label": "drawersize"
     },
     {
@@ -17572,7 +17632,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "drawer_drawer_drawerprops",
-      "community": 42,
+      "community": 190,
       "norm_label": "drawerprops"
     },
     {
@@ -17582,7 +17642,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "drawer_drawer_slidevariants",
-      "community": 42,
+      "community": 190,
       "norm_label": "slidevariants"
     },
     {
@@ -18072,7 +18132,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "popover_popover",
-      "community": 59,
+      "community": 168,
       "norm_label": "popover.tsx"
     },
     {
@@ -18082,7 +18142,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "popover_popover_popoverplacement",
-      "community": 59,
+      "community": 168,
       "norm_label": "popoverplacement"
     },
     {
@@ -18092,7 +18152,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "popover_popover_popoverprops",
-      "community": 59,
+      "community": 168,
       "norm_label": "popoverprops"
     },
     {
@@ -18102,7 +18162,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "popover_popover_popover",
-      "community": 59,
+      "community": 168,
       "norm_label": "popover()"
     },
     {
@@ -18532,7 +18592,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_steppedmodal",
-      "community": 42,
+      "community": 223,
       "norm_label": "steppedmodal()"
     },
     {
@@ -19322,7 +19382,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "test_render",
-      "community": 54,
+      "community": 47,
       "norm_label": "render.tsx"
     },
     {
@@ -19332,7 +19392,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "test_render_providersprops",
-      "community": 54,
+      "community": 47,
       "norm_label": "providersprops"
     },
     {
@@ -19342,7 +19402,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "test_render_allproviders",
-      "community": 54,
+      "community": 47,
       "norm_label": "allproviders()"
     },
     {
@@ -19352,7 +19412,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "test_render_renderwithproviders",
-      "community": 54,
+      "community": 47,
       "norm_label": "renderwithproviders()"
     },
     {
@@ -22756,10 +22816,20 @@
       "norm_label": "tajada 1 \u2014 la plantilla con hora y duracion, y los ajustes de vida"
     },
     {
-      "label": "4. Revisi\u00f3n \u2014 feature-reviewer",
+      "label": "Tajada 2 \u2014 La agenda del d\u00eda, en solo lectura",
       "file_type": "document",
       "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
       "source_location": "L1113",
+      "_origin": "ast",
+      "id": "features_feat_003_vida_hoy_planear_el_dia_tajada_2_la_agenda_del_d\u00eda_en_solo_lectura",
+      "community": 76,
+      "norm_label": "tajada 2 \u2014 la agenda del dia, en solo lectura"
+    },
+    {
+      "label": "4. Revisi\u00f3n \u2014 feature-reviewer",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
+      "source_location": "L1471",
       "_origin": "ast",
       "id": "features_feat_003_vida_hoy_planear_el_dia_4_revisi\u00f3n_feature_reviewer",
       "community": 76,
@@ -22769,11 +22839,21 @@
       "label": "Tajada 1 \u2014 La plantilla con hora y duraci\u00f3n, y los ajustes de Vida",
       "file_type": "document",
       "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
-      "source_location": "L1115",
+      "source_location": "L1473",
       "_origin": "ast",
-      "id": "features_feat_003_vida_hoy_planear_el_dia_tajada_1_la_plantilla_con_hora_y_duraci\u00f3n_y_los_ajustes_de_vida_1115",
+      "id": "features_feat_003_vida_hoy_planear_el_dia_tajada_1_la_plantilla_con_hora_y_duraci\u00f3n_y_los_ajustes_de_vida_1473",
       "community": 76,
       "norm_label": "tajada 1 \u2014 la plantilla con hora y duracion, y los ajustes de vida"
+    },
+    {
+      "label": "Tajada 2 \u2014 La agenda del d\u00eda, en solo lectura",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
+      "source_location": "L1695",
+      "_origin": "ast",
+      "id": "features_feat_003_vida_hoy_planear_el_dia_tajada_2_la_agenda_del_d\u00eda_en_solo_lectura_1695",
+      "community": 76,
+      "norm_label": "tajada 2 \u2014 la agenda del dia, en solo lectura"
     },
     {
       "label": "PROTOCOL.md",
@@ -27102,7 +27182,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "up_comming_work_status_habit_month_view_and_difficulty_picker_md",
-      "community": 394,
+      "community": 200,
       "norm_label": "habit-month-view-and-difficulty-picker.md"
     },
     {
@@ -27112,7 +27192,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "up_comming_work_status_parte_1_habitdifficultypicker",
-      "community": 394,
+      "community": 200,
       "norm_label": "parte 1 \u2014 habitdifficultypicker"
     },
     {
@@ -27122,7 +27202,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "up_comming_work_status_parte_2_habitmonthview",
-      "community": 394,
+      "community": 200,
       "norm_label": "parte 2 \u2014 habitmonthview"
     },
     {
@@ -27132,7 +27212,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "up_comming_work_status_desv\u00edos_respecto_al_spec_98",
-      "community": 394,
+      "community": 200,
       "norm_label": "desvios respecto al spec"
     },
     {
@@ -27142,7 +27222,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "up_comming_work_status_orden_recomendado_del_spec",
-      "community": 394,
+      "community": 200,
       "norm_label": "orden recomendado del spec"
     },
     {
@@ -27372,7 +27452,7 @@
       "source_location": "L609",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_4_activitycategoriespanel_grid_responsive_tarjeta",
-      "community": 206,
+      "community": 173,
       "norm_label": "mejora 4 \u2014 `activitycategoriespanel`: grid responsive + tarjeta \"+\""
     },
     {
@@ -27382,7 +27462,7 @@
       "source_location": "L611",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_4_1_activitycategoriespanel_module_scss",
-      "community": 206,
+      "community": 173,
       "norm_label": "4.1 \u2014 `activitycategoriespanel.module.scss`"
     },
     {
@@ -27392,7 +27472,7 @@
       "source_location": "L634",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_4_2_tarjeta_integrada_en_el_grid",
-      "community": 206,
+      "community": 173,
       "norm_label": "4.2 \u2014 tarjeta \"+\" integrada en el grid"
     },
     {
@@ -27452,7 +27532,7 @@
       "source_location": "L1093",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_criterios_de_aceptaci\u00f3n",
-      "community": 195,
+      "community": 173,
       "norm_label": "criterios de aceptacion"
     },
     {
@@ -27462,7 +27542,7 @@
       "source_location": "L1095",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_1_2",
-      "community": 195,
+      "community": 173,
       "norm_label": "mejora 1 + 2"
     },
     {
@@ -27472,7 +27552,7 @@
       "source_location": "L1102",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_3",
-      "community": 195,
+      "community": 173,
       "norm_label": "mejora 3"
     },
     {
@@ -27482,7 +27562,7 @@
       "source_location": "L1111",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_4",
-      "community": 195,
+      "community": 173,
       "norm_label": "mejora 4"
     },
     {
@@ -27492,7 +27572,7 @@
       "source_location": "L1118",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_5",
-      "community": 195,
+      "community": 173,
       "norm_label": "mejora 5"
     },
     {
@@ -27502,7 +27582,7 @@
       "source_location": "L1126",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_general",
-      "community": 195,
+      "community": 173,
       "norm_label": "general"
     },
     {
@@ -27802,7 +27882,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_habits_module_improvements",
-      "community": 56,
+      "community": 12,
       "norm_label": "habits-module-improvements.md"
     },
     {
@@ -28642,7 +28722,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2_tododrawer_panel_lateral_en_desktop_drawer_en_mobile",
-      "community": 376,
+      "community": 206,
       "norm_label": "mejora 2 \u2014 `tododrawer`: panel lateral en desktop, drawer en mobile"
     },
     {
@@ -28652,7 +28732,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_1_notebooklist_tsx_detectar_viewport_layout_con_panel",
-      "community": 376,
+      "community": 206,
       "norm_label": "2.1 \u2014 `notebooklist.tsx`: detectar viewport + layout con panel"
     },
     {
@@ -28662,7 +28742,7 @@
       "source_location": "L201",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_2_notebooklist_module_scss_layout_2_columnas",
-      "community": 376,
+      "community": 206,
       "norm_label": "2.2 \u2014 `notebooklist.module.scss`: layout 2 columnas"
     },
     {
@@ -28672,7 +28752,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_3_tododrawer_tsx_a\u00f1adir_prop_aspanel_modo_panel",
-      "community": 376,
+      "community": 206,
       "norm_label": "2.3 \u2014 `tododrawer.tsx`: anadir prop `aspanel` + modo panel"
     },
     {
@@ -28682,7 +28762,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_4_tododrawer_module_scss_estilos_del_panel_lateral",
-      "community": 376,
+      "community": 206,
       "norm_label": "2.4 \u2014 `tododrawer.module.scss`: estilos del panel lateral"
     },
     {
@@ -28782,7 +28862,7 @@
       "source_location": "L734",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_criterios_de_aceptaci\u00f3n",
-      "community": 376,
+      "community": 195,
       "norm_label": "criterios de aceptacion"
     },
     {
@@ -28792,7 +28872,7 @@
       "source_location": "L736",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_1",
-      "community": 376,
+      "community": 195,
       "norm_label": "mejora 1"
     },
     {
@@ -28802,7 +28882,7 @@
       "source_location": "L742",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2",
-      "community": 376,
+      "community": 195,
       "norm_label": "mejora 2"
     },
     {
@@ -28812,7 +28892,7 @@
       "source_location": "L752",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_3",
-      "community": 376,
+      "community": 195,
       "norm_label": "mejora 3"
     },
     {
@@ -28822,7 +28902,7 @@
       "source_location": "L761",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_4",
-      "community": 376,
+      "community": 195,
       "norm_label": "mejora 4"
     },
     {
@@ -28832,7 +28912,7 @@
       "source_location": "L769",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_general",
-      "community": 376,
+      "community": 195,
       "norm_label": "general"
     }
   ],
@@ -43049,9 +43129,9 @@
       "source_file": "src/features/vida/components/VidaAgendaBlock/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendablock_index",
-      "target": "vidaagendablock_vidaagendablock",
-      "confidence_score": 1.0
+      "target": "vidaagendablock_vidaagendablock"
     },
     {
       "relation": "contains",
@@ -43059,9 +43139,9 @@
       "source_file": "src/features/vida/components/VidaAgendaBlock/VidaAgendaBlock.tsx",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendablock_vidaagendablock",
-      "target": "vidaagendablock_vidaagendablock_vidaagendablock",
-      "confidence_score": 1.0
+      "target": "vidaagendablock_vidaagendablock_vidaagendablock"
     },
     {
       "relation": "contains",
@@ -43069,9 +43149,9 @@
       "source_file": "src/features/vida/components/VidaAgendaBlock/VidaAgendaBlock.tsx",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendablock_vidaagendablock",
-      "target": "vidaagendablock_vidaagendablock_vidaagendablockprops",
-      "confidence_score": 1.0
+      "target": "vidaagendablock_vidaagendablock_vidaagendablockprops"
     },
     {
       "relation": "re_exports",
@@ -43080,9 +43160,9 @@
       "source_file": "src/features/vida/components/VidaAgendaBlock/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendablock_index",
-      "target": "vidaagendablock_vidaagendablock_vidaagendablock",
-      "confidence_score": 1.0
+      "target": "vidaagendablock_vidaagendablock_vidaagendablock"
     },
     {
       "relation": "calls",
@@ -43124,9 +43204,9 @@
       "source_file": "src/features/vida/components/VidaAgendaGap/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendagap_index",
-      "target": "vidaagendagap_vidaagendagap",
-      "confidence_score": 1.0
+      "target": "vidaagendagap_vidaagendagap"
     },
     {
       "relation": "contains",
@@ -43134,9 +43214,9 @@
       "source_file": "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendagap_vidaagendagap",
-      "target": "vidaagendagap_vidaagendagap_vidaagendagap",
-      "confidence_score": 1.0
+      "target": "vidaagendagap_vidaagendagap_vidaagendagap"
     },
     {
       "relation": "contains",
@@ -43144,9 +43224,9 @@
       "source_file": "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendagap_vidaagendagap",
-      "target": "vidaagendagap_vidaagendagap_vidaagendagapprops",
-      "confidence_score": 1.0
+      "target": "vidaagendagap_vidaagendagap_vidaagendagapprops"
     },
     {
       "relation": "re_exports",
@@ -43155,9 +43235,9 @@
       "source_file": "src/features/vida/components/VidaAgendaGap/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaagendagap_index",
-      "target": "vidaagendagap_vidaagendagap_vidaagendagap",
-      "confidence_score": 1.0
+      "target": "vidaagendagap_vidaagendagap_vidaagendagap"
     },
     {
       "relation": "calls",
@@ -43315,9 +43395,9 @@
       "source_file": "src/features/vida/components/VidaDayBudget/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidadaybudget_index",
-      "target": "vidadaybudget_vidadaybudget",
-      "confidence_score": 1.0
+      "target": "vidadaybudget_vidadaybudget"
     },
     {
       "relation": "contains",
@@ -43325,9 +43405,9 @@
       "source_file": "src/features/vida/components/VidaDayBudget/VidaDayBudget.tsx",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidadaybudget_vidadaybudget",
-      "target": "vidadaybudget_vidadaybudget_vidadaybudget",
-      "confidence_score": 1.0
+      "target": "vidadaybudget_vidadaybudget_vidadaybudget"
     },
     {
       "relation": "contains",
@@ -43335,9 +43415,9 @@
       "source_file": "src/features/vida/components/VidaDayBudget/VidaDayBudget.tsx",
       "source_location": "L11",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidadaybudget_vidadaybudget",
-      "target": "vidadaybudget_vidadaybudget_vidadaybudgetprops",
-      "confidence_score": 1.0
+      "target": "vidadaybudget_vidadaybudget_vidadaybudgetprops"
     },
     {
       "relation": "re_exports",
@@ -43346,9 +43426,9 @@
       "source_file": "src/features/vida/components/VidaDayBudget/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidadaybudget_index",
-      "target": "vidadaybudget_vidadaybudget_vidadaybudget",
-      "confidence_score": 1.0
+      "target": "vidadaybudget_vidadaybudget_vidadaybudget"
     },
     {
       "relation": "calls",
@@ -43528,9 +43608,9 @@
       "source_file": "src/features/vida/components/VidaTemplateAside/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidatemplateaside_index",
-      "target": "vidatemplateaside_vidatemplateaside",
-      "confidence_score": 1.0
+      "target": "vidatemplateaside_vidatemplateaside"
     },
     {
       "relation": "contains",
@@ -43538,9 +43618,9 @@
       "source_file": "src/features/vida/components/VidaTemplateAside/VidaTemplateAside.tsx",
       "source_location": "L32",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidatemplateaside_vidatemplateaside",
-      "target": "vidatemplateaside_vidatemplateaside_vidatemplateaside",
-      "confidence_score": 1.0
+      "target": "vidatemplateaside_vidatemplateaside_vidatemplateaside"
     },
     {
       "relation": "contains",
@@ -43548,9 +43628,9 @@
       "source_file": "src/features/vida/components/VidaTemplateAside/VidaTemplateAside.tsx",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidatemplateaside_vidatemplateaside",
-      "target": "vidatemplateaside_vidatemplateaside_vidatemplateasideprops",
-      "confidence_score": 1.0
+      "target": "vidatemplateaside_vidatemplateaside_vidatemplateasideprops"
     },
     {
       "relation": "re_exports",
@@ -43559,9 +43639,9 @@
       "source_file": "src/features/vida/components/VidaTemplateAside/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidatemplateaside_index",
-      "target": "vidatemplateaside_vidatemplateaside_vidatemplateaside",
-      "confidence_score": 1.0
+      "target": "vidatemplateaside_vidatemplateaside_vidatemplateaside"
     },
     {
       "relation": "contains",
@@ -44838,9 +44918,9 @@
       "source_file": "src/features/vida/hooks/useVidaDayData.ts",
       "source_location": "L40",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_usevidadaydata",
-      "target": "hooks_usevidadaydata_usevidadaydata",
-      "confidence_score": 1.0
+      "target": "hooks_usevidadaydata_usevidadaydata"
     },
     {
       "relation": "contains",
@@ -44848,9 +44928,9 @@
       "source_file": "src/features/vida/hooks/useVidaDayData.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_usevidadaydata",
-      "target": "hooks_usevidadaydata_vidadaydata",
-      "confidence_score": 1.0
+      "target": "hooks_usevidadaydata_vidadaydata"
     },
     {
       "relation": "calls",
@@ -45195,9 +45275,9 @@
       "source_file": "src/features/vida/hooks/useVidaNowMinute.ts",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_usevidanowminute",
-      "target": "hooks_usevidanowminute_formatnowlabel",
-      "confidence_score": 1.0
+      "target": "hooks_usevidanowminute_formatnowlabel"
     },
     {
       "relation": "contains",
@@ -45205,9 +45285,9 @@
       "source_file": "src/features/vida/hooks/useVidaNowMinute.ts",
       "source_location": "L11",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_usevidanowminute",
-      "target": "hooks_usevidanowminute_readnowminutes",
-      "confidence_score": 1.0
+      "target": "hooks_usevidanowminute_readnowminutes"
     },
     {
       "relation": "contains",
@@ -45215,9 +45295,9 @@
       "source_file": "src/features/vida/hooks/useVidaNowMinute.ts",
       "source_location": "L38",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_usevidanowminute",
-      "target": "hooks_usevidanowminute_usevidanowminute",
-      "confidence_score": 1.0
+      "target": "hooks_usevidanowminute_usevidanowminute"
     },
     {
       "relation": "contains",
@@ -45225,9 +45305,9 @@
       "source_file": "src/features/vida/hooks/useVidaNowMinute.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_usevidanowminute",
-      "target": "hooks_usevidanowminute_vidanowminute",
-      "confidence_score": 1.0
+      "target": "hooks_usevidanowminute_vidanowminute"
     },
     {
       "relation": "calls",
@@ -45247,9 +45327,9 @@
       "source_file": "src/features/vida/hooks/useVidaNowMinute.ts",
       "source_location": "L55",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "hooks_usevidanowminute_usevidanowminute",
-      "target": "hooks_usevidanowminute_formatnowlabel",
-      "confidence_score": 1.0
+      "target": "hooks_usevidanowminute_formatnowlabel"
     },
     {
       "relation": "calls",
@@ -45654,9 +45734,9 @@
       "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_vidahoypage_test",
-      "target": "pages_vidahoypage_test_block",
-      "confidence_score": 1.0
+      "target": "pages_vidahoypage_test_block"
     },
     {
       "relation": "contains",
@@ -45664,9 +45744,9 @@
       "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_vidahoypage_test",
-      "target": "pages_vidahoypage_test_plan",
-      "confidence_score": 1.0
+      "target": "pages_vidahoypage_test_plan"
     },
     {
       "relation": "contains",
@@ -45674,9 +45754,9 @@
       "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
       "source_location": "L21",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_vidahoypage_test",
-      "target": "pages_vidahoypage_test_query",
-      "confidence_score": 1.0
+      "target": "pages_vidahoypage_test_query"
     },
     {
       "relation": "contains",
@@ -45684,8 +45764,18 @@
       "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_vidahoypage_test",
-      "target": "pages_vidahoypage_test_ready",
+      "target": "pages_vidahoypage_test_ready"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
+      "source_location": "L239",
+      "weight": 1.0,
+      "source": "pages_vidahoypage_test",
+      "target": "pages_vidahoypage_test_renderat",
       "confidence_score": 1.0
     },
     {
@@ -45694,9 +45784,9 @@
       "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
       "source_location": "L98",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_vidahoypage_test",
-      "target": "pages_vidahoypage_test_settings",
-      "confidence_score": 1.0
+      "target": "pages_vidahoypage_test_settings"
     },
     {
       "relation": "contains",
@@ -45704,9 +45794,20 @@
       "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_vidahoypage_test",
-      "target": "pages_vidahoypage_test_suggestion",
-      "confidence_score": 1.0
+      "target": "pages_vidahoypage_test_suggestion"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/vida/pages/VidaHoyPage.test.tsx",
+      "source_location": "L241",
+      "weight": 1.0,
+      "source": "pages_vidahoypage_test_renderat",
+      "target": "test_render_renderwithproviders"
     },
     {
       "relation": "contains",
@@ -46373,11 +46474,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
-      "source_location": "L27",
+      "source_location": "L162",
       "weight": 1.0,
       "source": "utils_vida_agenda_utils_test",
-      "target": "utils_vida_agenda_utils_test_block",
+      "target": "utils_vida_agenda_utils_test_agendaat",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "utils_vida_agenda_utils_test",
+      "target": "utils_vida_agenda_utils_test_block"
     },
     {
       "relation": "contains",
@@ -46385,9 +46496,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
       "source_location": "L72",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils_test",
-      "target": "utils_vida_agenda_utils_test_gapof",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_test_gapof"
     },
     {
       "relation": "contains",
@@ -46395,9 +46506,20 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils_test",
-      "target": "utils_vida_agenda_utils_test_suggestion",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_test_suggestion"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/vida/utils/vida-agenda.utils.test.ts",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils_test_agendaat",
+      "target": "utils_vida_agenda_utils_builddayagenda"
     },
     {
       "relation": "contains",
@@ -46405,9 +46527,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_agendablock",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_agendablock"
     },
     {
       "relation": "contains",
@@ -46415,9 +46537,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_agendaentry",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_agendaentry"
     },
     {
       "relation": "contains",
@@ -46425,8 +46547,18 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L46",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_agendagap",
+      "target": "utils_vida_agenda_utils_agendagap"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils",
+      "target": "utils_vida_agenda_utils_agendanowmark",
       "confidence_score": 1.0
     },
     {
@@ -46435,9 +46567,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L94",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_builddayagenda",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_builddayagenda"
     },
     {
       "relation": "contains",
@@ -46445,9 +46577,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_builddayagendainput",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_builddayagendainput"
     },
     {
       "relation": "contains",
@@ -46455,9 +46587,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L233",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_buildguidanceline",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_buildguidanceline"
     },
     {
       "relation": "contains",
@@ -46465,9 +46597,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L64",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_dayagenda",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_dayagenda"
     },
     {
       "relation": "contains",
@@ -46475,9 +46607,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_daybudget",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_daybudget"
     },
     {
       "relation": "contains",
@@ -46485,9 +46617,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L201",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_findlargestgap",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_findlargestgap"
     },
     {
       "relation": "contains",
@@ -46495,9 +46627,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L362",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_findnextblockid",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_findnextblockid"
     },
     {
       "relation": "contains",
@@ -46505,9 +46637,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L299",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_fitsingap",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_fitsingap"
     },
     {
       "relation": "contains",
@@ -46515,9 +46647,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L192",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_formatgaprange",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_formatgaprange"
     },
     {
       "relation": "contains",
@@ -46525,9 +46657,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L277",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_gapsuggestion",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_gapsuggestion"
     },
     {
       "relation": "contains",
@@ -46535,9 +46667,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L283",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_gapsuggestions",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_gapsuggestions"
     },
     {
       "relation": "contains",
@@ -46545,9 +46677,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L170",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_getdaybudget",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_getdaybudget"
     },
     {
       "relation": "contains",
@@ -46555,9 +46687,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L157",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_getdaybudgetinput",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_getdaybudgetinput"
     },
     {
       "relation": "contains",
@@ -46565,8 +46697,28 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L217",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_guidanceinput",
+      "target": "utils_vida_agenda_utils_guidanceinput"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L208",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils",
+      "target": "utils_vida_agenda_utils_makegap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L227",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils",
+      "target": "utils_vida_agenda_utils_nowmark",
       "confidence_score": 1.0
     },
     {
@@ -46575,9 +46727,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L315",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_suggestionsforgap",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_suggestionsforgap"
     },
     {
       "relation": "contains",
@@ -46585,8 +46737,29 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L291",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils",
-      "target": "utils_vida_agenda_utils_suggestionsforgapinput",
+      "target": "utils_vida_agenda_utils_suggestionsforgapinput"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L239",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils",
+      "target": "utils_vida_agenda_utils_withnowmark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L196",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils_builddayagenda",
+      "target": "utils_vida_agenda_utils_withnowmark",
       "confidence_score": 1.0
     },
     {
@@ -46606,6 +46779,39 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L216",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils_makegap",
+      "target": "utils_vida_time_utils_minutestotime"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L255",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils_withnowmark",
+      "target": "utils_vida_agenda_utils_makegap",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
+      "source_location": "L245",
+      "weight": 1.0,
+      "source": "utils_vida_agenda_utils_withnowmark",
+      "target": "utils_vida_agenda_utils_nowmark",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L187",
       "weight": 1.0,
       "source": "utils_vida_agenda_utils_getdaybudget",
@@ -46618,9 +46824,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L274",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils_buildguidanceline",
-      "target": "utils_vida_agenda_utils_formatgaprange",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_formatgaprange"
     },
     {
       "relation": "calls",
@@ -46651,9 +46857,9 @@
       "source_file": "src/features/vida/utils/vida-agenda.utils.ts",
       "source_location": "L263",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_agenda_utils_buildguidanceline",
-      "target": "utils_vida_agenda_utils_findlargestgap",
-      "confidence_score": 1.0
+      "target": "utils_vida_agenda_utils_findlargestgap"
     },
     {
       "relation": "calls",
@@ -46834,9 +47040,9 @@
       "source_file": "src/features/vida/utils/vida-date.utils.ts",
       "source_location": "L115",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_date_utils",
-      "target": "utils_vida_date_utils_formatdayheading",
-      "confidence_score": 1.0
+      "target": "utils_vida_date_utils_formatdayheading"
     },
     {
       "relation": "contains",
@@ -46874,9 +47080,9 @@
       "source_file": "src/features/vida/utils/vida-date.utils.ts",
       "source_location": "L108",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_date_utils",
-      "target": "utils_vida_date_utils_getvidadayofweek",
-      "confidence_score": 1.0
+      "target": "utils_vida_date_utils_getvidadayofweek"
     },
     {
       "relation": "contains",
@@ -46914,9 +47120,9 @@
       "source_file": "src/features/vida/utils/vida-date.utils.ts",
       "source_location": "L101",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_date_utils",
-      "target": "utils_vida_date_utils_parseymdtolocaldate",
-      "confidence_score": 1.0
+      "target": "utils_vida_date_utils_parseymdtolocaldate"
     },
     {
       "relation": "contains",
@@ -47021,9 +47227,9 @@
       "source_file": "src/features/vida/utils/vida-date.utils.ts",
       "source_location": "L117",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_date_utils_formatdayheading",
-      "target": "utils_vida_date_utils_parseymdtolocaldate",
-      "confidence_score": 1.0
+      "target": "utils_vida_date_utils_parseymdtolocaldate"
     },
     {
       "relation": "calls",
@@ -47032,9 +47238,9 @@
       "source_file": "src/features/vida/utils/vida-date.utils.ts",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_date_utils_getvidadayofweek",
-      "target": "utils_vida_date_utils_parseymdtolocaldate",
-      "confidence_score": 1.0
+      "target": "utils_vida_date_utils_parseymdtolocaldate"
     },
     {
       "relation": "calls",
@@ -47043,9 +47249,9 @@
       "source_file": "src/features/vida/utils/vida-date.utils.ts",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_date_utils_formatdayheading",
-      "target": "utils_vida_date_utils_getvidadayofweek",
-      "confidence_score": 1.0
+      "target": "utils_vida_date_utils_getvidadayofweek"
     },
     {
       "relation": "contains",
@@ -55150,18 +55356,38 @@
       "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
       "source_location": "L854",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "features_feat_003_vida_hoy_planear_el_dia_3_construcci\u00f3n_feature_builder",
-      "target": "features_feat_003_vida_hoy_planear_el_dia_tajada_1_la_plantilla_con_hora_y_duraci\u00f3n_y_los_ajustes_de_vida",
+      "target": "features_feat_003_vida_hoy_planear_el_dia_tajada_1_la_plantilla_con_hora_y_duraci\u00f3n_y_los_ajustes_de_vida"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
+      "source_location": "L1113",
+      "weight": 1.0,
+      "source": "features_feat_003_vida_hoy_planear_el_dia_3_construcci\u00f3n_feature_builder",
+      "target": "features_feat_003_vida_hoy_planear_el_dia_tajada_2_la_agenda_del_d\u00eda_en_solo_lectura",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
-      "source_location": "L1115",
+      "source_location": "L1473",
       "weight": 1.0,
       "source": "features_feat_003_vida_hoy_planear_el_dia_4_revisi\u00f3n_feature_reviewer",
-      "target": "features_feat_003_vida_hoy_planear_el_dia_tajada_1_la_plantilla_con_hora_y_duraci\u00f3n_y_los_ajustes_de_vida_1115",
+      "target": "features_feat_003_vida_hoy_planear_el_dia_tajada_1_la_plantilla_con_hora_y_duraci\u00f3n_y_los_ajustes_de_vida_1473",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-003-vida-hoy-planear-el-dia.md",
+      "source_location": "L1695",
+      "weight": 1.0,
+      "source": "features_feat_003_vida_hoy_planear_el_dia_4_revisi\u00f3n_feature_reviewer",
+      "target": "features_feat_003_vida_hoy_planear_el_dia_tajada_2_la_agenda_del_d\u00eda_en_solo_lectura_1695",
       "confidence_score": 1.0
     },
     {
@@ -60956,5 +61182,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "5d2ef5bf7cba0c3479c2f948a83aadf2666cbac8"
+  "built_at_commit": "191b678b828276fcf85a765bc88f0218240b5566"
 }

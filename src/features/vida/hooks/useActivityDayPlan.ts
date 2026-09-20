@@ -7,12 +7,20 @@ import type {
   ActivityDayPlanSetInput,
 } from '@/features/vida/types/activity-day-plan.types'
 import { invalidateDayPlanQueries } from '@/features/vida/utils/invalidate-vida-queries'
+import { toErrorMessage } from '@/features/vida/utils/vida-error.utils'
 import { vidaKeys } from '@/shared/api/query-keys'
 import { useToast } from '@/shared/ui/Toast'
 
 /**
  * Plan del día. A diferencia de los follow-ups, **una fecha futura sí consulta**:
  * planear mañana es el caso de uso, no un error.
+ *
+ * **Cada mutación avisa por toast, también cuando falla** (`onError` con
+ * `toErrorMessage`, igual que `useActivities`). Sin él, colocar algo desde una
+ * ficha —que no abre ninguna hoja donde leer el fallo— se quedaba en silencio
+ * y la agenda simplemente no cambiaba (criterio 29). Donde sí hay hoja
+ * (`VidaPlaceInGapSheet`), el toast acompaña al `Alert` de dentro, que es el
+ * que sostiene el criterio.
  *
  * Los inputs del esquema aceptan `clientId` (UUID v7, idempotencia offline) y
  * aquí **no se genera ninguno**: la web es el piloto y no hay modo offline. El
@@ -39,6 +47,9 @@ export function useSetActivityDayPlanMutation() {
       invalidateDayPlanQueries(queryClient, { date: variables.date })
       toast.success('Plan del día guardado')
     },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos guardar el plan del día'))
+    },
   })
 }
 
@@ -50,6 +61,9 @@ export function useAddDayPlanItemMutation() {
     onSuccess: (data, variables) => {
       invalidateDayPlanQueries(queryClient, { date: data.date ?? variables.date })
       toast.success('Añadido a tu plan')
+    },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos ponerlo en tu plan'))
     },
   })
 }
@@ -67,6 +81,9 @@ export function useEditDayPlanItemMutation() {
       invalidateDayPlanQueries(queryClient, { date: data.date })
       toast.success('Plan actualizado')
     },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos cambiar ese bloque'))
+    },
   })
 }
 
@@ -83,6 +100,9 @@ export function useRemoveDayPlanItemMutation() {
     onSuccess: (_data, variables) => {
       invalidateDayPlanQueries(queryClient, { date: variables.date })
       toast.success('Quitado del plan')
+    },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos quitarlo del plan'))
     },
   })
 }

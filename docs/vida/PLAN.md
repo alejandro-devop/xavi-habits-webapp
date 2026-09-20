@@ -66,7 +66,8 @@ La revisión del día compara **plan frente a real** y nombra las cosas por lo q
 
 1. **El módulo se llama «Vida».** Es como lo llama el usuario y como lo llama el API. Hábitos ya tiene «Mi día»; el día de Vida se llama **«Hoy»**.
 2. **Vuelve un segundo módulo a la app**, así que la barra única de la fase 11 necesita **cambiar de módulo**: Hábitos · Vida. Es lo primero que se construye, con render.
-3. **Backend intocable en la v1.** Todo lo que no dé el API se deriva en cliente; lo que no se pueda derivar se anota como hueco, no se inventa.
+3. **Backend casi intocable en la v1.** Todo lo que no dé el API se deriva en cliente; lo que no se pueda derivar se anota como hueco, no se inventa. **Excepción decidida el 2026-09-20 (FEAT-003):** la plantilla es una agenda, así que `VidaItem` gana `startTime` y `durationMinutes`, y `UserSettings` gana `vidaDayStartTime` / `vidaDayEndTime`. Nada más se toca del API en la v1.
+13. **La plantilla lleva hora y duración por ítem.** «A esta hora hago esto por tanto tiempo»: el usuario no quiere «varias cosas para la mañana» que al día siguiente se ven como una lista abrumadora sin orden. El plan del día no es regla rígida: se mueve, y luego se compara planeado frente a ejecutado para ajustar la plantilla. «Armar desde la plantilla» copia hora y duración. Lo de improviso elige duración con píldoras 15 · 30 · 45 · 1h · libre.
 4. **Las notas de sesión son texto plano.** No vuelve tiptap.
 5. **Sin arrastrar y soltar en la v1.** No hay `dnd-kit` y no vuelve por esto: el plan del día se ordena por hora, y la hora se edita. Si más adelante duele, se decide entonces.
 6. **Renders antes de cada pantalla nueva**, aprobados por el usuario. Sin render aprobado no se abre la construcción de esa pantalla.

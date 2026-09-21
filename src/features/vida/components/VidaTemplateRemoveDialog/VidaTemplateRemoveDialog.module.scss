@@ -1,0 +1,29 @@
+/* Tres botones en un diálogo de 375 px: se envuelven en vez de desbordar, y
+   «Volver» queda siempre a la izquierda para que la salida sea la primera. */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.warn {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.calm {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}

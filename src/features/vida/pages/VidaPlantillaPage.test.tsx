@@ -31,12 +31,33 @@ let itemsQuery: Query<VidaItem[]>
 let settingsQuery: Query<UserSettings>
 let activitiesQuery: Query<ActivitiesResponse>
 let lastIncludeInactive: boolean | undefined
+let updateItem: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+let deleteItem: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+let createItem: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useVidaItemsQuery: (includeInactive?: boolean) => {
     lastIncludeInactive = includeInactive
     return itemsQuery
   },
+  // Las que estrena la tajada 2: «Activar», restarle un día y quitarlo; la de
+  // crear la monta la hoja por dentro (`useSaveVidaItemForActivity`).
+  useUpdateVidaItemMutation: () => updateItem,
+  useDeleteVidaItemMutation: () => deleteItem,
+  useCreateVidaItemMutation: () => createItem,
+}))
+// La hoja pide las categorías al montarse; sin `AuthBootstrapProvider` el
+// guard de Vida **lanza**, así que se mockean aquí igual que en el test de la
+// propia hoja. Es el aviso que dejó escrito la tajada 1.
+vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
+  useActivityCategoriesQuery: () => ({
+    data: [],
+    isPending: false,
+    isError: false,
+    fetchStatus: 'idle',
+    refetch: vi.fn(),
+  }),
+  useCreateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
@@ -44,6 +65,8 @@ vi.mock('@/features/settings/hooks/useUserSettings', () => ({
 }))
 vi.mock('@/features/vida/hooks/useActivities', () => ({
   useActivitiesQuery: () => activitiesQuery,
+  useCreateActivityMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  useUpdateActivityMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
 
 function ready<T>(data: T): Query<T> {
@@ -92,6 +115,9 @@ beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(new Date(2026, 8, 18, 9, 24, 0))
   lastIncludeInactive = undefined
+  updateItem = { mutate: vi.fn(), isPending: false, isError: false }
+  deleteItem = { mutate: vi.fn(), isPending: false, isError: false }
+  createItem = { mutate: vi.fn(), isPending: false, isError: false }
   itemsQuery = ready<VidaItem[]>([])
   settingsQuery = ready(SETTINGS)
   activitiesQuery = ready<ActivitiesResponse>({ activities: [], page: 1, limit: 200, total: 0 })
@@ -206,14 +232,17 @@ describe('la agenda del día (criterios 6, 7, 8, 9 y 13)', () => {
     expect(screen.getByText(/no sale en Hoy/)).toBeInTheDocument()
   })
 
-  it('**no se pinta ni un botón muerto**: en la tajada 1 la pantalla solo lee', () => {
+  it('**sigue sin haber botones muertos**: lo de las tajadas 3 y 4 no se pinta', () => {
     renderWithProviders(<VidaPlantillaPage />)
-    // **Cero botones**: las siete pestañas son `role="tab"`, y no hay nada más
-    // que pulsar — ni «Activar», ni «···», ni «+», ni «Ponerle hora».
-    expect(screen.queryAllByRole('button')).toHaveLength(0)
+    // La afirmación de la tajada 1 era «cero botones» y **queda derogada por
+    // los criterios 16, 25 y 26**: abrir la hoja, «Ponerle hora» y «Activar»
+    // son de esta tajada. Lo que sigue valiendo es que **no se pinta nada que
+    // no funcione todavía**: ni «+» (criterio 29, tajada 3), ni «Ver la semana
+    // entera» ni «Copiar este día a otros» (tajada 4).
     expect(screen.getAllByRole('tab')).toHaveLength(7)
-    expect(screen.queryByRole('button', { name: /activar/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /ponerle hora/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /añadir a mi vida|^\+$/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /ver la semana entera/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /copiar este día/i })).not.toBeInTheDocument()
   })
 
   it('el cajón «Sin hora» va al final, con su cuenta y su explicación literal', () => {
@@ -351,5 +380,171 @@ describe('los estados (criterios 10, 11 y 12)', () => {
     renderWithProviders(<VidaPlantillaPage />)
     expect(screen.queryByText('Vieja')).not.toBeInTheDocument()
     expect(screen.getAllByRole('tab')[4]).toHaveAccessibleName(/viernes, hoy · 1 cosa/)
+  })
+})
+
+/**
+ * La plantilla se edita desde aquí (FEAT-005, tajada 2): criterios 16, 17, 21,
+ * 22, 24, 25, 26 y 27.
+ *
+ * Todo lo que se comprueba aquí es **el cableado**: qué hoja se abre, con qué
+ * ítem, qué mutación sale y con qué. Lo que pasa dentro de la hoja tiene su
+ * propio test (`VidaActivitySheet.test.tsx`) y lo puro, el suyo
+ * (`vida-template.utils.test.ts`). **Nada de esto pasa por el API de verdad.**
+ */
+describe('la hoja del ítem y lo que escribe (criterios 16-27)', () => {
+  beforeEach(() => {
+    itemsQuery = ready([
+      // La misma actividad **dos veces**, que es el caso del criterio 17.
+      { ...item('m', { startTime: '07:30', durationMinutes: 40, title: 'Pasear a las mascotas' }),
+        activityId: 'a-pasear' },
+      { ...item('t', { startTime: '19:00', durationMinutes: 40, title: 'Pasear a las mascotas' }),
+        activityId: 'a-pasear' },
+      item('casa', {
+        days: ['monday', 'wednesday', 'friday'],
+        startTime: '09:00',
+        durationMinutes: 45,
+        title: 'Organizar la casa',
+      }),
+      item('off', { startTime: '06:45', durationMinutes: 30, title: 'Salir a correr', isActive: false }),
+      item('lavadora', { title: 'Poner una lavadora' }),
+    ])
+  })
+
+  it('tocar una tarjeta abre la hoja **de ese ítem, por su id** (criterios 16 y 17)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Abrir Pasear a las mascotas' })[0]!)
+
+    const sheet = screen.getByRole('dialog')
+    // Es **la hoja del catálogo**: los mismos campos, y la cabecera enseña el
+    // nombre sin pedirlo.
+    expect(within(sheet).getByText('Pasear a las mascotas')).toBeInTheDocument()
+    expect(within(sheet).queryByLabelText(/Cómo la llamas/)).not.toBeInTheDocument()
+    // El de las **7:30**, que es el que se tocó: no «el ítem de esa actividad».
+    expect(within(sheet).getByLabelText(/A qué hora/)).toHaveValue('07:30')
+  })
+
+  it('abrir el de las 19:00 y guardar actualiza ESE id, no el de las 7:30 (criterio 17)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const cards = screen.getAllByRole('button', { name: 'Abrir Pasear a las mascotas' })
+    fireEvent.click(cards[1]!)
+
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByLabelText(/A qué hora/)).toHaveValue('19:00')
+    fireEvent.change(within(sheet).getByLabelText(/A qué hora/), { target: { value: '19:30' } })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Guardar' }))
+
+    // **Sin mutación de actividad de por medio** (decisión A4): con la
+    // actividad bloqueada se guarda directo la plantilla.
+    expect(createItem.mutate).not.toHaveBeenCalled()
+    expect(updateItem.mutate).toHaveBeenCalledTimes(1)
+    expect(updateItem.mutate.mock.calls[0]![0]).toMatchObject({ id: 't', startTime: '19:30' })
+  })
+
+  it('«Ponerle hora» en el cajón abre **la misma hoja** (criterio 25)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const drawer = screen.getByRole('region', { name: /sin hora/i })
+    fireEvent.click(within(drawer).getByRole('button', { name: 'Ponerle hora' }))
+
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByText('Poner una lavadora')).toBeInTheDocument()
+    // Lista para escribirse: vacía, no con una hora inventada.
+    expect(within(sheet).getByLabelText(/A qué hora/)).toHaveValue('')
+  })
+
+  it('«Activar» reactiva de un toque, **sin abrir la hoja** (criterio 26)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Activar' }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // Solo `isActive`: sus días, su hora y su nota se quedan como están,
+    // porque omitir un campo en `vidaItemUpdate` lo deja igual.
+    expect(updateItem.mutate.mock.calls[0]![0]).toEqual({ id: 'off', isActive: true })
+  })
+
+  it('«Quitar de la plantilla» avisa de los otros días y **«Volver» no llama a nadie** (criterios 21 y 22)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Organizar la casa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar de la plantilla' }))
+
+    // Dos diálogos en el árbol: la hoja, que se queda montada para su
+    // animación de salida, y la confirmación. Se elige por su nombre.
+    const dialog = screen.getByRole('dialog', { name: /¿Quitar «Organizar la casa»/ })
+    expect(dialog.textContent).toContain('también está los lunes y los miércoles')
+    expect(dialog.textContent).toContain('La actividad se queda en tu catálogo')
+    // Las dos salidas afirmativas del criterio 22, más «Volver».
+    expect(within(dialog).getByRole('button', { name: 'Quitarlo solo del viernes' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Quitarlo de los 3 días' })).toBeInTheDocument()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Volver' }))
+    expect(deleteItem.mutate).not.toHaveBeenCalled()
+    expect(updateItem.mutate).not.toHaveBeenCalled()
+  })
+
+  it('«Quitarlo solo del viernes» le resta el día; «de los 3 días» borra el ítem (criterios 21 y 22)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Organizar la casa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar de la plantilla' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitarlo solo del viernes' }))
+
+    expect(deleteItem.mutate).not.toHaveBeenCalled()
+    expect(updateItem.mutate.mock.calls[0]![0]).toEqual({
+      id: 'casa',
+      days: ['monday', 'wednesday'],
+    })
+
+    // Y la otra salida, la que sí borra: `vidaItemDelete` por su id.
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Organizar la casa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar de la plantilla' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitarlo de los 3 días' }))
+    expect(deleteItem.mutate.mock.calls[0]![0]).toEqual({ id: 'casa' })
+  })
+
+  it('con un solo día la confirmación tiene **una sola salida** afirmativa (criterio 22)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Poner una lavadora' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar de la plantilla' }))
+
+    const dialog = screen.getByRole('dialog', { name: /¿Quitar «Poner una lavadora»/ })
+    expect(within(dialog).queryByRole('button', { name: /Quitarlo solo/ })).not.toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Quitarlo' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Volver' })).toBeInTheDocument()
+    expect(dialog.textContent).not.toContain('también está')
+  })
+
+  it('la pantalla se dibuja **de la consulta**: cambiar la hora reordena y vaciarla manda al cajón (criterio 24)', () => {
+    const { rerender } = renderWithProviders(<VidaPlantillaPage />)
+    const names = () =>
+      within(screen.getByRole('list', { name: /viernes, ordenado por hora/i }))
+        .getAllByRole('listitem')
+        .map((row) => row.textContent ?? '')
+
+    expect(names()[0]).toContain('Salir a correr')
+    expect(names()[2]).toContain('Organizar la casa')
+
+    // Lo que devolvería la consulta ya invalidada tras guardar: la casa a las
+    // 21:00 y el paseo de la mañana **sin hora**.
+    itemsQuery = ready([
+      { ...item('m', { title: 'Pasear a las mascotas' }), activityId: 'a-pasear' },
+      item('casa', {
+        days: ['monday', 'wednesday', 'friday'],
+        startTime: '21:00',
+        durationMinutes: 45,
+        title: 'Organizar la casa',
+      }),
+    ])
+    rerender(<VidaPlantillaPage />)
+
+    expect(names()).toHaveLength(1)
+    expect(names()[0]).toContain('Organizar la casa')
+    const drawer = screen.getByRole('region', { name: /sin hora/i })
+    expect(within(drawer).getByText('Pasear a las mascotas')).toBeInTheDocument()
   })
 })

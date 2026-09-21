@@ -64,7 +64,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: null,
+        targetItem: null,
         inTemplate: true,
         days: ['friday', 'monday'],
         startTime: null,
@@ -77,7 +77,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem(),
+        targetItem: buildVidaItem(),
         inTemplate: true,
         days: ['tuesday'],
         startTime: null,
@@ -99,7 +99,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem({ isActive: false }),
+        targetItem: buildVidaItem({ isActive: false }),
         inTemplate: true,
         days: ['monday', 'wednesday', 'friday'],
         startTime: null,
@@ -121,7 +121,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        targetItem: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
         inTemplate: false,
         days: [],
         startTime: null,
@@ -136,7 +136,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: null,
+        targetItem: null,
         inTemplate: false,
         days: [],
         startTime: null,
@@ -146,7 +146,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem({ isActive: false }),
+        targetItem: buildVidaItem({ isActive: false }),
         inTemplate: false,
         days: [],
         startTime: null,
@@ -159,7 +159,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem(),
+        targetItem: buildVidaItem(),
         inTemplate: true,
         days: ['friday', 'wednesday', 'monday'],
         startTime: null,
@@ -174,7 +174,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: null,
+        targetItem: null,
         inTemplate: true,
         days: ['monday'],
         startTime: '08:00',
@@ -188,7 +188,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: null,
+        targetItem: null,
         inTemplate: true,
         days: ['monday'],
         startTime: null,
@@ -201,7 +201,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        targetItem: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
         inTemplate: true,
         days: ['monday', 'wednesday', 'friday'],
         startTime: '09:15',
@@ -223,7 +223,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        targetItem: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
         inTemplate: true,
         days: ['monday', 'wednesday', 'friday'],
         startTime: null,
@@ -245,7 +245,7 @@ describe('planVidaItemSave', () => {
     expect(
       planVidaItemSave({
         activityId: 'a1',
-        item: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
+        targetItem: buildVidaItem({ startTime: '08:00', durationMinutes: 40 }),
         inTemplate: true,
         days: ['friday', 'wednesday', 'monday'],
         startTime: '08:00',
@@ -254,12 +254,112 @@ describe('planVidaItemSave', () => {
     ).toEqual({ kind: 'nothing' })
   })
 
+  it('con DOS ítems de la misma actividad, el de las 19:00 actualiza ESE id (FEAT-005, criterio 17)', () => {
+    // El caso que estrena el contrato de A3: `targetItem` es «el ítem sobre el
+    // que se escribe». Pasar el de las 19:00 no puede tocar el de las 7:30.
+    const manana = buildVidaItem({ id: 'v-manana', startTime: '07:30', durationMinutes: 40 })
+    const tarde = buildVidaItem({ id: 'v-tarde', startTime: '19:00', durationMinutes: 40 })
+    const plan = planVidaItemSave({
+      activityId: 'a1',
+      targetItem: tarde,
+      inTemplate: true,
+      days: ['monday', 'wednesday', 'friday'],
+      startTime: '19:30',
+      durationMinutes: 40,
+    })
+
+    expect(plan).toEqual({
+      kind: 'update',
+      input: {
+        id: 'v-tarde',
+        days: ['monday', 'wednesday', 'friday'],
+        isActive: true,
+        startTime: '19:30',
+        durationMinutes: 40,
+      },
+    })
+    expect(JSON.stringify(plan)).not.toContain(manana.id)
+  })
+
+  it('targetItem null con una actividad que YA tiene ítem: se crea otro (FEAT-005, criterio 34)', () => {
+    // Nadie llama así todavía —es la tajada 3—, pero es la mitad del contrato
+    // que A3 vino a arreglar y el sitio donde se sostiene es este test.
+    expect(
+      planVidaItemSave({
+        activityId: 'a1',
+        targetItem: null,
+        inTemplate: true,
+        days: ['saturday'],
+        startTime: '19:00',
+        durationMinutes: 30,
+      }),
+    ).toEqual({
+      kind: 'create',
+      input: { activityId: 'a1', days: ['saturday'], startTime: '19:00', durationMinutes: 30 },
+    })
+  })
+
+  it('la nota viaja solo si quien llama la pinta (FEAT-005, criterio 18)', () => {
+    const item = buildVidaItem({ startTime: '08:00', durationMinutes: 40, notes: 'Con calma' })
+    const same = {
+      activityId: 'a1',
+      targetItem: item,
+      inTemplate: true,
+      days: ['monday', 'wednesday', 'friday'] as const,
+      startTime: '08:00',
+      durationMinutes: 40,
+    }
+
+    // Sin `notes`: nada cambió, y el `update` que salga nunca la manda.
+    expect(planVidaItemSave({ ...same, days: [...same.days] })).toEqual({ kind: 'nothing' })
+    expect(
+      planVidaItemSave({ ...same, days: [...same.days], startTime: '09:00' }),
+    ).toEqual({
+      kind: 'update',
+      input: {
+        id: 'v1',
+        days: ['monday', 'wednesday', 'friday'],
+        isActive: true,
+        startTime: '09:00',
+        durationMinutes: 40,
+      },
+    })
+
+    // Con `notes` distinta: hay viaje y la nota va dentro.
+    expect(
+      planVidaItemSave({ ...same, days: [...same.days], notes: 'Empezar por la cocina' }),
+    ).toEqual({
+      kind: 'update',
+      input: {
+        id: 'v1',
+        days: ['monday', 'wednesday', 'friday'],
+        isActive: true,
+        startTime: '08:00',
+        durationMinutes: 40,
+        notes: 'Empezar por la cocina',
+      },
+    })
+
+    // Vaciarla manda `null` explícito: omitirla dejaría la vieja puesta.
+    expect(planVidaItemSave({ ...same, days: [...same.days], notes: '   ' })).toEqual({
+      kind: 'update',
+      input: {
+        id: 'v1',
+        days: ['monday', 'wednesday', 'friday'],
+        isActive: true,
+        startTime: '08:00',
+        durationMinutes: 40,
+        notes: null,
+      },
+    })
+  })
+
   it('una duración que no es un entero positivo se trata como «no tiene»', () => {
     for (const bad of [0, -30, Number.NaN]) {
       expect(
         planVidaItemSave({
           activityId: 'a1',
-          item: null,
+          targetItem: null,
           inTemplate: true,
           days: ['monday'],
           startTime: '   ',
@@ -278,7 +378,7 @@ describe('useSaveVidaItemForActivity', () => {
     result.current.save(
       {
         activityId: 'a1',
-        item: null,
+        targetItem: null,
         inTemplate: true,
         days: ['monday'],
         startTime: null,
@@ -303,7 +403,7 @@ describe('useSaveVidaItemForActivity', () => {
 
     result.current.save({
       activityId: 'a1',
-      item: buildVidaItem(),
+      targetItem: buildVidaItem(),
       inTemplate: false,
       days: [],
       startTime: null,
@@ -321,7 +421,7 @@ describe('useSaveVidaItemForActivity', () => {
     result.current.save(
       {
         activityId: 'a1',
-        item: null,
+        targetItem: null,
         inTemplate: false,
         days: [],
         startTime: null,

@@ -45,6 +45,17 @@
   background: var(--color-surface);
 }
 
+/* La tarjeta y sus acciones van apiladas en la misma columna: los botones de
+   «Ponerle hora» y «Activar» quedan **debajo** de la tarjeta y no le roban
+   ancho al nombre a 375 px (criterio 28). */
+.stack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
 .card {
   display: flex;
   /* Con un nombre largo las piezas se apilan en vez de aplastar el nombre
@@ -78,6 +89,34 @@
   color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
 }
 
+/* La misma tarjeta, pulsable (criterio 16): un `<button>` de verdad para que
+   el teclado y el foco lleguen gratis. Solo cambia lo que un botón trae de
+   serie y aquí estorba —fuente, alineación, cursor—. */
+.cardButton {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 45%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Las acciones, cuando las hay. Se envuelven: a 375 px dos botones caben, y si
+   no caben bajan de línea en vez de desbordar. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding-left: 0.2rem;
+}
+
 .body {
   display: flex;
   flex: 1 1 8rem;
@@ -89,6 +128,7 @@
 /* Un nombre de 60 caracteres se recorta: nunca empuja la tarjeta ni tapa la
    hora (criterio 13). */
 .name {
+  display: block;
   margin: 0;
   max-width: 100%;
   overflow: hidden;
@@ -100,6 +140,7 @@
 }
 
 .meta {
+  display: block;
   margin: 0;
   color: var(--color-text-secondary);
   font-size: 0.75rem;

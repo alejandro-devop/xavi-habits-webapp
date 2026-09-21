@@ -20,11 +20,12 @@ import { useToast } from '@/shared/ui/Toast'
  * La plantilla Vida y lo tomado de ella. Desde la tajada 3 de F1 la consume el
  * catálogo: las casillas de cada tarjeta y el interruptor de la hoja.
  *
- * `onError` con toast en crear y actualizar —las dos que estrena la hoja—; el
+ * `onError` con toast en las tres que escriben —crear, actualizar y borrar—; el
  * mensaje lo arma `toErrorMessage`, compartido por los tres hooks de Vida.
- * `useDeleteVidaItemMutation` sigue sin `onError` **a propósito**: nadie la
- * llama (D1 dice que nada se borra) y añadirle un toast sería adornar código
- * muerto.
+ * `useDeleteVidaItemMutation` **ya tiene quien la llame** desde FEAT-005:
+ * «Quitar de la plantilla» (criterio 21), que es su primer uso y no contradice
+ * el D1 de FEAT-002 —apagar el interruptor sigue sin borrar nada: son dos
+ * gestos distintos, «desactivar ≠ quitar»—.
  *
  * `VidaItemCreateInput.clientId` (UUID v7, idempotencia offline) existe en el
  * esquema y **ningún hook lo genera**: la web es el piloto y no hay modo
@@ -100,6 +101,9 @@ export function useDeleteVidaItemMutation() {
     onSuccess: () => {
       invalidateVidaItemQueries(queryClient)
       toast.success('Quitado de tu plantilla')
+    },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos quitarlo de tu plantilla'))
     },
   })
 }

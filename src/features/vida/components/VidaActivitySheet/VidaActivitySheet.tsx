@@ -1,16 +1,19 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { CreateVidaCategoryStep } from '@/features/vida/components/CreateVidaCategoryStep'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
 import { useCreateActivityMutation, useUpdateActivityMutation } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import { useSaveVidaItemForActivity } from '@/features/vida/hooks/useSaveVidaItemForActivity'
+import type { ActivityFollowUpActivityRef } from '@/features/vida/types/activity-followup.types'
 import type { Activity } from '@/features/vida/types/activity.types'
 import type { VidaDayOfWeek, VidaItem } from '@/features/vida/types/vida-item.types'
+import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
 import {
   VIDA_DAY_LABELS,
   VIDA_DAY_ORDER,
   VIDA_DAY_SHORT_LABELS,
 } from '@/features/vida/utils/vida-date.utils'
+import { describeTemplatePreview } from '@/features/vida/utils/vida-template.utils'
 import { normalizeTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -20,6 +23,7 @@ import { Input } from '@/shared/ui/Input'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import { SteppedModal, useModalStep } from '@/shared/ui/SteppedModal'
 import { Switch } from '@/shared/ui/Switch'
+import { Textarea } from '@/shared/ui/Textarea'
 import styles from './VidaActivitySheet.module.scss'
 
 type TemplateDraft = {
@@ -29,6 +33,8 @@ type TemplateDraft = {
   startTime: string
   /** Minutos, o `null` si no tiene duración. */
   durationMinutes: number | null
+  /** La nota del ítem, en texto plano. `''` es «no tiene». */
+  notes: string
 }
 
 type VidaActivitySheetProps = {
@@ -50,6 +56,35 @@ type VidaActivitySheetProps = {
    * de la prop sin que nadie tenga que resincronizar nada.
    */
   isTemplatePending?: boolean
+
+  /* ── Todo lo de aquí abajo es **aditivo** (FEAT-005, tajada 2) ────────────
+   *
+   * Mismo contrato de frontera que `VidaAgendaBlock`: **sin ninguna de estas
+   * props la hoja se pinta exactamente como la dejó FEAT-002** —el catálogo no
+   * pasa ninguna y no cambia ni un píxel—. Son lo que permite que la plantilla
+   * abra **la misma hoja** (criterio 16) en vez de escribir una segunda.
+   */
+
+  /**
+   * La actividad **como viaja dentro del `VidaItem`** (`id`, `title`, `status`
+   * y `category`). No es un `Activity`: **no trae `categoryId`** (decisión A4),
+   * y por eso con `lockActivity` la hoja no lo mira.
+   */
+  activityRef?: ActivityFollowUpActivityRef | null
+  /**
+   * La actividad **no se edita aquí**: la cabecera enseña nombre, icono y
+   * categoría y no los pide (criterio 18), y guardar **se salta la mutación de
+   * actividad** —que es lo que necesitaría el `categoryId` que el ítem no
+   * trae—. Cambiar nombre o categoría sigue siendo del catálogo.
+   */
+  lockActivity?: boolean
+  /** Con ella se pinta «Quitar de la plantilla» (criterio 21). Sin ella, no existe. */
+  onRemoveFromTemplate?: (item: VidaItem) => void
+  /**
+   * La línea del criterio 35 («esta actividad tiene 2 horas en tu plantilla»).
+   * La cablea el catálogo en la tajada 3; aquí solo se pinta si llega.
+   */
+  multipleItemsNote?: string | null
 }
 
 /**
@@ -89,8 +124,12 @@ export function VidaActivitySheet({
   activity = null,
   vidaItem = null,
   isTemplatePending = false,
+  activityRef = null,
+  lockActivity = false,
+  onRemoveFromTemplate,
+  multipleItemsNote = null,
 }: VidaActivitySheetProps) {
-  const isEditing = Boolean(activity)
+  const isEditing = Boolean(activity) || lockActivity
   const categoriesQuery = useActivityCategoriesQuery()
   const categories = categoriesQuery.data ?? []
   const createMutation = useCreateActivityMutation()
@@ -122,6 +161,7 @@ export function VidaActivitySheet({
     (vidaItem?.startTime ? normalizeTimeForDisplay(vidaItem.startTime) : '')
   const durationMinutes =
     templateDraft !== null ? templateDraft.durationMinutes : (vidaItem?.durationMinutes ?? null)
+  const notes = templateDraft?.notes ?? vidaItem?.notes ?? ''
   // Editando y con la plantilla en vuelo, lo que hay **no se sabe**. Al crear no
   // hay nada que saber: una actividad que no existe no está en ninguna plantilla.
   const templateUnknown = isTemplatePending && isEditing
@@ -140,7 +180,7 @@ export function VidaActivitySheet({
 
   /** Un solo sitio donde nace el borrador: los cuatro campos, siempre juntos. */
   function patchTemplate(patch: Partial<TemplateDraft>) {
-    setTemplateDraft({ inTemplate, days, startTime, durationMinutes, ...patch })
+    setTemplateDraft({ inTemplate, days, startTime, durationMinutes, notes, ...patch })
   }
 
   function toggleDay(day: VidaDayOfWeek) {
@@ -154,16 +194,20 @@ export function VidaActivitySheet({
     patchTemplate({ inTemplate: checked })
   }
 
-  function saveTemplateFor(target: Activity) {
+  function saveTemplateFor(target: { id: string }) {
     templateSave.save(
       {
         activityId: target.id,
-        item: vidaItem,
+        // **El ítem sobre el que se escribe** (decisión A3). Desde la plantilla
+        // es el que se está editando, por su id; desde el catálogo, el que
+        // resolvió `findVidaItemForActivity`. La función es la misma.
+        targetItem: vidaItem,
         inTemplate,
         days,
         // Vacío es «no tiene hora», no un error: el hook ya lo entiende así.
         startTime: startTime || null,
         durationMinutes,
+        notes,
       },
       { onSuccess: onClose },
     )
@@ -174,15 +218,32 @@ export function VidaActivitySheet({
     // decisión tomada sobre datos que todavía no han llegado.
     if (templateUnknown) return
 
+    // Encendido y sin ningún día no se guarda nada: ni la actividad (criterio
+    // 18 de FEAT-002; criterio 23 de FEAT-005, que es el mismo límite del API
+    // dicho en el campo y no con un error del servidor).
+    const missingDays = inTemplate && days.length === 0
+    setDaysError(
+      missingDays
+        ? lockActivity
+          ? 'Déjale al menos un día, o desactívala con el interruptor.'
+          : 'Marca al menos un día, o apaga el interruptor.'
+        : null,
+    )
+
+    // Con la actividad bloqueada no hay nombre ni categoría que validar: no se
+    // piden, no se pintan y no se mandan (decisión A4).
+    if (lockActivity) {
+      if (missingDays || !activityRef) return
+      saveTemplateFor(activityRef)
+      return
+    }
+
     const trimmed = name.trim()
     const missingName = !trimmed
     const missingCategory = !categoryId
-    // Encendido y sin ningún día no se guarda nada: ni la actividad (criterio 18).
-    const missingDays = inTemplate && days.length === 0
 
     setNameError(missingName ? 'Ponle un nombre: es cómo la vas a reconocer.' : null)
     setCategoryError(missingCategory ? 'Elige una categoría: le da el icono y el color.' : null)
-    setDaysError(missingDays ? 'Marca al menos un día, o apaga el interruptor.' : null)
     // Nada sale hacia la API si falta alguno de los tres (criterios 12 y 18).
     if (missingName || missingCategory || missingDays) return
 
@@ -205,11 +266,40 @@ export function VidaActivitySheet({
     )
   }
 
+  // La cabecera de la hoja abierta desde la plantilla: **enseña** el nombre, el
+  // icono y la categoría, y no los pide (criterio 18). Todo sale de lo que ya
+  // viaja dentro del `VidaItem`: ni una consulta más (decisión A4).
+  const lockedCategory = activityRef?.category ?? null
+  const lockedTitle = lockActivity ? (activityRef?.title ?? 'Esta actividad') : null
+  const lockedSubtitle = lockActivity
+    ? `En tu plantilla${lockedCategory?.name ? ` · ${lockedCategory.name}` : ''} · se cambia desde aquí y desde Actividades`
+    : undefined
+  const preview = describeTemplatePreview({
+    days,
+    startTime: startTime || null,
+    durationMinutes,
+  })
+
   const footer = (
     <div className={styles.footer}>
-      <Button type="button" variant="ghost" onClick={onClose} disabled={isMutating}>
-        Cancelar
-      </Button>
+      {onRemoveFromTemplate && vidaItem ? (
+        // La salida de la izquierda **es otra** cuando la hoja se abre desde la
+        // plantilla (criterio 21): ahí no se descarta un formulario, se quita un
+        // ítem —y quien lo confirma es el diálogo, no este botón—.
+        <Button
+          type="button"
+          variant="ghost"
+          className={styles.remove}
+          onClick={() => onRemoveFromTemplate(vidaItem)}
+          disabled={isMutating}
+        >
+          Quitar de la plantilla
+        </Button>
+      ) : (
+        <Button type="button" variant="ghost" onClick={onClose} disabled={isMutating}>
+          Cancelar
+        </Button>
+      )}
       <Button
         type="button"
         className={styles.submit}
@@ -226,14 +316,43 @@ export function VidaActivitySheet({
     <SteppedModal
       open={open}
       onClose={onClose}
-      title={isEditing ? 'Editar actividad' : 'Nueva actividad'}
-      description="Dos cosas: cómo la llamas y a qué categoría pertenece."
+      title={lockedTitle ?? (isEditing ? 'Editar actividad' : 'Nueva actividad')}
+      description={
+        lockActivity
+          ? lockedSubtitle
+          : 'Dos cosas: cómo la llamas y a qué categoría pertenece.'
+      }
       size="md"
       ds="aura"
       mobileSheet
       footer={footer}
     >
       <div className={styles.form}>
+        {lockActivity ? (
+          <div
+            className={styles.locked}
+            style={
+              lockedCategory?.color
+                ? ({ '--vida-category-color': lockedCategory.color } as CSSProperties)
+                : undefined
+            }
+          >
+            <span className={styles.lockedIcon} aria-hidden>
+              <AppIcon
+                name={lockedCategory?.icon ?? UNCATEGORIZED_GROUP_ICON}
+                size="sm"
+                decorative
+              />
+            </span>
+            <span className={styles.lockedCategory}>
+              {lockedCategory?.name ?? 'Sin categoría'}
+            </span>
+          </div>
+        ) : null}
+
+        {multipleItemsNote ? <p className={styles.hint}>{multipleItemsNote}</p> : null}
+
+        {lockActivity ? null : (
         <FormField id="vida-activity-name" label="Cómo la llamas" error={nameError}>
           <Input
             id="vida-activity-name"
@@ -247,7 +366,9 @@ export function VidaActivitySheet({
             autoFocus
           />
         </FormField>
+        )}
 
+        {lockActivity ? null : (
         <div className={styles.field}>
           <span className={styles.label} id="vida-activity-category-label">
             Categoría <span className={styles.labelHint}>· le da el icono y el color</span>
@@ -307,6 +428,7 @@ export function VidaActivitySheet({
             </p>
           ) : null}
         </div>
+        )}
 
         <div className={styles.template}>
           {templateUnknown ? (
@@ -317,8 +439,16 @@ export function VidaActivitySheet({
           ) : (
             <Switch
               id="vida-activity-template"
-              label="Ponerla en mi plantilla"
-              description="Los días que suele tocar. Se cambia luego en Plantilla."
+              // Desde la plantilla el ítem **ya está**: lo que el interruptor
+              // decide es si sale en Hoy (criterio 19), y eso es lo que dice.
+              // Desde el catálogo sigue diciendo lo de FEAT-002, palabra por
+              // palabra.
+              label={lockActivity ? 'Activa en mi plantilla' : 'Ponerla en mi plantilla'}
+              description={
+                lockActivity
+                  ? 'Desactivada se queda aquí guardada con sus días y su hora, y deja de salir en Hoy.'
+                  : 'Los días que suele tocar. Se cambia luego en Plantilla.'
+              }
               checked={inTemplate}
               disabled={isMutating}
               onChange={(event) => toggleTemplate(event.target.checked)}
@@ -382,6 +512,41 @@ export function VidaActivitySheet({
                     onChange={(minutes) => patchTemplate({ durationMinutes: minutes })}
                   />
                 </div>
+              </div>
+
+              {/* La nota del ítem, **texto plano** (criterio 18 y decisión (e)
+                  del analista). Vive en `VidaItem.notes` desde F0 y hasta ahora
+                  ninguna pantalla la pedía: lo único que la escribía era el
+                  API. */}
+              <Textarea
+                id="vida-activity-notes"
+                className={styles.notesInput}
+                label="Nota · opcional, texto plano"
+                rows={2}
+                value={notes}
+                maxLength={280}
+                disabled={isMutating}
+                placeholder="Ej. Empezar por la cocina"
+                onChange={(event) => patchTemplate({ notes: event.target.value })}
+              />
+
+              {/* Cómo queda en Hoy (criterio 20), calculado de lo elegido: sin
+                  hora o sin duración **dice qué falta** en vez de enseñar un
+                  rango que no existe. */}
+              <div className={styles.preview}>
+                <p className={styles.previewLine}>
+                  {preview.complete ? (
+                    <>
+                      Así queda en <b>Hoy</b>: {preview.daysText}{' '}
+                      <b>{preview.rangeText}</b>.
+                    </>
+                  ) : (
+                    preview.text
+                  )}{' '}
+                  <span className={styles.previewSmall}>
+                    Los días que ya tienes armados <b>no se reescriben solos</b>.
+                  </span>
+                </p>
               </div>
             </>
           ) : null}

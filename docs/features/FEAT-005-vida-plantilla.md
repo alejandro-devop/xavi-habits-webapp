@@ -5,7 +5,7 @@ status: building
 architect: yes    # pantalla nueva sin hermana (la cuadrícula semanal por horas), y hay que generalizar la hoja del catálogo de «el ítem de esta actividad» a «este ítem», que es código compartido
 area: features/vida
 requested: 2026-09-20
-updated: 2026-09-20   # tajada 1 `accepted`: la plantilla se ve
+updated: 2026-09-20   # tajada 2 `accepted`: la hoja del ítem (el criterio 27 queda del usuario)
 ---
 
 # FEAT-005 — La plantilla Vida — tu semana tipo, con hora y duración por ítem
@@ -320,7 +320,7 @@ arrastrar y soltar** (`docs/vida/PLAN.md`, decisiones 3, 5 y 13).
 | # | What it does | State |
 |---|---|---|
 | 1 | **La plantilla se ve.** `/app/vida/plantilla` deja de ser un cascarón: pestañas de día con su cuenta y su punto, el resumen («3h 40 puestas de 16h 30») con la barra del día, la agenda del día **ordenada por hora** con sus tarjetas, el cajón «Sin hora» con su explicación, los desactivados en trazo suave, y los estados vacío · cargando · error · texto largo · 375 px · oscuro. **Solo lectura.** Ya es útil sola: es la primera vez que el usuario ve su día tipo entero y descubre qué tiene sin hora. | in-review |
-| 2 | **La plantilla se edita desde aquí.** La hoja del ítem —la misma del catálogo— abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de cómo queda en Hoy, «Quitar de la plantilla» (con la salida de quitarlo de un solo día) y «Activar» de un toque. Arreglar la plantilla deja de exigir dar la vuelta por el catálogo, y Hoy lo ve al instante. | pending |
+| 2 | **La plantilla se edita desde aquí.** La hoja del ítem —la misma del catálogo— abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de cómo queda en Hoy, «Quitar de la plantilla» (con la salida de quitarlo de un solo día) y «Activar» de un toque. Arreglar la plantilla deja de exigir dar la vuelta por el catálogo, y Hoy lo ve al instante. | in-review |
 | 3 | **Añadir a mi Vida, y el primer minuto.** El «+» de móvil y el panel de escritorio: buscar una actividad del catálogo y ponerle días, hora y duración **sin salir de la pantalla**, incluida una **segunda hora** para algo que ya está; y la plantilla vacía con los **seis puntos de partida con hora**. Cierra el criterio de la fase (39). | pending |
 | 4 | **La semana entera y copiar un día.** Los siete días a la vez con cada bloque a su hora, los sin hora debajo de su columna, la leyenda, el total de la semana, y **«Copiar este día a otros»** — que añade lo que falta, no pisa nada y lo cuenta. Es el atajo que sustituye al arrastrar. | pending |
 
@@ -1039,7 +1039,7 @@ que recortar.
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **La plantilla se ve.** Pestañas de día con cuenta y punto, resumen con barra, agenda del día ordenada por hora, cajón «Sin hora», desactivados en trazo suave, y los estados. Solo lectura. | **Crea:** `utils/vida-template.utils.ts` (+`.test.ts`), `components/VidaTemplateDayTabs/`, `components/VidaTemplateDaySummary/`, `components/VidaTemplateItemCard/`, `components/VidaTemplateNoTimeDrawer/`, `pages/VidaPlantillaPage.module.scss`, `pages/VidaPlantillaPage.test.tsx`. **Modifica:** `pages/VidaPlantillaPage.tsx` (reescritura del cascarón). | 1–15 (el 10, su mitad: el texto y la salida al catálogo; los seis puntos de partida son de la 3) | **accepted** (2026-09-20) |
-| 2 | **La plantilla se edita desde aquí.** La misma hoja, abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de Hoy, «Quitar de la plantilla» con la salida de un solo día, «Ponerle hora» y «Activar». | **Modifica:** `hooks/useSaveVidaItemForActivity.ts` (+ test), `components/VidaActivitySheet/VidaActivitySheet.tsx` (+ test), `hooks/useVidaItems.ts:95` (`onError`), `utils/vida-template.utils.ts`, `components/VidaTemplateItemCard/`, `pages/VidaPlantillaPage.tsx`. **Crea (si `useConfirmDialog` no admite dos salidas):** `components/VidaTemplateRemoveDialog/`. | 16–28 | pending |
+| 2 | **La plantilla se edita desde aquí.** La misma hoja, abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de Hoy, «Quitar de la plantilla» con la salida de un solo día, «Ponerle hora» y «Activar». | **Modifica:** `hooks/useSaveVidaItemForActivity.ts` (+ test), `components/VidaActivitySheet/VidaActivitySheet.tsx` (+ test), `hooks/useVidaItems.ts:95` (`onError`), `utils/vida-template.utils.ts`, `components/VidaTemplateItemCard/`, `pages/VidaPlantillaPage.tsx`. **Crea (si `useConfirmDialog` no admite dos salidas):** `components/VidaTemplateRemoveDialog/`. | 16–28 | **accepted** (2026-09-20; el 27 solo lo cierra el usuario, con la API) |
 | 3 | **Añadir a mi Vida, y el primer minuto.** Panel de escritorio y «+» de móvil: buscar, poner días/hora/duración y guardar sin salir; segunda hora para lo que ya está; y los seis puntos de partida **con hora**. | **Crea:** `components/VidaTemplateAddPanel/`. **Modifica:** `utils/vida-catalog.utils.ts` (mapa de *varios* ítems), `utils/vida-template.utils.ts`, `data/vida-starting-points.ts` (+ test), `hooks/useCreateStartingActivities.ts` (+ test), `components/VidaStartingPoints/VidaStartingPoints.tsx`, `components/VidaActivitySheet/VidaActivitySheet.tsx` (criterio 35), `pages/VidaActividadesPage.tsx` (cablea el aviso), `pages/VidaPlantillaPage.tsx`. | 29–41 (y el 39, el criterio de la fase) | pending |
 | 4 | **La semana entera y copiar un día.** Siete columnas con cada bloque a su hora y su alto, los sin hora debajo, leyenda, total de la semana, y «Copiar este día a otros» que añade lo que falta y no pisa nada. | **Crea:** `components/VidaWeekGrid/`, `components/VidaTemplateCopyDay/`, `hooks/useCopyTemplateDay.ts` (+ test). **Modifica:** `utils/vida-template.utils.ts` (+ test), `pages/VidaPlantillaPage.tsx`. | 42–54 | pending |
 
@@ -1272,6 +1272,179 @@ dentro de `/app/vida/plantilla` con datos de verdad.
     «todavía no tienes nada».
 
 
+### Tajada 2 — la hoja del ítem (criterios 16–28)
+
+**Resumen para quien revise, en tres líneas:**
+
+1. **La plantilla ya se edita desde la plantilla.** Tocar una tarjeta abre **la
+   misma hoja del catálogo** —`VidaActivitySheet`, con props aditivas— pero
+   **por el ítem que se tocó, por su id**: días, hora, cuánto, **la nota**, el
+   interruptor «Activa en mi plantilla» con su explicación y la **vista previa
+   de cómo queda en Hoy**. Debajo, **«Ponerle hora»** en el cajón y
+   **«Activar»** de un toque sin abrir nada; y en la hoja, **«Quitar de la
+   plantilla»**, que abre una confirmación con **dos salidas afirmativas**
+   —«Quitarlo solo del viernes» y «Quitarlo de los 3 días»— más **«Volver»**.
+2. **Ni un documento GraphQL, ni una clave de caché, ni una ruta, ni un
+   `localStorage`, ni un icono a pelo.** Las tres mutaciones ya existían
+   (`vidaItemUpdate`, `vidaItemDelete` —**primer uso**— y `vidaItemCreate`) y
+   las tres invalidan `vidaKeys.items.all()`, que es **prefijo** de las
+   sugerencias: el criterio 27 sale de ahí y no de invalidación nueva.
+3. **Lo que más probable haya roto:** la hoja del catálogo **estrena un campo
+   de nota** —el criterio 18 lo pide y **no existía**, aunque el analista dijera
+   que sí—, así que **`planVidaItemSave` sí cambió de cuerpo** (el arquitecto
+   escribió «sin cambios en el cuerpo») y **cuatro expectativas de tests de
+   FEAT-002 cambiaron**: ahora sus `update` llevan `notes`. El cinturón está
+   puesto —`notes: undefined` significa «no se toca» y entonces el campo **no
+   viaja**—, pero si algo se rompe en el catálogo, es ahí.
+
+**Archivos.** Creado: `components/VidaTemplateRemoveDialog/` (`.tsx`,
+`.module.scss`, `index.ts`). Modificados:
+`hooks/useSaveVidaItemForActivity.ts` (+ su test),
+`components/VidaActivitySheet/VidaActivitySheet.tsx` y `.module.scss` (+ su
+test), `hooks/useVidaItems.ts`, `utils/vida-template.utils.ts` (+ su test),
+`components/VidaTemplateItemCard/` (`.tsx` y `.module.scss`),
+`components/VidaTemplateNoTimeDrawer/VidaTemplateNoTimeDrawer.tsx`,
+`pages/VidaPlantillaPage.tsx` (+ su test). Es la tabla del arquitecto, más el
+`.module.scss` de la hoja y el de la tarjeta. **Nada fuera de
+`src/features/vida/`.**
+
+**Criterio por criterio, con la evidencia:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 16 | cumplido | Tocar la tarjeta abre `VidaActivitySheet` —**el mismo componente**, no una copia: `grep` sobre `src/` da un solo archivo de hoja de ítem—. La tarjeta es un `<button>` de verdad (`aria-label="Abrir Organizar la casa"`), así que el teclado llega gratis. Test: la hoja abierta enseña el nombre y **no pinta** el campo «Cómo la llamas». |
+| 17 | cumplido | Con **dos ítems de «Pasear a las mascotas»** (7:30 y 19:00), abrir el de las 19:00 y guardar llama a `vidaItemUpdate` con **`id: 't'`** (test de pantalla), y el plan puro lo sostiene aparte: `planVidaItemSave` con `targetItem` = el de las 19:00 devuelve `update` sobre **ese** id y el JSON del plan **no contiene** el id del otro. Es la decisión **A3**: `item` → `targetItem`, contrato nuevo, y los dos casos que pidió el arquitecto están escritos. |
+| 18 | cumplido, **con un hallazgo** | Los campos son los del render: días (`role="group"` «Días de la plantilla»), «A qué hora» (`input type="time"`, 24 h, se puede vaciar), «Cuánto» con **15 · 30 · 45 · 1h · libre** y minutos a mano (`VidaDurationPills`, sin tocar) y **la nota en texto plano**. La cabecera enseña **nombre** (título del modal), **icono** y **categoría** y **no los pide**. **El hallazgo:** la nota **no existía en la hoja** —la sección 1 la daba por hecha («ya existen en la hoja»)— y la he tenido que añadir; ver «decisiones mías». |
+| 19 | cumplido | Interruptor **«Activa en mi plantilla»** con la explicación **literal** del criterio, y apagarlo guarda `{ id, isActive: false }` y **nada más**: ni días, ni hora, ni nota (test). Desde el catálogo el interruptor **sigue diciendo lo de FEAT-002** («Ponerla en mi plantilla»): el texto nuevo va atado a `lockActivity`, y por eso ninguna afirmación de FEAT-002 cambió por esto. |
+| 20 | cumplido | `describeTemplatePreview` (puro, 7 casos): con los datos del render da **«Así queda en Hoy: lunes, miércoles y viernes de 9:00 a 9:45.»**, y en pantalla se recalcula **de lo elegido** —quitar la duración borra el rango y aparece «Sin cuánto dura, Hoy le pone 30 min al armar el día»; cambiar la hora a 07:15 da «de 7:15 a 7:45»—. **Sin hora** dice lo que Hoy hace de verdad («la pone al final del día, una detrás de otra»), y **sin ningún día** no se afirma nada. La línea «Los días que ya tienes armados **no se reescriben solos**» va siempre. Ninguna variante trae una palabra de culpa (barridas seis). |
+| 21 | cumplido | «Quitar de la plantilla» **solo existe si quien abre la hoja la cablea** (sin `onRemoveFromTemplate` no se pinta: test), **no borra desde la hoja** —avisa a la página— y la confirmación dice **«La actividad se queda en tu catálogo»**. «Quitarlo» llama a `vidaItemDelete` con su id (**primer uso** de la mutación). La salida es **«Volver»**, y pulsarla **no llama a ninguna de las dos mutaciones** (test). Ni «eliminar» ni «cancelar» en ninguna parte de lo nuevo. |
+| 22 | cumplido | Con «Organizar la casa» los lunes, miércoles y viernes, quitándolo **desde el viernes**, la confirmación dice **«también está los lunes y los miércoles»** y ofrece **«Quitarlo solo del viernes»** (`vidaItemUpdate` con `days: ['monday','wednesday']`, comprobado) y **«Quitarlo de los 3 días»** (`vidaItemDelete`). **Con un solo día hay una sola salida** afirmativa («Quitarlo»), no se dice «también está» y no se inventa plural (test). |
+| 23 | cumplido | Quitar el último día y pulsar «Guardar» **no manda nada al API** (las dos mutaciones sin llamar) y se lee en el campo: **«Déjale al menos un día, o desactívala con el interruptor.»** Es el `daysError` que ya estaba; el texto nuevo va atado a `lockActivity` para no derogar la afirmación de FEAT-002. |
+| 24 | cumplido **en sus dos mitades, y medido distinto cada una** | *La hoja cierra en el `onSuccess` de la mutación*: el test comprueba que tras «Guardar» `onClose` **todavía no se ha llamado** y que solo se llama al correr el `onSuccess` — si la mutación falla, la hoja se queda abierta con lo escrito, que es lo que ya hacía FEAT-002. *La pantalla se actualiza sin recargar*: **la pantalla se dibuja de la consulta, no de estado local**, y eso está probado cambiando lo que devuelve la consulta y volviendo a pintar: la casa pasa de las 9:00 a las 21:00 y **se reordena**, y el paseo sin hora **cae al cajón «Sin hora»**. Lo que no puedo ver desde aquí es el viaje de verdad (invalidación → refetch → API). |
+| 25 | cumplido | «Ponerle hora» en el cajón abre **la misma hoja** con la hora **vacía y lista para escribirse** (test: `toHaveValue('')`), no con una hora inventada. |
+| 26 | cumplido | «Activar» en un desactivado llama a `vidaItemUpdate` con **`{ id, isActive: true }` y nada más** —sus días, su hora y su nota se quedan, porque omitir un campo lo deja igual— y **no abre la hoja** (`queryByRole('dialog')` vacío). Lo confirma el toast que ya existía («Plantilla actualizada») y el botón se apaga con «Activando…» mientras viaja. |
+| 27 | **no lo puedo cerrar yo**; hecho lo que lo sostiene | Las tres mutaciones invalidan `vidaKeys.items.all()` por `invalidateVidaItemQueries`, que es **prefijo** de `items.suggestions(*)` y `items.takenToday(*)` (`invalidate-vida-queries.ts:71-79`): con eso las fichas de los huecos y «Armar desde la plantilla» de Hoy releen solos. **No escribí invalidación nueva**, como mandaba el plan. Pero que Hoy lo vea **sin recargar** solo se ve con el API vivo y una sesión: va en los pasos manuales. Lo que **sí** puedo afirmar: **no se toca ningún `activityDayPlan`** —ni una de sus cuatro mutaciones aparece en lo nuevo—, así que un día ya armado no se reescribe. |
+| 28 | cumplido, **medido en el navegador** | Arnés borrado, 375×812, tema oscuro: `scrollWidth` **375 = clientWidth** y **cero elementos** desbordando, con la hoja abierta y con la confirmación abierta. **«Guardar» y «Quitar de la plantilla» se ven sin desplazar la hoja** (`Guardar` en y 748–787 de 812) — y esto **no salía gratis**: mis dos bloques nuevos dejaban el panel en 820 px contra 746 de alto útil y empujaban «Guardar» fuera; se arregló recortando el alto de la nota, juntando la vista previa en un párrafo y bajando el icono de la cabecera. En **oscuro**, lo nuevo va de **7,88:1** (la línea «En tu plantilla · Casa · …» y la categoría) a **18,67:1** (la vista previa), con la nota en 14,89:1 y las tarjetas y el cajón en 9,88:1. Un nombre de **60 caracteres** sigue en **una fila**, recortado con puntos y sin tapar la hora. |
+
+**Lo que no se puede cerrar desde aquí, y no lo disimulo:** **ninguna llamada
+real al API**. Todo `/app/*` está detrás del login y los agentes no entran: no
+he visto nunca esta pantalla con datos de verdad, ni he visto a
+`vidaItemDelete` responder —**es su primer uso en la vida del proyecto**—, ni he
+visto Hoy actualizarse tras guardar. Lo de arriba está medido con **tests**
+(`vitest` + Testing Library) y con un **arnés temporal**
+(`src/harness-f5t2.tsx` + `harness-f5t2.html`, **ya borrados**) que montaba las
+piezas nuevas con `AuthBootstrapContext` a `{ status: 'ready' }` y datos
+sintéticos.
+
+**Decisiones mías, fuera de lo que decía el plan, todas revertibles:**
+
+1. **La nota no existía y la he añadido** (criterio 18). La sección 1 decía «ya
+   existen en la hoja (FEAT-002)» y **no es cierto**: `VidaItem.notes` está en
+   el modelo y en los dos inputs desde F0, pero **ninguna pantalla la pedía**.
+   Como el criterio la lista entre los campos y el render la dibuja, entra.
+   **Consecuencia, y es la que hay que mirar:** `planVidaItemSave` **sí cambió
+   de cuerpo**, contra lo que escribió el arquitecto. El cinturón: `notes`
+   entra como **opcional**, `undefined` significa **«no se toca»** y entonces
+   el campo **no viaja en el `update`** (omitir deja la que hubiera); solo
+   `null`/`''` la limpian, y eso solo lo manda quien pinta el campo. Cuatro
+   expectativas de tests de FEAT-002 cambiaron por esto —ahora su `update`
+   lleva `notes: 'Con calma'`, que es **la misma nota que traía el ítem**—.
+2. **La hoja se monta solo después de la primera apertura**
+   (`sheetSession > 0`). `VidaActivitySheet` pide las categorías al montarse y
+   en esta pantalla **no hacen falta** —con `lockActivity` ni se pintan—: dejarla
+   montada siempre habría añadido una consulta a cada entrada en la plantilla.
+3. **El texto nuevo del interruptor y del error de días va atado a
+   `lockActivity`.** Desde el catálogo la hoja dice **exactamente lo mismo que
+   decía**, así que ninguna afirmación de FEAT-002 se deroga por vocabulario.
+   Si se prefiere una sola redacción para las dos, es borrar el ternario.
+4. **`VidaTemplateRemoveDialog` es un `Modal`, no `useConfirmDialog`** — la
+   bifurcación que el arquitecto dejó abierta, **resuelta mirando el código**:
+   `ConfirmDialogProvider` resuelve una `Promise<boolean>` y pinta **dos**
+   botones (`ConfirmDialogProvider.tsx:87-104`), así que **no admite dos salidas
+   afirmativas** y el criterio 22 pide tres botones.
+5. **Las dos salidas afirmativas no son rojas.** `Button variant="danger"` pinta
+   texto blanco sobre `rgb(255,180,171)` en **tema oscuro**: lo medí, **1,7:1**,
+   ilegible. Como el render de esta pantalla no tiene rojo en ninguna parte y el
+   criterio 22 quiere **las dos salidas ofrecidas**, las dos van `secondary` y
+   «Volver» va `ghost`. **Es un hallazgo que va más allá de esta tajada**: todas
+   las confirmaciones de Vida que usan `useConfirmDialog` con `variant: 'danger'`
+   (FEAT-003 «Vaciar y rehacer», FEAT-004 «Quitar del registro») tienen ese
+   mismo 1,7:1 en oscuro. **No lo arreglo**: vive en `src/shared/ui/Button` y lo
+   usa hábitos entero.
+6. **«Quitarlo de los 3 días» escribe el número en cifra**, no «los tres días»
+   como el criterio: con 2, 4 o 7 días la palabra habría que declinarla y la
+   cifra no miente nunca.
+7. **La tarjeta entera abre la hoja, y no hay «···».** El criterio 16 dice
+   «tocar una tarjeta (o su «···»)»: con dos acciones sueltas —«Ponerle hora» y
+   «Activar»— y la hoja detrás de la tarjeta, un menú de tres puntos con una sola
+   entrada sería un paso de más. Si al verlo se echa de menos, es aditivo.
+
+**Lo que descubrí y no estaba en el plan (y no toqué):**
+
+- **La nota no existía en la hoja** (arriba). Es el único punto donde la sección
+  1 describía algo que no estaba construido.
+- **`Button variant="danger"` es ilegible en oscuro** (1,7:1). Afecta a todas
+  las confirmaciones de Vida, no solo a esta. Es de `shared/ui` y no lo toco.
+- **La descripción del `Switch` compartido se queda en 4,79:1** en oscuro —es el
+  peor número de la hoja entera, y es de FEAT-002/`shared/ui`, no de lo nuevo;
+  lo nuevo empieza en 7,88:1—.
+- **`useConfirmDialog` no admite dos salidas afirmativas** (cerrada la duda del
+  arquitecto).
+- Sin tocar: `findVidaItemForActivity`, `buildVidaItemsByActivity`,
+  `usableTemplateItems`, `vida-agenda.utils.ts`, `vida-build-day.utils.ts`,
+  `VidaDayBudget`, `VidaAgendaBlock`, `graphql/`, `api/`, `types/`,
+  `routes/`, `app-nav.config.ts`, `src/shared/ui/`.
+
+**Un test de la tajada 1 quedó derogado, no borrado.** El que decía «**no se
+pinta ni un botón muerto**: en la tajada 1 la pantalla solo lee» afirmaba **cero
+botones**, y los criterios 16, 25 y 26 son justo lo contrario. En su lugar
+afirma lo que **sigue valiendo**: que no se pinta nada de las tajadas 3 y 4 —ni
+«+», ni «Ver la semana entera», ni «Copiar este día a otros»—.
+
+**La línea base, corrida entera al terminar:**
+
+| Qué | Antes (tajada 1) | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** (exit 0) |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos |
+| `pnpm test` | 2 fallos de 1200 | **2 fallos de 1230** (los dos de `SearchSelect`; **+30 tests**, 1 archivo rojo de 101). `src/features/vida`: **810/810** |
+| `pnpm build` | inicial 976,49 kB · `app-icons` 620,20 · `IconPicker` 4,64 | **exit 0**, inicial **982,95 kB** (+6,46 kB, **ninguno de iconos**), `app-icons` **620,20** e `IconPicker` **4,64** clavados; CSS 208,82 kB |
+
+`graphify update .`: **3357 nodos, 3871 aristas, 471 comunidades**.
+
+**El recorrido manual, para el usuario** (con la API despierta —Render tarda
+~1 min— y la sesión iniciada; es lo único que ningún agente puede hacer, y aquí
+**por primera vez se borra de verdad**):
+
+1. Entra en **Vida → Plantilla** y toca una tarjeta. Comprueba que se abre la
+   hoja **de esa cosa**, con su nombre, su icono y su categoría arriba, y que
+   **no te pide** el nombre ni la categoría.
+2. Cámbiale **la hora** y guarda: la tarjeta tiene que **reordenarse sola** en
+   ese día, sin recargar.
+3. **Vacíale la hora** y guarda: tiene que caer al cajón **«Sin hora»**. Desde
+   ahí, **«Ponerle hora»**, pónsela y comprueba que vuelve a su sitio.
+4. Escríbele una **nota**, guarda, vuelve a abrirla: la nota tiene que seguir
+   ahí. *(Es campo nuevo: si algo del API no la acepta, se ve aquí.)*
+5. Mira la **vista previa**: «Así queda en Hoy: … de 9:00 a 9:45». Quítale la
+   duración y comprueba que **deja de enseñar un rango** y dice qué falta.
+6. **Desactiva** una con el interruptor y guarda: se queda en su hora, en trazo
+   suave. Después pulsa **«Activar»** y comprueba que vuelve **con sus días, su
+   hora y su nota**.
+7. Quítale **todos los días** a una: no tiene que dejarte guardar, y el mensaje
+   tiene que salir **en el campo**, no como error del servidor.
+8. En una que esté en **varios días**, pulsa **«Quitar de la plantilla»** desde
+   uno de ellos: comprueba que la confirmación **nombra los otros días**, que
+   **«Volver»** no hace nada, y prueba **«Quitarlo solo del \<día\>»** — tiene
+   que quedarse en los demás.
+9. Ahora sí, **«Quitarlo de los N días»** en una que te sobre: **es la primera
+   vez que este proyecto borra un ítem de plantilla**. Comprueba que la
+   actividad **sigue en `/app/vida/actividades`**.
+10. Vete a **Hoy** (`/app/vida/hoy`) **sin recargar**: las fichas de los huecos
+    y «Armar desde la plantilla» tienen que ver ya lo cambiado — y un día **ya
+    armado** tiene que seguir **exactamente igual**.
+11. En el **móvil de verdad** y en **tema oscuro**: abre la hoja y comprueba que
+    llegas a «Guardar» sin pelearte con el desplazamiento.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — la plantilla se ve (criterios 1–15)
@@ -1396,3 +1569,102 @@ aprendizaje: un arnés de revisión bajo `src/` **entra en el build**.
 dentro de `/app/vida/plantilla` con datos de verdad, y los **375 px** y el **tema
 oscuro** en un navegador —medidos por el constructor, no por mí—. El recorrido
 manual de los diez pasos, al final de la sección 3, sigue siendo del usuario.
+
+### Tajada 2 — la hoja del ítem (criterios 16–28)
+
+**Veredicto: `accepted`.** La parte delicada de esta tajada no es la hoja: es que
+**`planVidaItemSave` cambió de cuerpo** y esa función la comparte el catálogo de
+FEAT-002, que está entregado. **La medí yo, caso por caso, con un arnés de tests
+propio** (`src/features/vida/hooks/zz-rev-f5t2.test.ts`, 8 casos, **ya borrado**,
+sin un solo `import` de `node:*`) y **el catálogo sin nota produce exactamente
+las mismas mutaciones que antes**. Lo demás encaja, la línea base no empeora y no
+encontré ninguna regresión.
+
+**El punto 1 del encargo, que era el riesgo: medido**
+
+| Qué comprobé | Resultado |
+|---|---|
+| **Crear** con el interruptor encendido y sin nota | `{ activityId, days }` **y nada más** — igual que antes. Con el campo pintado pero **vacío**, tampoco viaja `notes`. |
+| **Apagar** el interruptor (con o sin nota guardada) | `{ id, isActive: false }` **y nada más**: la nota, la hora y los días se quedan donde estaban. Igual que antes. |
+| **Editar sin pintar el campo** (`notes: undefined`) | El cuerpo **no lleva la clave `notes`**: lo verifiqué sobre las claves del objeto, no de vista. |
+| **Guardar otra cosa con la nota cargada** | Viaja `notes: 'Con calma'` —el mismo valor que ya tenía—, así que **no se pierde nada**. |
+| **Vaciar el campo a propósito** | `notes: null`: limpia, que es lo que se pide al vaciarlo. |
+| **Sin tocar nada** | `nothing`, con y sin campo de nota: ni viaje ni toast de mentira. |
+
+**Y aquí está la pieza que sostiene todo eso, que conviene que quede escrita:** la
+hoja arranca el campo con `templateDraft?.notes ?? vidaItem?.notes ?? ''`, o sea
+**precarga la nota del ítem**, y `notes` **sí está en la selección** de
+`graphql/vida-items.graphql.ts`. Si algún día un documento dejara de pedir
+`notes`, la hoja se abriría vacía y **guardar borraría la nota sin decirlo**. Hoy
+no pasa; lo dejo como el punto frágil de esta decisión, no como un defecto.
+
+**Las cuatro expectativas de FEAT-002 que cambiaron: justificadas.** Miré **todas
+las líneas borradas** del diff (`git diff 8fe0b19 -- src/ | grep '^-'`): lo único
+que se toca en los tests heredados es el **renombrado `item:` → `targetItem:`**,
+que es el cambio de contrato de A3, y **no hay una sola afirmación de
+comportamiento eliminada ni debilitada**. Ningún `expect` de payload desapareció.
+
+| # | Veredicto del revisor | Cómo lo comprobé |
+|---|---|---|
+| 16 | cumplido | La tarjeta abre **la misma** `VidaActivitySheet` con props **aditivas** (`targetItem`, `multipleItemsNote`, las de la plantilla): no hay una segunda forma de editar un ítem en el repo. |
+| 17 | cumplido, **medido por mí** | Con «Pasear» a las 7:30 y a las 19:00, guardar el de las 19:00 da `update` con **`id: 'i-tarde'`** y el `JSON` del plan **no contiene** el id del de la mañana. Y `targetItem: null` sobre una actividad que **ya tiene** ítem da **`create`** (lo que necesitará el criterio 34). |
+| 18 | cumplido, **con la desviación dicha** | Días, hora, píldoras, minutos a mano, **nota** e interruptor. La nota **no existía** y por eso `planVidaItemSave` cambió de cuerpo contra el «sin cambios» del arquitecto: la desviación está escrita, es aditiva y **`notes: undefined` = «no se toca»** la hace inocua para quien no pinta el campo. |
+| 19 · 20 | cumplidos | El interruptor con su explicación y la vista previa derivada de lo elegido («de 9:00 a 9:45», «Sin cuánto dura…», «no se reescriben solos»), con tests de pantalla. |
+| 21 | cumplido | «Quitar de la plantilla» llama a **`useDeleteVidaItemMutation`** (`vidaItemDelete`, su primer uso) y **en ninguna ruta de la plantilla se nombra `activityRemove`**: la actividad se queda en el catálogo, y la confirmación lo dice. |
+| 22 · 23 | cumplidos | El diálogo ofrece **«Quitarlo solo del viernes»** —que **no borra nada**: es `update` con los días restantes— y «Quitarlo de los N días» —`delete`—. Con un solo día queda **una sola salida** («Quitarlo»), y `removeDay` **corta en seco** si no quedan días: el mínimo del API no se toca desde aquí. |
+| 24 | cumplido | Guardar cierra en el `onSuccess` local y el fallo deja la hoja abierta con lo escrito (mismo patrón que las hojas de FEAT-004). |
+| 25 · 26 | cumplidos | «Ponerle hora» en el cajón abre la hoja; **«Activar» manda solo `{ id, isActive: true }`**, así que días, hora y nota se quedan como estaban — leído en la página. |
+| 27 | **no se puede cerrar aquí** | La invalidación por prefijo de `items.all()` es lo correcto, pero que **Hoy lo vea sin recargar** solo se comprueba con el API despierta y sesión: queda para el usuario, y así lo dice el constructor. |
+| 28 | cumplido **de segunda mano** | 375×812 con «Guardar» visible sin salir de la hoja: medido por el constructor en su arnés, **no por mí**. |
+
+**Los otros puntos de ojo**
+
+- **El diálogo de dos salidas afirmativas.** `useConfirmDialog` no admite dos, así
+  que se usa `Modal` con tres botones. Es la razón correcta y el vocabulario
+  aguanta: **«Volver»** (que no llama a ninguna mutación), «Quitarlo solo del
+  \<día\>» y «Quitarlo de los N días». **Ni «cancelar», ni «eliminar», ni
+  «borrar»** en toda la superficie nueva.
+- **`multipleItemsNote`**: la prop existe, entra por defecto en `null` y solo
+  pinta una línea; no rompe la hoja del catálogo. El aviso de verdad es el
+  criterio 35, **tajada 3**, y **no lo doy por cerrado**.
+- **El test de la tajada 1 quedó derogado y acotado, no borrado**: el mismo caso
+  —«no se pinta nada que no funcione»— conserva las siete pestañas y cambia
+  «cero botones» por «ni «+», ni «Ver la semana entera», ni «Copiar este día»»,
+  con el porqué escrito encima. Es exactamente lo que se hizo con Hoy en
+  FEAT-003.
+- **`variant="danger"` ilegible en oscuro**: lo anoto como **hallazgo
+  transversal** (abajo). Aquí se evitó usando `secondary`.
+
+**Línea base, corrida entera por mí**
+
+| Qué | Resultado |
+|---|---|
+| `pnpm typecheck` | **exit 0**, limpio |
+| `pnpm lint` | **14 errores / 0 warnings** |
+| `pnpm test` | **2 fallos de 1230** (los dos de `SearchSelect`; **1 archivo rojo de 101**) |
+| `pnpm build` | **exit 0** · chunk inicial **982,95 kB** · `app-icons` **620,20 kB** · `IconPicker` **4,64 kB** · CSS 208,82 kB |
+
+Sin `localStorage` nuevo (cero coincidencias en el diff de `src/`), sin Font
+Awesome a pelo, y sin nada duplicado: la hoja es **la misma**, el orquestador es
+**el mismo**, y `vidaItemDelete` es una mutación que ya existía sin estrenar.
+
+**Hallazgos anotados, ninguno devuelve**
+
+1. **Transversal: `Button variant="danger"` no se lee en tema oscuro** (1,7:1
+   medido por el constructor). Aquí se esquivó con `secondary`, pero **ya está
+   en pantalla en FEAT-003 («Vaciar y rehacer») y en FEAT-004 («Quitar del
+   registro»)**: es un arreglo del sistema de diseño, con su propio alcance, no
+   de esta tajada.
+2. **La nota depende de que `notes` siga en la selección GraphQL** (arriba). Si
+   un día deja de pedirse, guardar la borraría en silencio.
+3. **El catálogo manda ahora `notes` en el `update`** aunque no haya cambiado
+   —con el mismo valor que ya tenía—: inocuo y medido, pero el cuerpo de la
+   mutación ya no es idéntico al de FEAT-002 y conviene saberlo si alguien lo
+   compara contra un log del servidor.
+4. **El criterio 27 queda al usuario**: es el único de la tajada que ningún
+   agente puede cerrar.
+
+**Lo que no revisé, y no lo disimulo:** ni una llamada real al API —ni un
+`vidaItemDelete` de verdad—, los **375 px** y el **tema oscuro** en un navegador,
+y la pantalla dentro de `/app/vida/plantilla` con datos reales. Sigue siendo el
+límite del login.

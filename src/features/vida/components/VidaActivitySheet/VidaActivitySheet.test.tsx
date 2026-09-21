@@ -307,6 +307,9 @@ describe('VidaActivitySheet', () => {
       // limpiaría: este ítem no tenía ni hora ni duración y sigue sin tenerlas.
       startTime: null,
       durationMinutes: null,
+      // La hoja pide la nota desde FEAT-005 (criterio 18) y la manda tal
+      // cual venía: el ítem de la prueba la trae, así que viaja igual.
+      notes: 'Con calma',
     })
     act(() => updateVidaItem.mutate.mock.calls[0][1].onSuccess())
     expect(onClose).toHaveBeenCalledTimes(1)
@@ -351,6 +354,9 @@ describe('VidaActivitySheet', () => {
       isActive: true,
       startTime: null,
       durationMinutes: null,
+      // La hoja pide la nota desde FEAT-005 (criterio 18) y la manda tal
+      // cual venía: el ítem de la prueba la trae, así que viaja igual.
+      notes: 'Con calma',
     })
   })
 
@@ -418,6 +424,9 @@ describe('VidaActivitySheet', () => {
       isActive: true,
       startTime: '09:15',
       durationMinutes: 30,
+      // La hoja pide la nota desde FEAT-005 (criterio 18) y la manda tal
+      // cual venía: el ítem de la prueba la trae, así que viaja igual.
+      notes: 'Con calma',
     })
   })
 
@@ -458,6 +467,9 @@ describe('VidaActivitySheet', () => {
       isActive: true,
       startTime: null,
       durationMinutes: null,
+      // La hoja pide la nota desde FEAT-005 (criterio 18) y la manda tal
+      // cual venía: el ítem de la prueba la trae, así que viaja igual.
+      notes: 'Con calma',
     })
   })
 
@@ -596,5 +608,146 @@ describe('VidaActivitySheet', () => {
     for (const word of ['pendiente', 'prioridad', 'vencida', 'fallaste', 'cancelad', 'tarea']) {
       expect(text).not.toContain(word)
     }
+  })
+})
+
+/**
+ * La misma hoja, **abierta desde la plantilla** (FEAT-005, tajada 2): criterios
+ * 16, 18, 19, 20, 21 y 23.
+ *
+ * Es el mismo componente con props aditivas: sin ninguna de ellas la hoja es
+ * exactamente la de FEAT-002, y eso lo siguen afirmando los tests de arriba.
+ */
+describe('VidaActivitySheet desde la plantilla (lockActivity)', () => {
+  const activityRef = {
+    id: 'a1',
+    title: 'Organizar la casa',
+    status: 'pending' as const,
+    category: { id: 'casa', name: 'Casa', color: '#8b5cf6', icon: 'house-chimney' },
+  }
+
+  function renderLocked(item: Partial<VidaItem> = {}, extra = {}) {
+    return renderSheet({
+      vidaItem: buildVidaItem({ startTime: '09:00', durationMinutes: 45, ...item }),
+      activityRef,
+      lockActivity: true,
+      ...extra,
+    })
+  }
+
+  it('la cabecera **enseña** nombre, icono y categoría y **no los pide** (criterio 18)', () => {
+    renderLocked()
+    expect(screen.getByText('Organizar la casa')).toBeInTheDocument()
+    expect(screen.getByText('Casa')).toBeInTheDocument()
+    // Ni el campo del nombre ni el selector de categorías: se cambian donde se
+    // cambiaban, en el catálogo (decisión A4).
+    expect(screen.queryByLabelText(/Cómo la llamas/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '+ nueva' })).not.toBeInTheDocument()
+  })
+
+  it('están los cuatro campos del render: días, hora, cuánto y **la nota** (criterio 18)', () => {
+    renderLocked()
+    expect(screen.getByRole('group', { name: 'Días de la plantilla' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/A qué hora/)).toHaveValue('09:00')
+    expect(screen.getByRole('button', { name: '45' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByLabelText(/Nota/)).toHaveValue('Con calma')
+  })
+
+  it('el interruptor dice lo del criterio 19, con su explicación', () => {
+    renderLocked()
+    const swi = screen.getByRole('switch', { name: /Activa en mi plantilla/ })
+    expect(swi).toBeChecked()
+    expect(
+      screen.getByText(
+        'Desactivada se queda aquí guardada con sus días y su hora, y deja de salir en Hoy.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('la vista previa se recalcula con lo elegido y **no enseña un rango falso** (criterio 20)', async () => {
+    const user = userEvent.setup()
+    renderLocked()
+    expect(screen.getByText(/de 9:00 a 9:45/)).toBeInTheDocument()
+    expect(screen.getByText(/no se reescriben solos/)).toBeInTheDocument()
+
+    // Quitarle la duración: deja de haber rango y se dice qué falta.
+    await user.click(screen.getByRole('button', { name: '45' }))
+    expect(screen.queryByText(/de 9:00 a 9:45/)).not.toBeInTheDocument()
+    expect(screen.getByText(/Sin cuánto dura/)).toBeInTheDocument()
+
+    // Y cambiar la hora la mueve: se calcula de lo elegido, no de lo guardado.
+    await user.click(screen.getByRole('button', { name: '30' }))
+    fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '07:15' } })
+    expect(screen.getByText(/de 7:15 a 7:45/)).toBeInTheDocument()
+  })
+
+  it('guardar **se salta la mutación de actividad** y escribe ESE ítem (criterios 16 y 24)', async () => {
+    const user = userEvent.setup()
+    const { onClose } = renderLocked({ id: 'v-tarde' })
+
+    fireEvent.change(screen.getByLabelText(/Nota/), { target: { value: 'Empezar por la cocina' } })
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(updateActivity.mutate).not.toHaveBeenCalled()
+    expect(createActivity.mutate).not.toHaveBeenCalled()
+    expect(createVidaItem.mutate).not.toHaveBeenCalled()
+    expect(updateVidaItem.mutate.mock.calls[0][0]).toEqual({
+      id: 'v-tarde',
+      days: ['monday', 'wednesday', 'friday'],
+      isActive: true,
+      startTime: '09:00',
+      durationMinutes: 45,
+      notes: 'Empezar por la cocina',
+    })
+    // La hoja cierra **en el `onSuccess` de la mutación**, no antes: si falla,
+    // se queda abierta con lo escrito (criterio 24).
+    expect(onClose).not.toHaveBeenCalled()
+    act(() => updateVidaItem.mutate.mock.calls[0][1].onSuccess())
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('quitar el último día **no se guarda** y se dice en el campo (criterio 23)', async () => {
+    const user = userEvent.setup()
+    renderLocked({ days: ['friday'] })
+
+    await user.click(screen.getByRole('button', { name: 'viernes' }))
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(
+      screen.getByText('Déjale al menos un día, o desactívala con el interruptor.'),
+    ).toBeInTheDocument()
+    // **Nada sale hacia el API**: el límite se dice aquí, no con un error del
+    // servidor.
+    expect(updateVidaItem.mutate).not.toHaveBeenCalled()
+    expect(createVidaItem.mutate).not.toHaveBeenCalled()
+  })
+
+  it('«Quitar de la plantilla» solo existe si quien abre la hoja la cablea (criterio 21)', async () => {
+    const user = userEvent.setup()
+    renderLocked()
+    // Sin `onRemoveFromTemplate` no se pinta: la hoja del catálogo sigue
+    // teniendo su «Cancelar» y ni un botón más.
+    expect(screen.queryByRole('button', { name: 'Quitar de la plantilla' })).not.toBeInTheDocument()
+
+    const onRemoveFromTemplate = vi.fn()
+    const item = buildVidaItem({ id: 'v-casa' })
+    renderSheet({ vidaItem: item, activityRef, lockActivity: true, onRemoveFromTemplate })
+    const botones = screen.getAllByRole('button', { name: 'Quitar de la plantilla' })
+    await user.click(botones[botones.length - 1]!)
+
+    // **No borra desde aquí**: avisa a quien la abrió, que es quien pinta la
+    // confirmación del criterio 22.
+    expect(onRemoveFromTemplate).toHaveBeenCalledWith(item)
+    expect(updateVidaItem.mutate).not.toHaveBeenCalled()
+  })
+
+  it('apagar el interruptor **desactiva, no borra** (criterio 19)', async () => {
+    const user = userEvent.setup()
+    renderLocked({ id: 'v-casa' })
+
+    await user.click(screen.getByRole('switch', { name: /Activa en mi plantilla/ }))
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(updateVidaItem.mutate.mock.calls[0][0]).toEqual({ id: 'v-casa', isActive: false })
   })
 })

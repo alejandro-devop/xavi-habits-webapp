@@ -216,3 +216,69 @@
   gap: 0.7rem;
   min-width: 0;
 }
+
+/* ── La hoja abierta desde la plantilla (FEAT-005, tajada 2) ──────────────────
+   Todo lo de aquí abajo solo existe con las props aditivas: sin ellas la hoja
+   se pinta exactamente como la dejó FEAT-002. */
+
+/* La cabecera enseña el icono y la categoría; el nombre ya lo pone el título
+   del modal. No se pide ninguno de los tres (criterio 18). */
+.locked {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.lockedIcon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.lockedCategory {
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* «Así queda en Hoy…» (criterio 20). Es lectura, no un control: se lee como una
+   nota al pie del bloque de plantilla. */
+.preview {
+  padding: 0.5rem 0.65rem;
+  border: 1px dashed var(--color-glass-border);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--aura-glass-1) 60%, transparent);
+}
+
+.previewLine {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.previewSmall {
+  color: var(--color-text-secondary);
+}
+
+/* Dos renglones, no seis: la hoja tiene que llegar hasta «Guardar» sin
+   desplazarse a 375 px, y `Textarea` trae un `min-height` pensado para una
+   descripción larga. Aquí la nota es una línea o dos. */
+.notesInput {
+  min-height: 3.25rem;
+}
+
+/* La salida de la izquierda cuando la hoja se abre desde la plantilla: mismo
+   peso visual que «Cancelar», que es el sitio que ocupa. */
+.remove {
+  margin-right: auto;
+}

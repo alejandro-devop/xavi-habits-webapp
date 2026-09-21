@@ -4,6 +4,14 @@ import styles from './VidaTemplateNoTimeDrawer.module.scss'
 
 type VidaTemplateNoTimeDrawerProps = {
   items: VidaItem[]
+  /** Abrir la hoja de ese ítem (criterio 16). Opcional, como en la tarjeta. */
+  onOpen?: (item: VidaItem) => void
+  /** «Ponerle hora» (criterio 25): la misma hoja, con la hora lista. */
+  onSetTime?: (item: VidaItem) => void
+  /** «Activar» de un toque (criterio 26): aquí también hay desactivados. */
+  onActivate?: (item: VidaItem) => void
+  /** El id del ítem cuya reactivación está en vuelo, si hay alguna. */
+  activatingId?: string | null
 }
 
 /**
@@ -16,10 +24,16 @@ type VidaTemplateNoTimeDrawerProps = {
  *   razón de esta pantalla.
  * - La explicación es **literal** y dice lo que Hoy hace de verdad con ellos:
  *   los encadena al final del día (`buildDayFromTemplate`, regla 2).
- * - **No se pinta «Ponerle hora»**: es el criterio 25, de la tajada 2. Aquí no
- *   hay ningún botón muerto.
+ * - **«Ponerle hora»** (criterio 25) se pinta desde la tajada 2, y solo si
+ *   quien monta el cajón la pasa: sin ella esto sigue siendo lectura pura.
  */
-export function VidaTemplateNoTimeDrawer({ items }: VidaTemplateNoTimeDrawerProps) {
+export function VidaTemplateNoTimeDrawer({
+  items,
+  onOpen,
+  onSetTime,
+  onActivate,
+  activatingId = null,
+}: VidaTemplateNoTimeDrawerProps) {
   if (items.length === 0) return null
 
   return (
@@ -29,7 +43,14 @@ export function VidaTemplateNoTimeDrawer({ items }: VidaTemplateNoTimeDrawerProp
       </h3>
       <ul className={styles.list}>
         {items.map((item) => (
-          <VidaTemplateItemCard key={item.id} item={item} />
+          <VidaTemplateItemCard
+            key={item.id}
+            item={item}
+            onOpen={onOpen}
+            onSetTime={onSetTime}
+            onActivate={onActivate}
+            isActivating={activatingId === item.id}
+          />
         ))}
       </ul>
       <p className={styles.why}>

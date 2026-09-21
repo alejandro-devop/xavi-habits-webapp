@@ -11,19 +11,31 @@ import type {
 import { VIDA_DAY_ORDER } from '@/features/vida/utils/vida-date.utils'
 
 /**
- * Guardar la plantilla de **una** actividad desde su hoja: el interruptor
- * «ponerla en mi plantilla», sus siete días y —desde FEAT-003— **a qué hora** y
- * **cuánto**.
+ * Guardar **un** ítem de la plantilla desde su hoja: el interruptor, sus siete
+ * días, **a qué hora**, **cuánto** y su nota.
  *
  * Es un **orquestador**, no acceso nuevo al API: decide cuál de las dos
  * mutaciones de F0 toca y las llama. Tres reglas, y las tres son criterios:
  *
- * - Encendido **sin** `VidaItem`: se crea (criterio 17).
- * - Encendido **con** `VidaItem`: se **actualiza el mismo**, nunca se crea otro
- *   (criterio 19). Si estaba desactivado, vuelve con `isActive: true` y con su
- *   nota intacta —por eso la página pide la plantilla con `includeInactive`—.
- * - Apagado con `VidaItem` activo: `isActive: false`. **No se borra**: los días
- *   y la nota se quedan donde están (criterio 20). `vidaItemDelete` no se usa.
+ * - Encendido **sin** ítem objetivo: se crea (criterio 17 de FEAT-002).
+ * - Encendido **con** ítem objetivo: se **actualiza ese**, nunca se crea otro
+ *   (criterio 19 de FEAT-002). Si estaba desactivado, vuelve con
+ *   `isActive: true` y con su nota intacta —por eso la página pide la plantilla
+ *   con `includeInactive`—.
+ * - Apagado con ítem objetivo activo: `isActive: false`. **No se borra**: los
+ *   días y la nota se quedan donde están (criterio 20 de FEAT-002); quien borra
+ *   es «Quitar de la plantilla» (`vidaItemDelete`, criterio 21 de FEAT-005).
+ *
+ * **`targetItem` es «el ítem sobre el que se escribe», no «el ítem de esta
+ * actividad»** (decisión A3 de FEAT-005). El cambio es de contrato, no de
+ * lógica, y es lo que hace que las tres llamadas quepan en la misma función:
+ *
+ * - el catálogo pasa lo que encuentra `findVidaItemForActivity` → se comporta
+ *   **exactamente igual** que antes;
+ * - la plantilla pasa **el ítem que se está editando, por su id** → `update`
+ *   sobre ese y no sobre el de las 7:30 (criterio 17 de FEAT-005);
+ * - «añadir otra hora» (tajada 3) pasará `targetItem: null` con el `activityId`
+ *   de una actividad que **ya tiene ítem** → `create` (criterio 34).
  *
  * Y una cuarta que no es criterio pero evita un viaje y un toast de mentira:
  * si nada cambió (apagado sin ítem, o encendido con los mismos días, la misma
@@ -38,8 +50,11 @@ import { VIDA_DAY_ORDER } from '@/features/vida/utils/vida-date.utils'
  */
 export type SaveVidaItemForActivityInput = {
   activityId: string
-  /** El `VidaItem` que ya existe para esa actividad, **activo o desactivado**. */
-  item: VidaItem | null | undefined
+  /**
+   * **El ítem sobre el que se escribe**, activo o desactivado; `null` para
+   * crear uno nuevo —aunque esa actividad ya tenga otros—.
+   */
+  targetItem: VidaItem | null | undefined
   /** El interruptor. */
   inTemplate: boolean
   /** Los días marcados, en cualquier orden. */
@@ -48,6 +63,12 @@ export type SaveVidaItemForActivityInput = {
   startTime: string | null
   /** Entero > 0, o `null` si no tiene duración. */
   durationMinutes: number | null
+  /**
+   * La nota del ítem, en texto plano. **`undefined` es «no se toca»** y es lo
+   * que manda quien no pinta el campo: en un `update`, omitir `notes` deja la
+   * que hubiera, mientras que `null` la limpia. `''` y `null` son lo mismo.
+   */
+  notes?: string | null
 }
 
 export type VidaItemSavePlan =
@@ -74,6 +95,12 @@ function normalizeOptionalDuration(minutes: number | null | undefined): number |
   return rounded > 0 ? rounded : null
 }
 
+/** `null`, `undefined` y `''` son lo mismo aquí: «no tiene nota». */
+function normalizeOptionalNotes(notes: string | null | undefined): string | null {
+  const trimmed = notes?.trim()
+  return trimmed ? trimmed : null
+}
+
 function sameDays(a: VidaDayOfWeek[], b: VidaDayOfWeek[]): boolean {
   const left = sortVidaDays(a)
   const right = sortVidaDays(b)
@@ -86,24 +113,28 @@ function sameDays(a: VidaDayOfWeek[], b: VidaDayOfWeek[]): boolean {
  */
 export function planVidaItemSave({
   activityId,
-  item,
+  targetItem,
   inTemplate,
   days,
   startTime,
   durationMinutes,
+  notes,
 }: SaveVidaItemForActivityInput): VidaItemSavePlan {
   if (!inTemplate) {
-    // Nada que apagar si no hay ítem o ya estaba desactivado. La hora y la
-    // duración **se quedan donde están**, como los días y la nota (criterio 20).
-    if (!item || !item.isActive) return { kind: 'nothing' }
-    return { kind: 'update', input: { id: item.id, isActive: false } }
+    // Nada que apagar si no hay ítem o ya estaba desactivado. La hora, la
+    // duración y la nota **se quedan donde están**, como los días (criterio 20).
+    if (!targetItem || !targetItem.isActive) return { kind: 'nothing' }
+    return { kind: 'update', input: { id: targetItem.id, isActive: false } }
   }
 
   const wanted = sortVidaDays(days)
   const wantedStart = normalizeOptionalTime(startTime)
   const wantedDuration = normalizeOptionalDuration(durationMinutes)
+  // `undefined` es «quien llama no pinta el campo»: ni se compara ni se manda.
+  const touchesNotes = notes !== undefined
+  const wantedNotes = normalizeOptionalNotes(notes)
 
-  if (!item) {
+  if (!targetItem) {
     return {
       kind: 'create',
       input: {
@@ -112,26 +143,37 @@ export function planVidaItemSave({
         // Al crear no se manda lo que no hay: el API ya los deja nulos.
         ...(wantedStart ? { startTime: wantedStart } : {}),
         ...(wantedDuration ? { durationMinutes: wantedDuration } : {}),
+        ...(touchesNotes && wantedNotes ? { notes: wantedNotes } : {}),
       },
     }
   }
 
-  const sameStart = normalizeOptionalTime(item.startTime) === wantedStart
-  const sameDuration = normalizeOptionalDuration(item.durationMinutes) === wantedDuration
-  if (item.isActive && sameDays(item.days, wanted) && sameStart && sameDuration) {
+  const sameStart = normalizeOptionalTime(targetItem.startTime) === wantedStart
+  const sameDuration = normalizeOptionalDuration(targetItem.durationMinutes) === wantedDuration
+  const sameNotes = !touchesNotes || normalizeOptionalNotes(targetItem.notes) === wantedNotes
+  if (
+    targetItem.isActive &&
+    sameDays(targetItem.days, wanted) &&
+    sameStart &&
+    sameDuration &&
+    sameNotes
+  ) {
     return { kind: 'nothing' }
   }
 
   return {
     kind: 'update',
     input: {
-      id: item.id,
+      id: targetItem.id,
       days: wanted,
       isActive: true,
       // Aquí sí va el `null` explícito: es lo que **limpia** la hora o la
       // duración en el API. Omitirlo dejaría la vieja puesta.
       startTime: wantedStart,
       durationMinutes: wantedDuration,
+      // La nota solo viaja si quien llama la pinta: omitirla la deja como
+      // estaba, que es lo que necesita cualquier hoja sin campo de nota.
+      ...(touchesNotes ? { notes: wantedNotes } : {}),
     },
   }
 }

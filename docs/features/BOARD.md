@@ -13,7 +13,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
-| FEAT-005 | building | 2/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
+| FEAT-005 | building | 3/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | planned | 0/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
@@ -27,6 +27,88 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+
+**FEAT-005, tajada 2 — revisión: `accepted`** (2026-09-20). El riesgo de esta
+tajada no era la hoja, era que **`planVidaItemSave` cambió de cuerpo** y esa
+función la comparte el catálogo de FEAT-002, ya entregado. **Lo medí yo con un
+arnés de tests propio** (8 casos, borrado): crear sin nota manda
+`{ activityId, days }` **y nada más**, apagar el interruptor manda
+`{ id, isActive: false }` **y nada más**, y editar **sin pintar el campo**
+(`notes: undefined`) produce un cuerpo que **no lleva la clave `notes`** —
+comprobado sobre las claves, no de vista—. O sea: **el catálogo sin nota se
+comporta exactamente igual que antes**. La nota **no se borra sin querer** porque
+la hoja la precarga del ítem y `notes` **está en la selección GraphQL**; vaciar
+el campo a propósito sí la limpia. Y de las «cuatro expectativas cambiadas» de
+FEAT-002: miré **todas las líneas borradas del diff** y lo único que se toca es
+el renombrado `item:` → `targetItem:`; **ninguna afirmación de comportamiento se
+eliminó ni se debilitó**. Con dos «Pasear», guardar el de las 19:00 escribe
+**ese id** y el JSON del plan **no contiene** el de la mañana; `targetItem: null`
+sobre una actividad que ya tiene ítem **crea otro**. «Quitar de la plantilla» usa
+**`vidaItemDelete`** y **en ninguna ruta se nombra `activityRemove`**; «Quitarlo
+solo del \<día\>» **no borra nada** (es un `update` con los días restantes, y
+corta en seco si no queda ninguno); las salidas son «Volver», «Quitarlo solo
+del…» y «Quitarlo de los N días», **sin «cancelar», «eliminar» ni «borrar»**.
+«Activar» manda solo `{ id, isActive: true }`. El test de la tajada 1 quedó
+**derogado y acotado, no borrado**. **El criterio 27 —que Hoy lo vea sin
+recargar— no lo puede cerrar ningún agente**: queda del usuario. Línea base
+corrida entera por el revisor: typecheck **exit 0**, lint **14/0**, `pnpm test`
+**2 fallos de 1230** (los dos de `SearchSelect`; 1 archivo rojo de 101),
+`pnpm build` **exit 0** con chunk inicial **982,95 kB**, `app-icons` **620,20
+kB** e `IconPicker` **4,64 kB** (CSS 208,82 kB). **Hallazgo transversal
+anotado:** `Button variant="danger"` **no se lee en tema oscuro** (1,7:1); aquí
+se esquivó con `secondary`, pero ya está en pantalla en FEAT-003 («Vaciar y
+rehacer») y FEAT-004 («Quitar del registro») — es del sistema de diseño, con su
+propio alcance. **Sin revisar por el revisor:** 375 px y oscuro (medidos por el
+constructor) y cualquier llamada real al API. Siguiente: la tajada 3, añadir sin
+salir de la pantalla.
+
+**FEAT-005, tajada 2 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **la plantilla ya se edita desde
+la plantilla.** Tocar una tarjeta abre **la misma hoja del catálogo**
+—`VidaActivitySheet` con **props aditivas**, no una segunda hoja— pero **por el
+ítem que se tocó, por su id**: con dos «Pasear a las mascotas» (7:30 y 19:00),
+abrir el de las 19:00 y guardar escribe **ese** id y el otro no aparece ni en el
+plan. Dentro: días, hora, **15 · 30 · 45 · 1h · libre**, **la nota**, el
+interruptor **«Activa en mi plantilla»** con su explicación literal y la **vista
+previa** —«Así queda en Hoy: lunes, miércoles y viernes **de 9:00 a 9:45**»—,
+que **nunca enseña un rango falso**: sin duración dice los 30 min que Hoy le
+pondría, sin hora dice que la encadena al final del día. Fuera: **«Ponerle
+hora»** en el cajón y **«Activar»** de un toque (`{ id, isActive: true }` y nada
+más, **sin abrir la hoja**). Y **«Quitar de la plantilla»**, que es el **primer
+uso de `vidaItemDelete` en la vida del proyecto**, con una confirmación de **dos
+salidas afirmativas** —«Quitarlo solo del viernes» (le resta el día) y
+«Quitarlo de los 3 días» (borra)— más **«Volver»**, que no llama a nadie; con un
+solo día, una sola salida. **Ni un documento GraphQL, ni una clave, ni una ruta,
+ni `localStorage`, ni invalidación nueva**: las tres mutaciones ya invalidan
+`items.all()` por prefijo, que es lo que sostiene el criterio 27. **La duda que
+dejó el arquitecto, cerrada leyendo el código:** `useConfirmDialog` **no admite
+dos salidas afirmativas** (resuelve `Promise<boolean>` y pinta dos botones), así
+que el diálogo es un `Modal` corto, que era la otra mitad de su bifurcación.
+Medido **en el navegador** con arnés borrado: a 375 px `scrollWidth` **375 =
+clientWidth**, cero desbordes con la hoja y con el diálogo abiertos, **«Guardar»
+y «Quitar de la plantilla» visibles sin desplazar la hoja** —y eso **no salía
+gratis**: los dos bloques nuevos la dejaban en 820 px contra 746 de alto útil—,
+y en **oscuro** lo nuevo va de **7,88:1** a **18,67:1**. Línea base sin
+empeorar: typecheck **limpio**, lint **14/0**, `pnpm test` **2 fallos de 1230**
+(los dos de `SearchSelect`; **+30 tests**; `src/features/vida` **810/810**),
+`pnpm build` **exit 0** con chunk inicial **982,95 kB** (+6,46 kB, **ninguno de
+iconos**: `app-icons` 620,20 e `IconPicker` 4,64 clavados). `graphify update .`:
+3357 nodos, 3871 aristas. **Avisos para quien revise, por orden de riesgo:**
+**(1)** el criterio 18 pide **la nota** y **no existía en la hoja** —la sección 1
+la daba por construida y no lo estaba—, así que la añadí y con ella
+**`planVidaItemSave` sí cambió de cuerpo**, contra lo que escribió el arquitecto;
+el cinturón es que `notes: undefined` significa «no se toca» y entonces **no
+viaja en el `update`**, pero **cuatro expectativas de tests de FEAT-002
+cambiaron** por esto. **(2)** `Button variant="danger"` es **ilegible en tema
+oscuro** (blanco sobre `rgb(255,180,171)`, **1,7:1**, medido): por eso las dos
+salidas del diálogo van `secondary`, y queda dicho que **todas las
+confirmaciones de Vida** que usan `variant: 'danger'` tienen ese mismo número —no
+lo arreglo, vive en `shared/ui/Button` y lo usa hábitos—. **(3)** un test de la
+tajada 1 quedó **derogado y acotado**, no borrado: el que afirmaba «cero
+botones». **Del usuario:** el recorrido real —once pasos al final de la sección
+3— y con él **todo lo que pasa por el API**: ningún agente entra a `/app/*`, así
+que **nunca he visto a `vidaItemDelete` responder** ni a Hoy releer la plantilla
+sin recargar (criterio 27).
 
 **FEAT-005, tajada 1 — revisión: `accepted`** (2026-09-20). Los quince criterios
 se cumplen y **no encontré ninguna regresión**. Lo que medí **yo**, con un arnés

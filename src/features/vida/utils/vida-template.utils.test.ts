@@ -8,7 +8,10 @@ import {
   describeItemDays,
   describeItemDuration,
   describeItemMeta,
+  daysWithout,
+  describeOtherDays,
   describeTemplateDayTotals,
+  describeTemplatePreview,
   templateItemsForDay,
 } from '@/features/vida/utils/vida-template.utils'
 
@@ -291,5 +294,112 @@ describe('buildTemplateGuidance (criterio 5)', () => {
     const day = build([item('1', { startTime: '07:00', durationMinutes: 15 })])
     const line = buildTemplateGuidance(day, 'viernes')
     expect(line).not.toMatch(/vac[ií]o|desperdici|fallaste|perdiste/i)
+  })
+})
+
+/**
+ * La hoja del ítem (tajada 2): los criterios **20** y **22**, que son de texto
+ * y se cierran aquí, sin montar un modal.
+ */
+describe('describeTemplatePreview (criterio 20)', () => {
+  it('con días, hora y duración enseña el rango **de verdad**, calculado', () => {
+    const preview = describeTemplatePreview({
+      days: ['monday', 'wednesday', 'friday'],
+      startTime: '09:00',
+      durationMinutes: 45,
+    })
+    expect(preview.complete).toBe(true)
+    expect(preview.text).toBe('Así queda en Hoy: lunes, miércoles y viernes de 9:00 a 9:45.')
+    expect(preview.rangeText).toBe('de 9:00 a 9:45')
+    expect(preview.missingText).toBeNull()
+  })
+
+  it('los siete días se dicen «todos los días», y uno solo va solo', () => {
+    expect(
+      describeTemplatePreview({
+        days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+        startTime: '07:00',
+        durationMinutes: 15,
+      }).text,
+    ).toBe('Así queda en Hoy: todos los días de 7:00 a 7:15.')
+    expect(
+      describeTemplatePreview({ days: ['saturday'], startTime: '10:00', durationMinutes: 60 }).text,
+    ).toBe('Así queda en Hoy: sábado de 10:00 a 11:00.')
+  })
+
+  it('**sin hora** no enseña un rango falso: dice lo que Hoy hace de verdad', () => {
+    const preview = describeTemplatePreview({
+      days: ['monday'],
+      startTime: null,
+      durationMinutes: 30,
+    })
+    expect(preview.complete).toBe(false)
+    expect(preview.rangeText).toBeNull()
+    expect(preview.text).toBe(
+      'Así queda en Hoy: lunes. Sin hora, Hoy la pone al final del día, una detrás de otra.',
+    )
+  })
+
+  it('**sin duración** dice qué falta, y dice los 30 min que Hoy le pondría', () => {
+    const preview = describeTemplatePreview({
+      days: ['monday', 'friday'],
+      startTime: '09:00',
+      durationMinutes: null,
+    })
+    expect(preview.complete).toBe(false)
+    expect(preview.text).toBe(
+      'Así queda en Hoy: lunes y viernes a las 9:00. Sin cuánto dura, Hoy le pone 30 min al armar el día.',
+    )
+  })
+
+  it('sin ningún día no se afirma nada: se pide el día (criterios 20 y 23)', () => {
+    const preview = describeTemplatePreview({ days: [], startTime: '09:00', durationMinutes: 45 })
+    expect(preview.complete).toBe(false)
+    expect(preview.text).toBe('Marca al menos un día y verás cómo queda en Hoy.')
+  })
+
+  it('una hora que no es `HH:mm` cuenta como «no tiene», no como 00:00', () => {
+    expect(
+      describeTemplatePreview({ days: ['monday'], startTime: '   ', durationMinutes: 30 }).text,
+    ).toContain('Sin hora')
+    // Y una duración de 0 o negativa tampoco es una duración (criterio 7).
+    expect(
+      describeTemplatePreview({ days: ['monday'], startTime: '09:00', durationMinutes: 0 }).text,
+    ).toContain('Sin cuánto dura')
+  })
+
+  it('ninguna variante trae una palabra de culpa', () => {
+    const variantes = [
+      describeTemplatePreview({ days: [], startTime: null, durationMinutes: null }),
+      describeTemplatePreview({ days: ['monday'], startTime: null, durationMinutes: null }),
+      describeTemplatePreview({ days: ['monday'], startTime: '09:00', durationMinutes: null }),
+      describeTemplatePreview({ days: ['monday'], startTime: '09:00', durationMinutes: 45 }),
+    ]
+    for (const variante of variantes) {
+      expect(variante.text).not.toMatch(/vac[ií]o|desperdici|fallaste|perdiste|cancelar|eliminar/i)
+    }
+  })
+})
+
+describe('describeOtherDays y daysWithout (criterio 22)', () => {
+  const casa = item('casa', { days: ['monday', 'wednesday', 'friday'] })
+
+  it('dice los otros días **con su artículo**, como el criterio', () => {
+    expect(describeOtherDays(casa, 'friday')).toBe('también está los lunes y los miércoles')
+    expect(describeOtherDays(casa, 'monday')).toBe('también está los miércoles y los viernes')
+  })
+
+  it('con dos días sueltos no inventa una lista', () => {
+    const dos = item('dos', { days: ['saturday', 'sunday'] })
+    expect(describeOtherDays(dos, 'saturday')).toBe('también está los domingos')
+  })
+
+  it('con un solo día **no hay nada que avisar**: una sola salida', () => {
+    expect(describeOtherDays(item('uno', { days: ['friday'] }), 'friday')).toBeNull()
+  })
+
+  it('los días que quedan al quitar uno van de lunes a domingo y sin el quitado', () => {
+    expect(daysWithout(casa, 'wednesday')).toEqual(['monday', 'friday'])
+    expect(daysWithout(item('uno', { days: ['friday'] }), 'friday')).toEqual([])
   })
 })

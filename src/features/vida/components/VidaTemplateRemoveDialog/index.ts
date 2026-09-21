@@ -1,0 +1,1 @@
+export { VidaTemplateRemoveDialog } from './VidaTemplateRemoveDialog'

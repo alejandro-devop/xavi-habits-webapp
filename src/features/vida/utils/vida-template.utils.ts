@@ -26,9 +26,16 @@
  */
 
 import type { VidaDayOfWeek, VidaItem } from '@/features/vida/types/vida-item.types'
-import { VIDA_DAY_ORDER, VIDA_DAY_SHORT_LABELS } from '@/features/vida/utils/vida-date.utils'
+import {
+  VIDA_DAY_LABELS,
+  VIDA_DAY_ORDER,
+  VIDA_DAY_SHORT_LABELS,
+  pluralDayLabel,
+} from '@/features/vida/utils/vida-date.utils'
 import { compareVidaNames } from '@/features/vida/utils/vida-text.utils'
 import {
+  DEFAULT_BLOCK_MINUTES,
+  calculateEndTime,
   formatDurationFromMinutes,
   formatDurationMinutes,
   formatTimeForDisplay,
@@ -420,4 +427,134 @@ function plural(count: number, one: string, many: string): string {
 
 function capitalize(value: string): string {
   return `${value.charAt(0).toUpperCase()}${value.slice(1)}`
+}
+
+/* ── La hoja del ítem (tajada 2) ────────────────────────────────────────────
+ *
+ * Tres funciones puras que la hoja y su confirmación leen, y que se prueban
+ * aquí en vez de montando un modal: la vista previa de cómo queda en Hoy
+ * (criterio 20), el aviso de los otros días (criterio 22) y los días que
+ * quedan al quitar uno (criterio 22, la salida «solo del viernes»).
+ */
+
+export type TemplatePreviewInput = {
+  days: VidaDayOfWeek[]
+  /** `HH:mm`, `''` o `null`. */
+  startTime: string | null
+  durationMinutes: number | null
+}
+
+export type TemplatePreview = {
+  /** `true` cuando se puede enseñar un rango de verdad; `false` cuando falta algo. */
+  complete: boolean
+  /** «lunes, miércoles y viernes», «todos los días», o `''` si no hay ninguno. */
+  daysText: string
+  /** «de 9:00 a 9:45» cuando están las dos; `null` si falta alguna. */
+  rangeText: string | null
+  /** Lo que le falta, dicho: `null` cuando no falta nada. */
+  missingText: string | null
+  /** La frase entera, que es lo que se lee de corrido. */
+  text: string
+}
+
+/** «lunes, miércoles y viernes»: la lista en lenguaje natural, de lunes a domingo. */
+export function describeDaysInWords(days: VidaDayOfWeek[]): string {
+  const ordered = VIDA_DAY_ORDER.filter((day) => days.includes(day))
+  if (ordered.length === 0) return ''
+  if (ordered.length === VIDA_DAY_ORDER.length) return 'todos los días'
+  const labels = ordered.map((day) => VIDA_DAY_LABELS[day])
+  if (labels.length === 1) return labels[0]!
+  return `${labels.slice(0, -1).join(', ')} y ${labels[labels.length - 1]}`
+}
+
+/**
+ * **Cómo queda en Hoy** (criterio 20), calculado de lo que hay elegido en la
+ * hoja —no de lo guardado—: «Así queda en Hoy: lunes, miércoles y viernes de
+ * 9:00 a 9:45».
+ *
+ * Sin hora o sin duración **no se enseña un rango falso**: se dice qué le
+ * falta, y lo que se dice es lo que Hoy hace de verdad —sin hora, `buildDay`
+ * la encadena al final del día; sin duración, le pone `DEFAULT_BLOCK_MINUTES`
+ * (`vida-build-day.utils.ts:146`)—.
+ */
+export function describeTemplatePreview({
+  days,
+  startTime,
+  durationMinutes,
+}: TemplatePreviewInput): TemplatePreview {
+  const daysText = describeDaysInWords(days)
+  const hasTime = isValidHhMm(startTime)
+  const duration = durationMinutes !== null && durationMinutes > 0 ? durationMinutes : null
+
+  if (daysText === '') {
+    return {
+      complete: false,
+      daysText: '',
+      rangeText: null,
+      missingText: 'Marca al menos un día y verás cómo queda en Hoy.',
+      text: 'Marca al menos un día y verás cómo queda en Hoy.',
+    }
+  }
+
+  const head = `Así queda en Hoy: ${daysText}`
+
+  if (!hasTime) {
+    const missing = `Sin hora, Hoy la pone al final del día, una detrás de otra.`
+    return {
+      complete: false,
+      daysText,
+      rangeText: null,
+      missingText: missing,
+      text: `${head}. ${missing}`,
+    }
+  }
+
+  const from = formatTimeForDisplay(startTime!)
+
+  if (duration === null) {
+    const missing = `Sin cuánto dura, Hoy le pone ${DEFAULT_BLOCK_MINUTES} min al armar el día.`
+    return {
+      complete: false,
+      daysText,
+      rangeText: null,
+      missingText: missing,
+      text: `${head} a las ${from}. ${missing}`,
+    }
+  }
+
+  const to = formatTimeForDisplay(calculateEndTime(startTime!, duration))
+  const rangeText = `de ${from} a ${to}`
+
+  return {
+    complete: true,
+    daysText,
+    rangeText,
+    missingText: null,
+    text: `${head} ${rangeText}.`,
+  }
+}
+
+/**
+ * «también está los lunes y los miércoles» (criterio 22): lo que hay que decir
+ * **antes** de quitar un ítem desde un día, porque quitarlo los quita todos.
+ *
+ * `null` cuando ese ítem solo está en ese día: entonces no hay nada que avisar
+ * y la confirmación tiene una sola salida.
+ */
+export function describeOtherDays(item: VidaItem, day: VidaDayOfWeek): string | null {
+  const others = daysWithout(item, day)
+  if (others.length === 0) return null
+  // Con el artículo en cada día: «los lunes y los miércoles», que es como lo
+  // escribe el criterio 22 y como se lee en voz alta.
+  const labels = others.map((other) => `los ${pluralDayLabel(VIDA_DAY_LABELS[other])}`)
+  const list =
+    labels.length === 1
+      ? labels[0]!
+      : `${labels.slice(0, -1).join(', ')} y ${labels[labels.length - 1]}`
+  return `también está ${list}`
+}
+
+/** Los días que le quedan a un ítem si se le quita uno, de lunes a domingo. */
+export function daysWithout(item: VidaItem, day: VidaDayOfWeek): VidaDayOfWeek[] {
+  return VIDA_DAY_ORDER.filter((other) => other !== day && item.days.includes(other))
 }

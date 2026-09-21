@@ -13,6 +13,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | building | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+| FEAT-005 | planned | 0/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -611,3 +612,62 @@ tramo sin dato (D8) y la razón de un «No se pudo» (D7) se guardan **en el
 aparato**, porque el API no tiene dónde. El cruce real↔planeado es **de cliente**
 (D1): con dos bloques de la misma actividad el mismo día puede cambiar la pareja,
 y está escrito como limitación conocida. Siguiente: el `feature-architect`.
+
+**FEAT-005 `specified`** (2026-09-20): F4 del plan de Vida, «La plantilla», sobre
+el render aprobado hoy (`docs/vida/assets/06-vida-plantilla.html`, marcos A·B·C·D
+y sus notas al pie). **55 criterios y cuatro tajadas**, con **el API intacto**:
+1 la plantilla **se ve** —pestañas de día, la agenda del día **ordenada por
+hora**, el cajón «Sin hora» con su explicación y el resumen «3h 40 puestas de
+16h 30»— · 2 **se edita desde aquí** con **la misma hoja del catálogo**, ahora
+por ítem, con «Quitar de la plantilla» (y la salida de quitarlo de un solo día) y
+«Activar» de un toque · 3 **«Añadir a mi Vida»** sin salir de la pantalla y el
+primer minuto con seis puntos de partida **con hora**, que es lo que cierra el
+criterio de la fase · 4 la **semana entera** en siete columnas y **«Copiar este
+día a otros»**, que añade lo que falta y no pisa nada. `architect: yes`: la
+cuadrícula semanal por horas **no existe en el repo** y hay que generalizar
+`VidaActivitySheet` / `planVidaItemSave` de «el ítem de esta actividad» a «**este
+ítem**» — código que hoy sostiene el catálogo de FEAT-002. **Las seis preguntas
+que el render dejaba abiertas quedan resueltas por el analista con lo que el
+render enseña** (pestañas en móvil · el interruptor se queda · dos ítems para dos
+horas · copiar un día entra · las notas se quedan · los solapes se ven y no se
+bloquean) y **ninguna bloquea**. Dos cosas verificadas en el repo hermano y
+escritas para que nadie las vuelva a buscar: **el API no tiene unicidad por
+(usuario, actividad)** —`migrations/058_vida_items.sql`; el único índice único es
+el de `client_id`—, así que **pasear a las 7:30 y a las 19:00 son dos ítems
+legales**, y **`vidaItemDelete` existe sin estrenar**: «Quitar de la plantilla»
+es su primer uso y no contradice el «apagar no borra» de FEAT-002, porque son dos
+gestos distintos. Limitación dicha y no disimulada: la tarjeta del catálogo sigue
+enseñando **un** ítem por actividad, así que su hoja tiene que avisar («tiene 2
+horas · se cambian en Plantilla») en vez de enseñar una hora como si fuera la
+única.
+
+**FEAT-005 `planned`** (2026-09-20): plan escrito sobre HEAD `5026236`. La
+implementación de referencia es **`pages/VidaSemanaPage.tsx`** —la única pantalla
+que ya vive de `useVidaItemsQuery` + `useVidaDayHours` para los siete días, con
+sus tres estados distinguidos y su lote— y **no `VidaHoyPage`**, que está abierta
+por el constructor de FEAT-004. El código nuevo cae en
+`pages/VidaPlantillaPage.tsx` (hoy 6 líneas de cascarón), en un util puro nuevo
+`utils/vida-template.utils.ts` que crece con cada tajada, y en cinco componentes
+nuevos. **Ni un documento GraphQL, ni un tipo, ni una clave de caché, ni una
+invalidación**: `invalidateVidaItemQueries` ya cubre lista + sugerencias por
+prefijo, y `VIDA_ITEM_DELETE_MUTATION` ya está en `contracts.test.ts`. Cuatro
+hallazgos que cambian el plan del analista: **(1)** `planVidaItemSave` **no
+necesita lógica nueva**, solo que su parámetro deje de significar «el ítem de
+esta actividad» y signifique «el ítem sobre el que se escribe» —con eso, editar
+por id y crear una segunda hora salen los dos del cuerpo que ya hay—; **(2)**
+`VidaItem.activity` es un `ActivityFollowUpActivityRef` y **no trae
+`categoryId`**, que es lo que la hoja lee, así que se abre con `lockActivity` y
+la cabecera del render en vez de pedir la actividad entera; **(3) copiar un día
+no crea ítems: añade días al ítem que ya existe** (`vidaItemUpdate`), que es lo
+único que hace verdad el criterio 51 y lo que convierte el criterio 22 en su
+salida; **(4)** `useCreateStartingActivities` **deduplica categorías pero no
+actividades**, y el criterio 37 pide lo contrario: es trabajo nuevo de la tajada
+3 y de rebote mejora el primer minuto del catálogo. La cuadrícula semanal se
+confirma **sin hermana**: se escribe pieza nueva y **no se generaliza
+`buildDayAgenda`**, que entra por `ActivityDayPlanItem` con horas obligatorias y
+arrastraría a dos archivos que FEAT-004 tiene abiertos. Las cuatro tajadas **se
+mantienen como las cortó el analista**. Dos cosas sin averiguar, escritas: si
+`useConfirmDialog` admite dos salidas afirmativas (la tajada 2 está planeada como
+bifurcación, no como supuesto) y si el servidor vivo acepta de verdad dos ítems
+de la misma actividad —**nadie lo ha probado contra la API** y desde aquí no se
+puede—. Siguiente: el `feature-builder`, tajada 1.

@@ -100,8 +100,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 1200** (`SearchSelect` ×2, preexistentes) |
-| Paquete | `pnpm build` | chunk inicial **976,5 kB** + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 1230** (`SearchSelect` ×2, preexistentes) |
+| Paquete | `pnpm build` | chunk inicial **983,0 kB** + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 Cerrar cada tajada con `pnpm build`, no solo con `pnpm typecheck`: son el mismo `tsc -b`, pero el estado incremental de `typecheck` dejó pasar una vez un `TS2783` que el build sí cazó (FEAT-003, tajada 3).
 
@@ -145,6 +145,7 @@ Para el `feature-architect`. El módulo de hábitos es la referencia de todo:
 - **Vite en dev acumula errores de HMR si se borran muchos archivos** bajo un servidor arrancado antes. Si ves 504 «Outdated Optimize Dep» o «Failed to reload», es el servidor viejo: repórtalo; el usuario lo reinicia.
 - **El barril de Font Awesome es un único módulo**: cualquier archivo que importe de `@fortawesome/free-solid-svg-icons` a pelo se lleva todos los iconos al chunk inicial. Los iconos del cromo se importan de uno en uno; el catálogo entra por `icon-registry.ts` en diferido. No rompas eso.
 - **Dos constructores a la vez se contaminan la línea base** de lint y tests. Una tajada a la vez.
+- **`Button variant="danger"` no se lee en tema oscuro** (blanco sobre `rgb(255,180,171)`, 1,7:1 medido en FEAT-005). Vive en `shared/ui/Button` y lo usa hábitos: deuda del sistema de diseño, no de una feature. Mientras tanto, las confirmaciones nuevas de Vida usan `secondary`.
 - **`Mi día` ya es de hábitos.** El día del módulo Vida se llama **«Hoy»**. No reutilices el nombre.
 - La regla de producto que manda en Vida y en hábitos: **nada de culpa.** Ni «desperdicio», ni «fallaste», ni recordar el propósito al fallar. Ver `docs/vida/PLAN.md` y `docs/remodel/06-mi-persona.spec.md`.
 

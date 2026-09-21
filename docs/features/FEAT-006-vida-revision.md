@@ -1,7 +1,7 @@
 ---
 id: FEAT-006
 title: Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla
-status: in-review
+status: building
 architect: yes    # pantalla sin hermana (dos carriles alineados por hora, y la semana con lo real de siete días a la vez: catorce consultas donde hoy hay siete), y hay que decidir una sola vez dónde vive la derivación por categoría y la de la semana sin partir en dos `vida-execution.utils.ts`
 area: features/vida
 requested: 2026-09-20
@@ -1022,7 +1022,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | in-review |
+| 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | **accepted** (2026-09-20) |
 | 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | pending |
 | 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | pending |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | pending (**bloqueada hasta que FEAT-005 esté `delivered`**) |
@@ -1338,3 +1338,65 @@ Render se duerme a los 15 min y tarda ~1 min en despertar.
     *(criterio 61, el de la fase)*
 
 ## 4. Review — feature-reviewer
+
+### Tajada 1 — el día se lee (criterios 1–7, 9–25; el 8 a medias)
+
+**Veredicto: `accepted`.** Lo delicado era **no romper Hoy** y no colar nada
+nuevo por la puerta de atrás; las dos cosas las comprobé yo con un arnés propio
+(`src/features/vida/utils/zz-rev-f6.test.ts`, 5 casos, **borrado**).
+
+**Lo que medí**
+
+- **Hoy no cambia.** `buildDayStrip(d, hoy)` **sin** tercer parámetro es
+  `toEqual` a `buildDayStrip(d, hoy, getPlanningWindow(hoy))` en cuatro fechas
+  (hoy, mitad de semana, el domingo que viene y una fuera de ventana), y
+  `clampToPlanningWindow` recorta **exactamente igual** que antes: hoy y el
+  domingo de la semana siguiente se quedan, una fecha lejana cae al borde,
+  `null` da hoy, y **el domingo de ayer siendo lunes sigue cayendo fuera** al
+  planear. **La revisión sí lo abre** (`clampToReviewWindow` lo devuelve tal
+  cual, y llega catorce días atrás), que era el punto del criterio 2.
+- **`uncoveredMinutes`**: 990 sin sesiones, descuenta bien una sesión, **no
+  cuenta dos veces dos solapadas** (900 con 60+60 pisadas), da 0 con una que
+  cubre el día entero y 0 con un tramo degenerado. Es la cifra de «sin
+  registrar» y cuadra con la leyenda.
+- **La historia**: seis variantes —nada registrado, sin plan con sesiones, todo
+  seguido, a medias con «en su lugar» y «no se pudo», día abierto y día
+  futuro—; **ninguna pasa de tres frases** y **ninguna trae una palabra de
+  culpa** (barrí once). **No nombra categorías**: lo único que las lee es el
+  icono y el color de cada fila.
+
+**Lo demás, por lectura del diff:** no hay **consulta, clave, invalidación,
+mutación, documento GraphQL, tipo, `api/` ni `localStorage` nuevos**, y
+**`vida-execution.utils.ts` está sin tocar**. De `routes/` solo cambia
+`vida-paths.ts`, que gana `revisionForDate` —el mismo molde que `hoyForDate`, una
+query string, **ninguna ruta nueva**— y `vida.routes.tsx` y `app-nav.config.ts`
+siguen intactos. `VidaDayStrip` gana `basePath` y `buildDayStrip` su tercer
+parámetro, **los dos aditivos y con valor por defecto**.
+
+**Los dos tests ajenos: acotados y reforzados, no borrados.** El de los
+cascarones pierde `revision` —ya no lo es— y **en su lugar entra uno que afirma
+qué hay** (título, «Entra para ver cómo te fue» y la vía para entrar), que es más
+fuerte que «no hay nada»; en `VidaHoyPage.test.tsx` lo que hay es un test
+**nuevo** para el criterio 25 (la vía a la revisión solo con el día cerrado).
+
+**La decisión que había que juzgar: los umbrales.** El constructor usa los de Hoy
+—±5 min es «calcado», >60 es «movido»— y no los del render, así que «empezó +5»
+se lee **calcado** y «40 min tarde» se lee **empezó +40**. Es **lo correcto**:
+los criterios 9 y 13 mandan usar las etiquetas de Hoy, y esos umbrales los fijó
+el usuario en D6 de FEAT-004. Si algún día quiere que la revisión afine más, es
+una decisión suya, no un defecto. **Queda anotado.**
+
+**Línea base, corrida entera por mí:** typecheck **exit 0** · lint **14 errores /
+0 warnings** · `pnpm test` **2 fallos de 1367** (los dos de `SearchSelect`; **1
+archivo rojo de 104**) · `pnpm build` **exit 0**, chunk inicial **1.030,98 kB**,
+`app-icons` **620,20 kB**, `IconPicker` **4,64 kB**, CSS 230,79 kB.
+
+**Hallazgos, ninguno devuelve:** el **chunk inicial sigue creciendo** (1.030,98
+kB, **nada de iconos**; el troceado del módulo Vida ya venía anotado de
+FEAT-005); y la ventana de la revisión llega hasta **el domingo que viene** por
+el criterio 4 —poder abrir un día futuro para decir que no ha pasado—, cosa
+correcta pero que conviene recordar al escribir la tajada de la semana.
+
+**Lo que no revisé:** ninguna llamada real al API, los **375 px** y el **tema
+oscuro** en un navegador (medidos por el constructor), y la pantalla con datos de
+verdad: `/app/*` está detrás del login.

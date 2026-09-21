@@ -14,10 +14,33 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
-| FEAT-006 | in-review | 1/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-006 | building | 2/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-006, tajada 1 — revisión: `accepted`** (2026-09-20). Lo delicado era **no
+romper Hoy**, y lo medí con arnés propio (5 casos, borrado): `buildDayStrip` sin
+tercer parámetro es **idéntico** al de siempre en cuatro fechas,
+`clampToPlanningWindow` recorta **exactamente igual** —el domingo de ayer siendo
+lunes **sigue cayendo fuera** al planear— y **la revisión sí lo abre**, que era
+el punto del criterio 2. `uncoveredMinutes` descuenta solapes (900 con 60+60
+pisadas) y cuadra con la leyenda. La **historia** no pasa de tres frases en seis
+variantes, **no reprocha** (barrí once palabras) y **no nombra categorías**. Sin
+consulta, clave, invalidación, mutación, documento, tipo, `api/` ni
+`localStorage` nuevos; **`vida-execution.utils.ts` sin tocar**; de `routes/` solo
+`vida-paths.ts`, que gana `revisionForDate` —una query string, **ninguna ruta
+nueva**—. Los dos tests ajenos están **acotados y reforzados**: donde se afirmaba
+«no hay nada» ahora se afirma **qué** hay. **Los umbrales de Hoy** (±5 calcado,
+>60 movido) frente a los del render son **lo correcto** por los criterios 9 y 13
+y por D6 de FEAT-004: queda anotado como decisión del usuario. Línea base corrida
+entera por el revisor: typecheck **exit 0**, lint **14/0**, `pnpm test` **2
+fallos de 1367** (los dos de `SearchSelect`; 1 archivo rojo de 104), `pnpm build`
+**exit 0** con chunk inicial **1.030,98 kB**, `app-icons` **620,20 kB** e
+`IconPicker` **4,64 kB**. Hallazgos: el **chunk sigue creciendo** (nada de
+iconos; el troceado ya venía anotado de FEAT-005) y la ventana de la revisión
+llega hasta el domingo que viene por el criterio 4. **Sin revisar:** 375 px,
+oscuro y cualquier llamada real al API. Siguiente: la tajada 2.
 
 **FEAT-006, tajada 1 `in-review`** (2026-09-20, **sin commitear**; la
 construcción está en la sección 3 del dossier): **el día se lee.**

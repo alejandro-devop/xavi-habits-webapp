@@ -10,7 +10,9 @@ import { VidaTemplateDaySummary } from '@/features/vida/components/VidaTemplateD
 import { VidaTemplateDayTabs } from '@/features/vida/components/VidaTemplateDayTabs'
 import { VidaTemplateItemCard } from '@/features/vida/components/VidaTemplateItemCard'
 import { VidaTemplateNoTimeDrawer } from '@/features/vida/components/VidaTemplateNoTimeDrawer'
+import { VidaTemplateCopyDay } from '@/features/vida/components/VidaTemplateCopyDay'
 import { VidaTemplateRemoveDialog } from '@/features/vida/components/VidaTemplateRemoveDialog'
+import { VidaWeekGrid } from '@/features/vida/components/VidaWeekGrid'
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
 import {
@@ -29,6 +31,8 @@ import {
 import {
   buildTemplateDay,
   buildTemplateGuidance,
+  buildTemplateWeekGrid,
+  buildWeekTotals,
   countTemplateByDay,
 } from '@/features/vida/utils/vida-template.utils'
 import { Alert } from '@/shared/ui/Alert'
@@ -45,9 +49,14 @@ import styles from './VidaPlantillaPage.module.scss'
  * Es la primera pantalla que pinta `VidaItem` **en forma de agenda**: pestañas
  * de día con su cuenta y su punto, el resumen con la barra del día, las cosas
  * del día **ordenadas por hora**, y al final el cajón de las que no tienen
- * hora. Lo que todavía no está: la **cuadrícula de escritorio** (la 4). Un
- * botón muerto sigue siendo peor que ninguno, y por eso «Ver la semana entera»
- * y «Copiar este día a otros» no se pintan.
+ * hora.
+ *
+ * **Desde la tajada 4 está la semana entera** (criterios 42–54): en escritorio
+ * la cuadrícula va **arriba**, siempre visible, y el día elegido sigue debajo;
+ * en móvil se alcanza con **«Ver la semana entera»**, que es **un estado más de
+ * esta página y no una ruta nueva** (criterio 48), con su vuelta al día. Y
+ * **«Copiar este día a otros»**, el atajo que sustituye al arrastrar: le añade
+ * días al ítem que ya existe y **no pisa lo que ya hay** (A7).
  *
  * **Desde la tajada 3 se añade sin salir de aquí** (criterios 29–39): el panel
  * «Añadir a mi Vida» en el aside de escritorio y, en móvil, el mismo panel
@@ -97,6 +106,14 @@ export function VidaPlantillaPage() {
   const [activatingId, setActivatingId] = useState<string | null>(null)
   /** La hoja de «Añadir a mi Vida» en móvil; en escritorio el panel va suelto. */
   const [addOpen, setAddOpen] = useState(false)
+  /**
+   * **La semana entera en móvil** (criterio 48): un estado más de esta misma
+   * página, **sin ruta nueva** —`vida-paths.ts` no se toca—. En escritorio la
+   * cuadrícula está siempre, así que este interruptor solo manda debajo de
+   * 60rem y quien lo hace cumplir es el CSS.
+   */
+  const [weekOpen, setWeekOpen] = useState(false)
+  const [copyOpen, setCopyOpen] = useState(false)
 
   function openSheet(item: VidaItem) {
     setEditing(item)
@@ -275,6 +292,15 @@ export function VidaPlantillaPage() {
     dayStart: dayHours.startTime,
     dayEnd: dayHours.endTime,
   })
+  // La cuadrícula y su total salen de **una sola ventana para los siete días**
+  // (A5): `buildTemplateDay` estira la ventana de *su* día, y siete escalas
+  // distintas no se pueden comparar.
+  const weekGrid = buildTemplateWeekGrid({
+    items,
+    dayStart: dayHours.startTime,
+    dayEnd: dayHours.endTime,
+  })
+  const weekTotals = buildWeekTotals(weekGrid)
   const dayLabel = VIDA_DAY_LABELS[day]
   const guidance = buildTemplateGuidance(templateDay, dayLabel)
   const isDayEmpty = templateDay.timed.length === 0 && templateDay.untimed.length === 0
@@ -284,6 +310,31 @@ export function VidaPlantillaPage() {
       {header()}
 
       <div className={styles.layout}>
+      <div className={styles.main}>
+
+      {/* **La semana entera** (criterios 42–48). En escritorio está siempre;
+          en móvil se pinta solo con «Ver la semana entera» y se vuelve al día
+          con el botón de arriba — **el mismo estado, la misma ruta**. */}
+      <section
+        className={styles.week}
+        data-open={weekOpen ? 'true' : 'false'}
+        aria-label="Tu semana entera"
+      >
+        <p className={styles.weekTotals}>{weekTotals.text}</p>
+        <VidaWeekGrid
+          grid={weekGrid}
+          today={today}
+          selectedDay={day}
+          onOpenItem={openSheet}
+        />
+        <div className={styles.weekBack}>
+          <Button variant="secondary" size="sm" onClick={() => setWeekOpen(false)}>
+            Volver al día
+          </Button>
+        </div>
+      </section>
+
+      <div className={styles.dayView} data-hidden={weekOpen ? 'true' : 'false'}>
       <VidaTemplateDayTabs value={day} onChange={setDay} counts={counts} today={today}>
         <div className={styles.day}>
           <VidaTemplateDaySummary
@@ -292,6 +343,20 @@ export function VidaPlantillaPage() {
             dayStart={dayHours.startTime}
             dayEnd={dayHours.endTime}
             isDefaultSchedule={dayHours.isDefault}
+            actions={
+              <>
+                <Button variant="secondary" size="sm" onClick={() => setCopyOpen(true)}>
+                  Copiar este día a otros
+                </Button>
+                {/* Solo en móvil: en escritorio la cuadrícula ya está arriba y
+                    esto sería una segunda puerta a lo mismo (el CSS lo apaga). */}
+                <span className={styles.weekLink}>
+                  <Button variant="ghost" size="sm" onClick={() => setWeekOpen(true)}>
+                    Ver la semana entera
+                  </Button>
+                </span>
+              </>
+            }
           />
 
           {isDayEmpty ? (
@@ -345,6 +410,8 @@ export function VidaPlantillaPage() {
           )}
         </div>
       </VidaTemplateDayTabs>
+      </div>
+      </div>
 
       {/* **En escritorio el panel va suelto al lado** (criterio 29); en móvil
           esta columna no se pinta y quien abre el panel es el «+» flotante de
@@ -399,6 +466,16 @@ export function VidaPlantillaPage() {
         }}
       />
       ) : null}
+
+      <VidaTemplateCopyDay
+        // Una `key` por apertura: el diálogo parte con los días sin marcar y
+        // sin el resumen de la vez anterior.
+        key={`copy-${day}-${copyOpen ? 'open' : 'closed'}`}
+        open={copyOpen}
+        fromDay={day}
+        items={items}
+        onClose={() => setCopyOpen(false)}
+      />
 
       <VidaTemplateRemoveDialog
         open={removing !== null}

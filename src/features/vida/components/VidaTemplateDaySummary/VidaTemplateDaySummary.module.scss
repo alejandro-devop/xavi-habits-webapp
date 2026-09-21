@@ -133,3 +133,11 @@
 .scheduleNote {
   color: var(--color-text-secondary);
 }
+
+/* Los atajos del día (tajada 4): «Copiar este día a otros» y «Ver la semana
+   entera», como en el marco A. Se envuelven a 375 px en vez de desbordar. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}

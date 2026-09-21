@@ -140,11 +140,71 @@
   }
 }
 
+/* ── Tajada 4: la semana entera ───────────────────────────────────────────
+   Una sola cuadrícula y dos comportamientos: en móvil es **un estado más de
+   esta página** (criterio 48) y en escritorio está siempre arriba. Quien
+   decide cuál es la media query, no un segundo componente. */
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.week {
+  display: none;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.week[data-open='true'] {
+  display: flex;
+}
+
+.weekTotals {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.weekBack {
+  display: flex;
+}
+
+.dayView {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dayView[data-hidden='true'] {
+  display: none;
+}
+
 @media (min-width: 60rem) {
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 20rem;
     align-items: start;
+  }
+
+  /* En escritorio la cuadrícula **está siempre** y el día sigue debajo: quitar
+     el día se llevaría por delante editar desde su tarjeta. */
+  .week {
+    display: flex;
+  }
+
+  .dayView[data-hidden='true'] {
+    display: flex;
+  }
+
+  /* Con la cuadrícula arriba, «Ver la semana entera» y «Volver al día» sobran:
+     serían dos puertas a lo que ya está en pantalla. */
+  .weekBack,
+  .weekLink {
+    display: none;
   }
 
   .aside {

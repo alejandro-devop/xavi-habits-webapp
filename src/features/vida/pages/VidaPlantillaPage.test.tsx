@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { act, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaPlantillaPage } from '@/features/vida/pages/VidaPlantillaPage'
@@ -7,6 +7,7 @@ import type {
   Activity,
   ActivityStatus,
 } from '@/features/vida/types/activity.types'
+import * as vidaItemsApi from '@/features/vida/api/vida-items.api'
 import type { VidaDayOfWeek, VidaItem } from '@/features/vida/types/vida-item.types'
 import { renderWithProviders } from '@/test/render'
 
@@ -63,6 +64,10 @@ vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
   }),
   useCreateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
+// El lote de «Copiar este día a otros» orquesta sobre `api/`, como su molde
+// (`useBuildWeekFromTemplate`): se mockea la capa de API y **no el hook**, para
+// que lo que se afirme sea el cuerpo que viajaría.
+vi.mock('@/features/vida/api/vida-items.api')
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
   useUpdateUserSettingsMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
@@ -231,23 +236,30 @@ describe('la agenda del día (criterios 6, 7, 8, 9 y 13)', () => {
 
   it('un desactivado **no desaparece**: se queda en su hora, con su etiqueta', () => {
     renderWithProviders(<VidaPlantillaPage />)
-    expect(screen.getByText('Salir a correr')).toBeInTheDocument()
-    expect(screen.getByText('desactivada')).toBeInTheDocument()
-    expect(screen.getByText(/no sale en Hoy/)).toBeInTheDocument()
+    // **Acotado en la tajada 4, no debilitado**: desde que existe la
+    // cuadrícula, el mismo nombre se pinta dos veces —en la agenda del día y en
+    // su bloque de la semana—, así que la afirmación se hace sobre la agenda,
+    // que es de lo que hablaba el criterio 8.
+    const agenda = screen.getByRole('list', { name: /viernes, ordenado por hora/i })
+    expect(within(agenda).getByText('Salir a correr')).toBeInTheDocument()
+    expect(within(agenda).getByText('desactivada')).toBeInTheDocument()
+    // La leyenda de la cuadrícula dice lo mismo («trazo punteado = desactivada
+    // · no sale en Hoy»), así que también aquí se mira la agenda.
+    expect(within(agenda).getByText(/no sale en Hoy/)).toBeInTheDocument()
   })
 
-  it('**sigue sin haber botones muertos**: lo de las tajadas 3 y 4 no se pinta', () => {
+  it('**ningún botón muerto**: los dos atajos del día existen y hacen algo', () => {
     renderWithProviders(<VidaPlantillaPage />)
-    // La afirmación de la tajada 1 era «cero botones» y **queda derogada por
-    // los criterios 16, 25 y 26**: abrir la hoja, «Ponerle hora» y «Activar»
-    // son de esta tajada. Lo que sigue valiendo es que **no se pinta nada que
-    // no funcione todavía**: ni «+» (criterio 29, tajada 3), ni «Ver la semana
-    // entera» ni «Copiar este día a otros» (tajada 4).
+    // La afirmación de la tajada 1 era «cero botones» y quedó derogada por los
+    // criterios 16, 25 y 26; la de la tajada 3, que la 4 no se pintaba,
+    // **queda derogada aquí por los criterios 48 y 49**: «Ver la semana
+    // entera» y «Copiar este día a otros» ya funcionan. Lo que sigue valiendo
+    // es la regla de fondo: **no se pinta nada que no haga nada**.
     expect(screen.getAllByRole('tab')).toHaveLength(7)
-    // **Derogado en la tajada 3**: el «+» y el panel de añadir son el criterio
-    // 29 y ya funcionan. Lo que sigue valiendo es la tajada 4.
-    expect(screen.queryByRole('button', { name: /ver la semana entera/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /copiar este día/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /ver la semana entera/i })).toBeEnabled()
+
+    fireEvent.click(screen.getByRole('button', { name: /copiar este día a otros/i }))
+    expect(screen.getByRole('dialog', { name: /copiar tu viernes a otros días/i })).toBeInTheDocument()
   })
 
   it('el cajón «Sin hora» va al final, con su cuenta y su explicación literal', () => {
@@ -274,7 +286,10 @@ describe('la agenda del día (criterios 6, 7, 8, 9 y 13)', () => {
     expect(largo).toHaveLength(60)
     itemsQuery = ready([item('1', { startTime: '08:00', durationMinutes: 30, title: largo })])
     renderWithProviders(<VidaPlantillaPage />)
-    expect(screen.getByText(largo)).toBeInTheDocument()
+    // Acotado a la agenda: la cuadrícula de la tajada 4 pinta el mismo nombre
+    // en su bloque.
+    const agenda = screen.getByRole('list', { name: /viernes, ordenado por hora/i })
+    expect(within(agenda).getByText(largo)).toBeInTheDocument()
   })
 })
 
@@ -734,5 +749,221 @@ describe('el primer minuto, con la plantilla vacía (criterio 36)', () => {
     expect(
       screen.getByText('Un día sin plantilla se vive igual: se registra sobre la marcha.'),
     ).toBeInTheDocument()
+  })
+})
+
+/* ── La semana entera y copiar un día (tajada 4, criterios 42–54) ──────────── */
+
+/**
+ * El reloj de este archivo está congelado (`vi.useFakeTimers`) para que «se abre
+ * el día de hoy» sea una afirmación, y con temporizadores falsos `waitFor` no
+ * avanza solo: el lote de copiar se espera empujando los timers a mano.
+ */
+async function flush() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(20)
+  })
+}
+
+const WEEK = [
+  item('1', {
+    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    startTime: '07:00',
+    durationMinutes: 15,
+    title: 'Bañarme',
+  }),
+  item('2', {
+    days: ['monday'],
+    startTime: '13:00',
+    durationMinutes: 60,
+    title: 'Cocinar y almorzar',
+  }),
+  item('3', { days: ['saturday'], title: 'Poner una lavadora' }),
+  item('4', {
+    days: ['friday'],
+    startTime: '06:45',
+    title: 'Salir a correr',
+    isActive: false,
+  }),
+]
+
+describe('la cuadrícula de la semana (criterios 42–47)', () => {
+  beforeEach(() => {
+    itemsQuery = ready(WEEK)
+  })
+
+  it('enseña **siete columnas** con su cuenta, su tiempo y **hoy marcado**', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const week = screen.getByRole('region', { name: 'Tu semana entera' })
+
+    expect(within(week).getByRole('region', { name: /^lunes · 2 cosas · 1h 15$/ })).toBeInTheDocument()
+    // Hoy es viernes: la columna lo dice en lo que se lee, no solo en el color.
+    expect(within(week).getByRole('region', { name: /^viernes, hoy ·/ })).toBeInTheDocument()
+    expect(within(week).getByRole('region', { name: /^domingo · 0 cosas · 0m$/ })).toBeInTheDocument()
+  })
+
+  it('cada bloque es **un botón con su rótulo completo**: qué, qué día, a qué hora y cuánto', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const week = screen.getByRole('region', { name: 'Tu semana entera' })
+
+    expect(
+      within(week).getByRole('button', { name: 'Abrir Bañarme · lunes a las 7:00 · 15 min' }),
+    ).toBeInTheDocument()
+    expect(
+      within(week).getByRole('button', {
+        name: 'Abrir Salir a correr · viernes a las 6:45 · sin duración · desactivada · no sale en Hoy',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('tocar un bloque abre **la misma hoja** del ítem (criterio 16)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const week = screen.getByRole('region', { name: 'Tu semana entera' })
+
+    fireEvent.click(
+      within(week).getByRole('button', { name: /^Abrir Cocinar y almorzar/ }),
+    )
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('los **sin hora** van debajo de su columna, y una columna sin ellos no pinta nada', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const week = screen.getByRole('region', { name: 'Tu semana entera' })
+
+    expect(
+      within(week).getByRole('button', { name: 'Poner una lavadora · sábado · sin hora' }),
+    ).toBeInTheDocument()
+    expect(
+      within(week).queryByRole('button', { name: /· lunes · sin hora$/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('la leyenda trae **las categorías que aparecen** y lo que significa el punteado', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const week = screen.getByRole('region', { name: 'Tu semana entera' })
+
+    expect(within(week).getByText('Casa')).toBeInTheDocument()
+    expect(
+      within(week).getByText('trazo punteado = desactivada · no sale en Hoy'),
+    ).toBeInTheDocument()
+  })
+
+  it('el total de la semana sale con los números de verdad (criterio 46)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(
+      screen.getByText('8 cosas puestas · 2h 15 a la semana de 115h 30 · tu día va de 6:30 a 23:00'),
+    ).toBeInTheDocument()
+  })
+
+  it('**dos que se pisan se ven los dos**, cada uno en su carril (criterio 47)', () => {
+    itemsQuery = ready([
+      item('a', { days: ['monday'], startTime: '09:00', durationMinutes: 60, title: 'Leer' }),
+      item('b', { days: ['monday'], startTime: '09:30', durationMinutes: 60, title: 'Llamar' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+    const week = screen.getByRole('region', { name: 'Tu semana entera' })
+
+    const uno = within(week).getByRole('button', { name: /^Abrir Leer/ })
+    const dos = within(week).getByRole('button', { name: /^Abrir Llamar/ })
+    // Ninguno se oculta ni se recorta hasta desaparecer: los dos con alto y en
+    // mitades distintas de la columna.
+    expect(uno.style.width).toBe('calc(50% - 0.3rem)')
+    expect(dos.style.left).toBe('calc(50% + 0.15rem)')
+    expect(uno.style.height).not.toBe('0%')
+    expect(dos.style.height).not.toBe('0%')
+    // Y **no se bloquea nada**: ni error ni aviso.
+    expect(within(week).queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
+describe('«Ver la semana entera» en móvil (criterio 48)', () => {
+  beforeEach(() => {
+    itemsQuery = ready(WEEK)
+  })
+
+  it('es **un estado de la misma página**, con vuelta al día y sin cambiar de ruta', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const before = window.location.pathname
+    const week = () => screen.getByRole('region', { name: 'Tu semana entera' })
+    // En móvil quien enseña y esconde es el CSS —`display` por `data-open`—, y
+    // en jsdom los módulos de estilo no se aplican: lo que se afirma aquí es
+    // **el estado**, y que la cuadrícula se ve a 375 px está medido en el
+    // navegador, no aquí.
+    expect(week().dataset.open).toBe('false')
+
+    fireEvent.click(screen.getByRole('button', { name: /ver la semana entera/i }))
+    expect(week().dataset.open).toBe('true')
+    // **Sin ruta nueva**: la URL no se ha movido (criterio 48).
+    expect(window.location.pathname).toBe(before)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Volver al día' }))
+    expect(week().dataset.open).toBe('false')
+    // El día sigue donde estaba: las pestañas no se han tocado.
+    expect(screen.getAllByRole('tab')).toHaveLength(7)
+  })
+})
+
+describe('«Copiar este día a otros» (criterios 49–53)', () => {
+  beforeEach(() => {
+    itemsQuery = ready(WEEK)
+    vi.mocked(vidaItemsApi.updateVidaItem).mockResolvedValue(WEEK[0]!)
+  })
+
+  it('parte del día que se está viendo, cuenta los días y copia **con un update**', async () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(screen.getByRole('button', { name: /copiar este día a otros/i }))
+    const dialog = screen.getByRole('dialog', { name: /copiar tu viernes a otros días/i })
+
+    // Sin días marcados no se puede copiar, y el día de partida no se ofrece.
+    expect(within(dialog).getByRole('button', { name: 'Elige los días' })).toBeDisabled()
+    expect(within(dialog).queryByRole('checkbox', { name: 'viernes' })).not.toBeInTheDocument()
+    // La salida es **«Volver»**.
+    expect(within(dialog).getByRole('button', { name: 'Volver' })).toBeInTheDocument()
+
+    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'sábado' }))
+    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'domingo' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Copiar a 2 días' }))
+
+    await flush()
+    expect(vidaItemsApi.updateVidaItem).toHaveBeenCalledTimes(1)
+    // **Le añade días al ítem que ya existe** (A7): ni un create, ni un delete.
+    expect(vidaItemsApi.updateVidaItem).toHaveBeenCalledWith({
+      id: '1',
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+    })
+    expect(vidaItemsApi.createVidaItem).not.toHaveBeenCalled()
+    expect(vidaItemsApi.deleteVidaItem).not.toHaveBeenCalled()
+    // El desactivado del viernes **no se copia** (criterio 52).
+    expect(vi.mocked(vidaItemsApi.updateVidaItem).mock.calls.map((call) => call[0]!.id)).not.toContain(
+      '4',
+    )
+  })
+
+  it('dice **antes** lo que se queda como está, y la consecuencia de compartir ítem', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(screen.getByRole('button', { name: /copiar este día a otros/i }))
+    const dialog = screen.getByRole('dialog', { name: /copiar tu viernes a otros días/i })
+
+    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'lunes' }))
+
+    expect(
+      within(dialog).getByText('Bañarme ya estaba el lunes, se quedó como estaba'),
+    ).toBeInTheDocument()
+    expect(dialog.textContent).toContain('comparte el mismo ítem')
+    expect(dialog.textContent).toContain('lo que ya tienes a esa hora se queda como está')
+  })
+
+  it('después de copiar, el resumen dice **cuántas y a cuántos días**', async () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(screen.getByRole('button', { name: /copiar este día a otros/i }))
+    const dialog = screen.getByRole('dialog', { name: /copiar tu viernes a otros días/i })
+
+    fireEvent.click(within(dialog).getByRole('checkbox', { name: 'sábado' }))
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Copiar a 1 día' }))
+
+    await flush()
+    expect(within(dialog).getByText('Copiamos 1 cosa a 1 día.')).toBeInTheDocument()
+    expect(within(dialog).getByRole('button', { name: 'Listo' })).toBeInTheDocument()
   })
 })

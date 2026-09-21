@@ -1,11 +1,11 @@
 ---
 id: FEAT-005
 title: La plantilla Vida — tu semana tipo, con hora y duración por ítem
-status: building
+status: delivered
 architect: yes    # pantalla nueva sin hermana (la cuadrícula semanal por horas), y hay que generalizar la hoja del catálogo de «el ítem de esta actividad» a «este ítem», que es código compartido
 area: features/vida
 requested: 2026-09-20
-updated: 2026-09-20   # tajada 3 `accepted`: «Añadir a mi Vida» y el primer minuto (el 39 queda del usuario)
+updated: 2026-09-20   # las cuatro tajadas aceptadas: `delivered` (queda del usuario el criterio 55)
 ---
 
 # FEAT-005 — La plantilla Vida — tu semana tipo, con hora y duración por ítem
@@ -322,7 +322,7 @@ arrastrar y soltar** (`docs/vida/PLAN.md`, decisiones 3, 5 y 13).
 | 1 | **La plantilla se ve.** `/app/vida/plantilla` deja de ser un cascarón: pestañas de día con su cuenta y su punto, el resumen («3h 40 puestas de 16h 30») con la barra del día, la agenda del día **ordenada por hora** con sus tarjetas, el cajón «Sin hora» con su explicación, los desactivados en trazo suave, y los estados vacío · cargando · error · texto largo · 375 px · oscuro. **Solo lectura.** Ya es útil sola: es la primera vez que el usuario ve su día tipo entero y descubre qué tiene sin hora. | in-review |
 | 2 | **La plantilla se edita desde aquí.** La hoja del ítem —la misma del catálogo— abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de cómo queda en Hoy, «Quitar de la plantilla» (con la salida de quitarlo de un solo día) y «Activar» de un toque. Arreglar la plantilla deja de exigir dar la vuelta por el catálogo, y Hoy lo ve al instante. | in-review |
 | 3 | **Añadir a mi Vida, y el primer minuto.** El «+» de móvil y el panel de escritorio: buscar una actividad del catálogo y ponerle días, hora y duración **sin salir de la pantalla**, incluida una **segunda hora** para algo que ya está; y la plantilla vacía con los **seis puntos de partida con hora**. Cierra el criterio de la fase (39). | in-review |
-| 4 | **La semana entera y copiar un día.** Los siete días a la vez con cada bloque a su hora, los sin hora debajo de su columna, la leyenda, el total de la semana, y **«Copiar este día a otros»** — que añade lo que falta, no pisa nada y lo cuenta. Es el atajo que sustituye al arrastrar. | pending |
+| 4 | **La semana entera y copiar un día.** Los siete días a la vez con cada bloque a su hora, los sin hora debajo de su columna, la leyenda, el total de la semana, y **«Copiar este día a otros»** — que añade lo que falta, no pisa nada y lo cuenta. Es el atajo que sustituye al arrastrar. | in-review |
 
 **Por qué este orden:** la 1 es lectura pura sobre datos que **ya existen**
 (`vidaItems` trae la semana entera de una vez), así que se ve con un arnés y se
@@ -1041,7 +1041,7 @@ que recortar.
 | 1 | **La plantilla se ve.** Pestañas de día con cuenta y punto, resumen con barra, agenda del día ordenada por hora, cajón «Sin hora», desactivados en trazo suave, y los estados. Solo lectura. | **Crea:** `utils/vida-template.utils.ts` (+`.test.ts`), `components/VidaTemplateDayTabs/`, `components/VidaTemplateDaySummary/`, `components/VidaTemplateItemCard/`, `components/VidaTemplateNoTimeDrawer/`, `pages/VidaPlantillaPage.module.scss`, `pages/VidaPlantillaPage.test.tsx`. **Modifica:** `pages/VidaPlantillaPage.tsx` (reescritura del cascarón). | 1–15 (el 10, su mitad: el texto y la salida al catálogo; los seis puntos de partida son de la 3) | **accepted** (2026-09-20) |
 | 2 | **La plantilla se edita desde aquí.** La misma hoja, abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de Hoy, «Quitar de la plantilla» con la salida de un solo día, «Ponerle hora» y «Activar». | **Modifica:** `hooks/useSaveVidaItemForActivity.ts` (+ test), `components/VidaActivitySheet/VidaActivitySheet.tsx` (+ test), `hooks/useVidaItems.ts:95` (`onError`), `utils/vida-template.utils.ts`, `components/VidaTemplateItemCard/`, `pages/VidaPlantillaPage.tsx`. **Crea (si `useConfirmDialog` no admite dos salidas):** `components/VidaTemplateRemoveDialog/`. | 16–28 | **accepted** (2026-09-20; el 27 solo lo cierra el usuario, con la API) |
 | 3 | **Añadir a mi Vida, y el primer minuto.** Panel de escritorio y «+» de móvil: buscar, poner días/hora/duración y guardar sin salir; segunda hora para lo que ya está; y los seis puntos de partida **con hora**. | **Crea:** `components/VidaTemplateAddPanel/`. **Modifica:** `utils/vida-catalog.utils.ts` (mapa de *varios* ítems), `utils/vida-template.utils.ts`, `data/vida-starting-points.ts` (+ test), `hooks/useCreateStartingActivities.ts` (+ test), `components/VidaStartingPoints/VidaStartingPoints.tsx`, `components/VidaActivitySheet/VidaActivitySheet.tsx` (criterio 35), `pages/VidaActividadesPage.tsx` (cablea el aviso), `pages/VidaPlantillaPage.tsx`. | 29–41 (y el 39, el criterio de la fase) | **accepted** (2026-09-20; el 39 lo cierra el usuario) |
-| 4 | **La semana entera y copiar un día.** Siete columnas con cada bloque a su hora y su alto, los sin hora debajo, leyenda, total de la semana, y «Copiar este día a otros» que añade lo que falta y no pisa nada. | **Crea:** `components/VidaWeekGrid/`, `components/VidaTemplateCopyDay/`, `hooks/useCopyTemplateDay.ts` (+ test). **Modifica:** `utils/vida-template.utils.ts` (+ test), `pages/VidaPlantillaPage.tsx`. | 42–54 | pending |
+| 4 | **La semana entera y copiar un día.** Siete columnas con cada bloque a su hora y su alto, los sin hora debajo, leyenda, total de la semana, y «Copiar este día a otros» que añade lo que falta y no pisa nada. | **Crea:** `components/VidaWeekGrid/`, `components/VidaTemplateCopyDay/`, `hooks/useCopyTemplateDay.ts` (+ test). **Modifica:** `utils/vida-template.utils.ts` (+ test), `pages/VidaPlantillaPage.tsx`. **Añade:** `components/VidaTemplateDaySummary/` (prop aditiva `actions`). | 42–54 | **accepted** (2026-09-20; el 53 se sostiene en la invalidación de siempre y el 55 lo cierra el usuario) |
 
 El criterio **55** lo cierra el usuario, con la API despierta y la sesión
 iniciada: **los agentes no entran a `/app/*`** y eso queda dicho, no disimulado.
@@ -1610,6 +1610,180 @@ nuevo del hook. Ninguna afirmación de producto de FEAT-002 se debilitó: el car
 10. Vete a **Hoy** sin recargar: los huecos y «Armar desde la plantilla» tienen
     que ver lo añadido, y un día **ya armado** tiene que seguir igual.
 
+### Tajada 4 — la semana entera y copiar un día (criterios 42–54)
+
+**Resumen para quien revise, en tres líneas:**
+
+1. **La semana entera existe.** Siete columnas con cada cosa **a su hora y con
+   el alto de su duración** sobre **una sola ventana para los siete días**, la
+   cabecera «L · 7 · 3h 45» con **hoy marcado**, los **sin hora** en píldoras
+   punteadas debajo de su columna, la **leyenda** por categoría, el total
+   «8 cosas puestas · 2h 15 a la semana de 115h 30 · tu día va de 6:30 a 23:00»
+   y **dos que se pisan se ven los dos**, en carriles. En escritorio está
+   siempre arriba; en móvil se abre con **«Ver la semana entera»**, que es **un
+   estado más de esta página** —`vida-paths.ts` sin tocar—. Y **«Copiar este día
+   a otros»**: días destino, «Copiar a 2 días», «Volver», y **un `vidaItemUpdate`
+   por ítem** que añade días y **no pisa ni borra nada**.
+2. **Ni un documento GraphQL, ni un tipo, ni un `api/`, ni una clave de caché,
+   ni una invalidación nueva**, ni `localStorage`, ni una ruta, ni un Font
+   Awesome a pelo. Copiar pasa por `vidaItemsApi.updateVidaItem`, que ya existía,
+   e invalida con `invalidateVidaItemQueries` **una sola vez**.
+3. **Lo que más probable haya roto:** la cuadrícula **pinta los mismos nombres
+   que la agenda del día**, así que en jsdom hay ahora **dos elementos con el
+   mismo texto** y **tres afirmaciones del test de la pantalla tuve que
+   acotarlas** —dos a la agenda (`getByText` → `within(agenda)`) y la de «la
+   tajada 4 no se pinta», que **queda derogada por los criterios 48 y 49** y
+   ahora afirma lo contrario: que los dos atajos existen y hacen algo—. Y en
+   escritorio **la pantalla es más larga**: la cuadrícula va **encima** del día,
+   que sigue debajo entero.
+
+**Archivos.** Creados: `components/VidaWeekGrid/` (`.tsx` + `.module.scss` +
+`index.ts`), `components/VidaTemplateCopyDay/` (los tres),
+`hooks/useCopyTemplateDay.ts` y `hooks/useCopyTemplateDay.test.tsx`.
+Modificados: `utils/vida-template.utils.ts` (+ su `.test.ts`),
+`pages/VidaPlantillaPage.tsx` (+ `.module.scss` + `.test.tsx`) y
+`components/VidaTemplateDaySummary/` (una prop **aditiva**, `actions`, para los
+dos atajos del marco A). Es la tabla del arquitecto más esa prop.
+
+**Criterio por criterio, con la evidencia:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 42 | cumplido | Siete columnas en `VidaWeekGrid`, cada bloque con `top`/`height` **en porcentaje** sobre la ventana común. Test puro: un ítem 06:30 de 99 min da `topPercent` 0 y `heightPercent` = 99/990. **Visto en el navegador** (arnés borrado): 41 bloques pintados, los de 15 min miden **18 px** —la misma escala del render (0,62 px por minuto)—. La escala sale de `useVidaDayHours`, así que es el horario de los ajustes. |
+| 43 | cumplido | Cabecera «L» + «7 · 3h 45» (cuántas cosas y cuánto), y **hoy marcado** por `data-today` en la cabecera y en la columna —color **y** peso, más el rótulo que se lee: el test busca la región `viernes, hoy · …` y la encuentra—. El tiempo de la columna es **la unión** de los tramos, el mismo número que `plannedMinutes` del resumen del día: test que lo compara con `buildTemplateDay`. |
+| 44 | cumplido | Los «sin hora» van en la fila de pie, bajo su columna, como píldoras **punteadas**, con el rótulo «sin hora» a la izquierda. Test: la píldora «Poner una lavadora · sábado · sin hora» existe y **ninguna columna sin ellos pinta nada**. |
+| 45 | cumplido | Una entrada por categoría **de las que aparecen**, ordenadas por nombre (test puro con dos categorías y tres ítems), más «trazo punteado = desactivada · no sale en Hoy». El desactivado se pinta **en su hora**, en trazo discontinuo y sin relleno de categoría. |
+| 46 | cumplido | `buildWeekTotals` escribe la línea entera y está probada con números: «6 cosas puestas · 5h a la semana de 115h 30 · tu día va de 6:30 a 23:00», «1 cosa puesta» en singular y la semana vacía en cero. En pantalla, con los datos del test: **«8 cosas puestas · 2h 15 a la semana de 115h 30 · tu día va de 6:30 a 23:00»**. |
+| 47 | cumplido | Carriles: dos ítems 9:00–10:00 y 9:30–10:30 salen en **carriles 0 y 1 con `laneCount` 2**, tres a la misma hora dan tres carriles, y lo que no se pisa ocupa la columna entera. En la pantalla se mide el estilo: uno queda en `width: calc(50% - 0.3rem)` y el otro en `left: calc(50% + 0.15rem)`, **los dos con alto > 0**. **No se bloquea nada**: ni `role="alert"` ni aviso. Y la cuenta de la columna **no suma dos veces** lo pisado (9:00–10:30 con dos bloques = 60 min, no 90). |
+| 48 | cumplido, con el matiz dicho | «Ver la semana entera» pone `data-open="true"` en la sección y `data-hidden="true"` en el día **sin mover la URL** (el test compara `window.location.pathname` antes y después), y «Volver al día» deshace. Quien enseña y esconde es **el CSS** (`display` por `data-open`), y en jsdom los módulos de estilo no se aplican: **lo que se afirma en el test es el estado**; que a 375 px se vea la cuadrícula y se desplace está medido en el navegador. |
+| 49 | cumplido | El diálogo parte **del día que se está viendo** («Copiar tu viernes a otros días»), **el día de partida no se ofrece** como destino, sin días marcados el botón dice «Elige los días» y está **apagado**, con dos marcados dice **«Copiar a 2 días»**, y la salida es **«Volver»** (más la «×» del `Modal`), que no llama a nadie. |
+| 50 | cumplido | `planCopyDay`: con «Pasear» el lunes a las 7:30 y **otro** «Pasear» el sábado a las 19:00, copiar lunes → sábado **no produce ningún update** y el resumen dice «*Pasear a las mascotas* ya estaba el sábado, se quedó como estaba». En la pantalla, esa línea sale **antes de copiar**. El cuerpo que viaja es `{ id, days }` y **nada más** (test sobre las claves): **ni un `vidaItemCreate` ni un `vidaItemDelete`** en ninguna ruta, y los días que ya tenía **siguen dentro** —copiar no borra nunca nada—. |
+| 51 | cumplido | El diálogo lo dice siempre: «Un día copiado **comparte el mismo ítem**: si después le cambias la hora, cambia en los dos días. Para separarlos, quítalo de un solo día desde su hoja» — que es la salida del criterio 22, ya construida en la tajada 2. Es verdad **porque copiar es un `update`** (A7), no un `create`. |
+| 52 | cumplido | Fallo parcial probado con el API simulado: con dos ítems y el segundo fallando, el resultado trae `done: [Bañarme]` y `failed: [Leer]` y el aviso dice **«Copiamos 1 cosa a 1 día; Leer se quedó sin copiar.»**; si fallan **todos**, dice «No pudimos copiar tu lunes (Bañarme). Tu plantilla se quedó como estaba» y **nunca** se escribe «copiado». Los **desactivados no se copian**: con uno apagado y otro no, el API se llama **una sola vez**. |
+| 53 | cumplido **hasta donde llega un agente** | Una sola `invalidateQueries` con `['vida', 'items']`, que es **prefijo** de sugerencias y de lo tomado hoy (`invalidate-vida-queries.ts:77`), y solo si algo cambió de verdad: test con espía sobre el `QueryClient`. Las cuentas de las pestañas, el resumen y la cuadrícula salen **todos de `itemsQuery.data`**, así que se recalculan con la lista nueva. **Que Hoy lo vea sin recargar contra el API de verdad no lo he visto nunca**: es del recorrido del usuario. |
+| 54 | cumplido | Los tres estados son **los de la pantalla** y cortan antes de pintar la cuadrícula: sin sesión, esqueletos, y «No pudimos cargar tu plantilla» + **Reintentar** (tests de la tajada 1, siguen verdes); la **semana vacía** no llega nunca a siete columnas mudas porque el texto del criterio 10 se pinta antes (`hasAnything`). A 375 px, medido en el navegador: `scrollWidth` **375 = clientWidth** y **cero elementos** fuera del contenedor; **el que se desplaza es el contenedor de la cuadrícula** (555 px de ancho dentro de 343 visibles), nunca el cuerpo. **Oscuro**: lo nuevo va de **5,03:1** (la hora pequeña dentro de un bloque, `--color-text-secondary` sobre el tinte de la categoría) a **12,3:1**; en claro, de **5,42:1** a **7,15:1**. |
+
+**Lo que no se puede cerrar desde aquí, y no lo disimulo:** **ninguna llamada
+real al API**. Todo `/app/*` está detrás del login y los agentes no entran: lo
+de arriba está medido con **tests** (`vitest` + Testing Library, con la capa
+`api/` simulada) y con un **arnés temporal** (`src/harness-semana.html` +
+`.tsx`, con datos sintéticos, **ya borrado**). **Nunca he visto a
+`vidaItemUpdate` copiar un día de verdad**, ni a Hoy releer la plantilla después
+(criterio 53), ni la cuadrícula con la cuenta del usuario.
+
+**Decisiones mías, fuera de lo que decía el plan, todas revertibles:**
+
+1. **En escritorio la cuadrícula va ARRIBA y el día sigue debajo.** El marco C
+   del render enseña solo la semana, sin pestañas de día. Quitar el día en
+   escritorio se llevaría por delante **editar desde la tarjeta**, «Ponerle
+   hora», «Activar» y el cajón «Sin hora» —las tajadas 2 y 3 enteras—, así que
+   la cuadrícula se suma en vez de sustituir. Es una media query si se quiere al
+   revés.
+2. **Los bloques son botones y abren la misma hoja del ítem.** La regla del
+   repositorio permitía «cuadrícula `aria-hidden` + lectura en texto debajo» o
+   «cada bloque un botón con `aria-label` completo»; elegí lo segundo porque
+   duplicar la semana en texto son 43 líneas que nadie lee. Y si son botones,
+   **tienen que hacer algo**: abren la hoja que ya existe. El rail de horas y
+   las rayas sí son `aria-hidden`.
+3. **Alto mínimo de bloque: 30 minutos de escala** (`TEMPLATE_GRID_MIN_BLOCK_MINUTES`).
+   No es una duración inventada —`durationMinutes` sigue llegando `null` y la
+   lectura sigue diciendo «sin duración»—: es lo que impide que un ítem sin
+   duración mida 0 % y **desaparezca**, que es lo que el criterio 47 prohíbe. El
+   render hace lo mismo (dibuja los de 15 min con el alto de ~30).
+4. **La hora dentro del bloque solo se escribe si cabe** (`showTime`, 40 min).
+   Con dos líneas en un bloque de 18 px **no se leía ninguna**: lo vi en el
+   navegador y lo arreglé. La hora **no se pierde**: está en el rail y en el
+   rótulo que se lee.
+5. **La ventana común se estira con el alto mínimo dentro**, no solo con la
+   duración real: si no, algo a las 22:50 se recortaría contra el borde. Y el
+   «tu día va de …» del total **dice la ventana estirada**, no el horario de los
+   ajustes, porque es la que se está pintando.
+6. **`planCopyDay` devuelve `{ input, title, addedDays }`, no `VidaItemUpdateInput`
+   a secas.** El hook necesita el nombre para poder decir **cuál** falló, que es
+   lo que hace su molde (`useBuildWeekFromTemplate` nombra los días que no
+   salieron). El `input` que viaja es exactamente `{ id, days }`.
+7. **Un ítem que ya estaba en el día destino también se dice** (`reason:
+   'already-there'`), no solo el que choca con otro. El usuario marcó ese día y
+   merece saber qué pasó con él. En la **vista previa** se nombran **tres** y el
+   resto se cuentan («y 3 más que también se quedan como están»), porque con una
+   semana llena la lista tapaba el botón; el resumen de después sí las nombra
+   todas.
+8. **Los dos atajos del día viven en el resumen** (`actions`), y no hay un panel
+   «Copiar un día» en el aside de escritorio como en el marco C: **una sola
+   puerta** a copiar, la misma en los dos tamaños. «Ver la semana entera» y
+   «Volver al día» **se apagan en escritorio**, donde la cuadrícula ya está.
+
+**Lo que descubrí y no estaba en el plan:**
+
+- **El aviso de la tajada 1 era real y se nota**: `buildTemplateDay` estira la
+  ventana **por día**, así que la cuadrícula **no puede** construirse llamándola
+  siete veces. `buildTemplateWeekGrid` calcula la ventana mirando **los siete
+  días a la vez** y la reparte; hay un test que lo fija (algo a las 5:00 el
+  domingo mueve la escala del lunes).
+- **El total de la semana y el resumen del día pueden discrepar si no se tiene
+  cuidado**: `countTemplateByDay` suma **duraciones** y `buildTemplateDay` suma
+  **la unión**. La columna usa la unión, para que la cabecera y el resumen del
+  día digan lo mismo; las pestañas siguen enseñando solo la **cuenta**, así que
+  no hay dos números distintos en pantalla.
+- **`waitFor` no avanza con los temporizadores falsos** de este archivo de
+  tests: las dos pruebas del lote empujan los timers a mano (`flush()`). Queda
+  escrito para el próximo.
+- Sin tocar: `vida-agenda.utils.ts`, `VidaDayBudget`, `VidaAgendaBlock`,
+  `vida-build-day.utils.ts`, `usableTemplateItems`, `buildVidaItemsByActivity`,
+  `findVidaItemForActivity`, `graphql/`, `api/`, `types/`, `vida-paths.ts`,
+  `app-nav.config.ts` y `shared/ui/`.
+
+**La línea base, corrida entera antes y después:**
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** (exit 0) |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos |
+| `pnpm test` | 2 fallos de 1259 | **2 fallos de 1305** (los dos de `SearchSelect`; **+46 tests**) |
+| `pnpm build` | inicial 994,33 kB · `app-icons` 620,20 · `IconPicker` 4,64 | **exit 0**, inicial **1.007,76 kB** (+13,43 kB, **ninguno de iconos**)** , `app-icons` **620,20 kB** e `IconPicker` **4,64 kB** clavados (CSS 222,14 kB)** |
+
+`graphify update .`: **3428 nodos, 3987 aristas, 478 comunidades**.
+
+**El recorrido manual, para el usuario — FEAT-005 entera (criterio 55)** (con la
+API despierta —Render tarda ~1 min— y la sesión iniciada; es lo único que ningún
+agente puede hacer):
+
+1. Entra en **Vida → Plantilla**: se abre **el día de hoy**, con las siete
+   pestañas, su cuenta y su punto. Muévete con las **flechas ←/→**.
+2. Abre un ítem tocando su tarjeta, **cámbiale la hora** y comprueba que la
+   agenda **se reordena sola**.
+3. **Quítale la hora** al mismo ítem: tiene que caer al cajón **«Sin hora»**.
+   Desde ahí, **«Ponerle hora»** y que vuelva a su sitio.
+4. **Desactiva uno** con el interruptor de la hoja: se queda **en su hora**, en
+   trazo suave, con «desactivada · no sale en Hoy». **«Activar»** lo devuelve de
+   un toque.
+5. **Quita uno de un solo día** («Quitarlo solo del \<día\>») y comprueba que
+   **sigue en los otros** y que **la actividad sigue en tu catálogo**.
+6. En **«Añadir a mi Vida»** (el panel de escritorio o el «+» de móvil): busca
+   una actividad, ponle **días, hora y cuánto** y guárdala **sin salir de la
+   pantalla**.
+7. **Añádele una segunda hora** a una que ya estaba: la pantalla tiene que
+   avisar «ya está a las 7:30 · esto le añade otra hora» y quedar **dos**.
+   *(Esto es lo que nunca se ha probado contra el servidor: si algo va a fallar,
+   falla aquí.)*
+8. **Mira la semana entera**: en escritorio está arriba; en móvil, botón **«Ver
+   la semana entera»** y **«Volver al día»**. Comprueba que **hoy está marcado**,
+   que los **sin hora** salen debajo de su columna, que la **leyenda** trae tus
+   categorías y que el total de arriba cuadra con tu horario de
+   `/app/vida/ajustes`.
+9. **Copia un día a otros tres**: elige el día, marca los destinos, lee lo que
+   dice que **se queda como está** y pulsa «Copiar a 3 días». Comprueba que
+   **lo que ya tenías no se movió** y que lo copiado aparece en las otras
+   columnas **sin recargar**.
+10. Abre **uno de los copiados** y cámbiale la hora: tiene que cambiar **en
+    todos sus días a la vez** (comparten ítem). Si quieres separarlos, «quitarlo
+    solo de ese día» y volver a añadirlo con otra hora.
+11. Vete a **Hoy** sin recargar: los huecos y **«Armar desde la plantilla»**
+    tienen que ver todo lo cambiado, y un día **ya armado** tiene que seguir
+    **exactamente igual**.
+12. En el **móvil de verdad** y en **tema oscuro**: sin scroll horizontal de la
+    página —solo la cuadrícula se desplaza— y todo legible.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — la plantilla se ve (criterios 1–15)
@@ -1929,3 +2103,113 @@ los puntos de partida son **los que ya había**.
 actividad creada de verdad, ni un ítem—, los **375 px** y el **tema oscuro** en
 un navegador, y el **criterio 39**, que es del usuario: dejar un día entero
 puesto sin salir de `/app/vida/plantilla`.
+
+### Tajada 4 — la semana entera y copiar un día (criterios 42–54)
+
+**Veredicto: `accepted`**, y con ella **la feature entera**. Los trece criterios
+se cumplen, **no hay una sola mutación, documento, tipo, clave de caché ni
+invalidación nueva** —que es lo que el arquitecto prohibía—, y las dos partes
+delicadas —`planCopyDay` y la **ventana común**— las medí yo con un arnés propio
+(`src/features/vida/utils/zz-rev-f5t4.test.ts`, 12 casos, **ya borrado**, sin
+`node:*`).
+
+**Lo que prohibía el arquitecto: cumplido.** El diff **no toca** `graphql/`,
+`api/`, `types/`, `hooks/useVidaItems.ts` ni `invalidate-vida-queries.ts`.
+`useCopyTemplateDay` importa **el `vidaItemsApi` que ya existía** y llama a
+**`invalidateVidaItemQueries`**, la de siempre: copiar es **un
+`vidaItemUpdate` por ítem** con `{ id, days }` y nada más.
+
+**`planCopyDay`, medido por mí**
+
+| Qué comprobé | Resultado |
+|---|---|
+| Un ítem **desactivado** | **No se copia** (criterio 52). |
+| Un día que el ítem **ya tiene** | No se añade, y sale en `skipped` como `already-there`: el usuario marcó ese día y se le dice qué pasó. |
+| Otro ítem de **la misma actividad** en el destino, **a otra hora** | **No se copia nada** y se nombra (`other-item`): es el «ya estaba el sábado, se quedó como estaba» del criterio 50. |
+| Ítems que **no son del día origen** | **No se tocan**: el plan solo lleva el del día que se copia. |
+| El `days` que viaja | Siempre la **unión** de los que tenía más los añadidos: **nunca `[]`**, **nunca se quita un día**, y el **origen nunca es destino**. |
+| Nada que copiar | Cero actualizaciones, sin inventar viajes. |
+
+**La cuadrícula, medida por mí**
+
+- **La ventana es común, no por día** (el aviso que yo mismo dejé en la tajada
+  1): con algo a las **05:00 el domingo**, las siete columnas arrancan a las 5:00
+  y el bloque del **lunes** se coloca contra **esa** escala —comprobé el
+  `topPercent` contra la fórmula, no de vista—. Comparar columnas significa algo.
+- **Dos que se pisan se ven los dos**, en carriles distintos (criterio 47), y la
+  cabecera de la columna cuenta **la unión** (90 min con 60+60 pisados), el
+  mismo número que el resumen del día: la vista semanal y la diaria **no se
+  contradicen**.
+- Los **sin hora** van aparte y una columna sin ellos **no pinta nada**
+  (criterio 44); el **desactivado se pinta** y `hasInactive` enciende su línea de
+  leyenda (45); la **semana vacía se declara vacía** (54).
+
+**Las tres decisiones que había que juzgar**
+
+1. **Los bloques son botones con `aria-label` completo, no un lienzo
+   `aria-hidden` con tabla oculta.** Lo comparé con la regla de `ChartPanel`
+   —que existe porque un SVG no se lee— y **aquí se cumple mejor su intención**:
+   cada dato es un control **enfocable** cuyo nombre lo dice entero, y lo que va
+   `aria-hidden` es solo el cromo (rejilla, horas, marcas). Una tabla oculta
+   añadiría una segunda lectura del mismo dato. **Vale, y queda escrito.**
+2. **En escritorio la cuadrícula se suma encima del día en vez de sustituirlo.**
+   El criterio 42 dice «la pantalla enseña **los siete días a la vez**» y **no**
+   dice «en vez del día»; el marco C del render sí lo sustituye. **Mando del
+   criterio**, como ya se hizo en FEAT-004 cuando render y criterio no
+   coincidían: enseñar las dos cosas **cumple el 42 y no pierde nada** —el día
+   es donde se edita, y la tajada 2 vive ahí—. **Recorte consciente, anotado**;
+   si al verlo el usuario prefiere que sustituya, es una decisión suya y de una
+   línea.
+3. **El alto mínimo de 30 min de escala** para que un ítem corto no desaparezca:
+   es lo que sostiene el «ninguno se recorta hasta desaparecer» del criterio 47.
+
+**Los demás criterios**
+
+| # | Veredicto del revisor | Cómo lo comprobé |
+|---|---|---|
+| 43 · 46 | cumplidos | Cabecera «L · 7 · 3h 45» con hoy marcado y el total semanal, con los números saliendo de la misma aritmética de la columna. |
+| 48 | cumplido | En móvil «Ver la semana entera» / «Volver al día» es **estado de la misma página**: **ninguna ruta nueva** (nada cambia en `vida.routes.tsx` ni en `vida-paths.ts`). |
+| 49 · 51 | cumplidos | El diálogo «¿Copiar tu viernes a otros días?» con «Copiar a N días» y salida **«Volver»**; la consecuencia de compartir ítem la enseña la hoja de la tajada 2. |
+| 50 · 52 | cumplidos | La tabla de `planCopyDay`. **Copiar no borra nunca nada**: el único campo que viaja es `days`, y siempre creciendo. |
+| 53 | cumplido | `invalidateVidaItemQueries` es la misma que ya refresca pestañas, resumen, cuadrícula y lo que Hoy ofrece: sin clave nueva. |
+| 54 | cumplido | Semana vacía, cargando y error con «Reintentar» heredan los estados de la tajada 1, que ya medí. A **375 px** se desplaza **el contenedor**, no el cuerpo: eso lo midió el constructor, **no yo**. |
+| 55 | **del usuario** | El recorrido entero con la API despierta. No lo doy por cerrado. |
+
+**Las tres afirmaciones tocadas: justificadas.** Dos se **acotaron** con
+`within(agenda)` —«Salir a correr» y «desactivada» ahora salen **dos veces** en
+la página, porque la cuadrícula las pinta también— y la tercera, el test de
+«ningún botón muerto», **conserva su identidad y se hace más fuerte**: donde
+antes afirmaba que «Ver la semana entera» y «Copiar este día» **no** estaban,
+ahora afirma que el primero está **habilitado** y que el segundo **abre su
+diálogo**. Ninguna se borró.
+
+**Línea base, corrida entera por mí**
+
+| Qué | Resultado |
+|---|---|
+| `pnpm typecheck` | **exit 0**, limpio |
+| `pnpm lint` | **14 errores / 0 warnings** |
+| `pnpm test` | **2 fallos de 1305** (los dos de `SearchSelect`; **1 archivo rojo de 102**) |
+| `pnpm build` | **exit 0** · chunk inicial **1.007,76 kB** · `app-icons` **620,20 kB** · `IconPicker` **4,64 kB** · CSS 222,14 kB |
+
+Sin `localStorage`, sin Font Awesome a pelo, sin `variant="danger"` en los
+botones de copiar, y sin una palabra de culpa en el diálogo.
+
+**Hallazgos anotados, ninguno devuelve**
+
+1. **El chunk inicial pasó del megabyte** (1.007,76 kB). **No es de iconos** —
+   `app-icons` e `IconPicker` siguen clavados— y ninguna tajada lo disparó sola,
+   pero el módulo Vida ya pesa lo suyo: merece su propia tarea de troceado.
+2. **La cuadrícula se suma al día en escritorio** (decisión 2 de arriba).
+3. **La misma actividad se lee dos veces en la página** (en la agenda y en la
+   cuadrícula): es lo que obligó a acotar dos tests, y con un lector de pantalla
+   significa recorrer dos veces lo mismo.
+4. Siguen abiertos los de las tajadas anteriores: `Button variant="danger"`
+   ilegible en oscuro (transversal), las píldoras no elegidas en 5,01:1, el
+   panel que sin sesión diría «todavía no tienes actividades», el renombrado de
+   «Cocinar», y la dependencia de que `notes` siga en la selección GraphQL.
+
+**Lo que no revisé, y no lo disimulo:** ninguna llamada real al API —ni un
+`vidaItemUpdate` de copiar—, los **375 px** y el **tema oscuro** en un navegador,
+y la pantalla dentro de `/app/vida/plantilla` con datos de verdad. **El criterio
+55 es del usuario** y es el único que cierra la feature de verdad.

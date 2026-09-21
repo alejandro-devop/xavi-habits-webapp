@@ -1,0 +1,1 @@
+export { VidaTemplateCopyDay } from './VidaTemplateCopyDay'

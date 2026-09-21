@@ -1,0 +1,1 @@
+export { VidaWeekGrid } from './VidaWeekGrid'

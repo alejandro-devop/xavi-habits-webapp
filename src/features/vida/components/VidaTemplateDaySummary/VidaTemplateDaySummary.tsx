@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import { VIDA_DAY_LABELS } from '@/features/vida/utils/vida-date.utils'
 import {
@@ -19,6 +20,13 @@ type VidaTemplateDaySummaryProps = {
   dayEnd: string
   /** El horario es el respaldo del cliente, no una elección del usuario. */
   isDefaultSchedule: boolean
+  /**
+   * Los atajos del día, **opcionales y aditivos** (tajada 4): «Copiar este día
+   * a otros» y «Ver la semana entera», que en el render viven justo debajo de
+   * la frase de guía (marco A). Sin ellos el resumen es exactamente el de la
+   * tajada 1.
+   */
+  actions?: ReactNode
 }
 
 /**
@@ -40,6 +48,7 @@ export function VidaTemplateDaySummary({
   dayStart,
   dayEnd,
   isDefaultSchedule,
+  actions,
 }: VidaTemplateDaySummaryProps) {
   const label = VIDA_DAY_LABELS[day.day]
   const totals = describeTemplateDayTotals(day)
@@ -83,6 +92,8 @@ export function VidaTemplateDaySummary({
       </ul>
 
       <p className={styles.guidance}>{guidance}</p>
+
+      {actions ? <div className={styles.actions}>{actions}</div> : null}
 
       <p className={styles.schedule}>
         Tu día · {formatTimeForDisplay(dayStart)} → {formatTimeForDisplay(dayEnd)}

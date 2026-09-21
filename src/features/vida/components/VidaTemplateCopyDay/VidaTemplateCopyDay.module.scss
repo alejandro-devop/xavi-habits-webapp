@@ -1,0 +1,142 @@
+/* «Copiar este día a otros». Mismo molde que `VidaTemplateRemoveDialog`: un
+   `Modal` corto, «Volver» a la izquierda y nada en rojo — aquí no se destruye
+   nada, y además `danger` no se lee en tema oscuro. */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.lead {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Las seis píldoras de día: a 375 px se envuelven, no desbordan. */
+.days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  width: 100%;
+  padding: 0 0 0.3rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.75rem;
+  background: var(--aura-glass-1);
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+  }
+
+  &:focus-within {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* El día elegido se distingue **por algo más que el color**: borde y peso. */
+.day[data-checked='true'] {
+  border-color: color-mix(in srgb, var(--color-primary) 65%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-text);
+}
+
+/* La casilla de verdad sigue ahí (el teclado y los lectores la usan); lo que se
+   ve es la píldora. */
+.check {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.note,
+.preview {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.preview {
+  color: var(--color-text);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.shared {
+  margin: 0;
+  padding-top: 0.2rem;
+  border-top: 1px solid var(--color-glass-border);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.resultHead {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

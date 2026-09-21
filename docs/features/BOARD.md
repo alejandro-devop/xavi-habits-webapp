@@ -13,7 +13,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
-| FEAT-005 | building | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
+| FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | planned | 0/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
@@ -27,6 +27,118 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+| FEAT-005 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
+
+**FEAT-005 `delivered`** (2026-09-20, **sin commitear**). Cuarta revisión:
+**`accepted`**, y con ella las cuatro tajadas. **Nada de lo que el arquitecto
+prohibía**: el diff **no toca** `graphql/`, `api/`, `types/`,
+`hooks/useVidaItems.ts` ni `invalidate-vida-queries.ts` — copiar es **un
+`vidaItemUpdate` por ítem** con `{ id, days }` y la invalidación de siempre.
+**`planCopyDay`, medido con arnés propio** (12 casos, borrado): no copia
+desactivados, no añade un día que el ítem ya tiene, **no pisa otro ítem de la
+misma actividad a ninguna hora** —lo nombra en vez de copiarlo—, no toca ítems de
+otros días, y el `days` que viaja es siempre **la unión**: nunca `[]`, nunca
+quita un día, y el origen nunca es destino. **La cuadrícula usa una ventana
+común** —con algo a las 05:00 el domingo las siete columnas arrancan ahí, y
+comprobé el `topPercent` del lunes contra la fórmula—, **dos que se pisan se ven
+los dos** en carriles distintos, y la cabecera cuenta **la unión** (90 min con
+60+60 pisados), el mismo número que el resumen del día. Las **tres decisiones
+juzgadas y escritas**: los bloques son **botones con `aria-label` completo** en
+vez de lienzo con tabla oculta —cumple mejor la intención de la regla de
+`ChartPanel`, porque cada dato es un control enfocable—; en escritorio la
+cuadrícula **se suma al día** en vez de sustituirlo, que es **lo que dice el
+criterio 42** aunque el marco C del render sustituya (manda el criterio, y no se
+pierde nada); y el alto mínimo de 30 min de escala sostiene el criterio 47. Las
+**tres afirmaciones tocadas están justificadas**: dos acotadas con
+`within(agenda)` porque la cuadrícula pinta los mismos textos, y la de «ningún
+botón muerto» **se hizo más fuerte** (ahora afirma que los dos atajos están
+habilitados y que el diálogo abre). Línea base corrida entera por el revisor:
+typecheck **exit 0**, lint **14/0**, `pnpm test` **2 fallos de 1305** (los dos de
+`SearchSelect`; 1 archivo rojo de 102), `pnpm build` **exit 0** con chunk inicial
+**1.007,76 kB**, `app-icons` **620,20 kB** e `IconPicker` **4,64 kB** (CSS
+222,14 kB).
+
+**Lo que queda del usuario, y solo él puede cerrarlo** (con la API despierta;
+Render tarda ~1 min): el **criterio 55**, el recorrido entero —moverse por las
+pestañas, cambiarle la hora a un ítem y verlo reordenarse, quitarle la hora y
+verlo caer al cajón, desactivar y reactivar, **quitar uno de un solo día** y
+comprobar que la actividad sigue en el catálogo, añadir desde «Añadir a mi Vida»,
+**darle una segunda hora a una que ya estaba**, copiar un día a otros tres, y
+volver a **Hoy** a ver que los huecos y «Armar desde la plantilla» lo ven todo y
+que **un día ya armado no se movió**—; el **criterio 39** (dejar un día entero
+puesto sin salir de la pantalla); el **criterio 27** (que Hoy lo vea sin
+recargar); y **todo lo que pasa por el API**: ni un `vidaItemDelete`, ni un
+`vidaItemUpdate` de copiar, ni una actividad creada de verdad se han visto nunca
+contra el servidor. También quedan sin ojo humano los **375 px** y el **tema
+oscuro** dentro de `/app/vida/plantilla`: lo medido son arneses.
+
+**La deuda anotada de las cuatro tajadas, en un solo sitio** (ninguna devolvió,
+todas escritas en la sección 4): el **chunk inicial pasó del megabyte**
+(1.007,76 kB, **nada de iconos**) y el troceado merece su propia tarea ·
+`Button variant="danger"` **no se lee en oscuro** (1,7:1) y ya está en pantalla
+en FEAT-003 y FEAT-004: es del sistema de diseño · las **píldoras no elegidas**
+quedan en 5,01:1, heredado de FEAT-002 · el **panel de añadir, sin sesión, diría
+«todavía no tienes actividades»** · **«Cocinar» pasó a «Cocinar y almorzar»**, así
+que quien ya tuviera la vieja recibirá una segunda actividad · la **nota del ítem
+depende de que `notes` siga en la selección GraphQL** (si dejara de pedirse,
+guardar la borraría en silencio) · el catálogo manda ahora `notes` en el `update`
+aunque no cambie · **si solo fallan los ajustes de Vida** la pantalla usa
+06:30–23:00 y no dice que no pudo leer los tuyos · el **desactivado cuenta** en la
+cuenta de la pestaña · el **acople por atributo con `Tabs`** · en escritorio la
+**cuadrícula se suma al día** en vez de sustituirlo · y la misma actividad **se
+lee dos veces** en la página (agenda y cuadrícula), que con lector de pantalla es
+recorrer lo mismo dos veces.
+
+**FEAT-005, tajada 4 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **la semana entera existe, y
+copiar un día es el atajo que sustituye al arrastrar.** Siete columnas con cada
+cosa **a su hora y con el alto de su duración**, sobre **una sola ventana para
+los siete días** —el aviso que dejó la tajada 1: `buildTemplateDay` estira la
+ventana por día y siete escalas no se comparan—, con la cabecera «L · 7 · 3h 45»
+y **hoy marcado**, los **sin hora** en píldoras punteadas **debajo de su
+columna**, la **leyenda** por categoría más «trazo punteado = desactivada · no
+sale en Hoy», el total **«8 cosas puestas · 2h 15 a la semana de 115h 30 · tu día
+va de 6:30 a 23:00»** y **dos que se pisan vistos los dos**, en carriles
+(medido: uno en `width: calc(50% - 0.3rem)`, el otro en `left: calc(50% +
+0.15rem)`, los dos con alto). En escritorio la cuadrícula está **siempre arriba**
+y el día sigue debajo; en móvil se abre con **«Ver la semana entera»**, que es
+**un estado más de la misma página** —la URL no se mueve y `vida-paths.ts` está
+sin tocar— con **«Volver al día»**. Y **«Copiar este día a otros»**: se parte del
+día que se ve, se marcan destinos, «Copiar a 2 días», salida **«Volver»**, y lo
+que viaja es **un `vidaItemUpdate` por ítem** con `{ id, days }` y nada más —**ni
+un create ni un delete en ninguna ruta**—: copiar **añade días al ítem que ya
+existe** (A7), **no pisa** lo que ya hay a cualquier hora, **no copia los
+desactivados** y **no borra nunca nada**; con un fallo a mitad dice «Copiamos 1
+cosa a 1 día; Leer se quedó sin copiar» y **nunca** escribe «copiado» de lo que
+no lo está. **Ni un documento GraphQL, ni un tipo, ni un `api/`, ni una clave de
+caché, ni invalidación nueva** (una sola `invalidateQueries` con `['vida',
+'items']`, y solo si algo cambió), nada en `localStorage`, ninguna ruta, ningún
+Font Awesome a pelo. Medido **en el navegador** con arnés borrado: a 375 px
+`scrollWidth` **375 = clientWidth** y **cero elementos fuera** —el que se
+desplaza es **el contenedor de la cuadrícula** (555 px dentro de 343), nunca el
+cuerpo—, los bloques de 15 min miden **18 px**, la misma escala del render; en
+**oscuro** lo nuevo va de **5,03:1** a **12,3:1** y en claro de **5,42:1** a
+**7,15:1**. Línea base sin empeorar: typecheck **exit 0**, lint **14/0**, `pnpm
+test` **2 fallos de 1305** (los dos de `SearchSelect`; **+46 tests**;
+`src/features/vida` **885/885**), `pnpm build` **exit 0** con chunk inicial
+**1.007,76 kB** (+13,43 kB, **ninguno de iconos**: `app-icons` 620,20 e
+`IconPicker` 4,64 clavados; CSS 222,14 kB). `graphify update .`: 3428 nodos,
+3987 aristas. **Avisos para quien revise, por orden de riesgo:** **(1)** la
+cuadrícula **pinta los mismos nombres que la agenda del día**, así que en jsdom
+hay dos elementos con el mismo texto y **tres afirmaciones del test de la
+pantalla quedaron acotadas o derogadas** —dos se miran ahora dentro de la agenda
+y la de «la tajada 4 no se pinta» **queda derogada por los criterios 48 y 49** y
+afirma lo contrario—. **(2)** en **escritorio** la pantalla es más larga: la
+cuadrícula se **suma** encima del día en vez de sustituirlo como el marco C,
+porque quitar el día se llevaría por delante editar desde la tarjeta (tajadas 2
+y 3). **(3)** los bloques son **botones que abren la hoja del ítem** —la otra
+mitad de la regla de accesibilidad, en vez de una tabla de 43 líneas— y por eso
+`VidaTemplateDaySummary` gana una prop **aditiva** (`actions`). **Del usuario, y
+es lo único que queda:** el **criterio 55**, el recorrido entero de FEAT-005 en
+**doce pasos** al final de la sección 3 —y dentro de él lo que ningún agente ha
+visto nunca: **`vidaItemUpdate` copiando un día de verdad**, que **Hoy vea la
+plantilla nueva sin recargar** (criterio 53) y que un día **ya armado no se
+mueva**—.
 
 **FEAT-005, tajada 3 — revisión: `accepted`** (2026-09-20). El riesgo número uno
 era real —`useCreateStartingActivities` lo comparte el catálogo de FEAT-002, ya

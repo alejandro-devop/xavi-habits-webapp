@@ -25,7 +25,11 @@
  *   sumar (decisión A5).
  */
 
-import type { VidaDayOfWeek, VidaItem } from '@/features/vida/types/vida-item.types'
+import type {
+  VidaDayOfWeek,
+  VidaItem,
+  VidaItemUpdateInput,
+} from '@/features/vida/types/vida-item.types'
 import {
   VIDA_DAY_LABELS,
   VIDA_DAY_ORDER,
@@ -647,4 +651,498 @@ export function describeDaysPhrase(days: VidaDayOfWeek[]): string {
   if (key === 'monday,tuesday,wednesday,thursday,friday') return 'de lunes a viernes'
   if (key === 'saturday,sunday') return 'el fin de semana'
   return describeDaysInWords(ordered)
+}
+
+/* ── La semana entera y copiar un día (tajada 4) ────────────────────────────
+ *
+ * Tres funciones puras más: la geometría de la cuadrícula (criterios 42–47),
+ * el total de la semana (criterio 46) y **qué se copia y qué se queda como
+ * está** (criterios 50 y 52).
+ *
+ * La regla que manda aquí la escribió el arquitecto en A5 y la repitió el
+ * revisor de la tajada 1: `buildTemplateDay` **estira la ventana por día** —con
+ * algo a las 05:00 el resumen de ese día pasa a «de 18h»—, y siete columnas con
+ * siete ventanas distintas **no son comparables**. Por eso la cuadrícula
+ * calcula **una sola ventana para los siete días** y la reparte a todos.
+ */
+
+/**
+ * Lo mínimo que mide un bloque en la cuadrícula, en minutos de escala.
+ *
+ * No es una duración inventada —`durationMinutes` sigue llegando `null` y la
+ * lectura sigue diciendo «sin duración» (criterio 7)—: es **alto mínimo para
+ * que se vea**. El criterio 47 pide que nada «se recorte hasta desaparecer», y
+ * un bloque de 0 min con alto 0 % es un bloque perdido. El render hace lo
+ * mismo: dibuja los de 15 min con el alto de ~30.
+ */
+export const TEMPLATE_GRID_MIN_BLOCK_MINUTES = 30
+
+/** Cada cuántas horas se escribe una marca en el rail (7:00 · 9:00 · 11:00…). */
+export const TEMPLATE_GRID_HOUR_STEP = 2
+
+/** Por debajo de esto, un bloque solo escribe su nombre (cabe una línea). */
+export const TEMPLATE_GRID_TIME_LABEL_MINUTES = 40
+
+export type TemplateWeekBlock = {
+  item: VidaItem
+  startMinutes: number
+  /** `startMinutes` + su duración real; igual a `startMinutes` si no la tiene. */
+  endMinutes: number
+  /** **`null` cuando el ítem no la tiene** (criterio 7). */
+  durationMinutes: number | null
+  /** Desde el borde de arriba de la ventana común, en %. */
+  topPercent: number
+  /** Alto en %, **nunca 0** y nunca por debajo del borde de abajo. */
+  heightPercent: number
+  /** El carril en el que se pinta cuando algo se pisa: 0 es el de la izquierda. */
+  lane: number
+  /** Cuántos carriles se reparten su trozo de columna (criterio 47). */
+  laneCount: number
+  /** Lo que se lee de corrido: «Bañarme · lunes a las 7:00 · 15 min». */
+  label: string
+  /**
+   * Si el bloque da de sí para escribir **su hora encima del nombre**. Es
+   * geometría, y por eso se decide aquí: un bloque corto con dos líneas recorta
+   * las dos y no se lee ninguna. El render hace lo mismo —los de 15 y 20 min
+   * llevan solo el nombre—, y la hora **nunca se pierde**: está en el rótulo
+   * que se lee y en el rail de la izquierda.
+   */
+  showTime: boolean
+}
+
+export type TemplateWeekColumn = {
+  day: VidaDayOfWeek
+  blocks: TemplateWeekBlock[]
+  /** Los «sin hora» del día, que van **debajo de la columna** (criterio 44). */
+  untimed: VidaItem[]
+  /** Cuántas cosas hay ese día, con hora y sin ella. */
+  count: number
+  /**
+   * Cuánto tiempo ocupa el día: **la unión de los tramos**, no la suma de
+   * duraciones. Es exactamente el mismo número que `plannedMinutes` de
+   * `buildTemplateDay`, y por eso la cabecera de la columna y el resumen del
+   * día dicen lo mismo aunque dos cosas se pisen.
+   */
+  plannedMinutes: number
+}
+
+export type TemplateGridHourMark = {
+  minutes: number
+  /** «7:00», sin cero a la izquierda, como el resto del módulo. */
+  label: string
+  topPercent: number
+}
+
+export type TemplateCategoryLegend = {
+  id: string
+  name: string
+  color: string | null
+}
+
+export type TemplateWeekGrid = {
+  columns: TemplateWeekColumn[]
+  /** La ventana **común a las siete columnas** (A5), en minutos desde medianoche. */
+  windowStart: number
+  windowEnd: number
+  windowMinutes: number
+  hourMarks: TemplateGridHourMark[]
+  /** Las categorías **que aparecen**, por nombre: la leyenda del criterio 45. */
+  categories: TemplateCategoryLegend[]
+  /** Si hay algo desactivado: lo que el trazo punteado significa (criterio 45). */
+  hasInactive: boolean
+  /** Si no hay ni un bloque ni una píldora en toda la semana. */
+  isEmpty: boolean
+}
+
+export type BuildTemplateWeekGridInput = {
+  items: VidaItem[]
+  dayStart: string
+  dayEnd: string
+}
+
+type PlacedEntry = {
+  item: VidaItem
+  startMinutes: number
+  endMinutes: number
+  durationMinutes: number | null
+  /** El tramo que ocupa **en la pantalla**, con el alto mínimo ya aplicado. */
+  visibleEnd: number
+}
+
+function placeTimed(items: VidaItem[]): PlacedEntry[] {
+  return items
+    .filter(hasTime)
+    .map((item) => {
+      const startMinutes = parseTimeToMinutes(item.startTime!)
+      const durationMinutes = durationOf(item)
+      return {
+        item,
+        startMinutes,
+        endMinutes: startMinutes + (durationMinutes ?? 0),
+        durationMinutes,
+        visibleEnd:
+          startMinutes + Math.max(durationMinutes ?? 0, TEMPLATE_GRID_MIN_BLOCK_MINUTES),
+      }
+    })
+    .sort((a, b) => {
+      const diff = a.startMinutes - b.startMinutes
+      if (diff !== 0) return diff
+      return compareVidaNames(templateItemTitle(a.item), templateItemTitle(b.item))
+    })
+}
+
+/** La unión de los tramos ocupados: el mismo número que `plannedMinutes`. */
+function unionMinutes(entries: PlacedEntry[]): number {
+  let total = 0
+  let cursor = -Infinity
+  for (const entry of entries) {
+    const start = Math.max(entry.startMinutes, cursor)
+    if (entry.endMinutes > start) {
+      total += entry.endMinutes - start
+      cursor = entry.endMinutes
+    } else {
+      cursor = Math.max(cursor, entry.endMinutes)
+    }
+  }
+  return total
+}
+
+/**
+ * Los carriles: **dos cosas que se pisan se ven las dos** (criterio 47).
+ *
+ * Se agrupan los que se solapan de verdad —por su hora y su duración, no por el
+ * alto mínimo— y dentro de cada grupo cada uno se va al primer carril libre. Un
+ * ítem sin duración ocupa **su minuto**, no media hora: inventarle 30 min para
+ * decidir que estorba sería la misma mentira que el criterio 7 prohíbe.
+ */
+function assignLanes(entries: PlacedEntry[]): { lane: number; laneCount: number }[] {
+  const result: { lane: number; laneCount: number }[] = entries.map(() => ({
+    lane: 0,
+    laneCount: 1,
+  }))
+  const endOf = (entry: PlacedEntry) => Math.max(entry.endMinutes, entry.startMinutes + 1)
+
+  let groupStart = 0
+  let groupEnd = -Infinity
+  let laneEnds: number[] = []
+
+  function closeGroup(until: number) {
+    const laneCount = Math.max(1, laneEnds.length)
+    for (let index = groupStart; index < until; index += 1) {
+      result[index]!.laneCount = laneCount
+    }
+  }
+
+  entries.forEach((entry, index) => {
+    if (entry.startMinutes >= groupEnd) {
+      closeGroup(index)
+      groupStart = index
+      groupEnd = -Infinity
+      laneEnds = []
+    }
+
+    let lane = laneEnds.findIndex((end) => end <= entry.startMinutes)
+    if (lane === -1) {
+      lane = laneEnds.length
+      laneEnds.push(endOf(entry))
+    } else {
+      laneEnds[lane] = endOf(entry)
+    }
+
+    result[index] = { lane, laneCount: 1 }
+    groupEnd = Math.max(groupEnd, endOf(entry))
+  })
+  closeGroup(entries.length)
+
+  return result
+}
+
+/** «Bañarme · lunes a las 7:00 · 15 min», que es lo que se oye de un bloque. */
+function describeBlock(item: VidaItem, startMinutes: number, day: VidaDayOfWeek): string {
+  const parts = [
+    templateItemTitle(item),
+    `${VIDA_DAY_LABELS[day]} a las ${formatTimeForDisplay(minutesToTime(startMinutes))}`,
+    describeItemDuration(item),
+  ]
+  if (item.isActive === false) parts.push('desactivada · no sale en Hoy')
+  return parts.join(' · ')
+}
+
+/**
+ * Las siete columnas de la cuadrícula (criterios 42–47), **con una sola ventana
+ * para todas**.
+ *
+ * Aquí sale calculado **todo** lo que la cuadrícula necesita —`top` y `height`
+ * en porcentaje, el carril de cada bloque, las marcas del rail, las cuentas de
+ * cada cabecera y la leyenda—: el componente solo traduce números a estilos,
+ * que es la regla que ya sigue `VidaDayBudget` y que el plan repite para esta
+ * pieza.
+ *
+ * La ventana se estira si algo cae fuera del horario de Vida (A5) **mirando la
+ * semana entera**: si el domingo hay algo a las 5:00, las siete columnas
+ * empiezan a las 5:00. Si cada una empezara donde le conviene, comparar
+ * columnas —que es para lo único que sirve esta vista— sería engañoso.
+ */
+export function buildTemplateWeekGrid({
+  items,
+  dayStart,
+  dayEnd,
+}: BuildTemplateWeekGridInput): TemplateWeekGrid {
+  const perDay = VIDA_DAY_ORDER.map((day) => {
+    const ofDay = templateItemsForDay(items, day)
+    return {
+      day,
+      placed: placeTimed(ofDay),
+      untimed: ofDay
+        .filter((item) => !hasTime(item))
+        .sort((a, b) => compareVidaNames(templateItemTitle(a), templateItemTitle(b))),
+      count: ofDay.length,
+    }
+  })
+
+  const all = perDay.flatMap((entry) => entry.placed)
+  const windowStart = all.reduce(
+    (min, entry) => Math.min(min, entry.startMinutes),
+    parseTimeToMinutes(dayStart),
+  )
+  // Con el alto mínimo dentro: si el último bloque del día acabara justo en el
+  // borde, se recortaría hasta desaparecer, que es lo que el criterio 47 no
+  // quiere.
+  const windowEnd = all.reduce(
+    (max, entry) => Math.max(max, entry.visibleEnd),
+    parseTimeToMinutes(dayEnd),
+  )
+  const windowMinutes = Math.max(1, windowEnd - windowStart)
+
+  const columns: TemplateWeekColumn[] = perDay.map(({ day, placed, untimed, count }) => {
+    const lanes = assignLanes(placed)
+    return {
+      day,
+      untimed,
+      count,
+      plannedMinutes: unionMinutes(placed),
+      blocks: placed.map((entry, index) => {
+        const topPercent = ((entry.startMinutes - windowStart) / windowMinutes) * 100
+        const rawHeight = ((entry.visibleEnd - entry.startMinutes) / windowMinutes) * 100
+        return {
+          item: entry.item,
+          startMinutes: entry.startMinutes,
+          endMinutes: entry.endMinutes,
+          durationMinutes: entry.durationMinutes,
+          topPercent,
+          heightPercent: Math.min(rawHeight, Math.max(0, 100 - topPercent)),
+          lane: lanes[index]!.lane,
+          laneCount: lanes[index]!.laneCount,
+          label: describeBlock(entry.item, entry.startMinutes, day),
+          showTime:
+            entry.visibleEnd - entry.startMinutes >= TEMPLATE_GRID_TIME_LABEL_MINUTES &&
+            entry.durationMinutes !== null,
+        }
+      }),
+    }
+  })
+
+  const hourMarks: TemplateGridHourMark[] = []
+  const firstHour = Math.ceil(windowStart / 60) * 60
+  for (
+    let minutes = firstHour;
+    minutes <= windowEnd;
+    minutes += TEMPLATE_GRID_HOUR_STEP * 60
+  ) {
+    hourMarks.push({
+      minutes,
+      label: formatTimeForDisplay(minutesToTime(minutes)),
+      topPercent: ((minutes - windowStart) / windowMinutes) * 100,
+    })
+  }
+
+  const byCategory = new Map<string, TemplateCategoryLegend>()
+  let hasInactive = false
+  for (const column of columns) {
+    for (const entry of [...column.blocks.map((block) => block.item), ...column.untimed]) {
+      if (entry.isActive === false) hasInactive = true
+      const category = entry.activity?.category
+      if (category && !byCategory.has(category.id)) {
+        byCategory.set(category.id, {
+          id: category.id,
+          name: category.name,
+          color: category.color ?? null,
+        })
+      }
+    }
+  }
+
+  return {
+    columns,
+    windowStart,
+    windowEnd,
+    windowMinutes,
+    hourMarks,
+    categories: [...byCategory.values()].sort((a, b) => compareVidaNames(a.name, b.name)),
+    hasInactive,
+    isEmpty: columns.every((column) => column.count === 0),
+  }
+}
+
+export type TemplateWeekTotals = {
+  /** Cuántas cosas hay puestas en la semana, contando cada día por separado. */
+  itemsCount: number
+  timedCount: number
+  untimedCount: number
+  /** La suma de lo ocupado en los siete días (la unión por día, no duraciones). */
+  plannedMinutes: number
+  /** Siete veces la ventana común. */
+  weekMinutes: number
+  windowStart: number
+  windowEnd: number
+  /** La línea del criterio 46, ya escrita. */
+  text: string
+}
+
+/**
+ * El total de arriba (criterio 46): «43 cosas puestas · 26h 15 a la semana de
+ * 115h 30 · tu día va de 6:30 a 23:00».
+ *
+ * Los tres números salen de la misma ventana común que la cuadrícula, así que
+ * lo que se lee arriba y lo que se ve abajo **no pueden contradecirse**. Si
+ * algo cae fuera del horario de Vida y estira la ventana, el «tu día va de…»
+ * dice la ventana estirada: es la que se está pintando, y la otra sería una
+ * media verdad.
+ */
+export function buildWeekTotals(grid: TemplateWeekGrid): TemplateWeekTotals {
+  const itemsCount = grid.columns.reduce((total, column) => total + column.count, 0)
+  const timedCount = grid.columns.reduce((total, column) => total + column.blocks.length, 0)
+  const plannedMinutes = grid.columns.reduce(
+    (total, column) => total + column.plannedMinutes,
+    0,
+  )
+  const weekMinutes = grid.windowMinutes * VIDA_DAY_ORDER.length
+
+  const text = `${itemsCount} ${itemsCount === 1 ? 'cosa puesta' : 'cosas puestas'} · ${formatDurationFromMinutes(
+    plannedMinutes,
+  )} a la semana de ${formatDurationFromMinutes(weekMinutes)} · tu día va de ${formatTimeForDisplay(
+    minutesToTime(grid.windowStart),
+  )} a ${formatTimeForDisplay(minutesToTime(grid.windowEnd))}`
+
+  return {
+    itemsCount,
+    timedCount,
+    untimedCount: itemsCount - timedCount,
+    plannedMinutes,
+    weekMinutes,
+    windowStart: grid.windowStart,
+    windowEnd: grid.windowEnd,
+    text,
+  }
+}
+
+export type TemplateCopyUpdate = {
+  /** Lo que viaja al API: **un `vidaItemUpdate` por ítem** (A7), nunca un create. */
+  input: VidaItemUpdateInput
+  /** Para poder nombrar por su nombre lo que falle, como `useBuildWeekFromTemplate`. */
+  title: string
+  /** Los días que se le añaden, de lunes a domingo. */
+  addedDays: VidaDayOfWeek[]
+}
+
+export type TemplateCopySkip = {
+  title: string
+  day: VidaDayOfWeek
+  /**
+   * `already-there`: **ese mismo ítem** ya estaba en el día destino.
+   * `other-item`: hay **otro** ítem de la misma actividad, a cualquier hora.
+   * En los dos casos no se toca nada y el resumen lo dice (criterio 50).
+   */
+  reason: 'already-there' | 'other-item'
+}
+
+export type TemplateCopyPlan = {
+  updates: TemplateCopyUpdate[]
+  skipped: TemplateCopySkip[]
+}
+
+/**
+ * Qué se copia de un día a otros, y qué **se queda como está** (criterios 50 y
+ * 52).
+ *
+ * **Copiar no crea ítems: le añade días al que ya existe** (decisión A7). Es lo
+ * único que hace verdad al criterio 51 —un día copiado comparte el mismo ítem,
+ * así que cambiarle la hora después cambia los dos días— y lo que convierte el
+ * «quitarlo solo del viernes» del criterio 22 en su salida natural.
+ *
+ * Tres reglas, y ninguna borra nada:
+ *
+ * 1. Un ítem **desactivado no se copia** (criterio 52): no sale en Hoy, y
+ *    llevarlo a tres días más sería multiplicar algo apagado.
+ * 2. Si en el día destino ya hay **otro** ítem de la misma actividad —a
+ *    cualquier hora— ese ítem **no se toca** y entra en `skipped`.
+ * 3. Si el ítem **ya está** en el día destino, tampoco hay nada que hacer; se
+ *    dice igual, porque el usuario marcó ese día y merece saber qué pasó con
+ *    él.
+ */
+export function planCopyDay(
+  items: VidaItem[],
+  fromDay: VidaDayOfWeek,
+  toDays: VidaDayOfWeek[],
+): TemplateCopyPlan {
+  const targets = VIDA_DAY_ORDER.filter((day) => day !== fromDay && toDays.includes(day))
+  const source = templateItemsForDay(items, fromDay).filter((item) => item.isActive !== false)
+  const updates: TemplateCopyUpdate[] = []
+  const skipped: TemplateCopySkip[] = []
+
+  for (const item of source) {
+    const addedDays: VidaDayOfWeek[] = []
+
+    for (const day of targets) {
+      if (item.days.includes(day)) {
+        skipped.push({ title: templateItemTitle(item), day, reason: 'already-there' })
+        continue
+      }
+      // **A cualquier hora**: si ya tienes «Pasear» el sábado a las 19:00, el
+      // lunes de las 7:30 no se le añade encima.
+      const taken = templateItemsForDay(items, day).some(
+        (other) => other.id !== item.id && other.activityId === item.activityId,
+      )
+      if (taken) {
+        skipped.push({ title: templateItemTitle(item), day, reason: 'other-item' })
+        continue
+      }
+      addedDays.push(day)
+    }
+
+    if (addedDays.length === 0) continue
+
+    updates.push({
+      input: {
+        id: item.id,
+        days: VIDA_DAY_ORDER.filter((day) => item.days.includes(day) || addedDays.includes(day)),
+      },
+      title: templateItemTitle(item),
+      addedDays,
+    })
+  }
+
+  return { updates, skipped }
+}
+
+/**
+ * «*Pasear a las mascotas* ya estaba el sábado, se quedó como estaba»
+ * (criterio 50), agrupado por nombre para que no salga siete veces lo mismo.
+ */
+export function describeCopySkips(skipped: TemplateCopySkip[]): string[] {
+  const byTitle = new Map<string, VidaDayOfWeek[]>()
+  for (const skip of skipped) {
+    const days = byTitle.get(skip.title) ?? []
+    if (!days.includes(skip.day)) days.push(skip.day)
+    byTitle.set(skip.title, days)
+  }
+  return [...byTitle.entries()].map(([title, days]) => {
+    const ordered = VIDA_DAY_ORDER.filter((day) => days.includes(day))
+    const labels = ordered.map((day) => `el ${VIDA_DAY_LABELS[day]}`)
+    const list =
+      labels.length === 1
+        ? labels[0]!
+        : `${labels.slice(0, -1).join(', ')} y ${labels[labels.length - 1]}`
+    return `${title} ya estaba ${list}, se quedó como estaba`
+  })
 }

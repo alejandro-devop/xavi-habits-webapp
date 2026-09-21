@@ -141,7 +141,7 @@ Cada fase es una *feature* del protocolo `forja` (un dossier `FEAT-NNN`), con su
 
 ### F5 — Revisar el día
 
-*Render: sí. Aquí manda la regla heredada de hábitos.*
+*Render aprobado el 2026-09-20: `assets/07-vida-revision.html` (marcos A un día revisado, B por categoría, C la semana con un solo puente a la plantilla, D escritorio en dos carriles, E día sin nada apuntado). Decidido: lectura en tres pasos (historia → cifra → detalle), mismo vocabulario que Hoy, «sin registrar» como magnitud propia y nunca tiempo perdido, toda cifra de lo que no salió lleva su salida al lado, la revisión termina en un solo aviso hacia la plantilla en forma de pregunta y no edita el plan del día. Aquí manda la regla heredada de hábitos.*
 
 - Al final del día (o de cualquier día pasado): **plan frente a real**. Bloques seguidos, añadidos, no hechos. Minutos planeados frente a registrados. Por categoría.
 - La **historia del día** en prosa corta compuesta con reglas (como la lectura del panel de hábitos): «Seguiste 4 de 6 bloques; lo que se salió fue X; la tarde se te fue en Y».

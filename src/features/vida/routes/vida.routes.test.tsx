@@ -55,7 +55,7 @@ function renderAt(initialEntry: string) {
 describe('vidaRoutes', () => {
   it.each([
     [vidaPaths.hoy, 'Hoy'],
-    [vidaPaths.plantilla, 'Plantilla'],
+    [vidaPaths.plantilla, 'Tu plantilla'],
     [vidaPaths.revision, 'Revisión'],
     [vidaPaths.actividades, 'Actividades'],
     [vidaPaths.archivadas, 'Archivadas'],
@@ -73,7 +73,14 @@ describe('vidaRoutes', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Hoy' })).toBeInTheDocument()
   })
 
-  it.each([vidaPaths.plantilla, vidaPaths.revision])(
+  /**
+   * **`/app/vida/plantilla` salió de esta lista** en la tajada 1 de FEAT-005
+   * (criterios 1 y 12): con el guard en `false` ya no pinta solo el título,
+   * pinta su estado «sin sesión». La afirmación de F0 queda **derogada y
+   * acotada**, igual que se hizo con Hoy en FEAT-003, no borrada: `revision`
+   * sigue siendo un cascarón y se sigue comprobando.
+   */
+  it.each([vidaPaths.revision])(
     '%s sigue siendo un cascarón: nada más que el título',
     (path) => {
       renderAt(path)
@@ -91,6 +98,16 @@ describe('vidaRoutes', () => {
    * sostiene el criterio 51 —mensaje breve con la vía para entrar, y **no** un
    * esqueleto girando para siempre—.
    */
+  it('/app/vida/plantilla ya no es un cascarón: sin sesión enseña la vía para entrar', () => {
+    renderAt(vidaPaths.plantilla)
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Tu plantilla' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Entra para ver tu plantilla')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toBeInTheDocument()
+  })
+
   it('/app/vida/hoy ya no es un cascarón: sin sesión enseña la vía para entrar', () => {
     renderAt(vidaPaths.hoy)
 

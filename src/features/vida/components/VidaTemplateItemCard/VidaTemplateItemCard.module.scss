@@ -1,0 +1,145 @@
+/* Una cosa de la plantilla: la canaleta de la hora a la izquierda y la tarjeta
+   de vidrio a la derecha, igual que `VidaAgendaBlock` en Hoy — la plantilla se
+   lee **como se lee el día**, y ese parecido es la razón de la pantalla. La
+   lista está ordenada por hora: nada de alturas proporcionales a minutos (eso
+   es la cuadrícula de la tajada 4). */
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+/* Ancho fijo para que las horas queden alineadas en columna sin tabla. */
+.gutter {
+  display: flex;
+  position: relative;
+  flex: 0 0 2.75rem;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding-top: 0.85rem;
+}
+
+.time {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* En el cajón «Sin hora» la canaleta no miente con un 00:00: una raya. */
+.noTime {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.tick {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.1rem;
+  border: 2px solid
+    color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 55%, transparent);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.card {
+  display: flex;
+  /* Con un nombre largo las piezas se apilan en vez de aplastar el nombre
+     hasta «O…» (criterios 13 y 14). */
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  row-gap: 0.45rem;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1rem;
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+/* Mismo tratamiento del color que `VidaActivityCard` y `VidaAgendaBlock`: el
+   tinte de la categoría mezclado con el fondo, y el glifo mezclado con el texto
+   para que se lea igual en claro y en oscuro. */
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.body {
+  display: flex;
+  flex: 1 1 8rem;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/* Un nombre de 60 caracteres se recorta: nunca empuja la tarjeta ni tapa la
+   hora (criterio 13). */
+.name {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.days {
+  color: var(--color-text);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05rem 0.4rem;
+  border: 1px dashed color-mix(in srgb, var(--color-text) 30%, transparent);
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+/* Desactivada: **no desaparece**, se queda en su hora en trazo suave
+   (criterio 8). El trazo discontinuo es lo que la distingue sin depender del
+   color, que en oscuro se lee igual de fuerte. */
+.row[data-inactive='true'] {
+  .card {
+    border-style: dashed;
+    background: color-mix(in srgb, var(--aura-glass-1) 60%, transparent);
+    box-shadow: none;
+  }
+
+  .name {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  .tick {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-text) 35%, transparent);
+  }
+}

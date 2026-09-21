@@ -1,0 +1,1 @@
+export { VidaTemplateDayTabs } from './VidaTemplateDayTabs'

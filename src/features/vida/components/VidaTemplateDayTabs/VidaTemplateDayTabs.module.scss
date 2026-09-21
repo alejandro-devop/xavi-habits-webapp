@@ -1,0 +1,86 @@
+/* Las siete pestañas de día. El cromo (lista, foco, subrayado de la activa) lo
+   pone `@/shared/ui/Tabs`; aquí solo va lo de dentro de cada pestaña: la letra,
+   la cuenta y el punto, apilados como en el render (marco A). */
+.root {
+  gap: 0.6rem;
+}
+
+/* Las siete pestañas **caben en 375 px**: el relleno horizontal que trae
+   `@/shared/ui/Tabs` está pensado para dos o tres pestañas de palabra («Panel ·
+   Esta semana · Historial» en hábitos) y con siete dejaba la del domingo fuera
+   de la vista, con barra de desplazamiento propia — y el día que se abre al
+   entrar puede ser justo ese. Se ajusta **por atributo y dentro de esta
+   pantalla**, sin tocar el componente compartido ni su cromo (foco, subrayado
+   de la activa, teclado). */
+.root [role='tablist'] {
+  gap: 0.15rem;
+  padding-inline: 0;
+}
+
+.root [role='tab'] {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: 0.2rem;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 1.5rem;
+}
+
+.letter {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.count {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/* El día de hoy queda marcado aunque se esté mirando otro: un punto de color
+   sobre la letra, no un cambio de tamaño que movería la fila. */
+.tab[data-today='true'] .letter {
+  color: var(--color-primary);
+}
+
+/* El punto: rayado si ese día tiene algo, apagado si no. Misma lectura que la
+   tira de Hoy (`VidaDayStrip`), y **decorativo**: lo que se oye es el texto
+   oculto de al lado. */
+.dot {
+  width: 1rem;
+  height: 0.25rem;
+  border-radius: 999px;
+
+  &[data-state='some'] {
+    background: repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-primary) 70%, transparent) 0 3px,
+      color-mix(in srgb, var(--color-primary) 25%, transparent) 3px 6px
+    );
+  }
+
+  &[data-state='none'] {
+    background: color-mix(in srgb, var(--color-text) 14%, transparent);
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

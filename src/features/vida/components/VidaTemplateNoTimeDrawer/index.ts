@@ -1,0 +1,1 @@
+export { VidaTemplateNoTimeDrawer } from './VidaTemplateNoTimeDrawer'

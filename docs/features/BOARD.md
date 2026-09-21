@@ -13,7 +13,8 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
-| FEAT-005 | planned | 0/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
+| FEAT-005 | building | 2/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
+| FEAT-006 | planned | 0/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
@@ -26,6 +27,85 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+
+**FEAT-005, tajada 1 — revisión: `accepted`** (2026-09-20). Los quince criterios
+se cumplen y **no encontré ninguna regresión**. Lo que medí **yo**, con un arnés
+de tests puros (8 casos, borrado): la barra suma **el día entero** y con dos
+ítems pisados lo puesto son **90 min, no 120**; el orden es **por hora y, a igual
+hora, por nombre**; `0` y las duraciones negativas se leen **«sin duración»** y
+no aportan minutos; las cuentas de las pestañas miran los días **del ítem** e
+incluyen al desactivado; una actividad **archivada** no se pinta; y la frase de
+guía **nombra un hueco de verdad y calla uno de 40 min**, sin una palabra de
+culpa en ninguna variante. Lo de pantalla lo verifiqué **leyendo la página** —los
+estados van en orden y **el fallo de los ítems corta antes de pintar nada**, con
+«Reintentar», así que no puede disfrazarse de plantilla vacía; si lo que falla
+son los ajustes, `useVidaDayHours` cae a **06:30/23:00** sin romperse— y con los
+tests del constructor, verdes en mi corrida entera. **Los tres puntos de ojo,
+resueltos:** el ajuste del relleno de `Tabs` vive **dentro de una clase de
+CSS-module** de esta pantalla y `src/shared/ui/Tabs/` está **sin tocar**, así que
+hábitos no puede notarlo; los **dos tests ajenos están acotados, no borrados**
+(la lista de cascarones conserva `revision`, entra un test nuevo para
+`plantilla`, y **la píldora sigue diciendo «Plantilla»**, con `app-nav.config.ts`
+intacto: el `⌘K` no se rompe); y las tres reglas de una línea del constructor
+—hueco nombrable desde **90 min**, «lleno por la mañana» con **más de la mitad**,
+el desactivado que **cuenta**— las contrasté con los criterios y **las tres
+valen**, con la tercera señalada como la que el usuario podría querer del revés.
+**Aviso escrito para la tajada 4:** `buildTemplateDay` **estira la ventana por
+día** (con algo a las 05:00 el resumen pasa de «de 16h 30» a «de 18h»), así que
+la cuadrícula necesitará **una ventana común para las siete columnas**. Nada
+duplicado, nada en `localStorage`, ningún documento GraphQL, ninguna ruta y ni un
+Font Awesome a pelo. Línea base corrida entera por el revisor: typecheck **exit
+0**, lint **14/0**, `pnpm test` **2 fallos de 1200** (los dos de `SearchSelect`;
+1 archivo rojo de 101), `pnpm build` **exit 0** con chunk inicial **976,49 kB**,
+`app-icons` **620,20 kB** e `IconPicker` **4,64 kB** (CSS 207,06 kB). **Sin
+revisar por el revisor:** los **375 px** y el **tema oscuro** (medidos por el
+constructor en un arnés, no por mí) y cualquier llamada real al API — la pantalla
+**nunca se ha visto con datos de verdad**, que es el límite del login. Siguiente:
+la tajada 2, la hoja del ítem.
+
+**FEAT-005, tajada 1 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **la plantilla se ve.**
+`/app/vida/plantilla` dejó de ser un cascarón y enseña **la semana tipo, un día
+a la vez**: siete pestañas con su letra, su cuenta y su punto rayado —envolviendo
+`@/shared/ui/Tabs`, así que las flechas del teclado salen gratis—, el resumen
+«Viernes · **4h 5 puestas de 16h 30**» con la barra del día entero, la agenda
+**ordenada por hora** (icono y color de la categoría **sin consulta extra**,
+«45 min · L M X J V», **«sin duración»** cuando no la tiene, el desactivado
+**en su hora** con trazo suave y «desactivada · no sale en Hoy») y el cajón
+**«Sin hora»** con su explicación literal. **Todo lectura**: en la pantalla no
+hay **ni un botón** fuera de las pestañas —«Activar», «Ponerle hora», el «···» y
+el «+» son de las tajadas 2 y 3 y no se pintan muertos—. Los estados van
+distinguidos como en `VidaSemanaPage`: sin sesión ≠ esqueletos ≠ **«No pudimos
+cargar tu plantilla» + Reintentar**, que **nunca afirma que no hay nada**; y la
+plantilla vacía del todo trae el texto del marco D con la cuenta real del
+catálogo. Lo puro vive en **`utils/vida-template.utils.ts`** (26 casos): los
+`segments` suman el día entero **también con dos ítems pisados** (`trackMinutes`,
+copiado de la agenda de Hoy), la ventana **se estira** si algo cae fuera del
+horario, y la frase de guía sale **palabra por palabra** como el render
+(«Seis cosas con hora y una sin ella. Tu viernes está lleno por la mañana y
+libre de 14:00 a 19:00») **sin afirmar un hueco que no existe**. Medido **en el
+navegador** con arnés borrado: a 375 px `scrollWidth` **375 = clientWidth** y
+cero elementos desbordando, un nombre de **60 caracteres** deja la tarjeta en
+**una fila** sin tapar la hora, y en **oscuro** lo peor de lo nuevo es **9,5:1**
+(8,38:1 en claro). Línea base sin empeorar: typecheck **limpio**, lint **14/0**,
+`pnpm test` **2 fallos de 1200** (los dos de `SearchSelect`; **+47 tests**),
+`pnpm build` **exit 0** con chunk inicial **976,49 kB** (+11,8 kB, **ninguno de
+iconos**: `app-icons` 620,20 e `IconPicker` 4,64 clavados). `graphify update .`:
+3319 nodos, 3821 aristas. **Avisos para quien revise:** el título pasó de
+«Plantilla» a **«Tu plantilla»** y con eso **derogué tres afirmaciones ajenas**
+—dos de `vida.routes.test.tsx` (la de «sigue siendo un cascarón» deja dentro a
+`revision`, y hay un test nuevo de «sin sesión enseña la vía para entrar») y una
+de `AppLayout.test.tsx`—; **ajusté el relleno de las pestañas compartidas por
+selector de atributo desde mi módulo** (con el relleno de `Tabs` el domingo se
+salía de la vista, y el domingo puede ser el día que se abre al entrar), sin
+tocar `src/shared/ui/Tabs/`; y `VidaPlantillaPage` **ya no monta sin
+proveedores**. **Siete decisiones mías van dichas** en la sección 3, y las que
+más se pueden querer al revés: el hueco se nombra **desde 90 min**, «lleno por la
+mañana» pide **más de la mitad** del tiempo puesto (un empate no dice nada), y un
+ítem **desactivado cuenta** en la pestaña y en la frase. **Del usuario:** el
+recorrido real —diez pasos al final de la sección 3— y con él **todo lo que pasa
+por el API**: ningún agente entra a `/app/*`, así que esta pantalla nunca se ha
+visto con datos de verdad.
 
 **FEAT-004 `delivered`** (2026-09-20, **sin commitear**). Cuarta revisión:
 **`accepted`**, y con ella **las cuatro tajadas**. Los tres obligatorios los

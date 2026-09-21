@@ -144,8 +144,12 @@ describe('AppLayout', () => {
     expect(
       within(sectionsNav()).getByRole('link', { name: 'Plantilla' }),
     ).toBeInTheDocument()
+    // La **píldora** sigue diciendo «Plantilla» (`app-nav.config.ts` no se
+    // toca); el **título** de la pantalla pasa a ser «Tu plantilla» desde la
+    // tajada 1 de FEAT-005 (criterio 1). La afirmación es la misma: el módulo
+    // sale de la URL.
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Plantilla' }),
+      screen.getByRole('heading', { level: 1, name: 'Tu plantilla' }),
     ).toBeInTheDocument()
   })
 

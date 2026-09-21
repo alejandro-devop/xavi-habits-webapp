@@ -2445,8 +2445,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
-    "mtime": 1789798883.937553,
-    "ast_hash": "3cd67a930c65cc23559cd0b15dd8e037",
+    "mtime": 1789951445.7220707,
+    "ast_hash": "2a739316084a64b84f58c9a50bbfea08",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.tsx": {
@@ -2460,8 +2460,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/routes/vida.routes.test.tsx": {
-    "mtime": 1789922185.5993123,
-    "ast_hash": "6104cc4e4a5189a491b41abcdd2c07f9",
+    "mtime": 1789951718.5396028,
+    "ast_hash": "be4a81e35d179b92e6f5b3917e164360",
     "semantic_hash": ""
   },
   "src/features/vida/routes/vida.routes.tsx": {
@@ -2470,8 +2470,8 @@
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/AppLayout.test.tsx": {
-    "mtime": 1789922219.4263208,
-    "ast_hash": "f2f22249df95582df1ba376dd6bac452",
+    "mtime": 1789951718.5396028,
+    "ast_hash": "bb944f4443853c17bc68afa0cbd0a140",
     "semantic_hash": ""
   },
   "src/layouts/AppLayout/app-nav.config.test.ts": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789949226.9903047,
-    "ast_hash": "f787c815f6d94a0c430501546a23a075",
+    "mtime": 1789951763.1806934,
+    "ast_hash": "19471651da23bf1205f552d559b6bd0b",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1789949280.653517,
-    "ast_hash": "8fe3f10b5d86b70666b1ec3560c9dab9",
+    "mtime": 1789950580.118973,
+    "ast_hash": "5aa614ce800e06701f2179d7ec3da667",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2500,8 +2500,8 @@
     "semantic_hash": ""
   },
   "docs/vida/PLAN.md": {
-    "mtime": 1789948270.631582,
-    "ast_hash": "b0c50af9bf8a68a6e1a8f994d61edd47",
+    "mtime": 1789951368.2939284,
+    "ast_hash": "c6b6e6ff97d20b45480c2f33ff504ffa",
     "semantic_hash": ""
   },
   "docs/vida/assets/00-vida-hoy.html": {
@@ -3195,8 +3195,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-004-vida-hoy-vivir-el-dia.md": {
-    "mtime": 1789948743.168896,
-    "ast_hash": "43333b15c2a6b69b8f849a893909bec5",
+    "mtime": 1789950499.924968,
+    "ast_hash": "81c55f8093f0f9fb50ea8b29e8bd938b",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260920_220412_que_existe_en_el_repo_para_la_sesion_viva_de_vida.md": {
@@ -3300,13 +3300,78 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-005-vida-plantilla.md": {
-    "mtime": 1789949204.1712122,
-    "ast_hash": "da3f80ce48f2b26654f4507aef12878e",
+    "mtime": 1789950654.5340002,
+    "ast_hash": "a97fc8a661ad1dd3e214c727c190d0dc",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260921_000718_quien_escribe_un_vidaitem_hoy_y_donde_se_decide_cr.md": {
     "mtime": 1789949238.6873517,
     "ast_hash": "1d5904bc752300c7567979953c3814ed",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateDaySummary/VidaTemplateDaySummary.tsx": {
+    "mtime": 1789950981.2863114,
+    "ast_hash": "3df7dffb87a44bc5c2e49159f9332767",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateDaySummary/index.ts": {
+    "mtime": 1789950999.9413364,
+    "ast_hash": "95dfc08e14a0c3db21ed9a4bf03bd2a4",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateDayTabs/VidaTemplateDayTabs.tsx": {
+    "mtime": 1789950947.3072677,
+    "ast_hash": "bf7eef64cc60120561e5f33e6367e678",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateDayTabs/index.ts": {
+    "mtime": 1789950965.8012912,
+    "ast_hash": "67a8513a3567f61b8acff36cb6eca712",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateItemCard/VidaTemplateItemCard.tsx": {
+    "mtime": 1789951014.4893563,
+    "ast_hash": "8f77a77d4b286677e8bf025ca2adcdfd",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateItemCard/index.ts": {
+    "mtime": 1789951050.9864075,
+    "ast_hash": "e00efb042357d712fb743676c8f40851",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateNoTimeDrawer/VidaTemplateNoTimeDrawer.tsx": {
+    "mtime": 1789951043.0103962,
+    "ast_hash": "3b34a7755b0fbccde89714a1fc59b407",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateNoTimeDrawer/index.ts": {
+    "mtime": 1789951050.9864075,
+    "ast_hash": "a66bab7705639b4708c6f05eb1f8f2f3",
+    "semantic_hash": ""
+  },
+  "src/features/vida/pages/VidaPlantillaPage.test.tsx": {
+    "mtime": 1789951445.7220707,
+    "ast_hash": "dac6a8dc9f4b5e3af2d3ca5f2730e8d0",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-template.utils.test.ts": {
+    "mtime": 1789950914.6952276,
+    "ast_hash": "4aef98147f9104b59d8c443e8c51dbd2",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-template.utils.ts": {
+    "mtime": 1789950907.7922196,
+    "ast_hash": "455c0610bdd3ea54b90ae885d1aedd85",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-006-vida-revision.md": {
+    "mtime": 1789951756.55068,
+    "ast_hash": "1d32f39f2d3d77de4e6fce7fffbce9cf",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/07-vida-revision.html": {
+    "mtime": 1789951145.2745497,
+    "ast_hash": "b8f9843a7d5e98723409a9b7b4636116",
     "semantic_hash": ""
   }
 }

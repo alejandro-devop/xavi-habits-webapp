@@ -1,0 +1,40 @@
+import { VidaTemplateItemCard } from '@/features/vida/components/VidaTemplateItemCard'
+import type { VidaItem } from '@/features/vida/types/vida-item.types'
+import styles from './VidaTemplateNoTimeDrawer.module.scss'
+
+type VidaTemplateNoTimeDrawerProps = {
+  items: VidaItem[]
+}
+
+/**
+ * El cajón «Sin hora» del final del día (criterio 9).
+ *
+ * Tres cosas que no son adorno:
+ *
+ * - **No están escondidos y no están mezclados**: van juntos, al final, con su
+ *   cuenta. Descubrir que tres cosas se quedaron sin hora es la mitad de la
+ *   razón de esta pantalla.
+ * - La explicación es **literal** y dice lo que Hoy hace de verdad con ellos:
+ *   los encadena al final del día (`buildDayFromTemplate`, regla 2).
+ * - **No se pinta «Ponerle hora»**: es el criterio 25, de la tajada 2. Aquí no
+ *   hay ningún botón muerto.
+ */
+export function VidaTemplateNoTimeDrawer({ items }: VidaTemplateNoTimeDrawerProps) {
+  if (items.length === 0) return null
+
+  return (
+    <section className={styles.root} aria-labelledby="vida-template-no-time-heading">
+      <h3 className={styles.heading} id="vida-template-no-time-heading">
+        Sin hora <span className={styles.count}>{items.length}</span>
+      </h3>
+      <ul className={styles.list}>
+        {items.map((item) => (
+          <VidaTemplateItemCard key={item.id} item={item} />
+        ))}
+      </ul>
+      <p className={styles.why}>
+        Hoy las pone <b>al final del día</b>, una detrás de otra. Con hora quedan en su sitio.
+      </p>
+    </section>
+  )
+}

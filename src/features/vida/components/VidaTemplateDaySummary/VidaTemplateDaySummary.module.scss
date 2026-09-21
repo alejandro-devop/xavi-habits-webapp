@@ -1,0 +1,135 @@
+/* El resumen del día tipo: la misma tarjeta de vidrio que el presupuesto de
+   Hoy (`VidaDayBudget`), con lo que aquí sí existe: «puestas de», sin «ahora»
+   y sin tiempo restante. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+/* A 375 px el día y el «3h 40 puestas de 16h 30» no caben en una línea:
+   `flex-wrap` los apila sin producir scroll horizontal (criterio 14). */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  min-width: 0;
+}
+
+.heading {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.totals {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.value {
+  color: var(--color-text);
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ── La barra del día ────────────────────────────────────────────────────── */
+
+/* Los anchos son porcentajes de minutos y suman el 100 %: la barra es el día
+   entero, del inicio al fin del horario de Vida (criterio 4). */
+.track {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+
+.segment {
+  height: 100%;
+
+  &[data-kind='planned'] {
+    background: var(--color-primary);
+  }
+
+  /* Lo libre no es un agujero: es un tramo con su propio tono, más suave.
+     Sin rayado de «desperdicio» (criterio 15). */
+  &[data-kind='free'] {
+    background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  }
+}
+
+/* ── La leyenda: los minutos como texto ──────────────────────────────────── */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  /* Dato, no decoración: `--color-text-secondary` y no `--color-text-muted`,
+     que en tema claro se queda en ~2,4:1. */
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* El punto de la leyenda lleva **el mismo color que su tramo**: si no, la
+   leyenda y la barra dirían cosas distintas. */
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+
+  [data-kind='planned'] > & {
+    background: var(--color-primary);
+  }
+}
+
+.guidance {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.schedule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.scheduleNote {
+  color: var(--color-text-secondary);
+}

@@ -14,10 +14,60 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
-| FEAT-006 | building | 2/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-006 | in-review | 2/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-006, tajada 2 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **el día ya dice en qué se
+repartió.** Al final de la revisión —después de los carriles y antes de las
+salidas, que es el sitio del marco D— van **«Minutos por categoría»** con la
+**paleta del catálogo** y **dos barras por fila** (planeado **rayado**,
+registrado **sólido**, el rayado hecho con **dos opacidades del mismo color**,
+así que en oscuro sube y baja con él), cabecera **«Casa · 45m → 3h 3»**, **«Sin
+categoría» con fila propia** —sus minutos **no se reparten** y va siempre al
+final—, **«Sin registrar» como fila aparte** tras la línea punteada, con su
+tamaño **frente al día entero** y la **frase literal** del criterio 28 palabra
+por palabra; y debajo **«Los cuatro tramos más largos sin registrar»** con su
+franja y su tamaño, **el mismo umbral de Hoy** (`VIDA_NO_DATA_MIN_MINUTES`, sin
+una segunda constante) y **la sección entera desaparece** si no hay ninguno —ni
+«no hay tramos», ni tramos menores de relleno—. La **historia** cierra su
+criterio 8: puede decir **«la tarde, casi toda en Casa»**, pero **solo si una
+categoría se lleva al menos la mitad** de lo registrado en esa mitad del día;
+repartida entre varias **no afirma ninguna**, y «Sin categoría» **nunca se
+nombra**. **Ni un porcentaje ni la palabra «cumplimiento»** en toda la pantalla
+(comprobado sobre `container.textContent`). **Sigue siendo solo lectura**:
+`queryByRole('button')` **no encuentra nada** fuera de «Reintentar» —el «¿Qué
+pasó?» es de la tajada 3 y no se pinta muerto—, y **ni una consulta, clave,
+invalidación, mutación, ruta, documento GraphQL ni `localStorage` nuevos**; las
+dos secciones salen del **mismo `execution`** que ya estaba montado y
+**`vida-execution.utils.ts` sigue sin tocarse**. Medido **en el navegador** con
+arnés borrado: a 375 px `scrollWidth` **375 = clientWidth**, **cero desbordes**
+con un nombre de categoría de 60 caracteres y la nota de tres líneas; contraste
+compuesto sobre el vidrio (34 textos) **9,05:1 → 18,78:1 en oscuro** y **6,52:1 →
+17,19:1 en claro**. Línea base: typecheck **exit 0**, lint **14/0**, `pnpm test`
+**2 fallos de 1388** (los dos de `SearchSelect`; **+21 tests**; `src/features/vida`
+**968/968**), `pnpm build` **exit 0** con chunk inicial **1.037,75 kB**
+(**+6,77**, **ninguno de iconos**: `app-icons` 620,20 e `IconPicker` 4,64
+clavados; CSS 233,98). `graphify update .`: 3530 nodos, 4144 aristas. **Avisos,
+por orden de riesgo:** **(1)** `describeNuance` —la **primera frase de la
+historia, de la tajada 1**— cambió de comportamiento: admite el matiz de
+categoría y **se corta a dos matices** (antes los unía todos); si una historia se
+lee rara, es ahí. **(2)** `buildCategoryBreakdown` suma **minutos de sesión**, así
+que **no cuadra con el presupuesto** —magnitudes distintas, dicho en el código y
+fijado con un test de dos sesiones pisadas (120 registrados contra 60 de reloj)—
+y alguien lo querrá «arreglar». **(3)** una categoría **sin color** y la fila
+**«Sin categoría»** caen en el mismo color de acento, que es el `fallback` que ya
+usaba `VidaReviewRow`. **(4)** en un día **con plan y sin un solo registro** el
+reparto **sí se pinta** (barras de planeado con registrado a cero), una casilla
+que el render no dibuja; y en un **día abierto** los tramos **nunca** salen,
+porque `buildNoDataSlices` solo existe con el presupuesto cerrado —conviene
+saberlo antes de la tajada 3, donde el «¿Qué pasó?» cuelga de esos tramos—.
+**Del usuario:** los cuatro pasos del recorrido al final de la sección 3 y, con
+ellos, **todo lo que pasa por el API**: este reparto **nunca se ha visto con
+categorías de verdad**, y los 375 px y el oscuro se midieron en un arnés, no
+dentro de `/app/*`.
 
 **FEAT-006, tajada 1 — revisión: `accepted`** (2026-09-20). Lo delicado era **no
 romper Hoy**, y lo medí con arnés propio (5 casos, borrado): `buildDayStrip` sin

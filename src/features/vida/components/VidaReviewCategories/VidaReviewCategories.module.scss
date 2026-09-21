@@ -1,0 +1,155 @@
+/* Marco B del render: una tarjeta de vidrio con una fila por categoría, y
+   «Sin registrar» separada por una línea punteada al final. */
+.root {
+  padding: 0.75rem 0.8rem 0.7rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: var(--aura-glass-1);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.row {
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  min-width: 0;
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* Las dos magnitudes, nunca un porcentaje (criterio 29). */
+.values {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+
+  b {
+    color: var(--color-text);
+    font-weight: 700;
+  }
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.3rem;
+  min-width: 0;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.barLabel {
+  flex: 0 0 auto;
+  width: 4.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.track {
+  display: block;
+  flex: 1 1 auto;
+  overflow: hidden;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  min-width: 0;
+}
+
+/* Planeado **rayado**, registrado **sólido**: la misma distinción que el
+   render, y la que ya usa la plantilla para lo desactivado. El rayado se hace
+   con dos opacidades del mismo color del catálogo, así que en oscuro sube y
+   baja con el color, no con un gris fijo. */
+.planned,
+.registered,
+.noDataBar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+
+.planned {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 70%, transparent) 0 4px,
+    color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 28%, transparent) 4px 8px
+  );
+}
+
+.registered {
+  background: var(--vida-category-color, var(--color-primary));
+}
+
+.note {
+  margin: 0.3rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+/* «Sin registrar» **es una fila más**, y la línea punteada dice que no es una
+   categoría: no se reparte entre las otras (criterio 28). */
+.noData {
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed color-mix(in srgb, var(--color-text) 18%, transparent);
+  min-width: 0;
+}
+
+.noDataBar {
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-text) 34%, transparent) 0 4px,
+    color-mix(in srgb, var(--color-text) 14%, transparent) 4px 8px
+  );
+}

@@ -4,10 +4,15 @@ import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.t
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
 import { buildDayExecution, collectDayClosing } from '@/features/vida/utils/vida-execution.utils'
 import {
+  UNCATEGORIZED_ROW_KEY,
+  buildCategoryBreakdown,
   buildDayReview,
   buildReviewLanes,
   buildReviewStory,
+  describeCategoryNote,
+  describeHalfDayCategory,
   resolveReviewDate,
+  topNoDataSlices,
   uncoveredMinutes,
 } from '@/features/vida/utils/vida-review.utils'
 import { parseTimeToMinutes } from '@/features/vida/utils/vida-time.utils'
@@ -59,6 +64,7 @@ function session(
   title: string,
   startTime: string,
   durationMinutes: number | null,
+  category: { id: string; name: string; color: string | null; icon: string | null } | null = null,
 ): ActivityFollowUp {
   return {
     id,
@@ -71,7 +77,7 @@ function session(
     endDate: null,
     endDateTime: null,
     notes: null,
-    activity: { id: activityId, title, category: null },
+    activity: { id: activityId, title, category },
   }
 }
 
@@ -568,5 +574,248 @@ describe('«sin registrar», contado una sola vez por minuto (criterios 11 y 12)
     })
     // De 6:30 a 9:00 hay 150 min; 15 están registrados.
     expect(review.figures?.noDataMinutes).toBe(135)
+  })
+})
+
+/* ── En qué se repartió el día (tajada 2) ───────────────────────────────── */
+
+/**
+ * **Los criterios 26–32 y la otra mitad del 8**, sobre un día montado a mano
+ * con dos categorías de verdad y una actividad sin ninguna.
+ *
+ * Lo que más importa de este bloque: **la suma de «registrado» no cuadra con el
+ * presupuesto a propósito** (minutos de sesión frente a reparto del reloj) y hay
+ * un test que lo fija, para que nadie lo «arregle» sin leer el porqué.
+ */
+const CASA = { id: 'c-casa', name: 'Casa', color: '#7C3AED', icon: 'house' }
+const COMIDA = { id: 'c-comida', name: 'Comida', color: '#10B981', icon: 'utensils' }
+
+/** El mismo día, ya cerrado: la revisión se lee al día siguiente. */
+const NEXT_DAY = '2026-09-19'
+
+/** Un día con categorías: una casa que se lleva la tarde y un desayuno que no se pudo. */
+function categoryDay() {
+  const planItems = [
+    block('b1', 'a1', 'Desayunar con calma', '08:30', '09:00', COMIDA),
+    block('b2', 'a2', 'Organizar la casa', '09:00', '09:45', CASA),
+    block('b3', 'a3', 'Leer un rato', '21:30', '22:00', null),
+  ]
+  const followUps = [
+    session('s1', 'a2', 'Organizar la casa', '09:05', 63, CASA),
+    session('s2', 'a9', 'Recoger la cocina', '16:00', 120, CASA),
+  ]
+  return { planItems, followUps }
+}
+
+describe('minutos por categoría (criterios 26, 27, 28 y 29)', () => {
+  it('planeado sale del plan y registrado de las sesiones, **incluidas las de fuera del plan**', () => {
+    const { agenda, execution, review } = reviewOf({ ...categoryDay(), today: NEXT_DAY })
+
+    const breakdown = buildCategoryBreakdown({
+      agenda,
+      execution,
+      noDataMinutes: review.figures!.noDataMinutes,
+    })
+
+    const casa = breakdown.rows.find((row) => row.key === CASA.id)!
+    expect(casa.name).toBe('Casa')
+    expect(casa.color).toBe('#7C3AED')
+    expect(casa.plannedMinutes).toBe(45)
+    // 63 del bloque + 120 de lo que no estaba en el plan.
+    expect(casa.registeredMinutes).toBe(183)
+    expect(casa.plannedLabel).toBe('45m')
+    expect(casa.registeredLabel).toBe('3h 3')
+
+    const comida = breakdown.rows.find((row) => row.key === COMIDA.id)!
+    expect(comida.plannedMinutes).toBe(30)
+    expect(comida.registeredMinutes).toBe(0)
+  })
+
+  it('una actividad **sin categoría** tiene su propia fila y sus minutos no se reparten (criterio 27)', () => {
+    const { agenda, execution, review } = reviewOf({ ...categoryDay(), today: NEXT_DAY })
+
+    const breakdown = buildCategoryBreakdown({
+      agenda,
+      execution,
+      noDataMinutes: review.figures!.noDataMinutes,
+    })
+
+    const sinCategoria = breakdown.rows.find((row) => row.key === UNCATEGORIZED_ROW_KEY)!
+    expect(sinCategoria.name).toBe('Sin categoría')
+    expect(sinCategoria.plannedMinutes).toBe(30)
+    // Y esos 30 min **no** se sumaron a ninguna otra fila.
+    expect(breakdown.rows.find((row) => row.key === CASA.id)!.plannedMinutes).toBe(45)
+    expect(breakdown.rows.find((row) => row.key === COMIDA.id)!.plannedMinutes).toBe(30)
+    // Siempre al final: es un cajón, no una categoría.
+    expect(breakdown.rows[breakdown.rows.length - 1]!.key).toBe(UNCATEGORIZED_ROW_KEY)
+  })
+
+  it('«Sin registrar» **no es una fila del reparto**: va aparte, con su frase literal (criterio 28)', () => {
+    const { agenda, execution, review } = reviewOf({ ...categoryDay(), today: NEXT_DAY })
+
+    const breakdown = buildCategoryBreakdown({
+      agenda,
+      execution,
+      noDataMinutes: review.figures!.noDataMinutes,
+    })
+
+    expect(breakdown.rows.some((row) => row.name === 'Sin registrar')).toBe(false)
+    expect(breakdown.noData.minutes).toBe(review.figures!.noDataMinutes)
+    expect(breakdown.noData.note).toBe(
+      'Tiempo del que no hay dato, entre las 6:30 y las 23:00. No se reparte entre categorías ni se adivina: si quieres, se rellena registrando.',
+    )
+    expect(breakdown.noData.dayLabel).toBe('16h 30')
+    // Su tamaño se mide contra **el día entero**, no contra el reparto.
+    expect(breakdown.noData.share).toBeCloseTo(review.figures!.noDataMinutes / 990, 5)
+  })
+
+  it('**la suma de registrado no se fuerza a cuadrar con el presupuesto**: son magnitudes distintas', () => {
+    // Dos sesiones **pisadas**: el reloj solo puede contar 60 min, pero se
+    // registraron 120 minutos de sesión, y cada categoría se queda los suyos.
+    const { agenda, execution, review } = reviewOf({
+      today: NEXT_DAY,
+      planItems: [],
+      followUps: [
+        session('s1', 'a1', 'Organizar la casa', '10:00', 60, CASA),
+        session('s2', 'a2', 'Cocinar', '10:00', 60, COMIDA),
+      ],
+    })
+
+    const breakdown = buildCategoryBreakdown({
+      agenda,
+      execution,
+      noDataMinutes: review.figures!.noDataMinutes,
+    })
+
+    const registered = breakdown.rows.reduce((total, row) => total + row.registeredMinutes, 0)
+    expect(registered).toBe(120)
+    expect(registered).toBe(review.figures!.registeredMinutes)
+    // El reparto del día, en cambio, solo cuenta 60: el minuto de reloj es uno.
+    expect(execution.budget.dayMinutes - breakdown.noData.minutes).toBe(60)
+    expect(registered + breakdown.noData.minutes).not.toBe(execution.budget.dayMinutes)
+  })
+
+  it('ninguna fila lleva un porcentaje único ni la palabra «cumplimiento» (criterio 29)', () => {
+    const { agenda, execution, review } = reviewOf({ ...categoryDay(), today: NEXT_DAY })
+
+    const breakdown = buildCategoryBreakdown({
+      agenda,
+      execution,
+      noDataMinutes: review.figures!.noDataMinutes,
+    })
+
+    const texts = [
+      ...breakdown.rows.flatMap((row) => [row.plannedLabel, row.registeredLabel, row.note ?? '']),
+      breakdown.noData.label,
+      breakdown.noData.note,
+    ].join(' ')
+    expect(texts).not.toMatch(/%/)
+    expect(texts).not.toMatch(/cumplimiento/i)
+  })
+})
+
+describe('la nota de una categoría (criterio 30)', () => {
+  it('sin dato que la sostenga, **no hay nota**', () => {
+    expect(describeCategoryNote({ missing: [], offPlanCount: 0 })).toBeNull()
+    expect(
+      describeCategoryNote({
+        missing: [{ title: 'Leer un rato', plannedMinutes: 30, couldNot: false }],
+        offPlanCount: 0,
+      }),
+    ).toBeNull()
+  })
+
+  it('un bloque marcado «no se pudo» da la nota del render', () => {
+    const { agenda, execution, review } = reviewOf({
+      ...categoryDay(),
+      today: NEXT_DAY,
+      couldNotById: new Map([['b1', 'me fui directo a la llamada']]),
+    })
+
+    const breakdown = buildCategoryBreakdown({
+      agenda,
+      execution,
+      noDataMinutes: review.figures!.noDataMinutes,
+      couldNotById: new Map([['b1', 'me fui directo a la llamada']]),
+    })
+
+    expect(breakdown.rows.find((row) => row.key === COMIDA.id)!.note).toBe(
+      'Desayunar con calma no se pudo: 30 min planeados que no llegaron a registro.',
+    )
+  })
+
+  it('lo de fuera del plan se dice donde cayó', () => {
+    const { agenda, execution, review } = reviewOf({ ...categoryDay(), today: NEXT_DAY })
+
+    const breakdown = buildCategoryBreakdown({
+      agenda,
+      execution,
+      noDataMinutes: review.figures!.noDataMinutes,
+    })
+
+    expect(breakdown.rows.find((row) => row.key === CASA.id)!.note).toBe(
+      'Una cosa fuera del plan cayó aquí.',
+    )
+    expect(describeCategoryNote({ missing: [], offPlanCount: 2 })).toBe(
+      'Las 2 cosas fuera del plan cayeron aquí.',
+    )
+  })
+})
+
+describe('los tramos más largos sin registrar (criterios 31 y 32)', () => {
+  it('de mayor a menor, como mucho cuatro, y con el umbral de Hoy', () => {
+    const { execution } = reviewOf({ ...categoryDay(), today: NEXT_DAY })
+
+    const slices = topNoDataSlices(execution, 4)
+
+    expect(slices.length).toBeLessThanOrEqual(4)
+    expect(slices.every((slice) => slice.canAsk)).toBe(true)
+    expect(slices.every((slice) => slice.durationMinutes >= 30)).toBe(true)
+    const minutes = slices.map((slice) => slice.durationMinutes)
+    expect([...minutes].sort((a, b) => b - a)).toEqual(minutes)
+    expect(slices[0]!.rangeLabel).toMatch(/\d+:\d\d – \d+:\d\d/)
+  })
+
+  it('un día **sin tramos** por encima del umbral devuelve la lista vacía: la sección no se pinta', () => {
+    // Un día tapado de punta a punta: no queda ni un hueco que preguntar.
+    const { execution } = reviewOf({
+      planItems: [block('b1', 'a1', 'Vivir el día', '06:30', '23:00')],
+      followUps: [session('s1', 'a1', 'Vivir el día', '06:30', 990)],
+      today: NEXT_DAY,
+    })
+
+    expect(topNoDataSlices(execution, 4)).toEqual([])
+  })
+})
+
+describe('la historia puede nombrar una categoría, y solo si el dato la sostiene (criterio 8)', () => {
+  it('con una categoría que se lleva más de la mitad de la tarde, la nombra', () => {
+    const { execution, review } = reviewOf({ ...categoryDay(), today: NEXT_DAY })
+
+    expect(describeHalfDayCategory(execution)).toBe('la tarde, casi toda en Casa')
+    expect(review.story[0]).toContain('la tarde, casi toda en Casa')
+  })
+
+  it('repartida entre varias, **no se afirma ninguna**', () => {
+    const { execution, review } = reviewOf({
+      today: NEXT_DAY,
+      planItems: [block('b1', 'a1', 'Organizar la casa', '09:00', '09:45', CASA)],
+      followUps: [
+        session('s1', 'a1', 'Organizar la casa', '09:05', 45, CASA),
+        session('s2', 'a9', 'Recoger la cocina', '15:00', 60, CASA),
+        session('s3', 'a8', 'Cocinar', '16:30', 50, COMIDA),
+        session('s4', 'a7', 'Cosas sueltas', '18:00', 40, null),
+      ],
+    })
+
+    expect(describeHalfDayCategory(execution)).toBeNull()
+    expect(review.story.join(' ')).not.toContain('Casa')
+  })
+
+  it('el día del render, **sin categorías en los datos**, no nombra ninguna', () => {
+    const { execution, review } = reviewOf({ ...renderDay(), today: NEXT_DAY })
+
+    expect(describeHalfDayCategory(execution)).toBeNull()
+    expect(review.story.join(' ')).not.toMatch(/casi toda en/)
   })
 })

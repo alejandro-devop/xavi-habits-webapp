@@ -1,0 +1,42 @@
+/* Renglones sobrios: la franja a la izquierda y su tamaño a la derecha, como
+   el pie del marco B. Nada de alarma: es tiempo sin dato. */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px dashed color-mix(in srgb, var(--color-text) 16%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+}
+
+.range {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.duration {
+  flex: 0 0 auto;
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}

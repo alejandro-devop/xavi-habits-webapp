@@ -2,8 +2,10 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
+import { VidaReviewCategories } from '@/features/vida/components/VidaReviewCategories'
 import { VidaReviewFigures } from '@/features/vida/components/VidaReviewFigures'
 import { VidaReviewLanes } from '@/features/vida/components/VidaReviewLanes'
+import { VidaReviewNoDataList } from '@/features/vida/components/VidaReviewNoDataList'
 import { VidaReviewOffPlanRow, VidaReviewRow } from '@/features/vida/components/VidaReviewRow'
 import { VidaReviewStory } from '@/features/vida/components/VidaReviewStory'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
@@ -15,7 +17,12 @@ import { getBlockNote, useVidaDeviceNotesStore } from '@/features/vida/store/vid
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
 import { getCurrentLocalDate } from '@/features/vida/utils/vida-date.utils'
 import { buildDayExecution } from '@/features/vida/utils/vida-execution.utils'
-import { buildDayReview, resolveReviewDate } from '@/features/vida/utils/vida-review.utils'
+import {
+  buildCategoryBreakdown,
+  buildDayReview,
+  resolveReviewDate,
+  topNoDataSlices,
+} from '@/features/vida/utils/vida-review.utils'
 import {
   buildDayStrip,
   clampToReviewWindow,
@@ -53,6 +60,12 @@ const DESKTOP_QUERY = '(min-width: 60rem)'
  * Los días raros tienen **su propio estado y su salida a Hoy**: futuro
  * (criterio 4), hoy aún abierto (5), con plan y sin un solo registro (19), sin
  * plan y con sesiones (20) y sin plan y sin nada (21).
+ *
+ * **La tajada 2** añade, **al final** de la columna principal, «en qué se
+ * repartió el día»: los minutos por categoría con la paleta del catálogo y los
+ * tramos más largos sin registrar (criterios 26–34). Siguen siendo lectura: ni
+ * un botón, ni una consulta más — las dos secciones se derivan del **mismo**
+ * `execution` que ya estaba montado.
  *
  * Los estados van separados como en Hoy: sin sesión ≠ esqueletos ≠ **el plan no
  * cargó** ≠ **lo vivido no cargó**. Con lo vivido caído **no se afirma nada de
@@ -150,6 +163,23 @@ export function VidaRevisionPage() {
     () => buildDayReview({ execution, agenda, date, today, nowMinutes, couldNotById }),
     [execution, agenda, date, today, nowMinutes, couldNotById],
   )
+  // **En qué se repartió el día** (tajada 2). Los minutos sin registrar no se
+  // recalculan: son los que ya trae la cifra grande (A9), así que la fila de
+  // «Sin registrar» y la cifra de arriba **no pueden decir números distintos**.
+  const breakdown = useMemo(
+    () =>
+      buildCategoryBreakdown({
+        agenda,
+        execution,
+        noDataMinutes: review.figures?.noDataMinutes ?? 0,
+        couldNotById,
+      }),
+    [agenda, execution, review.figures?.noDataMinutes, couldNotById],
+  )
+  const noDataSlices = useMemo(() => topNoDataSlices(execution, 4), [execution])
+  const showsCategories =
+    review.status !== 'future' && (breakdown.rows.length > 0 || breakdown.noData.minutes > 0)
+
   const showsReasons = review.rows.some(
     (row) => row.real.kind === 'missing' && row.real.reason !== null,
   )
@@ -216,6 +246,7 @@ export function VidaRevisionPage() {
           {[0, 1, 2].map((row) => (
             <Skeleton key={row} width="100%" height={54} radius="1rem" />
           ))}
+          <Skeleton width="100%" height={120} radius="1.25rem" />
           <span className={styles.srOnly}>Cargando cómo fue tu día…</span>
         </div>
       </div>
@@ -413,6 +444,34 @@ export function VidaRevisionPage() {
                   <VidaReviewOffPlanRow key={row.id} row={row} />
                 ))}
               </ol>
+            </section>
+          ) : null}
+
+          {/* **En qué se repartió el día** (criterios 26–33). Va **al final**,
+              debajo de los carriles: es lo que se mira al final, no al empezar.
+              Los botones de cada tramo son de la tajada 3. */}
+          {showsCategories ? (
+            <section className={styles.section} aria-labelledby="vida-review-categories">
+              <h2 className={styles.sectionTitle} id="vida-review-categories">
+                Minutos por categoría
+              </h2>
+              <p className={styles.sectionNote}>
+                En qué se repartió el día · misma paleta que tus categorías.
+              </p>
+              <VidaReviewCategories breakdown={breakdown} />
+            </section>
+          ) : null}
+
+          {noDataSlices.length > 0 ? (
+            <section className={styles.section} aria-labelledby="vida-review-nodata">
+              <h2 className={styles.sectionTitle} id="vida-review-nodata">
+                {noDataSlices.length === 4
+                  ? 'Los cuatro tramos más largos sin registrar'
+                  : noDataSlices.length === 1
+                    ? 'El tramo más largo sin registrar'
+                    : `Los ${noDataSlices.length} tramos más largos sin registrar`}
+              </h2>
+              <VidaReviewNoDataList slices={noDataSlices} />
             </section>
           ) : null}
 

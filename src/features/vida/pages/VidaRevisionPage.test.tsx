@@ -79,12 +79,15 @@ function ready<T>(data: T): Query<T> {
   return { data, isPending: false, isError: false, fetchStatus: 'idle', refetch: vi.fn() }
 }
 
+type CategoryRef = { id: string; name: string; color: string | null; icon: string | null }
+
 function block(
   id: string,
   activityId: string,
   title: string,
   startTime: string,
   endTime: string,
+  category: CategoryRef | null = null,
 ): ActivityDayPlanItem {
   return {
     id,
@@ -97,7 +100,7 @@ function block(
     completedAt: null,
     createdAt: `${FRIDAY}T00:00:00.000Z`,
     updatedAt: `${FRIDAY}T00:00:00.000Z`,
-    activity: { id: activityId, title, category: null },
+    activity: { id: activityId, title, category },
   }
 }
 
@@ -107,6 +110,7 @@ function session(
   title: string,
   startTime: string,
   durationMinutes: number | null,
+  category: CategoryRef | null = null,
 ): ActivityFollowUp {
   return {
     id,
@@ -119,7 +123,7 @@ function session(
     endDate: null,
     endDateTime: null,
     notes: null,
-    activity: { id: activityId, title, category: null },
+    activity: { id: activityId, title, category },
   }
 }
 
@@ -409,5 +413,101 @@ describe('el escritorio: los dos carriles (criterio 22)', () => {
     } finally {
       window.matchMedia = original
     }
+  })
+})
+
+describe('en qué se repartió el día (criterios 26, 27, 28, 29, 32 y 33)', () => {
+  const CASA = { id: 'c-casa', name: 'Casa', color: '#7C3AED', icon: 'house' }
+  const COMIDA = { id: 'c-comida', name: 'Comida', color: '#10B981', icon: 'utensils' }
+
+  function withCategories() {
+    planQuery = ready([
+      block('b1', 'a1', 'Organizar la casa', '09:00', '09:45', CASA),
+      block('b2', 'a2', 'Desayunar con calma', '08:30', '09:00', COMIDA),
+      block('b3', 'a3', 'Leer un rato', '21:30', '22:00'),
+    ])
+    dayFollowUpsQuery = ready([
+      session('s1', 'a1', 'Organizar la casa', '09:05', 63, CASA),
+      session('s2', 'a9', 'Recoger la cocina', '16:00', 120, CASA),
+    ])
+  }
+
+  it('dos barras por categoría, con su cabecera de dos magnitudes (criterio 26)', () => {
+    withCategories()
+    renderPage()
+
+    expect(screen.getByRole('heading', { name: 'Minutos por categoría' })).toBeInTheDocument()
+    const categorias = screen.getByRole('region', { name: 'Minutos por categoría' })
+    expect(within(categorias).getByText('Casa')).toBeInTheDocument()
+    // Planeado → registrado: 45m de plan, 3h 3 registradas (63 + 120 de fuera).
+    expect(within(categorias).getByText(/45m →/)).toBeInTheDocument()
+    expect(within(categorias).getByText('3h 3')).toBeInTheDocument()
+    expect(within(categorias).getAllByText('planeado').length).toBe(3)
+    expect(within(categorias).getAllByText('registrado').length).toBe(3)
+  })
+
+  it('«Sin categoría» tiene **su propia fila** (criterio 27)', () => {
+    withCategories()
+    renderPage()
+
+    expect(screen.getByText('Sin categoría')).toBeInTheDocument()
+  })
+
+  it('«Sin registrar» es una fila más, con su frase literal (criterio 28)', () => {
+    withCategories()
+    renderPage()
+
+    expect(
+      screen.getByText(
+        /No se reparte entre categorías ni se adivina: si quieres, se rellena registrando/,
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/de las 16h 30 de tu día\./)).toBeInTheDocument()
+  })
+
+  it('ni un porcentaje, ni la palabra «cumplimiento» en toda la pantalla (criterio 29)', () => {
+    withCategories()
+    const { container } = renderPage()
+
+    expect(container.textContent).not.toMatch(/%/)
+    expect(container.textContent).not.toMatch(/cumplimiento/i)
+  })
+
+  it('los tramos más largos sin registrar, con su franja y su tamaño (criterio 31)', () => {
+    withCategories()
+    renderPage()
+
+    expect(
+      screen.getByRole('heading', { name: 'Los cuatro tramos más largos sin registrar' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('6:30 – 8:30')).toBeInTheDocument()
+    // Y siguen sin pintarse botones: «¿Qué pasó?» es de la tajada 3.
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('sin tramos por encima del umbral, **la sección no se pinta** (criterio 32)', () => {
+    planQuery = ready([block('b1', 'a1', 'Vivir el día', '06:30', '23:00', CASA)])
+    dayFollowUpsQuery = ready([session('s1', 'a1', 'Vivir el día', '06:30', 990, CASA)])
+    renderPage()
+
+    expect(screen.queryByRole('heading', { name: /tramos más largos sin registrar/ })).not.toBeInTheDocument()
+    expect(screen.queryByText(/no hay tramos/i)).not.toBeInTheDocument()
+  })
+
+  it('cargando no se afirma ningún reparto (criterio 34)', () => {
+    planQuery = { isPending: true, isError: false, fetchStatus: 'fetching', refetch: vi.fn() }
+    renderPage()
+
+    expect(screen.queryByRole('heading', { name: 'Minutos por categoría' })).not.toBeInTheDocument()
+  })
+
+  it('con **lo vivido caído** tampoco se reparte nada, y el error manda (criterio 34)', () => {
+    withCategories()
+    dayFollowUpsQuery = { isPending: false, isError: true, fetchStatus: 'idle', refetch: vi.fn() }
+    renderPage()
+
+    expect(screen.getByText('No pudimos leer lo que viviste ese día')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Minutos por categoría' })).not.toBeInTheDocument()
   })
 })

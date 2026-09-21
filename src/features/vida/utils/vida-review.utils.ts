@@ -23,7 +23,10 @@
  */
 
 import type { AgendaBlock, DayAgenda } from '@/features/vida/utils/vida-agenda.utils'
-import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
+import {
+  UNCATEGORIZED_GROUP_ICON,
+  UNCATEGORIZED_GROUP_NAME,
+} from '@/features/vida/utils/vida-catalog.utils'
 import { formatDayHeading, parseYmdToLocalDate } from '@/features/vida/utils/vida-date.utils'
 import type {
   BlockExecution,
@@ -554,6 +557,11 @@ export function describeNuance(agenda: DayAgenda, execution: DayExecution): stri
     parts.push('la mañana, calcada')
   }
 
+  // La **otra mitad del criterio 8** (tajada 2): la frase de la mañana o de la
+  // tarde puede nombrar una categoría, y **solo esa frase**.
+  const halfClause = describeHalfDayCategory(execution)
+  if (halfClause) parts.push(halfClause)
+
   const widest = matched
     .filter(
       (pair) => Math.abs(pair.item.durationDeltaMinutes) > VIDA_ON_PLAN_TOLERANCE_MINUTES,
@@ -573,7 +581,55 @@ export function describeNuance(agenda: DayAgenda, execution: DayExecution): stri
     )
   }
 
-  return parts.length > 0 ? parts.join('; ') : null
+  // Dos matices como mucho: el tercero convertiría la primera frase en una
+  // lista, y la historia se lee en diez segundos (criterio 6).
+  return parts.length > 0 ? parts.slice(0, 2).join('; ') : null
+}
+
+/**
+ * **La mitad del criterio 8 que necesitaba el reparto por categoría**: «la
+ * tarde, casi toda en Casa».
+ *
+ * La regla es la del criterio, literal: se mira **una** mitad del día —la que
+ * tenga más minutos registrados— y solo se afirma si **una sola categoría se
+ * lleva al menos la mitad** de lo registrado en ella. Si no llega, **no se
+ * afirma**: la historia sigue hablando de bloques, que es lo seguro.
+ *
+ * Los minutos se **recortan** a su mitad del día: una sesión de 13:30 a 15:00
+ * aporta 30 min a la mañana y 60 a la tarde, no 90 a ninguna. Y «Sin
+ * categoría» **nunca se nombra** —«la tarde se te fue en Sin categoría» no es
+ * una frase— aunque sí suma al total contra el que se compara.
+ */
+export function describeHalfDayCategory(execution: DayExecution): string | null {
+  const halves = [
+    { key: 'la mañana', from: 0, to: REVIEW_AFTERNOON_MINUTES },
+    { key: 'la tarde', from: REVIEW_AFTERNOON_MINUTES, to: 24 * 60 },
+  ] as const
+
+  const measured = halves.map((half) => {
+    let total = 0
+    const byCategory = new Map<string, { name: string; minutes: number }>()
+    for (const span of spansOf(execution)) {
+      const minutes =
+        Math.min(span.endMinutes, half.to) - Math.max(span.startMinutes, half.from)
+      if (minutes <= 0) continue
+      total += minutes
+      const ref = categoryKeyOf(span.session.activity)
+      if (ref.key === UNCATEGORIZED_ROW_KEY) continue
+      const current = byCategory.get(ref.key)
+      if (current) current.minutes += minutes
+      else byCategory.set(ref.key, { name: ref.name, minutes })
+    }
+    const top = [...byCategory.values()].sort((a, b) => b.minutes - a.minutes)[0] ?? null
+    return { label: half.key, total, top }
+  })
+
+  // **Una** mitad, la que tenga más minutos registrados. Si en esa no hay
+  // mayoría, no se cuela la otra: la frase describiría un rato menor y sonaría
+  // a la mitad grande del día.
+  const half = measured.sort((a, b) => b.total - a.total)[0]
+  if (!half || half.total <= 0 || !half.top || half.top.minutes * 2 < half.total) return null
+  return `${half.label}, casi toda en ${half.top.name}`
 }
 
 /**
@@ -833,4 +889,261 @@ export function buildReviewLanes(params: {
   }
 
   return rows
+}
+
+/* ── En qué se repartió el día (criterios 26–32, tajada 2) ─────────────── */
+
+/**
+ * La clave de la fila «Sin categoría» (criterio 27). No es un `id` del API: el
+ * API no tiene una categoría llamada así, y por eso no se puede confundir con
+ * una de verdad.
+ */
+export const UNCATEGORIZED_ROW_KEY = 'sin-categoria'
+
+/** Una fila del bloque «Minutos por categoría». */
+export type CategoryRow = {
+  /** `category.id`, o `UNCATEGORIZED_ROW_KEY`. */
+  key: string
+  name: string
+  /** El color del catálogo. `null` en «Sin categoría» y en la que no lo tenga. */
+  color: string | null
+  icon: string
+  plannedMinutes: number
+  /** «45 min». */
+  plannedLabel: string
+  registeredMinutes: number
+  /** «2h 53». */
+  registeredLabel: string
+  /** Ancho de la barra rayada, de 0 a 1. */
+  plannedShare: number
+  /** Ancho de la barra sólida, de 0 a 1. */
+  registeredShare: number
+  /** La nota del criterio 30, o `null` si ninguna regla dispara. */
+  note: string | null
+}
+
+/** «Sin registrar» **no es una categoría**: es una fila aparte (criterio 28). */
+export type CategoryNoDataRow = {
+  minutes: number
+  /** «10h 53». */
+  label: string
+  /** Frente al día entero, de 0 a 1. */
+  share: number
+  /** «16h 30». */
+  dayLabel: string
+  /** La frase literal del criterio 28. */
+  note: string
+}
+
+export type CategoryBreakdown = {
+  rows: CategoryRow[]
+  noData: CategoryNoDataRow
+}
+
+type CategoryTally = {
+  key: string
+  name: string
+  color: string | null
+  icon: string
+  plannedMinutes: number
+  registeredMinutes: number
+  /** Bloques de esa categoría que se quedaron sin sesión, para la nota. */
+  missing: { title: string; plannedMinutes: number; couldNot: boolean }[]
+  offPlanCount: number
+}
+
+function categoryKeyOf(
+  activity: { category?: { id: string; name: string; color: string | null; icon: string | null } | null } | null | undefined,
+): { key: string; name: string; color: string | null; icon: string } {
+  const category = activity?.category ?? null
+  if (!category) {
+    return {
+      key: UNCATEGORIZED_ROW_KEY,
+      name: UNCATEGORIZED_GROUP_NAME,
+      color: null,
+      icon: UNCATEGORIZED_GROUP_ICON,
+    }
+  }
+  return {
+    key: category.id,
+    name: category.name,
+    color: category.color,
+    icon: category.icon ?? UNCATEGORIZED_GROUP_ICON,
+  }
+}
+
+/**
+ * La nota bajo una categoría (criterio 30): **sale de una regla y solo con dato
+ * que la sostenga**. Si ninguna dispara, devuelve `null` y la pantalla no pinta
+ * nada — nunca se rellena con una frase de relleno.
+ *
+ * Las dos reglas, en este orden:
+ *
+ * 1. **Un bloque de esa categoría marcado «no se pudo»** (el de más minutos
+ *    planeados): «El desayuno no se pudo: 30 min planeados que no llegaron a
+ *    registro.», que es la nota del marco B tal cual.
+ * 2. **Cosas de fuera del plan que cayeron aquí**: «Las 2 cosas fuera del plan
+ *    cayeron aquí.».
+ *
+ * Ninguna juzga: describen de dónde salen los minutos. No hay una tercera
+ * regla, y añadir una es una decisión de producto, no un detalle.
+ */
+export function describeCategoryNote(tally: {
+  missing: { title: string; plannedMinutes: number; couldNot: boolean }[]
+  offPlanCount: number
+}): string | null {
+  const couldNot = tally.missing
+    .filter((item) => item.couldNot)
+    .sort((a, b) => b.plannedMinutes - a.plannedMinutes)[0]
+  if (couldNot) {
+    return `${couldNot.title} no se pudo: ${formatDurationMinutes(couldNot.plannedMinutes)} planeados que no llegaron a registro.`
+  }
+  if (tally.offPlanCount > 0) {
+    return tally.offPlanCount === 1
+      ? 'Una cosa fuera del plan cayó aquí.'
+      : `Las ${tally.offPlanCount} cosas fuera del plan cayeron aquí.`
+  }
+  return null
+}
+
+/**
+ * **En qué se repartió el día** (criterios 26, 27, 28 y 29).
+ *
+ * De dónde sale cada número, que es lo único delicado de esta función:
+ *
+ * - **Planeado**: `agenda.blocks[].durationMinutes`, por la categoría de la
+ *   actividad del bloque.
+ * - **Registrado**: los **minutos reales de cada `SessionSpan`**, incluidas las
+ *   sesiones de **fuera del plan**, por `span.session.activity.category`.
+ *
+ * > **La suma de «registrado» no cuadra con `budget` a propósito, y no se
+ * > fuerza.** Son magnitudes distintas: el presupuesto **reparte el día** en
+ * > tramos sin solapes (cada minuto del reloj cuenta una vez), y estas filas
+ * > **suman minutos de sesión** (dos cosas a la vez suman dos veces). Cuadrarlas
+ * > obligaría a repartir un solape entre dos categorías, que es exactamente el
+ * > tipo de invención que esta pantalla no hace. Si alguien lo «arregla», rompe
+ * > el criterio 26.
+ *
+ * «Sin registrar» **no entra en el reparto**: es su propia fila, medida contra
+ * el día entero (criterio 28). Y **no hay ningún porcentaje único** de
+ * cumplimiento por categoría (criterio 29): dos barras, cada una con su
+ * magnitud.
+ */
+export function buildCategoryBreakdown(params: {
+  agenda: DayAgenda
+  execution: DayExecution
+  /** Los minutos sin registrar ya calculados por `buildDayReview` (A9). */
+  noDataMinutes: number
+  /** `item.id` → razón del «No se pudo». Del aparato, como en `buildDayReview`. */
+  couldNotById?: ReadonlyMap<string, string | null>
+}): CategoryBreakdown {
+  const { agenda, execution, noDataMinutes } = params
+  const couldNotById = params.couldNotById ?? new Map<string, string | null>()
+  const tallies = new Map<string, CategoryTally>()
+
+  const tallyOf = (activity: Parameters<typeof categoryKeyOf>[0]): CategoryTally => {
+    const ref = categoryKeyOf(activity)
+    const existing = tallies.get(ref.key)
+    if (existing) {
+      // La primera que traiga color e icono manda: el catálogo es el mismo.
+      if (existing.color === null && ref.color !== null) existing.color = ref.color
+      return existing
+    }
+    const created: CategoryTally = {
+      ...ref,
+      plannedMinutes: 0,
+      registeredMinutes: 0,
+      missing: [],
+      offPlanCount: 0,
+    }
+    tallies.set(ref.key, created)
+    return created
+  }
+
+  for (const block of agenda.blocks) {
+    const tally = tallyOf(block.item.activity)
+    tally.plannedMinutes += block.durationMinutes
+    if (execution.missingByBlockId[block.id] !== undefined) {
+      tally.missing.push({
+        title: block.item.activity?.title ?? 'Actividad',
+        plannedMinutes: block.durationMinutes,
+        couldNot: couldNotById.has(block.item.id),
+      })
+    }
+  }
+
+  for (const span of spansOf(execution)) {
+    tallyOf(span.session.activity).registeredMinutes += span.durationMinutes
+  }
+  for (const entry of execution.sessions) {
+    if (entry.variant !== 'off-plan') continue
+    tallyOf(entry.span.session.activity).offPlanCount += 1
+  }
+
+  const rows = [...tallies.values()]
+    .filter((tally) => tally.plannedMinutes > 0 || tally.registeredMinutes > 0)
+    // Lo más grande arriba, y «Sin categoría» siempre al final: es un cajón, no
+    // una categoría (el mismo orden que el catálogo de FEAT-002).
+    .sort((a, b) => {
+      if (a.key === UNCATEGORIZED_ROW_KEY) return 1
+      if (b.key === UNCATEGORIZED_ROW_KEY) return -1
+      return (
+        Math.max(b.plannedMinutes, b.registeredMinutes) -
+          Math.max(a.plannedMinutes, a.registeredMinutes) || a.name.localeCompare(b.name, 'es')
+      )
+    })
+
+  // La misma escala para todas las barras, o dos categorías no se podrían
+  // comparar de un vistazo. Se redondea al cuarto de hora de arriba para que el
+  // extremo no quede siempre pegado al borde, como en el render.
+  const largest = rows.reduce(
+    (max, row) => Math.max(max, row.plannedMinutes, row.registeredMinutes),
+    0,
+  )
+  const scale = Math.max(30, Math.ceil(largest / 30) * 30)
+  const share = (minutes: number) => Math.min(1, Math.max(0, minutes / scale))
+
+  const dayMinutes = execution.budget.dayMinutes
+  const fromLabel = formatTimeForDisplay(minutesToTime(agenda.windowStart))
+  const toLabel = formatTimeForDisplay(minutesToTime(agenda.windowEnd))
+
+  return {
+    rows: rows.map((tally) => ({
+      key: tally.key,
+      name: tally.name,
+      color: tally.color,
+      icon: tally.icon,
+      plannedMinutes: tally.plannedMinutes,
+      plannedLabel: formatDurationFromMinutes(tally.plannedMinutes),
+      registeredMinutes: tally.registeredMinutes,
+      registeredLabel: formatDurationFromMinutes(tally.registeredMinutes),
+      plannedShare: share(tally.plannedMinutes),
+      registeredShare: share(tally.registeredMinutes),
+      note: describeCategoryNote(tally),
+    })),
+    noData: {
+      minutes: noDataMinutes,
+      label: formatDurationFromMinutes(noDataMinutes),
+      share: dayMinutes > 0 ? Math.min(1, Math.max(0, noDataMinutes / dayMinutes)) : 0,
+      dayLabel: formatDurationFromMinutes(dayMinutes),
+      note: `Tiempo del que no hay dato, entre las ${fromLabel} y las ${toLabel}. No se reparte entre categorías ni se adivina: si quieres, se rellena registrando.`,
+    },
+  }
+}
+
+/**
+ * **Los tramos más largos sin registrar** (criterios 31 y 32), de mayor a
+ * menor.
+ *
+ * Son los mismos `NoDataSlice` que pinta Hoy —mismo umbral
+ * (`VIDA_NO_DATA_MIN_MINUTES`, que es lo que mira `canAsk`), mismo cálculo—:
+ * aquí solo se ordenan y se cortan. Si no hay ninguno por encima del umbral, la
+ * lista sale **vacía** y la pantalla no pinta la sección: no se escribe «no hay
+ * tramos» ni se rellena con tramos menores.
+ */
+export function topNoDataSlices(execution: DayExecution, limit = 4): NoDataSlice[] {
+  return Object.values(execution.noDataByGapId)
+    .filter((slice) => slice.canAsk)
+    .sort((a, b) => b.durationMinutes - a.durationMinutes || a.startMinutes - b.startMinutes)
+    .slice(0, Math.max(0, limit))
 }

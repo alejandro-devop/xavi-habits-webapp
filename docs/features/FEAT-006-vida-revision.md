@@ -1,7 +1,7 @@
 ---
 id: FEAT-006
 title: Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla
-status: building
+status: in-review
 architect: yes    # pantalla sin hermana (dos carriles alineados por hora, y la semana con lo real de siete días a la vez: catorce consultas donde hoy hay siete), y hay que decidir una sola vez dónde vive la derivación por categoría y la de la semana sin partir en dos `vida-execution.utils.ts`
 area: features/vida
 requested: 2026-09-20
@@ -355,7 +355,7 @@ tal cual** y están repartidos por los criterios de abajo.
 | # | What it does | State |
 |---|---|---|
 | 1 | **El día se lee.** `/app/vida/revision` deja de ser un cascarón: tira de días con `?d=`, **la historia en prosa**, la cifra grande (N de M) con planeado · registrado · fuera del plan y **sin registrar**, **plan frente a real** bloque a bloque con el vocabulario de Hoy, la sección «Fuera del plan», el escritorio en **dos carriles**, los días raros (futuro, en curso, sin registros, sin plan) y los estados. **Solo lectura**, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí al cerrarse el día. Ya es útil sola: es la primera vez que el usuario ve su día contado. | in-review |
-| 2 | **En qué se repartió el día.** Por categoría, con la paleta del catálogo y dos barras (planeado rayado · registrado sólido), **«Sin registrar» como fila propia** con su frase, y **los cuatro tramos más largos sin registrar** listados con su franja y su tamaño. Sigue siendo lectura: responde «¿en qué se me fue el día?», que es la pregunta que trajo el módulo. | pending |
+| 2 | **En qué se repartió el día.** Por categoría, con la paleta del catálogo y dos barras (planeado rayado · registrado sólido), **«Sin registrar» como fila propia** con su frase, y **los cuatro tramos más largos sin registrar** listados con su franja y su tamaño. Sigue siendo lectura: responde «¿en qué se me fue el día?», que es la pregunta que trajo el módulo. | in-review |
 | 3 | **La revisión rellena el día.** Las salidas, todas prestadas de Hoy: **«Lo hice»** por bloque no hecho y en la lista fantasma, **«Registrar tiempo pasado»** y **«¿Qué pasó?»** con la hoja de FEAT-004 dentro de la revisión, y **«Dejarlo así»** con el store del aparato. Nada de esto toca el plan. Convierte una pantalla que se mira en una que se usa. | pending |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», la barrita del día y «registrado de planeado», la frase de la semana, el punto de tres estados en la tira, y **un solo aviso** hacia la plantilla en forma de pregunta, que al aceptarse **mueve la hora del ítem** (`vidaItemUpdate`) y nunca el plan. Es lo que cierra el círculo plantilla → día → revisión → plantilla. | pending |
 
@@ -1023,7 +1023,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | **accepted** (2026-09-20) |
-| 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | pending |
+| 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | **in-review** (2026-09-20) |
 | 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | pending |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | pending (**bloqueada hasta que FEAT-005 esté `delivered`**) |
 
@@ -1336,6 +1336,158 @@ Render se duerme a los 15 min y tarda ~1 min en despertar.
     `docs/vida/assets/07-vida-revision.html`, marco D. *(criterio 22)*
 14. Cronometrar: **¿se lee en diez segundos y sin una palabra de reproche?**
     *(criterio 61, el de la fase)*
+
+### Tajada 2 — en qué se repartió el día
+
+**Resumen para quien revise, en tres líneas:**
+
+1. **La revisión ya dice en qué se repartió el día**: al final de la pantalla,
+   **minutos por categoría** con la paleta del catálogo y **dos barras**
+   —planeado **rayado**, registrado **sólido**—, «Sin categoría» con fila propia,
+   **«Sin registrar» como fila aparte** con su frase literal, y debajo **los
+   cuatro tramos más largos sin registrar**. Y la **historia** puede ahora
+   nombrar una categoría («la tarde, casi toda en Casa») **solo cuando el dato lo
+   sostiene** (la otra mitad del criterio 8).
+2. **Sigue siendo solo lectura y sin coste**: ni una consulta, clave,
+   invalidación, mutación, ruta ni `localStorage` nuevos, `vida-execution.utils.ts`
+   **sin tocar**, y las dos secciones salen del **mismo** `execution` que ya
+   estaba montado. `queryByRole('button')` **sigue sin encontrar nada** fuera de
+   «Reintentar».
+3. **Lo que más probable he roto:** `describeNuance` —la primera frase de la
+   historia, de la tajada 1— **cambió de comportamiento**: ahora puede llevar el
+   matiz de categoría y **se corta a dos matices** (antes los unía todos). Si una
+   historia se lee rara, es ahí. Segundo sospechoso: `buildCategoryBreakdown`
+   suma **minutos de sesión**, así que **no cuadra con el presupuesto** y a
+   alguien le parecerá un error (hay test que lo fija). Tercero: una categoría
+   **sin color** y la fila **«Sin categoría»** caen en el mismo color de acento
+   que cualquier otra sin color, porque es el mismo `fallback` de
+   `VidaReviewRow`.
+
+**Lo que se construyó, archivo por archivo**
+
+**Se crea:**
+
+- `src/features/vida/components/VidaReviewCategories/` (3 archivos: `index.ts`,
+  `.tsx`, `.module.scss`) — el marco B: cabecera «Casa · 45m → 2h 53» con la
+  cápsula de la categoría, dos barras por fila (planeado con
+  `repeating-linear-gradient` del **mismo color del catálogo** en dos
+  opacidades; registrado sólido), la nota por regla, y **«Sin registrar»
+  separada por la línea punteada** con su tamaño frente al día entero.
+- `src/features/vida/components/VidaReviewNoDataList/` (3 archivos) — los tramos
+  con su franja («10:32 – 13:05») y su tamaño («2h 33»). **Devuelve `null` con la
+  lista vacía** (criterio 32).
+
+**Se modifica:**
+
+- `src/features/vida/utils/vida-review.utils.ts` — `buildCategoryBreakdown`,
+  `describeCategoryNote`, `topNoDataSlices`, `describeHalfDayCategory` y
+  `UNCATEGORIZED_ROW_KEY`; `describeNuance` gana el matiz de categoría.
+- `src/features/vida/utils/vida-review.utils.test.ts` — **+16 casos**.
+- `src/features/vida/pages/VidaRevisionPage.tsx` — las dos secciones **al final**
+  de la columna principal (antes de las salidas), un esqueleto más en el estado
+  de carga, y dos `useMemo`. `.module.scss` **no hizo falta tocarlo**: las
+  secciones reusan `.section`, `.sectionTitle` y `.sectionNote` de la tajada 1.
+- `src/features/vida/pages/VidaRevisionPage.test.tsx` — **+8 casos**; los
+  ayudantes `block` y `session` ganan un parámetro **opcional** de categoría.
+
+**Evidencia, criterio por criterio**
+
+| # | Estado | Cómo se comprobó |
+|---|---|---|
+| 26 | **cumplido** | Test de pantalla: la sección «Minutos por categoría», la cabecera **«45m → 3h 3»** y **tres filas × dos barras** (`planeado`/`registrado` aparecen 3 veces cada una dentro de la región). El **color del catálogo** entra por `--vida-category-color` (el mismo canal que `VidaReviewRow`) y el **rayado** es un `repeating-linear-gradient` de ese color: **visto en el navegador**, violeta, ámbar y menta rayados y sólidos. Planeado sale de `agenda.blocks` (45 min) y registrado de los `SessionSpan` (63 + 120 = **183**, **incluida la de fuera del plan**), con test puro que fija los dos números. |
+| 27 | **cumplido** | Test puro: «Sin categoría» es una fila con `key` propia (`sin-categoria`), con sus 30 min planeados, y se afirma que **Casa sigue en 45 y Comida en 30** — no se repartieron. Va **siempre al final**. En pantalla, el texto «Sin categoría» está. |
+| 28 | **cumplido** | Test puro: **ninguna fila del reparto se llama «Sin registrar»**; va en `breakdown.noData`, con la **frase literal** comprobada carácter a carácter, `dayLabel` «16h 30» y `share` = minutos / **990** (el día entero, no el reparto). En pantalla, la línea entera y la fila separada por el trazo punteado. |
+| 29 | **cumplido** | `expect(container.textContent).not.toMatch(/%/)` y `not.toMatch(/cumplimiento/i)` sobre **la pantalla entera** con categorías, más un test puro sobre todas las cadenas del reparto. Dos magnitudes, nunca una nota. |
+| 30 | **cumplido** | `describeCategoryNote` con **dos reglas** y test de las tres salidas: sin dato → **`null`** (también con un bloque que simplemente no se hizo), «no se pudo» → «**Desayunar con calma no se pudo: 30 min planeados que no llegaron a registro.**», y lo de fuera del plan → «Una cosa fuera del plan cayó aquí.» / «Las 2 cosas fuera del plan cayeron aquí.». |
+| 31 | **cumplido** | `topNoDataSlices(execution, 4)`: test puro de que **todos tienen `canAsk`**, que ninguno baja de **30 min** (`VIDA_NO_DATA_MIN_MINUTES`, el umbral de Hoy, sin una segunda constante), que el orden es **descendente** y que hay **como mucho cuatro**. En pantalla, «Los cuatro tramos más largos sin registrar» y la franja **«6:30 – 8:30»** con su tamaño. |
+| 32 | **cumplido** | Un día tapado de 6:30 a 23:00: `topNoDataSlices` devuelve **`[]`**, el componente devuelve **`null`** y el test de pantalla afirma que **no hay cabecera** de tramos y que **no se escribe «no hay tramos»**. |
+| 33 | **cumplido** | Las dos secciones van **al final de la columna principal**, después de los carriles y **antes** de las dos salidas del pie. En escritorio la columna principal es la derecha, así que la categoría **cierra la pantalla**, como el marco D. (Verificado por el orden en el JSX y por el test del escritorio, que sigue en verde.) |
+| 34 | **cumplido** | Tests: **cargando** no pinta «Minutos por categoría» (y el estado de carga suma un esqueleto más para lo nuevo); **lo vivido caído** enseña su mensaje con **«Reintentar»** y **tampoco** reparte nada; el **plan caído** corta antes, como en la tajada 1. **375 px medido en el navegador** con arnés borrado: `scrollWidth` **375 = clientWidth** y **cero** elementos desbordando, con un nombre de categoría de **60 caracteres** (se recorta con puntos suspensivos) y la nota de tres líneas. **Contraste compuesto sobre el vidrio** (34 textos): **oscuro 9,05:1 → 18,78:1**, **claro 6,52:1 → 17,19:1**. El **rayado se distingue del sólido en oscuro**: comprobado a ojo en la captura, dos opacidades del mismo color (70 % / 28 %). |
+| 8 (la otra mitad) | **cumplido** | `describeHalfDayCategory`: con la tarde entera en Casa, la historia abre «…: la tarde, casi toda en Casa.»; **repartida entre varias** (Casa 60, Comida 50, sin categoría 40 de 150) devuelve **`null`** y la historia **no nombra ninguna**; y el **día del render**, cuyos datos no traen categoría, **tampoco nombra ninguna**. Los minutos se **recortan** a su mitad del día y «Sin categoría» **nunca se nombra** (suma al total, no al nombre). |
+
+**Decisiones que tomé, y por qué** (ninguna es del usuario; las tres primeras se
+pueden querer del revés)
+
+1. **La regla de la mitad del día mira *una* mitad: la que tenga más minutos
+   registrados.** El criterio dice «la frase de la tarde o la mañana». Si se
+   miraran las dos, un día con mucha tarde repartida y una mañana pequeña y
+   monocolor acabaría diciendo «la mañana, casi toda en X», que describe el rato
+   menor del día. Queda escrito en el `jsdoc` y con su test.
+2. **La primera frase se corta a dos matices.** `describeNuance` ya podía juntar
+   «la mañana, calcada» y «X, N min más larga»; con el de categoría serían tres y
+   la frase pasaría a ser una lista. Es **un cambio de comportamiento de la
+   tajada 1** y por eso va el primero en el resumen.
+3. **Las dos reglas de la nota, y no una tercera.** «No se pudo» (el bloque de
+   más minutos) y «lo de fuera del plan cayó aquí». Añadir una cuarta («planeaste
+   y no registraste nada aquí») empieza a sonar a corrección, que es justo lo que
+   esta pantalla no hace. Si se quiere, es una línea.
+4. **La escala de las barras es común a todas las filas** y se redondea a la
+   media hora de arriba (`Math.ceil(max/30)*30`), que es lo que reproduce
+   **exactamente** los anchos del render (45 → 25 %, 90 → 50 %, 173 → 96 % con
+   escala 180). Sin escala común, dos categorías no se pueden comparar de un
+   vistazo.
+5. **Las barras van con `aria-hidden`.** Lo que lee un lector de pantalla es la
+   cabecera, que trae **los dos números exactos**: una barra no añade nada que el
+   texto no diga. Es la otra cara de la regla de `ChartPanel` (el dato, siempre
+   legible), sin una tabla oculta de cuatro filas que repita lo que hay justo
+   encima.
+6. **El título de los tramos se adapta al número**: «Los cuatro…» con cuatro, «Los
+   3 tramos…» con tres, «El tramo más largo sin registrar» con uno. El criterio 31
+   escribe «los cuatro» porque el render tiene cuatro; decir «los cuatro» con dos
+   sería falso.
+7. **`buildCategoryBreakdown` recibe `noDataMinutes` ya calculado** en vez del
+   `budget` que decía el plan (A9): así la fila «Sin registrar» y la cifra grande
+   **no pueden decir números distintos**, porque son literalmente el mismo. Y
+   recibe `couldNotById` (que el plan no nombraba) porque **sin él no existe la
+   nota del criterio 30** — las razones viven en el aparato y entran como dato,
+   igual que en `buildDayReview`.
+
+**Lo que descubrí y no estaba en el plan**
+
+- **Una categoría sin color y la fila «Sin categoría» se pintan con el color de
+  acento** (`--color-primary`), que es el `fallback` que ya usaba
+  `VidaReviewRow`: si además hay una categoría menta, las dos filas se parecen.
+  Preferí **la consistencia con el componente hermano** a inventar un gris solo
+  aquí, pero queda dicho.
+- **En un día con plan y sin un solo registro** (marco E) el reparto **sí se
+  pinta**: todas las barras de planeado con su registrado a cero y «Sin
+  registrar» con el día entero. Es informativo y no afirma nada falso, pero es
+  una casilla que el render no dibuja.
+- **`buildNoDataSlices` solo existe con el presupuesto en forma cerrada** (día
+  terminado **y** algo registrado), así que en un **día abierto** la sección de
+  tramos **nunca** aparece. Es herencia de FEAT-004 y está bien, pero conviene
+  saberlo antes de la tajada 3, donde el «¿Qué pasó?» cuelga de esos tramos.
+- El **chunk inicial sigue subiendo**: **1.037,75 kB** (+6,77). Ninguno es de
+  iconos. El troceado ya estaba anotado desde FEAT-005 y sigue sin dueño.
+
+**Línea base, corrida entera al cerrar**
+
+- `pnpm typecheck` → **exit 0**.
+- `pnpm lint` → **14 errores / 0 warnings** (los mismos de siempre; ninguno en lo
+  nuevo).
+- `pnpm test` → **2 fallos de 1388** (los dos de `SearchSelect`, preexistentes;
+  **+21 tests** sobre los 1367 de la línea base; `src/features/vida` **968/968**,
+  46 archivos en verde).
+- `pnpm build` → **exit 0**, chunk inicial **1.037,75 kB** (**+6,77**),
+  `app-icons` **620,20 kB** e `IconPicker` **4,64 kB** (**clavados**), CSS
+  **233,98 kB** (+3,19).
+- `graphify update .` → **3530 nodos, 4144 aristas**.
+
+**Lo que no pude comprobar desde aquí, y es del usuario**
+
+- **Todo lo que pasa por el API.** `/app/vida/revision` está detrás del login y
+  los agentes no entran con credenciales: **este reparto nunca se ha visto con
+  categorías de verdad**. En concreto, que las sesiones de fuera del plan lleguen
+  con su `activity.category` (el documento **sí la pide**, pero nadie lo ha visto
+  responder).
+- **Los 375 px y el oscuro dentro de `/app/vida/revision`**: lo medido es un
+  **arnés** con los dos componentes sueltos, borrado antes de reportar.
+- **El recorrido, en cuatro pasos:** (1) abrir la revisión de un día con
+  actividades de **varias categorías** y comprobar que los colores son los del
+  catálogo; (2) comprobar que una actividad **sin categoría** sale en su fila y no
+  se mezcla; (3) marcar un bloque como **«No se pudo»** desde Hoy y ver aparecer
+  su nota bajo la categoría; (4) mirar los **tramos** y comprobar que las franjas
+  coinciden con los huecos que enseña Hoy.
 
 ## 4. Review — feature-reviewer
 

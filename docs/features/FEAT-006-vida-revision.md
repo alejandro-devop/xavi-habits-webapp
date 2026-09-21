@@ -1024,7 +1024,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 |---|---|---|---|---|
 | 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | **accepted** (2026-09-20) |
 | 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | **accepted** (2026-09-20) |
-| 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | `in-review` (2026-09-20) |
+| 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | **accepted** (2026-09-20; 375 px y oscuro **sin medir**, van al recorrido manual) |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | pending (**bloqueada hasta que FEAT-005 esté `delivered`**) |
 
 Los criterios **61, 62 y 63** los cierra **el usuario**: están detrás del login y
@@ -1754,3 +1754,45 @@ en leerlas—; y sigue creciendo el chunk inicial.
 
 **Lo que no revisé:** ninguna llamada real al API, los **375 px** y el **tema
 oscuro** en un navegador, y la pantalla con datos de verdad.
+
+### Tajada 3 — la revisión rellena el día (criterios 35–44)
+
+**Veredicto: `accepted`**, con **una cosa que nadie ha medido y queda dicha**:
+los **375 px** y el **tema oscuro** con los botones nuevos. Revisada sobre
+`git diff 0f4ffe7 8238d16` (ya commiteada).
+
+- **375 px y oscuro: sin medir por nadie.** Ninguno de los criterios 35–44 lo
+  exige —el 34 era de la tajada 2 y se midió entonces—, así que **no devuelvo**,
+  pero **tampoco lo doy por bueno**. Lo que sí comprobé es que la **forma** es la
+  correcta: las filas de salidas llevan `flex-wrap: wrap` con `min-width: 0` y
+  las etiquetas `white-space: nowrap`, que es justo el patrón con el que las
+  tajadas anteriores pasaron los 375 px. **Va al recorrido manual como lo
+  primero que hay que mirar.**
+- **«Lo hice» es la función de Hoy, no una copia:** las dos páginas importan
+  **`plannedSessionMinutes` de `vida-execution.utils`** y le pasan el mismo
+  `{ block, nowMinutes }`; el recorte a «ahora» no está reescrito en ningún
+  sitio.
+- **«Dejarlo así» no estrena clave**: usa el mismo `vida-device-notes.store` de
+  Hoy (`dismissNoData` / `isNoDataDismissed`), y en todo el diff la única
+  aparición de `localStorage` es **un comentario**.
+- **Las cuatro afirmaciones derogadas están justificadas y reemplazadas por lo
+  contrario**, cada una nombrando el criterio que la deroga (36, 37, 38): donde
+  la tajada 1 afirmaba «no hay ni un botón» y «las salidas son enlaces», ahora
+  hay tests que **ejercen** «Lo hice», la hoja que abre dentro de la pantalla y
+  el «¿Qué pasó?» con su hora puesta. Ninguna se borró.
+- **El plan no se toca** (criterio 41): siguen los espías sobre las cuatro
+  mutaciones de `activityDayPlan` con **cero llamadas**.
+- **Sin `danger` en ningún botón** (solo en un `Alert` de error), y sin una
+  palabra de culpa en lo nuevo.
+- **La decisión del constructor** —en un día sin ningún registro no hay tramos,
+  así que el «¿Qué pasó?» del marco E abre por la primera hora del día— es
+  razonable y no contradice ningún criterio: el 39 pide las tres salidas con el
+  mismo peso, no una hora concreta. **Anotada.**
+
+**Línea base, corrida entera por mí:** typecheck **exit 0** · lint **14/0** ·
+`pnpm test` **2 fallos de 1401** (los dos de `SearchSelect`; 1 archivo rojo de
+104) · `pnpm build` **exit 0**, chunk inicial **1.040,86 kB**, `app-icons`
+**620,20 kB**, `IconPicker` **4,64 kB**, CSS 236,09 kB.
+
+**Lo que no revisó nadie, y es lo que hay que mirar primero:** **375 px y tema
+oscuro con las salidas nuevas**. Y, como siempre, ninguna llamada real al API.

@@ -14,10 +14,33 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
-| FEAT-006 | building | 3/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-006 | building | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-006, tajada 3 — revisión: `accepted`** (2026-09-20, revisada ya
+**commiteada**, sobre `0f4ffe7..8238d16`), **con una cosa que nadie ha medido y
+queda dicha: los 375 px y el tema oscuro con los botones nuevos.** Ningún
+criterio de los 35–44 lo exige —el 34 era de la tajada 2—, así que no devuelve,
+pero **tampoco lo doy por bueno**: lo que sí comprobé es que la **forma** es la
+correcta (`flex-wrap: wrap` + `min-width: 0` y etiquetas `nowrap`, el patrón con
+el que pasaron las tajadas anteriores), y **va al recorrido manual como lo
+primero que hay que mirar**. Lo demás: **«Lo hice» es la función de Hoy, no una
+copia** (las dos páginas importan `plannedSessionMinutes` de
+`vida-execution.utils`); **«Dejarlo así» no estrena clave** —el mismo store del
+aparato, y la única aparición de `localStorage` en el diff es un comentario—;
+las **cuatro afirmaciones derogadas** nombran el criterio que las deroga (36, 37,
+38) y **se reemplazan por tests que ejercen** las salidas nuevas; **el plan no se
+toca**, con los espías de las cuatro mutaciones de `activityDayPlan` en **cero
+llamadas**; y **ningún botón usa `danger`**, sin una palabra de culpa. La
+decisión de abrir el «¿Qué pasó?» del marco E por la primera hora del día en un
+día sin registros es razonable y **no contradice** el criterio 39, que habla de
+peso visual. Línea base corrida entera por el revisor: typecheck **exit 0**, lint
+**14/0**, `pnpm test` **2 fallos de 1401** (los dos de `SearchSelect`; 1 archivo
+rojo de 104), `pnpm build` **exit 0** con chunk inicial **1.040,86 kB**,
+`app-icons` **620,20 kB** e `IconPicker` **4,64 kB**. Siguiente: la tajada 4, la
+última.
 
 **FEAT-006, tajada 3 `in-review`** (2026-09-20, **sin commitear**; la
 construcción está en la sección 3 del dossier): **la revisión rellena el día.**

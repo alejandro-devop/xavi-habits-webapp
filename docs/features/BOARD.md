@@ -14,10 +14,30 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
-| FEAT-006 | in-review | 2/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-006 | building | 3/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-006, tajada 2 — revisión: `accepted`** (2026-09-20, revisada ya
+**commiteada**, sobre `31ebd0a..0bea895`). **«Sin registrar» es fila aparte**:
+fuera de `rows`, con su frase literal y su tamaño contra el día entero, y en todo
+el diff **no aparece «desperdicio»** ni ninguna palabra de culpa; **«Sin
+categoría»** tiene su propia fila, la última, y **no se reparte**. La
+**divergencia con el presupuesto es deliberada y está probada en las dos
+direcciones**: dos sesiones pisadas suman **120 min** de categoría y **60 min**
+de reloj, y el test afirma los dos números. La **historia solo nombra categoría
+cuando el dato la sostiene** (la nombra con media tarde; no la nombra en el día
+del render, sin categorías) y sigue sin culpa. **El día abierto no deja título
+huérfano**: la sección de tramos va dentro de `noDataSlices.length > 0`
+(criterio 32). Línea base corrida entera por el revisor: typecheck **exit 0**,
+lint **14/0**, `pnpm test` **2 fallos de 1388** (los dos de `SearchSelect`; 1
+archivo rojo de 104), `pnpm build` **exit 0** con chunk inicial **1.037,75 kB**,
+`app-icons` **620,20 kB** e `IconPicker` **4,64 kB**; cero `localStorage` y cero
+Font Awesome a pelo. **Hallazgo anotado:** una categoría **sin color** y «Sin
+categoría» comparten acento, así que a la vista solo las separa el nombre.
+**Sin revisar:** 375 px, oscuro y cualquier llamada real al API. Siguiente: la
+tajada 3.
 
 **FEAT-006, tajada 2 `in-review`** (2026-09-20, **sin commitear**; la
 construcción está en la sección 3 del dossier): **el día ya dice en qué se

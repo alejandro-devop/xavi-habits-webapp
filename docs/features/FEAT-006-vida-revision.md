@@ -1023,7 +1023,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | **accepted** (2026-09-20) |
-| 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | **in-review** (2026-09-20) |
+| 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | **accepted** (2026-09-20) |
 | 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | pending |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | pending (**bloqueada hasta que FEAT-005 esté `delivered`**) |
 
@@ -1552,3 +1552,43 @@ correcta pero que conviene recordar al escribir la tajada de la semana.
 **Lo que no revisé:** ninguna llamada real al API, los **375 px** y el **tema
 oscuro** en un navegador (medidos por el constructor), y la pantalla con datos de
 verdad: `/app/*` está detrás del login.
+
+### Tajada 2 — en qué se repartió el día (criterios 26–34 y la otra mitad del 8)
+
+**Veredicto: `accepted`.** Revisada sobre `git diff 31ebd0a 0bea895` (ya
+commiteada). Los cuatro puntos que había que mirar salen bien y la línea base la
+corrí entera.
+
+- **«Sin registrar» es fila aparte y no contamina el reparto** (criterio 28):
+  `CategoryBreakdown` la saca de `rows` y la deja en `noData`, con la **frase
+  literal** del criterio, su tamaño contra el día entero y su `share`. En todo el
+  diff **no aparece «desperdicio»** ni ninguna palabra de culpa. «Sin categoría»
+  tiene **su propia fila, la última**, y sus minutos **no se reparten** entre las
+  demás (criterio 27).
+- **La divergencia con el presupuesto es deliberada y está probada en las dos
+  direcciones**: con dos sesiones pisadas, el reparto suma **120 min** de sesión
+  y el presupuesto cuenta **60 min** de reloj, y el test afirma **ambos** números
+  —no se fuerza el cuadre y queda escrito en el código—. Es correcto: son
+  magnitudes distintas y el criterio 26 habla de minutos por categoría, no de
+  tramos del día.
+- **La historia solo nombra categoría cuando el dato la sostiene**: hay un caso
+  con una categoría que se lleva más de media tarde —la nombra— y otro con el día
+  del render **sin categorías en los datos**, que **no nombra ninguna**; y el
+  matiz se corta a dos. Sigue sin culpa.
+- **El día abierto no deja título huérfano** (criterio 32): la sección de tramos
+  se pinta **dentro** de `noDataSlices.length > 0`, así que sin tramos no hay ni
+  título ni caja.
+
+**Línea base, corrida entera por mí:** typecheck **exit 0** · lint **14/0** ·
+`pnpm test` **2 fallos de 1388** (los dos de `SearchSelect`; 1 archivo rojo de
+104) · `pnpm build` **exit 0**, chunk inicial **1.037,75 kB**, `app-icons`
+**620,20 kB**, `IconPicker` **4,64 kB**, CSS 233,98 kB. Cero `localStorage` y
+cero Font Awesome a pelo en el diff.
+
+**Hallazgos, ninguno devuelve:** una categoría **sin color** y **«Sin categoría»**
+comparten el mismo acento, así que a la vista solo las separa **el nombre** —es
+texto, y por eso lo tolero, pero con varias sin color la lectura se apoya entera
+en leerlas—; y sigue creciendo el chunk inicial.
+
+**Lo que no revisé:** ninguna llamada real al API, los **375 px** y el **tema
+oscuro** en un navegador, y la pantalla con datos de verdad.

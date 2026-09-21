@@ -14,10 +14,62 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
-| FEAT-006 | planned | 0/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-006 | in-review | 1/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-006, tajada 1 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **el día se lee.**
+`/app/vida/revision` dejó de ser un cascarón y cuenta el día: **la historia en
+prosa** (≤3 frases por reglas, abriendo siempre por lo que sí salió), la **cifra
+grande «6 / 8 bloques seguidos»** —que es literalmente
+`collectDayClosing().followedCount/plannedCount`, **sin una segunda definición de
+«seguido»**— con **planeado 4h 30 · registrado 5h 37 · de lo registrado 1h 50
+fuera del plan**, **«Sin registrar 10h 53 · de las 16h 30 de tu día · no hay
+dato, no se adivina»**, **plan frente a real** bloque a bloque con **las
+etiquetas de Hoy y ninguna nueva**, la sección **«Fuera del plan»** con el
+**mismo número** que la cifra, y en **escritorio los dos carriles alineados por
+hora** —el plan quieto, lo de fuera **sin nada enfrente**, el movido como
+**sombra** a su hora y su tarjeta donde ocurrió (**una sola**), y los tramos
+**sin registrar ocupando su sitio con su tamaño**—. Los **cuatro días raros**
+tienen estado propio y salida a Hoy (futuro sin una sola cifra, hoy «aún
+abierto» sin hablar en pasado cerrado, el marco E literal con el plan en trazo
+fantasma, y sin plan con o sin sesiones), y los **cuatro estados** van separados:
+**el plan caído** y **lo vivido caído** dicen cosas **distintas**, cada uno con
+«Reintentar», y **ninguno afirma «no quedó nada apuntado»**. **Solo lectura**:
+`queryByRole('button')` **no encuentra nada** fuera de «Reintentar», y las dos
+salidas son **enlaces a Hoy**. Y **Hoy enlaza aquí** al cerrarse el día
+(«Ver cómo fue el día», con `href` comprobado). **Ni una consulta, clave,
+invalidación, ruta, mutación, `localStorage` ni documento GraphQL nuevos**, y
+**`vida-execution.utils.ts` sin tocar**: lo nuevo es `utils/vida-review.utils.ts`,
+puro, que **consume** aquel (A1). Medido **en el navegador** con arnés borrado: a
+375 px `scrollWidth` **375 = clientWidth** y **cero desbordes** con un nombre de
+60 caracteres y una razón de tres líneas; contraste compuesto sobre el vidrio
+(187 textos) **7,70:1 → 16,74:1 en oscuro** y **6,39:1 → 17,61:1 en claro**.
+Línea base: typecheck **exit 0**, lint **14/0**, `pnpm test` **2 fallos de 1367**
+(los dos de `SearchSelect`; **+62 tests**), `pnpm build` **exit 0** con chunk
+inicial **1.030,98 kB** (**+23,22**, **ninguno de iconos**: `app-icons` 620,20 e
+`IconPicker` 4,64 clavados; CSS 230,79). `graphify update .`: 3498 nodos, 4101
+aristas. **Avisos, por orden de riesgo:** **(1)** `buildDayStrip` ganó un **tercer
+parámetro** y `VidaDayStrip` la prop **`basePath`** —los dos con valor por
+defecto, con test de que **sin ellos nada cambia**—, pero **los usa Hoy**;
+`clampToPlanningWindow` además se reescribió para delegar en un recorte común.
+**(2)** **dos casillas del render no se pueden reproducir** con los umbrales que
+ya existen: «empezó +5» cae **dentro** de la tolerancia (5, inclusive) y «movido
+· 40 min tarde» no llega al umbral de movido (60), así que la pantalla lee
+«✓ calcado» y «empezó +40». **Manda el código de FEAT-004** (criterios 9 y 13) y
+queda dicho por si el usuario prefiere mover los umbrales. **(3)** `VidaDayBudget`
+pinta un enlace **dentro** de la frase de cierre, y **un test ajeno quedó
+derogado y reemplazado por algo más fuerte** (`vida.routes.test.tsx` ya no
+afirma «sigue siendo un cascarón», afirma **qué** enseña sin sesión). **(4)** la
+única aritmética nueva es `uncoveredMinutes`, que existe **solo** porque el día
+abierto no tiene tramo «sin dato» en ninguna forma del presupuesto — y hay test
+de que sobre un día cerrado da **exactamente** lo que dice la leyenda. **Del
+usuario:** el recorrido entero en **catorce pasos** al final de la sección 3 y,
+con él, **todo lo que pasa por el API**: esta pantalla **nunca se ha visto con un
+día de verdad**, y los 375 px y el oscuro se midieron en un arnés, no dentro de
+`/app/*`.
 
 ## Delivered
 

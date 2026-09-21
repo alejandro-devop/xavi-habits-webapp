@@ -63,18 +63,66 @@ export function isInPlanningWindow(date: string, today = getCurrentLocalDate()):
   return date >= window.from && date <= window.to
 }
 
+/** El recorte, sin decidir **a qué** ventana: eso lo eligen los dos de abajo. */
+function clampToWindow(date: string | null, window: PlanningWindow, today: string): string {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) return today
+  const value = date.trim()
+  if (value < window.from) return window.from
+  if (value > window.to) return window.to
+  return value
+}
+
 /**
  * La fecha que de verdad se va a mostrar: lo que venga fuera de la ventana se
  * recorta a su borde en vez de dejar la pantalla en blanco (criterio 35). Lo
  * que no tenga forma de fecha cae en hoy.
  */
 export function clampToPlanningWindow(date: string | null, today = getCurrentLocalDate()): string {
-  const window = getPlanningWindow(today)
-  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) return today
-  const value = date.trim()
-  if (value < window.from) return window.from
-  if (value > window.to) return window.to
-  return value
+  return clampToWindow(date, getPlanningWindow(today), today)
+}
+
+/* ── La ventana de **mirar atrás** (FEAT-006, A3) ───────────────────────── */
+
+/**
+ * Cuántos días atrás alcanza la revisión. Es también la ventana de la regla
+ * del puente (FEAT-006, criterio 55), y por eso el número vive aquí y no en
+ * dos sitios.
+ */
+export const REVIEW_LOOKBACK_DAYS = 14
+
+/**
+ * La ventana de la **revisión**, que no es la de planear.
+ *
+ * `clampToPlanningWindow` recorta a esta semana y la que viene: un lunes,
+ * «ayer» es domingo y **cae fuera**, así que la revisión abriría el lunes en
+ * vez del último día cerrado. Aquí `from` es el **lunes de la semana de
+ * hoy − 14**, no el día 14 exacto, para que **cualquier día que la semana de
+ * la revisión pueda pintar sea alcanzable**: una fila que se toca y lleva a un
+ * día fuera de la ventana sería un enlace muerto.
+ *
+ * `to` se hereda de la ventana de planeación: el criterio 4 exige poder
+ * **abrir** un día futuro para decir que todavía no ha pasado.
+ */
+export function getReviewWindow(today = getCurrentLocalDate()): PlanningWindow {
+  const monday = getMondayOfWeek(parseYmdToLocalDate(shiftYmd(today, -REVIEW_LOOKBACK_DAYS)))
+  return { from: formatDateToYmd(monday), to: getPlanningWindow(today).to }
+}
+
+/** Como `clampToPlanningWindow`, pero contra la ventana de mirar atrás. */
+export function clampToReviewWindow(date: string | null, today = getCurrentLocalDate()): string {
+  return clampToWindow(date, getReviewWindow(today), today)
+}
+
+/**
+ * La frase del borde de la revisión: en vez de flechas que no llevan a ningún
+ * sitio, se dice **desde cuándo** se puede mirar atrás. Molde exacto de
+ * `describePlanningWindowEdge`.
+ */
+export function describeReviewWindowEdge(today = getCurrentLocalDate()): string {
+  const window = getReviewWindow(today)
+  const local = parseYmdToLocalDate(window.from)
+  const label = VIDA_DAY_LABELS[VIDA_DAY_ORDER[(local.getDay() + 6) % 7]!]
+  return `Se miran los días ya vividos: desde el ${label} ${local.getDate()}.`
 }
 
 /**
@@ -111,10 +159,18 @@ export type DayStripDay = {
  * Contra el borde la tira no encoge: se desliza. Mirando el lunes de esta
  * semana salen lunes → domingo; mirando el último domingo alcanzable salen los
  * siete anteriores a él. Así nunca hay un día pintado al que no se pueda ir.
+ *
+ * El **tercer parámetro** (FEAT-006, A3) es la ventana contra la que se
+ * recorta: por defecto la de planear, que es lo que usan Hoy y la semana, y la
+ * revisión le pasa `getReviewWindow(today)`. Así sigue habiendo **un solo
+ * constructor de tiras** y ninguna pantalla anterior cambia de comportamiento.
  */
-export function buildDayStrip(selectedDate: string, today = getCurrentLocalDate()): DayStripDay[] {
-  const window = getPlanningWindow(today)
-  const selected = clampToPlanningWindow(selectedDate, today)
+export function buildDayStrip(
+  selectedDate: string,
+  today = getCurrentLocalDate(),
+  window: PlanningWindow = getPlanningWindow(today),
+): DayStripDay[] {
+  const selected = clampToWindow(selectedDate, window, today)
 
   let start = shiftYmd(selected, -DAY_STRIP_LEAD)
   if (start < window.from) start = window.from

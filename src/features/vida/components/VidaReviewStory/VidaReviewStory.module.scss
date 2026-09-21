@@ -1,0 +1,66 @@
+/* La tarjeta de la historia: vidrio con un tinte menta, como el render. Es lo
+   primero que se lee, así que no compite con nada — ni icono, ni botón. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: var(--aura-glass-1);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* En el móvil el título sobra —la fecha manda— pero **se sigue leyendo en voz
+   alta**: es el nombre de la sección. En escritorio se ve (criterio 22). */
+.title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.date {
+  margin: 0;
+  color: var(--color-primary-strong, var(--color-primary));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.sentence {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.55;
+}
+
+@media (min-width: 60rem) {
+  .title {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0 0 0.1rem;
+    overflow: visible;
+    clip-path: none;
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: normal;
+  }
+}

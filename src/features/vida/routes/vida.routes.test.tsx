@@ -74,22 +74,22 @@ describe('vidaRoutes', () => {
   })
 
   /**
-   * **`/app/vida/plantilla` salió de esta lista** en la tajada 1 de FEAT-005
-   * (criterios 1 y 12): con el guard en `false` ya no pinta solo el título,
-   * pinta su estado «sin sesión». La afirmación de F0 queda **derogada y
-   * acotada**, igual que se hizo con Hoy en FEAT-003, no borrada: `revision`
-   * sigue siendo un cascarón y se sigue comprobando.
+   * **Ya no queda ningún cascarón entre estas rutas.** `/app/vida/plantilla`
+   * salió de la lista en la tajada 1 de FEAT-005 y **`/app/vida/revision` sale
+   * ahora**, en la tajada 1 de FEAT-006 (criterio 1): con el guard en `false`
+   * ya no pinta solo el título, pinta su estado «sin sesión».
+   *
+   * La afirmación de F0 queda **derogada y reemplazada por algo más fuerte**,
+   * no borrada: en vez de «no hay nada», se afirma **qué** hay — la vía para
+   * entrar—, que es lo que sostiene el criterio 23.
    */
-  it.each([vidaPaths.revision])(
-    '%s sigue siendo un cascarón: nada más que el título',
-    (path) => {
-      renderAt(path)
+  it('/app/vida/revision ya no es un cascarón: sin sesión enseña la vía para entrar', () => {
+    renderAt(vidaPaths.revision)
 
-      expect(screen.getAllByRole('heading')).toHaveLength(1)
-      expect(screen.queryByRole('button')).not.toBeInTheDocument()
-      expect(screen.queryByRole('list')).not.toBeInTheDocument()
-    },
-  )
+    expect(screen.getByRole('heading', { level: 1, name: 'Revisión' })).toBeInTheDocument()
+    expect(screen.getByText('Entra para ver cómo te fue')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toBeInTheDocument()
+  })
 
   /**
    * `/app/vida/hoy` **dejó de ser un cascarón** en la tajada 2 de FEAT-003

@@ -10,6 +10,15 @@ type VidaDayStripProps = {
   plans: Record<string, VidaDayPlanDot>
   /** La frase del borde de la ventana (criterio 35). */
   edgeNote: string
+  /**
+   * A dónde lleva cada día. Por defecto, **a Hoy**: sin esta prop la tira se
+   * comporta exactamente como en `VidaHoyPage`. La revisión le pasa
+   * `vidaPaths.revisionForDate` para quedarse en su pantalla (FEAT-006, A3).
+   *
+   * Es una prop y no un componente nuevo a propósito: dos tiras se
+   * desincronizarían.
+   */
+  basePath?: (date: string) => string
 }
 
 /**
@@ -29,7 +38,12 @@ type VidaDayStripProps = {
  * flechas de «semana anterior/siguiente» que no lleven a ninguna parte; hay una
  * línea que dice hasta dónde se planea.
  */
-export function VidaDayStrip({ days, plans, edgeNote }: VidaDayStripProps) {
+export function VidaDayStrip({
+  days,
+  plans,
+  edgeNote,
+  basePath = vidaPaths.hoyForDate,
+}: VidaDayStripProps) {
   return (
     <nav className={styles.root} aria-label="Elige el día">
       <ul className={styles.days}>
@@ -58,7 +72,7 @@ export function VidaDayStrip({ days, plans, edgeNote }: VidaDayStripProps) {
           return (
             <li className={styles.day} key={day.date}>
               <Link
-                to={vidaPaths.hoyForDate(day.date)}
+                to={basePath(day.date)}
                 className={styles.link}
                 data-selected={day.isSelected ? 'true' : undefined}
                 data-today={day.isToday ? 'true' : undefined}

@@ -19,6 +19,15 @@ export const vidaPaths = {
    */
   hoyForDate: (date: string) => `/app/vida/hoy?d=${date}`,
   /**
+   * La revisión de un día concreto: mismo `?d=` que Hoy (FEAT-006, criterio 2).
+   *
+   * **Un solo sitio construye esta URL**, igual que `hoyForDate`: la tira de
+   * días de la revisión y el «Ver cómo fue el día» de Hoy salen de aquí, así
+   * que `app-nav.config.ts` sigue siendo la única fuente de destinos y la
+   * píldora «Revisión» se enciende igual.
+   */
+  revisionForDate: (date: string) => `/app/vida/revision?d=${date}`,
+  /**
    * La semana de un vistazo (tajada 5). **No entra como píldora en la barra**:
    * se llega desde la tira de Hoy, y por eso `app-nav.config.ts` no la conoce.
    */

@@ -1,7 +1,7 @@
 ---
 id: FEAT-006
 title: Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla
-status: planned
+status: in-review
 architect: yes    # pantalla sin hermana (dos carriles alineados por hora, y la semana con lo real de siete días a la vez: catorce consultas donde hoy hay siete), y hay que decidir una sola vez dónde vive la derivación por categoría y la de la semana sin partir en dos `vida-execution.utils.ts`
 area: features/vida
 requested: 2026-09-20
@@ -354,7 +354,7 @@ tal cual** y están repartidos por los criterios de abajo.
 
 | # | What it does | State |
 |---|---|---|
-| 1 | **El día se lee.** `/app/vida/revision` deja de ser un cascarón: tira de días con `?d=`, **la historia en prosa**, la cifra grande (N de M) con planeado · registrado · fuera del plan y **sin registrar**, **plan frente a real** bloque a bloque con el vocabulario de Hoy, la sección «Fuera del plan», el escritorio en **dos carriles**, los días raros (futuro, en curso, sin registros, sin plan) y los estados. **Solo lectura**, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí al cerrarse el día. Ya es útil sola: es la primera vez que el usuario ve su día contado. | pending |
+| 1 | **El día se lee.** `/app/vida/revision` deja de ser un cascarón: tira de días con `?d=`, **la historia en prosa**, la cifra grande (N de M) con planeado · registrado · fuera del plan y **sin registrar**, **plan frente a real** bloque a bloque con el vocabulario de Hoy, la sección «Fuera del plan», el escritorio en **dos carriles**, los días raros (futuro, en curso, sin registros, sin plan) y los estados. **Solo lectura**, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí al cerrarse el día. Ya es útil sola: es la primera vez que el usuario ve su día contado. | in-review |
 | 2 | **En qué se repartió el día.** Por categoría, con la paleta del catálogo y dos barras (planeado rayado · registrado sólido), **«Sin registrar» como fila propia** con su frase, y **los cuatro tramos más largos sin registrar** listados con su franja y su tamaño. Sigue siendo lectura: responde «¿en qué se me fue el día?», que es la pregunta que trajo el módulo. | pending |
 | 3 | **La revisión rellena el día.** Las salidas, todas prestadas de Hoy: **«Lo hice»** por bloque no hecho y en la lista fantasma, **«Registrar tiempo pasado»** y **«¿Qué pasó?»** con la hoja de FEAT-004 dentro de la revisión, y **«Dejarlo así»** con el store del aparato. Nada de esto toca el plan. Convierte una pantalla que se mira en una que se usa. | pending |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», la barrita del día y «registrado de planeado», la frase de la semana, el punto de tres estados en la tira, y **un solo aviso** hacia la plantilla en forma de pregunta, que al aceptarse **mueve la hora del ítem** (`vidaItemUpdate`) y nunca el plan. Es lo que cierra el círculo plantilla → día → revisión → plantilla. | pending |
@@ -1022,7 +1022,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | pending |
+| 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | in-review |
 | 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | pending |
 | 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | pending |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | pending (**bloqueada hasta que FEAT-005 esté `delivered`**) |
@@ -1102,5 +1102,239 @@ dicho, no disimulado.
   cierto al cerrar la tajada 1.
 
 ## 3. Construction — feature-builder
+
+### Tajada 1 — el día se lee
+
+**Resumen para quien revise, en tres líneas:**
+
+1. **`/app/vida/revision` dejó de ser un cascarón**: enseña el día contado —la
+   historia en prosa, la cifra grande «N de M» con planeado · registrado ·
+   fuera del plan y **sin registrar**, plan frente a real bloque a bloque con
+   **las etiquetas de Hoy**, «Fuera del plan», los **dos carriles** en
+   escritorio, los cuatro días raros y los cuatro estados—, **sin escribir
+   nada**: en toda la pantalla no hay un solo `<button>` fuera de «Reintentar».
+2. **Ni una consulta, clave, invalidación, ruta, mutación ni `localStorage`
+   nuevos**: `useVidaDayData` + `buildDayAgenda` + `buildDayExecution` y un
+   cuarto pase puro, `utils/vida-review.utils.ts`, que **consume**
+   `vida-execution.utils.ts` sin ampliarlo ni copiarlo (A1). `vida-execution.utils.ts`
+   está **sin tocar**.
+3. **Lo que más probablemente rompí, por orden:** **(a)** `buildDayStrip` ganó un
+   **tercer parámetro** y `VidaDayStrip` una **prop** — los dos con valor por
+   defecto, pero los usa **Hoy**, que es la pantalla más viva del módulo: si la
+   tira de Hoy llevara a la revisión o cambiara de días, es esto. **(b)**
+   `VidaDayBudget` pinta ahora un enlace **dentro** de la frase de cierre
+   (`reviewTo`): si la frase de cierre de Hoy se descoloca o se lee raro con
+   lector de pantalla, es este cambio. **(c)** `vida-window.utils.ts` refactorizó
+   `clampToPlanningWindow` para compartir el recorte con
+   `clampToReviewWindow` — el comportamiento debería ser idéntico y hay test
+   que lo afirma, pero **de esa función dependen Hoy y la semana**.
+
+**Dónde está.** Se crean `utils/vida-review.utils.ts` (+`.test.ts`),
+`components/VidaReviewStory/`, `components/VidaReviewFigures/`,
+`components/VidaReviewRow/`, `components/VidaReviewLanes/`,
+`pages/VidaRevisionPage.module.scss` y `pages/VidaRevisionPage.test.tsx`. Se
+modifican `pages/VidaRevisionPage.tsx` (reescritura del cascarón),
+`utils/vida-window.utils.ts` (+test), `routes/vida-paths.ts`,
+`components/VidaDayStrip/VidaDayStrip.tsx`,
+`components/VidaDayBudget/VidaDayBudget.tsx`, `pages/VidaHoyPage.tsx`, y dos
+tests ajenos (`routes/vida.routes.test.tsx`, `pages/VidaHoyPage.test.tsx`).
+**Exactamente la tabla del arquitecto**, con dos diferencias dichas abajo.
+
+#### La línea base, corrida entera
+
+| Qué | Antes (ENVIRONMENT.md) | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **exit 0** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0** (el warning que estrené —`dayFollowUps` fuera del `useMemo`— está arreglado, no silenciado) |
+| `pnpm test` | 2 fallos de 1305 | **2 fallos de 1367** (+62 tests; los dos siguen siendo `SearchSelect`; 1 archivo rojo de 104) |
+| `pnpm build` | 1.007,76 kB · `app-icons` 620,20 · `IconPicker` 4,64 | **exit 0**, chunk inicial **1.030,98 kB** (+23,22), `app-icons` **620,20** e `IconPicker` **4,64** **clavados**, CSS 230,79 kB (+8,65) |
+
+`graphify update .`: **3498 nodos, 4101 aristas**.
+
+**El +23 kB, dicho sin disimulo:** es todo código de pantalla (un util de ~700
+líneas con sus tipos, cuatro componentes y una página de ~430). **Ningún icono**
+entró en el arranque. **No lo pude mandar a un chunk perezoso** sin estrenar
+`lazy()` en `routes/vida.routes.tsx`, que hoy importa **las ocho páginas de
+Vida en directo**: hacerlo aquí sería cambiar la convención del router en una
+tajada de lectura. Queda como deuda, con la misma dueña que el troceado que ya
+arrastra FEAT-005.
+
+#### Criterio por criterio, con la evidencia
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 1 | **cumplido** | `VidaRevisionPage.test.tsx` «deja de ser un cascarón»: `heading` nivel 1 «Revisión» + subtítulo **«Viernes 18 de septiembre · día cerrado»**. La ruta, `app-nav.config.ts` y el `⌘K` **sin tocar** (el diff no los nombra). |
+| 2 | **cumplido** | Test «la tira lleva a **la revisión** de cada día»: los **siete** enlaces casan `^/app/vida/revision\?d=\d{4}-\d{2}-\d{2}$`. Son `<Link>`, así que el «atrás» del navegador sale gratis, como en Hoy. La URL la construye **un solo sitio**, `vidaPaths.revisionForDate`. El punto es el de Hoy (D8). |
+| 3 | **cumplido** | `vida-review.utils.test.ts`, `resolveReviewDate`: a las 20:00 abre **ayer**; a las 23:05 y **en el minuto exacto** de las 23:00 abre **hoy**; el 1 de octubre abre el **30 de septiembre** (no inventa el día 0). Y en pantalla: sin `?d=`, la consulta que se pide es la del **viernes 18** con el reloj en el sábado 19 a las 9:24. |
+| 4 | **cumplido** | Test «un día **futuro** no se revisa»: «Este día todavía no ha pasado», enlace **«Planearlo en Hoy»** a `/app/vida/hoy?d=2026-09-25`, y **cero cifras** (`figures` es `null` en el util y la región «Las cifras del día» no existe en el DOM). Además `useActivityDayFollowUpsQuery` ya está apagada en días futuros. |
+| 5 | **cumplido** | Test «**hoy, aún abierto**»: subtítulo «Sábado 19 de septiembre · aún abierto», la historia abre **«Hasta ahora llevas…»**, **no aparece «Seguiste»** en ninguna parte, y se lee «Las cifras van hasta ahora». En puro: con el día abierto la frase (c) —lo que no se hizo— **no se compone**. |
+| 6 | **cumplido** | `buildReviewStory`: **≤3 frases**, en el orden (a) seguiste N de M con su matiz, (b) lo que se salió con sus minutos, (c) lo que no se hizo con la razón entre comillas. Con **un solo dato** sale **una sola frase** («Seguiste el bloque que planeaste.»), probado. |
+| 7 | **cumplido** | La historia **siempre abre por lo que sí salió** (la frase (a) es la primera en las cinco variantes). Test que genera **las cinco** y barre `desperdici|perdist|perdid|fallast|deberías|mal\b|vago|excusa|incumpl`: ninguna la contiene. `vida-vocabulary.test.ts` barre el módulo entero con `import.meta.glob`, así que **los archivos nuevos entran sin tocarlo**, y está en verde. |
+| 8 | **la mitad que toca** | La historia habla **de bloques**. Test explícito de que **no nombra ninguna categoría** ni dice «la tarde se te fue ahí». La otra mitad es de la tajada 2, como escribió el arquitecto. |
+| 9 | **cumplido** | Test que compara la cifra con `collectDayClosing` **sobre el mismo día**: `followedCount` 6 y `plannedCount` 8, iguales a los de la función de FEAT-004. En `vida-review.utils.ts` **no hay ninguna segunda definición de «seguido»** ni ningún umbral. |
+| 10 | **cumplido** | Planeado **270 min → «4h 30»**, registrado **337 → «5h 37»**, fuera del plan **110 → «1h 50»**, y la línea «de lo registrado, **1h 50** fuera del plan». Medido en el navegador: los tres en pantalla. |
+| 11 | **cumplido** | «Sin registrar 10h 53 · de las **16h 30** de tu día · **no hay dato, no se adivina**», con la cifra tomada de `legend('no-data')` (A9) y el día entero de `budget.dayMinutes` — los dos afirmados contra el presupuesto en el test. |
+| 12 | **cumplido** | Test: la leyenda del presupuesto **suma el día entero** sobre el día del render (con dos sesiones y solapes), y `uncoveredMinutes` —lo único aritmético que estrené— da **exactamente** lo mismo que la leyenda sobre un día cerrado. |
+| 13 | **cumplido** | Test que lee las ocho etiquetas de una vez: `✓ calcado · +11 min · no se pudo · +18 min · empezó +10 · −8 min · ✓ calcado · empezó +40 · no hecho`. **Todas salen de `describeBlockExecution`**; en los componentes nuevos no se escribe ni una. Ver el aviso **(2)** de abajo: dos casillas del render no se pueden reproducir con los umbrales de Hoy. |
+| 14 | **cumplido** | Test de pantalla: con la nota del aparato puesta, el bloque se lee **«no se pudo»** + **«me fui directo a la llamada»** entre comillas; sin nota y con el día cerrado, **«no hecho · sin razón»**. Sin rojo: `.missing` usa `--color-text-secondary`, no el color de peligro (comprobado en el SCSS y en el navegador). |
+| 15 | **cumplido** | La línea «Las razones de «no se pudo» se guardan en este aparato: en otro no estarán» se pinta **una vez** y **solo si hay alguna razón en pantalla** — hay test de las dos mitades. |
+| 16 | **cumplido** | «Fuera del plan · 1 · 25m» con su renglón y la etiqueta *fuera del plan*; en puro, con el día del render, **2 · 1h 50** y los mismos minutos que la cifra grande (afirmado en el test: `offPlanMinutes === figures.offPlanMinutes`). |
+| 17 | **cumplido** | Un movido de verdad (70 min, por encima del umbral de Hoy): **una sola fila**, con `['movido', '70 min tarde']`, y **no** aparece además en «Fuera del plan». En los carriles, **dos filas y una sola tarjeta real**: la sombra a las 19:00 (`plan.isShadow === true`) y la real a las 20:10 con `plan: null`. |
+| 18 | **cumplido** | Test: «Ver el día en la agenda» y «Registrar tiempo pasado» son **enlaces** a `/app/vida/hoy?d=2026-09-18`, y `queryByRole('button')` **no encuentra nada** en toda la pantalla. Ningún botón muerto. |
+| 19 | **cumplido** | Test del marco E: los **tres textos literales**, la lista «Lo que tenías planeado» en trazo fantasma (`data-ghost`, `real.kind === 'none'` en las cuatro filas), **sin cifra grande**, **sin «Lo hice»** (es la tajada 3) y «sin registrar» = **el día entero** (990 min). |
+| 20 | **cumplido** | «Este día no tenía plan; registraste 2 cosas y 1h 40.», **sin lista fantasma** y **sin «N de M»** (`hasCount: false`; la región de cifras no contiene «/ N»). Lo registrado se lista con su hora. |
+| 21 | **cumplido** | Una sola frase, sin reproche: «De este día no quedó nada apuntado» + «No llegó a tener plan y tampoco hay registros. Puede que lo vivieras sin abrir la app, y también es un día.», con la salida a Hoy. Test que afirma que **no** dice «no hiciste». |
+| 22 | **cumplido con arnés** | En el navegador, a 1280 px: **hora · plan · real**, el plan quieto en su columna, lo **fuera del plan sin nada enfrente**, el movido como **sombra** a las 19:00 y su tarjeta a las 20:10, y los tramos **sin registrar ocupando su sitio con su tamaño** (alto proporcional a los minutos, con suelo y techo). A la izquierda, historia, cifras y **«Lo que no se hizo»** con su razón. Test de pantalla con `matchMedia` forzado: con ancho salen los carriles y **no** la sección suelta de «Fuera del plan». |
+| 23 | **cumplido** | Cuatro estados **distintos** y probados: sin sesión («Entra para ver cómo te fue» + «Iniciar sesión»), cargando (esqueletos + «Cargando cómo fue tu día…»), **el plan** caído («No pudimos cargar tu plan de ese día» + Reintentar) y **lo vivido** caído («No pudimos leer lo que viviste ese día» + Reintentar, con el plan enseñado y **sin una sola etiqueta de «no hecho»**). En los cuatro, `queryByText(/no quedó nada apuntado/)` **no encuentra nada**. |
+| 24 | **cumplido con arnés** | A **375 px**: `scrollWidth` **375 = clientWidth**, **cero** elementos desbordando, un nombre de **60 caracteres** recortado con puntos suspensivos sin empujar la fila, y una razón de **tres líneas** envuelta dentro de su tarjeta. Contraste medido componiendo el vidrio sobre el lienzo (187 textos): **oscuro 7,70:1 → 16,74:1**, **claro 6,39:1 → 17,61:1**. |
+| 25 | **cumplido** | Test **en `VidaHoyPage.test.tsx`**: con el día cerrado y algo registrado aparece el enlace **«Ver cómo fue el día»** a `/app/vida/revision?d=2026-09-18`; con el día en marcha **no se pinta**. Es lo único que cambia en Hoy. |
+
+#### Lo que decidí, y por qué
+
+1. **`uncoveredMinutes` existe, y es la única aritmética nueva.** A9 dice que
+   «sin registrar» sale de la leyenda del presupuesto, y así es **en el día
+   cerrado**. Pero **ninguna de las tres formas del presupuesto tiene tramo
+   «sin dato» en un día abierto**, y el criterio 5 pide leer las cifras «hasta
+   ahora». Así que la revisión calcula ahí los minutos que ninguna sesión cubre
+   entre el inicio del día y **ahora**, con la misma regla de «cada minuto una
+   vez». **El cinturón es un test**: sobre un día cerrado, `uncoveredMinutes`
+   da **exactamente** lo que dice la leyenda. Si algún día dejaran de coincidir,
+   el fallo sería mío, no de `getExecutedBudget`.
+2. **Los minutos de «fuera del plan» son minutos de sesión, no el tramo de la
+   leyenda.** El criterio 10 los presenta como **parte de lo registrado** («de
+   lo registrado, 1h 50 fuera del plan») y el 16 los repite en la cabecera de
+   la sección: si la cifra saliera de la leyenda —que reparte el día sin
+   solapes— la pantalla podría decir **dos números distintos de lo mismo**. Está
+   escrito en el código y afirmado en un test.
+3. **Móvil y escritorio no coexisten en el DOM.** La página elige con
+   `useMediaQuery` —el hook que ya existe en `shared/hooks`— entre la lista
+   compacta y los carriles, y el panel «Lo que no se hizo» solo se monta en
+   escritorio. Es **a propósito**: FEAT-005 dejó anotado que pintar lo mismo dos
+   veces obliga a acotar tests y hace que un lector de pantalla recorra el día
+   dos veces. El coste, dicho: **un test de los carriles tiene que forzar
+   `matchMedia`**, y lo hace.
+4. **La historia tiene un matiz, y sale de bloques.** `describeNuance` compone
+   «la mañana, calcada» (dos o más bloques seguidos antes de las 14:00, **todos**
+   dentro de la tolerancia) y «X, N min más larga de lo que le diste» (el bloque
+   cuya duración más se separó, por encima de la tolerancia de Hoy). Las dos
+   piden dato; si no lo hay, **la frase va sin matiz**. Es la parte de la
+   primera frase del render que se puede sostener sin categorías.
+5. **`describeReviewWindowEdge` es función nueva en `vida-window.utils.ts`.**
+   `VidaDayStrip` exige `edgeNote` y la de planear («Se planea esta semana y la
+   que viene…») sería **falsa** aquí. Dice «Se miran los días ya vividos: desde
+   el lunes 31.» El arquitecto no la listó; es una línea, en el archivo que él
+   eligió.
+6. **Los componentes son de tres archivos, no de cuatro.** `index.ts` + `.tsx` +
+   `.module.scss`, como **todos** los componentes del módulo (`VidaAgendaBlock`,
+   `VidaAgendaNoData`…), y las afirmaciones de pantalla viven en
+   `pages/VidaRevisionPage.test.tsx`, que es el archivo de test que la tabla del
+   arquitecto sí pide. Ningún componente del módulo tiene test propio.
+7. **`VidaReviewRow` exporta también `VidaReviewOffPlanRow`.** Es la misma
+   anatomía con la columna de plan vacía; separarlo en un quinto componente
+   habría duplicado el SCSS entero.
+8. **No creé `VidaDayBudget.test.tsx`.** La tabla lo pedía, pero **ese archivo no
+   existe hoy** y la frase de cierre se prueba **dentro de `VidaHoyPage.test.tsx`**,
+   que es donde vive su contexto (día cerrado, sesiones, reloj). El criterio 25
+   se afirma ahí, con el `href` completo. Crear un test de componente aislado
+   para una prop habría duplicado la fixture del día cerrado.
+
+#### Avisos para quien revise, por orden de riesgo
+
+1. **`buildDayStrip` y `VidaDayStrip` cambiaron de forma, y los usa Hoy.** Los
+   dos cambios son **aditivos y con valor por defecto** —tercer parámetro
+   `window = getPlanningWindow(today)` y prop `basePath = vidaPaths.hoyForDate`—
+   y hay un test que afirma que **sin el tercer parámetro el resultado es
+   idéntico** al de antes. Pero si algo va mal en la tira de Hoy, empieza por
+   aquí. `clampToPlanningWindow` también se reescribió para delegar en un
+   `clampToWindow` privado: mismo comportamiento, mismos tests de siempre en
+   verde.
+2. **Dos casillas del render aprobado no se pueden reproducir, y seguí al
+   código.** El marco A escribe «empezó +5» para un inicio de **+5 min** y
+   «movido · 40 min tarde» para un paseo **40 min** tarde. Con las constantes
+   que ya existen —`VIDA_ON_PLAN_TOLERANCE_MINUTES = 5` (inclusive) y
+   `VIDA_MOVED_THRESHOLD_MINUTES = 60`— eso se lee **«✓ calcado» sin etiqueta de
+   inicio** y **«empezó +40»**. El criterio 13 dice «exactamente las de Hoy» y el
+   9 dice «el mismo emparejamiento»: **manda el código de FEAT-004**. Queda
+   dicho por si el usuario prefiere mover los umbrales — que sería tocar Hoy.
+3. **Un test ajeno quedó derogado y reemplazado por algo más fuerte**:
+   `vida.routes.test.tsx` afirmaba que `/app/vida/revision` «sigue siendo un
+   cascarón». Ahora afirma que **sin sesión enseña la vía para entrar**
+   («Entra para ver cómo te fue» + «Iniciar sesión»), que es el criterio 23. Con
+   eso **ya no queda ningún cascarón** en esa lista. `AppLayout.test.tsx` y
+   `app-nav.config.test.ts` están **sin tocar**: la píldora sigue diciendo
+   «Revisión» y el `⌘K` sigue apuntando a `vidaPaths.revision`.
+4. **La revisión monta `useVidaDayHours()` por su cuenta**, además del que monta
+   `useVidaDayData` por dentro, porque «con qué día se entra» depende del fin
+   del día de Vida **antes** de saber qué día es. Es la **misma** consulta de
+   ajustes (`settingsKeys.my`), deduplicada por React Query: **no es una
+   consulta más**, pero es un hook más montado.
+5. **El chunk inicial subió 23,22 kB** (ver arriba). Nada de iconos.
+
+#### Lo que descubrí y no estaba en el plan
+
+- **El render y los umbrales de Hoy no cuadran** (aviso 2). Es lo más
+  sustantivo: quien mire la pantalla al lado del render verá dos etiquetas
+  distintas en dos filas, y **no es un fallo**.
+- **El día abierto se queda sin «sin registrar» en el presupuesto**, y por eso
+  existe `uncoveredMinutes`. El plan daba por hecho que la leyenda servía
+  siempre.
+- **`formatDurationMinutes` escribe «1 h 3 min»** donde el render escribe
+  «63 min». Es el formateador que ya usa la agenda de Hoy y no lo cambié: dos
+  formateadores para lo mismo sería peor. Se ve en las filas largas.
+- **Las sesiones sin categoría se pintan con el icono genérico**
+  (`UNCATEGORIZED_GROUP_ICON`), igual que en el catálogo. El render les da
+  icono porque todas sus actividades tienen categoría.
+- **`docs/vida/assets/08-vida-entiende.html`** apareció sin versionar en el
+  árbol (render de otra fase). **No lo toqué.**
+
+#### Lo que no pude comprobar, dicho sin disimular
+
+- **Ni una llamada real al API.** `/app/*` está detrás del login y **los agentes
+  no entran con credenciales**: todo lo de arriba sale de tests con las
+  consultas simuladas y de un **arnés temporal** (`src/harness-revision.html` +
+  `.tsx`) que renderizaba los componentes con datos sintéticos y **está
+  borrado**. La revisión nunca se ha visto con un día de verdad.
+- **Los 375 px y el tema oscuro se midieron en el arnés**, no dentro de
+  `/app/vida/revision`.
+- **El criterio 61** (leerse en diez segundos) **es del usuario**, y el **62** y
+  el **63** también.
+
+#### El recorrido manual, paso a paso (del usuario, con la API despierta)
+
+Render se duerme a los 15 min y tarda ~1 min en despertar.
+
+1. Entrar en **`/app/vida/hoy`** y vivir un día a medias: empezar y terminar
+   algo del plan, registrar algo que no estaba, dejar un bloque sin hacer.
+2. Al pasar la hora de fin del día (los ajustes de Vida), comprobar que bajo la
+   frase de cierre aparece **«Ver cómo fue el día»**. *(criterio 25)*
+3. Tocarlo: tiene que abrir **`/app/vida/revision?d=<ese día>`** con la píldora
+   «Revisión» encendida.
+4. Leer **la historia** (tres frases como mucho), la **cifra grande** y
+   comprobar que **las etiquetas son las mismas** que se vieron durante el día.
+   *(criterios 6, 9 y 13)*
+5. Comprobar que **«Sin registrar»** dice una cifra que cuadra con el día
+   entero del horario de Vida. *(criterio 11)*
+6. Bajar al pie y comprobar que **«Ver el día en la agenda»** y **«Registrar
+   tiempo pasado»** llevan a **Hoy de ese día**. *(criterio 18)*
+7. Volver atrás con el botón del navegador: tiene que volver a Hoy sin perder
+   el día. Y moverse por **la tira**: cada día abre **su revisión**, no Hoy.
+   *(criterio 2)*
+8. Salir de la app, entrar de nuevo en **`/app/vida/revision` sin `?d=`** antes
+   del fin del día: tiene que abrirse **ayer**. Después del fin del día: **hoy**.
+   *(criterio 3)*
+9. Tocar en la tira un día **de mañana**: «Este día todavía no ha pasado», sin
+   cifras. *(criterio 4)*
+10. Abrir **hoy** desde la tira a media tarde: «aún abierto», «Hasta ahora
+    llevas…» y ninguna frase en pasado cerrado. *(criterio 5)*
+11. Abrir un día viejo **del que no se registró nada**: el texto del marco E, el
+    plan en trazo fantasma y **ningún** «Lo hice» (eso llega en la tajada 3).
+    *(criterio 19)*
+12. Marcar un bloque como **«No se pudo»** con una razón desde Hoy, volver a la
+    revisión y comprobar que la razón sale entre comillas **y** que la pantalla
+    avisa de que eso **vive en este aparato**. *(criterios 14 y 15)*
+13. En **escritorio**, comprobar los **dos carriles** al lado del render
+    `docs/vida/assets/07-vida-revision.html`, marco D. *(criterio 22)*
+14. Cronometrar: **¿se lee en diez segundos y sin una palabra de reproche?**
+    *(criterio 61, el de la fase)*
 
 ## 4. Review — feature-reviewer

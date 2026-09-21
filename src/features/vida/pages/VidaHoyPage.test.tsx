@@ -1702,6 +1702,28 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
     expect(presupuesto.textContent).not.toContain('Tu hueco más grande')
   })
 
+  /**
+   * **FEAT-006, criterio 25.** Es lo único que cambia en Hoy en la tajada 1 de
+   * la revisión: al cerrarse el día, junto a la frase de cierre, la vía a
+   * `/app/vida/revision?d=`. Con el día **en marcha** no se pinta, porque
+   * todavía no hay nada que revisar.
+   */
+  it('FEAT-006 criterio 25 — al cerrarse el día hay «Ver cómo fue el día»', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([closedFollowUp('f9', 'a-b1', 'Bañarme', '08:00', 45)])
+    const { unmount } = renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByRole('link', { name: 'Ver cómo fue el día' })).toHaveAttribute(
+      'href',
+      '/app/vida/revision?d=2026-09-18',
+    )
+
+    unmount()
+    vi.setSystemTime(new Date(2026, 8, 18, 9, 24, 0))
+    renderWithProviders(<VidaHoyPage />)
+    expect(screen.queryByRole('link', { name: 'Ver cómo fue el día' })).not.toBeInTheDocument()
+  })
+
   it('criterio 58 — con lo vivido caído no se afirma «no hecho» ni se ofrecen salidas', () => {
     vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
     dayFollowUpsQuery = {

@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — el sistema entiende</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#006c49; --violet:#7c3aed; --violet-text:#5b21b6;
+    --amber:#f59e0b; --rose:#e11d48; --sky:#0284c7;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-2:rgba(255,255,255,.78); --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+    --hatch-mint:repeating-linear-gradient(135deg,rgba(16,185,129,.45) 0 4px,rgba(16,185,129,.2) 4px 8px);
+    --hatch-ink:repeating-linear-gradient(135deg,rgba(15,23,42,.16) 0 4px,rgba(15,23,42,.05) 4px 8px);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .caption:first-child{margin-top:0}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+  .note + .note{margin-top:8px}
+
+  .row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  /* ── cromo de la app ── */
+  .phone{width:100%;max-width:390px;height:1345px;border-radius:38px;padding:9px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6)}
+  .phone.mid{height:905px}
+  .phone.tall{height:1245px}
+  .phone.short{height:895px}
+  .screen{position:relative;overflow:hidden;width:100%;height:100%;border-radius:30px;background:var(--canvas);isolation:isolate}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(100px)}
+  .o1{width:70%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-20%;left:-10%}
+  .o2{width:60%;aspect-ratio:1;background:rgba(210,187,255,.32);top:10%;right:-20%}
+  .o3{width:70%;aspect-ratio:1;background:rgba(224,242,254,.8);bottom:-30%;left:20%}
+  .z{position:relative;z-index:1}
+  .mbar{display:flex;align-items:center;gap:8px;padding:12px 12px 0}
+  .ring{width:20px;height:20px;border-radius:50%;border:2.5px solid var(--mint);position:relative;flex:0 0 auto}
+  .ring::after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--mint)}
+  .brand{font-weight:700;font-size:14px;letter-spacing:-.02em}
+  .mods{display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(15,23,42,.05);margin-left:6px}
+  .mod{padding:4px 10px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft)}
+  .mod.on{background:#fff;color:var(--ink);box-shadow:0 4px 12px -6px rgba(15,23,42,.25)}
+  .avatar{margin-left:auto;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--mint),#c4b5fd);display:grid;place-items:center;color:#fff;font-family:'Inter',sans-serif;font-size:11px;font-weight:700}
+  .mpills{display:flex;gap:4px;padding:8px 12px 0;overflow:hidden}
+  .pill{padding:6px 11px;border-radius:999px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+  .pill.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 20px -9px rgba(16,185,129,.4)}
+  .body{padding:10px 12px 12px}
+  h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em}
+  .sub{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin:2px 0 0}
+
+  /* las tres secciones de Revisión */
+  .segs{display:flex;gap:3px;padding:3px;border-radius:999px;background:rgba(15,23,42,.05);margin:11px 0 0}
+  .seg{flex:1;text-align:center;padding:6px 4px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .seg.on{background:#fff;color:var(--mint-text);box-shadow:0 6px 16px -8px rgba(16,185,129,.5)}
+
+  /* tira de días de Hoy */
+  .days{display:flex;gap:4px;margin:10px 0}
+  .day{flex:1;min-width:0;padding:6px 1px 5px;border-radius:12px;text-align:center;background:rgba(255,255,255,.5);border:1px solid var(--edge)}
+  .day .w{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-dim)}
+  .day .n{font-family:'Inter',sans-serif;font-size:13px;font-weight:700;margin-top:1px}
+  .day .s{margin:3px auto 0;width:16px;height:4px;border-radius:999px;background:rgba(15,23,42,.1)}
+  .day .s.done{background:var(--mint)}
+  .day .s.part{background:linear-gradient(90deg,var(--mint) 60%,rgba(15,23,42,.12) 60%)}
+  .day .s.plan{background:repeating-linear-gradient(90deg,rgba(16,185,129,.55) 0 3px,rgba(16,185,129,.2) 3px 6px)}
+  .day.on{background:#fff;border-color:rgba(16,185,129,.4);box-shadow:0 8px 20px -10px rgba(16,185,129,.45)}
+  .day.today .n{color:var(--rose)}
+
+  /* ── la frase de arriba ── */
+  .story{padding:13px 14px;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(236,253,245,.72));border:1px solid var(--edge);box-shadow:var(--sh-1);margin:10px 0 9px}
+  .story .d{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mint-text)}
+  .story p{margin:7px 0 0;font-size:13.5px;line-height:1.55;font-weight:500;letter-spacing:-.005em}
+  .story p b{font-weight:700}
+  .story p + p{margin-top:5px}
+  .story .howmany{margin-top:9px;padding-top:8px;border-top:1px dashed rgba(15,23,42,.1);font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);line-height:1.5}
+  .story .howmany b{color:var(--ink-soft);font-weight:700}
+
+  .seclbl{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:13px 0 6px;display:flex;align-items:center;gap:6px}
+  .seclbl span{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;font-size:10.5px}
+
+  /* ── adherencia semana a semana ── */
+  .weeks{display:flex;flex-direction:column;gap:5px}
+  .wrow{display:grid;grid-template-columns:62px minmax(0,1fr) 52px;gap:8px;align-items:center;padding:8px 10px;border-radius:14px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1)}
+  .wrow .wl{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums;line-height:1.25}
+  .wrow .wl b{display:block;font-size:11px;color:var(--ink-soft)}
+  .wrow .wb{height:10px;border-radius:999px;background:var(--hatch-mint);overflow:hidden}
+  .wrow .wb i{display:block;height:100%;border-radius:999px;background:var(--mint)}
+  .wrow .wf{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .wrow .wf small{display:block;font-size:9.5px;font-weight:600;color:var(--ink-dim);letter-spacing:0}
+  .wrow.now{border-color:rgba(16,185,129,.45);background:#fff;box-shadow:0 10px 24px -14px rgba(16,185,129,.5)}
+  .wrow.thin{background:rgba(255,255,255,.45);border-style:dashed}
+  .wrow.thin .wf{color:var(--ink-dim)}
+  .lgd{display:flex;gap:10px;flex-wrap:wrap;font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:7px}
+  .sw{width:9px;height:9px;border-radius:3px;display:inline-block;vertical-align:-1px;margin-right:4px}
+
+  /* ── una fila L M X J V S D ── */
+  .dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+  .dow .c{text-align:center;padding:5px 1px 4px;border-radius:10px;background:rgba(15,23,42,.04);min-width:0}
+  .dow .c b{display:block;font-family:'Inter',sans-serif;font-size:9px;font-weight:700;letter-spacing:.03em;color:var(--ink-dim)}
+  .dow .c i{display:block;font-family:'Inter',sans-serif;font-style:normal;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.03em;margin-top:2px;color:var(--ink-soft)}
+  .dow .c.ok{background:rgba(16,185,129,.14)} .dow .c.ok i{color:#047857} .dow .c.ok b{color:#047857}
+  .dow .c.late{background:rgba(124,58,237,.12)} .dow .c.late i{color:var(--violet-text)} .dow .c.late b{color:var(--violet-text)}
+  .dow .c.big{background:rgba(124,58,237,.22)} .dow .c.big i{color:var(--violet-text)} .dow .c.big b{color:var(--violet-text)}
+  .dow .c.none i{color:var(--ink-dim)}
+
+  /* ── tarjeta de patrón ── */
+  .pat{padding:11px 12px 12px;border-radius:18px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);margin-bottom:8px;min-width:0}
+  .ph{display:flex;align-items:center;gap:9px;min-width:0}
+  .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+  .ph>div{min-width:0}
+  .nm{font-weight:600;font-size:12.5px;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .meta{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+  .meta b{color:var(--ink-soft);font-weight:600}
+  .plines{margin:9px 0 8px;display:flex;flex-direction:column;gap:4px}
+  .pline{display:flex;align-items:baseline;gap:6px;font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);flex-wrap:wrap}
+  .pline .pl{width:92px;flex:0 0 auto;font-weight:600}
+  .pline b{font-size:12.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .tag{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:999px;white-space:nowrap}
+  .tag.done{background:rgba(16,185,129,.15);color:#047857}
+  .tag.over{background:rgba(245,158,11,.18);color:#92400e}
+  .tag.late{background:rgba(124,58,237,.12);color:var(--violet-text)}
+  .tag.miss{background:rgba(15,23,42,.07);color:var(--ink-soft)}
+  .tag.soft{background:rgba(15,23,42,.05);color:var(--ink-dim)}
+  .pfoot{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:7px;line-height:1.5}
+  .pfoot b{color:var(--ink-soft);font-weight:700}
+  .ask{margin:9px 0 0;padding-top:9px;border-top:1px dashed rgba(124,58,237,.25);font-size:12.5px;font-weight:600;line-height:1.45}
+  .ask b{font-weight:700}
+  .okline{margin:9px 0 0;padding-top:9px;border-top:1px dashed rgba(16,185,129,.25);font-family:'Inter',sans-serif;font-size:11px;color:var(--mint-text);font-weight:600;line-height:1.5}
+  .btn{padding:6px 10px;border-radius:999px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;border:1px solid var(--edge);background:rgba(255,255,255,.85);color:var(--ink-soft);white-space:nowrap}
+  .btn.go{background:var(--mint);color:#fff;border-color:transparent}
+  .btn.vio{background:var(--violet);color:#fff;border-color:transparent}
+  .btn.sm{padding:4px 8px;font-size:10.5px}
+  .btn.ghost{background:transparent;border-color:rgba(15,23,42,.12)}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+
+  /* ── el aviso al planear ── */
+  .advice{margin:6px 0 0;padding:9px 11px;border-radius:14px;border:1.5px dashed rgba(124,58,237,.4);background:rgba(245,243,255,.66)}
+  .advice .ah{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--violet-text);display:flex;align-items:center;gap:5px}
+  .advice .ah span{margin-left:auto;letter-spacing:0;text-transform:none;font-weight:600;color:var(--ink-dim)}
+  .advice p{margin:5px 0 0;font-size:12px;line-height:1.45;font-weight:600}
+  .advice p b{font-weight:700}
+  .advice .acts{margin-top:7px}
+  .pickline{margin:10px 0 0;padding:8px 11px;border-radius:13px;background:rgba(15,23,42,.035);font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-soft);line-height:1.55}
+  .pickline b{font-weight:700;color:var(--ink)}
+
+  /* ── el presupuesto del día (de Hoy) ── */
+  .budget{padding:12px 13px 11px;border-radius:20px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);margin-bottom:10px}
+  .btop{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .btop .d{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mint-text)}
+  .btop .left{margin-left:auto;font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft)}
+  .btop .left b{font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .track{height:12px;border-radius:999px;background:rgba(15,23,42,.06);overflow:hidden;display:flex;margin:9px 0 7px}
+  .track i{display:block;height:100%}
+  .track .plan{background:var(--hatch-mint)}
+  .track .free{background:transparent}
+  .lg{display:flex;gap:10px;flex-wrap:wrap;font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-soft)}
+  .lg span{display:inline-flex;align-items:center;gap:5px}
+  .lg b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .hint{margin:9px 0 0;padding-top:8px;border-top:1px dashed rgba(15,23,42,.1);font-size:12.5px;line-height:1.45;font-weight:500}
+  .hint b{font-weight:700}
+
+  /* ── la agenda (de Hoy) ── */
+  .agenda{position:relative;padding-left:40px}
+  .rail{position:absolute;left:32px;top:0;bottom:0;width:2px;background:rgba(15,23,42,.08)}
+  .slot{position:relative;margin-bottom:7px}
+  .slot .t{position:absolute;left:-40px;top:9px;width:28px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-11px;top:12px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid var(--ink-dim)}
+  .card{padding:9px 11px;border-radius:15px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);display:flex;align-items:center;gap:9px;min-width:0}
+  .card>div{min-width:0}
+  .r{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+  .slot.plan .card{background:rgba(255,255,255,.5)}
+  .free{position:relative;margin-bottom:7px;padding:9px 11px 10px;border-radius:15px;border:1.5px dashed rgba(16,185,129,.5);background:rgba(236,253,245,.5)}
+  .free .dot{position:absolute;left:-11px;top:12px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px dashed var(--mint)}
+  .free .h{display:flex;align-items:baseline;gap:6px;font-family:'Inter',sans-serif;font-size:11px;color:var(--mint-text);font-weight:700}
+  .free .h b{font-size:12.5px}
+  .free .h span{margin-left:auto;font-weight:600;color:var(--ink-dim)}
+  .fits{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+  .chipa{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:#fff;border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink);box-shadow:var(--sh-1);max-width:100%}
+  .chipa small{font-weight:600;color:var(--ink-dim)}
+  .chipa.more{background:transparent;border-style:dashed;color:var(--ink-dim)}
+  .free .why{margin:6px 0 0;font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);line-height:1.5}
+
+  /* ── la hoja del ítem de la plantilla ── */
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:12px 14px 16px;border-radius:24px 24px 0 0;background:rgba(255,255,255,.97);box-shadow:0 -12px 40px -16px rgba(15,23,42,.35)}
+  .handle{width:36px;height:4px;border-radius:999px;background:rgba(15,23,42,.15);margin:0 auto 10px}
+  .stitle{font-size:15px;font-weight:700;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .ssub{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);margin:3px 0 0}
+  .field{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:12px 0 6px}
+  .field em{font-style:normal;font-weight:500;letter-spacing:0;text-transform:none}
+  .input{padding:10px 13px;border-radius:14px;border:1px solid rgba(15,23,42,.12);background:#fff;font-size:14px;font-weight:600}
+  .input.soft{font-size:12.5px;font-weight:500;color:var(--ink-soft)}
+  .input span{color:var(--ink-dim);font-weight:400}
+  .opts{display:flex;gap:5px;flex-wrap:wrap}
+  .opt{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:999px;border:1px solid rgba(15,23,42,.1);background:#fff;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--ink-soft)}
+  .opt.on{background:var(--mint);color:#fff;border-color:transparent}
+  .wdays{display:flex;gap:4px;margin-top:2px}
+  .wdays span{flex:1;text-align:center;padding:8px 0;border-radius:11px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;background:rgba(15,23,42,.05);color:var(--ink-dim)}
+  .wdays span.on{background:rgba(16,185,129,.18);color:#047857}
+  .wdays span.flag{background:rgba(124,58,237,.16);color:var(--violet-text)}
+  .toggle{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(15,23,42,.03)}
+  .toggle .sw2{width:34px;height:20px;border-radius:999px;background:var(--mint);position:relative;flex:0 0 auto}
+  .toggle .sw2::after{content:'';position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff}
+  .toggle .lbl{font-size:12.5px;font-weight:600}
+  .toggle .lbl small{display:block;font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);font-weight:500;line-height:1.45;margin-top:1px}
+  .srow{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}
+  .srow .btn.go{margin-left:auto;padding:9px 16px;font-size:12.5px}
+  .peek{margin-top:10px;padding:8px 11px;border-radius:12px;background:rgba(236,253,245,.7);border:1px solid rgba(16,185,129,.25);font-family:'Inter',sans-serif;font-size:10.5px;color:var(--mint-text);line-height:1.5}
+  .peek b{font-weight:700}
+  .wdaystrip{display:flex;gap:4px;margin:10px 0}
+  .dtab{flex:1;min-width:0;padding:6px 1px 5px;border-radius:12px;text-align:center;background:rgba(255,255,255,.5);border:1px solid var(--edge)}
+  .dtab .w{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;color:var(--ink-dim)}
+  .dtab .c{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;margin-top:1px}
+  .dtab.on{background:#fff;border-color:rgba(16,185,129,.4)}
+
+  /* ── sin datos suficientes ── */
+  .empty{padding:15px 14px;border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(236,253,245,.72));border:1px solid var(--edge);box-shadow:var(--sh-1)}
+  .empty .eh{font-size:16px;font-weight:700;letter-spacing:-.015em;margin:0}
+  .empty p{font-family:'Inter',sans-serif;font-size:12px;color:var(--ink-soft);line-height:1.6;margin:7px 0 0}
+  .waitrow{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border-radius:14px;background:rgba(255,255,255,.55);border:1px dashed rgba(15,23,42,.14);margin-bottom:6px}
+  .waitrow>div{min-width:0;flex:1}
+  .waitrow .wt{font-size:12.5px;font-weight:600;letter-spacing:-.01em}
+  .waitrow .wm{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:2px;line-height:1.5}
+  .dots{display:flex;gap:2px;margin-top:6px;flex-wrap:wrap}
+  .dots i{width:7px;height:7px;border-radius:50%;background:rgba(15,23,42,.1)}
+  .dots i.f{background:var(--mint)}
+
+  /* ── escritorio ── */
+  .frame{position:relative;overflow:hidden;border-radius:24px;background:var(--canvas);box-shadow:0 20px 60px -20px rgba(15,23,42,.25);isolation:isolate;width:100%}
+  .frame .orb{filter:blur(120px)}
+  .bar{display:flex;align-items:center;gap:14px;padding:10px 20px;border-bottom:1px solid var(--edge);background:rgba(250,252,251,.66);backdrop-filter:blur(26px);flex-wrap:wrap}
+  .bar .avatar{width:30px;height:30px;font-size:12px}
+  .inner{padding:20px 22px 24px;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:18px;align-items:start}
+  .eyebrow{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text);margin:0 0 4px}
+  h1{margin:0 0 12px;font-size:24px;font-weight:700;letter-spacing:-.025em}
+  .side{display:flex;flex-direction:column;gap:12px;min-width:0}
+  .main{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .panel{padding:15px 17px;border-radius:22px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);min-width:0}
+  .ptitle{font-size:14px;font-weight:700;margin:0;letter-spacing:-.01em}
+  .psub{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin:3px 0 10px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;align-items:start}
+  .grid2 .pat{margin-bottom:0}
+  .sugg{padding:11px 12px;border-radius:16px;border:1.5px dashed rgba(124,58,237,.35);background:rgba(245,243,255,.55);margin-bottom:8px}
+  .sugg:last-of-type{margin-bottom:0}
+  .sugg .st{display:flex;align-items:center;gap:8px;min-width:0}
+  .sugg .st>div{min-width:0}
+  .sugg .sq{margin:7px 0 0;font-size:12.5px;font-weight:600;line-height:1.45}
+  .fromline{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);line-height:1.6;margin:0}
+  .fromline b{font-weight:700;color:var(--ink)}
+  .fromline + .fromline{margin-top:7px}
+
+  @media (max-width:900px){
+    .inner{grid-template-columns:minmax(0,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <p class="caption">F6 · El sistema entiende — adherencia, patrones por día, y avisos al planear</p>
+  <div class="row3">
+
+    <!-- ══ A · ADHERENCIA ══ -->
+    <div class="moment">
+      <div class="mtitle">A · Adherencia<small>Dentro de Revisión, una tercera sección: «Lo que se repite»</small></div>
+      <div class="phone mid"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="mpills"><span class="pill">Hoy</span><span class="pill">Plantilla</span><span class="pill on">Revisión</span><span class="pill">Activid…</span></div>
+          <div class="body">
+
+            <div><h2>Lo que se repite</h2><p class="sub">Sale de tus propios días · no hay nada que configurar</p></div>
+
+            <div class="segs"><span class="seg">Un día</span><span class="seg">La semana</span><span class="seg on">Lo que se repite</span></div>
+
+            <div class="story">
+              <div class="d">Tu adherencia</div>
+              <p>De cada 10 bloques que planeas, sigues <b>8</b>. Llevas <b>tres semanas subiendo</b>.</p>
+              <p>Las mañanas son lo que más se parece a tu plantilla; las tardes son donde más se mueve todo.</p>
+              <div class="howmany">Con <b>5 semanas</b> de datos. Las semanas con menos de 3 días planeados se quedan fuera, para que una semana de viaje no arrastre la línea.</div>
+            </div>
+
+            <div class="seclbl">Semana a semana <span>seguidos de planeados</span></div>
+            <div class="weeks">
+              <div class="wrow">
+                <div class="wl">ago<b>18 – 24</b></div>
+                <div class="wb"><i style="width:61%"></i></div>
+                <div class="wf">19/31<small>61 %</small></div>
+              </div>
+              <div class="wrow">
+                <div class="wl">ago<b>25 – 31</b></div>
+                <div class="wb"><i style="width:67%"></i></div>
+                <div class="wf">22/33<small>67 %</small></div>
+              </div>
+              <div class="wrow">
+                <div class="wl">sep<b>1 – 7</b></div>
+                <div class="wb"><i style="width:71%"></i></div>
+                <div class="wf">24/34<small>71 %</small></div>
+              </div>
+              <div class="wrow">
+                <div class="wl">sep<b>8 – 14</b></div>
+                <div class="wb"><i style="width:77%"></i></div>
+                <div class="wf">27/35<small>77 %</small></div>
+              </div>
+              <div class="wrow now">
+                <div class="wl">sep<b>15 – 21</b></div>
+                <div class="wb"><i style="width:81%"></i></div>
+                <div class="wf">29/36<small>81 %</small></div>
+              </div>
+            </div>
+            <div class="lgd">
+              <span><i class="sw" style="background:var(--mint)"></i>seguido</span>
+              <span><i class="sw" style="background:var(--hatch-mint)"></i>planeado</span>
+              <span>la semana en curso cuenta hasta hoy</span>
+            </div>
+
+            <div class="seclbl">Por día de la semana <span>5 semanas</span></div>
+            <div class="dow">
+              <div class="c ok"><b>L</b><i>9/10</i></div>
+              <div class="c late"><b>M</b><i>5/10</i></div>
+              <div class="c ok"><b>X</b><i>9/10</i></div>
+              <div class="c ok"><b>J</b><i>8/10</i></div>
+              <div class="c late"><b>V</b><i>6/10</i></div>
+              <div class="c none"><b>S</b><i>2 sem</i></div>
+              <div class="c none"><b>D</b><i>2 sem</i></div>
+            </div>
+            <p class="pfoot">Los <b>miércoles</b> son los que más se parecen a tu plan; los <b>martes</b>, los que menos. De <b>sábado y domingo</b> hay 2 semanas con plan: a partir de 3 se puede hablar de ellos, y mientras tanto se dice así.</p>
+
+            <div class="acts"><span class="btn sm">Ver los patrones por actividad</span></div>
+
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ══ B · PATRONES POR ACTIVIDAD ══ -->
+    <div class="moment">
+      <div class="mtitle">B · Patrones por actividad<small>Hora planeada frente a hora real · y qué se desborda</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="mpills"><span class="pill">Hoy</span><span class="pill">Plantilla</span><span class="pill on">Revisión</span><span class="pill">Activid…</span></div>
+          <div class="body">
+
+            <div><h2>Lo que se repite</h2><p class="sub">Por actividad · 5 semanas de plan y registro</p></div>
+            <div class="segs"><span class="seg">Un día</span><span class="seg">La semana</span><span class="seg on">Lo que se repite</span></div>
+
+            <div class="seclbl" style="margin-top:12px">Por actividad <span>3 con algo que proponer</span></div>
+
+            <!-- se desborda -->
+            <div class="pat">
+              <div class="ph"><span class="ic" style="background:rgba(124,58,237,.14)">🧹</span>
+                <div><div class="nm">Organizar la casa</div><div class="meta">En tu plantilla: <b>L · X · V · 9:00 · 45 min</b></div></div>
+              </div>
+              <div class="plines">
+                <div class="pline"><span class="pl">Sueles empezar</span><b>9:06</b><span class="tag late">+6 min</span></div>
+                <div class="pline"><span class="pl">Suele llevarte</span><b>1h 10</b><span class="tag over">+25 min</span></div>
+              </div>
+              <div class="dow">
+                <div class="c late"><b>L</b><i>+22</i></div>
+                <div class="c none"><b>M</b><i>·</i></div>
+                <div class="c late"><b>X</b><i>+19</i></div>
+                <div class="c none"><b>J</b><i>·</i></div>
+                <div class="c big"><b>V</b><i>+34</i></div>
+                <div class="c none"><b>S</b><i>·</i></div>
+                <div class="c none"><b>D</b><i>·</i></div>
+              </div>
+              <p class="pfoot">Minutos de más frente a los 45 planeados · se siguió <b>13 de 15</b> veces</p>
+              <p class="ask">¿Le damos <b>1h 10</b> en tu plantilla?</p>
+              <div class="acts"><span class="btn vio sm">Ponerlo en 1h 10</span><span class="btn sm">Dejarlo</span></div>
+            </div>
+
+            <!-- empieza más tarde -->
+            <div class="pat">
+              <div class="ph"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span>
+                <div><div class="nm">Pasear a las mascotas · tarde</div><div class="meta">En tu plantilla: <b>todos los días · 19:00 · 30 min</b></div></div>
+              </div>
+              <div class="plines">
+                <div class="pline"><span class="pl">Sueles empezar</span><b>19:28</b><span class="tag late">+28 min</span></div>
+                <div class="pline"><span class="pl">Suele llevarte</span><b>32 min</b><span class="tag done">como lo diste</span></div>
+              </div>
+              <div class="dow">
+                <div class="c late"><b>L</b><i>+20</i></div>
+                <div class="c big"><b>M</b><i>+35</i></div>
+                <div class="c late"><b>X</b><i>+15</i></div>
+                <div class="c big"><b>J</b><i>+40</i></div>
+                <div class="c big"><b>V</b><i>+38</i></div>
+                <div class="c late"><b>S</b><i>+25</i></div>
+                <div class="c late"><b>D</b><i>+22</i></div>
+              </div>
+              <p class="pfoot">Minutos más tarde de las 19:00 · se siguió <b>30 de 35</b> veces</p>
+              <p class="ask">La hora que de verdad te sale son las <b>19:30</b>. ¿La movemos?</p>
+              <div class="acts"><span class="btn vio sm">Moverlo a las 19:30</span><span class="btn sm">Dejarlo</span></div>
+            </div>
+
+            <!-- un solo día distinto -->
+            <div class="pat">
+              <div class="ph"><span class="ic" style="background:rgba(16,185,129,.14)">🍳</span>
+                <div><div class="nm">Desayunar con calma</div><div class="meta">En tu plantilla: <b>L a V · 8:30 · 30 min</b></div></div>
+              </div>
+              <div class="plines">
+                <div class="pline"><span class="pl">Sueles empezar</span><b>8:35</b><span class="tag done">a su hora</span></div>
+                <div class="pline"><span class="pl">Los martes</span><b>9:40</b><span class="tag late">+70 min</span></div>
+              </div>
+              <div class="dow">
+                <div class="c ok"><b>L</b><i>+4</i></div>
+                <div class="c big"><b>M</b><i>+70</i></div>
+                <div class="c ok"><b>X</b><i>+5</i></div>
+                <div class="c ok"><b>J</b><i>+3</i></div>
+                <div class="c ok"><b>V</b><i>+6</i></div>
+                <div class="c none"><b>S</b><i>·</i></div>
+                <div class="c none"><b>D</b><i>·</i></div>
+              </div>
+              <p class="pfoot">Los <b>martes nunca empiezas antes de las 9:30</b> · el resto de mañanas van calcadas · se siguió <b>19 de 25</b> veces</p>
+              <p class="ask">Los martes, ¿lo <b>quitamos de la plantilla</b>? Tu día empieza más tarde ese día.</p>
+              <div class="acts"><span class="btn vio sm">Quitar el martes</span><span class="btn sm">Dejarlo</span></div>
+            </div>
+
+            <!-- va bien: no propone nada -->
+            <div class="pat">
+              <div class="ph"><span class="ic" style="background:rgba(2,132,199,.14)">🚿</span>
+                <div><div class="nm">Bañarme</div><div class="meta">En tu plantilla: <b>todos los días · 7:00 · 15 min</b></div></div>
+              </div>
+              <div class="plines">
+                <div class="pline"><span class="pl">Sueles empezar</span><b>7:03</b><span class="tag done">a su hora</span></div>
+                <div class="pline"><span class="pl">Suele llevarte</span><b>14 min</b><span class="tag done">como lo diste</span></div>
+              </div>
+              <div class="dow">
+                <div class="c ok"><b>L</b><i>+2</i></div>
+                <div class="c ok"><b>M</b><i>+6</i></div>
+                <div class="c ok"><b>X</b><i>+1</i></div>
+                <div class="c ok"><b>J</b><i>+3</i></div>
+                <div class="c ok"><b>V</b><i>+4</i></div>
+                <div class="c ok"><b>S</b><i>+2</i></div>
+                <div class="c ok"><b>D</b><i>+5</i></div>
+              </div>
+              <p class="pfoot">Se siguió <b>33 de 35</b> veces</p>
+              <p class="okline">Esto pasa como lo planeaste. Aquí no hay nada que proponer.</p>
+            </div>
+
+            <p class="pickline">Una actividad aparece aquí cuando la has planeado <b>4 veces o más</b>. Las demás esperan, y se dice cuántas veces llevan.</p>
+
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ══ C · AVISOS AL PLANEAR, EN HOY ══ -->
+    <div class="moment">
+      <div class="mtitle">C · Avisos al planear, en Hoy<small>El día armado desde la plantilla · dos avisos, pegados donde tocan</small></div>
+      <div class="phone tall"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="mpills"><span class="pill on">Hoy</span><span class="pill">Plantilla</span><span class="pill">Revisión</span><span class="pill">Activid…</span></div>
+          <div class="body">
+
+            <div class="days">
+              <div class="day"><div class="w">Lun</div><div class="n">14</div><div class="s done"></div></div>
+              <div class="day"><div class="w">Mar</div><div class="n">15</div><div class="s part"></div></div>
+              <div class="day"><div class="w">Mié</div><div class="n">16</div><div class="s done"></div></div>
+              <div class="day"><div class="w">Jue</div><div class="n">17</div><div class="s part"></div></div>
+              <div class="day"><div class="w">Vie</div><div class="n">18</div><div class="s part"></div></div>
+              <div class="day today"><div class="w">Sáb</div><div class="n">19</div><div class="s part"></div></div>
+              <div class="day on"><div class="w">Dom</div><div class="n">20</div><div class="s plan"></div></div>
+            </div>
+
+            <div class="budget">
+              <div class="btop"><span class="d">Domingo 20 · mañana</span><span class="left">planeadas <b>4h 10</b> de 16h 30</span></div>
+              <div class="track"><i class="free" style="width:4%"></i><i class="plan" style="width:9%"></i><i class="free" style="width:8%"></i><i class="plan" style="width:6%"></i><i class="free" style="width:22%"></i><i class="plan" style="width:7%"></i><i class="free" style="width:33%"></i><i class="plan" style="width:4%"></i><i class="free" style="width:7%"></i></div>
+              <div class="lg"><span><i class="sw" style="background:var(--hatch-mint)"></i>planeado <b>4h 10</b></span><span><i class="sw" style="background:rgba(15,23,42,.06);border:1px dashed rgba(15,23,42,.2)"></i>libre <b>12h 20</b></span></div>
+              <p class="hint">Armado desde tu plantilla de domingo · <b>5 cosas</b>. La tarde sigue vacía de 14:00 a 19:00.</p>
+            </div>
+
+            <div class="agenda">
+              <div class="rail"></div>
+
+              <div class="slot plan"><span class="t">7:00</span><span class="dot"></span>
+                <div class="card"><span class="ic" style="background:rgba(2,132,199,.14)">🚿</span><div><div class="nm">Bañarme</div><div class="meta">15 min</div></div></div>
+              </div>
+
+              <div class="slot plan"><span class="t">9:00</span><span class="dot"></span>
+                <div class="card"><span class="ic" style="background:rgba(124,58,237,.14)">🧹</span><div><div class="nm">Organizar la casa</div><div class="meta">45 min · 9:00 – 9:45</div></div></div>
+                <div class="advice">
+                  <div class="ah">De tus últimas semanas <span>1 de 2</span></div>
+                  <p>Organizar la casa <b>te suele llevar 25 min más</b> · ¿lo dejamos en <b>1h 10</b>?</p>
+                  <div class="acts"><span class="btn vio sm">Sí, 1h 10</span><span class="btn sm">Así está bien</span></div>
+                </div>
+              </div>
+
+              <div class="free"><span class="dot"></span>
+                <div class="h">Libre <b>10:30 – 13:00</b><span>2h 30</span></div>
+                <div class="fits">
+                  <span class="chipa">🛒 Compra semana <small>sueles tardar 55m</small></span>
+                  <span class="chipa">🧺 Poner lavadora <small>20m</small></span>
+                  <span class="chipa more">+ otra cosa</span>
+                </div>
+                <p class="why">De tu plantilla de domingo, lo que cabe aquí. La duración que se ofrece es <b>la que sueles tardar</b>, no la que pusiste.</p>
+              </div>
+
+              <div class="slot plan"><span class="t">13:00</span><span class="dot"></span>
+                <div class="card"><span class="ic" style="background:rgba(16,185,129,.14)">🥗</span><div><div class="nm">Cocinar y almorzar</div><div class="meta">60 min</div></div></div>
+              </div>
+
+              <div class="free"><span class="dot"></span>
+                <div class="h">Libre <b>14:00 – 19:00</b><span>5h</span></div>
+                <div class="fits">
+                  <span class="chipa">🛋️ Descansar <small>1h</small></span>
+                  <span class="chipa">🚗 Salir a hacer cosas <small>2h</small></span>
+                  <span class="chipa more">+ otra cosa</span>
+                </div>
+              </div>
+
+              <div class="slot plan"><span class="t">19:00</span><span class="dot"></span>
+                <div class="card"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear a las mascotas</div><div class="meta">30 min · 19:00 – 19:30</div></div></div>
+                <div class="advice">
+                  <div class="ah">De tus últimas semanas <span>2 de 2</span></div>
+                  <p>Los domingos <b>sueles salir sobre las 19:22</b> · ¿lo ponemos a las <b>19:30</b>?</p>
+                  <div class="acts"><span class="btn vio sm">Sí, 19:30</span><span class="btn sm">Así está bien</span></div>
+                </div>
+              </div>
+
+              <div class="slot plan"><span class="t">21:30</span><span class="dot"></span>
+                <div class="card"><span class="ic" style="background:rgba(2,132,199,.14)">📖</span><div><div class="nm">Leer un rato</div><div class="meta">30 min</div></div></div>
+              </div>
+
+            </div>
+
+            <p class="pickline"><b>Dos avisos como mucho por día</b>, y nunca dos del mismo bloque: se eligen los que más veces se han repetido, con un desfase de más de 10 min, y que todavía no has contestado. Lo demás vive en «Lo que se repite» y espera a que tú vayas.</p>
+
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <p class="note"><b>A · Adherencia.</b> Vive <b>dentro de Revisión</b>, como tercera sección junto a «Un día» y «La semana» — sin pestaña nueva en la barra. Lo primero es la frase: <i>de cada 10 bloques que planeas, sigues 8; llevas tres semanas subiendo</i>. Debajo, las <b>cinco semanas</b> con la barra rayada (planeado) y la sólida (seguido), y la fracción <b>29/36</b> con su porcentaje pequeño, nunca al revés: la fracción se entiende, el porcentaje solo se lee como nota. Y siempre se dice <b>cuántos datos hay</b> y qué se deja fuera. En la fila por día de la semana, sábado y domingo <b>no fingen un número</b>: dicen «2 sem», y el pie explica que a partir de 3 se puede hablar de ellos.</p>
+  <p class="note"><b>B · Patrones por actividad.</b> Una tarjeta por actividad, y todas dicen lo mismo en el mismo orden: <b>hora que sueles empezar</b> y <b>cuánto suele llevarte</b> frente a lo que pusiste en la plantilla, la <b>mini-fila L M X J V S D</b> con el desfase de cada día (violeta cuanto más grande, gris si ese día no está en tu plantilla), y <b>cuántas veces de cuántas</b> se siguió. Termina en una <b>pregunta con dos salidas</b> — «Ponerlo en 1h 10» / «Dejarlo» — o, si el patrón está bien, en <b>nada</b>: «aquí no hay nada que proponer», que es la tarjeta que demuestra que esto no es una lista de correcciones. La tercera tarjeta es tu caso literal («los martes nunca empiezas antes de las 9:30»), y su salida es quitar el martes, porque la plantilla tiene <b>una hora por ítem, no una por día</b> — está en las preguntas de abajo.</p>
+  <p class="note"><b>C · Avisos al planear, en Hoy.</b> La misma agenda de F2 —presupuesto arriba, huecos con lo que cabe, armar desde la plantilla— con el aviso <b>pegado al bloque</b> al que se refiere, en violeta punteado para que se lea como una nota al margen y no como un error. Son <b>dos como mucho</b>, numerados («1 de 2»), y las dos salidas están siempre escritas: <i>Sí, 1h 10</i> y <i>Así está bien</i>. Hay un tercer sitio donde el dato aparece <b>sin pedir nada</b>: los chips del hueco ofrecen la duración que <i>sueles</i> tardar («Compra semana · sueles tardar 55m»), que es la forma más barata de que el sistema entienda sin decir ni una palabra de más.</p>
+
+  <p class="caption">D · El mismo dato en la Plantilla — una línea debajo de la hora</p>
+  <div class="row3">
+    <div class="moment">
+      <div class="mtitle">D · Avisos en la Plantilla<small>La hoja del ítem de F4, con lo que dicen tus semanas</small></div>
+      <div class="phone mid"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z" style="opacity:.4">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="mpills"><span class="pill">Hoy</span><span class="pill on">Plantilla</span><span class="pill">Revisión</span><span class="pill">Activid…</span></div>
+          <div class="body">
+            <div><h2>Tu plantilla</h2><p class="sub">Martes · 6 cosas</p></div>
+            <div class="wdaystrip">
+              <div class="dtab"><div class="w">L</div><div class="c">6</div></div>
+              <div class="dtab on"><div class="w">M</div><div class="c">6</div></div>
+              <div class="dtab"><div class="w">X</div><div class="c">7</div></div>
+              <div class="dtab"><div class="w">J</div><div class="c">5</div></div>
+              <div class="dtab"><div class="w">V</div><div class="c">7</div></div>
+              <div class="dtab"><div class="w">S</div><div class="c">6</div></div>
+              <div class="dtab"><div class="w">D</div><div class="c">6</div></div>
+            </div>
+            <div class="agenda"><div class="rail"></div>
+              <div class="slot"><span class="t">7:00</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(2,132,199,.14)">🚿</span><div><div class="nm">Bañarme</div><div class="meta">15 min</div></div></div></div>
+              <div class="slot"><span class="t">8:30</span><span class="dot"></span><div class="card"><span class="ic" style="background:rgba(16,185,129,.14)">🍳</span><div><div class="nm">Desayunar con calma</div><div class="meta">30 min</div></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet">
+          <div class="handle"></div>
+          <p class="stitle"><span class="ic" style="background:rgba(16,185,129,.14)">🍳</span>Desayunar con calma</p>
+          <p class="ssub">En tu plantilla · Comida · se cambia desde aquí y desde Actividades</p>
+
+          <div class="field">Qué días</div>
+          <div class="wdays"><span class="on">L</span><span class="flag">M</span><span class="on">X</span><span class="on">J</span><span class="on">V</span><span>S</span><span>D</span></div>
+
+          <div class="field">A qué hora</div>
+          <div class="input">8:30<span> · 24 h</span></div>
+          <div class="advice">
+            <div class="ah">De tus últimas 5 semanas</div>
+            <p>Sueles empezar a las <b>8:35</b> — salvo los <b>martes</b>, que <b>nunca antes de las 9:30</b>.</p>
+            <div class="acts"><span class="btn vio sm">Quitar el martes</span><span class="btn sm">Dejarlo</span></div>
+          </div>
+
+          <div class="field">Cuánto <em>· o escribe los minutos</em></div>
+          <div class="opts"><span class="opt">15m</span><span class="opt on">30m</span><span class="opt">45m</span><span class="opt">1h</span><span class="opt">libre</span></div>
+          <p class="pfoot">Suele llevarte <b>30 min justos</b>. Esta hora va bien.</p>
+
+          <div class="field">Nota <em>· opcional, texto plano</em></div>
+          <div class="input soft">Sin pantalla<span>|</span></div>
+
+          <div class="toggle"><span class="sw2"></span><div class="lbl">Activa en mi plantilla<small>Desactivada se queda aquí guardada con sus días y su hora, y deja de salir en Hoy.</small></div></div>
+
+          <div class="peek">Así queda en <b>Hoy</b>: de lunes a viernes de <b>8:30 a 9:00</b>. Los días que ya tienes armados no se reescriben solos.</div>
+
+          <div class="srow"><span class="btn ghost">Quitar de la plantilla</span><span class="btn go">Guardar</span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div style="flex:1;min-width:280px">
+      <p class="note" style="margin-top:0"><b>D · Avisos en la Plantilla.</b> Es <b>la hoja de F4 intacta</b> —días, hora, cuánto, nota, el interruptor y la vista previa— con una sola cosa nueva: <b>una línea de dato debajo del campo al que se refiere</b>. Bajo la hora, lo que dicen tus semanas y su salida; bajo «Cuánto», un dato que <b>confirma</b> y no propone nada («suele llevarte 30 min justos, esta hora va bien»), porque si solo aparece cuando algo se desvía, el aviso se convierte en una señal de alarma.</p>
+      <p class="note">El martes va marcado en violeta en la fila de días: es el día del que habla el aviso. <b>Marcado no es tocado</b> — mientras no se pulse «Quitar el martes», la plantilla se queda exactamente como está.</p>
+      <p class="note">Aquí se ve la <b>frontera real</b> de la plantilla de F4: tiene <b>una hora por ítem</b>, no una hora por día. Por eso, cuando el patrón es de un solo día, lo único que se puede proponer es <b>quitar ese día</b> — o mover la hora de todos, que casi nunca es lo que quieres. Si lo que quieres es «los martes a las 9:30 y el resto a las 8:30», eso es horas por día en la plantilla y es una decisión tuya, no de esta fase.</p>
+    </div>
+  </div>
+
+  <p class="caption">E · Escritorio — adherencia arriba, patrones en rejilla, y las sugerencias sin contestar al lado</p>
+  <div class="frame">
+    <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+    <div class="z">
+      <div class="bar">
+        <span class="ring"></span><span class="brand">Xavi</span>
+        <div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div>
+        <div class="mpills" style="padding:0"><span class="pill">Hoy</span><span class="pill">Plantilla</span><span class="pill on">Revisión</span><span class="pill">Actividades</span></div>
+        <span class="avatar">A</span>
+      </div>
+      <div class="inner">
+
+        <div class="main">
+          <div>
+            <p class="eyebrow">Revisión · lo que se repite · 5 semanas</p>
+            <h1>Lo que se repite</h1>
+            <div class="segs" style="max-width:420px;margin:0"><span class="seg">Un día</span><span class="seg">La semana</span><span class="seg on">Lo que se repite</span></div>
+          </div>
+
+          <div class="panel">
+            <p class="ptitle">Adherencia</p>
+            <p class="psub">Bloques seguidos de los que planeaste, semana a semana</p>
+            <div class="story" style="margin:0 0 11px">
+              <div class="d">Tu adherencia</div>
+              <p>De cada 10 bloques que planeas, sigues <b>8</b>. Llevas <b>tres semanas subiendo</b>.</p>
+              <div class="howmany">Con <b>5 semanas</b> de datos · las semanas con menos de 3 días planeados se quedan fuera · la semana en curso cuenta hasta hoy.</div>
+            </div>
+            <div class="weeks">
+              <div class="wrow"><div class="wl">ago<b>18 – 24</b></div><div class="wb"><i style="width:61%"></i></div><div class="wf">19/31<small>61 %</small></div></div>
+              <div class="wrow"><div class="wl">ago<b>25 – 31</b></div><div class="wb"><i style="width:67%"></i></div><div class="wf">22/33<small>67 %</small></div></div>
+              <div class="wrow"><div class="wl">sep<b>1 – 7</b></div><div class="wb"><i style="width:71%"></i></div><div class="wf">24/34<small>71 %</small></div></div>
+              <div class="wrow"><div class="wl">sep<b>8 – 14</b></div><div class="wb"><i style="width:77%"></i></div><div class="wf">27/35<small>77 %</small></div></div>
+              <div class="wrow now"><div class="wl">sep<b>15 – 21</b></div><div class="wb"><i style="width:81%"></i></div><div class="wf">29/36<small>81 %</small></div></div>
+            </div>
+            <div class="seclbl" style="margin-top:14px">Por día de la semana <span>seguidos de planeados</span></div>
+            <div class="dow">
+              <div class="c ok"><b>L</b><i>9/10</i></div>
+              <div class="c late"><b>M</b><i>5/10</i></div>
+              <div class="c ok"><b>X</b><i>9/10</i></div>
+              <div class="c ok"><b>J</b><i>8/10</i></div>
+              <div class="c late"><b>V</b><i>6/10</i></div>
+              <div class="c none"><b>S</b><i>2 sem</i></div>
+              <div class="c none"><b>D</b><i>2 sem</i></div>
+            </div>
+            <p class="pfoot">De <b>sábado y domingo</b> hay 2 semanas con plan: a partir de 3 se puede hablar de ellos.</p>
+          </div>
+
+          <div>
+            <div class="seclbl">Patrones por actividad <span>7 actividades con datos suficientes</span></div>
+            <div class="grid2">
+
+              <div class="pat">
+                <div class="ph"><span class="ic" style="background:rgba(124,58,237,.14)">🧹</span><div><div class="nm">Organizar la casa</div><div class="meta">L · X · V · 9:00 · 45 min</div></div></div>
+                <div class="plines">
+                  <div class="pline"><span class="pl">Sueles empezar</span><b>9:06</b><span class="tag late">+6 min</span></div>
+                  <div class="pline"><span class="pl">Suele llevarte</span><b>1h 10</b><span class="tag over">+25 min</span></div>
+                </div>
+                <div class="dow">
+                  <div class="c late"><b>L</b><i>+22</i></div><div class="c none"><b>M</b><i>·</i></div><div class="c late"><b>X</b><i>+19</i></div><div class="c none"><b>J</b><i>·</i></div><div class="c big"><b>V</b><i>+34</i></div><div class="c none"><b>S</b><i>·</i></div><div class="c none"><b>D</b><i>·</i></div>
+                </div>
+                <p class="pfoot">Se siguió <b>13 de 15</b> veces</p>
+                <p class="ask">¿Le damos <b>1h 10</b>?</p>
+                <div class="acts"><span class="btn vio sm">Ponerlo en 1h 10</span><span class="btn sm">Dejarlo</span></div>
+              </div>
+
+              <div class="pat">
+                <div class="ph"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear · tarde</div><div class="meta">Todos los días · 19:00 · 30 min</div></div></div>
+                <div class="plines">
+                  <div class="pline"><span class="pl">Sueles empezar</span><b>19:28</b><span class="tag late">+28 min</span></div>
+                  <div class="pline"><span class="pl">Suele llevarte</span><b>32 min</b><span class="tag done">como lo diste</span></div>
+                </div>
+                <div class="dow">
+                  <div class="c late"><b>L</b><i>+20</i></div><div class="c big"><b>M</b><i>+35</i></div><div class="c late"><b>X</b><i>+15</i></div><div class="c big"><b>J</b><i>+40</i></div><div class="c big"><b>V</b><i>+38</i></div><div class="c late"><b>S</b><i>+25</i></div><div class="c late"><b>D</b><i>+22</i></div>
+                </div>
+                <p class="pfoot">Se siguió <b>30 de 35</b> veces</p>
+                <p class="ask">¿Lo movemos a las <b>19:30</b>?</p>
+                <div class="acts"><span class="btn vio sm">Moverlo a las 19:30</span><span class="btn sm">Dejarlo</span></div>
+              </div>
+
+              <div class="pat">
+                <div class="ph"><span class="ic" style="background:rgba(16,185,129,.14)">🍳</span><div><div class="nm">Desayunar con calma</div><div class="meta">L a V · 8:30 · 30 min</div></div></div>
+                <div class="plines">
+                  <div class="pline"><span class="pl">Sueles empezar</span><b>8:35</b><span class="tag done">a su hora</span></div>
+                  <div class="pline"><span class="pl">Los martes</span><b>9:40</b><span class="tag late">+70 min</span></div>
+                </div>
+                <div class="dow">
+                  <div class="c ok"><b>L</b><i>+4</i></div><div class="c big"><b>M</b><i>+70</i></div><div class="c ok"><b>X</b><i>+5</i></div><div class="c ok"><b>J</b><i>+3</i></div><div class="c ok"><b>V</b><i>+6</i></div><div class="c none"><b>S</b><i>·</i></div><div class="c none"><b>D</b><i>·</i></div>
+                </div>
+                <p class="pfoot">Los martes nunca empiezas antes de las 9:30 · se siguió <b>19 de 25</b> veces</p>
+                <p class="ask">Los martes, ¿lo <b>quitamos</b>?</p>
+                <div class="acts"><span class="btn vio sm">Quitar el martes</span><span class="btn sm">Dejarlo</span></div>
+              </div>
+
+              <div class="pat">
+                <div class="ph"><span class="ic" style="background:rgba(2,132,199,.14)">📖</span><div><div class="nm">Leer un rato · noche</div><div class="meta">Todos los días · 21:30 · 30 min</div></div></div>
+                <div class="plines">
+                  <div class="pline"><span class="pl">Cuando sale</span><b>20:40</b><span class="tag late">antes de su hora</span></div>
+                  <div class="pline"><span class="pl">Suele llevarte</span><b>25 min</b><span class="tag done">como lo diste</span></div>
+                </div>
+                <div class="dow">
+                  <div class="c none"><b>L</b><i>—</i></div><div class="c ok"><b>M</b><i>−50</i></div><div class="c none"><b>X</b><i>—</i></div><div class="c ok"><b>J</b><i>−45</i></div><div class="c none"><b>V</b><i>—</i></div><div class="c ok"><b>S</b><i>−55</i></div><div class="c none"><b>D</b><i>—</i></div>
+                </div>
+                <p class="pfoot">Se siguió <b>9 de 35</b> veces · cuando sí, siempre antes de las 21:00</p>
+                <p class="ask">¿Lo movemos a las <b>20:30</b>?</p>
+                <div class="acts"><span class="btn vio sm">Moverlo a las 20:30</span><span class="btn sm">Dejarlo</span></div>
+              </div>
+
+              <div class="pat">
+                <div class="ph"><span class="ic" style="background:rgba(2,132,199,.14)">🚿</span><div><div class="nm">Bañarme</div><div class="meta">Todos los días · 7:00 · 15 min</div></div></div>
+                <div class="plines">
+                  <div class="pline"><span class="pl">Sueles empezar</span><b>7:03</b><span class="tag done">a su hora</span></div>
+                  <div class="pline"><span class="pl">Suele llevarte</span><b>14 min</b><span class="tag done">como lo diste</span></div>
+                </div>
+                <div class="dow">
+                  <div class="c ok"><b>L</b><i>+2</i></div><div class="c ok"><b>M</b><i>+6</i></div><div class="c ok"><b>X</b><i>+1</i></div><div class="c ok"><b>J</b><i>+3</i></div><div class="c ok"><b>V</b><i>+4</i></div><div class="c ok"><b>S</b><i>+2</i></div><div class="c ok"><b>D</b><i>+5</i></div>
+                </div>
+                <p class="pfoot">Se siguió <b>33 de 35</b> veces</p>
+                <p class="okline">Esto pasa como lo planeaste. Nada que proponer.</p>
+              </div>
+
+              <div class="pat">
+                <div class="ph"><span class="ic" style="background:rgba(245,158,11,.16)">🛒</span><div><div class="nm">Compra de la semana</div><div class="meta">Sin hora fija · desde el cajón</div></div></div>
+                <div class="plines">
+                  <div class="pline"><span class="pl">Sueles ponerla</span><b>domingo</b><span class="tag soft">4 de 5 veces</span></div>
+                  <div class="pline"><span class="pl">Suele llevarte</span><b>55 min</b><span class="tag soft">le das 1h</span></div>
+                </div>
+                <div class="dow">
+                  <div class="c none"><b>L</b><i>·</i></div><div class="c none"><b>M</b><i>·</i></div><div class="c none"><b>X</b><i>·</i></div><div class="c none"><b>J</b><i>·</i></div><div class="c none"><b>V</b><i>·</i></div><div class="c late"><b>S</b><i>1</i></div><div class="c ok"><b>D</b><i>4</i></div>
+                </div>
+                <p class="pfoot">Veces que la pusiste en cada día · 5 semanas</p>
+                <p class="ask">¿La ponemos fija los <b>domingos a las 10:30</b>?</p>
+                <div class="acts"><span class="btn vio sm">Ponerla los domingos</span><span class="btn sm">Dejarlo</span></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="side">
+          <div class="panel">
+            <p class="ptitle">Sin contestar</p>
+            <p class="psub">Las sugerencias esperan aquí · no caduca ninguna y no cambian nada solas</p>
+
+            <div class="sugg">
+              <div class="st"><span class="ic" style="background:rgba(124,58,237,.14)">🧹</span><div><div class="nm">Organizar la casa</div><div class="meta">45 min planeados · 1h 10 reales</div></div></div>
+              <p class="sq">¿Le damos <b>1h 10</b> en tu plantilla?</p>
+              <div class="acts"><span class="btn vio sm">Ponerlo en 1h 10</span><span class="btn sm">Dejarlo</span></div>
+            </div>
+
+            <div class="sugg">
+              <div class="st"><span class="ic" style="background:rgba(245,158,11,.16)">🐕</span><div><div class="nm">Pasear · tarde</div><div class="meta">19:00 planeado · 19:28 real</div></div></div>
+              <p class="sq">¿Lo movemos a las <b>19:30</b>?</p>
+              <div class="acts"><span class="btn vio sm">Moverlo a las 19:30</span><span class="btn sm">Dejarlo</span></div>
+            </div>
+
+            <div class="sugg">
+              <div class="st"><span class="ic" style="background:rgba(2,132,199,.14)">📖</span><div><div class="nm">Leer un rato</div><div class="meta">21:30 · llega 9 de 35 noches</div></div></div>
+              <p class="sq">¿Lo movemos a las <b>20:30</b>?</p>
+              <div class="acts"><span class="btn vio sm">Moverlo a las 20:30</span><span class="btn sm">Dejarlo</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <p class="ptitle">Contestadas</p>
+            <p class="psub">Lo que ya decidiste · se puede volver sobre ello cuando quieras</p>
+            <p class="fromline">🍳 <b>Desayunar con calma</b> · «Dejarlo» el 7 de septiembre. Vuelve a aparecer el <b>5 de octubre</b> si el patrón sigue igual.</p>
+            <p class="fromline">🥗 <b>Cocinar y almorzar</b> · pasó de 45 min a <b>1h</b> el 30 de agosto. Desde entonces va calcado.</p>
+          </div>
+
+          <div class="panel">
+            <p class="ptitle">De dónde sale todo esto</p>
+            <p class="psub">Sin nada nuevo que guardar</p>
+            <p class="fromline">De <b>tu plan y tu registro</b> de las últimas 6 semanas, con las consultas que ya existen. Se calcula <b>en tu dispositivo</b>, cada vez que abres.</p>
+            <p class="fromline">Lo único que se guarda es <b>tu respuesta</b> a cada sugerencia, para no repetírtela.</p>
+            <p class="fromline">Nada de esto <b>cambia tu plantilla ni tu plan por su cuenta</b>: hace falta que toques el botón que dice el número.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <p class="note"><b>E · Escritorio.</b> Lo que en el móvil son tres pantallazos seguidos, aquí cabe a la vez: <b>adherencia arriba</b> (frase, semanas, días de la semana), <b>los patrones en rejilla</b> debajo —donde se ve de golpe que la mayoría de tarjetas no proponen nada—, y el <b>lateral con las sugerencias sin contestar</b>, que es la única lista de «cosas por decidir» del módulo. Debajo, las <b>contestadas</b>, con la fecha en la que vuelven a aparecer si el patrón sigue: nada desaparece a escondidas. Y el último panel dice en tres líneas <b>de dónde sale todo</b> y qué se guarda, porque un sistema que «entiende» tiene que ser el primero en explicarse.</p>
+
+  <p class="caption">F · Cuando todavía no hay datos suficientes</p>
+  <div class="row3">
+    <div class="moment">
+      <div class="mtitle">F · Con menos de dos semanas<small>Se dice lo que ya se sabe, aunque sea una cosa — y cuándo habrá más</small></div>
+      <div class="phone short"><div class="screen">
+        <div class="aurora"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
+        <div class="z">
+          <div class="mbar"><span class="ring"></span><span class="brand">Xavi</span><div class="mods"><span class="mod">Hábitos</span><span class="mod on">Vida</span></div><span class="avatar">A</span></div>
+          <div class="mpills"><span class="pill">Hoy</span><span class="pill">Plantilla</span><span class="pill on">Revisión</span><span class="pill">Activid…</span></div>
+          <div class="body">
+
+            <div><h2>Lo que se repite</h2><p class="sub">Llevas 9 días con plan</p></div>
+            <div class="segs"><span class="seg">Un día</span><span class="seg">La semana</span><span class="seg on">Lo que se repite</span></div>
+
+            <div class="empty" style="margin-top:11px">
+              <p class="eh">Con 9 días ya se puede decir una cosa</p>
+              <p>El resto necesita más semanas tuyas. Aparece solo, sin que tengas que hacer nada distinto.</p>
+            </div>
+
+            <div class="seclbl">Lo que ya se sabe <span>1 cosa</span></div>
+            <div class="pat">
+              <div class="ph"><span class="ic" style="background:rgba(124,58,237,.14)">🧹</span>
+                <div><div class="nm">Organizar la casa</div><div class="meta">En tu plantilla: <b>L · X · V · 9:00 · 45 min</b></div></div>
+              </div>
+              <div class="plines">
+                <div class="pline"><span class="pl">Suele llevarte</span><b>1h 07</b><span class="tag over">+22 min</span></div>
+              </div>
+              <p class="pfoot">Las <b>4 veces</b> que la planeaste te llevó más de 45 min · aún no da para hablar de días de la semana</p>
+              <p class="ask">¿Le damos <b>1h 05</b> en tu plantilla?</p>
+              <div class="acts"><span class="btn vio sm">Ponerlo en 1h 05</span><span class="btn sm">Dejarlo</span></div>
+            </div>
+
+            <div class="seclbl">Lo que llega después</div>
+
+            <div class="waitrow">
+              <div>
+                <div class="wt">Adherencia semana a semana</div>
+                <div class="wm">A partir de <b>2 semanas</b> completas · te falta <b>1</b>, la del 22 al 28 de septiembre.</div>
+                <div class="dots"><i class="f"></i><i></i></div>
+              </div>
+            </div>
+
+            <div class="waitrow">
+              <div>
+                <div class="wt">Patrones por día de la semana</div>
+                <div class="wm">A partir de <b>3 semanas</b> · llevas 9 días de 21.</div>
+                <div class="dots"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+            </div>
+
+            <div class="waitrow">
+              <div>
+                <div class="wt">Avisos al planear</div>
+                <div class="wm">Ya sale <b>uno</b>: el de «Organizar la casa» aparecerá el próximo lunes cuando armes el día.</div>
+              </div>
+            </div>
+
+            <p class="pickline">Esto no depende de que planees más ni mejor: sale de los días que vives. Sigue como quieras y se va llenando solo.</p>
+
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div style="flex:1;min-width:280px">
+      <p class="note" style="margin-top:0"><b>F · Sin datos suficientes.</b> Lo importante aquí es lo que <b>no</b> hay: ni una pantalla vacía que diga «vuelve en tres semanas», ni una barra a cero, ni una sola frase que empuje a planear más. Con 9 días ya hay <b>una cosa útil</b> —una actividad planeada 4 veces, que es el umbral— y sale entera, con su sugerencia y sus dos salidas.</p>
+      <p class="note">Debajo, <b>lo que llega después</b>, con el umbral dicho en claro y cuánto falta: <i>2 semanas para la adherencia, te falta 1</i>; <i>3 semanas para los patrones por día, llevas 9 de 21</i>. Los puntitos son el contador, no una meta. Y la última línea cierra el asunto: <b>esto sale de los días que vives</b>, no de portarse de una forma u otra.</p>
+      <p class="note">La misma regla vale dentro de cada tarjeta: una actividad con 2 apariciones no enseña un promedio de 2 datos disfrazado de patrón — dice <i>«llevas 2 de 4»</i> y espera.</p>
+    </div>
+  </div>
+
+  <p class="note"><b>Lo que esta pantalla decide.</b> (1) <b>Los patrones viven dentro de Revisión</b>, como tercera sección «Lo que se repite» junto a «Un día» y «La semana». No hay pestaña nueva en la barra de Vida. (2) <b>Umbrales mínimos de datos, dichos siempre en voz alta</b>: una actividad habla con <b>4 apariciones</b> en el plan; un día de la semana, con <b>3 semanas</b>; la adherencia, con <b>2 semanas</b>, y su tendencia con <b>3</b>. Por debajo del umbral se dice cuánto falta y no se insinúa nada. (3) Las semanas con <b>menos de 3 días planeados no entran</b> en la adherencia, para que un viaje no arrastre la línea, y la semana en curso cuenta solo hasta hoy. (4) <b>Dos avisos como mucho por día</b> al planear, y nunca dos del mismo bloque: se eligen por número de repeticiones, con un desfase de más de 10 min, y entre los que aún no se han contestado. (5) Una sugerencia contestada con <b>«Dejarlo» no vuelve en 4 semanas</b>, y cuando vuelve lo hace con la fecha a la vista en «Contestadas»; si el patrón se hace más grande, vuelve con el número nuevo. (6) <b>Ningún aviso cambia nada por su cuenta</b>: la plantilla y el plan solo se mueven si se toca el botón que lleva el número escrito. Un aviso ignorado se queda quieto. (7) <b>Todo aviso es una pregunta con dos salidas</b>, y la segunda está siempre escrita («Dejarlo», «Así está bien»). Una tarjeta cuyo patrón está bien <b>no propone nada</b> y lo dice. (8) Los datos también aparecen <b>sin pedir nada</b>: la duración que sueles tardar en los chips del hueco, y una línea de confirmación bajo «Cuánto» en la plantilla — así el aviso no se lee como señal de alarma. (9) <b>Se deriva todo en cliente</b>, de `activityDayPlan` y `activityFollowUpsInDates` de las <b>últimas 6 semanas</b>, con las consultas que ya existen: <b>nada de backend</b>. Lo único que se guarda es la respuesta a cada sugerencia. (10) El <b>vocabulario es el de Hoy y el de la revisión</b> —<i>calcado · +N min · empezó +N · movido · no hecho · sin dato</i>— y las cifras van en <b>fracción</b> («se siguió 13 de 15 veces»), con el porcentaje en pequeño y nunca solo. (11) La plantilla tiene <b>una hora por ítem</b>: cuando el patrón es de un solo día, lo único que se propone es <b>quitar ese día</b>. (12) Lo que el cliente <b>no</b> puede hacer queda dicho y no se disimula: recordar estas respuestas entre dispositivos, y cualquier historia más larga que las 6 semanas que caben.</p>
+
+  <p class="note"><b>Para saber si estamos alineados:</b> (a) ¿los <b>patrones viven en Revisión</b> como tercera sección, como aquí, o quieres una <b>pestaña propia</b> en la barra de Vida? (b) ¿cuántas semanas hacen falta para que el sistema hable — <b>3</b> como aquí, o prefieres que empiece a decir cosas desde la <b>segunda</b>, aun sabiendo que se equivocará más? (c) una sugerencia contestada con «Dejarlo», ¿<b>vuelve a las 4 semanas</b> si el patrón sigue, o <b>no vuelve nunca</b> hasta que tú entres a mirar? (d) los avisos en Hoy, ¿<b>pegados al bloque</b> como aquí, o solo dentro del <b>hueco</b> al poner algo, para no tocar lo que ya está armado? (e) cuando el patrón es de <b>un solo día</b> («los martes»), ¿te vale que la única salida sea <b>quitar ese día</b>, o quieres que la plantilla aprenda <b>horas por día</b> (y eso sí toca el API)?</p>
+
+</div>
+</body>
+</html>

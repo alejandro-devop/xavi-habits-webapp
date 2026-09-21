@@ -669,6 +669,9 @@ export function VidaHoyPage() {
             executed={execution.budget}
             guidance={guidance}
             closingLine={closingLine}
+            // La vía a la revisión de **este** día, solo cuando el día se
+            // cierra (FEAT-006, criterio 25).
+            reviewTo={closingLine ? vidaPaths.revisionForDate(date) : null}
             nowLabel={nowLabel}
           />
 

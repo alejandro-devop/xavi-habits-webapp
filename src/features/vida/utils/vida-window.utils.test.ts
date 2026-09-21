@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import {
+  REVIEW_LOOKBACK_DAYS,
   buildDayStrip,
   clampToPlanningWindow,
+  clampToReviewWindow,
   describePlanningWindowEdge,
+  describeReviewWindowEdge,
   getPlanningWindow,
+  getReviewWindow,
   isEditableDate,
   isInPlanningWindow,
   planItemsToSetItems,
@@ -200,5 +204,58 @@ describe('describePlanningWindowEdge', () => {
     expect(describePlanningWindowEdge(FRIDAY)).toBe(
       'Se planea esta semana y la que viene: hasta el domingo 27.',
     )
+  })
+})
+
+/**
+ * **La ventana de mirar atrás** (FEAT-006, A3). Existe porque la de planear no
+ * sirve para revisar: un lunes, «ayer» es domingo y la de planear lo recorta
+ * —la revisión abriría el lunes en vez del domingo—.
+ */
+describe('getReviewWindow y clampToReviewWindow', () => {
+  it('arranca en el **lunes** de la semana de hoy − 14 y llega hasta donde llega planear', () => {
+    expect(REVIEW_LOOKBACK_DAYS).toBe(14)
+    expect(getReviewWindow(FRIDAY)).toEqual({ from: '2026-08-31', to: '2026-09-27' })
+  })
+
+  it('**el domingo anterior es alcanzable un lunes**, que es el defecto que corrige', () => {
+    const monday = '2026-09-21'
+    const sunday = '2026-09-20'
+    expect(clampToPlanningWindow(sunday, monday)).toBe('2026-09-21')
+    expect(clampToReviewWindow(sunday, monday)).toBe(sunday)
+  })
+
+  it('deja ver un día futuro —el criterio 4 lo necesita— y recorta lo que se sale', () => {
+    expect(clampToReviewWindow('2026-09-25', FRIDAY)).toBe('2026-09-25')
+    expect(clampToReviewWindow('2026-10-30', FRIDAY)).toBe('2026-09-27')
+    expect(clampToReviewWindow('2026-01-01', FRIDAY)).toBe('2026-08-31')
+    expect(clampToReviewWindow(null, FRIDAY)).toBe(FRIDAY)
+    expect(clampToReviewWindow('lo que sea', FRIDAY)).toBe(FRIDAY)
+  })
+
+  it('el borde se dice con palabras, no con una flecha muerta', () => {
+    expect(describeReviewWindowEdge(FRIDAY)).toBe('Se miran los días ya vividos: desde el lunes 31.')
+  })
+})
+
+describe('buildDayStrip con la ventana de la revisión (A3)', () => {
+  it('sin tercer parámetro se comporta **exactamente** como antes', () => {
+    expect(buildDayStrip(FRIDAY, FRIDAY)).toEqual(
+      buildDayStrip(FRIDAY, FRIDAY, getPlanningWindow(FRIDAY)),
+    )
+  })
+
+  it('con la ventana de revisión, un lunes la tira alcanza el domingo de atrás', () => {
+    const monday = '2026-09-21'
+    const days = buildDayStrip(monday, monday, getReviewWindow(monday)).map((day) => day.date)
+    expect(days).toContain('2026-09-20')
+    expect(days).toHaveLength(7)
+  })
+
+  it('mirando un día viejo, ningún día pintado se sale de la ventana', () => {
+    const window = getReviewWindow(FRIDAY)
+    for (const day of buildDayStrip('2026-09-01', FRIDAY, window)) {
+      expect(day.date >= window.from && day.date <= window.to).toBe(true)
+    }
   })
 })

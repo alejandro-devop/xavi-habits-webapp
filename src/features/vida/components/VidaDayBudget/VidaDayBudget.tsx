@@ -36,6 +36,15 @@ type VidaDayBudgetProps = {
    * cosa ni la otra—.
    */
   closingLine?: string | null
+  /**
+   * **«Ver cómo fue el día»** (FEAT-006, criterio 25): la vía a la revisión de
+   * ese día, y **lo único** que cambia en Hoy en esa tajada.
+   *
+   * Solo se pinta junto a la frase de cierre —el momento en que el día se
+   * cierra, que es cuando hay algo que revisar—: sin `closingLine` no hay
+   * enlace, así que un día en marcha sigue exactamente como estaba.
+   */
+  reviewTo?: string | null
 }
 
 /**
@@ -76,6 +85,7 @@ export function VidaDayBudget({
   nowLabel,
   executed = null,
   closingLine = null,
+  reviewTo = null,
 }: VidaDayBudgetProps) {
   const dayMinutes = Math.max(1, budget.dayMinutes)
   // Las dos formas de D5 solo aparecen cuando hay algo registrado: con la
@@ -181,7 +191,17 @@ export function VidaDayBudget({
           los huecos que quedan por delante y en un día terminado no queda
           ninguno (criterio 51). Una sola línea, nunca las dos. */}
       {closingLine ? (
-        <p className={styles.closing}>{closingLine}</p>
+        <p className={styles.closing}>
+          {closingLine}
+          {reviewTo ? (
+            <>
+              {' '}
+              <Button variant="ghost" size="sm" to={reviewTo}>
+                Ver cómo fue el día
+              </Button>
+            </>
+          ) : null}
+        </p>
       ) : (
         <p className={styles.guidance}>{guidance}</p>
       )}

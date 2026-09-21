@@ -70,7 +70,7 @@ backend: no se adivinan.
 /app/vida                  → redirige a /app/vida/hoy
 /app/vida/hoy              Vida · Hoy          (planear y vivir el día; ?d=YYYY-MM-DD)
 /app/vida/plantilla        Vida · Plantilla    (la semana tipo: por día, hoja del ítem, añadir, semana entera y copiar)
-/app/vida/revision         Vida · Revisión     (cascarón hasta FEAT-006)
+/app/vida/revision         Vida · Revisión     (el día contado: historia, cifra «N de M», plan frente a real; ?d=YYYY-MM-DD)
 /app/vida/actividades      Vida · Actividades  (cascarón hasta F1)
 ```
 

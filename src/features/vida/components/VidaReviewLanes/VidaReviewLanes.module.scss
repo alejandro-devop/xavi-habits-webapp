@@ -1,0 +1,146 @@
+/* Los dos carriles: hora · plan · real. Una rejilla de tres columnas, no una
+   tabla: cada fila es un borde de tiempo, y las horas se leen en columna. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.head,
+.row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: start;
+}
+
+.head {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.headTime {
+  display: block;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.time {
+  padding-top: 0.45rem;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+
+.lane {
+  min-width: 0;
+}
+
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.9rem;
+  background: var(--aura-glass-1);
+}
+
+/* El movido deja **sombra** en su hora planeada: se ve que el plan estaba ahí
+   y que lo real pasó más tarde, sin contarlo dos veces (criterio 17). */
+.card[data-shadow] {
+  border-style: dashed;
+  opacity: 0.72;
+}
+
+.card[data-real='off-plan'] {
+  border-style: dashed;
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.name {
+  flex: 1 1 5rem;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tag {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.tag[data-kind='on-plan'] {
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary-strong, var(--color-primary));
+}
+
+.movedTo,
+.missing {
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.reason {
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* El tramo sin registrar **ocupa su sitio**: el alto crece con sus minutos
+   (0,55 px por minuto), con un suelo para que se lea y un techo para que dos
+   horas no se coman la pantalla. */
+.noData {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  min-height: clamp(2rem, calc(var(--vida-no-data-minutes, 30) * 0.55px), 9rem);
+  padding: 0.35rem 0.6rem;
+  border: 1px dashed color-mix(in srgb, var(--color-text) 18%, transparent);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}

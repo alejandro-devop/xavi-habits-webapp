@@ -68,8 +68,8 @@ backend: no se adivinan.
 /app/habits/:id/edit  /app/habits/:id/week  /app/habits/:id/calendar
 /app/settings              Ajustes de cuenta (menú de la ficha de usuario)
 /app/vida                  → redirige a /app/vida/hoy
-/app/vida/hoy              Vida · Hoy          (cascarón hasta F2/F3)
-/app/vida/plantilla        Vida · Plantilla    (cascarón hasta F4)
+/app/vida/hoy              Vida · Hoy          (planear y vivir el día; ?d=YYYY-MM-DD)
+/app/vida/plantilla        Vida · Plantilla    (cascarón hasta FEAT-005)
 /app/vida/revision         Vida · Revisión     (cascarón hasta F5)
 /app/vida/actividades      Vida · Actividades  (cascarón hasta F1)
 ```
@@ -100,8 +100,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 1101** (`SearchSelect` ×2, preexistentes) |
-| Paquete | `pnpm build` | chunk inicial **953,9 kB** + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 1153** (`SearchSelect` ×2, preexistentes) |
+| Paquete | `pnpm build` | chunk inicial **964,7 kB** + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 Cerrar cada tajada con `pnpm build`, no solo con `pnpm typecheck`: son el mismo `tsc -b`, pero el estado incremental de `typecheck` dejó pasar una vez un `TS2783` que el build sí cazó (FEAT-003, tajada 3).
 

@@ -1,9 +1,11 @@
 import { useState, type CSSProperties } from 'react'
+import { Link } from 'react-router'
 import { CreateVidaCategoryStep } from '@/features/vida/components/CreateVidaCategoryStep'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
 import { useCreateActivityMutation, useUpdateActivityMutation } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import { useSaveVidaItemForActivity } from '@/features/vida/hooks/useSaveVidaItemForActivity'
+import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { ActivityFollowUpActivityRef } from '@/features/vida/types/activity-followup.types'
 import type { Activity } from '@/features/vida/types/activity.types'
 import type { VidaDayOfWeek, VidaItem } from '@/features/vida/types/vida-item.types'
@@ -350,7 +352,16 @@ export function VidaActivitySheet({
           </div>
         ) : null}
 
-        {multipleItemsNote ? <p className={styles.hint}>{multipleItemsNote}</p> : null}
+        {/* Criterio 35: la línea **con su enlace**, para que cambiar las dos
+            horas esté a un toque desde donde se ve el problema. */}
+        {multipleItemsNote ? (
+          <p className={styles.hint}>
+            {multipleItemsNote}{' '}
+            <Link className={styles.hintLink} to={vidaPaths.plantilla}>
+              Ir a Plantilla
+            </Link>
+          </p>
+        ) : null}
 
         {lockActivity ? null : (
         <FormField id="vida-activity-name" label="Cómo la llamas" error={nameError}>

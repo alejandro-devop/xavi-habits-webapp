@@ -5,7 +5,7 @@ status: building
 architect: yes    # pantalla nueva sin hermana (la cuadrícula semanal por horas), y hay que generalizar la hoja del catálogo de «el ítem de esta actividad» a «este ítem», que es código compartido
 area: features/vida
 requested: 2026-09-20
-updated: 2026-09-20   # tajada 2 `accepted`: la hoja del ítem (el criterio 27 queda del usuario)
+updated: 2026-09-20   # tajada 3 `accepted`: «Añadir a mi Vida» y el primer minuto (el 39 queda del usuario)
 ---
 
 # FEAT-005 — La plantilla Vida — tu semana tipo, con hora y duración por ítem
@@ -321,7 +321,7 @@ arrastrar y soltar** (`docs/vida/PLAN.md`, decisiones 3, 5 y 13).
 |---|---|---|
 | 1 | **La plantilla se ve.** `/app/vida/plantilla` deja de ser un cascarón: pestañas de día con su cuenta y su punto, el resumen («3h 40 puestas de 16h 30») con la barra del día, la agenda del día **ordenada por hora** con sus tarjetas, el cajón «Sin hora» con su explicación, los desactivados en trazo suave, y los estados vacío · cargando · error · texto largo · 375 px · oscuro. **Solo lectura.** Ya es útil sola: es la primera vez que el usuario ve su día tipo entero y descubre qué tiene sin hora. | in-review |
 | 2 | **La plantilla se edita desde aquí.** La hoja del ítem —la misma del catálogo— abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de cómo queda en Hoy, «Quitar de la plantilla» (con la salida de quitarlo de un solo día) y «Activar» de un toque. Arreglar la plantilla deja de exigir dar la vuelta por el catálogo, y Hoy lo ve al instante. | in-review |
-| 3 | **Añadir a mi Vida, y el primer minuto.** El «+» de móvil y el panel de escritorio: buscar una actividad del catálogo y ponerle días, hora y duración **sin salir de la pantalla**, incluida una **segunda hora** para algo que ya está; y la plantilla vacía con los **seis puntos de partida con hora**. Cierra el criterio de la fase (39). | pending |
+| 3 | **Añadir a mi Vida, y el primer minuto.** El «+» de móvil y el panel de escritorio: buscar una actividad del catálogo y ponerle días, hora y duración **sin salir de la pantalla**, incluida una **segunda hora** para algo que ya está; y la plantilla vacía con los **seis puntos de partida con hora**. Cierra el criterio de la fase (39). | in-review |
 | 4 | **La semana entera y copiar un día.** Los siete días a la vez con cada bloque a su hora, los sin hora debajo de su columna, la leyenda, el total de la semana, y **«Copiar este día a otros»** — que añade lo que falta, no pisa nada y lo cuenta. Es el atajo que sustituye al arrastrar. | pending |
 
 **Por qué este orden:** la 1 es lectura pura sobre datos que **ya existen**
@@ -1040,7 +1040,7 @@ que recortar.
 |---|---|---|---|---|
 | 1 | **La plantilla se ve.** Pestañas de día con cuenta y punto, resumen con barra, agenda del día ordenada por hora, cajón «Sin hora», desactivados en trazo suave, y los estados. Solo lectura. | **Crea:** `utils/vida-template.utils.ts` (+`.test.ts`), `components/VidaTemplateDayTabs/`, `components/VidaTemplateDaySummary/`, `components/VidaTemplateItemCard/`, `components/VidaTemplateNoTimeDrawer/`, `pages/VidaPlantillaPage.module.scss`, `pages/VidaPlantillaPage.test.tsx`. **Modifica:** `pages/VidaPlantillaPage.tsx` (reescritura del cascarón). | 1–15 (el 10, su mitad: el texto y la salida al catálogo; los seis puntos de partida son de la 3) | **accepted** (2026-09-20) |
 | 2 | **La plantilla se edita desde aquí.** La misma hoja, abierta **por ítem**: días, hora, duración, nota, interruptor, vista previa de Hoy, «Quitar de la plantilla» con la salida de un solo día, «Ponerle hora» y «Activar». | **Modifica:** `hooks/useSaveVidaItemForActivity.ts` (+ test), `components/VidaActivitySheet/VidaActivitySheet.tsx` (+ test), `hooks/useVidaItems.ts:95` (`onError`), `utils/vida-template.utils.ts`, `components/VidaTemplateItemCard/`, `pages/VidaPlantillaPage.tsx`. **Crea (si `useConfirmDialog` no admite dos salidas):** `components/VidaTemplateRemoveDialog/`. | 16–28 | **accepted** (2026-09-20; el 27 solo lo cierra el usuario, con la API) |
-| 3 | **Añadir a mi Vida, y el primer minuto.** Panel de escritorio y «+» de móvil: buscar, poner días/hora/duración y guardar sin salir; segunda hora para lo que ya está; y los seis puntos de partida **con hora**. | **Crea:** `components/VidaTemplateAddPanel/`. **Modifica:** `utils/vida-catalog.utils.ts` (mapa de *varios* ítems), `utils/vida-template.utils.ts`, `data/vida-starting-points.ts` (+ test), `hooks/useCreateStartingActivities.ts` (+ test), `components/VidaStartingPoints/VidaStartingPoints.tsx`, `components/VidaActivitySheet/VidaActivitySheet.tsx` (criterio 35), `pages/VidaActividadesPage.tsx` (cablea el aviso), `pages/VidaPlantillaPage.tsx`. | 29–41 (y el 39, el criterio de la fase) | pending |
+| 3 | **Añadir a mi Vida, y el primer minuto.** Panel de escritorio y «+» de móvil: buscar, poner días/hora/duración y guardar sin salir; segunda hora para lo que ya está; y los seis puntos de partida **con hora**. | **Crea:** `components/VidaTemplateAddPanel/`. **Modifica:** `utils/vida-catalog.utils.ts` (mapa de *varios* ítems), `utils/vida-template.utils.ts`, `data/vida-starting-points.ts` (+ test), `hooks/useCreateStartingActivities.ts` (+ test), `components/VidaStartingPoints/VidaStartingPoints.tsx`, `components/VidaActivitySheet/VidaActivitySheet.tsx` (criterio 35), `pages/VidaActividadesPage.tsx` (cablea el aviso), `pages/VidaPlantillaPage.tsx`. | 29–41 (y el 39, el criterio de la fase) | **accepted** (2026-09-20; el 39 lo cierra el usuario) |
 | 4 | **La semana entera y copiar un día.** Siete columnas con cada bloque a su hora y su alto, los sin hora debajo, leyenda, total de la semana, y «Copiar este día a otros» que añade lo que falta y no pisa nada. | **Crea:** `components/VidaWeekGrid/`, `components/VidaTemplateCopyDay/`, `hooks/useCopyTemplateDay.ts` (+ test). **Modifica:** `utils/vida-template.utils.ts` (+ test), `pages/VidaPlantillaPage.tsx`. | 42–54 | pending |
 
 El criterio **55** lo cierra el usuario, con la API despierta y la sesión
@@ -1445,6 +1445,171 @@ afirma lo que **sigue valiendo**: que no se pinta nada de las tajadas 3 y 4 —n
 11. En el **móvil de verdad** y en **tema oscuro**: abre la hoja y comprueba que
     llegas a «Guardar» sin pelearte con el desplazamiento.
 
+### Tajada 3 — «Añadir a mi Vida» y el primer minuto (criterios 29–41)
+
+**Resumen para quien revise, en tres líneas:**
+
+1. **La plantilla ya se llena desde la plantilla.** En escritorio, el panel
+   **«Añadir a mi Vida»** al lado (aside pegajoso); en móvil, **el «+»
+   flotante** abre **el mismo panel** dentro de la hoja inferior. Se busca en el
+   catálogo sin tildes, se ve **en qué estado está cada actividad**, y al elegir
+   una se le ponen **días, hora y cuánto en el mismo panel** — incluida una
+   **segunda hora** para algo que ya está (dos `VidaItem`). Y con la plantilla
+   vacía, **el primer minuto**: los **seis puntos de partida con hora**, los días
+   de una vez y **«Ponerlas en mi plantilla»**.
+2. **Ni un documento GraphQL, ni una clave de caché, ni una ruta, ni un
+   `localStorage`, ni un icono a pelo.** Se guarda por
+   `useSaveVidaItemForActivity` con **`targetItem: null`** (A3) y los puntos de
+   partida por `api/` como ya hacía `useCreateStartingActivities`; la
+   invalidación sale de `invalidateVidaItemQueries`, que ya existía.
+3. **Lo que más probable haya roto:** `useCreateStartingActivities` **cambió de
+   contrato y de comportamiento** —`mutate({ points, schedule? })` en vez de
+   `mutate(points)`, y ahora **reutiliza la actividad que ya exista por nombre
+   normalizado** (criterio 37)—, y ese hook **lo estrena el catálogo de
+   FEAT-002**. Si algo se rompe en el primer minuto del catálogo, es ahí. Y
+   detrás de eso: **«Cocinar» pasó a llamarse «Cocinar y almorzar»** en los datos
+   de los puntos de partida, porque el criterio 36 y el render lo nombran así.
+
+**Archivos.** Creado: `components/VidaTemplateAddPanel/` (`VidaTemplateAddPanel.tsx`,
+`VidaTemplateAddSheet.tsx`, `.module.scss`, `index.ts`). Modificados:
+`utils/vida-catalog.utils.ts` (+ `buildVidaItemsByActivityAll`),
+`utils/vida-template.utils.ts` (+ su test), `data/vida-starting-points.ts`
+(+ su test), `hooks/useCreateStartingActivities.ts` (+ su test),
+`components/VidaStartingPoints/VidaStartingPoints.tsx`, `.module.scss` y su test,
+`components/VidaActivitySheet/VidaActivitySheet.tsx` y `.module.scss`,
+`pages/VidaActividadesPage.tsx`, `pages/VidaPlantillaPage.tsx`, `.module.scss` y
+su test. Es la tabla del arquitecto, más los dos `.module.scss` y los tests.
+**Nada fuera de `src/features/vida/`.**
+
+**Criterio por criterio, con la evidencia:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 29 | cumplido | En la pantalla hay **las dos puertas y ninguna navega**: el `<button>` flotante «+» (`aria-label="Añadir a mi Vida"`, **sin `href`**, comprobado en el test) y el aside con el panel; la media query de `VidaPlantillaPage.module.scss` enseña el aside a partir de **60rem** y **apaga el «+»** ahí, para que no haya dos puertas a lo mismo en la misma vista. `vidaPaths.actividades` **no aparece** en ninguna de las dos rutas de añadir. |
+| 30 | cumplido | El panel usa **`filterActivitiesBySearch`** tal cual (no hay un quinto normalizador): escribir **«banar»** deja «Bañarme» y quita «Pasear a las mascotas» (test, midiendo **dentro del panel**, porque el paseo también está en la agenda). Agrupa con **`groupActivitiesByCategory`** y pinta el icono del grupo; las **archivadas** quedan fuera por `excludeArchivedActivities` (test: «Salir a correr», `cancelled`, no aparece). |
+| 31 | cumplido | Cada fila dice su estado: **«aún no está»** con **«+ Añadir»**, o **«en tu plantilla · V · 7:30»** —los días en corto y la hora, o «sin hora»— con **«Ponerle hora»** cuando lo que le falta es la hora (y entonces abre **la misma hoja** del ítem, la de la tajada 2). Con varias horas añade «· N horas». Los dos textos, en el test. |
+| 32 | cumplido | Al elegir una, el panel **cambia a su mini-formulario** —«Qué días» (arranca en **el día que se está viendo**), «A qué hora» (`input type="time"`) y `VidaDurationPills`— y guarda con **«Añadir a mi Vida»**. Al guardar, el panel vuelve a la lista y **la pantalla se repinta de la consulta**, que es lo que ya sostenía el criterio 24. **Sin salir de la pantalla y sin recargar**: ni una navegación en todo el camino. |
+| 33 | cumplido | `whatIsAt` + `describeFitAt`, puros y con 6 casos: a las 19:00 **«Cabe: a las 19:00 no tienes nada»**; a las 7:45, **«Cabe: a las 7:45 ya tienes Pasear a las mascotas»** — y **se puede guardar igual**, no hay ni una rama que bloquee por solape (medido también en el navegador con el formulario abierto). Un ítem **sin duración** ocupa solo su minuto: no se le inventan 30 para decir que estorba. |
+| 34 | cumplido | Con «Pasear a las mascotas» ya a las 7:30, el botón dice **«+ Otra hora»** y, antes de guardar, la línea **«Pasear a las mascotas ya está a las 7:30 · esto le añade otra hora.»** (`describeExistingHours`, con sus casos de una, dos y tres horas). Y lo que sale al API es un **`create`**: el test comprueba que `vidaItemCreate` se llama con `{ activityId, days, startTime, durationMinutes }`, que **`vidaItemUpdate` no se llama** y que el cuerpo **no contiene ninguna clave `id`** — es `targetItem: null` (A3) haciendo exactamente lo que el arquitecto escribió. |
+| 35 | cumplido, con una desviación de forma | La hoja **del catálogo** recibe ahora `multipleItemsNote` desde `VidaActividadesPage` con el mapa nuevo: **«Esta actividad tiene 2 horas en tu plantilla · las dos se cambian en Plantilla.»** (`describeMultipleItemsNote`, `null` con uno o ninguno, «3 horas · las 3…» con tres, «2 veces» cuando ninguna tiene hora). **`buildVidaItemsByActivity` y `findVidaItemForActivity` están sin tocar**, como manda el plan. *La desviación:* el enlace no puede ir dentro de un `string`, así que la hoja pinta la línea **y a su lado un enlace «Ir a Plantilla»**. |
+| 36 | cumplido | Con la plantilla vacía del todo, `VidaStartingPoints` con `schedule` pinta **los seis del render en orden de reloj** —7:00 Bañarme 15 min · 7:30 Pasear a las mascotas 40 min · 8:30 Desayunar con calma 30 min · 9:00 Organizar la casa 45 min · 13:00 Cocinar y almorzar 1 h · 21:30 Leer un rato 30 min—, **tres marcados** (los de la mañana), el selector de días **de lunes a viernes**, el contador **«3 elegidas · de lunes a viernes»**, el botón **«Ponerlas en mi plantilla»** y la línea **«Horas de partida · las ajustas en un toque después»**. Debajo, «Traer de tus actividades» y **la línea que quita presión**. Todo comprobado en test de datos, en test de pantalla y **en el navegador**. |
+| 37 | cumplido en lo que se puede medir sin API | El hook pide **el catálogo fresco** y busca por **`normalizeVidaText(title)`**: con un «bañarme» ya existente, `activityCreate` **solo se llama para la otra** y el punto cuenta como hecho igual (test). Una **archivada no se reutiliza** —sería poner algo que la plantilla no pinta— y se crea una nueva (test). Con `schedule`, cada punto crea su `VidaItem` con **días, hora y duración** (test sobre `createVidaItem`). **Lo que no puedo ver: que el API acepte todo eso de verdad.** |
+| 38 | cumplido | Si el ítem de un punto falla, el resultado trae `done: ['banarme','pasear']` y `failed: [{ name: 'Leer un rato', … }]`, el toast dice **«Pusimos 2 de 3; Leer un rato no se pudo.»** y **lo elegido no se pierde**: el componente desmarca **solo lo hecho** (por id de punto, no por título) y deja marcado lo que falló, con su `Alert` **«Algunas no se pudieron poner»** y el motivo. Volver a pulsar reintenta **solo eso**. |
+| 39 | **cumplido en el cableado; el recorrido real es del usuario** | Todo lo que hace falta para armar un día entero está **en la misma pantalla y sin navegar**: el primer minuto pone seis de golpe, el panel añade una a una y la hoja de la tajada 2 retoca. Ni un `Link` a `/app/vida/actividades` en el camino, salvo la salida explícita del catálogo vacío. **Que se pueda de verdad, de punta a punta con datos reales, solo lo cierra el usuario**: los agentes no entran a `/app/*`. |
+| 40 | cumplido | Los cuatro estados, distinguidos y con su test: **cargando** (esqueletos + «Cargando tus actividades…»), **error** («No pudimos cargar tus actividades» + «Reintentar», y **no dice «todavía no tienes actividades»**), **catálogo vacío** («Todavía no tienes actividades», con la salida a crearlas) y **sin resultados** («Nada con ese nombre. Prueba con otra palabra.»). |
+| 41 | cumplido, **medido en el navegador** | Arnés borrado, **375×812**, tema oscuro: `scrollWidth` **375 = clientWidth** y **cero elementos desbordando**, con la lista y **con el mini-formulario abierto**, incluso con un nombre de **50 caracteres**. Contraste en oscuro (compuesto sobre el fondo real, no sobre el token): el título **18,78:1**, la línea del criterio 34 y la del «Cabe» **9,94:1**, el contador y «Horas de partida» **5,5:1**, y lo peor de lo nuevo **5,01:1** — las píldoras de día y las filas **no elegidas**, que usan `--color-text-muted` sobre vidrio, el mismo tratamiento que ya tenían las píldoras de `VidaStartingPoints` desde FEAT-002. Pasa AA de texto normal, pero **es el número más bajo de esta tajada y va dicho**. |
+
+**Lo que no se puede cerrar desde aquí, y no lo disimulo:** **ninguna llamada
+real al API**. En particular, **el riesgo concentrado de esta tajada**: que el
+servidor acepte **dos `VidaItem` de la misma actividad**. El análisis del repo
+hermano dice que sí (no hay índice único por usuario+actividad) y en este repo
+nada asume lo contrario, pero **nunca se ha probado contra el servidor vivo** y
+por eso es **el primer paso del recorrido manual**. Tampoco he visto nunca
+`vidaItemCreate` responder desde esta pantalla, ni la deduplicación del criterio
+37 contra un catálogo real, ni Hoy releyendo la plantilla después de añadir.
+
+**Decisiones mías, fuera de lo que decía el plan, todas revertibles:**
+
+1. **`VidaStartingPoint` gana un tercer campo, `scheduleRecommended`.** El plan
+   decía dos (`startTime`, `durationMinutes`), pero el catálogo marca **seis** de
+   salida y el primer minuto de la plantilla marca **tres** (criterio 36). Va
+   explícito en los datos, y no «los tres primeros por hora», para que añadir un
+   punto más temprano no cambie el arranque sin que nadie lo pida.
+2. **«Cocinar» pasa a llamarse «Cocinar y almorzar».** Lo nombran así el criterio
+   36, el marco D y la agenda del marco A. **Es un cambio en datos de FEAT-002**:
+   el catálogo también lo enseñará así. Si se prefiere el nombre corto, es una
+   línea — pero entonces el criterio 36 deja de cumplirse al pie de la letra.
+3. **El resultado del hook crece a `{ created, reused, done, failed }`.** Con la
+   deduplicación, «creadas» dejó de ser la medida de «qué quedó hecho»: una
+   reutilizada cuenta igual. `done` va **por id de punto**, que es lo que el
+   componente necesita para desmarcar. Y el catálogo, cuando **todas ya
+   existían**, dice **«Ya las tenías en tu catálogo»** en vez de «Ya tienes 0
+   actividades».
+4. **La hora del mini-formulario arranca vacía**, no en las 18:00 del render.
+   Poner una hora por defecto sería inventarle un plan al usuario; en cuanto
+   escribe una, aparece la línea del criterio 33. Si se prefiere una sugerencia,
+   es una línea.
+5. **«Volver» dentro del mini-formulario** (vuelve a la lista sin guardar), con
+   el vocabulario de la casa: ni «cancelar» ni «descartar».
+6. **El enlace del criterio 35 va al lado de la línea, no dentro.**
+   `multipleItemsNote` es un `string` —así lo dejó la tajada 2— y meterle un
+   enlace dentro obligaría a partir la frase en dos props. La hoja pinta la línea
+   literal **y** un enlace «Ir a Plantilla».
+7. **En escritorio el «+» se apaga** (la media query). Con el panel al lado sería
+   una segunda puerta a lo mismo.
+8. **La frase «No hace falta llenarla entera. Empieza por tu mañana» la pone la
+   página**, no `VidaStartingPoints`: si no, se leía dos veces en la plantilla
+   vacía. En el catálogo el cartel sigue diciendo su frase de siempre.
+
+**Lo que descubrí y no estaba en el plan (y no toqué):**
+
+- **`useCreateStartingActivities` nunca miraba el catálogo**, así que el primer
+  minuto **del catálogo** podía crear un segundo «Bañarme». Queda arreglado, y es
+  el «efecto de rebote» que el propio arquitecto avisó: **es un cambio en algo
+  entregado**.
+- **El panel sin sesión diría «Todavía no tienes actividades»** si alguien lo
+  montara suelto: la consulta queda `idle` y no hay forma de distinguirlo del
+  vacío. Hoy **no pasa**, porque la página corta antes con su estado «Entra para
+  ver tu plantilla». Lo dejo dicho, no lo arreglo.
+- **`pnpm typecheck` volvió a dejar pasar lo que `pnpm build` cazó** (un
+  `ActivityPriority` en un test). Es exactamente la trampa que el
+  `ENVIRONMENT.md` describe; el build es el que manda.
+- **El servidor de dev del usuario arrastraba errores de HMR** de los archivos que
+  fui tocando (500 y «Failed to reload»). Se resolvió recargando la pestaña; si
+  vuelve a verse, es el servidor viejo, no el código.
+- Sin tocar: `findVidaItemForActivity`, `buildVidaItemsByActivity`,
+  `usableTemplateItems`, `vida-agenda.utils.ts`, `vida-build-day.utils.ts`,
+  `VidaDayBudget`, `VidaAgendaBlock`, `graphql/`, `api/`, `types/`, `routes/`,
+  `app-nav.config.ts`, `src/shared/ui/`.
+
+**Tres afirmaciones de tests anteriores quedaron derogadas, no borradas:** la de
+«no se pinta ni un botón de las tajadas 3 y 4» (ahora afirma solo lo de la
+tajada 4), la de que el día vacío ofrece **un enlace** al catálogo (ahora abre el
+panel **sin salir**) y la del mock de `VidaStartingPoints`, que pasó al contrato
+nuevo del hook. Ninguna afirmación de producto de FEAT-002 se debilitó: el cartel
+**sin `schedule`** sigue pintando los trece puntos, con «Crear las 6» y sin días.
+
+**La línea base, corrida entera al terminar:**
+
+| Qué | Antes (tajada 2) | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** (exit 0) |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos |
+| `pnpm test` | 2 fallos de 1230 | **2 fallos de 1259** (los dos de `SearchSelect`; **+29 tests**, 1 archivo rojo de 101) |
+| `pnpm build` | inicial 982,95 kB · `app-icons` 620,20 · `IconPicker` 4,64 | **exit 0**, inicial **994,33 kB** (+11,38 kB, **ninguno de iconos**), `app-icons` **620,20** e `IconPicker` **4,64** clavados; CSS 214,66 kB |
+
+`graphify update .`: **3380 nodos, 3918 aristas, 479 comunidades**.
+
+**El recorrido manual, para el usuario** (con la API despierta —Render tarda
+~1 min— y la sesión iniciada). **El primer paso es el que más importa: es lo
+único de esta tajada que nunca se ha probado contra el servidor.**
+
+1. En **Vida → Plantilla**, con una actividad que **ya esté** en tu plantilla:
+   ábrela en «Añadir a mi Vida» («**+ Otra hora**»), ponle **otra hora** y guarda.
+   **Tienen que quedar las dos** —la de siempre y la nueva— en su día. Si el API
+   se queja, para aquí y dímelo: es el riesgo de la tajada.
+2. Abre **la primera** y cámbiale la hora: la otra **no se tiene que mover**.
+3. Busca **«banar»** (sin tilde) y comprueba que encuentra «Bañarme»; busca algo
+   que no exista y lee **«Nada con ese nombre»**.
+4. Añade una que **no estaba**: días, hora y cuánto, **«Añadir a mi Vida»**.
+   Tiene que aparecer en el día sin recargar.
+5. Mira la línea **«Cabe: …»** con una hora ocupada y con una libre: tiene que
+   **decirlo y dejarte guardar igual**.
+6. En una actividad que **tenga dos horas**, entra en **`/app/vida/actividades`**
+   y ábrela: la hoja tiene que avisar **«tiene 2 horas en tu plantilla»** con el
+   enlace a Plantilla.
+7. En **móvil**: el **«+»** de abajo a la derecha abre el mismo panel; en
+   escritorio no está y el panel va al lado.
+8. **El primer minuto** (hace falta una cuenta con la plantilla vacía, o quitar
+   todo lo que haya): comprueba los **seis puntos con hora**, los **tres
+   marcados**, los días **de lunes a viernes** y **«Ponerlas en mi plantilla»**.
+   Al terminar, el día tiene que verse armado.
+9. Y dentro de eso, **lo del criterio 37**: si ya tenías una actividad llamada
+   igual que un punto de partida (por ejemplo «Bañarme»), **no se tiene que
+   duplicar** — mira `/app/vida/actividades` después.
+10. Vete a **Hoy** sin recargar: los huecos y «Armar desde la plantilla» tienen
+    que ver lo añadido, y un día **ya armado** tiene que seguir igual.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — la plantilla se ve (criterios 1–15)
@@ -1668,3 +1833,99 @@ Awesome a pelo, y sin nada duplicado: la hoja es **la misma**, el orquestador es
 `vidaItemDelete` de verdad—, los **375 px** y el **tema oscuro** en un navegador,
 y la pantalla dentro de `/app/vida/plantilla` con datos reales. Sigue siendo el
 límite del login.
+
+### Tajada 3 — «Añadir a mi Vida» y el primer minuto (criterios 29–41)
+
+**Veredicto: `accepted`.** El riesgo número uno era real —`useCreateStartingActivities`
+lo comparte el catálogo de FEAT-002, que está **entregado**— y **lo medí yo con
+un arnés propio** (`src/features/vida/hooks/zz-rev-f5t3.test.tsx`, 9 casos, **ya
+borrado**, sin `node:*`), montando el hook con las tres APIs simuladas. **El
+camino del catálogo no cambió de comportamiento**, la deduplicación nueva hace lo
+que promete, y las afirmaciones ajenas que se tocaron están **acotadas con su
+porqué**, no borradas.
+
+**El riesgo nº 1, medido caso por caso**
+
+| Qué comprobé (sin `schedule`, que es como llama el catálogo) | Resultado |
+|---|---|
+| Catálogo vacío | `createActivity({ title, categoryId })` y **`createVidaItem` no se llama ni una vez**: el catálogo sigue creando actividades y nada más. |
+| Categoría que ya existe («Yo») | **No se crea otra**: el dedupe de categorías de FEAT-002 sigue intacto. |
+| La actividad **ya existe** («bañarme», en minúsculas) | **No se crea un duplicado y no se modifica nada**: cero llamadas de creación y cero de actualización —el hook no tiene camino de update—, y la actividad aparece en `reused`. |
+| La existente está **archivada** | **No se reutiliza**: se crea. Es lo correcto, porque un ítem de plantilla sobre una archivada no lo pinta nadie. |
+| El catálogo **no se puede leer** | Se crea igual y **no se apunta ningún fallo**: como mucho nace una repetida, que es mejor que no poner nada. |
+
+Y con `schedule` (lo nuevo): crea la actividad **y** su ítem con
+`{ activityId, days, startTime, durationMinutes }`; si la actividad ya existía,
+el ítem va **sobre la que había**; y si el ítem falla, **el punto cuenta como
+fallido** aunque la actividad quedara creada, que es lo que sostiene el criterio
+38.
+
+**Los tests de FEAT-002 que cambiaron: acotados, no borrados.** Miré **todas las
+líneas borradas del diff**: son el cambio de firma `mutate(points)` →
+`mutate({ points })`, el renombrado de «Cocinar» y **dos afirmaciones de la
+propia FEAT-005** —el «+» que la tajada 2 exigía ausente y el enlace «Traer de
+tus actividades»—, las dos **derogadas con su comentario y reemplazadas por algo
+más fuerte**: ahora se afirma que el enlace al catálogo **ya no está** y que el
+botón «Añadir a mi Vida» **sí**, que es literalmente el criterio 29 («ninguno
+navega a `/app/vida/actividades`»). Ninguna afirmación de comportamiento se
+eliminó.
+
+| # | Veredicto del revisor | Cómo lo comprobé |
+|---|---|---|
+| 29 | cumplido | El panel en el aside y el «+» flotante con la misma pieza dentro; en escritorio el «+» se apaga. **Nada navega al catálogo**: lo afirma el test que sustituyó al viejo. |
+| 30 · 31 | cumplidos | Busca con el filtro que ya existía (sin tildes), agrupa por categoría, **excluye archivadas**, y cada actividad dice su estado con su acción. |
+| 32 · 34 | cumplidos | Días, hora y duración **en el mismo panel**, y `targetItem: null` → **`create`** (medido en la tajada 2: el cuerpo no lleva `id`), que es lo que permite la segunda hora de «Pasear». |
+| 33 | cumplido | `describeFitAt` **solo escribe una línea** —«a las 18:00 no tienes nada» / «…ya tienes X»— y el botón de guardar solo se inhabilita **mientras la mutación vuela**: el solape **no bloquea**, que es lo que pide el criterio. |
+| 35 | cumplido | **`buildVidaItemsByActivity` y `findVidaItemForActivity` están sin tocar** (el diff de `vida-catalog.utils.ts` es **solo** la función nueva `buildVidaItemsByActivityAll`), y el catálogo pasa `multipleItemsNote` con su «Ir a Plantilla». |
+| 36 | cumplido, **medido por mí** | Los **seis** puntos con hora son exactamente los del criterio y del render: Bañarme 07:00/15 · Pasear 07:30/40 · Desayunar con calma 08:30/30 · Organizar la casa 09:00/45 · Cocinar y almorzar 13:00/60 · Leer un rato 21:30/30. **Tres** llevan `scheduleRecommended`. |
+| 37 | cumplido, **medido por mí** | La tabla de arriba: lo que ya existe **se reutiliza**, no se duplica. |
+| 38 | cumplido | Comprobado en el arnés: el ítem que falla deja el punto fuera de `done` y dentro de `failed` con su motivo, para que la pantalla diga «Pusimos 2 de 3». |
+| 39 | **del usuario** | Es el criterio de fase: dejar un día entero puesto sin salir de la pantalla. No lo doy por cerrado. |
+| 40 | cumplido | Los cuatro estados están **separados** en el panel: esqueletos, **error con «Reintentar»** —y con el comentario de que no se dice «todavía no tienes actividades» sin saberlo—, «Nada con ese nombre» y catálogo vacío. |
+| 41 | cumplido **de segunda mano** | 375 px y oscuro los midió el constructor; **yo no**. |
+| 3 del encargo | cumplido | `scheduleRecommended` es **aditivo**: la lista sigue teniendo **13 puntos** y **seis `recommended`**, que es lo que pinta el catálogo. Su forma no cambió. |
+
+**El punto 2 del encargo: «Cocinar» → «Cocinar y almorzar».** Es **correcto**:
+lo pide el criterio 36 con esas palabras y es lo que dice el render. **Pero tiene
+una consecuencia que hay que escribir**: como el dedupe compara **nombres
+normalizados**, un usuario que ya hubiera estrenado el primer minuto **del
+catálogo** antes de este cambio tiene «Cocinar» guardada, y desde ahora recibiría
+**una segunda actividad** llamada «Cocinar y almorzar» en vez de reutilizar la
+suya. **Alcance:** solo usuarios que ya usaron los puntos de partida de FEAT-002;
+el efecto es **una actividad de más con otro nombre** —ni pérdida de datos, ni
+duplicado exacto— y se arregla archivando una. No devuelve, y queda como
+hallazgo con su alcance.
+
+**Línea base, corrida entera por mí**
+
+| Qué | Resultado |
+|---|---|
+| `pnpm typecheck` | **exit 0**, limpio |
+| `pnpm lint` | **14 errores / 0 warnings** |
+| `pnpm test` | **2 fallos de 1259** (los dos de `SearchSelect`; **1 archivo rojo de 101**) |
+| `pnpm build` | **exit 0** · chunk inicial **994,33 kB** · `app-icons` **620,20 kB** · `IconPicker` **4,64 kB** · CSS 214,66 kB |
+
+Sin `localStorage` nuevo (cero en el diff de `src/`), sin Font Awesome a pelo en
+lo nuevo, y sin nada duplicado: el filtro de búsqueda, el hook de guardar y el de
+los puntos de partida son **los que ya había**.
+
+**Hallazgos anotados, ninguno devuelve**
+
+1. **El renombrado de «Cocinar»** y su consecuencia para quien ya la tenía
+   (arriba, con su alcance).
+2. **Una consulta más en cada guardado de puntos de partida**: `loadCatalogByTitle`
+   pide el catálogo fresco también en el camino del catálogo. Es lo que hace
+   posible no duplicar; es un viaje más.
+3. **Sin sesión, el panel diría «todavía no tienes actividades»** —lo dejó dicho
+   el constructor—: la consulta deshabilitada se lee como catálogo vacío. No
+   ocurre hoy porque la pantalla entera tiene su estado «sin sesión» delante,
+   pero el panel solo no lo distingue.
+4. **Heredado de FEAT-002:** las píldoras **no elegidas** quedan en **5,01:1** en
+   oscuro. Pasa el mínimo, pero es el suelo de la pantalla.
+5. Sigue abierto el **transversal de la tajada 2**: `Button variant="danger"` no
+   se lee en oscuro.
+
+**Lo que no revisé, y no lo disimulo:** ninguna llamada real al API —ni una
+actividad creada de verdad, ni un ítem—, los **375 px** y el **tema oscuro** en
+un navegador, y el **criterio 39**, que es del usuario: dejar un día entero
+puesto sin salir de `/app/vida/plantilla`.

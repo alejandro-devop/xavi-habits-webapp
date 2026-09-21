@@ -558,3 +558,93 @@ export function describeOtherDays(item: VidaItem, day: VidaDayOfWeek): string | 
 export function daysWithout(item: VidaItem, day: VidaDayOfWeek): VidaDayOfWeek[] {
   return VIDA_DAY_ORDER.filter((other) => other !== day && item.days.includes(other))
 }
+
+/**
+ * Qué hay puesto **a esa hora** en un día (criterio 33).
+ *
+ * Es el dato del que sale el «Cabe: …» del panel de añadir, y **no bloquea
+ * nada**: los solapes se ven y se guardan igual —quien los resuelve es «Armar
+ * desde la plantilla» en Hoy, que corre detrás lo que se pisa (decisión (f) del
+ * analista)—.
+ *
+ * Un ítem **sin duración** ocupa solo su minuto de inicio: no se le inventan 30
+ * min para decir que estorba, que es la misma regla que el criterio 7.
+ */
+export function whatIsAt(dayItems: VidaItem[], minutes: number): VidaItem | null {
+  for (const item of dayItems) {
+    if (!hasTime(item)) continue
+    const start = parseTimeToMinutes(item.startTime!)
+    const duration = durationOf(item)
+    const end = duration === null ? start : start + duration
+    if (minutes >= start && minutes < Math.max(end, start + 1)) return item
+  }
+  return null
+}
+
+/**
+ * La línea del criterio 33, ya escrita: «a las 18:00 no tienes nada» o «a las
+ * 18:00 ya tienes *Pasear a las mascotas*». `null` si todavía no hay hora que
+ * mirar: sin hora no se afirma nada.
+ */
+export function describeFitAt(dayItems: VidaItem[], startTime: string): string | null {
+  if (!isValidHhMm(startTime)) return null
+  const at = formatTimeForDisplay(startTime)
+  const busy = whatIsAt(dayItems, parseTimeToMinutes(startTime))
+  if (!busy) return `a las ${at} no tienes nada`
+  return `a las ${at} ya tienes ${templateItemTitle(busy)}`
+}
+
+/**
+ * Las horas a las que **ya está** una actividad en la plantilla, en palabras:
+ * «a las 7:30», «a las 7:30 y a las 19:00», «a las 7:30, a las 13:00 y a las
+ * 19:00». `null` si esa actividad no está todavía, y los ítems **sin hora** se
+ * cuentan aparte («sin hora»), porque tampoco son «otra hora».
+ *
+ * Es lo que sostiene el aviso del criterio 34 —«*Pasear a las mascotas* ya está
+ * a las 7:30 · esto le añade otra hora»— antes de crear el segundo ítem.
+ */
+export function describeExistingHours(items: VidaItem[]): string | null {
+  if (items.length === 0) return null
+  const parts = items.map((item) =>
+    hasTime(item) ? `a las ${formatTimeForDisplay(item.startTime!)}` : 'sin hora',
+  )
+  if (parts.length === 1) return parts[0]!
+  return `${parts.slice(0, -1).join(', ')} y ${parts[parts.length - 1]}`
+}
+
+/**
+ * La línea del criterio 35 para **la hoja del catálogo**: «esta actividad tiene
+ * 2 horas en tu plantilla · las dos se cambian en Plantilla».
+ *
+ * `null` con uno o ninguno: el catálogo sigue enseñando **un** ítem por
+ * actividad y solo hay algo que decir cuando esa hoja se estaría quedando
+ * corta. Nunca enseña una hora como si fuera la única, que es literalmente lo
+ * que el criterio prohíbe.
+ */
+export function describeMultipleItemsNote(items: VidaItem[]): string | null {
+  const timed = items.filter((item) => hasTime(item))
+  if (items.length < 2) return null
+  const count = timed.length >= 2 ? timed.length : items.length
+  const noun = timed.length >= 2 ? 'horas' : 'veces'
+  const all = count === 2 ? 'las dos' : `las ${count}`
+  return `Esta actividad tiene ${count} ${noun} en tu plantilla · ${all} se cambian en Plantilla.`
+}
+
+/**
+ * Los días **en la forma corta en que se dicen** (criterio 36): «de lunes a
+ * viernes», «el fin de semana», «todos los días», y si no es ninguno de esos
+ * tres, la lista de siempre (`describeDaysInWords`).
+ *
+ * Existe porque el contador del primer minuto es literal —«3 elegidas · de
+ * lunes a viernes»— y enumerar los cinco días ahí lo haría ilegible. No
+ * sustituye a `describeDaysInWords`: la vista previa de la hoja sigue
+ * enumerando, que es lo que su criterio pide.
+ */
+export function describeDaysPhrase(days: VidaDayOfWeek[]): string {
+  const ordered = VIDA_DAY_ORDER.filter((day) => days.includes(day))
+  if (ordered.length === 0) return ''
+  const key = ordered.join(',')
+  if (key === 'monday,tuesday,wednesday,thursday,friday') return 'de lunes a viernes'
+  if (key === 'saturday,sunday') return 'el fin de semana'
+  return describeDaysInWords(ordered)
+}

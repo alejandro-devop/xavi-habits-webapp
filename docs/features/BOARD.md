@@ -13,7 +13,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
-| FEAT-005 | building | 3/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
+| FEAT-005 | building | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | planned | 0/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
@@ -27,6 +27,90 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+
+**FEAT-005, tajada 3 — revisión: `accepted`** (2026-09-20). El riesgo número uno
+era real —`useCreateStartingActivities` lo comparte el catálogo de FEAT-002, ya
+entregado— y **lo medí yo** con un arnés propio (9 casos, borrado) montando el
+hook con las tres APIs simuladas: **sin `schedule` el catálogo se comporta igual
+que antes** (crea la actividad, **no toca la plantilla**, reutiliza la categoría
+que ya existía); con una actividad **ya existente** —comparando «bañarme» en
+minúsculas— **no se duplica ni se modifica nada** y entra en `reused`; una
+**archivada no se reutiliza**; y si el catálogo **no se puede leer**, se crea
+igual y no se apunta ningún fallo. Con `schedule`, el punto entra en la plantilla
+con sus días, su hora y su duración, y **si el ítem falla el punto cuenta como
+fallido** (criterio 38). Los **seis puntos con hora** son exactamente los del
+render (7:00 · 7:30 · 8:30 · 9:00 · 13:00 · 21:30) con **tres** marcados, y
+`scheduleRecommended` es **aditivo**: la lista sigue con **13 puntos y seis
+`recommended`**, la forma que pinta el catálogo. **`buildVidaItemsByActivity` y
+`findVidaItemForActivity` están sin tocar** (el diff de `vida-catalog.utils.ts`
+es solo la función nueva), que es lo que exige el criterio 35. Los solapes
+**avisan y no bloquean**: `describeFitAt` solo escribe una línea y guardar solo
+se inhabilita mientras la mutación vuela. Las afirmaciones ajenas que se tocaron
+están **derogadas con su porqué y reemplazadas por algo más fuerte** —ahora se
+afirma que el enlace al catálogo **ya no está** y que «Añadir a mi Vida» **sí**,
+que es el criterio 29 literal—. **Hallazgo con alcance:** «Cocinar» pasó a
+**«Cocinar y almorzar»**, que es lo correcto por criterio y por render, pero como
+el dedupe compara nombres, **quien ya tuviera «Cocinar» del primer minuto del
+catálogo recibiría una segunda actividad** con el nombre nuevo — ni pérdida de
+datos ni duplicado exacto, y se arregla archivando una. Otros tres, anotados: una
+**consulta más** por guardado (el catálogo fresco que evita duplicar), el panel
+que **sin sesión diría «todavía no tienes actividades»**, y las píldoras no
+elegidas en **5,01:1** en oscuro (heredado de FEAT-002). Línea base corrida
+entera por el revisor: typecheck **exit 0**, lint **14/0**, `pnpm test` **2
+fallos de 1259** (los dos de `SearchSelect`; 1 archivo rojo de 101), `pnpm build`
+**exit 0** con chunk inicial **994,33 kB**, `app-icons` **620,20 kB** e
+`IconPicker` **4,64 kB** (CSS 214,66 kB). **Sin revisar por el revisor:** 375 px
+y oscuro (medidos por el constructor), cualquier llamada real al API, y el
+**criterio 39** —dejar un día entero puesto sin salir de la pantalla—, que es del
+usuario. Siguiente: la tajada 4, la semana entera y copiar un día.
+
+**FEAT-005, tajada 3 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **la plantilla ya se llena desde
+la plantilla.** En escritorio, el panel **«Añadir a mi Vida»** al lado; en móvil,
+**el mismo panel** dentro de la hoja que abre el **«+» flotante** —una sola
+implementación, dos envoltorios, y en escritorio el «+» se apaga para no tener
+dos puertas a lo mismo—. Dentro: el catálogo **buscable sin tildes**
+(`filterActivitiesBySearch`, sin un quinto normalizador) y **agrupado por
+categoría**, sin las archivadas, cada actividad diciendo **en qué estado está**
+(«aún no está · **+ Añadir**» o «en tu plantilla · V · 7:30»), y al elegir una,
+**días, hora y cuánto en el mismo panel**. Lo gordo: **una actividad que ya está
+puede recibir otra hora** —son **dos `VidaItem`**— y la pantalla **lo dice
+antes** («*Pasear a las mascotas* ya está a las 7:30 · esto le añade otra
+hora»); el test comprueba que sale un **`create`**, que `vidaItemUpdate` **no se
+llama** y que el cuerpo **no lleva ninguna clave `id`**: es `targetItem: null`
+(A3) haciendo lo que el arquitecto escribió. El panel **dice si cabe y no
+bloquea** («Cabe: a las 19:00 no tienes nada» / «…ya tienes *Pasear a las
+mascotas*»), y con la plantilla **vacía del todo** llega **el primer minuto**:
+los **seis puntos de partida con hora** (7:00 Bañarme 15m · 7:30 Pasear 40m ·
+8:30 Desayunar 30m · 9:00 Organizar 45m · 13:00 Cocinar y almorzar 1h · 21:30
+Leer 30m), **tres marcados**, los días **de lunes a viernes**, «**Ponerlas en mi
+plantilla**» y la línea que quita presión. **Ni un documento GraphQL, ni una
+clave, ni una ruta, ni `localStorage`, ni invalidación nueva.** Medido **en el
+navegador** con arnés borrado: a 375 px `scrollWidth` **375 = clientWidth** y
+**cero desbordes** con la lista y con el mini-formulario abiertos, y en **oscuro**
+lo nuevo va de **5,01:1** (las píldoras de día **no elegidas**, `--color-text-muted`
+sobre vidrio, el mismo tratamiento que ya traía `VidaStartingPoints` de FEAT-002)
+a **18,78:1**. Línea base sin empeorar: typecheck **limpio**, lint **14/0**,
+`pnpm test` **2 fallos de 1259** (los dos de `SearchSelect`; **+29 tests**),
+`pnpm build` **exit 0** con chunk inicial **994,33 kB** (+11,38 kB, **ninguno de
+iconos**: `app-icons` 620,20 e `IconPicker` 4,64 clavados). `graphify update .`:
+3380 nodos, 3918 aristas. **Avisos para quien revise, por orden de riesgo:**
+**(1)** `useCreateStartingActivities` **cambió de contrato y de
+comportamiento** —`mutate({ points, schedule? })` y **reutiliza la actividad que
+ya exista por nombre normalizado** (criterio 37; antes creaba a ciegas)— y ese
+hook **lo estrena el catálogo de FEAT-002**: si algo se rompe en el primer
+minuto del catálogo, es ahí. **(2)** **«Cocinar» pasó a llamarse «Cocinar y
+almorzar»** en los datos de los puntos de partida, porque así lo nombran el
+criterio 36 y el render; **también cambia lo que ve el catálogo**. **(3)** tres
+afirmaciones de tests quedaron **derogadas y acotadas, no borradas** (el «+» ya
+existe, el día vacío ya no enlaza al catálogo, y el mock del hook). Y **una
+desviación de forma dicha**: el enlace del criterio 35 va **al lado** de la línea
+(«Ir a Plantilla»), porque `multipleItemsNote` es un `string`. **Del usuario, y
+es lo primero que hay que tocar:** que el servidor acepte **dos `VidaItem` de la
+misma actividad** —el riesgo concentrado de la tajada, **nunca probado contra el
+servidor vivo**— y con él todo lo que pasa por el API: la deduplicación del
+criterio 37, el criterio 39 de punta a punta y que Hoy lo vea sin recargar. Diez
+pasos al final de la sección 3.
 
 **FEAT-005, tajada 2 — revisión: `accepted`** (2026-09-20). El riesgo de esta
 tajada no era la hoja, era que **`planVidaItemSave` cambió de cuerpo** y esa

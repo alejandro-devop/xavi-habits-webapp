@@ -71,6 +71,39 @@ export function findVidaItemForActivity(
   return own.find((item) => item.isActive) ?? own[0] ?? null
 }
 
+/**
+ * `activityId → todos sus VidaItem`, **los activos y los desactivados**, cada
+ * lista ordenada por hora (los que no tienen hora, al final; a igual hora, por
+ * el orden en que vinieron).
+ *
+ * Es el mapa que hacía falta desde que una actividad puede estar **dos veces**
+ * en la plantilla a dos horas (criterio 34 de FEAT-005): el panel de «Añadir a
+ * mi Vida» necesita saber **cuántas** hay y a qué horas, no «la suya».
+ *
+ * **No sustituye a `buildVidaItemsByActivity` ni a `findVidaItemForActivity`**:
+ * esos dos son el contrato del catálogo («una actividad, un ítem» en su tarjeta
+ * y en su hoja) y el criterio 35 dice expresamente que se quedan como están —lo
+ * que cambia es que el catálogo **lo diga** cuando hay varias—.
+ */
+export function buildVidaItemsByActivityAll(items: VidaItem[]): Map<string, VidaItem[]> {
+  const byActivity = new Map<string, VidaItem[]>()
+  for (const item of items) {
+    const own = byActivity.get(item.activityId)
+    if (own) own.push(item)
+    else byActivity.set(item.activityId, [item])
+  }
+  for (const own of byActivity.values()) {
+    own.sort((a, b) => {
+      // Sin hora al final: no compiten con las que sí la tienen.
+      if (!a.startTime && !b.startTime) return 0
+      if (!a.startTime) return 1
+      if (!b.startTime) return -1
+      return a.startTime.localeCompare(b.startTime)
+    })
+  }
+  return byActivity
+}
+
 type GroupAccumulator = {
   group: VidaCatalogGroupModel
   orderIndex: number

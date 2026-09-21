@@ -11,12 +11,14 @@ import type { Activity } from '@/features/vida/types/activity.types'
 import { filterActivitiesBySearch } from '@/features/vida/utils/activity-filters'
 import {
   buildVidaItemsByActivity,
+  buildVidaItemsByActivityAll,
   CATALOG_LIMIT,
   countCatalogCategories,
   excludeArchivedActivities,
   findVidaItemForActivity,
   groupActivitiesByCategory,
 } from '@/features/vida/utils/vida-catalog.utils'
+import { describeMultipleItemsNote } from '@/features/vida/utils/vida-template.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
@@ -77,6 +79,15 @@ export function VidaActividadesPage() {
 
   const activities = useMemo(() => excludeArchivedActivities(data?.activities ?? []), [data])
   const vidaItemsByActivity = useMemo(() => buildVidaItemsByActivity(vidaItems), [vidaItems])
+  // **Todos** los ítems de cada actividad, no «el suyo»: desde FEAT-005 una
+  // actividad puede estar dos veces en la plantilla, a dos horas. La tarjeta y
+  // la hoja siguen enseñando **uno** —eso es el contrato de FEAT-002 y no se
+  // toca—, pero la hoja **lo dice** en vez de enseñar una hora como si fuera la
+  // única (criterio 35).
+  const allVidaItemsByActivity = useMemo(
+    () => buildVidaItemsByActivityAll(vidaItems),
+    [vidaItems],
+  )
   // Mientras la plantilla está en vuelo, la tarjeta **no afirma** «sin
   // plantilla»: sería mentira durante ese hueco y luego cambiaría sola. Con la
   // sesión caída la consulta queda `idle` y entonces sí se afirma: no va a
@@ -265,6 +276,11 @@ export function VidaActividadesPage() {
         activity={editing}
         vidaItem={editing ? findVidaItemForActivity(vidaItems, editing.id) : null}
         isTemplatePending={isTemplatePending}
+        multipleItemsNote={
+          editing
+            ? describeMultipleItemsNote(allVidaItemsByActivity.get(editing.id) ?? [])
+            : null
+        }
       />
     </div>
   )

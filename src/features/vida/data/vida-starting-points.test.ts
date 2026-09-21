@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   findStartingCategory,
   getRecommendedStartingPointIds,
+  getScheduledRecommendedIds,
+  getScheduledStartingPoints,
   VIDA_STARTING_CATEGORIES,
   VIDA_STARTING_POINTS,
 } from '@/features/vida/data/vida-starting-points'
@@ -32,7 +34,7 @@ describe('VIDA_STARTING_POINTS', () => {
       'Pasear a las mascotas',
       'Organizar la casa',
       'Desayunar con calma',
-      'Cocinar',
+      'Cocinar y almorzar',
       'Poner una lavadora',
       'Leer un rato',
       'Descansar',
@@ -86,5 +88,36 @@ describe('VIDA_STARTING_CATEGORIES', () => {
       coreByName.get('blue'),
       coreByName.get('mint'),
     ])
+  })
+})
+
+describe('los seis del primer minuto de la plantilla (criterio 36 de FEAT-005)', () => {
+  it('son seis, en orden de reloj, con la hora y la duración del render', () => {
+    expect(
+      getScheduledStartingPoints().map((point) => [
+        point.startTime,
+        point.title,
+        point.durationMinutes,
+      ]),
+    ).toEqual([
+      ['07:00', 'Bañarme', 15],
+      ['07:30', 'Pasear a las mascotas', 40],
+      ['08:30', 'Desayunar con calma', 30],
+      ['09:00', 'Organizar la casa', 45],
+      ['13:00', 'Cocinar y almorzar', 60],
+      ['21:30', 'Leer un rato', 30],
+    ])
+  })
+
+  it('**tres** vienen marcados, y son la mañana', () => {
+    expect(getScheduledRecommendedIds()).toEqual([
+      'banarme',
+      'pasear-a-las-mascotas',
+      'desayunar-con-calma',
+    ])
+  })
+
+  it('el catálogo sigue marcando los suyos, que son otros seis', () => {
+    expect(getRecommendedStartingPointIds()).toHaveLength(6)
   })
 })

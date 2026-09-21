@@ -2,15 +2,18 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { VidaStartingPoints } from '@/features/vida/components/VidaStartingPoints'
-import type { VidaStartingPoint } from '@/features/vida/data/vida-starting-points'
-import type { CreateStartingActivitiesResult } from '@/features/vida/hooks/useCreateStartingActivities'
+import type {
+  CreateStartingActivitiesInput,
+  CreateStartingActivitiesResult,
+} from '@/features/vida/hooks/useCreateStartingActivities'
 import { renderWithProviders } from '@/test/render'
 
 type MutateOptions = {
   onSuccess?: (result: CreateStartingActivitiesResult) => void
 }
 
-const mutate = vi.fn<(points: VidaStartingPoint[], options?: MutateOptions) => void>()
+const mutate =
+  vi.fn<(input: CreateStartingActivitiesInput, options?: MutateOptions) => void>()
 let isPending = false
 
 vi.mock('@/features/vida/hooks/useCreateStartingActivities', () => ({
@@ -44,8 +47,11 @@ describe('VidaStartingPoints', () => {
     await user.click(screen.getByRole('button', { name: 'Crear las 7' }))
 
     expect(mutate).toHaveBeenCalledTimes(1)
-    const points = mutate.mock.calls[0]![0]
+    const { points, schedule } = mutate.mock.calls[0]![0]
     expect(points).toHaveLength(7)
+    // Sin `schedule` el cartel del catálogo **no toca la plantilla**: crea
+    // actividades y nada más, exactamente como en FEAT-002.
+    expect(schedule).toBeUndefined()
     expect(points.map((point) => point.title)).toContain('Descansar')
     for (const point of points) {
       expect(point.categoryName).toBeTruthy()
@@ -80,12 +86,16 @@ describe('VidaStartingPoints', () => {
 
   it('si algo falla a mitad lo nombra y deja marcado solo lo que no se creó', async () => {
     const user = userEvent.setup()
-    mutate.mockImplementation((points, options) => {
+    mutate.mockImplementation(({ points }, options) => {
+      const ok = points.filter((point) => !point.title.startsWith('Cocinar'))
       options?.onSuccess?.({
-        created: points
-          .filter((point) => point.title !== 'Cocinar')
-          .map((point, index) => ({ id: `a${index}`, title: point.title }) as never),
-        failed: [{ name: 'Cocinar', reason: 'El servidor no respondió' }],
+        created: ok.map((point, index) => ({ id: `a${index}`, title: point.title }) as never),
+        reused: [],
+        // Lo que quedó hecho se dice **por id de punto** desde FEAT-005: con la
+        // deduplicación del criterio 37 una actividad reutilizada también
+        // cuenta, y por el título ya no se sabría.
+        done: ok.map((point) => point.id),
+        failed: [{ name: 'Cocinar y almorzar', reason: 'El servidor no respondió' }],
       })
     })
 

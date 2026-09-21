@@ -2,7 +2,11 @@ import { fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaPlantillaPage } from '@/features/vida/pages/VidaPlantillaPage'
-import type { ActivitiesResponse } from '@/features/vida/types/activity.types'
+import type {
+  ActivitiesResponse,
+  Activity,
+  ActivityStatus,
+} from '@/features/vida/types/activity.types'
 import type { VidaDayOfWeek, VidaItem } from '@/features/vida/types/vida-item.types'
 import { renderWithProviders } from '@/test/render'
 
@@ -240,7 +244,8 @@ describe('la agenda del día (criterios 6, 7, 8, 9 y 13)', () => {
     // no funcione todavía**: ni «+» (criterio 29, tajada 3), ni «Ver la semana
     // entera» ni «Copiar este día a otros» (tajada 4).
     expect(screen.getAllByRole('tab')).toHaveLength(7)
-    expect(screen.queryByRole('button', { name: /añadir a mi vida|^\+$/i })).not.toBeInTheDocument()
+    // **Derogado en la tajada 3**: el «+» y el panel de añadir son el criterio
+    // 29 y ya funcionan. Lo que sigue valiendo es la tajada 4.
     expect(screen.queryByRole('button', { name: /ver la semana entera/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /copiar este día/i })).not.toBeInTheDocument()
   })
@@ -365,7 +370,14 @@ describe('los estados (criterios 10, 11 y 12)', () => {
     // de debajo solo pone la salida, sin repetirla.
     expect(screen.getByText('El viernes no tienes nada puesto.')).toBeInTheDocument()
     expect(screen.getByText('Ponle algo cuando quieras')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Traer de tus actividades' })).toBeInTheDocument()
+    // **Derogado en la tajada 3**: la salida ya no manda al catálogo, abre el
+    // panel de añadir sin salir de la pantalla (criterio 29).
+    expect(
+      screen.getAllByRole('button', { name: 'Añadir a mi Vida' }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      screen.queryByRole('link', { name: 'Traer de tus actividades' }),
+    ).not.toBeInTheDocument()
     // Y sigue habiendo pestañas: el lunes está lleno y se alcanza de un toque.
     expect(screen.getAllByRole('tab')).toHaveLength(7)
   })
@@ -546,5 +558,181 @@ describe('la hoja del ítem y lo que escribe (criterios 16-27)', () => {
     expect(names()[0]).toContain('Organizar la casa')
     const drawer = screen.getByRole('region', { name: /sin hora/i })
     expect(within(drawer).getByText('Pasear a las mascotas')).toBeInTheDocument()
+  })
+})
+
+// ─── Tajada 3: «Añadir a mi Vida» y el primer minuto (criterios 29-40) ───────
+
+function catalogActivity(
+  id: string,
+  title: string,
+  status: ActivityStatus = 'pending',
+): Activity {
+  return {
+    id,
+    userId: 1,
+    title,
+    description: null,
+    status,
+    priority: 'medium' as const,
+    categoryId: 'c-1',
+    scheduledDate: null,
+    completedAt: null,
+    spentTimeMinutes: 0,
+    createdAt: '2026-01-01T00:00:00.000Z',
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  }
+}
+
+describe('«Añadir a mi Vida» (criterios 29-34 y 40)', () => {
+  beforeEach(() => {
+    itemsQuery = ready([
+      item('1', { startTime: '07:30', durationMinutes: 40, title: 'Pasear a las mascotas' }),
+    ])
+    activitiesQuery = ready<ActivitiesResponse>({
+      activities: [
+        catalogActivity('a-1', 'Pasear a las mascotas'),
+        catalogActivity('a-2', 'Bañarme'),
+        catalogActivity('a-3', 'Salir a correr', 'cancelled'),
+      ],
+      page: 1,
+      limit: 200,
+      total: 3,
+    })
+  })
+
+  it('el «+» y el panel existen y **ninguno navega al catálogo** (criterio 29)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const fab = screen.getByRole('button', { name: 'Añadir a mi Vida' })
+    expect(fab).not.toHaveAttribute('href')
+    expect(
+      screen.getByRole('heading', { name: 'Añadir a mi Vida', level: 3 }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Tus actividades. Eliges una y le pones días, hora y cuánto — aquí mismo.'),
+    ).toBeInTheDocument()
+  })
+
+  it('busca sin tildes y no enseña las archivadas (criterio 30)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    // Dentro del panel: «Pasear a las mascotas» también está en la agenda del
+    // día, y lo que se mide aquí es la lista del buscador.
+    const panel = screen.getByRole('region', { name: 'Añadir a mi Vida' })
+
+    expect(within(panel).queryByText('Salir a correr')).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Buscar en tus actividades'), {
+      target: { value: 'banar' },
+    })
+    expect(within(panel).getByText('Bañarme')).toBeInTheDocument()
+    expect(within(panel).queryByText('Pasear a las mascotas')).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Buscar en tus actividades'), {
+      target: { value: 'zzz' },
+    })
+    expect(screen.getByText('Nada con ese nombre. Prueba con otra palabra.')).toBeInTheDocument()
+  })
+
+  it('cada una dice en qué estado está (criterio 31)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(screen.getByText('aún no está')).toBeInTheDocument()
+    expect(screen.getByText('en tu plantilla · V · 7:30')).toBeInTheDocument()
+  })
+
+  it('añade **otra hora** a la que ya está, lo avisa antes y crea un segundo ítem (criterios 32, 33 y 34)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const panel = screen.getByRole('region', { name: 'Añadir a mi Vida' })
+
+    fireEvent.click(within(panel).getByRole('button', { name: '+ Otra hora' }))
+    expect(
+      screen.getByText('Pasear a las mascotas ya está a las 7:30 · esto le añade otra hora.'),
+    ).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '19:00' } })
+    // Criterio 33: dice qué hay a esa hora y **no bloquea**.
+    expect(screen.getByText('Cabe: a las 19:00 no tienes nada')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '07:45' } })
+    expect(
+      screen.getByText('Cabe: a las 7:45 ya tienes Pasear a las mascotas'),
+    ).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '19:00' } })
+    fireEvent.click(screen.getByRole('button', { name: '30' }))
+    fireEvent.click(within(panel).getByRole('button', { name: 'Añadir a mi Vida' }))
+
+    // **`create`, no `update`**: la de las 7:30 no se toca (criterio 34, A3).
+    expect(createItem.mutate).toHaveBeenCalledTimes(1)
+    expect(updateItem.mutate).not.toHaveBeenCalled()
+    const input = createItem.mutate.mock.calls[0]![0]
+    expect(input).toEqual({
+      activityId: 'a-1',
+      days: ['friday'],
+      startTime: '19:00',
+      durationMinutes: 30,
+    })
+    expect(JSON.stringify(input)).not.toContain('"id"')
+  })
+
+  it('distingue cargando, catálogo vacío y error (criterio 40)', () => {
+    activitiesQuery = {
+      data: undefined,
+      isPending: true,
+      isError: false,
+      fetchStatus: 'fetching',
+      refetch: vi.fn(),
+    }
+    const { unmount } = renderWithProviders(<VidaPlantillaPage />)
+    expect(screen.getByText('Cargando tus actividades…')).toBeInTheDocument()
+    unmount()
+
+    activitiesQuery = {
+      data: undefined,
+      isPending: false,
+      isError: true,
+      fetchStatus: 'idle',
+      refetch: vi.fn(),
+    }
+    const second = renderWithProviders(<VidaPlantillaPage />)
+    expect(screen.getByText('No pudimos cargar tus actividades')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
+    expect(screen.queryByText('Todavía no tienes actividades')).not.toBeInTheDocument()
+    second.unmount()
+
+    activitiesQuery = ready<ActivitiesResponse>({
+      activities: [],
+      page: 1,
+      limit: 200,
+      total: 0,
+    })
+    renderWithProviders(<VidaPlantillaPage />)
+    expect(screen.getByText('Todavía no tienes actividades')).toBeInTheDocument()
+  })
+})
+
+describe('el primer minuto, con la plantilla vacía (criterio 36)', () => {
+  it('enseña los seis puntos con su hora, tres marcados y el contador', () => {
+    itemsQuery = ready<VidaItem[]>([])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(screen.getByRole('button', { name: /7:00.*Bañarme.*15 min/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(
+      screen.getByRole('button', { name: /21:30.*Leer un rato.*30 min/ }),
+    ).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByText('3 elegidas · de lunes a viernes')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Ponerlas en mi plantilla' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Horas de partida · las ajustas en un toque después'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Traer de tus actividades' })).toBeInTheDocument()
+    expect(
+      screen.getByText('Un día sin plantilla se vive igual: se registra sobre la marcha.'),
+    ).toBeInTheDocument()
   })
 })

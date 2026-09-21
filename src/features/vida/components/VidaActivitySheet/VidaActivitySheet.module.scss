@@ -282,3 +282,15 @@
 .remove {
   margin-right: auto;
 }
+
+/* El enlace de la línea del criterio 35: no es un botón, es una salida. */
+.hintLink {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}

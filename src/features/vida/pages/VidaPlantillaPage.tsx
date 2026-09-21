@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaActivitySheet } from '@/features/vida/components/VidaActivitySheet'
+import { VidaStartingPoints } from '@/features/vida/components/VidaStartingPoints'
+import {
+  VidaTemplateAddPanel,
+  VidaTemplateAddSheet,
+} from '@/features/vida/components/VidaTemplateAddPanel'
 import { VidaTemplateDaySummary } from '@/features/vida/components/VidaTemplateDaySummary'
 import { VidaTemplateDayTabs } from '@/features/vida/components/VidaTemplateDayTabs'
 import { VidaTemplateItemCard } from '@/features/vida/components/VidaTemplateItemCard'
@@ -40,9 +45,15 @@ import styles from './VidaPlantillaPage.module.scss'
  * Es la primera pantalla que pinta `VidaItem` **en forma de agenda**: pestañas
  * de día con su cuenta y su punto, el resumen con la barra del día, las cosas
  * del día **ordenadas por hora**, y al final el cajón de las que no tienen
- * hora. Lo que todavía no está: **añadir** (la 3, y por eso no hay «+») y la
- * **cuadrícula de escritorio** (la 4). Un botón muerto sigue siendo peor que
- * ninguno.
+ * hora. Lo que todavía no está: la **cuadrícula de escritorio** (la 4). Un
+ * botón muerto sigue siendo peor que ninguno, y por eso «Ver la semana entera»
+ * y «Copiar este día a otros» no se pintan.
+ *
+ * **Desde la tajada 3 se añade sin salir de aquí** (criterios 29–39): el panel
+ * «Añadir a mi Vida» en el aside de escritorio y, en móvil, el mismo panel
+ * dentro de la hoja que abre el «+» flotante. Y con la plantilla **vacía del
+ * todo**, el primer minuto: los seis puntos de partida **con hora**
+ * (`VidaStartingPoints` con `schedule`).
  *
  * Molde: `VidaSemanaPage` (FEAT-003, tajada 5), que es la otra pantalla que
  * vive de **una sola consulta de plantilla para los siete días**
@@ -84,6 +95,8 @@ export function VidaPlantillaPage() {
   const [sheetSession, setSheetSession] = useState(0)
   const [removing, setRemoving] = useState<VidaItem | null>(null)
   const [activatingId, setActivatingId] = useState<string | null>(null)
+  /** La hoja de «Añadir a mi Vida» en móvil; en escritorio el panel va suelto. */
+  const [addOpen, setAddOpen] = useState(false)
 
   function openSheet(item: VidaItem) {
     setEditing(item)
@@ -224,7 +237,16 @@ export function VidaPlantillaPage() {
               No hace falta llenarla entera. <b>Empieza por tu mañana</b> — con eso ya se puede
               armar un día.
             </p>
-            <Button variant="primary" to={vidaPaths.actividades}>
+            {/* **El primer minuto** (criterio 36): los seis puntos de partida con
+                su hora y su duración ya propuestas, los días de una vez y un
+                botón. De lunes a viernes por defecto, como el render. */}
+            <VidaStartingPoints
+              schedule={{
+                defaultDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+              }}
+            />
+            <p className={styles.firstOr}>o</p>
+            <Button variant="secondary" to={vidaPaths.actividades}>
               Traer de tus actividades
             </Button>
             <p className={styles.firstCount}>
@@ -261,6 +283,7 @@ export function VidaPlantillaPage() {
     <div className={styles.root}>
       {header()}
 
+      <div className={styles.layout}>
       <VidaTemplateDayTabs value={day} onChange={setDay} counts={counts} today={today}>
         <div className={styles.day}>
           <VidaTemplateDaySummary
@@ -283,8 +306,10 @@ export function VidaPlantillaPage() {
                 title="Ponle algo cuando quieras"
                 description="Un día sin plantilla se vive igual: se registra sobre la marcha."
                 action={
-                  <Button to={vidaPaths.actividades} variant="secondary">
-                    Traer de tus actividades
+                  // Desde la tajada 3 la salida **no sale de la pantalla**
+                  // (criterio 29): abre el mismo panel de añadir.
+                  <Button variant="secondary" onClick={() => setAddOpen(true)}>
+                    Añadir a mi Vida
                   </Button>
                 }
               />
@@ -320,6 +345,38 @@ export function VidaPlantillaPage() {
           )}
         </div>
       </VidaTemplateDayTabs>
+
+      {/* **En escritorio el panel va suelto al lado** (criterio 29); en móvil
+          esta columna no se pinta y quien abre el panel es el «+» flotante de
+          abajo. Es **la misma implementación** en los dos sitios. */}
+      <aside className={styles.aside} aria-label="Añadir a mi Vida">
+        <Card className={styles.panel} padding="lg">
+          <VidaTemplateAddPanel day={day} items={items} onOpenItem={openSheet} />
+        </Card>
+      </aside>
+      </div>
+
+      {/* El «+» del marco A. **No navega**: abre la misma hoja inferior que la
+          del ítem, con el panel dentro. */}
+      <button
+        type="button"
+        className={styles.fab}
+        onClick={() => setAddOpen(true)}
+        aria-label="Añadir a mi Vida"
+      >
+        <span aria-hidden>+</span>
+      </button>
+
+      <VidaTemplateAddSheet
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        day={day}
+        items={items}
+        onOpenItem={(item) => {
+          setAddOpen(false)
+          openSheet(item)
+        }}
+      />
 
       {/* Una `key` por apertura: la hoja se remonta y parte limpia sin que
           nadie tenga que vaciarla a mano (molde de `VidaActividadesPage`).

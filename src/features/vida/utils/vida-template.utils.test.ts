@@ -11,8 +11,13 @@ import {
   daysWithout,
   describeOtherDays,
   describeTemplateDayTotals,
+  describeDaysPhrase,
+  describeExistingHours,
+  describeFitAt,
+  describeMultipleItemsNote,
   describeTemplatePreview,
   templateItemsForDay,
+  whatIsAt,
 } from '@/features/vida/utils/vida-template.utils'
 
 /**
@@ -401,5 +406,114 @@ describe('describeOtherDays y daysWithout (criterio 22)', () => {
   it('los días que quedan al quitar uno van de lunes a domingo y sin el quitado', () => {
     expect(daysWithout(casa, 'wednesday')).toEqual(['monday', 'friday'])
     expect(daysWithout(item('uno', { days: ['friday'] }), 'friday')).toEqual([])
+  })
+})
+
+// ─── Tajada 3: lo que sostiene «Añadir a mi Vida» (criterios 33, 34 y 35) ────
+
+describe('whatIsAt y describeFitAt (criterio 33)', () => {
+  const dayItems = [
+    item('paseo', { startTime: '18:00', durationMinutes: 30, title: 'Pasear a las mascotas' }),
+    item('leer', { startTime: '21:30', durationMinutes: 30, title: 'Leer un rato' }),
+  ]
+
+  it('con el rato libre lo dice sin bloquear nada', () => {
+    expect(describeFitAt(dayItems, '19:00')).toBe('a las 19:00 no tienes nada')
+  })
+
+  it('con algo puesto lo nombra', () => {
+    expect(describeFitAt(dayItems, '18:00')).toBe('a las 18:00 ya tienes Pasear a las mascotas')
+    expect(describeFitAt(dayItems, '18:29')).toBe('a las 18:29 ya tienes Pasear a las mascotas')
+  })
+
+  it('el minuto en que acaba ya está libre', () => {
+    expect(whatIsAt(dayItems, 18 * 60 + 30)).toBeNull()
+  })
+
+  it('un ítem **sin duración** ocupa solo su minuto: no se le inventan 30', () => {
+    const suelto = [item('x', { startTime: '10:00', title: 'Algo' })]
+    expect(whatIsAt(suelto, 10 * 60)?.id).toBe('x')
+    expect(whatIsAt(suelto, 10 * 60 + 5)).toBeNull()
+  })
+
+  it('sin hora que mirar no se afirma nada', () => {
+    expect(describeFitAt(dayItems, '')).toBeNull()
+    expect(describeFitAt(dayItems, '25:00')).toBeNull()
+  })
+})
+
+describe('describeExistingHours (criterio 34)', () => {
+  it('sin nada puesto no hay nada que avisar', () => {
+    expect(describeExistingHours([])).toBeNull()
+  })
+
+  it('una hora, dos y tres', () => {
+    const a = item('a', { startTime: '07:30' })
+    const b = item('b', { startTime: '19:00' })
+    const c = item('c', { startTime: '13:00' })
+    expect(describeExistingHours([a])).toBe('a las 7:30')
+    expect(describeExistingHours([a, b])).toBe('a las 7:30 y a las 19:00')
+    expect(describeExistingHours([a, c, b])).toBe('a las 7:30, a las 13:00 y a las 19:00')
+  })
+
+  it('lo que no tiene hora se dice «sin hora», no se inventa una', () => {
+    expect(describeExistingHours([item('a', { startTime: null })])).toBe('sin hora')
+  })
+})
+
+describe('describeMultipleItemsNote (criterio 35)', () => {
+  it('con uno solo el catálogo no dice nada: su hoja no se queda corta', () => {
+    expect(describeMultipleItemsNote([])).toBeNull()
+    expect(describeMultipleItemsNote([item('a', { startTime: '07:30' })])).toBeNull()
+  })
+
+  it('con dos horas lo dice y manda a Plantilla', () => {
+    const note = describeMultipleItemsNote([
+      item('a', { startTime: '07:30' }),
+      item('b', { startTime: '19:00' }),
+    ])
+    expect(note).toBe('Esta actividad tiene 2 horas en tu plantilla · las dos se cambian en Plantilla.')
+  })
+
+  it('con tres, el número es el de verdad', () => {
+    const note = describeMultipleItemsNote([
+      item('a', { startTime: '07:30' }),
+      item('b', { startTime: '13:00' }),
+      item('c', { startTime: '19:00' }),
+    ])
+    expect(note).toContain('3 horas')
+    expect(note).toContain('las 3 se cambian en Plantilla')
+  })
+
+  it('dos veces sin hora no se llaman «horas»', () => {
+    expect(describeMultipleItemsNote([item('a'), item('b')])).toContain('2 veces')
+  })
+})
+
+describe('describeDaysPhrase (criterio 36)', () => {
+  it('los cinco de diario se dicen «de lunes a viernes»', () => {
+    expect(
+      describeDaysPhrase(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
+    ).toBe('de lunes a viernes')
+  })
+
+  it('sábado y domingo, «el fin de semana»; los siete, «todos los días»', () => {
+    expect(describeDaysPhrase(['saturday', 'sunday'])).toBe('el fin de semana')
+    expect(
+      describeDaysPhrase([
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+      ]),
+    ).toBe('todos los días')
+  })
+
+  it('cualquier otra combinación se enumera, y sin ninguno no dice nada', () => {
+    expect(describeDaysPhrase(['monday', 'wednesday'])).toBe('lunes y miércoles')
+    expect(describeDaysPhrase([])).toBe('')
   })
 })

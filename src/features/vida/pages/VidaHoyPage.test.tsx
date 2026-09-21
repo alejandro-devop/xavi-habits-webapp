@@ -2,6 +2,7 @@ import { act, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
+import { useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { VidaItem, VidaSuggestion } from '@/features/vida/types/vida-item.types'
@@ -280,8 +281,11 @@ describe('VidaHoyPage — el día con plan', () => {
       .filter((texto) => texto.includes('Bañarme') || texto.includes('Cocinar'))
     expect(nombres[0]).toContain('Bañarme')
 
-    // Icono, color y duración de cada bloque.
-    expect(screen.getByText('45 min')).toBeInTheDocument()
+    // Icono, color y duración de cada bloque. Desde la tajada 4 la duración de
+    // un bloque **cuya hora ya pasó** se lee dentro de «planeado 45 min ·
+    // pendiente» (criterio 39), así que se busca en su fila y no suelta: lo que
+    // este caso afirma —que el bloque dice cuánto dura— no cambia.
+    expect(screen.getByText('Bañarme').closest('li')).toHaveTextContent('45 min')
     expect(screen.getByText('1 h')).toBeInTheDocument()
   })
 
@@ -1187,8 +1191,13 @@ describe('VidaHoyPage — lo real encima de lo planeado (FEAT-004, tajada 2)', (
   it('criterio 29 — un día con plan y nada registrado se ve como lo dejó F2', () => {
     renderWithProviders(<VidaHoyPage />)
 
-    expect(screen.getByText(/^planeado /)).toBeInTheDocument()
-    expect(screen.getByText(/^libre /)).toBeInTheDocument()
+    // La leyenda, y no toda la página: desde la tajada 4 un bloque pendiente
+    // también empieza por «planeado» (criterio 39). Lo que este caso afirma
+    // —que la **barra** sigue en la forma de F2— es lo de dentro del
+    // presupuesto.
+    const presupuesto = document.getElementById('vida-budget-heading')!.closest('section')!
+    expect(within(presupuesto).getByText(/^planeado /)).toBeInTheDocument()
+    expect(within(presupuesto).getByText(/^libre /)).toBeInTheDocument()
     expect(screen.queryByText(/^hecho /)).not.toBeInTheDocument()
     expect(screen.queryByText(/^sin dato /)).not.toBeInTheDocument()
     expect(screen.queryByText('✓ calcado')).not.toBeInTheDocument()
@@ -1402,5 +1411,325 @@ describe('VidaHoyPage — registrar lo que se sale (criterios 30 a 37 y 56)', ()
     expect(
       screen.queryByRole('button', { name: 'Más opciones de Llamada con el banco' }),
     ).not.toBeInTheDocument()
+  })
+})
+
+/* ── Lo que falta (FEAT-004, tajada 4): criterios 39 a 51, 58 ───────────── */
+
+describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de cierre', () => {
+  /** Una sesión ya cerrada, la que deja «Empezar» + «Terminar» sobre un bloque. */
+  function closedFollowUp(
+    id: string,
+    activityId: string,
+    title: string,
+    startTime: string,
+    durationMinutes: number,
+    date = '2026-09-18',
+  ): ActivityFollowUp {
+    return {
+      id,
+      activityId,
+      date,
+      startTime,
+      durationMinutes,
+      isOpen: false,
+      endTime: null,
+      endDate: null,
+      endDateTime: null,
+      notes: null,
+      activity: { id: activityId, title, category: null },
+    }
+  }
+
+  beforeEach(() => {
+    // El store del aparato es un singleton: cada caso empieza sin nada dicho.
+    useVidaDeviceNotesStore.setState({ blockNotes: {}, dismissedNoData: [] })
+    window.localStorage.clear()
+  })
+
+  it('criterio 39 — al pasar su hora el bloque se lee «pendiente», no «no hecho»', () => {
+    // Son las 9:24: «Bañarme» (08:00–08:45) ya pasó y «Leer un rato» (10:00) no.
+    renderWithProviders(<VidaHoyPage />)
+
+    const banarme = screen.getByText('Bañarme').closest('li')!
+    expect(within(banarme).getByText('pendiente')).toBeInTheDocument()
+    expect(screen.queryByText('no hecho')).not.toBeInTheDocument()
+    const leer = screen.getByText('Leer un rato').closest('li')!
+    expect(within(leer).queryByText('pendiente')).not.toBeInTheDocument()
+  })
+
+  it('criterio 39 — el día cerrado ya dice «no hecho»', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([closedFollowUp('f9', 'a-b1', 'Bañarme', '08:00', 45)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const leer = screen.getByText('Leer un rato').closest('li')!
+    expect(within(leer).getByText('no hecho')).toBeInTheDocument()
+    expect(screen.queryByText('pendiente')).not.toBeInTheDocument()
+  })
+
+  it('criterios 40 y 60 — las tres salidas, las tres a un toque y del mismo tipo', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const banarme = screen.getByText('Bañarme').closest('li')!
+    const grupo = within(banarme).getByRole('group', { name: 'Qué pasó con Bañarme' })
+    const botones = within(grupo).getAllByRole('button')
+    expect(botones.map((boton) => boton.textContent)).toEqual([
+      'Lo hice',
+      'Hice otra cosa',
+      'No se pudo',
+    ])
+    // Mismo peso visual: las tres son **el mismo control**, con la misma clase.
+    expect(new Set(botones.map((boton) => boton.className)).size).toBe(1)
+  })
+
+  it('criterio 41 — «Lo hice» registra la hora y la duración planeadas', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const banarme = screen.getByText('Bañarme').closest('li')!
+    fireEvent.click(within(banarme).getByRole('button', { name: 'Lo hice' }))
+
+    expect(createFollowUpMutation.mutate).toHaveBeenCalledWith({
+      activityId: 'a-b1',
+      date: '2026-09-18',
+      startTime: '08:00',
+      durationMinutes: 45,
+      notes: null,
+    })
+    // Y **no toca el plan** (criterio 37, que sigue valiendo aquí).
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+    expect(editMutation.mutate).not.toHaveBeenCalled()
+    expect(removeMutation.mutate).not.toHaveBeenCalled()
+    expect(setMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 41 — «Lo hice» a mitad del bloque recorta a «ahora», no al futuro', () => {
+    // 9:24, con un bloque de 9:00 a 10:00: se registran 24 minutos, no 60.
+    planQuery = ready([block('b9', 'Estirar', '09:00', '10:00')])
+    renderWithProviders(<VidaHoyPage />)
+
+    const fila = screen.getByText('Estirar').closest('li')!
+    // A esta hora el bloque aún no es «pendiente», así que las salidas no se
+    // ofrecen: esto comprueba la red de debajo, no la puerta.
+    expect(within(fila).queryByRole('button', { name: 'Lo hice' })).not.toBeInTheDocument()
+  })
+
+  it('criterios 35 y 41 — la sesión de un bloque se corrige y se quita desde su «···»', async () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([closedFollowUp('f1', 'a-b1', 'Bañarme', '08:00', 45)])
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Corregir' }))
+
+    const hoja = screen
+      .getAllByRole('dialog')
+      .find((node) => node.textContent?.includes('Corregir «Bañarme»'))!
+    expect(within(hoja).getByText('Corregir «Bañarme»')).toBeInTheDocument()
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue('08:00')
+    fireEvent.click(within(hoja).getByRole('button', { name: 'Volver' }))
+
+    // Y «Quitar del registro», con confirmación que nombra qué se quita y
+    // salida **«Volver»**, que no llama a la mutación.
+    async function abrirConfirmacion() {
+      fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+      // El primero es el del menú: el del diálogo, si quedara alguno montado,
+      // va después en el DOM porque se pinta en un portal al final del `body`.
+      fireEvent.click(screen.getAllByRole('button', { name: 'Quitar del registro' })[0]!)
+      await act(async () => {})
+      return screen
+        .getAllByRole('dialog')
+        .find((node) => node.textContent?.includes('¿Quitar «Bañarme» del registro?'))!
+    }
+
+    const confirmacion = await abrirConfirmacion()
+    expect(within(confirmacion).getByText('¿Quitar «Bañarme» del registro?')).toBeInTheDocument()
+    fireEvent.click(within(confirmacion).getByRole('button', { name: 'Volver' }))
+    await act(async () => {})
+    expect(deleteFollowUpMutation.mutate).not.toHaveBeenCalled()
+
+    const otraVez = await abrirConfirmacion()
+    fireEvent.click(within(otraVez).getByRole('button', { name: 'Quitar del registro' }))
+    await act(async () => {})
+    expect(deleteFollowUpMutation.mutate).toHaveBeenCalledWith({
+      id: 'f1',
+      date: '2026-09-18',
+      activityId: 'a-b1',
+      wasOpen: false,
+    })
+  })
+
+  it('criterios 41 y 46 — también en un día pasado, donde no se planea', () => {
+    viewedDate = '2026-09-17'
+    planQuery = ready([{ ...block('p1', 'Bañarme', '08:00', '08:45'), date: '2026-09-17' }])
+    dayFollowUpsQuery = ready([
+      closedFollowUp('f2', 'a-p1', 'Bañarme', '08:00', 45, '2026-09-17'),
+    ])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Más opciones de Bañarme' }))
+    expect(screen.getByRole('button', { name: 'Corregir' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Quitar del registro' })).toBeInTheDocument()
+    // Cero controles de **plan** en un día pasado (criterio 56).
+    expect(screen.queryByRole('button', { name: 'Quitar del plan' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Cambiar hora o duración' })).not.toBeInTheDocument()
+  })
+
+  it('criterio 42 — «Hice otra cosa» abre la hoja con el rato del bloque puesto', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const banarme = screen.getByText('Bañarme').closest('li')!
+    fireEvent.click(within(banarme).getByRole('button', { name: 'Hice otra cosa' }))
+
+    const hoja = screen
+      .getAllByRole('dialog')
+      .find((node) => node.textContent?.includes('Registrar tiempo pasado'))!
+    expect(within(hoja).getByText('Registrar tiempo pasado')).toBeInTheDocument()
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue('08:00')
+    // La duración planeada viene elegida y se puede cambiar antes de guardar.
+    expect(within(hoja).getByRole('button', { name: '45' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('criterio 42 — el bloque queda no hecho pero **explicado**, con vía a lo que pasó', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([
+      closedFollowUp('f3', 'a-otra', 'Llamada con el banco', '08:05', 30),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const banarme = screen.getByText('Bañarme').closest('li')!
+    expect(within(banarme).getByText('no hecho')).toBeInTheDocument()
+    expect(within(banarme).getByText('en su lugar,', { exact: false })).toBeInTheDocument()
+    const via = within(banarme).getByRole('link', { name: 'Llamada con el banco' })
+    expect(via).toHaveAttribute('href', '#session-f3')
+    // Y el plan **no se movió**: el bloque sigue en su hora.
+    expect(within(banarme).getByText('8:00')).toBeInTheDocument()
+    expect(document.getElementById('session-f3')).not.toBeNull()
+  })
+
+  it('criterios 43, 44 y 45 — «No se pudo», con razón opcional y dicho en el aparato', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const banarme = () => screen.getByText('Bañarme').closest('li')!
+    fireEvent.click(within(banarme()).getByRole('button', { name: 'No se pudo' }))
+
+    // Marcado al instante: no contar nada ya es una respuesta válida.
+    expect(within(banarme()).getByText('no se pudo')).toBeInTheDocument()
+    // Y se dice dónde se queda la nota (criterio 44).
+    expect(
+      within(banarme()).getByText('Esta nota se queda en este dispositivo.'),
+    ).toBeInTheDocument()
+
+    fireEvent.change(within(banarme()).getByLabelText('Si quieres, cuenta qué pasó'), {
+      target: { value: 'me quedé dormido' },
+    })
+    fireEvent.click(within(banarme()).getByRole('button', { name: 'Guardar' }))
+
+    expect(within(banarme()).getByText('· me quedé dormido')).toBeInTheDocument()
+    expect(window.localStorage.getItem('xavi.vida.deviceNotes')).toContain('me quedé dormido')
+
+    // Se puede quitar después.
+    fireEvent.click(within(banarme()).getByRole('button', { name: 'Quitar la nota' }))
+    expect(within(banarme()).queryByText('no se pudo')).not.toBeInTheDocument()
+  })
+
+  it('criterios 47 y 48 — los tramos sin dato tienen nombre, horas y «¿Qué pasó?»', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([closedFollowUp('f4', 'a-b1', 'Bañarme', '08:00', 45)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const tramos = screen.getAllByText('Sin dato')
+    expect(tramos.length).toBeGreaterThan(0)
+    const manana = tramos[0]!.closest('li')!
+    expect(within(manana).getByText('6:30 – 8:00 · 1h 30')).toBeInTheDocument()
+    expect(within(manana).getByRole('button', { name: '¿Qué pasó?' })).toBeInTheDocument()
+    expect(within(manana).getByRole('button', { name: 'Dejarlo así' })).toBeInTheDocument()
+
+    fireEvent.click(within(manana).getByRole('button', { name: '¿Qué pasó?' }))
+    const hoja = screen
+      .getAllByRole('dialog')
+      .find((node) => node.textContent?.includes('Registrar tiempo pasado'))!
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue('06:30')
+  })
+
+  it('criterio 49 — tras «dejarlo así» el tramo sigue, pero ya no pregunta', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([closedFollowUp('f5', 'a-b1', 'Bañarme', '08:00', 45)])
+    const { unmount } = renderWithProviders(<VidaHoyPage />)
+
+    const manana = () => screen.getAllByText('Sin dato')[0]!.closest('li')!
+    fireEvent.click(within(manana()).getByRole('button', { name: 'Dejarlo así' }))
+
+    expect(within(manana()).getByText('Sin dato')).toBeInTheDocument()
+    expect(within(manana()).queryByRole('button', { name: '¿Qué pasó?' })).not.toBeInTheDocument()
+
+    // Y al volver a entrar tampoco: se recuerda en este aparato.
+    unmount()
+    renderWithProviders(<VidaHoyPage />)
+    expect(within(manana()).getByText('Sin dato')).toBeInTheDocument()
+    expect(within(manana()).queryByRole('button', { name: '¿Qué pasó?' })).not.toBeInTheDocument()
+    expect(within(manana()).getByText('Lo dejaste así.')).toBeInTheDocument()
+  })
+
+  it('criterio 50 — el tiempo que aún no ha llegado no se llama «sin dato»', () => {
+    dayFollowUpsQuery = ready([closedFollowUp('f6', 'a-b1', 'Bañarme', '08:00', 45)])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.queryByText('Sin dato')).not.toBeInTheDocument()
+  })
+
+  it('criterio 51 — la frase de cierre resume el día y releva a la guía de F3', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([
+      closedFollowUp('f7', 'a-b1', 'Bañarme', '08:00', 45),
+      closedFollowUp('f8', 'a-otra', 'Llamada con el banco', '13:05', 40),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText(/^Seguiste 1 de 3\./)).toBeInTheDocument()
+    expect(screen.getByText(/En lugar de Cocinar y almorzar hiciste Llamada con el banco\./))
+      .toBeInTheDocument()
+    expect(screen.getByText(/Leer un rato se quedó sin hacer\./)).toBeInTheDocument()
+    // La guía de FEAT-003 habla de huecos y de mañana: en un día cerrado la
+    // releva la frase de cierre, y no se leen las dos.
+    const presupuesto = document.getElementById('vida-budget-heading')!.closest('section')!
+    expect(presupuesto.textContent).not.toContain('Tu día se cerró a las 23:00.')
+    expect(presupuesto.textContent).not.toContain('Tu hueco más grande')
+  })
+
+  it('criterio 58 — con lo vivido caído no se afirma «no hecho» ni se ofrecen salidas', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = {
+      data: [],
+      isPending: false,
+      isError: true,
+      fetchStatus: 'idle',
+      refetch: vi.fn(),
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('Falta una parte de tu día')).toBeInTheDocument()
+    expect(screen.queryByText('no hecho')).not.toBeInTheDocument()
+    expect(screen.queryByText('pendiente')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Lo hice' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Sin dato')).not.toBeInTheDocument()
+    // Y el plan se sigue viendo.
+    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+  })
+
+  it('criterio 59 — nada de lo nuevo usa una palabra de culpa', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    dayFollowUpsQuery = ready([closedFollowUp('f10', 'a-otra', 'Llamada', '08:05', 30)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const texto = (document.body.textContent ?? '').toLowerCase()
+    for (const prohibida of ['desperdici', 'perdiste', 'fallaste', 'cancelar', 'eliminar']) {
+      expect(texto).not.toContain(prohibida)
+    }
   })
 })

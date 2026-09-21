@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaAgendaBlock } from '@/features/vida/components/VidaAgendaBlock'
 import { VidaAgendaGap } from '@/features/vida/components/VidaAgendaGap'
+import { VidaAgendaNoData } from '@/features/vida/components/VidaAgendaNoData'
 import { VidaAgendaSession } from '@/features/vida/components/VidaAgendaSession'
 import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
@@ -12,6 +13,7 @@ import type { VidaLogSessionMode } from '@/features/vida/components/VidaLogSessi
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
 import { useAddDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
+import { useCreateActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
 import { useBuildDayFromTemplate } from '@/features/vida/hooks/useBuildDayFromTemplate'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
@@ -34,7 +36,19 @@ import {
   getDayBudget,
   suggestionsForGap,
 } from '@/features/vida/utils/vida-agenda.utils'
-import { buildDayExecution } from '@/features/vida/utils/vida-execution.utils'
+import {
+  buildDayClosingLine,
+  buildDayExecution,
+  collectDayClosing,
+  plannedSessionMinutes,
+} from '@/features/vida/utils/vida-execution.utils'
+import type { NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
+import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
+import {
+  getBlockNote,
+  isNoDataDismissed,
+  useVidaDeviceNotesStore,
+} from '@/features/vida/store/vida-device-notes.store'
 import type { GapWindow } from '@/features/vida/utils/vida-gap-form.utils'
 import {
   gapToWindow,
@@ -136,6 +150,18 @@ export function VidaHoyPage() {
   // hoy o de atrás, aunque su **plan** no se pueda tocar (D10, criterios 32 y
   // 56). En un día futuro, no: no se registra lo que no ha pasado.
   const canLogPast = isToday || isPast
+  // **Lo que falta** (tajada 4). Lo que vive en este aparato —la razón de un
+  // «No se pudo» y los tramos que se dejaron así— sale de un store con
+  // `persist`, el molde de `habit-identity.store.ts`. Es lo **único** de toda
+  // la feature que escribe en `localStorage`, y la pantalla lo dice.
+  const blockNotes = useVidaDeviceNotesStore((state) => state.blockNotes)
+  const dismissedNoData = useVidaDeviceNotesStore((state) => state.dismissedNoData)
+  const markBlockCouldNot = useVidaDeviceNotesStore((state) => state.markBlockCouldNot)
+  const clearBlockNote = useVidaDeviceNotesStore((state) => state.clearBlockNote)
+  const dismissNoData = useVidaDeviceNotesStore((state) => state.dismissNoData)
+  // «Lo hice» escribe una sesión con lo planeado (criterio 41). Es la misma
+  // mutación que usa la hoja de registrar: ni clave ni invalidación nuevas.
+  const createFollowUpMutation = useCreateActivityFollowUpMutation()
   const {
     planItems,
     suggestions,
@@ -144,6 +170,7 @@ export function VidaHoyPage() {
     isDisabled,
     isPending,
     isPlanError,
+    isFollowUpsError,
     failed,
     refetch,
   } = useVidaDayData(date)
@@ -215,6 +242,31 @@ export function VidaHoyPage() {
   const firstRealGapId =
     execution.entries.find((entry) => entry.kind === 'gap' && !entry.isSliver && !entry.isPast)
       ?.id ?? null
+
+  // **Lo vivido se pudo mirar.** Sin esto no se afirma nada de lo que falta:
+  // ni «pendiente», ni «no hecho», ni las tres salidas (criterio 58). El aviso
+  // de «falta una parte de tu día» ya lo pinta `failed` más abajo.
+  const executionKnown = !isFollowUpsError
+  const noDataByGapId = executionKnown ? execution.noDataByGapId : {}
+  // Qué bloques dijeron «No se pudo» en **este aparato**: es lo único que la
+  // frase de cierre necesita del `localStorage`, y entra como un conjunto de
+  // ids para que `collectDayClosing` siga siendo pura.
+  const couldNotItemIds = useMemo(
+    () =>
+      new Set(
+        planItems
+          .filter((item) => getBlockNote(blockNotes, date, item.id) !== null)
+          .map((item) => item.id),
+      ),
+    [planItems, blockNotes, date],
+  )
+  // **La frase de cierre** (criterio 51): solo con el día terminado y algo
+  // registrado —la misma puerta que abre la forma cerrada del presupuesto— y
+  // nunca sobre lo vivido que no cargó.
+  const closingLine =
+    executionKnown && execution.budget.form === 'closed'
+      ? buildDayClosingLine(collectDayClosing({ execution, agenda, couldNotItemIds }))
+      : null
 
   // La hoja: una `key` por apertura, como `VidaActividadesPage`. Se remonta
   // limpia sin que nadie tenga que vaciarla a mano, y se queda montada al
@@ -299,6 +351,51 @@ export function VidaHoyPage() {
         startTime: minutesToTime(block.startMinutes),
         durationMinutes: block.durationMinutes,
       },
+    })
+  }
+
+  /**
+   * **«Lo hice»** (criterio 41): la sesión con **la hora y la duración
+   * planeadas**, recortada a «ahora» por `plannedSessionMinutes` para que nunca
+   * nazca terminando en el futuro. Se deshace desde el «···» del bloque
+   * —«Quitar del registro»—, que es lo que pide el mismo criterio.
+   *
+   * Si el bloque llevaba un «no se pudo», deja de ser verdad y la nota se va:
+   * dos explicaciones contrarias sobre el mismo bloque se contradicen.
+   */
+  function markBlockDone(block: AgendaBlock) {
+    clearBlockNote(date, block.item.id)
+    createFollowUpMutation.mutate(
+      logSessionInput({
+        date,
+        activityId: block.item.activityId,
+        startTime: minutesToTime(block.startMinutes),
+        durationMinutes: plannedSessionMinutes({ block, nowMinutes }),
+      }),
+    )
+  }
+
+  /**
+   * **«Hice otra cosa»** (criterio 42): la hoja de «qué» con **el rato del
+   * bloque ya puesto** y ajustable antes de guardar. El bloque no se toca: lo
+   * que se registre encima de su hora lo explicará solo, porque «en su lugar,
+   * X» se **deriva** del cruce (`findInsteadSession`).
+   */
+  function logInsteadOfBlock(block: AgendaBlock) {
+    openLogSheet({
+      mode: 'log',
+      initial: {
+        startTime: minutesToTime(block.startMinutes),
+        durationMinutes: plannedSessionMinutes({ block, nowMinutes }),
+      },
+    })
+  }
+
+  /** **«¿Qué pasó?»** de un tramo sin dato: la hoja con sus horas (criterio 48). */
+  function askAboutNoData(slice: NoDataSlice) {
+    openLogSheet({
+      mode: 'log',
+      initial: { startTime: slice.startTime, durationMinutes: slice.durationMinutes },
     })
   }
 
@@ -477,6 +574,42 @@ export function VidaHoyPage() {
                   openSession.session ? () => openFinishModal(openSession.session!) : undefined
                 }
                 isSessionBusy={sessionActions.isBusy}
+                // **Lo que falta** (tajada 4). Con lo vivido caído no se pasa
+                // nada de esto: no se afirma «no hecho» de lo que no se pudo
+                // comprobar (criterio 58).
+                missing={executionKnown ? execution.missingByBlockId[entry.id] : null}
+                instead={execution.insteadByBlockId[entry.id] ?? null}
+                couldNot={getBlockNote(blockNotes, date, entry.item.id)}
+                outcomes={
+                  executionKnown && canLogPast
+                    ? {
+                        onDid: () => markBlockDone(entry),
+                        onDidSomethingElse: () => logInsteadOfBlock(entry),
+                        onCouldNot: (reason) =>
+                          markBlockCouldNot(date, entry.item.id, reason),
+                        onClearCouldNot: () => clearBlockNote(date, entry.item.id),
+                        isBusy: createFollowUpMutation.isPending,
+                      }
+                    : null
+                }
+                // Corregir y quitar **la sesión de este bloque** (criterios 35
+                // y 41): el camino más común —empezarlo y terminarlo— también
+                // se corrige, y también en un día pasado.
+                onEditSession={
+                  canLogPast ? (session) => openLogSheet({ mode: 'edit', session }) : undefined
+                }
+              />
+            ) : noDataByGapId[entry.id] ? (
+              // Un rato ya pasado del que no se sabe nada (criterios 47 a 49).
+              // Solo con el día cerrado y algo registrado: ver
+              // `buildNoDataSlices`, donde está escrito por qué.
+              <VidaAgendaNoData
+                slice={noDataByGapId[entry.id]!}
+                isDismissed={isNoDataDismissed(dismissedNoData, date, entry.id)}
+                onAsk={canLogPast ? askAboutNoData : undefined}
+                onLeaveIt={
+                  canLogPast ? (slice) => dismissNoData(date, slice.id) : undefined
+                }
               />
             ) : (
               <VidaAgendaGap
@@ -535,6 +668,7 @@ export function VidaHoyPage() {
             budget={budget}
             executed={execution.budget}
             guidance={guidance}
+            closingLine={closingLine}
             nowLabel={nowLabel}
           />
 
@@ -673,6 +807,7 @@ export function VidaHoyPage() {
           suggestions={suggestions}
           defaultStartTime={defaultLogStartTime(dayHours.startTime, nowMinutes)}
           session={logSheet.mode === 'edit' ? logSheet.session : null}
+          initial={logSheet.mode === 'edit' ? null : (logSheet.initial ?? null)}
           onStart={(activityId) => sessionActions.start(activityId)}
         />
       ) : null}
@@ -721,5 +856,9 @@ type SheetState =
  * empieza otra».
  */
 type LogSheetState =
-  | { mode: Extract<VidaLogSessionMode, 'start' | 'log'> }
+  | {
+      mode: Extract<VidaLogSessionMode, 'start' | 'log'>
+      /** Hora y duración **ya puestas**: el rato de un bloque o de un tramo sin dato. */
+      initial?: { startTime?: string; durationMinutes?: number }
+    }
   | { mode: Extract<VidaLogSessionMode, 'edit'>; session: ActivityFollowUp }

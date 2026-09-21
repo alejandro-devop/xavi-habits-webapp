@@ -12,7 +12,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-001 | delivered | 3/3 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | delivered | 4/4 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-19 |
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
-| FEAT-004 | building | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+| FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | planned | 0/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
@@ -25,6 +25,111 @@ feature in `building` at `3/4` has two accepted and one in progress.
 | FEAT-001 | layouts, app/router, features/vida | Cimientos del módulo Vida — la barra cambia de módulo y Vida existe como cascarón | 2026-09-19 |
 | FEAT-002 | features/vida | El catálogo de Vida — las actividades de tu día a día, con su categoría y sus días | 2026-09-20 |
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
+| FEAT-004 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
+
+**FEAT-004 `delivered`** (2026-09-20, **sin commitear**). Cuarta revisión:
+**`accepted`**, y con ella **las cuatro tajadas**. Los tres obligatorios los
+comprobé con arnés propio (7 casos, borrado): **(1)** el «···» de la sesión
+**emparejada con su bloque** ya existe —«Corregir» y «Quitar del registro», con
+«¿Quitar «Bañarme» del registro?» y salida **«Volver»** que no llama a la
+mutación, **también en un día pasado** y ahí **sin un solo control de plan**—, y
+con eso el criterio 35 queda entero; **(2)** «Lo hice» **recorta a ahora**
+(14:00–15:00 marcado a las 14:50 → **50 min**), nunca da 0 ni negativo (mínimo
+**1**), no recorta en un día pasado y **no puede empezar en el futuro** porque
+`describeMissingBlock` da `upcoming` a las 14:59 y `pending` en el minuto exacto
+del fin, y el bloque **no pinta las tres salidas con `upcoming`**; **(3)** la
+**sesión fuera del horario del día** sigue sin entrar en la barra y **la acepto
+como deuda anotada**: arreglarla es ensanchar la ventana del presupuesto, o sea
+tocar el criterio 26 entero, que es de la tajada 2 y está aceptado con sus
+medidas. Leí **las cuatro variantes** de la frase de cierre generándolas yo:
+ninguna trae una palabra de culpa (barrí nueve) y **todas abren por lo que sí
+salió**. Las tres salidas comparten **una sola** `className` (mismo peso visual).
+El store es el **único `localStorage`** de la feature, con una clave
+(`xavi.vida.deviceNotes`) y `partialize` que guarda solo razones y «dejarlo
+así». Las cuatro decisiones fuera del plan quedan escritas y ninguna devuelve;
+la más discutible es que **«sin dato» y su «¿qué pasó?» solo aparecen con el
+presupuesto en forma cerrada**: eso es lo que garantiza el criterio 29 en el caso
+principal, pero deja sin preguntar el día **sin plan y sin nada apuntado** — es
+una decisión de producto, está a una línea de cambiarse y **la pongo en manos del
+usuario**. Línea base corrida entera por el revisor: typecheck **exit 0**, lint
+**14/0**, `pnpm test` **2 fallos de 1153** (los dos de `SearchSelect`; 1 archivo
+rojo de 99), `pnpm build` **exit 0** con chunk inicial **964,65 kB**,
+`app-icons` **620,20 kB** e `IconPicker` **4,64 kB** (CSS 199,97 kB).
+
+**Lo que queda del usuario, y solo él puede cerrarlo** (con la API despierta;
+Render tarda ~1 min): el **criterio 66** —el recorrido entero, once pasos al
+final de la sección 3 del dossier— y el **criterio 52**, el de fase: vivir un día
+a medias y comprobar que quedó registrado **sin mover ni quitar un solo bloque
+del plan**. Dentro de eso, lo que ningún agente pudo tocar nunca: **ninguna
+llamada real al API** (las subtareas de sesión del criterio 10, el
+`activityFollowUpAdd` de «Lo hice» y el `activityFollowUpRemove` de deshacerlo),
+el **tema oscuro y los 375 px dentro de `/app/vida/hoy`** (criterios 60, 61 y 62:
+medidos en arneses, nunca en la pantalla real) y el `localStorage` del navegador
+de verdad. Y siguen abiertos de antes: **FEAT-001 criterio 10**, **FEAT-002
+criterio 36** y **FEAT-003 criterios 47 y 58**, todos recorridos con sesión.
+
+**La deuda anotada de las cuatro tajadas, en un solo sitio** (ninguna devuelve,
+todas escritas en la sección 4): una **sesión fuera del horario del día** no
+entra en la barra del presupuesto (criterio 26; arreglo: ensanchar la ventana) ·
+un bloque **movido que además está en marcha** se pinta dos veces · al **movido**
+le falta la barrita plan-frente-a-real · **«▶ Empezar»** se apaga por actividad y
+no por bloque · **«Cambiar hora o duración»** valida solo contra el plan, sin
+mirar lo registrado · el **buscador de actividades** no distingue «no hay nada»
+de «no cargó» (heredado de FEAT-003) · **«Corregir» no puede cambiar el «qué»**
+(el API no lo admite) y ninguna pantalla lo explica · **registrar no avisa de
+solapes** · en un **día sin plan y sin nada apuntado** no se pregunta «¿qué
+pasó?» · la frase de cierre dice **«Otras 1 quedaron explicadas»** con
+exactamente tres bloques explicados, y **no nombra el bloque movido** · la línea
+de «esta nota se queda en este dispositivo» se enseña **cada vez**, no solo la
+primera · y **lo del aparato no viaja**: en otro dispositivo no se ven las
+razones y el «¿qué pasó?» vuelve a preguntar (deuda de portabilidad de D7/D8,
+dicha en pantalla desde el principio).
+
+**FEAT-004, tajada 4 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **el día ya cuenta lo que
+falta.** Un bloque sin sesión se lee **«pendiente»** al pasar su hora de fin y
+**«no hecho»** solo cuando el día se cierra (D9, con seis casos puros y los dos
+momentos vistos en pantalla), y ofrece **las tres salidas con el mismo peso
+visual** —comprobado por estructura: los tres botones comparten `className`—:
+**«Lo hice»** (escribe la sesión con la hora y la duración planeadas y **no
+toca ninguna de las cuatro mutaciones del plan**), **«Hice otra cosa»** (abre la
+hoja de la tajada 3 con **08:00** y la píldora **45** ya puestas; el bloque queda
+no hecho **con «en su lugar, X»** y un ancla a la fila de lo que sí pasó) y
+**«No se pudo»** (marca al instante, razón opcional que se puede cambiar y
+quitar). Los ratos pasados sin plan y sin sesión se llaman **«sin dato»**, con
+sus horas y sus minutos, y a partir de **30 min** preguntan **«¿Qué pasó?»** o
+**«Dejarlo así»** — y lo dejado así **sigue ahí y no vuelve a preguntar**, ni
+tras desmontar y volver a montar. El presupuesto de un día cerrado cierra con
+**una frase sin reproche** («Seguiste 1 de 3. En lugar de Cocinar y almorzar
+hiciste Llamada con el banco…») que **releva a la guía de FEAT-003** y cuya
+cifra de lo que no salió **nunca abre** la línea. **Lo que pedía el revisor de la
+tajada 3, hecho:** la **sesión emparejada con su bloque** ya tiene su «···» con
+**«Corregir»** y **«Quitar del registro»** (diálogo que la nombra, salida
+«Volver» que no llama a la mutación), **también en un día pasado** — con eso el
+criterio 35 queda entero y el deshacer del 41 también. **Y la decisión sobre
+`validateLogPast`, escrita y con test: «Lo hice» recorta a «ahora»** (un bloque
+14:00–15:00 marcado a las 14:50 registra **50 min**), así que no hace falta
+exceptuar la validación y nunca nace una sesión que termina en el futuro. Lo del
+aparato va en `store/vida-device-notes.store.ts` (`persist`, molde
+`habit-identity.store.ts`, probado también con un `localStorage` **que lanza**) y
+es **lo único** de la feature en `localStorage`; la pantalla lo dice. Línea base
+sin empeorar: typecheck **limpio**, lint **14/0**, `pnpm test` **2 fallos de
+1153** (los dos de `SearchSelect`; **+52 tests**, 1 archivo rojo de 99), `pnpm
+build` chunk inicial **964,65 kB** (+10,7 kB, **ninguno de iconos**: `app-icons`
+620,20 e `IconPicker` 4,64 clavados); `src/features/vida` **733/733**. Medido
+**en el navegador** con arnés borrado: 375 px sin scroll horizontal con las tres
+salidas, un nombre de 59 caracteres y una razón de tres líneas, y **oscuro
+contra fondo negro** entre 9,1:1 y 18,8:1 en todo lo nuevo. **Avisos:** un bloque
+de hoy cuya hora ya pasó **cambia de texto** («planeado 45 min · pendiente» donde
+antes decía «45 min») y por eso **dos tests anteriores cambiaron de consulta, no
+de afirmación**; `VidaAgendaBlock` monta ahora `useDeleteActivityFollowUpMutation`
+y su «···» aparece en días pasados. **Queda dicho y no arreglado:** el hallazgo
+de la tajada 2 —una sesión **fuera del horario del día** no entra en la barra—
+**sigue abierto**, porque cerrarlo es ensanchar la ventana del presupuesto y eso
+toca el criterio 26 entero; y **en un día del que no se apuntó nada no se
+pregunta «¿qué pasó?»**, por el criterio 29, que es una lectura mía y es de una
+línea cambiarla. **Del usuario:** los criterios **52** y **66** — el recorrido
+manual entero está al final de la sección 3, en once pasos.
 
 **FEAT-004, tajada 3 — revisión: `accepted`** (2026-09-20), **con un recorte
 escrito y con dueño**. Los criterios 30–38 y 56 se cumplen; el **35 queda cerrado

@@ -656,6 +656,19 @@ export type DayExecution = {
   isDayClosed: boolean
   /** Hay algo registrado este día: sin esto, la pantalla se ve como en F2. */
   hasExecution: boolean
+
+  /* ── Lo que falta (tajada 4) ──────────────────────────────────────────── */
+
+  /**
+   * Los bloques **sin sesión**, con su estado de D9: `upcoming` (no se dice
+   * nada), `pending` (ya pasó su hora) o `not-done` (el día se cerró). Los que
+   * sí tienen sesión no están aquí (criterio 39).
+   */
+  missingByBlockId: Record<string, BlockMissingStatus>
+  /** «En su lugar, X» de los bloques que no tuvieron su sesión (criterio 42). */
+  insteadByBlockId: Record<string, BlockInstead>
+  /** Los tramos «sin dato», por el `id` del hueco que los produce (criterio 47). */
+  noDataByGapId: Record<string, NoDataSlice>
 }
 
 export type BuildDayExecutionInput = {
@@ -757,13 +770,389 @@ export function buildDayExecution({
   entries.push(...pending)
 
   const dayClosed = isDayClosed({ nowMinutes, dayEnd, isPastDay })
+  const budget = getExecutedBudget({
+    agenda,
+    spans,
+    byBlockId: spanByBlockId,
+    isDayClosed: dayClosed,
+  })
+
+  // Lo que falta (tajada 4). Un bloque **sin sesión** dice en qué momento está
+  // (D9) y, si alguien hizo otra cosa en su rato, qué fue (criterio 42). Los
+  // que tienen sesión no entran: de esos habla `byBlockId`.
+  const missingByBlockId: Record<string, BlockMissingStatus> = {}
+  const insteadByBlockId: Record<string, BlockInstead> = {}
+  for (const block of agenda.blocks) {
+    if (spanByBlockId[block.id]) continue
+    missingByBlockId[block.id] = describeMissingBlock({ block, nowMinutes, isDayClosed: dayClosed })
+    const instead = findInsteadSession({ block, sessions })
+    if (instead) insteadByBlockId[block.id] = instead
+  }
 
   return {
     byBlockId,
     sessions,
     entries,
-    budget: getExecutedBudget({ agenda, spans, byBlockId: spanByBlockId, isDayClosed: dayClosed }),
+    budget,
     isDayClosed: dayClosed,
     hasExecution: spans.length > 0,
+    missingByBlockId,
+    insteadByBlockId,
+    noDataByGapId: buildNoDataSlices({ entries, isClosedForm: budget.form === 'closed' }),
+  }
+}
+
+/* ── Lo que falta (tajada 4): pendiente, no hecho, en su lugar y sin dato ── */
+
+/**
+ * Desde cuántos minutos un tramo sin dato merece que se le pregunte «¿qué
+ * pasó?» (criterio 48). Por debajo de esto es un resto entre dos cosas, no un
+ * rato del que haya nada que contar — y preguntar por cada hueco de diez
+ * minutos sería el ruido que esta feature quiere evitar.
+ */
+export const VIDA_NO_DATA_MIN_MINUTES = 30
+
+/**
+ * Lo que se lee en un bloque **sin sesión** (D9, criterio 39).
+ *
+ * - `upcoming`: su hora todavía no ha pasado. **No se dice nada**: no se
+ *   afirma de algo que aún puede ocurrir.
+ * - `pending`: ya pasó su hora de fin y el día sigue abierto. **«Pendiente»**,
+ *   que no es un reproche: todavía cabe.
+ * - `not-done`: el día se cerró (pasada la hora de fin de los ajustes de Vida,
+ *   o cualquier día pasado). **«No hecho»**, con sus tres salidas al lado.
+ *
+ * Los **dos momentos** son la respuesta del usuario a D9, y por eso no hay un
+ * solo estado: decir «no hecho» a las 10:05 de algo planeado a las 10:00 sería
+ * cerrar un día que aún no ha terminado.
+ */
+export type BlockMissingStatus = 'upcoming' | 'pending' | 'not-done'
+
+export function describeMissingBlock(params: {
+  block: AgendaBlock
+  /** Minutos desde medianoche, o `null` si el día mostrado no es hoy. */
+  nowMinutes: number | null
+  isDayClosed: boolean
+}): BlockMissingStatus {
+  if (params.isDayClosed) return 'not-done'
+  if (params.nowMinutes === null) return 'upcoming'
+  return params.nowMinutes >= params.block.endMinutes ? 'pending' : 'upcoming'
+}
+
+/**
+ * Cuántos minutos registra **«Lo hice»** (criterio 41).
+ *
+ * Los planeados… **hasta ahora**. Un bloque de 14:00 a 15:00 marcado a las
+ * 14:50 nacería terminando a las 15:00, o sea diez minutos en el futuro: la
+ * agenda pintaría un rato que nadie ha vivido, el presupuesto lo contaría (lo
+ * que el criterio 50 prohíbe) y `validateLogPast` no dejaría **corregirlo**
+ * después — el aviso que dejó el revisor de la tajada 3. Recortar aquí es la
+ * respuesta, y no hace falta excepción ninguna en la validación.
+ *
+ * Con la puerta de D9 esto casi nunca actúa —las tres salidas solo aparecen en
+ * un bloque `pending` o `not-done`, o sea cuando su hora de fin **ya pasó**—,
+ * pero es la red por debajo: si algún día se ofrecen antes, lo registrado
+ * seguirá siendo verdad.
+ *
+ * En un día pasado (`nowMinutes === null`) no se recorta nada: aquel día entero
+ * ya ocurrió.
+ */
+export function plannedSessionMinutes(params: {
+  block: AgendaBlock
+  nowMinutes: number | null
+}): number {
+  const planned = Math.max(1, params.block.durationMinutes)
+  if (params.nowMinutes === null) return planned
+  return Math.max(1, Math.min(planned, params.nowMinutes - params.block.startMinutes))
+}
+
+/** «En su lugar, Llamada con el banco» (criterio 42), con su vía a lo que pasó. */
+export type BlockInstead = {
+  /** El `id` de la entrada de la agenda: la vía es un ancla a esa fila. */
+  entryId: string
+  sessionId: string
+  title: string
+  rangeLabel: string
+}
+
+/**
+ * Qué se hizo **en el rato de** un bloque que no tuvo su sesión (criterio 42).
+ *
+ * Se **deriva**, no se guarda: si hay una sesión fuera del plan que se pisa con
+ * la hora del bloque, eso es lo que ocurrió en su lugar. Así «Hice otra cosa»
+ * no necesita ningún campo nuevo ni ninguna marca en el aparato, y el bloque se
+ * explica igual si la otra cosa se registró por cualquier otra puerta —«Empezar
+ * algo», «Registrar tiempo pasado»— en vez de por la salida del bloque. Si se
+ * pisan varias, manda **la que más rato comparte**.
+ */
+export function findInsteadSession(params: {
+  block: AgendaBlock
+  sessions: ExecutionSessionEntry[]
+}): BlockInstead | null {
+  let best: { entry: ExecutionSessionEntry; overlap: number } | null = null
+  for (const entry of params.sessions) {
+    if (entry.variant !== 'off-plan') continue
+    const shared = overlap(
+      { start: entry.startMinutes, end: entry.endMinutes },
+      { start: params.block.startMinutes, end: params.block.endMinutes },
+    )
+    if (shared <= 0) continue
+    if (!best || shared > best.overlap) best = { entry, overlap: shared }
+  }
+  if (!best) return null
+  return {
+    entryId: best.entry.id,
+    sessionId: best.entry.span.id,
+    title: best.entry.span.title,
+    rangeLabel: best.entry.rangeLabel,
+  }
+}
+
+/** Un rato ya pasado del que no se sabe nada (criterios 47 y 48). */
+export type NoDataSlice = {
+  /** El `id` del hueco del que sale: es también la clave del «dejarlo así». */
+  id: string
+  startMinutes: number
+  endMinutes: number
+  durationMinutes: number
+  /** `HH:mm` de su principio: con lo que se abre la hoja ya puesta. */
+  startTime: string
+  /** «8:15 – 10:55». */
+  rangeLabel: string
+  /** «2h 40». */
+  durationLabel: string
+  /** Llega al mínimo para que valga la pena preguntar (criterio 48). */
+  canAsk: boolean
+}
+
+/**
+ * Los tramos «sin dato» de la agenda.
+ *
+ * Salen de los **huecos** que ya calculó `buildDayAgenda` (y que este archivo
+ * parte cuando una sesión cae dentro), así que los minutos que se leen en la
+ * agenda son exactamente los que cuenta la barra (criterio 26).
+ *
+ * **Solo cuando el presupuesto está en su forma cerrada**, es decir: el día
+ * terminó **y** hay algo registrado. Las dos condiciones son deliberadas y
+ * tienen precedente: el criterio 29 dice que un día con plan y **nada**
+ * registrado se ve exactamente como lo dejó F2 —y la revisión de la tajada 2 ya
+ * aceptó la tercera forma del presupuesto justo para no estrenar «sin dato
+ * 16h 30» en un día sin registro—. La consecuencia, dicha: en un día del que no
+ * se apuntó nada **no se pregunta «¿qué pasó?»** en cada hueco; ese día se
+ * cuenta entero desde «Registrar tiempo pasado».
+ *
+ * El tiempo que **aún no ha llegado** no entra nunca (criterio 50): con el día
+ * cerrado no queda futuro dentro de la ventana. Y los restos de menos de
+ * `MIN_GAP_MINUTES` siguen pintándose como lo que son, un respiro entre dos
+ * cosas, no un tramo con nombre.
+ */
+export function buildNoDataSlices(params: {
+  entries: ExecutionEntry[]
+  isClosedForm: boolean
+}): Record<string, NoDataSlice> {
+  if (!params.isClosedForm) return {}
+  const byGapId: Record<string, NoDataSlice> = {}
+  for (const entry of params.entries) {
+    if (entry.kind !== 'gap' || entry.isSliver) continue
+    const durationMinutes = entry.endMinutes - entry.startMinutes
+    if (durationMinutes <= 0) continue
+    byGapId[entry.id] = {
+      id: entry.id,
+      startMinutes: entry.startMinutes,
+      endMinutes: entry.endMinutes,
+      durationMinutes,
+      startTime: minutesToTime(entry.startMinutes),
+      rangeLabel: `${formatTimeForDisplay(minutesToTime(entry.startMinutes))} – ${formatTimeForDisplay(minutesToTime(entry.endMinutes))}`,
+      durationLabel: formatDurationFromMinutes(durationMinutes),
+      canAsk: durationMinutes >= VIDA_NO_DATA_MIN_MINUTES,
+    }
+  }
+  return byGapId
+}
+
+/* ── La frase de cierre del día (criterio 51) ───────────────────────────── */
+
+/** Lo que se sabe de un bloque que no tuvo su sesión, para la frase de cierre. */
+export type ClosingBlockNote = {
+  title: string
+  /** Dijo «No se pudo» (con razón o sin ella). */
+  couldNot: boolean
+  /** Lo que se hizo en su rato, si hubo algo (criterio 42). */
+  insteadTitle: string | null
+}
+
+export type DayClosingInput = {
+  /** Cuántos bloques tenía el plan de ese día. */
+  plannedCount: number
+  /** Cuántos tuvieron su sesión —calcados, cambiados o movidos—. */
+  followedCount: number
+  /** Los que no la tuvieron, con lo que se sabe de cada uno. */
+  missing: ClosingBlockNote[]
+  /** Sesiones registradas ese día (las de los bloques y las de fuera). */
+  sessionCount: number
+  /** Cuántas no son de ningún bloque. */
+  offPlanCount: number
+  offPlanMinutes: number
+  /** Minutos que se salieron de su bloque: el tramo «de más». */
+  overMinutes: number
+  /** Minutos del día que ninguna sesión cubre. */
+  noDataMinutes: number
+}
+
+function joinTitles(titles: string[]): string {
+  if (titles.length <= 1) return titles[0] ?? ''
+  return `${titles.slice(0, -1).join(', ')} y ${titles[titles.length - 1]}`
+}
+
+/**
+ * Lo que el día dice de sí mismo cuando ya terminó (criterio 51).
+ *
+ * **Describe, nunca reprocha.** No hay aquí una palabra de culpa —ni
+ * «desperdicio», ni «perdiste», ni «fallaste», ni «vacío»— y eso lo comprueba
+ * un test sobre las cuatro variantes, no la buena voluntad de quien la escribe.
+ * La regla que la ordena: **toda cifra que hable de lo que no salió va detrás
+ * de la que habla de lo que sí** — por eso «Seguiste N de M» abre siempre, y lo
+ * que quedó sin hacer nunca es la primera frase ni la única.
+ *
+ * **Lo explicado se nombra como explicado** (criterio 51): un bloque con «no se
+ * pudo» y otra cosa en su rato se lee «el desayuno no se pudo, y en su lugar
+ * hiciste la llamada», no como un hueco más.
+ *
+ * Las **cuatro variantes**:
+ *
+ * 1. **Nada registrado** — no se afirma nada del día: se ofrece contarlo.
+ * 2. **Sin plan pero con sesiones** — se cuenta lo que hubo, sin echar en falta
+ *    un plan que nadie hizo.
+ * 3. **Se siguió todo** — se dice entero, y sin premio ni medalla.
+ * 4. **A medias** — la de arriba, con sus cláusulas en orden.
+ *
+ * Es **pura**: entran números y títulos, sale una cadena. Ni fechas, ni
+ * `Date.now()`, ni el aparato — la razón de «No se pudo» no entra aquí, solo el
+ * hecho de que se dijo.
+ */
+export function buildDayClosingLine(input: DayClosingInput): string {
+  const {
+    plannedCount,
+    followedCount,
+    missing,
+    sessionCount,
+    offPlanCount,
+    offPlanMinutes,
+    overMinutes,
+    noDataMinutes,
+  } = input
+
+  // 1. Nada registrado.
+  if (sessionCount === 0) {
+    return plannedCount === 0
+      ? 'De este día no quedó nada apuntado, ni plan ni registro. Cuando quieras contarlo, sigue estando a tiempo.'
+      : `De este día no quedó nada apuntado. Tu plan de ${plannedCount} ${plannedCount === 1 ? 'cosa' : 'cosas'} sigue aquí, por si quieres contar qué pasó.`
+  }
+
+  const sentences: string[] = []
+  const registered = `${sessionCount} ${sessionCount === 1 ? 'cosa' : 'cosas'}`
+
+  // 2. Sin plan, pero con cosas hechas.
+  if (plannedCount === 0) {
+    sentences.push(`Este día fue sin plan y aun así quedó contado: ${registered}.`)
+    if (noDataMinutes > 0) {
+      sentences.push(`Del resto, ${formatDurationFromMinutes(noDataMinutes)} sin dato.`)
+    }
+    return sentences.join(' ')
+  }
+
+  // 3 y 4. Con plan: la cabecera es siempre lo que sí salió.
+  sentences.push(
+    followedCount === plannedCount
+      ? `Seguiste las ${plannedCount} ${plannedCount === 1 ? 'cosa' : 'cosas'} que planeaste.`
+      : `Seguiste ${followedCount} de ${plannedCount}.`,
+  )
+
+  if (overMinutes > 0) {
+    sentences.push(`${formatDurationFromMinutes(overMinutes)} se fueron por encima de lo planeado.`)
+  }
+
+  // Lo explicado, nombrado como explicado. Como mucho dos por su nombre: una
+  // frase con seis títulos no se lee.
+  const explained = missing.filter((item) => item.couldNot || item.insteadTitle !== null)
+  const named = explained.slice(0, 2)
+  for (const item of named) {
+    if (item.couldNot && item.insteadTitle) {
+      sentences.push(`${item.title} no se pudo, y en su lugar hiciste ${item.insteadTitle}.`)
+    } else if (item.couldNot) {
+      sentences.push(`${item.title} no se pudo.`)
+    } else {
+      sentences.push(`En lugar de ${item.title} hiciste ${item.insteadTitle}.`)
+    }
+  }
+  const restExplained = explained.length - named.length
+  if (restExplained > 0) {
+    sentences.push(`Otras ${restExplained} quedaron explicadas.`)
+  }
+
+  const unexplained = missing.filter((item) => !item.couldNot && item.insteadTitle === null)
+  if (unexplained.length > 0) {
+    sentences.push(
+      unexplained.length <= 2
+        ? `${joinTitles(unexplained.map((item) => item.title))} ${unexplained.length === 1 ? 'se quedó' : 'se quedaron'} sin hacer.`
+        : `Otras ${unexplained.length} se quedaron sin hacer.`,
+    )
+  }
+
+  if (offPlanCount > 0) {
+    sentences.push(
+      `Fuera del plan hiciste ${offPlanCount} ${offPlanCount === 1 ? 'cosa' : 'cosas'} (${formatDurationFromMinutes(offPlanMinutes)}).`,
+    )
+  }
+
+  if (noDataMinutes > 0) {
+    sentences.push(`Y ${formatDurationFromMinutes(noDataMinutes)} sin dato.`)
+  }
+
+  return sentences.join(' ')
+}
+
+/**
+ * Lo que la frase de cierre necesita saber, sacado del día ya cruzado.
+ *
+ * Vive aquí y no en la pantalla para que `buildDayClosingLine` se pueda probar
+ * con números a mano **y** el recuento se pueda probar con un día entero. Los
+ * minutos salen de **la leyenda del presupuesto**, no de sumar duraciones a
+ * mano: así la frase dice exactamente los mismos minutos que la barra
+ * (criterio 26).
+ *
+ * Lo único que entra de fuera es qué bloques dijeron «No se pudo» — eso vive en
+ * el aparato (D7) y esta función no sabe nada de `localStorage`.
+ */
+export function collectDayClosing(params: {
+  execution: DayExecution
+  agenda: DayAgenda
+  /** `item.id` de los bloques marcados «No se pudo» en este aparato. */
+  couldNotItemIds: ReadonlySet<string>
+}): DayClosingInput {
+  const { execution, agenda, couldNotItemIds } = params
+  const minutesOf = (kind: ExecutedSegmentKind) =>
+    execution.budget.legend.find((item) => item.kind === kind)?.minutes ?? 0
+
+  const offPlan = execution.sessions.filter((entry) => entry.variant === 'off-plan')
+  const followedCount = Object.keys(execution.byBlockId).length
+
+  const missing: ClosingBlockNote[] = agenda.blocks
+    .filter((block) => execution.missingByBlockId[block.id] !== undefined)
+    .map((block) => ({
+      title: block.item.activity?.title ?? 'Actividad',
+      couldNot: couldNotItemIds.has(block.item.id),
+      insteadTitle: execution.insteadByBlockId[block.id]?.title ?? null,
+    }))
+
+  return {
+    plannedCount: agenda.blocks.length,
+    followedCount,
+    missing,
+    sessionCount: followedCount + offPlan.length,
+    offPlanCount: offPlan.length,
+    offPlanMinutes: minutesOf('off-plan'),
+    overMinutes: minutesOf('over'),
+    noDataMinutes: minutesOf('no-data'),
   }
 }

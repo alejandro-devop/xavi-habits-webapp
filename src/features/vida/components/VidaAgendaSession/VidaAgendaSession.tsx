@@ -103,7 +103,9 @@ export function VidaAgendaSession({ entry, onEdit }: VidaAgendaSessionProps) {
   )
 
   return (
-    <li className={styles.row} style={colorStyle} data-variant={entry.variant}>
+    // El `id` es **la vía** del «en su lugar, X» de un bloque (criterio 42):
+    // el ancla de la fila donde se pinta lo que sí ocurrió.
+    <li id={entry.id} className={styles.row} style={colorStyle} data-variant={entry.variant}>
       <span className={styles.gutter}>
         <time className={styles.time} dateTime={minutesToTime(entry.startMinutes)}>
           {formatTimeForDisplay(minutesToTime(entry.startMinutes))}

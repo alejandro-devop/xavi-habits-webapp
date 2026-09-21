@@ -1,10 +1,17 @@
 import type { CSSProperties } from 'react'
+import { VidaBlockOutcomes } from '@/features/vida/components/VidaBlockOutcomes'
 import { VidaPlanVsRealBar } from '@/features/vida/components/VidaPlanVsRealBar'
 import { useRemoveDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
+import { useDeleteActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
 import { useVidaElapsed } from '@/features/vida/hooks/useVidaElapsed'
+import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { AgendaBlock } from '@/features/vida/utils/vida-agenda.utils'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
-import type { BlockExecution } from '@/features/vida/utils/vida-execution.utils'
+import type {
+  BlockExecution,
+  BlockInstead,
+  BlockMissingStatus,
+} from '@/features/vida/utils/vida-execution.utils'
 import { describeOverPlan } from '@/features/vida/utils/vida-session.utils'
 import {
   formatDurationMinutes,
@@ -59,6 +66,33 @@ type VidaAgendaBlockProps = {
    * día futuro y en uno sin nada registrado (criterios 27 y 29).
    */
   execution?: BlockExecution | null
+
+  /* ── Lo que falta (FEAT-004, tajada 4) ──────────────────────────────────
+   *
+   * Aditivo también: sin nada de esto el bloque se pinta como lo dejó la
+   * tajada 2. Nada de aquí se afirma mientras lo vivido no haya cargado
+   * (criterios 57 y 58): quien no sabe, no pasa `missing`.
+   */
+
+  /** «Pendiente» al pasar su hora, «no hecho» al cerrarse el día (criterio 39). */
+  missing?: BlockMissingStatus | null
+  /** «En su lugar, X», con la vía a la sesión que sí ocurrió (criterio 42). */
+  instead?: BlockInstead | null
+  /** «No se pudo» y su razón, que viven en **este aparato** (criterios 43 y 44). */
+  couldNot?: { reason: string | null } | null
+  /** Las tres salidas (criterio 40). Sin esto no se pintan. */
+  outcomes?: {
+    onDid: () => void
+    onDidSomethingElse: () => void
+    onCouldNot: (reason: string | null) => void
+    onClearCouldNot: () => void
+    isBusy?: boolean
+  } | null
+  /**
+   * **«Corregir»** la sesión de este bloque (criterios 35 y 41). Sin esto el
+   * «···» no ofrece nada de la sesión — que es lo que pasa en un día futuro.
+   */
+  onEditSession?: (session: ActivityFollowUp) => void
 }
 
 /**
@@ -116,9 +150,19 @@ export function VidaAgendaBlock({
   onOpenFinishModal,
   isSessionBusy = false,
   execution = null,
+  missing = null,
+  instead = null,
+  couldNot = null,
+  outcomes = null,
+  onEditSession,
 }: VidaAgendaBlockProps) {
   const { confirm } = useConfirmDialog()
   const removeMutation = useRemoveDayPlanItemMutation()
+  // Quitar la sesión de este bloque vive **aquí** por el mismo motivo que
+  // quitar el bloque del plan: confirmar y quitar son una sola decisión y no
+  // hay nada que la página necesite saber. Es el mismo hook que usa
+  // `VidaAgendaSession` para lo suelto, así que la invalidación es la misma.
+  const removeSessionMutation = useDeleteActivityFollowUpMutation()
   // Solo tictaquea el bloque que está en marcha: los demás pasan `null` y el
   // hook no monta ningún intervalo (criterio 4).
   const elapsed = useVidaElapsed(isRunning ? sessionStartInstant : null)
@@ -153,6 +197,35 @@ export function VidaAgendaBlock({
     removeMutation.mutate({ itemId: block.item.id, date })
   }
 
+  // La sesión de **este** bloque: la que le asignó el cruce de D1, ya cerrada.
+  // Da igual cómo naciera —«▶ Empezar» y «Terminar», «Lo hice», o registrada a
+  // mano—: lo que se corrige es la sesión, no la puerta por la que entró.
+  const blockSession = execution && !execution.isRunning ? execution.span.session : null
+  const canManageSession = Boolean(blockSession && onEditSession)
+
+  /**
+   * «Quitar del registro» (criterios 35 y 41). Es también **el deshacer de «Lo
+   * hice»**: quitada la sesión, el bloque vuelve a estar no hecho, que es lo
+   * que dice el criterio 41 con todas las letras.
+   */
+  async function handleRemoveSession() {
+    if (!blockSession) return
+    const ok = await confirm({
+      title: `¿Quitar «${title}» del registro?`,
+      description:
+        'Se va ese rato y el bloque vuelve a quedar sin hacer. Tu plan no se toca: sigue en su hora.',
+      confirmLabel: 'Quitar del registro',
+      cancelLabel: 'Volver',
+    })
+    if (!ok) return
+    removeSessionMutation.mutate({
+      id: blockSession.id,
+      date: blockSession.date,
+      activityId: blockSession.activityId,
+      wasOpen: false,
+    })
+  }
+
   const menu = (
     <ul className={styles.menu}>
       {isRunning && onOpenFinishModal ? (
@@ -162,6 +235,32 @@ export function VidaAgendaBlock({
           </button>
         </li>
       ) : null}
+      {/* Lo de la **sesión** va primero: cuando el bloque ya tiene su rato
+          registrado, corregirlo es lo que se viene a hacer aquí. */}
+      {canManageSession ? (
+        <>
+          <li>
+            <button
+              type="button"
+              className={styles.menuItem}
+              onClick={() => onEditSession?.(blockSession!)}
+              disabled={removeSessionMutation.isPending}
+            >
+              Corregir
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className={styles.menuItem}
+              onClick={handleRemoveSession}
+              disabled={removeSessionMutation.isPending}
+            >
+              Quitar del registro
+            </button>
+          </li>
+        </>
+      ) : null}
       {onEdit ? (
         <li>
           <button type="button" className={styles.menuItem} onClick={() => onEdit(block)}>
@@ -169,22 +268,33 @@ export function VidaAgendaBlock({
           </button>
         </li>
       ) : null}
-      <li>
-        <button
-          type="button"
-          className={styles.menuItem}
-          onClick={handleRemove}
-          disabled={removeMutation.isPending}
-        >
-          Quitar del plan
-        </button>
-      </li>
+      {date ? (
+        <li>
+          <button
+            type="button"
+            className={styles.menuItem}
+            onClick={handleRemove}
+            disabled={removeMutation.isPending}
+          >
+            Quitar del plan
+          </button>
+        </li>
+      ) : null}
     </ul>
   )
 
   // El movido: el bloque se queda de **sombra** en su hora y lo real se pinta
   // donde ocurrió (criterio 23). No se mueve de sitio y no se cuenta dos veces.
   const isMoved = execution?.status === 'moved'
+  // «Pendiente» / «no hecho» (D9). `upcoming` **no dice nada**: de lo que aún
+  // puede pasar no se afirma nada, igual que no se afirma mientras lo vivido
+  // no haya cargado (criterios 57 y 58: quien no sabe, no pasa `missing`).
+  const missingLabel =
+    execution || !missing || missing === 'upcoming'
+      ? null
+      : missing === 'pending'
+        ? 'pendiente'
+        : 'no hecho'
   // Lo que se lee encima del bloque cuando ya pasó: «✓ calcado», «empezó +5»,
   // «+18 min». Son **etiquetas de texto**, no colores (criterio 20).
   const executionTags =
@@ -227,6 +337,17 @@ export function VidaAgendaBlock({
               // Ya pasó: se leen **las horas reales**, no la duración planeada
               // (criterio 20). El plan sigue contándose en la barrita de abajo.
               <>{execution.rangeLabel}</>
+            ) : missingLabel ? (
+              // D9, criterio 39: **dos momentos**, no uno. «Pendiente» cuando
+              // ya pasó su hora y el día sigue abierto; «no hecho» solo cuando
+              // el día se cerró. Ninguno es un reproche y los dos tienen
+              // salida, justo debajo.
+              <>
+                planeado {formatDurationMinutes(block.durationMinutes)} ·{' '}
+                <span className={styles.missing} data-missing={missing}>
+                  {missingLabel}
+                </span>
+              </>
             ) : (
               <>
                 {formatDurationMinutes(block.durationMinutes)}
@@ -234,6 +355,26 @@ export function VidaAgendaBlock({
               </>
             )}
           </p>
+          {/* «En su lugar, X» (criterio 42), con **la vía** a lo que sí pasó:
+              un ancla a su fila de la agenda. Ni se borra el bloque ni se
+              reescribe el plan. */}
+          {instead ? (
+            <p className={styles.instead}>
+              en su lugar,{' '}
+              <a className={styles.insteadLink} href={`#${instead.entryId}`}>
+                {instead.title}
+              </a>{' '}
+              <span className={styles.insteadRange}>({instead.rangeLabel})</span>
+            </p>
+          ) : null}
+          {/* «No se pudo», con o sin razón (criterios 43 y 45). La razón se lee
+              en **una línea corta** bajo el bloque, y una de tres líneas se
+              envuelve sin romper nada (criterio 61). */}
+          {couldNot ? (
+            <p className={styles.couldNot}>
+              no se pudo{couldNot.reason ? <span className={styles.reason}> · {couldNot.reason}</span> : null}
+            </p>
+          ) : null}
           {executionTags.length > 0 ? (
             <p className={styles.tags}>
               {executionTags.map((tag) => (
@@ -255,6 +396,21 @@ export function VidaAgendaBlock({
           {/* Pasarse del plan **no interrumpe** (criterio 9): una línea, sin
               color de alarma, sin modal y sin sonido. */}
           {overPlan ? <p className={styles.overPlan}>{overPlan}</p> : null}
+          {/* Las **tres salidas**, las tres a un toque y ninguna obligatoria
+              (criterio 40). Solo cuando el bloque ya pasó su hora: ofrecerlas
+              antes sería preguntar por algo que todavía puede ocurrir. */}
+          {outcomes && missing && missing !== 'upcoming' ? (
+            <VidaBlockOutcomes
+              title={title}
+              couldNot={Boolean(couldNot)}
+              reason={couldNot?.reason ?? null}
+              onDid={outcomes.onDid}
+              onDidSomethingElse={outcomes.onDidSomethingElse}
+              onCouldNot={outcomes.onCouldNot}
+              onClearCouldNot={outcomes.onClearCouldNot}
+              isBusy={outcomes.isBusy}
+            />
+          ) : null}
         </div>
 
         {isRunning ? (
@@ -285,7 +441,11 @@ export function VidaAgendaBlock({
           </Button>
         ) : null}
 
-        {date ? (
+        {/* El «···» se pinta si tiene **algo** que ofrecer: los del plan
+            (solo donde se planea) o los de la sesión de este bloque, que
+            existen también en un día pasado, donde se registra y no se planea
+            (criterios 41 y 46). Un menú que no puede hacer nada no se pinta. */}
+        {date || canManageSession || (isRunning && onOpenFinishModal) ? (
           <div className={styles.more}>
             <Popover
               triggerLabel={`Más opciones de ${title}`}

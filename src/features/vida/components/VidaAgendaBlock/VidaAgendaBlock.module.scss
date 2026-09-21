@@ -258,3 +258,57 @@
   background: color-mix(in srgb, var(--aura-glass-1) 55%, transparent);
   box-shadow: none;
 }
+
+/* ── Lo que falta (FEAT-004, tajada 4) ───────────────────────────────────── */
+
+/* «pendiente» y «no hecho» (criterio 39). **Ni rojo ni alarma**: es el mismo
+   tono de dato que el resto de la fila, un poco más marcado para que se lea de
+   un vistazo. Los dos estados se distinguen **por la palabra**, no por el
+   color (criterio 45). */
+.missing {
+  color: var(--color-text-secondary);
+  font-weight: 700;
+
+  /* Un token sólido, no una mezcla con `transparent`: sobre el vidrio de la
+     tarjeta una mezcla translúcida se mide mal y se lee peor. Lo que separa
+     «pendiente» de «no hecho» es **la palabra**, no el tono (criterio 45). */
+  &[data-missing='not-done'] {
+    color: var(--color-text);
+  }
+}
+
+/* «en su lugar, Llamada con el banco» (criterio 42). El enlace es la **vía** a
+   la fila de la sesión que sí ocurrió. */
+.instead {
+  margin: 0.1rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.insteadLink {
+  color: var(--color-primary-hover);
+  font-weight: 700;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.insteadRange {
+  font-variant-numeric: tabular-nums;
+}
+
+/* «no se pudo · me quedé dormido» (criterios 43 y 45). Una razón larga se
+   envuelve en varias líneas y **no** produce scroll horizontal (criterio 61). */
+.couldNot {
+  margin: 0.1rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.reason {
+  font-style: italic;
+}

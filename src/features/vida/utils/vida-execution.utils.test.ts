@@ -4,8 +4,15 @@ import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.t
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
 import {
   VIDA_MOVED_THRESHOLD_MINUTES,
+  VIDA_NO_DATA_MIN_MINUTES,
   VIDA_ON_PLAN_TOLERANCE_MINUTES,
+  buildDayClosingLine,
   buildDayExecution,
+  buildNoDataSlices,
+  collectDayClosing,
+  describeMissingBlock,
+  plannedSessionMinutes,
+  type DayClosingInput,
   describeBlockExecution,
   getExecutedBudget,
   isDayClosed,
@@ -634,5 +641,344 @@ describe('el vocabulario (criterio 59)', () => {
     for (const forbidden of ['desperdici', 'perdiste', 'fallaste', 'vacío', 'cancel', 'elimin']) {
       expect(words).not.toContain(forbidden)
     }
+  })
+})
+
+/* ── Lo que falta (tajada 4): criterios 39 a 51 ──────────────────────────── */
+
+describe('describeMissingBlock — los dos momentos de D9 (criterio 39)', () => {
+  const [one] = agendaOf([block('b1', 'a', '10:00', '11:00')]).blocks
+
+  it('antes de su hora de fin no dice nada', () => {
+    expect(
+      describeMissingBlock({ block: one!, nowMinutes: at('10:30'), isDayClosed: false }),
+    ).toBe('upcoming')
+  })
+
+  it('en el minuto exacto de su fin pasa a «pendiente»', () => {
+    expect(
+      describeMissingBlock({ block: one!, nowMinutes: at('11:00'), isDayClosed: false }),
+    ).toBe('pending')
+  })
+
+  it('sigue «pendiente» horas después, mientras el día no se cierre', () => {
+    expect(
+      describeMissingBlock({ block: one!, nowMinutes: at('19:00'), isDayClosed: false }),
+    ).toBe('pending')
+  })
+
+  it('solo dice «no hecho» cuando el día se cerró', () => {
+    expect(
+      describeMissingBlock({ block: one!, nowMinutes: at('23:00'), isDayClosed: true }),
+    ).toBe('not-done')
+  })
+
+  it('un día pasado es «no hecho» aunque no haya reloj', () => {
+    expect(describeMissingBlock({ block: one!, nowMinutes: null, isDayClosed: true })).toBe(
+      'not-done',
+    )
+  })
+
+  it('un día futuro no dice nada de ninguno', () => {
+    expect(describeMissingBlock({ block: one!, nowMinutes: null, isDayClosed: false })).toBe(
+      'upcoming',
+    )
+  })
+})
+
+describe('plannedSessionMinutes — lo que registra «Lo hice» (criterio 41)', () => {
+  const [one] = agendaOf([block('b1', 'a', '14:00', '15:00')]).blocks
+
+  it('en un día pasado registra la duración planeada entera', () => {
+    expect(plannedSessionMinutes({ block: one!, nowMinutes: null })).toBe(60)
+  })
+
+  it('con la hora de fin ya pasada, la planeada entera', () => {
+    expect(plannedSessionMinutes({ block: one!, nowMinutes: at('20:00') })).toBe(60)
+  })
+
+  it('recorta a «ahora» para que no nazca terminando en el futuro', () => {
+    // El aviso del revisor de la tajada 3: un bloque 14:00–15:00 marcado a las
+    // 14:50 nacería acabando a las 15:00 y `validateLogPast` no dejaría
+    // corregirlo. Recortado son 50 min, y todos ya ocurrieron.
+    expect(plannedSessionMinutes({ block: one!, nowMinutes: at('14:50') })).toBe(50)
+  })
+
+  it('nunca baja de un minuto, que es el mínimo del API', () => {
+    expect(plannedSessionMinutes({ block: one!, nowMinutes: at('13:00') })).toBe(1)
+  })
+})
+
+describe('«en su lugar, X» (criterio 42)', () => {
+  it('un bloque sin sesión con otra cosa en su rato queda explicado', () => {
+    const agenda = agendaOf([block('b1', 'desayuno', '08:00', '08:40')])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'banco', '08:05', 30)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    expect(execution.missingByBlockId['b1']).toBe('not-done')
+    expect(execution.insteadByBlockId['b1']?.title).toBe('Actividad banco')
+    // La vía: el `id` de la fila donde se pinta lo que sí ocurrió.
+    expect(execution.insteadByBlockId['b1']?.entryId).toBe('session-s1')
+    // Y el plan **no se toca**: el bloque sigue en su hora.
+    expect(agenda.blocks[0]!.startMinutes).toBe(at('08:00'))
+  })
+
+  it('con varias encima, manda la que más rato comparte', () => {
+    const agenda = agendaOf([block('b1', 'desayuno', '08:00', '09:00')])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'banco', '08:50', 20), session('s2', 'llamada', '08:00', 45)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    expect(execution.insteadByBlockId['b1']?.sessionId).toBe('s2')
+  })
+
+  it('una sesión que no se pisa con el bloque no lo explica', () => {
+    const agenda = agendaOf([block('b1', 'desayuno', '08:00', '08:40')])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'banco', '12:00', 30)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    expect(execution.insteadByBlockId['b1']).toBeUndefined()
+  })
+})
+
+describe('los tramos «sin dato» (criterios 47, 48 y 50)', () => {
+  it('un día cerrado con registro parte los huecos en tramos con sus horas', () => {
+    const agenda = agendaOf([block('b1', 'a', '10:00', '11:00')])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'a', '10:00', 60)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    const slices = Object.values(execution.noDataByGapId)
+    expect(slices.length).toBeGreaterThan(0)
+    const morning = slices.find((slice) => slice.startMinutes === at('06:30'))
+    expect(morning?.rangeLabel).toBe('6:30 – 10:00')
+    expect(morning?.durationLabel).toBe('3h 30')
+    expect(morning?.canAsk).toBe(true)
+  })
+
+  it('por debajo del mínimo de 30 min no se pregunta, pero el tramo sigue', () => {
+    expect(VIDA_NO_DATA_MIN_MINUTES).toBe(30)
+    const slices = buildNoDataSlices({
+      entries: [
+        {
+          kind: 'gap',
+          id: 'gap-1',
+          startMinutes: at('10:00'),
+          endMinutes: at('10:20'),
+          durationMinutes: 20,
+          trackMinutes: 20,
+          isSliver: false,
+          isPast: true,
+          label: '',
+        } as never,
+      ],
+      isClosedForm: true,
+    })
+    expect(slices['gap-1']?.canAsk).toBe(false)
+    expect(slices['gap-1']?.durationLabel).toBe('20m')
+  })
+
+  it('un día **sin nada registrado** no estrena «sin dato» (criterio 29)', () => {
+    const agenda = agendaOf([block('b1', 'a', '10:00', '11:00')])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    expect(execution.noDataByGapId).toEqual({})
+  })
+
+  it('el tiempo que aún no ha llegado no es «sin dato» (criterio 50)', () => {
+    const agenda = agendaOf([block('b1', 'a', '10:00', '11:00')], at('12:00'))
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'a', '10:00', 60)],
+      date: DATE,
+      nowMinutes: at('12:00'),
+      dayEnd: DAY_END,
+      isPastDay: false,
+    })
+    // El día sigue en marcha: la forma es `running` y no hay ni un tramo sin
+    // dato, así que la tarde que queda no se llama así.
+    expect(execution.budget.form).toBe('running')
+    expect(execution.noDataByGapId).toEqual({})
+  })
+})
+
+describe('la frase de cierre del día (criterio 51)', () => {
+  const base: DayClosingInput = {
+    plannedCount: 0,
+    followedCount: 0,
+    missing: [],
+    sessionCount: 0,
+    offPlanCount: 0,
+    offPlanMinutes: 0,
+    overMinutes: 0,
+    noDataMinutes: 0,
+  }
+
+  it('variante 1: día sin nada registrado', () => {
+    const line = buildDayClosingLine({ ...base, plannedCount: 3 })
+    expect(line).toContain('no quedó nada apuntado')
+    expect(line).toContain('3 cosas')
+  })
+
+  it('variante 1 bis: ni plan ni registro', () => {
+    expect(buildDayClosingLine(base)).toContain('ni plan ni registro')
+  })
+
+  it('variante 2: día sin plan pero con sesiones', () => {
+    const line = buildDayClosingLine({
+      ...base,
+      sessionCount: 4,
+      offPlanCount: 4,
+      offPlanMinutes: 200,
+      noDataMinutes: 60,
+    })
+    expect(line).toContain('sin plan')
+    expect(line).toContain('4 cosas')
+    expect(line).toContain('1h sin dato')
+  })
+
+  it('variante 3: se siguió todo', () => {
+    const line = buildDayClosingLine({
+      ...base,
+      plannedCount: 5,
+      followedCount: 5,
+      sessionCount: 5,
+    })
+    expect(line).toContain('Seguiste las 5 cosas que planeaste.')
+  })
+
+  it('variante 4: a medias, y lo explicado se nombra como explicado', () => {
+    const line = buildDayClosingLine({
+      ...base,
+      plannedCount: 7,
+      followedCount: 5,
+      sessionCount: 7,
+      missing: [
+        { title: 'el desayuno', couldNot: true, insteadTitle: 'la llamada' },
+        { title: 'leer', couldNot: false, insteadTitle: null },
+      ],
+      offPlanCount: 2,
+      offPlanMinutes: 95,
+      overMinutes: 18,
+      noDataMinutes: 160,
+    })
+    expect(line).toContain('Seguiste 5 de 7.')
+    expect(line).toContain('el desayuno no se pudo, y en su lugar hiciste la llamada.')
+    expect(line).toContain('leer se quedó sin hacer.')
+    expect(line).toContain('Fuera del plan hiciste 2 cosas (1h 35).')
+    expect(line).toContain('2h 40 sin dato')
+    // La cifra que habla de lo que no salió **nunca abre** la frase.
+    expect(line.indexOf('Seguiste')).toBe(0)
+  })
+
+  it('con solo «en su lugar» lo dice sin hablar de «no se pudo»', () => {
+    const line = buildDayClosingLine({
+      ...base,
+      plannedCount: 2,
+      followedCount: 1,
+      sessionCount: 2,
+      missing: [{ title: 'el desayuno', couldNot: false, insteadTitle: 'la llamada' }],
+    })
+    expect(line).toContain('En lugar de el desayuno hiciste la llamada.')
+    expect(line).not.toContain('no se pudo')
+  })
+
+  it('**ninguna** variante usa una palabra de culpa', () => {
+    const variants = [
+      buildDayClosingLine(base),
+      buildDayClosingLine({ ...base, plannedCount: 3 }),
+      buildDayClosingLine({ ...base, sessionCount: 2, offPlanCount: 2, offPlanMinutes: 60 }),
+      buildDayClosingLine({ ...base, plannedCount: 4, followedCount: 4, sessionCount: 4 }),
+      buildDayClosingLine({
+        ...base,
+        plannedCount: 7,
+        followedCount: 4,
+        sessionCount: 6,
+        missing: [
+          { title: 'el desayuno', couldNot: true, insteadTitle: 'la llamada' },
+          { title: 'leer', couldNot: true, insteadTitle: null },
+          { title: 'pasear', couldNot: false, insteadTitle: null },
+          { title: 'la casa', couldNot: false, insteadTitle: null },
+          { title: 'el gimnasio', couldNot: false, insteadTitle: null },
+        ],
+        offPlanCount: 2,
+        offPlanMinutes: 95,
+        overMinutes: 18,
+        noDataMinutes: 160,
+      }),
+    ]
+    for (const line of variants) {
+      const text = line.toLowerCase()
+      for (const forbidden of [
+        'desperdici',
+        'perdiste',
+        'perdido',
+        'fallaste',
+        'fallo',
+        'vacío',
+        'cancel',
+        'elimin',
+        'deberías',
+      ]) {
+        expect(text).not.toContain(forbidden)
+      }
+    }
+  })
+})
+
+describe('collectDayClosing — los números salen del mismo sitio que la barra', () => {
+  it('cuenta seguidos, faltantes, fuera del plan y sin dato', () => {
+    const agenda = agendaOf([
+      block('b1', 'a', '08:00', '08:40'),
+      block('b2', 'b', '10:00', '11:00'),
+    ])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'a', '08:00', 40), session('s2', 'c', '10:10', 30)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    const closing = collectDayClosing({
+      execution,
+      agenda,
+      couldNotItemIds: new Set(['b2']),
+    })
+    expect(closing.plannedCount).toBe(2)
+    expect(closing.followedCount).toBe(1)
+    expect(closing.sessionCount).toBe(2)
+    expect(closing.offPlanCount).toBe(1)
+    expect(closing.missing).toEqual([
+      { title: 'Actividad b', couldNot: true, insteadTitle: 'Actividad c' },
+    ])
+    // Los minutos son **los de la leyenda**, no una suma aparte (criterio 26).
+    const legend = Object.fromEntries(execution.budget.legend.map((i) => [i.kind, i.minutes]))
+    expect(closing.offPlanMinutes).toBe(legend['off-plan'])
+    expect(closing.noDataMinutes).toBe(legend['no-data'])
   })
 })

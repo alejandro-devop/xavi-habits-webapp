@@ -23,6 +23,12 @@ export type VidaDayData = {
   isPending: boolean
   /** El plan no cargó: sin él no hay agenda que pintar. */
   isPlanError: boolean
+  /**
+   * **Lo vivido** no cargó. Lo usa la tajada 4 para no afirmar «no hecho» de un
+   * bloque cuyas sesiones no se pudieron comprobar (criterio 58): sin esto, un
+   * parpadeo de red pintaría el día entero como no hecho.
+   */
+  isFollowUpsError: boolean
   /** Lo que falló, en lenguaje humano, para decir **qué falta** (criterio 52). */
   failed: string[]
   /** Vuelve a pedir las cuatro. */
@@ -40,9 +46,11 @@ export type VidaDayData = {
  * viviste» (criterio 58). No hay un `isFollowUpsError` aparte **a propósito**:
  * con lo vivido caído no se pinta ni una etiqueta de ejecutado, así que nada
  * afirma lo que no sabe, y un campo que no usa nadie es un campo que miente
- * sobre lo que hace la pantalla. Cuando la **tajada 4** tenga que distinguir
- * «no hecho» de «no lo sé», ese será el momento de sacarlo, con quien lo use
- * delante.
+ * sobre lo que hace la pantalla. **La tajada 4 es ese momento**: para decir
+ * «no hecho» hay que haber podido mirar lo vivido, así que `isFollowUpsError`
+ * vuelve —ahora sí con quien lo usa delante, `VidaHoyPage`, que con lo vivido
+ * caído no pinta ni «pendiente» ni «no hecho» ni las tres salidas
+ * (criterio 58).
  *
  * No crea ninguna clave de caché ni ninguna consulta nueva: son
  * `vidaKeys.dayPlan.byDate`, `vidaKeys.items.suggestions`,
@@ -89,6 +97,7 @@ export function useVidaDayData(date: string): VidaDayData {
       (followUpsQuery.isPending && !isFollowUpsDisabled) ||
       dayHours.isPending,
     isPlanError: planQuery.isError,
+    isFollowUpsError: followUpsQuery.isError,
     failed,
     refetch: () => {
       void planQuery.refetch()

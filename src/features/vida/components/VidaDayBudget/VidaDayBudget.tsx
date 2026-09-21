@@ -28,6 +28,14 @@ type VidaDayBudgetProps = {
    * FEAT-003**: es el criterio 29.
    */
   executed?: ExecutedBudget | null
+  /**
+   * **La frase de cierre del día** (FEAT-004, criterio 51): números reales y
+   * sin reproche. Solo llega en un día terminado con algo registrado; cuando
+   * está, **sustituye a la línea de guía** de FEAT-003 —que habla de huecos por
+   * delante y de lo que queda por hacer, y en un día cerrado ya no hay ni una
+   * cosa ni la otra—.
+   */
+  closingLine?: string | null
 }
 
 /**
@@ -67,6 +75,7 @@ export function VidaDayBudget({
   guidance,
   nowLabel,
   executed = null,
+  closingLine = null,
 }: VidaDayBudgetProps) {
   const dayMinutes = Math.max(1, budget.dayMinutes)
   // Las dos formas de D5 solo aparecen cuando hay algo registrado: con la
@@ -168,7 +177,14 @@ export function VidaDayBudget({
           día se cierra, una línea lo dice. */}
       {hasExecuted && executed!.note ? <p className={styles.formNote}>{executed!.note}</p> : null}
 
-      <p className={styles.guidance}>{guidance}</p>
+      {/* En un día cerrado manda la frase de cierre: la guía de F3 habla de
+          los huecos que quedan por delante y en un día terminado no queda
+          ninguno (criterio 51). Una sola línea, nunca las dos. */}
+      {closingLine ? (
+        <p className={styles.closing}>{closingLine}</p>
+      ) : (
+        <p className={styles.guidance}>{guidance}</p>
+      )}
 
       <p className={styles.schedule}>
         Tu día · {formatTimeForDisplay(dayStart)} → {formatTimeForDisplay(dayEnd)}

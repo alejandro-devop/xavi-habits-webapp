@@ -1,0 +1,121 @@
+/* Las tres salidas de un bloque que no se hizo (criterio 40). **Mismo peso
+   visual**: mismo tamaño, mismo borde, mismo tono. Ninguna es la principal, y
+   por eso ninguna usa el `Button` primario del sistema. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  margin-top: 0.3rem;
+}
+
+/* En 375 px las tres no caben en una línea: se envuelven, nunca se salen
+   (criterio 60). */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.outcome {
+  flex: 0 1 auto;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  color: var(--color-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-text) 9%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* La elegida se marca, pero **no cambia de rango**: sigue siendo del mismo
+     tamaño que las otras dos. */
+  &[data-chosen] {
+    border-color: color-mix(in srgb, var(--color-text) 35%, transparent);
+    background: color-mix(in srgb, var(--color-text) 12%, transparent);
+  }
+}
+
+.reason {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.reasonLabel {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+/* Una línea corta: la razón se lee bajo el bloque, no es un diario. */
+.reasonInput {
+  width: 100%;
+  min-width: 0;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.6rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.8125rem;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: -1px;
+  }
+}
+
+.reasonActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.reasonSave,
+.reasonSkip {
+  padding: 0.15rem 0;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.reasonSave {
+  color: var(--color-primary-hover);
+}
+
+/* La deuda de portabilidad, dicha donde se escribe (criterio 44). */
+.deviceNote {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+}

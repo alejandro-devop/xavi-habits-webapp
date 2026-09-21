@@ -1,11 +1,11 @@
 ---
 id: FEAT-004
 title: Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro
-status: building
+status: delivered
 architect: yes    # concepto nuevo (la sesión viva y su cruce con el plan), superficie global en todo el módulo, y una decisión abierta que puede tocar el API
 area: features/vida
 requested: 2026-09-20
-updated: 2026-09-20   # tajada 3 `in-review`: registrar lo que se sale
+updated: 2026-09-20   # las cuatro tajadas aceptadas: `delivered` (quedan del usuario los criterios 52 y 66)
 ---
 
 # FEAT-004 — Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro
@@ -993,7 +993,7 @@ sesión, **el toast del cierre lo lanza el llamante, no el hook**:
 | 1 | **Empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo.** | `utils/vida-session.utils.ts` (N) · `hooks/useVidaElapsed.ts` (N) · `hooks/useVidaOpenSession.ts` (N) · `hooks/useVidaSessionActions.ts` (N) · `components/VidaSessionBar/` (N) · `components/VidaFinishSessionModal/` (N) · `components/VidaStaleSessionPrompt/` (N) · `routes/VidaModuleLayout.tsx` (N) · `routes/vida.routes.tsx` · `graphql/activity-followups.graphql.ts` · `api/activity-followups.api.ts` · `types/activity-followup.types.ts` · `hooks/useActivityFollowUps.ts` · `graphql/contracts.test.ts` · `shared/ui/Toast/` · `components/VidaAgendaBlock/` · `pages/VidaHoyPage.tsx` | 2–17, **1 a medias** (ver el recorte), 54, 59 (los tres toasts), 64, y la parte de 60/61/63 que toca la barra y el cierre | **accepted** (2026-09-20; 10 y 66 quedan en el recorrido manual) |
 | 2 | **Lo real encima de lo planeado, y el presupuesto por colores.** | `utils/vida-execution.utils.ts` (N) · `hooks/useVidaDayData.ts` · `components/VidaAgendaBlock/` · `components/VidaPlanVsRealBar/` (N) · `components/VidaAgendaSession/` (N) · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | **la otra mitad de 1**, 18–29, 53, 55, 57, 58, 62 | **accepted** (2026-09-20, en la **segunda** revisión: devuelta por el cruce de D1, re-entregada con los dos pases y comprobada con arnés propio) |
 | 3 | **Registrar lo que se sale.** | `components/VidaActivityPicker/` (N) · `components/VidaPlaceInGapSheet/` · `components/VidaLogSessionSheet/` (N) · `utils/vida-session.utils.ts` · `components/VidaDayActions/` · `components/VidaAgendaSession/` · `pages/VidaHoyPage.tsx` | 30–38, 56 | **accepted** (2026-09-20; el criterio 35 queda **recortado a las sesiones sueltas** y el «···» de la emparejada es obligatorio en la tajada 4) |
-| 4 | **Lo que falta: pendiente, las tres salidas, sin dato y la frase de cierre.** | `store/vida-device-notes.store.ts` (N) · `utils/vida-execution.utils.ts` · `components/VidaBlockOutcomes/` (N) · `components/VidaAgendaNoData/` (N) · `components/VidaAgendaBlock/` · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | 39–52, 60, 61, 65; **66 lo cierra el usuario** | pending |
+| 4 | **Lo que falta: pendiente, las tres salidas, sin dato y la frase de cierre.** | `store/vida-device-notes.store.ts` (N) · `utils/vida-execution.utils.ts` · `components/VidaBlockOutcomes/` (N) · `components/VidaAgendaNoData/` (N) · `components/VidaAgendaBlock/` · `components/VidaDayBudget/` · `pages/VidaHoyPage.tsx` | 39–52, 60, 61, 65; **66 lo cierra el usuario** | **accepted** (2026-09-20; cierra también el recorte del 35 que dejó abierto la tajada 3. **52 y 66 quedan del usuario**) |
 
 **Las cuatro tajadas se quedan como las cortó el analista.** Miradas contra el
 código, el corte aguanta y el reordenado de D7 era el correcto: la 1 no necesita
@@ -2030,6 +2030,309 @@ de prueba: todo lo que se escribió fueron mutaciones **simuladas** en tests.
 
 ---
 
+### Tajada 4 — pendiente, las tres salidas, sin dato y la frase de cierre
+
+**Resumen para el revisor:**
+1. El día ya **cuenta lo que falta**: un bloque sin sesión se lee **«pendiente»**
+   al pasar su hora y **«no hecho»** al cerrarse el día (D9), y ofrece **las tres
+   salidas con el mismo peso** —«Lo hice», «Hice otra cosa» y «No se pudo» con
+   razón opcional—; los ratos pasados sin plan y sin sesión se llaman **«sin
+   dato»** y preguntan **«¿Qué pasó?»** una sola vez por aparato; y el
+   presupuesto de un día cerrado lo resume con **una frase sin reproche** que
+   **releva a la guía de FEAT-003**. Y —lo que pidió el revisor de la tajada 3—
+   **la sesión emparejada con su bloque ya tiene su «···»**: «Corregir» y
+   «Quitar del registro», también en un día pasado.
+2. Lo escrito: **2 componentes nuevos** (`VidaBlockOutcomes/`,
+   `VidaAgendaNoData/`) y **1 store nuevo** (`store/vida-device-notes.store.ts`,
+   con su test), más **7 archivos modificados**; nada fuera de
+   `src/features/vida/`.
+3. **Lo que más probablemente rompí, en orden:** (a) **`VidaAgendaBlock` dice
+   ahora «planeado 45 min · pendiente» donde antes decía «45 min»** en cualquier
+   bloque de hoy cuya hora ya pasó — **dos tests de tajadas anteriores cambiaron
+   de consulta por eso** y están señalados abajo; si algo se lee raro en un día
+   normal, es ahí; (b) **`VidaAgendaBlock` monta una mutación más**
+   (`useDeleteActivityFollowUpMutation`), así que quien mockee
+   `useActivityFollowUps` para montar un bloque tiene que devolverla; (c) el
+   **«···» del bloque aparece en días pasados**, donde antes no existía nunca
+   —solo con lo de la sesión, nunca con lo del plan—.
+
+**Qué se construyó**
+
+*Lo nuevo*
+
+- `store/vida-device-notes.store.ts` (**N**, + `.test.ts`). **D7 y D8, y lo
+  único de toda la feature que escribe en el aparato.** Molde
+  `habit-identity.store.ts` carácter a carácter: `persist` +
+  `createJSONStorage` sobre `shared/lib/storage` (que ya se traga un
+  `localStorage` que lanza) + `partialize`. Guarda dos cosas: `blockNotes`
+  (`fecha|itemId` → `{ couldNot: true, reason }`) y `dismissedNoData`
+  (`fecha|idDelTramo`). Con ayudantes puros —`getBlockNote`,
+  `isNoDataDismissed`— para que la pantalla no arme claves a mano.
+- `components/VidaBlockOutcomes/` (**N**, 4 archivos). Las **tres salidas**, los
+  tres el **mismo control** con la **misma clase** (lo comprueba un test: el
+  conjunto de `className` de los tres botones tiene tamaño 1), más el editor de
+  la razón con su línea «Esta nota se queda en este dispositivo».
+- `components/VidaAgendaNoData/` (**N**, 4 archivos). El tramo «sin dato» con
+  sus horas, sus minutos y sus **dos salidas igual de válidas**; tras «Dejarlo
+  así» el tramo **sigue ahí**, con un «Lo dejaste así.» y sin preguntar.
+
+*Lo que cambió de forma*
+
+- `utils/vida-execution.utils.ts` (M): `VIDA_NO_DATA_MIN_MINUTES = 30`,
+  `describeMissingBlock` (D9), `plannedSessionMinutes` (el recorte de «Lo
+  hice»), `findInsteadSession`, `buildNoDataSlices`, **`buildDayClosingLine`**
+  con sus cuatro variantes y `collectDayClosing`. `buildDayExecution` devuelve
+  tres campos más (`missingByBlockId`, `insteadByBlockId`, `noDataByGapId`).
+  **Todo puro y con `now` inyectado**, como el resto del archivo.
+- `components/VidaAgendaBlock/` (M): «pendiente» / «no hecho», «en su lugar, X»
+  **con su vía** (un ancla al `id` de la fila de esa sesión), la razón en una
+  línea corta, las tres salidas dentro del cuerpo de la tarjeta y el **«···» de
+  la sesión de este bloque**.
+- `components/VidaAgendaSession/` (M): una línea — el `<li>` estrena `id`, que
+  es a donde apunta la vía del «en su lugar».
+- `components/VidaDayBudget/` (M): `closingLine`, que **sustituye** a la guía.
+- `hooks/useVidaDayData.ts` (M): **vuelve `isFollowUpsError`**, esta vez con
+  quien lo usa delante. Lo dejó escrito la tajada 2 en ese mismo archivo: «cuando
+  la tajada 4 tenga que distinguir "no hecho" de "no lo sé", ese será el
+  momento».
+- `pages/VidaHoyPage.tsx` (M): cablea el store, las tres salidas, el «¿qué
+  pasó?» y la frase de cierre.
+
+**Las decisiones que tomé, y por qué**
+
+- **«Lo hice» recorta la duración a «ahora»; `validateLogPast` no se exceptúa.**
+  Es el aviso que dejó el revisor de la tajada 3. `plannedSessionMinutes` devuelve
+  `min(planeado, ahora − inicio)` con un mínimo de 1: un bloque de 14:00 a 15:00
+  marcado a las 14:50 registra **50 min**, no 60. Se decidió así y no al revés
+  porque la alternativa —exceptuar la validación— dejaría en la agenda y en el
+  presupuesto minutos que **nadie ha vivido**, que es justo lo que prohíbe el
+  criterio 50; y porque una sesión que nace válida se puede corregir siempre.
+  **Con la puerta de D9 esto casi nunca actúa** —las tres salidas solo salen en
+  un bloque `pending` o `not-done`, o sea con su hora de fin ya pasada—, pero es
+  la red de debajo y tiene su test («recorta a ahora, no al futuro»).
+- **«En su lugar, X» se deriva, no se guarda.** Si hay una sesión **fuera del
+  plan** que se pisa con la hora del bloque, eso es lo que pasó en su lugar (y si
+  hay varias, la que más rato comparte). Así «Hice otra cosa» no inventa ningún
+  campo ni ninguna marca en el aparato, y el bloque queda explicado **igual** si
+  esa otra cosa se registró por cualquier otra puerta. Es la misma clase de regla
+  que el cruce de D1, en el mismo archivo.
+- **«Sin dato» en la agenda aparece con el presupuesto en su forma cerrada**, o
+  sea **día terminado y algo registrado**. Las dos condiciones son deliberadas:
+  el criterio 29 pide que un día **con plan y nada registrado** se vea
+  exactamente como lo dejó F2, y la revisión de la tajada 2 ya aceptó la tercera
+  forma del presupuesto justo para que un día pasado sin registro no estrenara
+  «sin dato 16h 30». **La consecuencia, dicha sin disimulo:** en un día del que
+  no se apuntó **nada** no hay «¿qué pasó?» en cada hueco; ese día se cuenta
+  entero desde «Registrar tiempo pasado». Si el usuario prefiere que pregunte
+  también ahí, es una línea (`isClosedForm`) y una decisión suya, no mía.
+- **El «···» de la sesión de un bloque no mira de dónde salió la sesión.**
+  Corrige y quita **cualquier** sesión emparejada —la de «▶ Empezar» + «Terminar»,
+  la de «Lo hice», una registrada a mano—, porque lo que se corrige es la sesión y
+  no la puerta por la que entró. Con eso el criterio 35 queda entero (era el
+  recorte de la tajada 3) y el 41 también, porque «Quitar del registro» **es** el
+  deshacer de «Lo hice»: quitada la sesión, el bloque vuelve a estar no hecho.
+- **«No se pudo» marca primero y pregunta después.** Un toque deja el bloque
+  explicado; el editor de la razón se abre al lado y **no contarla es una salida
+  con su propio botón** («Dejarlo sin razón»). Se puede cambiar y quitar después
+  desde el mismo sitio.
+- **Dónde se dice lo del aparato:** en el editor de la razón, cada vez que se
+  escribe una. El criterio 44 pide «una línea discreta la primera vez»; ponerla
+  donde se escribe es más honesto que un aviso suelto y no persigue a nadie por
+  la pantalla. **Es una lectura, y la digo.**
+- **La frase de cierre releva a la guía de FEAT-003.** La guía habla de huecos
+  por delante y de a qué hora empieza mañana; en un día cerrado no queda ninguno
+  de los dos. Se leen **una o la otra**, nunca las dos.
+- **`not-done` usa un token sólido y no una mezcla con `transparent`.** Lo
+  cambié **después de medirlo en el navegador**: sobre el vidrio de la tarjeta
+  una mezcla translúcida se lee peor y se mide mal. Lo que separa «pendiente» de
+  «no hecho» es la palabra, no el tono (criterio 45).
+
+**Verificación**
+
+*Las comprobaciones del `ENVIRONMENT.md`, enteras, al terminar*
+
+| Qué | Línea base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** (exit 0) |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos |
+| `pnpm test` | 2 fallos de 1101 (`SearchSelect` ×2) | **2 fallos de 1153** — los dos de `SearchSelect`, **1 archivo rojo de 99**. **+52 tests**, ninguno nuevo en rojo |
+| `pnpm build` | inicial 953,93 kB · `app-icons` 620,20 · `IconPicker` 4,64 | **964,65 kB** · `app-icons` **620,20** · `IconPicker` **4,64** — **+10,7 kB, y ninguno de iconos** (CSS 200,00 kB) |
+
+`pnpm vitest run src/features/vida` → **733 de 733 en verde**, 41 archivos.
+`graphify update .` → 3265 nodos, 3735 aristas.
+
+*Criterio por criterio*
+
+| # | Cómo queda | Evidencia |
+|---|---|---|
+| 39 | cumplido | `describeMissingBlock` con seis casos puros: antes de su fin `upcoming`, **en el minuto exacto** del fin `pending`, horas después sigue `pending`, con el día cerrado `not-done`, día pasado `not-done` sin reloj, día futuro `upcoming`. Y en pantalla: a las 9:24 «Bañarme» (08:00–08:45) se lee **«pendiente»** y **no hay ni un «no hecho»** en toda la página; a las 23:10 al revés. |
+| 40 | cumplido | Las tres en un `role="group"` llamado «Qué pasó con Bañarme», en este orden: **Lo hice · Hice otra cosa · No se pudo**. Mismo peso visual comprobado **por estructura**: `new Set(botones.map(b => b.className)).size === 1`. Ninguna es obligatoria: el bloque se puede dejar como está. |
+| 41 | cumplido | `createFollowUpMutation.mutate` recibe **exactamente** `{ activityId: 'a-b1', date: '2026-09-18', startTime: '08:00', durationMinutes: 45, notes: null }`, y **las cuatro** mutaciones de `activityDayPlan` siguen sin llamarse. Ajustable y deshacible desde el «···»: ver la fila 35. El recorte a «ahora» tiene sus cuatro casos puros. |
+| 42 | cumplido | «Hice otra cosa» abre la hoja en modo `log` con **08:00** en «a qué hora empezó» y la píldora **45** ya en `aria-pressed="true"`. Y el bloque queda **no hecho pero explicado**: con una sesión de «Llamada con el banco» a las 8:05, la fila de «Bañarme» dice «no hecho» **y** «en su lugar, Llamada con el banco», con la **vía** —`<a href="#session-f3">`— apuntando a una fila que existe en el DOM. El bloque **no se movió** de las 8:00 y el plan no se tocó. |
+| 43 | cumplido | Un toque en «No se pudo» deja «no se pudo» bajo el bloque **sin pedir nada**. Escribir «me quedé dormido» y guardar lo añade («· me quedé dormido»); «Quitar la nota» lo borra y el bloque vuelve a estar solo sin hacer. Tres casos más en el test del store (razón recortada, razón en blanco = sin razón, cambiarla). |
+| 44 | cumplido | Se lee **«Esta nota se queda en este dispositivo.»** dentro del editor, y lo escrito aparece en `localStorage` bajo `xavi.vida.deviceNotes`. **No hay campo nuevo en el API** ni nada metido en `notes` de ninguna sesión: la razón no sale del store. |
+| 45 | cumplido | Los tres estados se distinguen **por texto**: hecho (las horas reales y «✓ calcado»), «en su lugar, X» y «no se pudo · razón». Medido en el navegador a 375 px, los tres en la misma pantalla. Ningún estado depende del color para leerse. |
+| 46 | cumplido | Un día pasado con su sesión: el «···» ofrece **«Corregir»** y **«Quitar del registro»**, y **cero** controles de plan —ni «Quitar del plan» ni «Cambiar hora o duración»—. Las tres salidas salen en cualquier día que se pueda registrar (`canLogPast`), no solo hoy. |
+| 47 | cumplido | Las filas se llaman **«Sin dato»** y traen «6:30 – 8:00 · 1h 30». No aparece «desperdiciado», «perdido», «vacío» ni «libre» en ninguna de ellas (y hay un test que barre el texto de la página entera). |
+| 48 | cumplido | `VIDA_NO_DATA_MIN_MINUTES === 30`, probado como constante. Un tramo de 20 min se pinta pero **no pregunta** (`canAsk: false`); uno de 1h 30 ofrece **«¿Qué pasó?»** y **«Dejarlo así»**, y «¿Qué pasó?» abre la hoja con **06:30** ya puesto. |
+| 49 | cumplido | Tras «Dejarlo así» el tramo **sigue siendo «Sin dato»** y ya no pregunta; **desmontando y volviendo a montar la página** tampoco, y se lee «Lo dejaste así.». En el store: por día y por tramo, sin contagiar a otro tramo ni a otro día, y dos veces el mismo no lo apunta dos veces. |
+| 50 | cumplido | A las 9:24, con una sesión registrada, **no hay ni un «Sin dato»** en la pantalla, y en lo puro la forma del presupuesto es `running` con `noDataByGapId` vacío. La tarde que queda es planeado o libre, no «sin dato». |
+| 51 | cumplido | `buildDayClosingLine` con **las cuatro variantes** en test puro y un caso de vocabulario que barre **nueve** palabras («desperdici», «perdiste», «perdido», «fallaste», «fallo», «vacío», «cancel», «elimin», «deberías») sobre **cinco** frases distintas. En pantalla, un día cerrado con 1 de 3: «Seguiste 1 de 3. En lugar de Cocinar y almorzar hiciste Llamada con el banco. Leer un rato se quedó sin hacer. …», y la guía de F3 (**«Tu día se cerró a las 23:00»**, «Tu hueco más grande…») **ya no está** en el presupuesto. La cifra que habla de lo que no salió **nunca abre** la frase: `line.indexOf('Seguiste') === 0`, comprobado. |
+| 52 | **del usuario** | Es el criterio de fase y lo cierra él con el recorrido de abajo. |
+| 60 | cumplido, **medido en el navegador** | Arnés temporal a **375 px** (borrado): `scrollWidth === clientWidth === 375` y **cero** elementos desbordando, con un bloque «no hecho» + razón de tres líneas, otro «pendiente» + «en su lugar» y un tramo «sin dato», los tres con sus botones. Las **tres salidas** caben en el bloque envolviéndose en dos líneas, sin recortar ninguna. |
+| 61 | cumplido, **medido** | En ese mismo arnés: nombre de **59 caracteres** truncado con puntos suspensivos en una línea, y una razón de **100 caracteres** repartida en **tres líneas** dentro de la tarjeta, sin desbordar. |
+| 65 | cumplido, medido | La tabla de arriba. **Ningún documento GraphQL nuevo ni modificado**, así que `contracts.test.ts` no cambia. |
+| 35 (el recorte de la tajada 3) | **cerrado** | El «···» de un bloque con sesión ofrece **«Corregir»** —la hoja abre «Corregir «Bañarme»» con `08:00`— y **«Quitar del registro»** —diálogo «¿Quitar «Bañarme» del registro?», salida **«Volver»** que **no** llama a la mutación; al confirmar, `activityFollowUpRemove` recibe `{ id: 'f1', date, activityId, wasOpen: false }`—. Y **también en un día pasado**. |
+| 58 (heredado) | cumplido | Con `activityDayFollowUps` en error: se lee «Falta una parte de tu día», el plan se sigue viendo, y **no hay** «no hecho», ni «pendiente», ni «Lo hice», ni «Sin dato». Nada afirma lo que no se pudo comprobar. |
+| 59 (heredado) | cumplido | `vida-vocabulary.test.ts` sigue verde en la corrida entera, y hay un caso nuevo que barre el texto **de la página ya cerrada** buscando «desperdici», «perdiste», «fallaste», «cancelar» y «eliminar». |
+
+*Lo que miré en el navegador* (arnés temporal `src/arnes-t4.html` +
+`src/arnes-t4.tsx`, **ya borrados**), a 375 px y en **tema oscuro** —con el
+ámbito `[data-ds='aura']` **dentro** del `[data-theme='dark']`, que es como lo
+pide `_theme-variables.scss`—, sobre fondo negro (el peor caso, sin el degradado
+de la app). Contraste medido componiendo los fondos translúcidos uno sobre otro,
+no leyendo el color a pelo:
+
+| Lo que se lee | Contraste |
+|---|---|
+| el nombre del bloque · «no hecho» | **17,1:1** |
+| «Lo hice» · «Hice otra cosa» · «No se pudo» | **17,2:1** |
+| «pendiente» · la razón · «(10:05 – 10:35)» | **9,1:1** |
+| «Llamada con el banco» (la vía) | **12,6:1** |
+| «Sin dato» y sus horas | **9,9:1** |
+| «¿Qué pasó?» · «Dejarlo así» | **18,8:1** |
+
+**Riesgos**
+
+1. **Un bloque de hoy cuya hora ya pasó cambia de texto.** Antes decía «45 min»;
+   ahora «planeado 45 min · pendiente». Es el criterio 39 y es lo que hay que
+   hacer, pero **toca la lectura de un día normal** y por eso dos tests de
+   tajadas anteriores cambiaron de consulta (no de afirmación).
+2. **`VidaAgendaBlock` monta una mutación más.** Quien lo monte sin mockear
+   `useDeleteActivityFollowUpMutation` se queda sin ella. Solo lo monta
+   `VidaHoyPage`, cuyo mock ya la trae desde la tajada 3.
+3. **El «···» aparece en días pasados.** Antes no existía nunca ahí. Lo que
+   ofrece es solo lo de la sesión; los de plan siguen atados a `date`, que en un
+   día pasado es `null`.
+4. **«En su lugar» puede señalar algo que no era «en su lugar».** Si a la hora
+   de un bloque no hecho hay cualquier otra sesión fuera del plan, el bloque la
+   nombra. Es la misma clase de suposición que el cruce de D1 y está escrita en
+   la función; el minuto sigue contándose una sola vez, así que la barra no
+   miente.
+5. **Lo del aparato no viaja** (D7 y D8): en otro dispositivo las razones no se
+   ven y el «¿qué pasó?» vuelve a preguntar. Es la deuda de portabilidad de la
+   sección 1, dicha en pantalla.
+6. **La frase de cierre nombra como mucho dos bloques** por su título y resume el
+   resto («Otras 3 se quedaron sin hacer»). Con un día muy partido, alguno no
+   sale por su nombre — sale en la agenda, que es donde se lee entero.
+
+**Lo que no pude verificar, y no lo disimulo**
+
+- **Ni una llamada real al API.** `/app/*` está detrás del login y los agentes no
+  entran con credenciales (`ENVIRONMENT.md`). En particular **nunca se ha visto
+  un `activityFollowUpAdd` de «Lo hice» ni un `activityFollowUpRemove` de
+  deshacerlo contra el servidor**: lo que se comprueba es qué entra en `mutate`.
+- **La pantalla `/app/vida/hoy` entera** en un navegador: lo medido es un arnés
+  con los componentes nuevos. El tema oscuro **dentro** de la aplicación sigue
+  sin verlo nadie (criterio 62, abierto desde la tajada 2).
+- **El `localStorage` real del 5173**: el store se probó en jsdom (incluido uno
+  que **lanza**), no escribiendo en el navegador del usuario.
+- **Los criterios 52 y 66 son del usuario.**
+
+**Recorrido manual de FEAT-004, entero** (criterio 66; con la API despierta —
+Render tarda ~1 min en arrancar). Es el recorrido de la **feature completa**, no
+solo de esta tajada:
+
+1. **Empezar y el cronómetro.** En Hoy, «▶ Empezar» en un bloque: el cronómetro
+   tiene que arrancar. **Recarga la página**: no puede volver a 00:00. Vete a
+   *Actividades* o a *Ajustes* de Vida: la **barra** con el cronómetro tiene que
+   seguir ahí, y un toque en el nombre te devuelve al bloque.
+2. **Pasarse del tiempo.** Deja que el cronómetro pase de lo planeado: tiene que
+   leerse «llevas N min · planeado M» **sin** modal, sin sonido y sin rojo.
+3. **Terminar de un toque** y, desde el toast, **«añadir una nota»**: escribe
+   algo y guarda. Comprueba que el bloque pasa a hecho y se leen las **horas
+   reales**.
+4. **Empezar con otra en marcha:** «Empezar algo» → elige algo: el aviso tiene
+   que decir que terminamos la anterior, y **nunca** puede haber dos cronómetros.
+5. **Registrar un rato pasado** de esta mañana, y otro en un **día de atrás** de
+   la tira. Prueba una hora que **aún no ha llegado**: tiene que decírtelo.
+6. **Las tres salidas** (lo nuevo). Busca un bloque cuya hora **ya pasó** y que
+   no hiciste: tiene que leerse **«pendiente»** y traer los tres botones.
+   - **«Lo hice»** en uno: pasa a hecho con su hora planeada. Ábrele el **«···»**
+     → **«Corregir»** (cámbiale la hora) y luego **«Quitar del registro»**: tiene
+     que volver a estar sin hacer.
+   - **«Hice otra cosa»** en otro: elige otra actividad, mira que la hora y la
+     duración vengan puestas, y registra. El bloque tiene que quedar **no hecho
+     con «en su lugar, X»**, y tocando ese nombre tienes que ir a la fila de lo
+     que sí hiciste.
+   - **«No se pudo»** en un tercero, **con razón** («me quedé dormido») y en otro
+     **sin razón**. Comprueba que la razón se lee bajo el bloque y que se puede
+     cambiar y quitar.
+7. **El cambio de «pendiente» a «no hecho»:** vuelve a entrar **después de la
+   hora de fin de tu día** (o mira un día de atrás): los mismos bloques tienen
+   que leerse **«no hecho»**, y el presupuesto cambiar a *seguido · de más ·
+   fuera del plan · sin dato* **diciéndolo en una línea**.
+8. **«¿Qué pasó?»** en un tramo **«sin dato»** de al menos media hora: registra
+   algo en uno y **«Dejarlo así»** en otro. Sal de la pantalla, vuelve y
+   comprueba que **el que dejaste así no vuelve a preguntar** y **sigue
+   apareciendo** como «sin dato».
+9. **La frase de cierre:** léela entera. Tiene que decir qué seguiste, qué no y
+   **qué pasó en su lugar**, con tus números — y **no** puede sonar a reproche.
+   Si algo de ahí te suena a regaño, dilo: eso es un defecto.
+10. **En el móvil**, con un nombre largo y una razón larga: que no se salga nada
+    a lo ancho y que las tres salidas se alcancen sin scroll lateral.
+11. **El criterio 52**, que es el de fase: vive un día a medias —tres bloques
+    seguidos, uno movido, uno que no se pudo, uno con otra cosa en su lugar, dos
+    cosas fuera del plan y un rato sin dato— y comprueba que **no tuviste que
+    mover ni quitar un solo bloque del plan** para que quedara registrado.
+
+**Hallazgos que dejo escritos**
+
+1. **El hallazgo abierto de la tajada 2 —una sesión fuera del horario del día no
+   entra en la barra— sigue abierto, y lo digo.** Lo miré: `getExecutedBudget`
+   recorta todo a la ventana `dayStart…dayEnd`, así que un rato registrado a las
+   05:00 con el día empezando a las 06:30 **se ve en la agenda y aporta 0 a la
+   barra**. Arreglarlo es **ensanchar la ventana del presupuesto** cuando algo
+   cae fuera, y eso cambia el 100 % de la barra, el ancho de todos los tramos y
+   la cuenta de «sin dato» de **todos** los días — es decir, toca el criterio 26
+   entero, que es de la tajada 2 y está aceptado. **No lo hago aquí**: no cabe
+   sin desviarme y sin volver a medir lo de la tajada 2. Queda con dueño: la
+   revisión decide si lo abre como su propia tarea.
+2. **En un día del que no se apuntó nada no se pregunta «¿qué pasó?»** (ver «las
+   decisiones que tomé»). Es una lectura del criterio 29 contra el 48, y es de
+   una línea cambiarla si el usuario la quiere del otro modo.
+3. **La línea del aparato se enseña cada vez que se escribe una razón**, no solo
+   la primera. El criterio 44 dice «la primera vez»; esto es más, no menos.
+4. **La frase de cierre no habla del bloque movido.** Un movido cuenta como
+   seguido (tiene su sesión) y no se nombra aparte; en la agenda sí se lee.
+5. **Siguen abiertos los hallazgos heredados** que no eran de esta tajada: el
+   movido que además está en marcha, la barrita que le falta al movido, «▶
+   Empezar» apagándose por actividad, «Cambiar hora o duración» validando solo
+   contra el plan, el buscador que no distingue fallo de vacío, corregir que no
+   puede cambiar el «qué», y registrar sin aviso de solapes.
+
+**Dos tests de tajadas anteriores cambiaron de consulta, y queda dicho**
+
+Ninguno cambió de **afirmación**; los dos buscaban un texto que ahora vive
+dentro de otro más largo por el criterio 39:
+
+- `VidaHoyPage.test.tsx` «pinta el presupuesto y los bloques ordenados por hora»:
+  `getByText('45 min')` → el mismo texto **buscado dentro de la fila de
+  «Bañarme»**, que ahora dice «planeado 45 min · pendiente».
+- `VidaHoyPage.test.tsx` «criterio 29 — un día con plan y nada registrado se ve
+  como lo dejó F2»: `/^planeado /` → el mismo, **acotado a la sección del
+  presupuesto**, porque un bloque pendiente también empieza por «planeado».
+
+**Estado del árbol:** sin commitear. **3 archivos nuevos con sus carpetas**
+(`components/VidaBlockOutcomes/`, `components/VidaAgendaNoData/`,
+`store/vida-device-notes.store.ts` + su test) y **7 modificados** bajo `src/`,
+más este dossier y `BOARD.md`. El arnés temporal está **borrado**
+(`src/arnes-t4.html`, `src/arnes-t4.tsx`) y no queda dato de prueba ninguno:
+todo lo que se escribió fueron mutaciones **simuladas** y un `localStorage` de
+jsdom. **No toqué `docs/features/FEAT-005-vida-plantilla.md` ni su fila.**
+
+---
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — empezar y terminar un bloque, con cronómetro y la sesión visible en el módulo
@@ -2592,3 +2895,132 @@ vive con ello sabiéndolo.
 tema oscuro en un navegador, y los criterios 52 y 66, que son del usuario.
 Siguiente: la tajada 4, **la última**: pendiente, las tres salidas, «sin dato» y
 la frase de cierre — **más el «···» de la sesión de un bloque**.
+
+### Tajada 4 — pendiente, las tres salidas, sin dato y la frase de cierre
+
+**Veredicto: `accepted`**, y con ella **la feature entera**. Los tres puntos que
+yo mismo puse como condición están comprobados **por mí**, no de palabra; las
+cuatro decisiones fuera del plan las juzgo razonables y quedan escritas; y la
+línea base la corrí entera (con un tropiezo mío que cuento abajo).
+
+**Los tres obligatorios, uno a uno**
+
+1. **El «···» de la sesión emparejada con su bloque existe** (criterios 35 y 41).
+   Medido con arnés propio (`src/features/vida/components/zz-rev-t4.test.tsx`, 7
+   casos, **borrado**), montando `VidaAgendaBlock` con proveedores de verdad: con
+   una sesión cruzada, el «···» ofrece **«Corregir»** —que sube la sesión
+   entera por `onEditSession`— y **«Quitar del registro»**, cuyo diálogo dice
+   literalmente **«¿Quitar «Bañarme» del registro?»** con salida **«Volver»**
+   que **no llama a la mutación**. **También con `date={null}`** —el día
+   pasado—, y ahí **no aparece ni «Quitar del plan» ni «Cambiar hora o
+   duración»**: registro sí, plan no (criterio 46). Sin sesión, el menú no
+   ofrece nada de sesión. **El recorte que dejé abierto en la tajada 3 queda
+   cerrado.**
+2. **«Lo hice» recorta y `validateLogPast` no se exceptúa.** Comprobado en lo
+   puro: un bloque 14:00–15:00 marcado **a las 14:50 registra 50 min**; en un día
+   pasado no se recorta (60); pasado el final tampoco (60); y **nunca sale 0 ni
+   negativo** —con el reloj en 13:00 o en 14:00 devuelve **1**—. Lo de «empezar
+   en el futuro» **no puede ocurrir** porque la puerta de D9 lo impide, y lo
+   verifiqué en los dos lados: `describeMissingBlock` da `upcoming` a las 14:59 y
+   `pending` **en el minuto exacto** de las 15:00, y el componente **no pinta
+   ninguna de las tres salidas con `upcoming`** (con `pending` sí, y los tres
+   botones comparten **una sola** `className`, criterio 40). Es decir: la red de
+   debajo existe y el camino que la necesitaría está cerrado.
+3. **La sesión fuera del horario del día sigue abierta: la acepto como deuda
+   anotada.** El arreglo es ensanchar la ventana del presupuesto, y eso cambia el
+   100 % de la barra, el ancho de **todos** los tramos y la cuenta de «sin dato»
+   de **todos** los días: es el criterio 26 entero, que es de la tajada 2 y está
+   aceptado con sus medidas. Meterlo aquí habría obligado a volver a medir la
+   tajada 2 dentro de la última. **Hizo bien en no tocarlo**; queda en la deuda
+   de la entrega, con el arreglo nombrado.
+
+**Criterios, uno a uno** (contra la sección 1)
+
+| # | Veredicto del revisor | Cómo lo comprobé |
+|---|---|---|
+| 39 | cumplido | `describeMissingBlock` medido por mí en los seis casos: `upcoming` antes del fin y en el minuto anterior, **`pending` en el minuto exacto del fin**, `not-done` solo con el día cerrado o en un día pasado, y `upcoming` en un día futuro. En pantalla leí «planeado 45 min · **pendiente**». |
+| 40 | cumplido | Los tres botones existen con `pending`, en el orden del criterio, y **el conjunto de sus `className` tiene tamaño 1** (mismo peso visual, comprobado por mí). Ninguna es obligatoria. |
+| 41 | cumplido | El recorte, arriba. El **deshacer** es «Quitar del registro» del «···», que quita la sesión y devuelve el bloque a no hecho; lo vi funcionando en mi arnés. |
+| 42 | cumplido, **con una suposición dicha** | «En su lugar, X» se **deriva** del solape con una sesión fuera del plan y lleva ancla a su fila. Es la misma clase de regla que el cruce de D1 y **puede nombrar algo que no fue «en su lugar»** si a esa hora hubo cualquier otra cosa: está escrito en la función y en los riesgos. El plan no se toca. |
+| 43 · 44 | cumplidos | «No se pudo» marca primero y la razón es opcional, con «Dejarlo sin razón». La razón vive en el store del aparato —`xavi.vida.deviceNotes`— y **ningún campo del API se inventa**. La línea «Esta nota se queda en este dispositivo.» se enseña **cada vez** que se escribe una, no solo la primera: es **más** de lo que pide el criterio 44, y así queda anotado. |
+| 45 | cumplido | Hecho, «en su lugar, X» y «no se pudo · razón» se distinguen **por texto**; el color no decide nada (el token sólido de `not-done` es contraste, no significado). |
+| 46 | cumplido, **medido por mí** | El día pasado: «Corregir» y «Quitar del registro» sí, controles de plan **ninguno**. |
+| 47 · 48 · 49 · 50 | cumplidos **con la lectura que digo abajo** | `VIDA_NO_DATA_MIN_MINUTES = 30`; un tramo corto se pinta y **no pregunta**; el largo ofrece «¿Qué pasó?» y «Dejarlo así»; lo dejado así **sigue siendo «sin dato»** y no vuelve a preguntar, ni tras remontar; el futuro nunca se llama «sin dato». |
+| 51 | cumplido | **Leí las cuatro variantes yo**, generándolas con la función: «De este día no quedó nada apuntado. Tu plan de 3 cosas sigue aquí, por si quieres contar qué pasó.» · «Este día fue sin plan y aun así quedó contado: 2 cosas.» · «Seguiste las 3 cosas que planeaste. 12m se fueron por encima de lo planeado.» · «Seguiste 1 de 3. 18m se fueron por encima de lo planeado. En lugar de Cocinar y almorzar hiciste Llamada con el banco. Desayunar no se pudo. Leer un rato se quedó sin hacer. Fuera del plan hiciste 2 cosas (1h 35). Y 2h sin dato.» **Ninguna trae una palabra de culpa** (barrí nueve) y **todas abren por lo que sí salió**. |
+| 52 · 66 | **del usuario** | Recorrido al final de la sección 3 y en la nota de entrega. |
+| 60 · 61 | cumplidos **de segunda mano** | Los midió el constructor en un arnés de navegador (375 px sin desbordes, nombre de 59 caracteres truncado, razón de 100 en tres líneas) con tabla de contrastes en oscuro. **Yo no los volví a medir**: mi arnés fue de comportamiento, en jsdom, que no tiene disposición. Lo digo como lo que es. |
+| 65 | cumplido, **medido por mí** | typecheck **exit 0** · lint **14/0** · `pnpm test` **2 fallos de 1153** (los dos de `SearchSelect`; **1 archivo rojo de 99**) · `pnpm build` **exit 0**, chunk inicial **964,65 kB**, `app-icons` **620,20 kB**, `IconPicker` **4,64 kB**, CSS 199,97 kB. Ningún documento GraphQL nuevo. |
+
+**Un tropiezo mío, dicho:** mi primera corrida de `pnpm build` salió en rojo
+**por mi propio arnés** (un `import` de `node:fs` en un `.test.tsx` que `tsc -b`
+sí mira). Borré el arnés y **volví a correr typecheck y build enteros**: los dos
+en verde, con los números de la tabla. No hay nada del constructor en ese fallo.
+
+**Las cuatro decisiones fuera del plan: las cuatro las dejo escritas, ninguna
+devuelve**
+
+- **(a) «planeado 45 min · pendiente» en un bloque de hoy con la hora pasada.**
+  Es el criterio 39 literal; el cambio de lectura de un día normal es su
+  consecuencia inevitable. Los **dos tests de tajadas anteriores cambiaron de
+  consulta, no de afirmación** (uno acota el texto a la fila del bloque, el otro
+  al presupuesto): legítimo, igual que lo fue el cambio de expectativa de la
+  tajada 2.
+- **(b) «En su lugar, X» derivado y no guardado.** Lo prefiero a inventar un
+  campo o una marca en el aparato: explica el bloque venga la sesión por donde
+  venga y no añade una segunda verdad. Su límite está escrito.
+- **(c) «Sin dato» solo con el presupuesto en forma cerrada.** Lo juzgo
+  **correcto para el caso principal y discutible para uno**: el criterio 29 pide
+  que un día **con plan y nada registrado** se vea exactamente como lo dejó F2, y
+  esta regla es lo que lo garantiza —es la misma decisión que la revisión de la
+  tajada 2 ya aceptó con la tercera forma del presupuesto—. Donde queda corto es
+  en el día **sin plan y sin nada registrado**, que el 29 no cubre: ahí los
+  criterios 47 y 48 pedirían tramos «sin dato» con su «¿Qué pasó?» y no los hay.
+  No devuelvo porque llenar ese día de preguntas es una decisión de producto, no
+  un defecto técnico, y porque el constructor lo dejó escrito y a una línea de
+  cambiarse. **Va a la nota de entrega como decisión para el usuario.**
+- **(d) `not-done` con token sólido.** Medido en el navegador, y lo que separa
+  «pendiente» de «no hecho» sigue siendo la palabra.
+
+**Qué miré alrededor, y cómo** (regresiones)
+
+- **Quién monta lo tocado:** `VidaAgendaBlock`, `VidaAgendaSession`,
+  `VidaDayBudget`, `VidaBlockOutcomes` y `VidaAgendaNoData` solo salen de
+  `VidaHoyPage` (grep sobre `src/`); fuera de `src/features/vida/` el diff no
+  toca un archivo. La mutación nueva del bloque la mockeé yo al montarlo: no
+  explota.
+- **El store:** `persist` con `partialize` que guarda **solo** `blockNotes` y
+  `dismissedNoData`, sobre `shared/lib/storage`, con una **única** clave
+  (`xavi.vida.deviceNotes`). En todo el diff de `src/` no hay más `localStorage`
+  que el del store y el de sus tests: **es el único de la feature**, como manda
+  D8.
+- **Iconos y paquete:** ni un `free-solid-svg-icons` a pelo en el módulo, y
+  `app-icons`/`IconPicker` salen **idénticos** del build: los +10,7 kB no son de
+  iconos.
+- **Vocabulario:** `vida-vocabulary.test.ts` verde en la corrida entera, y las
+  cuatro frases de cierre las leí yo con un barrido de nueve palabras de culpa.
+
+**Hallazgos anotados, ninguno devuelve**
+
+1. **«Otras 1 quedaron explicadas»** en la frase de cierre cuando hay
+   exactamente **tres** bloques explicados (dos van por su nombre y el tercero
+   cae en el resumen, que no tiene singular). Lo reproduje. Es de la familia de
+   «los sábado» de FEAT-003: se lee raro, no reprocha.
+2. **En un día sin plan y sin nada apuntado no se pregunta «¿qué pasó?»** —la
+   decisión (c)—.
+3. **La línea del aparato se enseña cada vez**, no solo la primera (criterio 44:
+   es más, no menos).
+4. **La frase de cierre no nombra el bloque movido** (cuenta como seguido).
+5. **Deuda mayor, con dueño:** la **sesión fuera del horario del día** no entra
+   en la barra (criterio 26). Arreglo: ensanchar la ventana del presupuesto.
+6. Siguen abiertos los heredados: el movido que además está en marcha, la
+   barrita que le falta al movido, «▶ Empezar» apagándose por actividad,
+   «Cambiar hora o duración» validando solo contra el plan, el buscador que no
+   distingue fallo de vacío, «Corregir» que no cambia el «qué», y registrar sin
+   aviso de solapes.
+
+**Lo que no revisé, y no lo disimulo:** ni una llamada real al API —ni un
+`activityFollowUpAdd` de «Lo hice» ni un `activityFollowUpRemove` de deshacerlo—,
+los **375 px** y el **tema oscuro** en un navegador (míos son de jsdom; los del
+constructor, de arnés), `/app/vida/hoy` entera con sesión —el login es el límite
+estructural de este repositorio—, y el `localStorage` del navegador del usuario.
+**Los criterios 52 y 66 son suyos y siguen abiertos.**

@@ -1,0 +1,1 @@
+export { VidaAgendaNoData } from './VidaAgendaNoData'

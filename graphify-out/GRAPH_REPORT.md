@@ -1,16 +1,16 @@
 # Graph Report - xavi-habits-webapp  (2026-09-20)
 
 ## Corpus Check
-- 633 files · ~425,017 words
+- 641 files · ~447,976 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3206 nodes · 3659 edges · 459 communities (360 shown, 99 thin omitted)
-- Extraction: 83% EXTRACTED · 17% INFERRED · 0% AMBIGUOUS · INFERRED: 611 edges (avg confidence: 0.8)
+- 3265 nodes · 3735 edges · 460 communities (359 shown, 101 thin omitted)
+- Extraction: 83% EXTRACTED · 17% INFERRED · 0% AMBIGUOUS · INFERRED: 624 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `dda6caff`
+- Built from commit: `b0434ab6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -247,6 +247,7 @@
 - [[_COMMUNITY_Community 301|Community 301]]
 - [[_COMMUNITY_Community 309|Community 309]]
 - [[_COMMUNITY_Community 313|Community 313]]
+- [[_COMMUNITY_Community 324|Community 324]]
 - [[_COMMUNITY_Community 325|Community 325]]
 - [[_COMMUNITY_Community 368|Community 368]]
 - [[_COMMUNITY_Community 369|Community 369]]
@@ -332,10 +333,10 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `useToast()` - 43 edges
-2. `useConfirmDialog()` - 22 edges
-3. `VidaHoyPage()` - 21 edges
-4. `minutesToTime()` - 21 edges
-5. `formatTimeForDisplay()` - 21 edges
+2. `VidaHoyPage()` - 25 edges
+3. `minutesToTime()` - 23 edges
+4. `formatTimeForDisplay()` - 23 edges
+5. `useConfirmDialog()` - 22 edges
 6. `useAuthStore` - 20 edges
 7. `compilerOptions` - 20 edges
 8. `Habits Module — Implementation Plan` - 19 edges
@@ -349,15 +350,15 @@
   src/features/habits/components/HabitFormModal/HabitCreateWizard.tsx → src/features/habits/utils/habit-form.utils.ts
 - `HabitCategoriesPage()` --calls--> `defaultCategoryFormValues()`  [INFERRED]
   src/features/habits/pages/HabitCategoriesPage.tsx → src/features/habits/utils/habit-category-form.utils.ts
+- `HabitMeasuresPage()` --calls--> `defaultMeasureFormValues()`  [INFERRED]
+  src/features/habits/pages/HabitMeasuresPage.tsx → src/features/habits/utils/habit-measure-form.utils.ts
 - `HabitsListPage()` --calls--> `hasActiveHabitFilters()`  [INFERRED]
   src/features/habits/pages/HabitsListPage.tsx → src/features/habits/utils/habit-list.utils.ts
-- `renderSheet()` --calls--> `renderWithProviders()`  [INFERRED]
-  src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx → src/test/render.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (459 total, 99 thin omitted)
+## Communities (460 total, 101 thin omitted)
 
 ### Community 0 - "Weeklyplanner Planner"
 Cohesion: 0.14
@@ -368,8 +369,8 @@ Cohesion: 0.12
 Nodes (8): VidaItemCreateData, VidaItemDeleteData, VidaItemsData, VidaItemUpdateData, VidaMarkTakenTodayData, VidaSuggestionsForDateData, VidaTakenTodayData, VidaUnmarkTakenTodayData
 
 ### Community 2 - "Sections Commandpaletteprovider"
-Cohesion: 0.25
-Nodes (6): CommandPaletteContext, CommandPaletteContextValue, CommandPaletteProvider(), CommandPaletteProviderProps, HotkeyOptions, useHotkey()
+Cohesion: 0.14
+Nodes (10): AppLayoutShell(), CommandPaletteTrigger(), pillClassName(), CommandPaletteContext, CommandPaletteContextValue, CommandPaletteProvider(), CommandPaletteProviderProps, useCommandPalette() (+2 more)
 
 ### Community 3 - "Icons Icon"
 Cohesion: 0.08
@@ -388,16 +389,16 @@ Cohesion: 0.33
 Nodes (3): buildCategoryCreatePayload(), buildCategoryEditPayload(), defaultCategoryFormValues()
 
 ### Community 7 - "Quarters Activatequarter"
-Cohesion: 0.13
-Nodes (16): useAddDayPlanItemMutation(), useEditDayPlanItemMutation(), useRemoveDayPlanItemMutation(), useSetActivityDayPlanMutation(), FollowUpMutationContext, useRemoveHabitFollowUpMutation(), useUpdateHabitFollowUpMutation(), useSaveVidaItemForActivity() (+8 more)
+Cohesion: 0.16
+Nodes (13): useActivityDayPlanQuery(), useActivityDayFollowUpsQuery(), useSaveVidaItemForActivity(), useVidaDayData(), VidaDayData, useCreateVidaItemMutation(), useDeleteVidaItemMutation(), useMarkTakenTodayMutation() (+5 more)
 
 ### Community 8 - "Habit Routes"
 Cohesion: 0.10
 Nodes (23): habitsPaths, habitsRoutes, HabitPurpose, HabitPurposeEditInput, HabitPurposeInput, HabitPurposePlacement, Habit, HabitCategory (+15 more)
 
 ### Community 9 - "Activity Activitypickerfield"
-Cohesion: 0.33
-Nodes (5): useResendOtpMutation(), useVerifyEmailMutation(), VerifyEmailInput, VerifyEmailForm(), VerifyLocationState
+Cohesion: 0.15
+Nodes (8): useResendOtpMutation(), useVerifyEmailMutation(), VerifyEmailInput, VerifyEmailRoute(), VerifyLocationState, getPendingEmail(), VerifyEmailForm(), VerifyLocationState
 
 ### Community 10 - "Feedback Apperrorboundary"
 Cohesion: 0.09
@@ -405,15 +406,15 @@ Nodes (14): renderIndicator(), AppErrorBoundary, AppErrorBoundaryProps, AppError
 
 ### Community 11 - "Weekly Routine"
 Cohesion: 0.05
-Nodes (26): ActivitiesData, ActivityAddData, ActivityCompleteData, ActivityData, ActivityEditData, ActivityRemoveData, getActivities(), findStartingCategory() (+18 more)
+Nodes (27): ActivitiesData, ActivityAddData, ActivityCompleteData, ActivityData, ActivityEditData, ActivityRemoveData, getActivities(), findStartingCategory() (+19 more)
 
 ### Community 12 - "Quarter Dayofweek"
-Cohesion: 0.20
-Nodes (6): Archivos clave, Arquitectura del layout actual, Contexto del proyecto, Layout Improvements — xavi-habits-web, Orden de implementación recomendado, Variables CSS relevantes
+Cohesion: 0.18
+Nodes (11): Archivos clave, Arquitectura del layout actual, Contexto del proyecto, Criterios de aceptación, General, Layout Improvements — xavi-habits-web, Mejora 1, Mejora 2 (+3 more)
 
 ### Community 13 - "Usetodos Todossettings"
-Cohesion: 0.13
-Nodes (16): useDeleteHabitMutation(), useHabitFollowUpsInDatesQuery(), useHabitMyDayQuery(), useHabitQuery(), useHabitQueryGuard(), useHabitsQuery(), useHabitWeekViewQuery(), HabitCalendarPage() (+8 more)
+Cohesion: 0.14
+Nodes (22): HabitCreateWizard(), HabitEditForm(), HabitFormModal(), HabitFormModalProps, useCreateHabitMutation(), useDeleteHabitMutation(), useHabitCategoriesQuery(), useHabitFollowUpsInDatesQuery() (+14 more)
 
 ### Community 14 - "Rest Auth"
 Cohesion: 0.13
@@ -433,7 +434,7 @@ Nodes (14): 1.1 — Cambiar estado inicial en `AppLayout.tsx`, 1.2 — Ajustar a
 
 ### Community 18 - "Notecapture Notecard"
 Cohesion: 0.08
-Nodes (24): 1. The request — feature-analyst, 2. The plan — feature-architect, 3. Construction — feature-builder, 4. Review — feature-reviewer, Cómo se verifica cada tajada, Dónde NO va, Dónde va el código nuevo, archivo por archivo, FEAT-004 — Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro (+16 more)
+Nodes (25): 1. The request — feature-analyst, 2. The plan — feature-architect, 3. Construction — feature-builder, 4. Review — feature-reviewer, Cómo se verifica cada tajada, Dónde NO va, Dónde va el código nuevo, archivo por archivo, FEAT-004 — Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro (+17 more)
 
 ### Community 19 - "Todo Todocollection"
 Cohesion: 0.12
@@ -448,8 +449,8 @@ Cohesion: 0.12
 Nodes (15): Componentes, Criterios de aceptación, Datos, Diseño, Fuentes, Fuera de alcance, Iconos de campo, Layout (+7 more)
 
 ### Community 22 - "Loginform Resetpasswordform"
-Cohesion: 0.13
-Nodes (8): ForgotPasswordForm(), useForgotPasswordMutation(), useRegisterMutation(), useResetPasswordMutation(), RegisterForm(), ResetLocationState, ResetPasswordForm(), getAuthErrorMessage()
+Cohesion: 0.11
+Nodes (9): ForgotPasswordForm(), useForgotPasswordMutation(), useLoginMutation(), useRegisterMutation(), ICON_PROPS, LoginForm(), LoginLocationState, RegisterForm() (+1 more)
 
 ### Community 23 - "Router Todaypage"
 Cohesion: 0.13
@@ -476,8 +477,8 @@ Cohesion: 0.17
 Nodes (11): Comprobaciones que existen, Cómo conseguir datos reales, Dónde corre, Environment — lo que un agente no puede deducir del código, Grafo del proyecto, Lo que NO se ejecuta, Patrones vivos, Rutas o pantallas (+3 more)
 
 ### Community 29 - "Community 29"
-Cohesion: 0.10
-Nodes (22): ElapsedFormat, Timer(), useVidaElapsed(), VidaElapsed, closeSessionInput(), describeOverPlan(), editSessionInput(), elapsedMinutes() (+14 more)
+Cohesion: 0.16
+Nodes (17): closeSessionInput(), editSessionInput(), elapsedMinutes(), followUpStartInstant(), formatElapsedHHMMSS(), isFutureDateTime(), LogPastValidation, logSessionInput() (+9 more)
 
 ### Community 30 - "Auth Authsession"
 Cohesion: 0.12
@@ -488,8 +489,8 @@ Cohesion: 0.22
 Nodes (5): activeHabits, categories, createMutate, measures, updateMutate
 
 ### Community 32 - "Community 32"
-Cohesion: 0.16
-Nodes (12): useVidaSessionUi(), VidaSessionUiContext, VidaSessionUiValue, defaultLogStartTime(), LogSheetState, NO_SUGGESTIONS, SheetActivity, SheetState (+4 more)
+Cohesion: 0.14
+Nodes (12): LogSheetState, NO_SUGGESTIONS, SheetActivity, SheetState, subtitleFor(), formatDayHeading(), resolveUnknownEndMinutes(), VidaDayBudget() (+4 more)
 
 ### Community 33 - "Community 33"
 Cohesion: 0.18
@@ -512,20 +513,20 @@ Cohesion: 0.15
 Nodes (7): HabitIdentityClaimInput, useHabitIdentityClaim(), HabitIdentityMomentState, SavedIdentity, useHabitIdentityMoment(), HabitIdentityState, useHabitIdentityStore
 
 ### Community 41 - "Createfollowupfromfreeslotmodal Activityfollowupcard"
-Cohesion: 0.10
-Nodes (28): buildRangeSummary(), buildStreakEpisodes(), buildWeekdayBreakdown(), countComebacks(), countDaysInclusive(), DifficultyPoint, episodeLabel(), formatShortDate() (+20 more)
+Cohesion: 0.09
+Nodes (30): buildGoalSeries(), buildRangeSummary(), buildStreakEpisodes(), buildWeekdayBreakdown(), countComebacks(), countDaysInclusive(), DifficultyPoint, episodeLabel() (+22 more)
 
 ### Community 42 - "Modal Usereducedmotionpreference"
-Cohesion: 0.17
-Nodes (9): AuthLayout(), HIGHLIGHTS, Drawer(), useBodyScrollLock(), useFocusTrap(), Modal(), ModalProps, useReducedMotionPreference() (+1 more)
+Cohesion: 0.29
+Nodes (5): Drawer(), useBodyScrollLock(), useFocusTrap(), Modal(), ModalProps
 
 ### Community 43 - "Community 43"
-Cohesion: 0.16
-Nodes (16): format(), HabitDifficultyChart(), Props, TICKS, HabitGoalChart(), HabitPanel(), measureUnit(), Props (+8 more)
+Cohesion: 0.27
+Nodes (9): format(), HabitDifficultyChart(), Props, TICKS, formatDifficulty(), HabitWeeklyComplianceChart(), Props, xFor() (+1 more)
 
 ### Community 44 - "Community 44"
-Cohesion: 0.17
-Nodes (14): buildGuidanceLine(), formatGapRange(), buildStartTimeOptions(), describeWindow(), windowMinutes(), formatDurationFromMinutes(), formatTimeForDisplay(), minutesToTime() (+6 more)
+Cohesion: 0.10
+Nodes (20): buildGuidanceLine(), findFirstFittingGap(), findLargestGap(), formatGapRange(), buildNoDataSlices(), formatDurationFromMinutes(), formatTimeForDisplay(), formatDaysLabel() (+12 more)
 
 ### Community 46 - "Button Buttonasbuttonprops"
 Cohesion: 0.22
@@ -536,8 +537,8 @@ Cohesion: 0.22
 Nodes (8): TabsContext, TabsContextValue, useTabsContext(), Tabs, TabsList(), TabsPanel(), TabsProps, TabsTab()
 
 ### Community 49 - "Community 49"
-Cohesion: 0.21
-Nodes (14): useVidaDayHours(), VidaDayHours, getDayBudget(), toDayPlanTimes(), isFutureDateTime(), minutesUntilEndTime(), sessionStartInstant(), validateLogPast() (+6 more)
+Cohesion: 0.27
+Nodes (12): useVidaDayHours(), VidaDayHours, defaultLogStartTime(), toDayPlanTimes(), calculateEndTime(), DURATION_PILLS, isEndAfterStart(), isValidHhMm() (+4 more)
 
 ### Community 50 - "Query Keys"
 Cohesion: 0.13
@@ -556,8 +557,8 @@ Cohesion: 0.22
 Nodes (4): HabitPurposeAddData, HabitPurposeEditData, HabitPurposeRemoveData, HabitPurposesData
 
 ### Community 54 - "Community 54"
-Cohesion: 0.15
-Nodes (21): getCellClass(), DAY_LABELS, HabitDayCell(), Props, HabitFollowUpForm(), Props, buildGoalSeries(), shouldShowGoalChart() (+13 more)
+Cohesion: 0.08
+Nodes (30): getCellClass(), DAY_LABELS, HabitDayCell(), Props, getMicrocopy(), HabitDayRow(), HabitDayRowProps, HabitFollowUpForm() (+22 more)
 
 ### Community 55 - "Community 55"
 Cohesion: 0.17
@@ -577,11 +578,11 @@ Nodes (15): Barra de herramientas, Criterios de aceptación, Datos, Diseño, Est
 
 ### Community 59 - "Popover Useclickoutside"
 Cohesion: 0.06
-Nodes (40): CreateHabitCategoryStep(), Props, Props, STEP_META, WizardStep, HABIT_TYPE_OPTIONS, Props, NewCategoryButton() (+32 more)
+Nodes (42): CreateHabitMeasureStep(), Props, Props, STEP_META, WizardStep, HABIT_TYPE_OPTIONS, Props, NewCategoryButton() (+34 more)
 
 ### Community 60 - "Usehabitcategories Habitcategoriespage"
-Cohesion: 0.32
-Nodes (5): useCreateHabitCategoryMutation(), useRemoveHabitCategoryMutation(), useUpdateHabitCategoryMutation(), FormMode, HabitCategoriesPage()
+Cohesion: 0.21
+Nodes (7): CreateHabitCategoryStep(), Props, useCreateHabitCategoryMutation(), useRemoveHabitCategoryMutation(), useUpdateHabitCategoryMutation(), FormMode, HabitCategoriesPage()
 
 ### Community 61 - "Motion Variants"
 Cohesion: 0.25
@@ -592,16 +593,16 @@ Cohesion: 0.18
 Nodes (10): ActivitiesResponse, Activity, ActivityCategoryRef, ActivityEditInput, ActivityFilters, ActivityInput, ActivityPriority, ActivityStatus (+2 more)
 
 ### Community 63 - "Community 63"
-Cohesion: 0.15
-Nodes (15): describeLeftovers(), durationPillsForWindow(), fitsInWindow(), GapWindow, getMaxDurationForStartTime(), getPlacementLeftovers(), isStartTimeInsideWindow(), PlacementLeftovers (+7 more)
+Cohesion: 0.13
+Nodes (19): buildStartTimeOptions(), describeLeftovers(), describeWindow(), durationPillsForWindow(), fitsInWindow(), GapWindow, getMaxDurationForStartTime(), getPlacementLeftovers() (+11 more)
 
 ### Community 64 - "Applayout Logoutbutton"
 Cohesion: 0.22
 Nodes (6): archivedItem, categories, QueryState, refetch, updateActivity, updateVidaItem
 
 ### Community 65 - "Community 65"
-Cohesion: 0.13
-Nodes (14): DAY_LABELS, HabitContributionGrid(), Props, HabitWeekSelector(), HabitWeekSelectorProps, EMPTY_FOLLOW_UP_MAP, HabitMyDayPage(), RegisterTarget (+6 more)
+Cohesion: 0.14
+Nodes (13): DAY_LABELS, HabitContributionGrid(), Props, EMPTY_FOLLOW_UP_MAP, HabitMyDayPage(), RegisterTarget, WEEKDAY_INITIALS, HabitWeekViewPage() (+5 more)
 
 ### Community 66 - "Verifyemailform Useverifyemailmutation"
 Cohesion: 0.14
@@ -648,8 +649,8 @@ Cohesion: 0.18
 Nodes (13): ChartLegend(), ChartPanel(), ChartTable, Props, Props, habit, previous, summary (+5 more)
 
 ### Community 78 - "Community 78"
-Cohesion: 0.19
-Nodes (8): CreateHabitMeasureStep(), Props, useCreateHabitMeasureMutation(), useRemoveHabitMeasureMutation(), useUpdateHabitMeasureMutation(), FormMode, HabitMeasuresPage(), defaultMeasureFormValues()
+Cohesion: 0.32
+Nodes (5): useCreateHabitMeasureMutation(), useRemoveHabitMeasureMutation(), useUpdateHabitMeasureMutation(), FormMode, HabitMeasuresPage()
 
 ### Community 79 - "Icons Appiconmap"
 Cohesion: 0.40
@@ -684,32 +685,32 @@ Cohesion: 0.60
 Nodes (3): formatWeekRange(), HabitWeekNav(), Props
 
 ### Community 88 - "Quarterformmodal Usequarters"
-Cohesion: 0.11
-Nodes (16): HabitListCard(), HabitListCardProps, countBy(), countHabitsByCategory(), countHabitsByPurpose(), EMPTY_HABIT_LIST_FILTERS, getHabitFrequencyLabel(), getHabitIntent() (+8 more)
+Cohesion: 0.15
+Nodes (11): countBy(), countHabitsByCategory(), countHabitsByPurpose(), EMPTY_HABIT_LIST_FILTERS, HABIT_SORT_OPTIONS, HabitIntent, HabitListFilters, HabitSortKey (+3 more)
 
 ### Community 89 - "Community 89"
-Cohesion: 0.20
-Nodes (6): VidaActividadesPage(), countCatalogCategories(), excludeArchivedActivities(), findVidaItemForActivity(), GroupAccumulator, VidaCatalogGroupModel
+Cohesion: 0.11
+Nodes (14): useActivitiesQuery(), useActivityCategoriesQuery(), useActivityCategoryQuery(), useDeleteActivityCategoryMutation(), useUpdateActivityCategoryMutation(), useVidaItemsQuery(), VidaActividadesPage(), VidaArchivadasPage() (+6 more)
 
 ### Community 90 - "Iconbutton Iconbuttonprops"
 Cohesion: 0.40
 Nodes (3): IconButtonProps, IconButtonSize, IconButtonVariant
 
 ### Community 91 - "Community 91"
-Cohesion: 0.14
-Nodes (15): useActivitiesQuery(), useActivityCategoriesQuery(), useActivityCategoryQuery(), useDeleteActivityCategoryMutation(), useUpdateActivityCategoryMutation(), useActivityDayPlanQuery(), useActivityDayFollowUpsQuery(), useVidaDayData() (+7 more)
+Cohesion: 0.10
+Nodes (20): 1. The request — feature-analyst, 2. The plan — feature-architect, 3. Construction — feature-builder, 4. Review — feature-reviewer, Cómo se verifica cada tajada, Decisiones de arquitectura, Dónde NO va, Dónde va el código nuevo, archivo por archivo (+12 more)
 
 ### Community 93 - "Community 93"
-Cohesion: 0.19
-Nodes (15): HabitCreateWizard(), HabitEditForm(), HabitFormModal(), HabitFormModalProps, useCreateHabitPurposeMutation(), useHabitPurposeQueryGuard(), useHabitPurposesQuery(), useRemoveHabitPurposeMutation() (+7 more)
+Cohesion: 0.22
+Nodes (8): CreateHabitPurposeStep(), Props, useCreateHabitPurposeMutation(), useHabitPurposeQueryGuard(), useHabitPurposesQuery(), useRemoveHabitPurposeMutation(), useUpdateHabitPurposeMutation(), HabitPersonaPage()
 
 ### Community 94 - "Community 94"
 Cohesion: 0.18
 Nodes (5): ActivityDayPlanData, ActivityDayPlanItemAddData, ActivityDayPlanItemEditData, ActivityDayPlanItemRemoveData, ActivityDayPlanSetData
 
 ### Community 95 - "Searchselect Dropdownpos"
-Cohesion: 0.08
-Nodes (31): BlockExecution, BlockExecutionStatus, buildDayExecution(), BuildDayExecutionInput, CandidatePair, covers(), DayExecution, describeBlockExecution() (+23 more)
+Cohesion: 0.06
+Nodes (41): BlockExecution, BlockExecutionStatus, BlockInstead, BlockMissingStatus, buildDayClosingLine(), buildDayExecution(), BuildDayExecutionInput, CandidatePair (+33 more)
 
 ### Community 96 - "Skeleton Skeletonprops"
 Cohesion: 0.50
@@ -724,8 +725,8 @@ Cohesion: 0.09
 Nodes (25): AVOID_FALLBACK, getIdentitySuggestions(), IdentityRule, IdentitySuggestion, IdentitySuggestionQuery, matchesRule(), RULES, WANT_FALLBACK (+17 more)
 
 ### Community 101 - "Community 101"
-Cohesion: 0.09
-Nodes (18): AgendaBlock, AgendaEntry, AgendaGap, AgendaNowMark, buildDayAgenda(), BuildDayAgendaInput, DayAgenda, DayBudget (+10 more)
+Cohesion: 0.12
+Nodes (16): AgendaBlock, AgendaEntry, AgendaGap, AgendaNowMark, BuildDayAgendaInput, DayAgenda, DayBudget, GapSuggestion (+8 more)
 
 ### Community 103 - "Activityweekselector Activityweekselectorprops"
 Cohesion: 0.06
@@ -736,8 +737,8 @@ Cohesion: 0.50
 Nodes (3): ConfirmDialogOptions, ConfirmDialogState, ConfirmDialogVariant
 
 ### Community 109 - "Community 109"
-Cohesion: 0.26
-Nodes (11): invalidateFollowUpQueries(), formatDateToYmd(), getCurrentLocalDate(), getCurrentWeekRange(), getMondayOfWeek(), isFutureDate(), isToday(), pad2() (+3 more)
+Cohesion: 0.15
+Nodes (15): invalidateDayPlanQueries(), InvalidateFollowUpOptions, invalidateFollowUpQueries(), invalidateVidaTakenTodayQueries(), toFollowUpDateKey(), formatDateToYmd(), getCurrentLocalDate(), getCurrentWeekRange() (+7 more)
 
 ### Community 110 - "Community 110"
 Cohesion: 0.20
@@ -764,8 +765,8 @@ Cohesion: 0.50
 Nodes (3): AuthBootstrapContext, AuthBootstrapContextValue, AuthBootstrapStatus
 
 ### Community 131 - "Switch Springtransition"
-Cohesion: 0.07
-Nodes (28): 1.1 — Cambio en `HabitFollowUpForm`: default a nivel 2, 1.2 — Rediseño del componente `HabitDifficultyPicker`, 1.3 — Reescribir `HabitDifficultyPicker.module.scss`, 1.4 — Animación de bump al cambiar nivel (opcional), 1.5 — Criterios de aceptación del picker, 2.1 — Crear componente `HabitMonthView`, 2.2 — Crear `HabitMonthView.module.scss`, 2.3 — Reemplazar `HabitCalendarPage` para usar el nuevo componente (+20 more)
+Cohesion: 0.20
+Nodes (10): 1.1 — Cambio en `HabitFollowUpForm`: default a nivel 2, 1.2 — Rediseño del componente `HabitDifficultyPicker`, 1.3 — Reescribir `HabitDifficultyPicker.module.scss`, 1.4 — Animación de bump al cambiar nivel (opcional), 1.5 — Criterios de aceptación del picker, Estado actual, Lógica de detección desktop vs mobile, Parte 1 — HabitDifficultyPicker (+2 more)
 
 ### Community 133 - "Tooltip Tooltipplacement"
 Cohesion: 0.22
@@ -788,12 +789,8 @@ Cohesion: 0.29
 Nodes (6): ActivityDayPlanItem, ActivityDayPlanItemAddInput, ActivityDayPlanItemEditInput, ActivityDayPlanItemRemoveInput, ActivityDayPlanSetInput, ActivityDayPlanSetItemInput
 
 ### Community 140 - "Community 140"
-Cohesion: 0.19
-Nodes (8): getMicrocopy(), HabitDayRow(), HabitDayRowProps, HabitLifelineButton(), Props, useAddHabitFollowUpMutation(), SpendLifelineArgs, useHabitLifelineAction()
-
-### Community 141 - "Community 141"
-Cohesion: 0.17
-Nodes (9): resolveUnknownEndMinutes(), formatDurationMinutes(), VidaAgendaBlock(), VidaAgendaBlockProps, VidaDurationPills(), VidaDurationPillsProps, describeWhen(), VidaStaleSessionPrompt() (+1 more)
+Cohesion: 0.15
+Nodes (10): ElapsedFormat, Timer(), useVidaElapsed(), VidaElapsed, describeOverPlan(), formatElapsedCompact(), VidaAgendaBlock(), VidaAgendaBlockProps (+2 more)
 
 ### Community 142 - "Community 142"
 Cohesion: 0.43
@@ -808,32 +805,32 @@ Cohesion: 0.22
 Nodes (7): AppModule, appModules, AppModuleSection, AppModuleSettingsLink, createCommandActions(), findActiveModule(), buildActions()
 
 ### Community 159 - "Community 159"
-Cohesion: 0.19
-Nodes (11): BuildDayOutcome, BuildDayRequest, useBuildDayFromTemplate(), findFirstFittingGap(), pluralDayLabel(), PlaceInFirstGapButton(), placementMinutes(), tomorrowOf() (+3 more)
+Cohesion: 0.36
+Nodes (6): pluralDayLabel(), placementMinutes(), tomorrowOf(), VidaTemplateAside(), VidaTemplateAsideProps, VidaTomorrowBlock()
 
 ### Community 168 - "Community 168"
-Cohesion: 0.12
-Nodes (11): ArchivedHabitCard(), Props, Trigger(), ConfirmDialogContext, ConfirmDialogContextValue, ConfirmDialogProviderProps, initialState, useConfirmDialog() (+3 more)
+Cohesion: 0.09
+Nodes (16): ArchivedHabitCard(), Props, Trigger(), ConfirmDialogContext, ConfirmDialogContextValue, ConfirmDialogProviderProps, initialState, useConfirmDialog() (+8 more)
 
 ### Community 173 - "Activitytrackingpage Tracking"
-Cohesion: 0.11
-Nodes (18): 1.1 — `ActivitiesModuleLayout.tsx`, 1.2 — `ActivitiesModuleLayout.module.scss`, 2.1 — `ActivitiesModuleNav.tsx`, 2.2 — `ActivitiesModuleNav.module.scss`, 3.1 — Eliminar header redundante + reorganizar JSX, 3.2 — `ActivityTrackingPage.module.scss`, 5.1 — `ActivityDetailPage.tsx`, 5.2 — `ActivityDetailPage.module.scss` (+10 more)
+Cohesion: 0.07
+Nodes (27): 1.1 — `ActivitiesModuleLayout.tsx`, 1.2 — `ActivitiesModuleLayout.module.scss`, 2.1 — `ActivitiesModuleNav.tsx`, 2.2 — `ActivitiesModuleNav.module.scss`, 3.1 — Eliminar header redundante + reorganizar JSX, 3.2 — `ActivityTrackingPage.module.scss`, 4.1 — `ActivityCategoriesPanel.module.scss`, 4.2 — Tarjeta "+" integrada en el grid (+19 more)
 
 ### Community 183 - "Store Auth"
 Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 186 - "Community 186"
-Cohesion: 0.13
-Nodes (16): useActivityFollowUpsInDatesQuery(), useActivityOpenFollowUpQuery(), useCreateActivityFollowUpMutation(), useDeleteActivityFollowUpMutation(), useStartActivityFollowUpMutation(), useUpdateActivityFollowUpMutation(), VidaMutationOptions, useVidaOpenSession() (+8 more)
+Cohesion: 0.10
+Nodes (22): useAddDayPlanItemMutation(), useEditDayPlanItemMutation(), useRemoveDayPlanItemMutation(), useActivityFollowUpsInDatesQuery(), useActivityOpenFollowUpQuery(), useCreateActivityFollowUpMutation(), useDeleteActivityFollowUpMutation(), useStartActivityFollowUpMutation() (+14 more)
 
 ### Community 189 - "Community 189"
 Cohesion: 0.60
 Nodes (3): Props, VidaCategoryForm(), VidaCategoryFormValues
 
 ### Community 190 - "Community 190"
-Cohesion: 0.32
-Nodes (4): invalidateDayPlanQueries(), InvalidateFollowUpOptions, invalidateVidaTakenTodayQueries(), toFollowUpDateKey()
+Cohesion: 0.18
+Nodes (9): useVidaSessionUi(), VidaSessionUiContext, VidaSessionUiValue, useVidaWeekPlans(), VidaDayPlanDot, VidaWeekPlans, VidaHoyPage(), findNextBlockId() (+1 more)
 
 ### Community 192 - "Vite Importmeta"
 Cohesion: 0.08
@@ -852,15 +849,15 @@ Cohesion: 0.29
 Nodes (4): buildSuggestion(), gapWindow, MutationStub, renderSheet()
 
 ### Community 197 - "Community 197"
-Cohesion: 0.40
-Nodes (5): Criterios de aceptación, General, Mejora 1, Mejora 2, Mejora 3
+Cohesion: 0.28
+Nodes (7): HabitGoalChart(), HabitPanel(), measureUnit(), Props, composeReading(), formatAmount(), hasAnyDifficulty()
 
 ### Community 198 - "Community 198"
-Cohesion: 0.25
-Nodes (4): useLoginMutation(), ICON_PROPS, LoginForm(), LoginLocationState
+Cohesion: 0.22
+Nodes (3): Contexto, Habit Month View + Difficulty Picker Redesign, Orden de implementación recomendado
 
 ### Community 199 - "Community 199"
-Cohesion: 0.18
+Cohesion: 0.15
 Nodes (5): block(), block19(), PLAN, Query, SETTINGS
 
 ### Community 200 - "Community 200"
@@ -868,8 +865,8 @@ Cohesion: 0.33
 Nodes (5): DrawerProps, DrawerSide, DrawerSize, DrawerVariant, slideVariants
 
 ### Community 206 - "Community 206"
-Cohesion: 0.33
-Nodes (6): Criterios de aceptación, General, Mejora 1 + 2, Mejora 3, Mejora 4, Mejora 5
+Cohesion: 0.32
+Nodes (7): getBlockNote(), isNoDataDismissed(), useVidaDeviceNotesStore, VidaBlockNote, vidaBlockNoteKey(), VidaDeviceNotesState, vidaNoDataKey()
 
 ### Community 214 - "Community 214"
 Cohesion: 0.33
@@ -880,16 +877,16 @@ Cohesion: 0.70
 Nodes (4): comebackHelper(), days(), HabitPanelTiles(), Props
 
 ### Community 216 - "Community 216"
-Cohesion: 0.29
-Nodes (11): parseYmdToLocalDate(), buildDayStrip(), clampToPlanningWindow(), DayStripDay, describePlanningWindowEdge(), getPlanningWindow(), isEditableDate(), isInPlanningWindow() (+3 more)
+Cohesion: 0.22
+Nodes (15): formatWeekRange(), mondayOf(), shiftYmd(), VidaSemanaPage(), parseYmdToLocalDate(), buildDayStrip(), clampToPlanningWindow(), DayStripDay (+7 more)
 
 ### Community 223 - "Community 223"
-Cohesion: 0.18
-Nodes (6): renderApp(), renderAt(), ProvidersProps, renderWithProviders(), renderPicker(), SUGGESTIONS
+Cohesion: 0.33
+Nodes (4): renderApp(), renderAt(), ProvidersProps, renderWithProviders()
 
 ### Community 224 - "Community 224"
-Cohesion: 0.25
-Nodes (5): useClickOutside(), useEscapeKey(), Popover(), PopoverPlacement, PopoverProps
+Cohesion: 0.33
+Nodes (4): useEscapeKey(), Popover(), PopoverPlacement, PopoverProps
 
 ### Community 225 - "Community 225"
 Cohesion: 0.33
@@ -900,8 +897,8 @@ Cohesion: 0.22
 Nodes (6): IconPicker(), IconPickerProps, APP_ICON_CATEGORY_LABELS, APP_ICON_CATEGORY_ORDER, getCategoryLabel(), buildHaystack()
 
 ### Community 227 - "Community 227"
-Cohesion: 0.48
-Nodes (6): agendaOf(), at(), block(), budgetOf(), describe1(), session()
+Cohesion: 0.21
+Nodes (8): buildDayAgenda(), agendaAt(), agendaOf(), at(), block(), budgetOf(), describe1(), session()
 
 ### Community 228 - "Community 228"
 Cohesion: 0.33
@@ -912,12 +909,16 @@ Cohesion: 0.40
 Nodes (4): buildFollowUps(), days, renderCard(), getVisibleDays()
 
 ### Community 231 - "Community 231"
-Cohesion: 0.40
-Nodes (4): formatClock(), OK, UseVidaSessionActionsOptions, VidaSessionActionResult
+Cohesion: 0.25
+Nodes (8): 2.1 — Crear componente `HabitMonthView`, 2.2 — Crear `HabitMonthView.module.scss`, 2.3 — Reemplazar `HabitCalendarPage` para usar el nuevo componente, 2.4 — Exportar `HabitMonthView` desde el barrel de habits, 2.5 — Verificar tipo `HabitFollowUp`, 2.6 — Verificar que `AppIcon` acepta `name="message-circle"`, Contexto del estado actual, Parte 2 — Vista de mes (`HabitMonthView`)
 
 ### Community 232 - "Community 232"
 Cohesion: 0.33
 Nodes (6): P1 — Sidebar demasiado ancha (240px fija), P2 — `max-width: 1400px` con `margin: 0 auto` en `.main`, P3 — Topbar ocupa demasiada altura vertical, P4 — Doble sistema de navegación redundante en desktop, P5 — Padding acumulado entre `.main` y páginas internas, Problemas identificados
+
+### Community 233 - "Community 233"
+Cohesion: 0.33
+Nodes (3): buildMeasureCreatePayload(), buildMeasureEditPayload(), defaultMeasureFormValues()
 
 ### Community 236 - "Community 236"
 Cohesion: 0.25
@@ -928,24 +929,24 @@ Cohesion: 0.33
 Nodes (4): files, FORBIDDEN, HEREDADOS, sources
 
 ### Community 239 - "Community 239"
-Cohesion: 0.17
-Nodes (9): DAY_LETTERS, getLast7Days(), HabitsWidget(), sortMyDayEntries(), formatLocalDateToYmd(), getYesterdayString(), HABIT_TYPE_ICONS, HABIT_TYPE_LABELS (+1 more)
+Cohesion: 0.11
+Nodes (13): DAY_LETTERS, getLast7Days(), HabitsWidget(), HabitWeekSelector(), HabitWeekSelectorProps, HabitHistoryTab(), sortMyDayEntries(), formatLocalDateToYmd() (+5 more)
 
 ### Community 241 - "Community 241"
-Cohesion: 0.33
-Nodes (4): AppLayoutShell(), CommandPaletteTrigger(), pillClassName(), useCommandPalette()
+Cohesion: 0.29
+Nodes (7): Celdas, Criterios de aceptación — Vista de mes, General, Indicadores de detalle, Interacción, Navegación, Responsive
 
 ### Community 242 - "Community 242"
-Cohesion: 0.15
-Nodes (13): BuildWeekDay, BuildWeekDone, BuildWeekFailure, BuildWeekInput, BuildWeekResult, useBuildWeekFromTemplate(), useVidaWeekPlans(), VidaDayPlanDot (+5 more)
+Cohesion: 0.29
+Nodes (6): BuildWeekDay, BuildWeekDone, BuildWeekFailure, BuildWeekInput, BuildWeekResult, useBuildWeekFromTemplate()
 
 ### Community 243 - "Community 243"
 Cohesion: 0.38
 Nodes (4): filterAppIcons(), haystackCache, normalizeSearchText(), stripDiacritics()
 
 ### Community 244 - "Community 244"
-Cohesion: 0.29
-Nodes (3): VerifyEmailRoute(), VerifyLocationState, getPendingEmail()
+Cohesion: 0.40
+Nodes (3): useResetPasswordMutation(), ResetLocationState, ResetPasswordForm()
 
 ### Community 245 - "Community 245"
 Cohesion: 0.53
@@ -964,16 +965,16 @@ Cohesion: 0.09
 Nodes (21): Dominio Actividades — Xavi Habits Web, Estructura, Filtros del listado, Flujo UX, Formulario de actividad, Free slots (Fase 6.4), GraphQL — actividades, GraphQL — categorías (+13 more)
 
 ### Community 255 - "Community 255"
-Cohesion: 0.40
-Nodes (4): DropdownPos, SearchSelect(), SearchSelectOption, SearchSelectProps
+Cohesion: 0.18
+Nodes (7): AuthLayout(), HIGHLIGHTS, useReducedMotionPreference(), DropdownPos, SearchSelect(), SearchSelectOption, SearchSelectProps
 
 ### Community 257 - "Community 257"
-Cohesion: 0.47
-Nodes (4): getVidaDayOfWeek(), PlanShortcuts(), VidaDayActions(), VidaDayActionsProps
+Cohesion: 0.24
+Nodes (8): useSetActivityDayPlanMutation(), BuildDayOutcome, BuildDayRequest, useBuildDayFromTemplate(), getVidaDayOfWeek(), PlanShortcuts(), VidaDayActions(), VidaDayActionsProps
 
 ### Community 283 - "Community 283"
-Cohesion: 0.60
-Nodes (3): formatDaysLabel(), VidaActivityCard(), VidaActivityCardProps
+Cohesion: 0.40
+Nodes (4): Answer, Outcome, Q: Quien escribe un VidaItem hoy y donde se decide crear vs actualizar (FEAT-005), Source Nodes
 
 ### Community 292 - "Community 292"
 Cohesion: 0.50
@@ -990,10 +991,6 @@ Nodes (4): Archivos tocados (2026-06-23), Desvíos respecto al spec, layout-impr
 ### Community 300 - "Community 300"
 Cohesion: 0.50
 Nodes (3): Answer, Outcome, Q: que existe en el repo para la sesion viva de Vida (follow-ups, cronometro, cruce plan vs real)
-
-### Community 301 - "Community 301"
-Cohesion: 0.67
-Nodes (3): 4.1 — `ActivityCategoriesPanel.module.scss`, 4.2 — Tarjeta "+" integrada en el grid, MEJORA 4 — `ActivityCategoriesPanel`: grid responsive + tarjeta "+"
 
 ### Community 368 - "Community 368"
 Cohesion: 0.17
@@ -1220,24 +1217,24 @@ Cohesion: 0.40
 Nodes (4): Backlog de fases — rediseño Aura, Decidido — fase 10, Deuda anotada, sin hacer, Lo que se descubrió al escribir las specs
 
 ## Knowledge Gaps
-- **1458 isolated node(s):** `name`, `private`, `version`, `type`, `packageManager` (+1453 more)
+- **1487 isolated node(s):** `name`, `private`, `version`, `type`, `packageManager` (+1482 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **99 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **101 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useConfirmDialog()` connect `Community 168` to `Community 257`, `Community 292`, `Community 140`, `Usetodos Todossettings`, `Community 78`, `Community 141`, `Community 44`, `Community 242`, `Community 54`, `Quarterformmodal Usequarters`, `Community 283`, `Usehabitcategories Habitcategoriespage`, `Community 93`?**
-  _High betweenness centrality (0.044) - this node is a cross-community bridge._
-- **Why does `useToast()` connect `Quarters Activatequarter` to `Createhabitpurposestep Usehabitpurposes`, `Community 168`, `Weekly Routine`, `Community 140`, `Usetodos Todossettings`, `Community 78`, `Community 242`, `Toast Context`, `Activities Activity`, `Community 246`, `Community 186`, `Community 91`, `Usehabitcategories Habitcategoriespage`, `Community 93`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
-- **Why does `useAuthStore` connect `Router Todaypage` to `Community 198`, `Activity Activitypickerfield`, `Community 395`, `Usetodos Todossettings`, `Community 241`, `Community 274`, `Community 244`, `Community 91`, `Community 93`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+- **Why does `useConfirmDialog()` connect `Community 168` to `Community 257`, `Community 292`, `Community 44`, `Usetodos Todossettings`, `Community 78`, `Community 140`, `Community 54`, `Community 216`, `Usehabitcategories Habitcategoriespage`, `Community 93`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `useToast()` connect `Community 186` to `Community 257`, `Createhabitpurposestep Usehabitpurposes`, `Community 168`, `Quarters Activatequarter`, `Weekly Routine`, `Usetodos Todossettings`, `Community 78`, `Community 242`, `Toast Context`, `Activities Activity`, `Community 246`, `Community 54`, `Community 89`, `Usehabitcategories Habitcategoriespage`, `Community 93`?**
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **Why does `useAuthStore` connect `Router Todaypage` to `Sections Commandpaletteprovider`, `Quarters Activatequarter`, `Activity Activitypickerfield`, `Community 395`, `Usetodos Todossettings`, `Community 274`, `Loginform Resetpasswordform`, `Community 93`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
 - **Are the 42 inferred relationships involving `useToast()` (e.g. with `useCompleteActivityMutation()` and `useCreateActivityMutation()`) actually correct?**
   _`useToast()` has 42 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 21 inferred relationships involving `useConfirmDialog()` (e.g. with `ArchivedHabitCard()` and `Trigger()`) actually correct?**
-  _`useConfirmDialog()` has 21 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 19 inferred relationships involving `VidaHoyPage()` (e.g. with `useAddDayPlanItemMutation()` and `useBuildDayFromTemplate()`) actually correct?**
-  _`VidaHoyPage()` has 19 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 18 inferred relationships involving `minutesToTime()` (e.g. with `formatNowLabel()` and `defaultLogStartTime()`) actually correct?**
-  _`minutesToTime()` has 18 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 23 inferred relationships involving `VidaHoyPage()` (e.g. with `useAddDayPlanItemMutation()` and `useCreateActivityFollowUpMutation()`) actually correct?**
+  _`VidaHoyPage()` has 23 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 20 inferred relationships involving `minutesToTime()` (e.g. with `formatNowLabel()` and `defaultLogStartTime()`) actually correct?**
+  _`minutesToTime()` has 20 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 21 inferred relationships involving `formatTimeForDisplay()` (e.g. with `formatClock()` and `buildGuidanceLine()`) actually correct?**
+  _`formatTimeForDisplay()` has 21 INFERRED edges - model-reasoned connections that need verification._

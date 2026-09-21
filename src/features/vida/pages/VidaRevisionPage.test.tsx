@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaRevisionPage } from '@/features/vida/pages/VidaRevisionPage'
@@ -9,8 +10,8 @@ import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import { renderWithProviders } from '@/test/render'
 
 /**
- * **La revisión de un día** (FEAT-006, tajada 1): criterios 1, 2, 3, 4, 5, 6,
- * 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 22 y 23.
+ * **La revisión de un día** (FEAT-006, tajadas 1, 2 y 3): criterios 1, 2, 3, 4,
+ * 5, 6, 9, 10, 11, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 26–34 y 35–44.
  *
  * Se mockean **las consultas**, no `useVidaDayData` ni la derivación: lo que
  * hay que comprobar aquí es que la pantalla cruza de verdad plan + sesiones +
@@ -41,17 +42,53 @@ let dayFollowUpsQuery: Query<ActivityFollowUp[]>
 /** El día que la pantalla pidió: así se comprueba que el `?d=` manda. */
 let askedDates: string[]
 
+/**
+ * **El espía de los criterios 35 y 41.** Las cuatro mutaciones del plan del día
+ * se sustituyen por espías: si algún control de la revisión tocara el plan,
+ * alguno de estos `mutate` se llamaría. Ninguno lo hace.
+ */
+const planSpies = {
+  set: vi.fn(),
+  add: vi.fn(),
+  edit: vi.fn(),
+  remove: vi.fn(),
+}
+
+function planMutationsCalled(): number {
+  return Object.values(planSpies).reduce((total, spy) => total + spy.mock.calls.length, 0)
+}
+
 vi.mock('@/features/vida/hooks/useActivityDayPlan', () => ({
   useActivityDayPlanQuery: (date: string) => {
     askedDates.push(date)
     return planQuery
   },
+  useSetActivityDayPlanMutation: () => ({ mutate: planSpies.set, isPending: false }),
+  useAddDayPlanItemMutation: () => ({ mutate: planSpies.add, isPending: false }),
+  useEditDayPlanItemMutation: () => ({ mutate: planSpies.edit, isPending: false }),
+  useRemoveDayPlanItemMutation: () => ({ mutate: planSpies.remove, isPending: false }),
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useVidaSuggestionsForDateQuery: () => suggestionsQuery,
 }))
+/** Lo **único** que la revisión escribe: una sesión (`activityFollowUpAdd`). */
+const createFollowUp = vi.fn()
+let createFollowUpState = { isPending: false, isError: false }
+
 vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
   useActivityDayFollowUpsQuery: () => dayFollowUpsQuery,
+  useCreateActivityFollowUpMutation: () => ({
+    mutate: createFollowUp,
+    mutateAsync: createFollowUp,
+    ...createFollowUpState,
+  }),
+  // Las monta `VidaLogSessionSheet`, que se reutiliza tal cual.
+  useUpdateActivityFollowUpMutation: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    isPending: false,
+    isError: false,
+  }),
 }))
 // Los puntos de la tira: el hook tiene su propio test con `useQueries` de
 // verdad; aquí importa a dónde llevan los siete enlaces.
@@ -67,6 +104,11 @@ vi.mock('@/features/vida/hooks/useVidaWeekPlans', () => ({
     hasError: false,
     refetch: vi.fn(),
   }),
+}))
+// El «qué» de la hoja: el catálogo tiene su propio test y aquí solo estorba
+// (monta `useVidaQueryGuard`, que pide el proveedor de arranque de sesión).
+vi.mock('@/features/vida/hooks/useActivities', () => ({
+  useActivitiesQuery: () => ({ data: [], isPending: false, isError: false }),
 }))
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
@@ -162,6 +204,9 @@ beforeEach(() => {
   suggestionsQuery = ready([])
   settingsQuery = ready(SETTINGS)
   dayFollowUpsQuery = ready(SESSIONS)
+  createFollowUp.mockReset()
+  createFollowUpState = { isPending: false, isError: false }
+  for (const spy of Object.values(planSpies)) spy.mockReset()
   useVidaDeviceNotesStore.setState({ blockNotes: {}, dismissedNoData: [] })
 })
 
@@ -240,16 +285,17 @@ describe('el día contado (criterios 6, 9, 10, 11, 13, 14, 16 y 18)', () => {
     expect(screen.getByText('fuera del plan')).toBeInTheDocument()
   })
 
-  it('las dos salidas son **enlaces a Hoy** de ese día, y no hay botón muerto (criterio 18)', () => {
+  it('«Ver el día en la agenda» sigue siendo **el enlace a Hoy** (criterio 18)', () => {
     renderPage()
 
     const agenda = screen.getByRole('link', { name: 'Ver el día en la agenda' })
-    const log = screen.getByRole('link', { name: 'Registrar tiempo pasado' })
     expect(agenda).toHaveAttribute('href', `/app/vida/hoy?d=${FRIDAY}`)
-    expect(log).toHaveAttribute('href', `/app/vida/hoy?d=${FRIDAY}`)
-    // **La revisión no escribe nada en esta tajada**: ni un botón en toda la
-    // pantalla fuera de los enlaces (criterios 18 y 41).
-    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    // **Derogado por el criterio 37**: en la tajada 1 «Registrar tiempo pasado»
+    // era un enlace a Hoy y la pantalla no tenía **ni un botón**. Desde la
+    // tajada 3 registra **aquí mismo**, así que ahora se afirma lo contrario:
+    // es un botón y ya no lleva a ninguna parte.
+    expect(screen.queryByRole('link', { name: 'Registrar tiempo pasado' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Registrar tiempo pasado' }).length).toBe(2)
   })
 
   it('un «no se pudo» trae su razón y dice que **vive en este aparato** (criterios 14 y 15)', () => {
@@ -263,7 +309,12 @@ describe('el día contado (criterios 6, 9, 10, 11, 13, 14, 16 y 18)', () => {
     expect(screen.getByText(/se guardan en este aparato: en otro no estarán/)).toBeInTheDocument()
   })
 
-  it('sin ninguna razón, la línea del aparato **no se pinta**: no se dice lo que no toca', () => {
+  it('sin razones **y sin nada que dejar así**, la línea del aparato no se pinta', () => {
+    // Un día entero registrado: ni «no se pudo» ni tramos que preguntar, así
+    // que no se dice lo que no toca. (En un día con tramos **sí** se dice,
+    // porque «Dejarlo así» también vive en el aparato: criterio 15.)
+    planQuery = ready([block('b1', 'a1', 'Vivir el día', '06:30', '23:00')])
+    dayFollowUpsQuery = ready([session('s1', 'a1', 'Vivir el día', '06:30', 990)])
     renderPage()
 
     expect(screen.queryByText(/se guardan en este aparato/)).not.toBeInTheDocument()
@@ -310,8 +361,10 @@ describe('los días raros (criterios 4, 5, 19, 20 y 21)', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Si quieres, se rellena ahora — o se queda así.')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Lo que tenías planeado' })).toBeInTheDocument()
-    // Los «Lo hice» por bloque son de la tajada 3: no se pintan muertos.
-    expect(screen.queryByText('Lo hice')).not.toBeInTheDocument()
+    // **Derogado por el criterio 36**: en la tajada 1 la lista fantasma no
+    // tenía botones. Ahora cada bloque estrena su «Lo hice», que es la forma
+    // más barata de rellenar un día a posteriori.
+    expect(screen.getAllByRole('button', { name: 'Lo hice' })).toHaveLength(5)
     // Sin cifra grande, porque no hay nada que contar.
     expect(screen.queryByRole('region', { name: 'Las cifras del día' })).not.toBeInTheDocument()
   })
@@ -481,8 +534,9 @@ describe('en qué se repartió el día (criterios 26, 27, 28, 29, 32 y 33)', () 
       screen.getByRole('heading', { name: 'Los cuatro tramos más largos sin registrar' }),
     ).toBeInTheDocument()
     expect(screen.getByText('6:30 – 8:30')).toBeInTheDocument()
-    // Y siguen sin pintarse botones: «¿Qué pasó?» es de la tajada 3.
-    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    // **Derogado por el criterio 38**: cada tramo estrena sus dos salidas.
+    expect(screen.getAllByRole('button', { name: '¿Qué pasó?' }).length).toBeGreaterThan(0)
+    expect(screen.getAllByRole('button', { name: 'Dejarlo así' }).length).toBeGreaterThan(0)
   })
 
   it('sin tramos por encima del umbral, **la sección no se pinta** (criterio 32)', () => {
@@ -509,5 +563,204 @@ describe('en qué se repartió el día (criterios 26, 27, 28, 29, 32 y 33)', () 
     expect(screen.getByText('No pudimos leer lo que viviste ese día')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Minutos por categoría' })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * **La revisión rellena el día** (tajada 3): criterios 35, 36, 37, 38, 39, 40,
+ * 41, 42, 43 y 44.
+ *
+ * Lo que se vigila aquí es **qué se escribe**: una sesión y nada más. Las cuatro
+ * mutaciones del plan del día están espiadas arriba (`planSpies`), así que si
+ * cualquiera de estos controles tocara el plan, se vería.
+ */
+describe('la revisión rellena el día (criterios 35–44)', () => {
+  it('**«Lo hice»** en un bloque no hecho escribe la sesión planeada (criterio 35)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage()
+
+    // El primer bloque sin sesión del viernes: «Desayunar con calma», 8:30, 30 min.
+    const [primero] = screen.getAllByRole('button', { name: 'Lo hice' })
+    await user.click(primero!)
+
+    expect(createFollowUp).toHaveBeenCalledTimes(1)
+    expect(createFollowUp).toHaveBeenCalledWith({
+      activityId: 'a3',
+      date: FRIDAY,
+      startTime: '08:30',
+      durationMinutes: 30,
+      notes: null,
+    })
+    // **Y el plan no se tocó** (criterios 35 y 41).
+    expect(planMutationsCalled()).toBe(0)
+  })
+
+  it('«Lo hice» **recorta a ahora** en el día de hoy, igual que en Hoy (criterio 35)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    // Sábado 19 a las 9:24, con un bloque de 9:00 a 10:00 ya empezado: la
+    // sesión nace de 36 min, no de 60 — es `plannedSessionMinutes`, la misma
+    // función de Hoy, no una copia.
+    planQuery = ready([
+      { ...block('b9', 'a9', 'Organizar la casa', '09:00', '10:00'), date: '2026-09-19' },
+    ])
+    dayFollowUpsQuery = ready([])
+    renderPage('?d=2026-09-19')
+
+    const [primero] = screen.getAllByRole('button', { name: 'Lo hice' })
+    await user.click(primero!)
+
+    expect(createFollowUp).toHaveBeenCalledWith(
+      expect.objectContaining({ startTime: '09:00', durationMinutes: 24 }),
+    )
+    expect(planMutationsCalled()).toBe(0)
+  })
+
+  it('la **lista fantasma** de un día sin registros estrena su «Lo hice» (criterio 36)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    dayFollowUpsQuery = ready([])
+    renderPage()
+
+    const botones = screen.getAllByRole('button', { name: 'Lo hice' })
+    expect(botones).toHaveLength(5)
+    await user.click(botones[0]!)
+
+    expect(createFollowUp).toHaveBeenCalledWith(
+      expect.objectContaining({ activityId: 'a1', startTime: '07:00', durationMinutes: 15 }),
+    )
+    expect(planMutationsCalled()).toBe(0)
+  })
+
+  it('**«Registrar tiempo pasado»** abre la hoja **sin salir** de la revisión (criterio 37)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage()
+
+    await user.click(screen.getAllByRole('button', { name: 'Registrar tiempo pasado' })[0]!)
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    // Sigue siendo la revisión: la cabecera no se movió.
+    expect(screen.getByRole('heading', { level: 1, name: 'Revisión' })).toBeInTheDocument()
+    expect(planMutationsCalled()).toBe(0)
+  })
+
+  it('**«¿Qué pasó?»** de un tramo abre la hoja con **su hora ya puesta** (criterio 38)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage()
+
+    const [primero] = screen.getAllByRole('button', { name: '¿Qué pasó?' })
+    await user.click(primero!)
+
+    const hoja = await screen.findByRole('dialog')
+    // La hora con la que abre la hoja es **la del tramo**, no la de ahora ni la
+    // de «media hora antes»: se lee de la propia franja que se tocó.
+    const franja = primero!.closest('li')!.textContent ?? ''
+    const [hora, minuto] = franja.match(/(\d{1,2}):(\d{2})/)!.slice(1)
+    const esperada = `${hora!.padStart(2, '0')}:${minuto}`
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue(esperada)
+    expect(planMutationsCalled()).toBe(0)
+  })
+
+  it('**«Dejarlo así»** usa el store del aparato y **no vuelve a preguntar** (criterio 38)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const { unmount } = renderPage()
+
+    const antes = screen.getAllByRole('button', { name: 'Dejarlo así' }).length
+    await user.click(screen.getAllByRole('button', { name: 'Dejarlo así' })[0]!)
+
+    expect(screen.getAllByRole('button', { name: 'Dejarlo así' })).toHaveLength(antes - 1)
+    expect(screen.getByText('Lo dejaste así.')).toBeInTheDocument()
+    // Ni una escritura: esto vive en el aparato, no en el API.
+    expect(createFollowUp).not.toHaveBeenCalled()
+    expect(planMutationsCalled()).toBe(0)
+
+    // Y al volver a montar la pantalla **sigue dejado así**.
+    unmount()
+    renderPage()
+    expect(screen.getByText('Lo dejaste así.')).toBeInTheDocument()
+  })
+
+  it('el marco E trae **las tres salidas con el mismo peso visual** (criterio 39)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    dayFollowUpsQuery = ready([])
+    renderPage()
+
+    const registrar = screen.getAllByRole('button', { name: 'Registrar tiempo pasado' })[0]!
+    const quePaso = screen.getByRole('button', { name: '¿Qué pasó?' })
+    const dejarlo = screen.getByRole('button', { name: 'Dejarlo así' })
+    // **Misma `className`**: ninguna destacada sobre las otras.
+    expect(registrar.className).toBe(quePaso.className)
+    expect(quePaso.className).toBe(dejarlo.className)
+
+    // «Dejarlo así» cierra el asunto **del día entero**.
+    await user.click(dejarlo)
+    expect(screen.queryByRole('button', { name: '¿Qué pasó?' })).not.toBeInTheDocument()
+    expect(screen.getByText('Lo dejaste así.')).toBeInTheDocument()
+    expect(createFollowUp).not.toHaveBeenCalled()
+    expect(planMutationsCalled()).toBe(0)
+  })
+
+  it('lo registrado **se recalcula sin recargar** (criterio 40)', () => {
+    const { unmount } = renderPage()
+    const figures = screen.getByRole('region', { name: 'Las cifras del día' })
+    expect(within(figures).getByText('3')).toBeInTheDocument()
+
+    // Lo que la invalidación de `followUps.day(date)` trae de vuelta: una
+    // sesión más para el bloque que faltaba. La pantalla la cuenta sola.
+    unmount()
+    dayFollowUpsQuery = ready([...SESSIONS, session('s5', 'a3', 'Desayunar con calma', '08:30', 30)])
+    renderPage()
+
+    const despues = screen.getByRole('region', { name: 'Las cifras del día' })
+    expect(within(despues).getByText('4')).toBeInTheDocument()
+    expect(screen.getByText(/^Seguiste 4 de 5 bloques/)).toBeInTheDocument()
+  })
+
+  it('un **día futuro** no ofrece ninguna de estas salidas (criterio 42)', () => {
+    planQuery = ready([])
+    dayFollowUpsQuery = ready([])
+    renderPage('?d=2026-09-25')
+
+    expect(screen.queryByRole('button', { name: 'Lo hice' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Registrar tiempo pasado' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '¿Qué pasó?' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Dejarlo así' })).not.toBeInTheDocument()
+  })
+
+  it('un **día pasado** sí las ofrece, como en Hoy (criterio 42)', () => {
+    renderPage('?d=2026-09-16')
+
+    expect(screen.getAllByRole('button', { name: 'Registrar tiempo pasado' }).length).toBeGreaterThan(0)
+  })
+
+  it('si la escritura **falla**, se dice y sin reprochar (criterio 43)', () => {
+    createFollowUpState = { isPending: false, isError: true }
+    renderPage()
+
+    expect(screen.getByText('No pudimos guardar eso')).toBeInTheDocument()
+    expect(screen.getByText(/Se quedó sin apuntar/)).toBeInTheDocument()
+    // Lo elegido no se pierde: la pantalla sigue entera y el plan sigue intacto.
+    expect(screen.getByRole('heading', { name: /^Plan frente a real/ })).toBeInTheDocument()
+    expect(planMutationsCalled()).toBe(0)
+  })
+
+  it('**toda cifra de lo que no salió lleva su salida al lado** (criterio 44)', () => {
+    renderPage()
+
+    // «Sin registrar», dentro de la propia tarjeta de las cifras.
+    const figures = screen.getByRole('region', { name: 'Las cifras del día' })
+    expect(within(figures).getByRole('button', { name: 'Registrar tiempo pasado' })).toBeInTheDocument()
+    // Y cada bloque que no salió, con el suyo en su fila.
+    expect(screen.getAllByRole('button', { name: 'Lo hice' }).length).toBe(2)
+  })
+
+  it('en toda la pantalla **no se toca el plan**, haga lo que haga (criterio 41)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage()
+
+    await user.click(screen.getAllByRole('button', { name: 'Lo hice' })[0]!)
+    await user.click(screen.getAllByRole('button', { name: 'Dejarlo así' })[0]!)
+    await user.click(screen.getAllByRole('button', { name: 'Registrar tiempo pasado' })[0]!)
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
+
+    expect(planMutationsCalled()).toBe(0)
   })
 })

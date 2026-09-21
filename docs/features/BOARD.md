@@ -19,6 +19,55 @@ The user decides the order, not an agent. The state and slice rules are in
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
 
+**FEAT-006, tajada 3 `in-review`** (2026-09-20, **sin commitear**; la
+construcción está en la sección 3 del dossier): **la revisión rellena el día.**
+Cada bloque **sin sesión** —y cada fila del **plan fantasma** de un día sin
+registros— estrena **«Lo hice»**, que es **la función de Hoy** (`clearBlockNote`
++ `logSessionInput` + `plannedSessionMinutes`, no una copia de la aritmética):
+registra la hora y la duración **planeadas** y **recorta a «ahora»** (un bloque
+de 9:00 a 10:00 marcado a las 9:24 guarda **24 min**). **«Registrar tiempo
+pasado» dejó de ser un enlace a Hoy**: abre **la misma `VidaLogSessionSheet` de
+FEAT-004 aquí dentro**, con `key` por apertura y las `suggestions` que
+`useVidaDayData` **ya pedía** —ni una consulta más, ni una segunda hoja—. Cada
+tramo sin registrar trae **«¿Qué pasó?»** —la hoja con **la hora del tramo**, no
+con la de «media hora antes»: el test lee la franja del renglón y la compara con
+el campo— y **«Dejarlo así»**, que va al **mismo** `dismissedNoData` del store
+del aparato: el tramo **sigue ahí**, deja de preguntar, y sigue dejado así tras
+desmontar y volver a montar. El **marco E** trae **las tres salidas con la misma
+`className`** (comprobado por estructura) y su «Dejarlo así» **cierra el día
+entero**. Y **toda cifra de lo que no salió lleva su salida al lado**:
+«Sin registrar» con «Registrar tiempo pasado» **dentro de la tarjeta de las
+cifras**, cada bloque con su «Lo hice» **en su fila**. **Nada toca el plan**: las
+**cuatro** mutaciones de `activityDayPlan` están **espiadas en todo el archivo de
+test** y dan **0 llamadas** —también encadenando «Lo hice» + «Dejarlo así» +
+abrir la hoja—, y `useActivityDayPlan` **no se importa** en ninguno de los cuatro
+archivos tocados. **No se creó ni un archivo**: ni consulta, clave,
+invalidación, mutación, ruta, documento GraphQL ni clave de `localStorage`
+nuevos —el «dejarlo así» del día entero entra con el id `dia-entero` en la lista
+que ya existe—. Línea base: typecheck **exit 0**, lint **14/0**, `pnpm test` **2
+fallos de 1401** (los dos de `SearchSelect`; **+13 tests**; `src/features/vida`
+**981/981**), `pnpm build` **exit 0** con chunk inicial **1.040,86 kB**
+(**+3,11**, **ninguno de iconos**: `app-icons` 620,20 e `IconPicker` 4,64
+clavados; CSS 236,09). `graphify update .`: 3538 nodos, 4158 aristas. **Avisos,
+por orden de riesgo:** **(1)** **cuatro afirmaciones de las tajadas 1 y 2 quedan
+derogadas** —«en toda la pantalla no hay ni un botón», «el marco E sin Lo hice»,
+«los tramos sin botones» y la de la línea del aparato—, todas reemplazadas por lo
+contrario con su porqué escrito; si algo se lee raro en los tests, es ahí.
+**(2)** «Registrar tiempo pasado» **ya no es un `link`**: cualquier test ajeno
+que lo busque por rol cambia de resultado. **(3)** en **escritorio** el «Lo
+hice» vive en el panel «Lo que no se hizo» y **no** en los carriles —para no
+duplicar el control del mismo bloque—, decisión mía y a una línea de cambiarse.
+**(4)** el «¿Qué pasó?» del **marco E** abre por **la primera hora del día**,
+porque en un día sin registros `buildNoDataSlices` no da ningún tramo (el aviso
+que dejó la tajada 2). **Del usuario, y es lo primero que miraría quien revise:**
+**los 375 px y el oscuro con los botones nuevos no se han visto renderizados**
+—esta tajada fue sin arnés, por cuota; lo nuevo son píldoras de contorno
+copiadas de `VidaAgendaNoData`, medidas en FEAT-004, sobre filas con
+`flex-wrap`— y **todo lo que pasa por el API**: ningún `activityFollowUpAdd`
+desde esta pantalla ha viajado nunca, y el criterio 40 —la cifra subiendo **sin
+recargar** tras la invalidación real— solo está probado con las consultas
+simuladas. Los cinco pasos del recorrido, al final de la sección 3.
+
 **FEAT-006, tajada 2 — revisión: `accepted`** (2026-09-20, revisada ya
 **commiteada**, sobre `31ebd0a..0bea895`). **«Sin registrar» es fila aparte**:
 fuera de `rows`, con su frase literal y su tamaño contra el día entero, y en todo

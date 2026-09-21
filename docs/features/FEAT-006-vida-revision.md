@@ -356,7 +356,7 @@ tal cual** y están repartidos por los criterios de abajo.
 |---|---|---|
 | 1 | **El día se lee.** `/app/vida/revision` deja de ser un cascarón: tira de días con `?d=`, **la historia en prosa**, la cifra grande (N de M) con planeado · registrado · fuera del plan y **sin registrar**, **plan frente a real** bloque a bloque con el vocabulario de Hoy, la sección «Fuera del plan», el escritorio en **dos carriles**, los días raros (futuro, en curso, sin registros, sin plan) y los estados. **Solo lectura**, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí al cerrarse el día. Ya es útil sola: es la primera vez que el usuario ve su día contado. | in-review |
 | 2 | **En qué se repartió el día.** Por categoría, con la paleta del catálogo y dos barras (planeado rayado · registrado sólido), **«Sin registrar» como fila propia** con su frase, y **los cuatro tramos más largos sin registrar** listados con su franja y su tamaño. Sigue siendo lectura: responde «¿en qué se me fue el día?», que es la pregunta que trajo el módulo. | in-review |
-| 3 | **La revisión rellena el día.** Las salidas, todas prestadas de Hoy: **«Lo hice»** por bloque no hecho y en la lista fantasma, **«Registrar tiempo pasado»** y **«¿Qué pasó?»** con la hoja de FEAT-004 dentro de la revisión, y **«Dejarlo así»** con el store del aparato. Nada de esto toca el plan. Convierte una pantalla que se mira en una que se usa. | pending |
+| 3 | **La revisión rellena el día.** Las salidas, todas prestadas de Hoy: **«Lo hice»** por bloque no hecho y en la lista fantasma, **«Registrar tiempo pasado»** y **«¿Qué pasó?»** con la hoja de FEAT-004 dentro de la revisión, y **«Dejarlo así»** con el store del aparato. Nada de esto toca el plan. Convierte una pantalla que se mira en una que se usa. | in-review |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», la barrita del día y «registrado de planeado», la frase de la semana, el punto de tres estados en la tira, y **un solo aviso** hacia la plantilla en forma de pregunta, que al aceptarse **mueve la hora del ítem** (`vidaItemUpdate`) y nunca el plan. Es lo que cierra el círculo plantilla → día → revisión → plantilla. | pending |
 
 **Por qué este orden:** la 1 es lectura pura sobre **datos y aritmética que ya
@@ -1024,7 +1024,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 |---|---|---|---|---|
 | 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | **accepted** (2026-09-20) |
 | 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | **accepted** (2026-09-20) |
-| 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | pending |
+| 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | `in-review` (2026-09-20) |
 | 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | pending (**bloqueada hasta que FEAT-005 esté `delivered`**) |
 
 Los criterios **61, 62 y 63** los cierra **el usuario**: están detrás del login y
@@ -1488,6 +1488,168 @@ pueden querer del revés)
   se mezcla; (3) marcar un bloque como **«No se pudo»** desde Hoy y ver aparecer
   su nota bajo la categoría; (4) mirar los **tramos** y comprobar que las franjas
   coinciden con los huecos que enseña Hoy.
+
+### Tajada 3 — la revisión rellena el día
+
+**Resumen para quien revise, en tres líneas:**
+
+1. **La revisión ya se usa, no solo se mira**: cada bloque sin sesión —y cada
+   fila del **plan fantasma**— estrena **«Lo hice»**, «Registrar tiempo pasado»
+   abre **la hoja de FEAT-004 aquí dentro** (ya no es un enlace a Hoy), cada
+   tramo sin registrar estrena **«¿Qué pasó?» y «Dejarlo así»**, y el marco E
+   trae **las tres salidas con la misma `className`**. No se creó ni un archivo:
+   todo es cableado de código ya revisado.
+2. **Lo único que escribe es una sesión.** Las **cuatro** mutaciones de
+   `activityDayPlan` están **espiadas** en el test de la pantalla y **ninguna se
+   llama** haga lo que haga (criterios 35 y 41); no hay consulta, clave,
+   invalidación, documento GraphQL ni clave de `localStorage` nuevos, y «Dejarlo
+   así» va al **mismo** `dismissedNoData` que usa Hoy.
+3. **Lo que más probable he roto:** **cuatro afirmaciones de las tajadas 1 y 2
+   quedaron derogadas** —la que decía «en toda la pantalla no hay ni un botón»,
+   la de «la lista fantasma no trae Lo hice», la de «los tramos no traen
+   botones» y la de la línea del aparato— y están reemplazadas por lo
+   contrario, con su porqué escrito al lado. Segundo sospechoso: **«Registrar
+   tiempo pasado» dejó de ser un enlace** y ahora es un botón, así que cualquier
+   test ajeno que lo buscara por `role: 'link'` cambia de resultado. Tercero: la
+   línea de «esto vive en este aparato» **aparece más veces que antes** (ahora
+   también cuando solo hay tramos que dejar así).
+
+**Qué hice, archivo por archivo** (nada creado, cuatro archivos de código y uno
+de test):
+
+| Archivo | Qué |
+|---|---|
+| `components/VidaReviewRow/VidaReviewRow.tsx` (+ `.module.scss`) | Props **aditivas** `onDone` e `isSaving`. El botón **«Lo hice»** sale solo donde hay algo que rellenar: fila fantasma o `real.kind === 'missing'` (no hecho · no se pudo · pendiente). Sin `onDone` la fila es **exactamente** la de antes. |
+| `components/VidaReviewNoDataList/VidaReviewNoDataList.tsx` (+ `.module.scss`) | `onAsk`, `onLeaveIt` e `isDismissed`. **Molde exacto de `VidaAgendaNoData`**: las dos salidas comparten `className`, el tramo dejado así **sigue ahí** y solo deja de preguntar («Lo dejaste así.»). |
+| `components/VidaReviewFigures/VidaReviewFigures.tsx` (+ `.module.scss`) | `onLogPast`: **«Registrar tiempo pasado» al lado de la cifra «Sin registrar»** (criterio 44). |
+| `pages/VidaRevisionPage.tsx` (+ `.module.scss`) | `useCreateActivityFollowUpMutation`, `markRowDone` (copia de `VidaHoyPage:366`: `clearBlockNote` + `logSessionInput` + `plannedSessionMinutes`), la hoja `VidaLogSessionSheet mode="log"` con **`key` por apertura**, el store del aparato (`dismissNoData` · `isNoDataDismissed` · `clearBlockNote`), las **tres salidas del marco E**, el aviso de escritura fallida y la línea del aparato. |
+| `pages/VidaRevisionPage.test.tsx` | **+13 tests** (41 en el archivo) con el **espía de las cuatro mutaciones del plan**, y las cuatro afirmaciones derogadas. |
+
+**Criterio por criterio, con su evidencia** (todo en
+`pages/VidaRevisionPage.test.tsx` salvo donde se diga):
+
+- **35 — «Lo hice» en un bloque no hecho.** Con el viernes del render, el primer
+  «Lo hice» llama a la mutación **una vez** con
+  `{ activityId: 'a3', date: '2026-09-18', startTime: '08:30', durationMinutes: 30, notes: null }`
+  —la hora y la duración **planeadas**— y `planMutationsCalled()` es **0**. El
+  recorte a «ahora» es **la misma función de Hoy**, no una copia: un bloque de
+  9:00 a 10:00 marcado el sábado a las 9:24 registra **24 min**, que es
+  `plannedSessionMinutes` haciendo su trabajo.
+- **36 — la lista fantasma.** Día con plan y **sin un solo registro**: los
+  **cinco** bloques traen su «Lo hice», y el del primero manda
+  `{ activityId: 'a1', startTime: '07:00', durationMinutes: 15 }`. (La
+  afirmación de la tajada 1 que decía lo contrario está derogada con su
+  porqué.)
+- **37 — «Registrar tiempo pasado» sin salir.** El botón abre un `dialog` y **la
+  cabecera «Revisión» sigue en pantalla**: no hay navegación. Es
+  `VidaLogSessionSheet` **tal cual**, con el día visto (`date`), su `dayLabel` y
+  las `suggestions` que **ya pedía** `useVidaDayData` desde la tajada 1 — ni una
+  consulta más.
+- **38 — «¿Qué pasó?» y «Dejarlo así».** «¿Qué pasó?» abre la hoja con **la hora
+  del tramo**: el test lee la franja del renglón que se tocó y comprueba que el
+  campo «Hora a la que empezó» trae **esa** hora, no la de «media hora antes».
+  «Dejarlo así» **no llama a ninguna mutación**, quita el par de botones de ese
+  tramo, deja «Lo dejaste así.» y **sobrevive a desmontar y volver a montar**
+  (es el `dismissedNoData` del store, el mismo que lee Hoy: lo dejado así aquí
+  tampoco vuelve a preguntar allí).
+- **39 — las tres salidas del marco E.** Comprobado **por estructura**:
+  `registrar.className === quePaso.className === dejarlo.className`. Y «Dejarlo
+  así» **cierra el día entero**: las tres desaparecen y queda «Lo dejaste así.».
+- **40 — se recalcula sin recargar.** Lo que garantiza el refresco es que la
+  mutación es `useCreateActivityFollowUpMutation`, que ya invalida
+  `followUps.day(date)` (sin invalidación nueva). El test afirma el efecto: con
+  la sesión del bloque que faltaba de vuelta, la cifra pasa de **3** a **4** y la
+  historia de «Seguiste 3 de 5» a «**Seguiste 4 de 5**». **Lo que no pude
+  probar** es el viaje real caché→pantalla, porque la pantalla se prueba con las
+  consultas simuladas: queda como pendiente del recorrido del usuario.
+- **41 — la revisión no edita el plan.** Las cuatro mutaciones
+  (`useSetActivityDayPlanMutation`, `useAddDayPlanItemMutation`,
+  `useEditDayPlanItemMutation`, `useRemoveDayPlanItemMutation`) están
+  sustituidas por espías en **todo** el archivo de test, y hay un caso que
+  encadena «Lo hice» + «Dejarlo así» + abrir la hoja: **0 llamadas**. Además,
+  `grep` sobre el diff: `useActivityDayPlan` **no se importa** en ninguno de los
+  cuatro archivos tocados.
+- **42 — días futuros y pasados.** Un día futuro **no pinta ninguna** de las
+  cuatro salidas (`canFill` es falso por `status === 'future'`, y además la
+  pantalla corta antes). Un día de atrás **sí** las pinta, como en Hoy.
+- **43 — la escritura que falla.** Con la mutación en error, la pantalla dice
+  **«No pudimos guardar eso · Se quedó sin apuntar…»** sin una palabra de
+  reproche, **no pierde nada** (la pantalla sigue entera y «Lo hice» no cambió
+  el plan) y la hoja, cuando el fallo es suyo, **se queda abierta con lo
+  elegido** — eso lo hacía ya `VidaLogSessionSheet` desde FEAT-004 y no lo he
+  tocado.
+- **44 — toda cifra de lo que no salió lleva su salida.** «Sin registrar» lleva
+  **«Registrar tiempo pasado» dentro de la propia tarjeta de las cifras**, y
+  cada bloque que no salió lleva su «Lo hice» **en su fila**, que es donde se
+  sabe **cuál**.
+
+**Decisiones mías, dichas para que se puedan revertir en una línea:**
+
+1. **«Lo hice» también en un bloque `pending`** (hoy, su hora ya pasó pero el
+   día sigue abierto), no solo en `not-done`. Es lo que hace Hoy con sus tres
+   salidas, y el recorte de `plannedSessionMinutes` es justo la red para ese
+   caso.
+2. **En escritorio el «Lo hice» vive en el panel «Lo que no se hizo»**, no en
+   los carriles. Los carriles son la lectura de plan frente a real; meter
+   botones ahí duplicaría el control para el mismo bloque, porque el panel ya
+   lista lo mismo. En móvil va en la fila, que es donde no hay panel. **Nunca
+   salen los dos a la vez.**
+3. **El «¿Qué pasó?» del marco E abre por la primera hora del día.** En un día
+   sin un solo registro **no hay tramos calculados** —`buildNoDataSlices` exige
+   el presupuesto cerrado, el aviso que dejó la tajada 2—, así que el rato del
+   que se pregunta es el día entero y la duración la pone quien contesta.
+4. **El «Dejarlo así» del día entero usa el id `dia-entero`** dentro del
+   **mismo** `dismissedNoData` y la **misma** clave `xavi.vida.deviceNotes`: no
+   estrena clave de `localStorage` ni campo en el store. Ningún tramo puede
+   chocar con él (los suyos son franjas `HH:mm-HH:mm`).
+5. **`defaultLogStartTime` está copiado de `VidaHoyPage`, no importado**: allí
+   es una función local de la página y moverla a un util compartido tocaría Hoy,
+   que esta tajada no toca. Son seis líneas y están señaladas como copia.
+6. **La línea del aparato cambió de texto** («…y lo que dejas así…») y de
+   condición: ahora también se dice cuando lo único que hay es un tramo que
+   dejar así, porque eso **también** vive en el aparato (criterio 15).
+
+**Las cuatro afirmaciones ajenas derogadas** (ninguna borrada; todas reemplazadas
+por lo contrario con su motivo escrito en el test):
+
+1. «las dos salidas son enlaces a Hoy **y no hay botón muerto**» → ahora se
+   afirma que «Registrar tiempo pasado» **ya no es un enlace** y que hay **dos**
+   botones con ese nombre (el de las cifras y el del pie). Lo manda el criterio
+   37.
+2. «el marco E **sin «Lo hice»**» → ahora se afirma que hay **cinco**. Criterio
+   36.
+3. «los tramos **siguen sin pintar botones**» → ahora se afirma que cada uno
+   trae sus dos salidas. Criterio 38.
+4. «sin ninguna razón, la línea del aparato **no se pinta**» → el caso se
+   reescribió con un día **entero registrado** (sin razones **y** sin tramos),
+   que es donde sigue siendo cierto.
+
+**Línea base, corrida entera:** `pnpm typecheck` **exit 0**; `pnpm lint`
+**14 errores / 0 warnings** (los de siempre); `pnpm test` **2 fallos de 1401**
+(los dos de `SearchSelect`, preexistentes; **+13 tests** sobre los 1388 de la
+tajada 2; `src/features/vida` **981/981**, 46 archivos); `pnpm build` **exit 0**
+con chunk inicial **1.040,86 kB** (**+3,11**, **ninguno de iconos**: `app-icons`
+**620,20** e `IconPicker` **4,64** clavados; CSS 236,09). `graphify update .`:
+**3538 nodos, 4158 aristas**. Cero `localStorage` nuevo, cero Font Awesome a
+pelo, cero documentos GraphQL, cero rutas.
+
+**Lo que NO he podido comprobar y queda del usuario:**
+
+- **Los 375 px y el tema oscuro con los botones nuevos.** No monté arnés esta
+  vez (la tajada iba con prisa de cuota): lo nuevo son **píldoras de contorno
+  copiadas de `VidaAgendaNoData`**, que ya se midieron en FEAT-004, y las tres
+  filas que las llevan usan `flex-wrap`, pero **nadie lo ha visto renderizado**.
+  Es lo primero que miraría quien revise.
+- **Todo lo que pasa por el API**: ni un `activityFollowUpAdd` de «Lo hice»
+  desde esta pantalla ha viajado nunca de verdad, y el criterio 40 —que la cifra
+  cambie **sin recargar** tras la invalidación real— solo está probado con las
+  consultas simuladas.
+- **El recorrido, en cinco pasos:** (1) en un día de atrás, «Lo hice» en un
+  bloque que se quedó sin hacer y ver **la cifra subir sin recargar**; (2)
+  comprobar en Hoy que **ese bloque no se movió** ni cambió de hora; (3)
+  «¿Qué pasó?» en un tramo y registrar algo, y ver el tramo encogerse; (4)
+  «Dejarlo así» en otro y comprobar que **en Hoy tampoco pregunta**; (5) en un
+  día sin nada apuntado, «Dejarlo así» del día entero y volver a entrar.
 
 ## 4. Review — feature-reviewer
 

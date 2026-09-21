@@ -1,28 +1,43 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
+import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaReviewCategories } from '@/features/vida/components/VidaReviewCategories'
 import { VidaReviewFigures } from '@/features/vida/components/VidaReviewFigures'
 import { VidaReviewLanes } from '@/features/vida/components/VidaReviewLanes'
 import { VidaReviewNoDataList } from '@/features/vida/components/VidaReviewNoDataList'
 import { VidaReviewOffPlanRow, VidaReviewRow } from '@/features/vida/components/VidaReviewRow'
 import { VidaReviewStory } from '@/features/vida/components/VidaReviewStory'
+import { useCreateActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
-import { getBlockNote, useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
+import {
+  getBlockNote,
+  isNoDataDismissed,
+  useVidaDeviceNotesStore,
+} from '@/features/vida/store/vida-device-notes.store'
+import type { AgendaBlock } from '@/features/vida/utils/vida-agenda.utils'
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
-import { getCurrentLocalDate } from '@/features/vida/utils/vida-date.utils'
-import { buildDayExecution } from '@/features/vida/utils/vida-execution.utils'
+import {
+  VIDA_DAY_LABELS,
+  getCurrentLocalDate,
+  getVidaDayOfWeek,
+} from '@/features/vida/utils/vida-date.utils'
+import type { NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
+import { buildDayExecution, plannedSessionMinutes } from '@/features/vida/utils/vida-execution.utils'
+import type { ReviewRow } from '@/features/vida/utils/vida-review.utils'
 import {
   buildCategoryBreakdown,
   buildDayReview,
   resolveReviewDate,
   topNoDataSlices,
 } from '@/features/vida/utils/vida-review.utils'
+import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
+import { minutesToTime, parseTimeToMinutes } from '@/features/vida/utils/vida-time.utils'
 import {
   buildDayStrip,
   clampToReviewWindow,
@@ -51,11 +66,15 @@ const DESKTOP_QUERY = '(min-width: 60rem)'
  * nueva: las dos consultas del día ya existen y la tira reaprovecha la misma
  * `vidaKeys.dayPlan.byDate` que Hoy.
  *
- * **En esta tajada la revisión no escribe nada.** Las dos salidas del pie son
- * **enlaces a Hoy** de ese día, que ya sabe hacer las dos cosas (criterio 18);
- * registrar desde aquí es la tajada 3. Por eso tampoco se monta ninguna
- * mutación: en toda la pantalla no hay un control que toque el plan ni el
- * registro.
+ * **Desde la tajada 3 la revisión rellena el día** (criterios 35–44), y lo hace
+ * con código ya construido y revisado en FEAT-004: **«Lo hice»** por bloque sin
+ * sesión y por fila del plan fantasma (`plannedSessionMinutes` +
+ * `logSessionInput`, copia de `VidaHoyPage.markBlockDone`), **«Registrar tiempo
+ * pasado»** y **«¿Qué pasó?»** abriendo **la misma** `VidaLogSessionSheet` sin
+ * salir de aquí, y **«Dejarlo así»** en el **mismo** store del aparato que Hoy.
+ * Lo único que escribe es **una sesión**: en todo el archivo no se importa ni
+ * una mutación de `useActivityDayPlan`, así que la revisión **no puede** mover,
+ * quitar ni recortar un bloque del plan (criterios 35 y 41).
  *
  * Los días raros tienen **su propio estado y su salida a Hoy**: futuro
  * (criterio 4), hoy aún abierto (5), con plan y sin un solo registro (19), sin
@@ -97,6 +116,10 @@ export function VidaRevisionPage() {
 
   const {
     planItems,
+    // La plantilla de ese día: es lo que la hoja ofrece primero en el «qué».
+    // Ya se pedía —`useVidaDayData` monta esa consulta desde la tajada 1—, así
+    // que no es una consulta más.
+    suggestions,
     followUps,
     dayHours,
     isDisabled,
@@ -159,6 +182,16 @@ export function VidaRevisionPage() {
     return map
   }, [planItems, blockNotes, date])
 
+  const dismissedNoData = useVidaDeviceNotesStore((state) => state.dismissedNoData)
+  const clearBlockNote = useVidaDeviceNotesStore((state) => state.clearBlockNote)
+  const dismissNoData = useVidaDeviceNotesStore((state) => state.dismissNoData)
+  // **La única escritura de la pantalla**: la misma mutación que usa la hoja de
+  // registrar, con su invalidación de siempre —`followUps.day(date)`—, que es
+  // lo que hace que la historia, la cifra, las filas, las categorías y los
+  // tramos se rehagan **sin recargar** (criterio 40). Ni clave ni invalidación
+  // nuevas.
+  const createFollowUpMutation = useCreateActivityFollowUpMutation()
+
   const review = useMemo(
     () => buildDayReview({ execution, agenda, date, today, nowMinutes, couldNotById }),
     [execution, agenda, date, today, nowMinutes, couldNotById],
@@ -180,9 +213,82 @@ export function VidaRevisionPage() {
   const showsCategories =
     review.status !== 'future' && (breakdown.rows.length > 0 || breakdown.noData.minutes > 0)
 
+  // **Rellenar el día solo donde tiene sentido**: en un día futuro no se
+  // registra lo que no ha pasado (criterio 42) y sin sesión no hay a dónde
+  // escribir. Lo demás —hoy y cualquier día de atrás— sí, igual que en Hoy.
+  const canFill = !isDisabled && review.status !== 'future' && !isFollowUpsError
+  const dayLabel = VIDA_DAY_LABELS[getVidaDayOfWeek(date)]
+  const blocksByItemId = useMemo(() => {
+    const map = new Map<string, AgendaBlock>()
+    for (const block of agenda.blocks) map.set(block.item.id, block)
+    return map
+  }, [agenda.blocks])
+
+  // La hoja de registrar: **la misma de FEAT-004**, con una `key` por apertura
+  // —el molde de `VidaHoyPage`— para que se remonte limpia sin vaciarla a mano.
+  const [logSheet, setLogSheet] = useState<LogSheetState | null>(null)
+  const [logSheetOpen, setLogSheetOpen] = useState(false)
+  const [logSheetSession, setLogSheetSession] = useState(0)
+
+  function openLogSheet(next: LogSheetState) {
+    setLogSheet(next)
+    setLogSheetSession((session) => session + 1)
+    setLogSheetOpen(true)
+  }
+
+  /**
+   * **«Lo hice»** (criterios 35 y 36). Es **la función de Hoy**
+   * (`VidaHoyPage.markBlockDone`): la sesión con la hora y la duración
+   * planeadas, recortada a «ahora» por `plannedSessionMinutes` para que nunca
+   * nazca terminando en el futuro, y la nota de «no se pudo» se va porque deja
+   * de ser verdad. **El plan no se toca**: esto escribe `activityFollowUpAdd` y
+   * nada más.
+   */
+  function markRowDone(row: ReviewRow) {
+    const block = blocksByItemId.get(row.itemId)
+    if (!block) return
+    clearBlockNote(date, row.itemId)
+    createFollowUpMutation.mutate(
+      logSessionInput({
+        date,
+        activityId: block.item.activityId,
+        startTime: minutesToTime(block.startMinutes),
+        durationMinutes: plannedSessionMinutes({ block, nowMinutes }),
+      }),
+    )
+  }
+
+  /** **«Registrar tiempo pasado»**, sin salir de la revisión (criterio 37). */
+  function logPast() {
+    openLogSheet({ initial: null })
+  }
+
+  /** **«¿Qué pasó?»** de un tramo: la hoja con **sus horas** ya puestas (38). */
+  function askAboutNoData(slice: NoDataSlice) {
+    openLogSheet({
+      initial: { startTime: slice.startTime, durationMinutes: slice.durationMinutes },
+    })
+  }
+
+  /**
+   * **«¿Qué pasó?»** del marco E. De un día del que no quedó nada apuntado no
+   * hay tramos calculados —`buildNoDataSlices` necesita el presupuesto en forma
+   * cerrada—, así que el rato del que se pregunta es **el día entero**: la hoja
+   * abre por su primera hora y la duración la pone quien contesta.
+   */
+  function askAboutWholeDay() {
+    openLogSheet({ initial: { startTime: dayHours.startTime } })
+  }
+
   const showsReasons = review.rows.some(
     (row) => row.real.kind === 'missing' && row.real.reason !== null,
   )
+  // Lo del aparato se dice donde se lee: las razones de «no se pudo» y los
+  // «dejarlo así» que esta pantalla ofrece (criterio 15).
+  const showsDeviceNote =
+    showsReasons || (canFill && (noDataSlices.length > 0 || review.ghostRows.length > 0))
+  /** «Dejarlo así» del marco E: cierra el asunto **del día entero** (39). */
+  const dayDismissed = isNoDataDismissed(dismissedNoData, date, WHOLE_DAY_SLICE_ID)
 
   function header() {
     return (
@@ -202,16 +308,27 @@ export function VidaRevisionPage() {
     )
   }
 
-  /** Las dos salidas del pie: **enlaces a Hoy** (criterio 18). */
+  /**
+   * Las dos salidas del pie. «Ver el día en la agenda» sigue siendo **un enlace
+   * a Hoy** (criterio 18); «Registrar tiempo pasado» abre ahora **la hoja aquí
+   * mismo** (criterio 37) y solo donde se puede escribir — en lo demás sigue
+   * llevando a Hoy, que es donde eso vive.
+   */
   function exits() {
     return (
       <div className={styles.exits}>
         <Button variant="secondary" size="sm" to={vidaPaths.hoyForDate(date)}>
           Ver el día en la agenda
         </Button>
-        <Button variant="ghost" size="sm" to={vidaPaths.hoyForDate(date)}>
-          Registrar tiempo pasado
-        </Button>
+        {canFill ? (
+          <Button variant="ghost" size="sm" onClick={logPast}>
+            Registrar tiempo pasado
+          </Button>
+        ) : (
+          <Button variant="ghost" size="sm" to={vidaPaths.hoyForDate(date)}>
+            Registrar tiempo pasado
+          </Button>
+        )}
       </div>
     )
   }
@@ -351,6 +468,18 @@ export function VidaRevisionPage() {
         </Alert>
       ) : null}
 
+      {/* Una escritura que no salió **se dice**, sin reprochar y sin perder
+          nada de lo elegido: la hoja se queda abierta con lo suyo y «Lo hice»
+          no cambió nada (criterio 43). */}
+      {createFollowUpMutation.isError ? (
+        <Alert variant="warning" title="No pudimos guardar eso">
+          <p className={styles.errorText}>
+            Se quedó sin apuntar. Revisa tu conexión y vuelve a intentarlo cuando quieras; lo
+            demás de tu día sigue igual.
+          </p>
+        </Alert>
+      ) : null}
+
       <div className={styles.layout}>
         <div className={styles.side}>
           {review.story.length > 0 ? (
@@ -370,11 +499,38 @@ export function VidaRevisionPage() {
               {review.emptyNotice.hint ? (
                 <p className={styles.emptyHint}>{review.emptyNotice.hint}</p>
               ) : null}
+              {/* Las tres salidas del marco E, con **el mismo peso visual**:
+                  misma `className`, ninguna destacada sobre las otras
+                  (criterio 39). «Dejarlo así» cierra el asunto **del día
+                  entero** y no vuelve a preguntar en este aparato. */}
+              {canFill && !dayDismissed ? (
+                <div className={styles.emptyActions}>
+                  <button type="button" className={styles.emptyAction} onClick={logPast}>
+                    Registrar tiempo pasado
+                  </button>
+                  <button type="button" className={styles.emptyAction} onClick={askAboutWholeDay}>
+                    ¿Qué pasó?
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.emptyAction}
+                    onClick={() => dismissNoData(date, WHOLE_DAY_SLICE_ID)}
+                  >
+                    Dejarlo así
+                  </button>
+                </div>
+              ) : null}
+              {canFill && dayDismissed ? (
+                <p className={styles.emptyHint}>Lo dejaste así.</p>
+              ) : null}
             </Card>
           ) : null}
 
           {review.figures && review.hasExecution ? (
-            <VidaReviewFigures figures={review.figures} />
+            <VidaReviewFigures
+              figures={review.figures}
+              onLogPast={canFill ? logPast : undefined}
+            />
           ) : null}
 
           {/* «Lo que no se hizo», con su razón: solo en escritorio, donde el
@@ -389,7 +545,12 @@ export function VidaRevisionPage() {
               <p className={styles.sectionNote}>Con su razón, si la hay.</p>
               <ol className={styles.rows}>
                 {review.missingRows.map((row) => (
-                  <VidaReviewRow key={`missing-${row.id}`} row={row} />
+                  <VidaReviewRow
+                    key={`missing-${row.id}`}
+                    row={row}
+                    onDone={canFill ? markRowDone : undefined}
+                    isSaving={createFollowUpMutation.isPending}
+                  />
                 ))}
               </ol>
             </section>
@@ -404,9 +565,16 @@ export function VidaRevisionPage() {
               <h2 className={styles.sectionTitle} id="vida-review-ghost">
                 Lo que tenías planeado
               </h2>
+              <p className={styles.sectionNote}>Marca lo que sí hiciste.</p>
               <ol className={styles.rows}>
                 {review.ghostRows.map((row) => (
-                  <VidaReviewRow key={row.id} row={row} isGhost />
+                  <VidaReviewRow
+                    key={row.id}
+                    row={row}
+                    isGhost
+                    onDone={canFill ? markRowDone : undefined}
+                    isSaving={createFollowUpMutation.isPending}
+                  />
                 ))}
               </ol>
             </section>
@@ -425,7 +593,12 @@ export function VidaRevisionPage() {
               ) : (
                 <ol className={styles.rows}>
                   {review.rows.map((row) => (
-                    <VidaReviewRow key={row.id} row={row} />
+                    <VidaReviewRow
+                      key={row.id}
+                      row={row}
+                      onDone={canFill ? markRowDone : undefined}
+                      isSaving={createFollowUpMutation.isPending}
+                    />
                   ))}
                 </ol>
               )}
@@ -471,20 +644,74 @@ export function VidaRevisionPage() {
                     ? 'El tramo más largo sin registrar'
                     : `Los ${noDataSlices.length} tramos más largos sin registrar`}
               </h2>
-              <VidaReviewNoDataList slices={noDataSlices} />
+              <VidaReviewNoDataList
+                slices={noDataSlices}
+                onAsk={canFill ? askAboutNoData : undefined}
+                onLeaveIt={canFill ? (slice) => dismissNoData(date, slice.id) : undefined}
+                isDismissed={(slice) => isNoDataDismissed(dismissedNoData, date, slice.id)}
+              />
             </section>
           ) : null}
 
           {/* Lo del aparato se dice **una vez**, donde se lee (criterio 15). */}
-          {showsReasons ? (
+          {showsDeviceNote ? (
             <p className={styles.deviceNote}>
-              Las razones de «no se pudo» se guardan en este aparato: en otro no estarán.
+              Las razones de «no se pudo» y lo que dejas así se guardan en este aparato: en otro
+              no estarán.
             </p>
           ) : null}
 
           {exits()}
         </div>
       </div>
+
+      {/* **La hoja de FEAT-004, tal cual** (criterios 37 y 38): ni una segunda
+          hoja, ni un segundo «qué». Con `key` por apertura, y el fallo se lee
+          **dentro** sin perder lo elegido, que es lo que ya hacía en Hoy. */}
+      {logSheet && canFill ? (
+        <VidaLogSessionSheet
+          key={logSheetSession}
+          open={logSheetOpen}
+          onClose={() => setLogSheetOpen(false)}
+          mode="log"
+          date={date}
+          dayLabel={dayLabel}
+          suggestions={suggestions}
+          defaultStartTime={defaultLogStartTime(dayHours.startTime, nowMinutes)}
+          initial={logSheet.initial}
+        />
+      ) : null}
     </div>
   )
+}
+
+/** Cuántos minutos atrás arranca «Registrar tiempo pasado» por defecto. */
+const LOG_DEFAULT_LOOKBACK_MINUTES = 30
+
+/**
+ * De qué hora parte «Registrar tiempo pasado»: **media hora antes de ahora** en
+ * el día de hoy y el principio del día en uno pasado, donde no hay reloj al que
+ * mirar. Es la misma regla que `VidaHoyPage`, **copiada y no importada** porque
+ * allí es una función local de la página; moverla a un util compartido tocaría
+ * Hoy, y esta tajada no lo toca.
+ */
+function defaultLogStartTime(dayStart: string, nowMinutes: number | null): string {
+  if (nowMinutes === null) return dayStart
+  const startOfDay = parseTimeToMinutes(dayStart)
+  return minutesToTime(Math.max(startOfDay, nowMinutes - LOG_DEFAULT_LOOKBACK_MINUTES))
+}
+
+/**
+ * El «dejarlo así» **del día entero** (criterio 39). Va en el **mismo** store y
+ * en la **misma** lista que los tramos (`dismissedNoData`), con un id que
+ * ningún tramo puede tener —los suyos son franjas `HH:mm-HH:mm`—: la
+ * restricción del repositorio es «ninguna clave nueva en `localStorage`», y
+ * esto no estrena ninguna.
+ */
+const WHOLE_DAY_SLICE_ID = 'dia-entero'
+
+/** Por dónde se abrió la hoja. Un solo modo: aquí solo se registra lo pasado. */
+type LogSheetState = {
+  /** Hora y duración **ya puestas**: el rato de un tramo, o nada. */
+  initial: { startTime?: string; durationMinutes?: number } | null
 }

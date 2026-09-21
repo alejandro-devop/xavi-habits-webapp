@@ -7,10 +7,17 @@ type VidaReviewRowProps = {
   row: ReviewRow
   /**
    * El plan en **trazo fantasma** del marco E: el día no tuvo registros, así
-   * que no se afirma nada de cada bloque (criterio 19). Los «Lo hice» de esas
-   * filas son de la tajada 3.
+   * que no se afirma nada de cada bloque (criterio 19).
    */
   isGhost?: boolean
+  /**
+   * **«Lo hice»** (criterios 35, 36 y 44): registra la sesión con la hora y la
+   * duración planeadas. Sin él —día futuro, o la columna de solo lectura— el
+   * botón **no se pinta**: aquí no hay controles muertos (criterio 42).
+   */
+  onDone?: (row: ReviewRow) => void
+  /** Mientras la escritura vuela: el botón no se puede tocar dos veces. */
+  isSaving?: boolean
 }
 
 function colorStyleOf(color: string | null): CSSProperties | undefined {
@@ -33,8 +40,24 @@ function colorStyleOf(color: string | null): CSSProperties | undefined {
  * esconderse— con su razón entre comillas; sin razón, se lee «sin razón» y
  * nada más (criterio 14). Un **movido** aparece **una sola vez**, en su fila de
  * plan, con «movido · 40 min tarde» (criterio 17).
+ *
+ * **Desde la tajada 3 la fila tiene salida**: un bloque sin sesión —y cada fila
+ * del plan fantasma— estrena **«Lo hice»**, que es literalmente el de Hoy
+ * (`plannedSessionMinutes` + `logSessionInput`). Escribe **una sesión** y nada
+ * más: en este archivo no se nombra ni una mutación del plan (criterios 35 y
+ * 41).
  */
-export function VidaReviewRow({ row, isGhost = false }: VidaReviewRowProps) {
+export function VidaReviewRow({
+  row,
+  isGhost = false,
+  onDone,
+  isSaving = false,
+}: VidaReviewRowProps) {
+  // Solo donde hay algo que rellenar: un bloque sin sesión (no hecho, no se
+  // pudo o todavía pendiente) o una fila del plan fantasma. Nunca sobre un
+  // bloque que **ya** tiene su sesión: eso se corrige desde Hoy.
+  const canMarkDone = Boolean(onDone) && (isGhost || row.real.kind === 'missing')
+
   return (
     <li
       className={styles.row}
@@ -79,6 +102,16 @@ export function VidaReviewRow({ row, isGhost = false }: VidaReviewRowProps) {
           </p>
         </div>
       </div>
+      {canMarkDone ? (
+        <button
+          type="button"
+          className={styles.action}
+          disabled={isSaving}
+          onClick={() => onDone?.(row)}
+        >
+          Lo hice
+        </button>
+      ) : null}
     </li>
   )
 }

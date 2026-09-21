@@ -3,6 +3,12 @@ import styles from './VidaReviewFigures.module.scss'
 
 type VidaReviewFiguresProps = {
   figures: ReviewFigures
+  /**
+   * **La salida al lado de la cifra** (criterio 44): «Registrar tiempo pasado»
+   * junto a «Sin registrar», que es el número de esta tarjeta que habla de lo
+   * que no salió. Sin ella —día futuro— no se pinta ningún botón.
+   */
+  onLogPast?: () => void
 }
 
 /**
@@ -20,8 +26,13 @@ type VidaReviewFiguresProps = {
  * En un día **sin plan** no se enseña «N de M» (criterio 20): no hay contra qué
  * comparar y un «0 de 0» se leería como una nota. En un día **abierto** se dice
  * que las cifras van hasta ahora (criterio 5).
+ *
+ * **Desde la tajada 3 la cifra de lo que no salió lleva su salida al lado**
+ * (criterio 44): «Sin registrar» va con **«Registrar tiempo pasado»**, que abre
+ * la hoja de FEAT-004 sin salir de la revisión. Los bloques que no se hicieron
+ * llevan la suya en su propia fila («Lo hice»), que es donde se sabe **cuál**.
  */
-export function VidaReviewFigures({ figures }: VidaReviewFiguresProps) {
+export function VidaReviewFigures({ figures, onLogPast }: VidaReviewFiguresProps) {
   return (
     <section className={styles.root} aria-label="Las cifras del día">
       {figures.hasCount ? (
@@ -59,6 +70,11 @@ export function VidaReviewFigures({ figures }: VidaReviewFiguresProps) {
           {' '}
           de las {figures.dayMinutesLabel} de tu día · no hay dato, no se adivina
         </span>
+        {onLogPast ? (
+          <button type="button" className={styles.action} onClick={onLogPast}>
+            Registrar tiempo pasado
+          </button>
+        ) : null}
       </p>
     </section>
   )

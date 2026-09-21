@@ -105,3 +105,28 @@
 .noDataNote {
   color: var(--color-text-secondary);
 }
+
+/* La salida al lado de la cifra (criterio 44): la misma píldora de contorno que
+   el «Lo hice» de una fila y el «¿Qué pasó?» de un tramo. Ninguna pesa más. */
+.action {
+  margin-left: 0.4rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}

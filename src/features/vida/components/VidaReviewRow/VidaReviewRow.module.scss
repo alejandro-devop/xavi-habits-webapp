@@ -133,3 +133,35 @@
     justify-content: flex-end;
   }
 }
+
+/* **«Lo hice»** (criterios 35, 36 y 44). Mismo control y mismo tono que las dos
+   salidas de un tramo sin registrar —píldora de contorno, sin relleno—: ninguna
+   salida de esta pantalla pesa más que otra. */
+.action {
+  flex: 0 0 auto;
+  align-self: center;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--color-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}

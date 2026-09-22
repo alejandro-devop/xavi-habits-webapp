@@ -21,6 +21,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
+| FEAT-013 | specified | 0/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 
 **FEAT-009 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** Los
 trece criterios (140–152) y el 169, comprobados uno a uno, y **la deuda visual

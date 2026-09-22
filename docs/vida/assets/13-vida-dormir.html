@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — la hora de dormir</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#006c49; --violet:#7c3aed; --violet-text:#5b21b6;
+    --indigo:#4f46e5; --indigo-text:#3730a3; --rose:#e11d48; --rose-text:#9f1239;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-2:rgba(255,255,255,.78); --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:#475569;line-height:1.7;max-width:920px;margin:0 0 6px}
+  .lede b{color:#0f172a}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .caption em{font-style:normal;color:var(--indigo-text)}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .mtitle.bad{color:var(--rose-text)}
+  .mtitle.alt{color:var(--indigo-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  .phone{width:100%;max-width:375px;border-radius:38px;padding:9px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6)}
+  .screen{position:relative;overflow:hidden;width:100%;border-radius:30px;background:var(--canvas);isolation:isolate;padding-bottom:14px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(100px)}
+  .o1{width:70%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-20%;left:-10%}
+  .o2{width:60%;aspect-ratio:1;background:rgba(210,187,255,.32);top:14%;right:-20%}
+  .z{position:relative;z-index:1}
+  .body{padding:12px 12px 0}
+  .now{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 8px}
+
+  .agenda{position:relative;padding-left:44px}
+  .rail{position:absolute;left:36px;top:2px;bottom:2px;width:2px;background:rgba(15,23,42,.08)}
+  .slot{position:relative;margin-bottom:7px}
+  .slot .t{position:absolute;left:-44px;top:10px;width:32px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-13px;top:13px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid rgba(16,185,129,.55)}
+  .card{padding:9px 11px;border-radius:15px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);display:flex;align-items:center;gap:9px;min-width:0}
+  .ic2{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+  .txt{min-width:0;flex:1}
+  .nm2{font-weight:600;font-size:12.5px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+  .meta.bad{color:var(--rose-text);font-weight:700}
+
+  /* la noche: una franja, no una tarjeta */
+  .night{position:relative;margin:0 0 7px;border-radius:14px;padding:10px 12px;
+    background:linear-gradient(135deg,rgba(79,70,229,.14),rgba(124,58,237,.1));
+    border:1px solid rgba(79,70,229,.26)}
+  .night .lab{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;color:var(--indigo-text);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:7px}
+  .night .sub{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:3px}
+  .night.dawn{background:linear-gradient(135deg,rgba(79,70,229,.1),rgba(245,158,11,.12));border-color:rgba(79,70,229,.2)}
+  .stars{position:absolute;right:12px;top:9px;font-size:13px;opacity:.7}
+
+  /* ajustes */
+  .sheet{border-radius:19px;background:var(--canvas);padding:14px 13px 15px;border:1px solid rgba(15,23,42,.08)}
+  .grab{width:34px;height:4px;border-radius:999px;background:rgba(15,23,42,.14);margin:0 auto 12px}
+  .stitle{font-size:15px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .ssub{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin:3px 0 0;line-height:1.5}
+  .field{margin-top:13px}
+  .lbl{font-family:'Inter',sans-serif;font-size:12px;font-weight:700}
+  .inputs{display:flex;gap:8px;margin-top:7px}
+  .box{flex:1;border-radius:13px;background:#fff;border:1px solid rgba(15,23,42,.12);padding:8px 10px;display:flex;align-items:baseline;gap:6px}
+  .box .v{font-family:'Inter',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  .box .u{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-dim);margin-left:auto}
+  .cap{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:10px;line-height:1.55}
+  .cap b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .days{display:flex;gap:4px;margin-top:8px}
+  .d{flex:1;text-align:center;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;padding:6px 0;border-radius:9px;background:rgba(15,23,42,.05);color:var(--ink-dim)}
+  .d.on{background:rgba(79,70,229,.14);color:var(--indigo-text)}
+  .save{margin-top:13px;padding:11px;border-radius:14px;background:var(--ink);color:#fff;text-align:center;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700}
+
+  .tsum{padding:11px 13px 10px;border-radius:18px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);margin-bottom:11px}
+  .tsum .top{display:flex;align-items:baseline;gap:8px}
+  .tsum .d2{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mint-text)}
+  .tsum .left{margin-left:auto;font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft)}
+  .tsum .left b{font-weight:700;color:var(--ink)}
+  .tsum .win{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:7px}
+
+  table{border-collapse:collapse;width:100%;max-width:1000px;margin-top:14px;font-size:13px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid rgba(15,23,42,.08);vertical-align:top;line-height:1.55}
+  th{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#64748b}
+  td b{color:var(--ink)}
+  .yes{color:var(--mint-text);font-weight:700}
+  .no{color:var(--rose-text);font-weight:700}
+  .wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>La hora de dormir</h1>
+  <p class="lede">Preguntaste qué pasa si pones el martes a las 23:00 y seis horas. La respuesta honesta: <b>hoy no funciona</b>. El módulo entero no sabe cruzar la medianoche —la cuenta de la hora de fin <b>se queda pegada a las 23:59</b> a propósito, para no pintar bloques fantasma de madrugada—, así que tu sueño se vería como <b>59 minutos</b> y el miércoles no se enteraría. Aquí está eso, y dos formas distintas de arreglarlo.</p>
+
+  <p class="caption">Lo que pasa hoy</p>
+  <div class="row">
+    <div class="moment">
+      <div class="mtitle bad">Hoy · 23:00 + 6 h<small>Ni es verdad, ni llega al miércoles.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes</p>
+          <div class="agenda"><div class="rail"></div>
+            <div class="slot"><span class="t">21:00</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(124,58,237,.12)">🍽️</span>
+                <span class="txt"><span class="nm2">Cenar</span><span class="meta">45 min · M</span></span></div></div>
+            <div class="slot"><span class="t">23:00</span><span class="dot" style="border-color:rgba(225,29,72,.6)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(79,70,229,.12)">😴</span>
+                <span class="txt"><span class="nm2">Dormir</span><span class="meta bad">6 h → recortado a las 23:59</span></span></div></div>
+          </div>
+          <p class="now" style="margin-top:14px">Miércoles</p>
+          <div class="agenda"><div class="rail"></div>
+            <div class="slot"><span class="t">6:30</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(16,185,129,.12)">🚿</span>
+                <span class="txt"><span class="nm2">Bañarme</span><span class="meta">30 min · X</span></span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">El miércoles cree que su día empieza vacío a las 5:00, cuando en realidad estabas durmiendo hasta las 5:00. Cualquier cosa que el sistema diga de tu miércoles —el hueco de la mañana, el presupuesto, la adherencia— <b>está contando mal</b>.</p>
+    </div>
+  </div>
+
+  <p class="caption">Propuesta A · <em>la noche es el marco del día, no una actividad</em> — recomendada</p>
+  <div class="row">
+
+    <div class="moment">
+      <div class="mtitle alt">A1 · Una opción aparte<small>En Ajustes de Vida, donde ya vive «Tu día».</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <div class="sheet">
+            <div class="grab"></div>
+            <p class="stitle">Tu noche</p>
+            <p class="ssub">Dormir no es una cosa que metas entre otras: es lo que enmarca el día. Ponlo aquí una vez y aparece en todos.</p>
+            <div class="field">
+              <div class="lbl">Te acuestas / te levantas</div>
+              <div class="inputs">
+                <div class="box"><span class="v">23:00</span><span class="u">acostarse</span></div>
+                <div class="box"><span class="v">5:00</span><span class="u">levantarse</span></div>
+              </div>
+              <div class="cap">Son <b>6 h</b> de sueño. Cruza la medianoche, y eso está bien: <b>la noche del martes es la madrugada del miércoles</b>.</div>
+            </div>
+            <div class="field">
+              <div class="lbl">Qué noches</div>
+              <div class="days"><span class="d on">L</span><span class="d on">M</span><span class="d on">X</span><span class="d on">J</span><span class="d">V</span><span class="d">S</span><span class="d on">D</span></div>
+              <div class="cap">Viernes y sábado los dejas fuera: esas noches ya te las apañas tú.</div>
+            </div>
+            <div class="save">Guardar</div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Una sola vez, no un ítem por día de la semana. Y con sus noches, porque el fin de semana casi nadie duerme igual.</p>
+    </div>
+
+    <div class="moment">
+      <div class="mtitle alt">A2 · En la plantilla<small>Una franja que cierra el día y otra que lo abre.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes</p>
+          <div class="tsum">
+            <div class="top"><span class="d2">Martes</span><span class="left"><b>2h</b> puestas de 17h</span></div>
+            <div class="win">Tu día · 5:00 → 23:00 · duermes 6 h</div>
+          </div>
+          <div class="agenda"><div class="rail"></div>
+            <div class="night dawn"><span class="stars">🌅</span>
+              <span class="lab">Duermes hasta las 5:00</span>
+              <span class="sub">Vienes de anoche · 6 h</span></div>
+            <div class="slot"><span class="t">21:00</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(124,58,237,.12)">🍽️</span>
+                <span class="txt"><span class="nm2">Cenar</span><span class="meta">45 min · M</span></span></div></div>
+            <div class="night"><span class="stars">🌙</span>
+              <span class="lab">23:00 · te acuestas</span>
+              <span class="sub">Duermes 6 h y te levantas el miércoles a las 5:00</span></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Arriba y abajo de cada día, <b>siempre</b>, en un color que no es el de ninguna actividad. No ocupa una fila de la lista ni entra en el presupuesto: no compite con «2h puestas de 17h», porque dormir no es una cosa que <i>pongas</i> en tu día.</p>
+    </div>
+
+    <div class="moment">
+      <div class="mtitle alt">A3 · En Hoy<small>El sueño real, el que de verdad tuviste.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Miércoles · 7:10</p>
+          <div class="agenda"><div class="rail"></div>
+            <div class="night dawn"><span class="stars">🌅</span>
+              <span class="lab">Dormiste hasta las 5:40</span>
+              <span class="sub">Te acostaste a las 23:20 · <b>6 h 20</b> · 20 min más que tu noche</span></div>
+            <div class="slot"><span class="t">6:30</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(16,185,129,.12)">🚿</span>
+                <span class="txt"><span class="nm2">Bañarme</span><span class="meta">Hecho · 25 min</span></span></div></div>
+          </div>
+          <div class="night" style="margin-top:12px"><span class="stars">🌙</span>
+            <span class="lab">Hoy te acuestas a las 23:00</span>
+            <span class="sub">Para dormir 6 h · quedan 15 h 50 de día</span></div>
+        </div>
+      </div></div>
+      <p class="note">En el día, la franja de arriba se puede <b>corregir</b>: «me acosté a las 23:20 y me levanté a las 5:40». Y la de abajo es la única cuenta atrás que importa de verdad al final del día: <b>cuánto te queda antes de acostarte</b>.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Propuesta B · <em>dormir es una actividad como las demás, y la app aprende a cruzar la medianoche</em></p>
+  <div class="row">
+
+    <div class="moment">
+      <div class="mtitle">B1 · Lo pones en el martes<small>Tal y como lo intentaste: 23:00 y seis horas.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes</p>
+          <div class="agenda"><div class="rail"></div>
+            <div class="slot"><span class="t">21:00</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(124,58,237,.12)">🍽️</span>
+                <span class="txt"><span class="nm2">Cenar</span><span class="meta">45 min · M</span></span></div></div>
+            <div class="slot"><span class="t">23:00</span><span class="dot" style="border-color:rgba(79,70,229,.7)"></span>
+              <div class="card" style="border-color:rgba(79,70,229,.3)"><span class="ic2" style="background:rgba(79,70,229,.12)">😴</span>
+                <span class="txt"><span class="nm2">Dormir</span><span class="meta">6 h · hasta las 5:00 del miércoles</span></span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">El ítem vive <b>en un solo sitio</b>, el martes, que es donde lo pusiste. Lo único que cambia es que la app ya no recorta: dice hasta cuándo llega y de qué día es ese «hasta».</p>
+    </div>
+
+    <div class="moment">
+      <div class="mtitle">B2 · El miércoles lo sabe<small>Lo ve, pero no es suyo.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Miércoles</p>
+          <div class="agenda"><div class="rail"></div>
+            <div class="slot"><span class="t">0:00</span><span class="dot" style="border-color:rgba(79,70,229,.45)"></span>
+              <div class="card" style="opacity:.72;border-style:dashed"><span class="ic2" style="background:rgba(79,70,229,.1)">😴</span>
+                <span class="txt"><span class="nm2">Dormir</span><span class="meta">Viene del martes · hasta las 5:00</span></span></div></div>
+            <div class="slot"><span class="t">6:30</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(16,185,129,.12)">🚿</span>
+                <span class="txt"><span class="nm2">Bañarme</span><span class="meta">30 min · X</span></span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Se pinta <b>en trazo discontinuo y no se edita desde aquí</b> —se edita en el martes, que es su día—. Así el miércoles no dice que tiene la madrugada libre, que es la mentira que hay hoy.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Cuál elegir</p>
+  <div class="wrap"><table>
+    <tr><th>&nbsp;</th><th>A · la noche enmarca el día</th><th>B · dormir es una actividad</th></tr>
+    <tr><td><b>Qué pides tú</b></td><td class="yes">Una opción aparte, como dijiste</td><td>Un ítem más, como lo intentaste</td></tr>
+    <tr><td><b>Cuánto toca</b></td><td>Poco y acotado: una franja arriba y otra abajo, fuera de la lista y fuera del presupuesto</td><td class="no">Mucho: huecos, presupuesto, adherencia y patrones tienen que aprender que un bloque puede empezar ayer</td></tr>
+    <tr><td><b>Backend</b></td><td class="no">Sí: dos horas nuevas en tus ajustes (y las noches). Es pequeño, pero toca el API</td><td class="yes">No: el dato ya cabe, lo que falla es la cuenta y el pintado</td></tr>
+    <tr><td><b>El fin de semana</b></td><td class="yes">Lo resuelve: eliges qué noches</td><td>Un ítem por noche, igual que el resto</td></tr>
+    <tr><td><b>Y si mañana quieres otra cosa de madrugada</b></td><td class="no">No lo resuelve: solo sabe de dormir</td><td class="yes">Lo resuelve para siempre y para cualquier actividad</td></tr>
+    <tr><td><b>Lo que ganas de regalo</b></td><td>La cuenta atrás de «cuánto te queda antes de acostarte», y que el sueño real se corrija en un toque</td><td>Que el problema de la medianoche deje de existir en todo el módulo</td></tr>
+  </table></div>
+
+  <p class="note"><b>Mi recomendación: A</b>, y no por ser más barata —que también—, sino porque es más verdad. Dormir no compite con bañarte y pasear a los perros por un hueco de tu día: <b>es el borde</b>. Metido en la lista como una actividad de seis horas, aplastaría el presupuesto, se comería todos los huecos y ensuciaría la adherencia con la única cosa que no decides cada día.</p>
+  <p class="note"><b>Lo que A no arregla, y hay que decirlo:</b> si algún día quieres poner algo <i>que no sea dormir</i> cruzando la medianoche —un vuelo, un turno de noche—, seguirías sin poder. Si eso te va a pasar, B es la inversión correcta aunque cueste más; y si te pasa poco, A ahora y B cuando haga falta.</p>
+  <p class="note"><b>Y una advertencia honesta sobre A:</b> es la primera cosa de este módulo que <b>toca el API</b>. Son dos campos de hora en tus ajustes, pero el despliegue del backend lo haces tú.</p>
+
+</div>
+</body>
+</html>

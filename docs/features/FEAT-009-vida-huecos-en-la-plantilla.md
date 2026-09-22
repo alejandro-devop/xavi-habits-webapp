@@ -16,10 +16,12 @@ updated: 2026-09-22
 > FEAT-009 entrega **minutos enteros + `HH:mm`**, FEAT-008 los reparte, y **su hora de
 > fin tiene que ser el final del hueco**. No se fusionan: cada una se entrega sola.
 
-> **D2 resuelta: render hecho.** `docs/vida/assets/10-vida-huecos-plantilla.html`
-> —marco A a 375 px con las tres formas del hueco (normal, fino, y la línea del ítem sin
-> duración) y el panel de alta con hora y duración precargadas—. **Pendiente de la
-> aprobación del usuario**; hasta entonces la tajada 1 no arranca.
+> **D2 resuelta: render APROBADO el 2026-09-22** («así lo tenía en mi cabeza»).
+> `docs/vida/assets/10-vida-huecos-plantilla.html` —marco A a 375 px con las tres formas
+> del hueco (normal y pulsable, fino de menos de 15 min que se ve pero no se pulsa, y la
+> línea del ítem sin duración que dice que no se sabe dónde acaba) y el panel «Añadir a mi
+> Vida» con hora y duración precargadas del hueco entero—. **La tajada 1 puede arrancar**
+> en cuanto FEAT-008 entregue (D1: FEAT-008 va primero).
 
 ## 1. La petición — feature-analyst
 

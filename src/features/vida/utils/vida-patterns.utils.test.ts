@@ -12,6 +12,7 @@ import {
   pickBlockHints,
   suggestionReturnDate,
   buildTemplateSheetAdvice,
+  usualDurationsByActivityId,
   usualDurationsByItemId,
   vidaPatternSuggestionId,
   type BlockHintCandidate,
@@ -882,5 +883,45 @@ describe('el dato bajo los campos de la hoja de la plantilla (criterios 95, 96 y
   it('sin una sola sesión registrada **no hay línea** (97)', () => {
     const card = build(fiveDays(null), [item({ id: 'i1', activityId: 'a1' })]).patterns[0]!
     expect(buildTemplateSheetAdvice(card)).toBeNull()
+  })
+})
+
+/**
+ * **La misma costumbre, por actividad** (FEAT-011, criterio 238). Al registrar
+ * en un hueco no hay ítem de plantilla: hay una actividad elegida a mano, que
+ * puede ni estar en la plantilla de ese día.
+ */
+describe('usualDurationsByActivityId', () => {
+  const pattern = (
+    activityId: string,
+    usualDurationMinutes: number | null,
+    usualDurationSamples: number,
+  ) => ({ activityId, usualDurationMinutes, usualDurationSamples })
+
+  it('devuelve la mediana de cada actividad', () => {
+    expect(usualDurationsByActivityId([pattern('a1', 25, 6), pattern('a2', 50, 4)])).toEqual({
+      a1: 25,
+      a2: 50,
+    })
+  })
+
+  it('sin costumbre medida, la clave **no está** (criterio 240)', () => {
+    expect(usualDurationsByActivityId([pattern('a1', null, 2)])).toEqual({})
+    expect(usualDurationsByActivityId([])).toEqual({})
+  })
+
+  it('la misma actividad en dos ítems: gana la que más datos tiene', () => {
+    expect(
+      usualDurationsByActivityId([pattern('a1', 25, 4), pattern('a1', 70, 9)]),
+    ).toEqual({ a1: 70 })
+    expect(
+      usualDurationsByActivityId([pattern('a1', 70, 9), pattern('a1', 25, 4)]),
+    ).toEqual({ a1: 70 })
+  })
+
+  it('con empate de datos manda la primera: mezclar dos medianas inventaría un número', () => {
+    expect(
+      usualDurationsByActivityId([pattern('a1', 25, 5), pattern('a1', 70, 5)]),
+    ).toEqual({ a1: 25 })
   })
 })

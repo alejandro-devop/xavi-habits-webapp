@@ -71,6 +71,16 @@
   line-height: 1.35;
 }
 
+/* «Sueles tardar 25 min» (FEAT-011, criterio 240). Es un dato de apoyo, no un
+   aviso: el tono secundario de siempre, nunca el rojo del error. Solo se pinta
+   cuando el número **es** la costumbre, así que no reserva sitio. */
+.usual {
+  margin: 0.35rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
 .notes {
   width: 100%;
   min-width: 0;

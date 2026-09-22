@@ -76,6 +76,11 @@ type VidaAgendaGapProps = {
  * del presupuesto dejaría de cuadrar con lo que se ve (criterio 14), y un resto
  * de diez minutos no es sitio donde ofrecer nada (criterio 221).
  *
+ * **El hueco de delante** también cuenta hacia atrás, pero de segundo: las
+ * fichas de plantilla mandan y «Registrar» va detrás, con menos peso (criterio
+ * 241). Quien escucha decide qué ventana le da a la hoja; aquí solo está el
+ * gesto.
+ *
  * **Los que ya pasaron** (`isPast`) no ofrecen planear —planear hacia atrás no
  * significa nada— pero sí **contar**: con `onLogPast` traen una salida, y solo
  * una, «Registrar lo que hice» (criterio 220). Sin ella se quedan como la línea
@@ -289,6 +294,22 @@ export function VidaAgendaGap({
               </button>
             </li>
           </ul>
+        ) : null}
+
+        {/* **La otra cara del hueco** (criterio 241). Aquí manda «Poner algo»
+            —las fichas de arriba— y esto queda de **segunda** salida, con menos
+            peso: por si acabas de hacer algo y no lo dijiste. Cuelga de su
+            propio nodo, hermano de las fichas y **no** de que haya fichas: si
+            mañana las de sugerencia se van, esta salida sigue donde está. */}
+        {onLogPast ? (
+          <button
+            type="button"
+            className={[styles.logButton, styles.logButtonGhost].join(' ')}
+            aria-label={`Registrar algo que hiciste antes de las ${toLabel}`}
+            onClick={() => onLogPast(gap)}
+          >
+            Registrar
+          </button>
         ) : null}
       </section>
     </li>

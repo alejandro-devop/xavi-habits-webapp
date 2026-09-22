@@ -19,11 +19,65 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | planned | 0/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-22 |
-| FEAT-011 | building | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
+| FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | specified | 0/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
+
+**FEAT-011 `delivered` 3/3** (2026-09-22, revisor). **Tajada 3 aceptada y con
+ella la feature entregada.** Lo primero, lo que había que comprobar y no
+creerse: **no infló la tajada** —el criterio **230 ya estaba probado en `HEAD`**
+(`vida-execution.utils.test.ts:403`, fuera de este diff) y el 225 lo cerró la
+tajada 2—, y además **arregló el hallazgo que yo dejé** en la 2: la ventana sin
+sitio ya no dice dos veces la misma hora, ahora dice «Aquí ya no queda rato
+libre.». **Reproduje el hallazgo (1)**: al recortar a «ahora», `nextTouchesEnd`
+pasa a `false` y el aviso **deja de poder decir** «a las 10:30 entra Daily
+meeting» de una reunión de las 11:30 — y comprobé la otra mitad, que sin recorte
+**la frase buena sigue ahí**: no se tapó el agujero apagando la función.
+**La decisión del 242 es la correcta y no promete de más**: la mitad de delante
+tiene ventana vacía, así que «Registrar» abre **la hoja de siempre**
+(`openLogSheet({ mode: 'log' })`, sin ventana ni `initial`), que **no** dice «en
+el hueco de X a Y» — promete registrar y lleva a registrar; anclarla habría sido
+un callejón y no ofrecer nada, un paso más. **La duración**: caída costumbre →
+plantilla → `DEFAULT_BLOCK_MINUTES`, **siempre** recortada, sin número cuando no
+cabe nada, y «Sueles tardar 25m» **solo** cuando el número es la costumbre
+entera (con 55 en un hueco de 20 propone 20 y **no** lo llama costumbre) —
+probado por mí en cinco casos, más el salto actividad → ítem, que se resuelve
+por la costumbre **con más muestras**. **El «Registrar» del hueco futuro** va
+**el último**, con menos peso pero **44 px** y contraste 6,24:1 en claro y
+**9,94:1 en oscuro** —sí reacciona al tema, al revés que el `ghost` de
+`shared/ui/Button`— y **cuelga de `onLogPast`, no de `suggestions.visible`**:
+cuando FEAT-010 retire las fichas, la salida sigue. `vida-gap-form.utils.ts`,
+`VidaPlaceInGapSheet/` y `VidaTemplateGapRow/` **fuera del diff** por tercera
+tajada seguida, y la aserción «cambiada» era un `click`, no una afirmación.
+Línea base corrida entera: typecheck limpio, **lint 14/0** (el movimiento de
+`proposeLogDuration` fuera del `.tsx` era justo para eso), **2 fallos de 1738**,
+build exit 0 con el chunk en **1.106,47 kB** (+1,33). **La nota de cierre para
+el usuario, la deuda de FEAT-011 entera —`nextBlockTitle` ambiguo (falta la hora
+real de entrada del siguiente, no el nombre), los gemelos
+`MIN_GAP_MINUTES`/`MIN_PLACEMENT_MINUTES` y el tercer `isSliver` —que **FEAT-014
+es el momento natural de unificar**, porque baja el umbral de 15 a 5—, las dos
+validaciones sin uso y el rótulo «antes de las 11:30»— y los seis pasos que
+tiene que probar él, incluido el único que ningún test puede decir —**si la
+duración propuesta acierta lo bastante como para no tocarla casi nunca**— están
+al final de la sección 4 del dossier.**
+
+**FEAT-011 `in-review` 3/3** (2026-09-22, constructor). **Tajada 3 —la última—
+construida y sin commitear.** Lo que de verdad quedaba abierto eran **238 a
+242** y ya no: la duración que se propone al registrar sale de **lo que sueles
+tardar en esa actividad** (con caída a plantilla y a `DEFAULT_BLOCK_MINUTES`,
+recortada a lo que cabe, y la frase «sueles tardar» **solo** cuando el número es
+la costumbre entera), y el hueco **de delante** estrena «Registrar» de segundo,
+detrás de «Poner algo». El **230** (el hueco que se encoge, marco 4 del render)
+se **comprobó** sobre el test que ya existía de `sliceGap`: cerrado, no
+construido. De paso, el aviso de la ventana sin sitio deja de decir «entre las
+11:40 y las 11:40». Línea base: typecheck limpio, lint **14/0**, **2 fallos de
+1738** (+20 casos), chunk **1.106,47 kB** (+1,33). **Una decisión mía que pido
+mirar:** el hueco de delante **no se ancla a sí mismo** —su ventana recortada a
+«ahora» queda sin sitio— y abre la hoja de siempre, la de media hora atrás.
+Queda para el usuario el recorrido con sesión (251) y decir si la duración
+propuesta acierta.
 
 **FEAT-011 `building` 2/3** (2026-09-22, revisor). **Tajada 2 aceptada**, y con
 ella se cierra el 225 que quedó parcial en la tajada 1. **Reproduje el hallazgo

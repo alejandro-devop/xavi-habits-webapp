@@ -686,6 +686,10 @@ export type DayExecution = {
    * El hueco de la agenda **no se mueve**: esto lo acompaña. Quien quiera
    * registrar algo ahí valida contra esta ventana; quien pinte la barra sigue
    * leyendo `startMinutes` / `endMinutes` del hueco (criterio 14 de FEAT-003).
+   *
+   * **Recortada a «ahora»** (criterio 242): la mitad de delante de un hueco
+   * partido por el reloj sale **sin sitio dentro**, porque el futuro no se
+   * registra. Los huecos que ya pasaron no lo notan.
    */
   realWindowByGapId: Record<string, RealGapWindow>
 }
@@ -819,7 +823,18 @@ export function buildDayExecution({
   /** Empujar un hueco **y anotar su ventana real con la clave que acaba de estrenar**. */
   function pushGap(gap: AgendaGap, before: GapNeighbour | null, after: GapNeighbour | null) {
     entries.push(gap)
-    realWindowByGapId[gap.id] = buildGapRealWindow({ gap, before, after, nowMinutes })
+    // `clampToNow` **siempre** (FEAT-011, criterio 242): en un hueco que ya
+    // pasó no cambia nada —su final ya está detrás del reloj— y en la mitad de
+    // delante deja la ventana sin sitio, que es justo lo que queremos decir:
+    // por ahí no se registra el futuro. En un día de atrás, `nowMinutes` es
+    // `null` y no se recorta nada.
+    realWindowByGapId[gap.id] = buildGapRealWindow({
+      gap,
+      before,
+      after,
+      nowMinutes,
+      clampToNow: true,
+    })
   }
 
   for (const entry of agenda.entries) {

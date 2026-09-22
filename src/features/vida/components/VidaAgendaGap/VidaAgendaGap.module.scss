@@ -207,6 +207,24 @@ button.chip {
   }
 }
 
+/* La misma salida en el hueco **de delante**, con menos peso (FEAT-011,
+   criterio 241): ahí manda «Poner algo» y esto queda de segundo, por si acabas
+   de hacer algo sin decirlo. Mismo alto de dedo (44 px) y mismo sitio; lo
+   único que baja es el color: fondo de vidrio en vez del sólido invertido. */
+.logButtonGhost {
+  margin-top: 0.15rem;
+  border-color: var(--color-glass-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+
+  &:hover {
+    opacity: 1;
+    border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-glass-border));
+    color: var(--color-text);
+  }
+}
+
 /* ── El resto de menos de 15 minutos ─────────────────────────────────────── */
 
 /* No desaparece: si lo hiciera, la leyenda del presupuesto dejaría de sumar lo

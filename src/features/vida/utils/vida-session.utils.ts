@@ -435,3 +435,36 @@ export function translateSessionError(error: unknown, fallback: string): string 
   // vocabulario del módulo. El mensaje crudo sigue en la consola del error.
   return fallback
 }
+
+/**
+ * **Cuánto proponer para lo que se registra en un hueco** (criterios 238 y 239).
+ *
+ * En este orden: lo que **sueles tardar** en esa actividad, lo que dice la
+ * **plantilla**, y `DEFAULT_BLOCK_MINUTES`. Lo que salga se recorta a lo que
+ * quepa desde la hora elegida — nunca se propone el hueco entero como duración,
+ * solo se usa como techo.
+ *
+ * Devuelve además **si el número que se ve es la costumbre, entera**: recortado
+ * ya no lo es, y decir «sueles tardar 45» encima de un 20 sería presentar como
+ * dato algo que no lo es (criterio 240). Molde: `preselectedDuration` de
+ * `VidaPlaceInGapSheet`.
+ */
+export function proposeLogDuration({
+  usualMinutes,
+  templateMinutes,
+  maxMinutes,
+}: {
+  usualMinutes: number | null
+  templateMinutes: number | null
+  maxMinutes: number
+}): { durationMinutes: number | null; fromUsual: number | null } {
+  // Un hueco sin un minuto dentro no propone nada: ahí lo que hay que decir es
+  // que no cabe, no un número apagado.
+  if (maxMinutes < 1) return { durationMinutes: null, fromUsual: null }
+  const candidate = usualMinutes ?? templateMinutes ?? DEFAULT_BLOCK_MINUTES
+  const minutes = Math.min(candidate, maxMinutes)
+  return {
+    durationMinutes: minutes,
+    fromUsual: usualMinutes !== null && minutes === usualMinutes ? usualMinutes : null,
+  }
+}

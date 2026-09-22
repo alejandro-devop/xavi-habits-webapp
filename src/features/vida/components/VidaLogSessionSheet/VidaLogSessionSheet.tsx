@@ -25,6 +25,7 @@ import {
 import {
   editSessionInput,
   logSessionInput,
+  proposeLogDuration,
   validateLogPast,
   validateStartTime,
 } from '@/features/vida/utils/vida-session.utils'
@@ -61,6 +62,17 @@ type VidaLogSessionSheetProps = {
   defaultStartTime: string
   /** Hora y duración **ya puestas** (lo usará el «¿Qué pasó?» de la tajada 4). */
   initial?: { startTime?: string; durationMinutes?: number } | null
+  /**
+   * **La duración que sueles tardar, por actividad** (FEAT-011, criterio 238),
+   * de `usualDurationsByActivityId`. Al elegir el «qué» **anclada a un hueco**,
+   * la duración que viene puesta sale de aquí antes que de la plantilla.
+   *
+   * La clave que **no está** es la señal de que no hay costumbre medida: ahí no
+   * se dice «sueles tardar» ni se reserva el sitio donde iría (criterio 240, la
+   * misma regla del 92 de FEAT-007). Vacío por defecto: sin patrones, la hoja
+   * es exactamente la de antes.
+   */
+  usualDurations?: Record<string, number>
   /**
    * **El hueco al que va anclado lo que se registra** (FEAT-011, criterio 222).
    * Con ventana, la hoja valida por arriba y por abajo con lo que ya existe
@@ -132,6 +144,7 @@ export function VidaLogSessionSheet({
   suggestions,
   defaultStartTime,
   initial = null,
+  usualDurations = {},
   session = null,
   gapWindow = null,
   onStart,
@@ -148,6 +161,10 @@ export function VidaLogSessionSheet({
   const [durationMinutes, setDurationMinutes] = useState<number | null>(
     session?.durationMinutes ?? initial?.durationMinutes ?? null,
   )
+  // **De dónde salió la duración que se ve.** `null` salvo cuando la puso la
+  // costumbre y **entera**: es lo único que autoriza la frase «sueles tardar»
+  // (criterio 240). Se apaga en cuanto la duración la toca alguien.
+  const [usualMinutes, setUsualMinutes] = useState<number | null>(null)
   // Mientras nadie toque la hora en «Empezar algo», el campo **sigue al reloj**
   // (`defaultStartTime` cambia cada minuto) y no se manda: así, quien no la mira
   // hace exactamente el gesto de siempre y guarda la hora del momento de pulsar
@@ -183,13 +200,30 @@ export function VidaLogSessionSheet({
   function chooseActivity(activity: PickedActivity, templateMinutes: number | null) {
     setChosen(activity)
     setFormError(null)
-    // Lo que la plantilla dice que dura viene puesto y se puede cambiar. En
-    // «Empezar algo» no se mira: ahí no hay duración que elegir.
-    // Anclada a un hueco, lo que no cabe **no se preselecciona**: sería una
-    // píldora encendida y apagada a la vez (molde: `VidaPlaceInGapSheet`).
-    if (mode === 'log' && durationMinutes === null && templateMinutes !== null) {
-      if (!anchored || templateMinutes <= maxMinutes) setDurationMinutes(templateMinutes)
+    // En «Empezar algo» no se mira: ahí no hay duración que elegir. Y una
+    // duración ya puesta no se pisa.
+    if (mode !== 'log' || durationMinutes !== null) return
+
+    // **Anclada a un hueco** (criterios 238 y 239): manda lo que sueles tardar
+    // en **esa actividad**, y si no hay ese dato se cae a la plantilla y luego
+    // a `DEFAULT_BLOCK_MINUTES`, siempre recortado a lo que quepa. Nunca al
+    // hueco entero: tener dos horas libres no dice nada de lo que hiciste.
+    if (anchored) {
+      const proposal = proposeLogDuration({
+        usualMinutes: usualDurations[activity.id] ?? null,
+        templateMinutes,
+        maxMinutes,
+      })
+      setDurationMinutes(proposal.durationMinutes)
+      setUsualMinutes(proposal.fromUsual)
+      return
     }
+
+    // **Sin hueco, la hoja de siempre.** «Registrar tiempo pasado» de la
+    // cabecera no tiene bordes contra los que recortar nada, así que sigue
+    // haciendo exactamente lo de FEAT-004: la duración de la plantilla si la
+    // hay, y si no, ninguna.
+    if (templateMinutes !== null) setDurationMinutes(templateMinutes)
   }
 
   async function handleStart() {
@@ -417,6 +451,9 @@ export function VidaLogSessionSheet({
                 disabled={isPending}
                 onChange={(minutes) => {
                   setDurationMinutes(minutes)
+                  // Tocada a mano ya no es la costumbre: la frase se va con
+                  // ella (criterio 240).
+                  setUsualMinutes(null)
                   setFormError(null)
                 }}
               />
@@ -428,6 +465,16 @@ export function VidaLogSessionSheet({
                 startTime={startTime}
                 durationMinutes={durationMinutes}
               />
+              {/* **Solo cuando el número viene de verdad de la costumbre**
+                  (criterio 240): con menos de cuatro datos, o si hubo que
+                  recortarlo para que cupiera, aquí no hay ni frase ni hueco
+                  reservado donde iría. */}
+              {usualMinutes !== null ? (
+                <p className={styles.usual}>
+                  Sueles tardar {formatDurationFromMinutes(usualMinutes)}. Cámbialo si hoy fue
+                  otra cosa.
+                </p>
+              ) : null}
             </section>
           </>
         ) : null}

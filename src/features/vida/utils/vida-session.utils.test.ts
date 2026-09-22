@@ -13,6 +13,7 @@ import {
   isSessionFromAnotherDay,
   logSessionInput,
   minutesUntilEndTime,
+  proposeLogDuration,
   resolveUnknownEndMinutes,
   sessionStartInstant,
   startSessionInput,
@@ -20,6 +21,7 @@ import {
   validateLogPast,
   validateStartTime,
 } from '@/features/vida/utils/vida-session.utils'
+import { DEFAULT_BLOCK_MINUTES } from '@/features/vida/utils/vida-time.utils'
 
 function session(overrides: Partial<ActivityFollowUp> = {}): ActivityFollowUp {
   return {
@@ -470,5 +472,37 @@ describe('validateStartTime — la hora de «Empezar algo» (criterios 333 y 334
 
   it('no habla de duración: una sesión abierta no la tiene (criterio 30)', () => {
     expect(validateStartTime({ date: HOY, startTime: '15:29', now: AHORA }).message).toBeNull()
+  })
+})
+
+describe('proposeLogDuration — el orden de la caída (criterios 238 y 239)', () => {
+  it('costumbre, plantilla y `DEFAULT_BLOCK_MINUTES`, en ese orden', () => {
+    expect(
+      proposeLogDuration({ usualMinutes: 35, templateMinutes: 20, maxMinutes: 120 }),
+    ).toEqual({ durationMinutes: 35, fromUsual: 35 })
+    expect(
+      proposeLogDuration({ usualMinutes: null, templateMinutes: 20, maxMinutes: 120 }),
+    ).toEqual({ durationMinutes: 20, fromUsual: null })
+    expect(
+      proposeLogDuration({ usualMinutes: null, templateMinutes: null, maxMinutes: 120 }),
+    ).toEqual({ durationMinutes: DEFAULT_BLOCK_MINUTES, fromUsual: null })
+  })
+
+  it('nunca el hueco entero como propuesta: solo como techo', () => {
+    // Dos horas libres no dicen nada de lo que hiciste.
+    expect(
+      proposeLogDuration({ usualMinutes: null, templateMinutes: null, maxMinutes: 120 })
+        .durationMinutes,
+    ).toBe(DEFAULT_BLOCK_MINUTES)
+    // Y lo que no cabe se recorta, dejando de ser «lo que sueles tardar».
+    expect(
+      proposeLogDuration({ usualMinutes: 60, templateMinutes: null, maxMinutes: 40 }),
+    ).toEqual({ durationMinutes: 40, fromUsual: null })
+  })
+
+  it('un hueco sin un minuto dentro no propone ningún número', () => {
+    expect(
+      proposeLogDuration({ usualMinutes: 35, templateMinutes: 20, maxMinutes: 0 }),
+    ).toEqual({ durationMinutes: null, fromUsual: null })
   })
 })

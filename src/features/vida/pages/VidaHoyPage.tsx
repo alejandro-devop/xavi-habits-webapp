@@ -51,6 +51,7 @@ import type { NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
 import type { VidaBlockHint as BlockHint } from '@/features/vida/utils/vida-patterns.utils'
 import {
   pickBlockHints,
+  usualDurationsByActivityId,
   usualDurationsByItemId,
 } from '@/features/vida/utils/vida-patterns.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
@@ -321,6 +322,14 @@ export function VidaHoyPage() {
     () => usualDurationsByItemId(patterns.patterns),
     [patterns.patterns],
   )
+  // La misma costumbre **por actividad**, para la duración que viene puesta al
+  // registrar en un hueco (FEAT-011, criterio 238). Al registrar no hay ítem de
+  // plantilla: hay una actividad elegida, que puede ni estar en la plantilla de
+  // hoy. Vacío mientras no haya patrones, como su hermana.
+  const usualDurationsByActivity = useMemo(
+    () => usualDurationsByActivityId(patterns.patterns),
+    [patterns.patterns],
+  )
 
   // **Dos avisos como mucho, y nunca dos del mismo bloque** (criterio 88). La
   // regla entera vive en `pickBlockHints`, que es puro y está probado; aquí
@@ -517,6 +526,17 @@ export function VidaHoyPage() {
    */
   function logInGap(gap: AgendaGap) {
     const gapWindow = execution.realWindowByGapId[gap.id] ?? gapToWindow(gap)
+    // **El hueco de delante no ancla nada** (criterio 242). Su ventana viene
+    // recortada a «ahora» y por tanto sin un minuto dentro: anclarse a ella
+    // sería abrir una hoja donde no cabe nada. Lo que se ofrece ahí es lo que
+    // dice el renglón —«por si acabas de hacer algo sin decirlo»—: la hoja de
+    // siempre, que parte de media hora atrás y que **ya** no deja escribir el
+    // futuro (`validateLogPast`, FEAT-004).
+    const isPastGap = gap.isPast || isPast
+    if (!isPastGap && gapWindow.endMinutes <= gapWindow.startMinutes) {
+      openLogSheet({ mode: 'log' })
+      return
+    }
     openLogSheet({
       mode: 'log',
       gapWindow,
@@ -983,6 +1003,9 @@ export function VidaHoyPage() {
           initial={logSheet.mode === 'edit' ? null : (logSheet.initial ?? null)}
           // El hueco al que va anclado, cuando se abrió desde uno (FEAT-011).
           gapWindow={logSheet.mode === 'edit' ? null : (logSheet.gapWindow ?? null)}
+          // Lo que sueles tardar en cada actividad: la duración que viene
+          // puesta al elegir el «qué» dentro de un hueco (criterio 238).
+          usualDurations={usualDurationsByActivity}
           onStart={(activityId, startTime) => sessionActions.start(activityId, startTime)}
         />
       ) : null}

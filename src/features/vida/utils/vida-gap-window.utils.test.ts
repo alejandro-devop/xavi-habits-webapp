@@ -224,3 +224,49 @@ describe('describePlacementBlocker — envuelve, no sustituye (criterios 225 y 2
     expect(describePlacementBlocker(input, planWindow)).toBe(validatePlacement(input, planWindow).message)
   })
 })
+
+/**
+ * **La ventana que se quedó sin sitio** (hallazgo 1 de la revisión de la tajada
+ * 2). Antes decía «Aquí cabe algo entre las 12:00 y las 12:00»: bloqueaba bien,
+ * pero la frase no se entendía.
+ */
+describe('describePlacementBlocker — la ventana sin sitio (tajada 3)', () => {
+  it('no dice la misma hora dos veces: dice que ya no queda rato, y quién lo ocupó', () => {
+    const space = buildGapRealWindow({ gap, before: breakfast(12 * 60), after: meeting(null) })
+    const message = describePlacementBlocker({ startTime: '09:30', durationMinutes: 15 }, space)
+
+    expect(message).toBe('Aquí ya no queda rato libre. Desayunar acabó a las 12:00.')
+    expect(message).not.toContain('entre las 12:00 y las 12:00')
+  })
+
+  it('también sin duración elegida: con la ventana sin sitio, da igual cuánto dure', () => {
+    const space = buildGapRealWindow({ gap, before: breakfast(12 * 60), after: meeting(null) })
+
+    expect(describePlacementBlocker({ startTime: '09:30', durationMinutes: null }, space)).toBe(
+      'Aquí ya no queda rato libre. Desayunar acabó a las 12:00.',
+    )
+  })
+
+  it('sin nadie a quien nombrar —la mitad de delante, recortada a «ahora»— no se inventa un vecino', () => {
+    const space = buildGapRealWindow({
+      gap,
+      before: null,
+      after: meeting(null),
+      nowMinutes: gap.startMinutes,
+      clampToNow: true,
+    })
+
+    expect(describePlacementBlocker({ startTime: '09:30', durationMinutes: 15 }, space)).toBe(
+      'Aquí ya no queda rato libre. Lo de al lado ocupó todo este rato.',
+    )
+  })
+
+  it('ni una palabra de reproche: no se llama «vacío» ni «perdido» a nada (criterio 246)', () => {
+    const space = buildGapRealWindow({ gap, before: breakfast(12 * 60), after: meeting(null) })
+    const message = describePlacementBlocker({ startTime: '09:30', durationMinutes: 15 }, space) ?? ''
+
+    for (const word of ['vacío', 'perdido', 'desperdici', 'en blanco']) {
+      expect(message.toLowerCase()).not.toContain(word)
+    }
+  })
+})

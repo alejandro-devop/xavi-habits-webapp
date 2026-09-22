@@ -2138,6 +2138,66 @@ describe('VidaHoyPage — el hueco que ya pasó se pulsa (criterios 220 a 232)',
   })
 })
 
+/* ── FEAT-011, tajada 3: la otra cara del hueco ─────────────────────────── */
+
+describe('VidaHoyPage — el hueco de delante cuenta de segundo (criterios 241 y 242)', () => {
+  /** Con «ahora» a las 9:24 y «Leer un rato» a las 10:00. */
+  const HUECO_FUTURO = 'Libre de 9:24 – 10:00'
+
+  it('criterio 241 — manda «Poner algo» y «Registrar» queda detrás, con menos peso', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const hueco = screen.getByLabelText(HUECO_FUTURO)
+    // Lo de FEAT-003 sigue igual: fichas de plantilla y «+ otra cosa».
+    expect(within(hueco).getAllByRole('button', { name: /^Poner / }).length).toBeGreaterThan(0)
+    const registrar = within(hueco).getByRole('button', {
+      name: 'Registrar algo que hiciste antes de las 10:00',
+    })
+    expect(registrar).toHaveTextContent('Registrar')
+    // **Detrás** de las fichas, y fuera de su lista: si mañana las de
+    // sugerencia se van (FEAT-010), esta salida se queda donde está.
+    const fichas = within(hueco).getAllByRole('button', { name: /^Poner / })
+    expect(
+      fichas[0]!.compareDocumentPosition(registrar) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(registrar.closest('ul')).toBeNull()
+  })
+
+  it('criterio 242 — la hoja que abre no propone registrar el futuro', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Registrar algo que hiciste antes de las 10:00' }),
+    )
+
+    const hoja = screen.getByRole('dialog')
+    // No se ancla a un rato que **no ha pasado**: su ventana acaba donde
+    // empieza. Se ofrece lo de siempre, que parte de media hora atrás (8:54) y
+    // nunca pasa de «ahora».
+    expect(within(hoja).queryByText(/en el hueco de/)).toBeNull()
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue('08:54')
+
+    // Y si se empuja a mano hacia delante, no se guarda.
+    fireEvent.click(within(hoja).getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(within(hoja).getByLabelText('Hora a la que empezó'), {
+      target: { value: '09:40' },
+    })
+    fireEvent.click(within(hoja).getByRole('button', { name: 'Registrar' }))
+    expect(within(hoja).getByText('Esa hora todavía no ha llegado.')).toBeInTheDocument()
+    expect(createFollowUpMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 232 — en un día futuro el hueco de delante tampoco ofrece contar', () => {
+    viewedDate = '2026-09-19'
+    planQuery = ready([block('b1', 'Bañarme', '08:00', '08:45')])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.queryByRole('button', { name: /^Registrar algo que hiciste/ })).toBeNull()
+  })
+})
+
 /* ── FEAT-011, tajada 2: la ventana REAL ────────────────────────────────── */
 
 describe('VidaHoyPage — el hueco se valida contra lo vivido (criterios 233 a 236)', () => {
@@ -2227,7 +2287,13 @@ describe('VidaHoyPage — el hueco se valida contra lo vivido (criterios 233 a 2
     )
     const hoja = screen.getByRole('dialog')
     fireEvent.click(within(hoja).getByRole('button', { name: /Poner lavadora/ }))
-    fireEvent.click(within(hoja).getByRole('button', { name: '15' }))
+    // Desde la tajada 3 la duración viene puesta al elegir el «qué»: los 20 de
+    // la plantilla, recortados a los 15 que caben (criterio 239). Antes había
+    // que pulsar «15» a mano; volver a pulsarlo ahora la quitaría.
+    expect(within(hoja).getByRole('button', { name: '15' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
     // Un cuarto de hora desde las 8:50 se pisaría con la llamada: no cabe, y
     // se dice con su nombre.
     fireEvent.change(within(hoja).getByLabelText('Hora a la que empezó'), {

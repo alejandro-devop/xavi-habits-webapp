@@ -3,6 +3,7 @@ import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-pla
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { AgendaGap } from '@/features/vida/utils/vida-agenda.utils'
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
+import { getMaxDurationForStartTime } from '@/features/vida/utils/vida-gap-form.utils'
 import {
   VIDA_MOVED_THRESHOLD_MINUTES,
   VIDA_NO_DATA_MIN_MINUTES,
@@ -566,6 +567,39 @@ describe('buildDayExecution: la agenda con lo real dentro', () => {
       (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('09:30'),
     )!
     expect(execution.realWindowByGapId[past.id]!.startMinutes).toBe(at('09:28'))
+  })
+
+  it('criterio 242 de FEAT-011 — la mitad de DELANTE del hueco se queda sin sitio dentro', () => {
+    // El hueco de 9:30 a 11:30 partido por «ahora» (10:30): el trozo de atrás
+    // se registra entero y el de delante **no ofrece futuro**, porque su
+    // ventana acaba donde empieza. Y nadie dice a qué hora entra el vecino de
+    // la derecha: a las 10:30 no entra Daily meeting, entra el reloj.
+    const agenda = agendaOf(
+      [block('b1', 'des', '09:00', '09:30'), block('b2', 'daily', '11:30', '12:00')],
+      at('10:30'),
+    )
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [],
+      date: DATE,
+      nowMinutes: at('10:30'),
+      dayEnd: DAY_END,
+      isPastDay: false,
+    })
+    const future = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('10:30'),
+    )!
+    const past = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('09:30'),
+    )!
+
+    const ahead = execution.realWindowByGapId[future.id]!
+    expect(ahead.endMinutes).toBe(ahead.startMinutes)
+    expect(getMaxDurationForStartTime('10:30', ahead)).toBe(0)
+    expect(ahead.nextTouchesEnd).toBe(false)
+    // El de atrás no lo nota: su final ya estaba detrás del reloj.
+    const behind = execution.realWindowByGapId[past.id]!
+    expect([behind.startMinutes, behind.endMinutes]).toEqual([at('09:30'), at('10:30')])
   })
 
   it('un bloque sin sesión deja mandar al plan (criterio 237)', () => {

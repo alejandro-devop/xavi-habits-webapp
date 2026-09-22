@@ -132,8 +132,15 @@ export function buildGapRealWindow({
   const next = after !== null && after.plannedMinutes === plannedEndMinutes ? after : null
 
   const rawStart = previous?.realMinutes ?? plannedStartMinutes
-  let rawEnd = next?.realMinutes ?? plannedEndMinutes
-  if (clampToNow && nowMinutes !== null) rawEnd = Math.min(rawEnd, nowMinutes)
+  const neighbourEnd = next?.realMinutes ?? plannedEndMinutes
+  // **Recortar a «ahora» despega al vecino del final.** Si no, el aviso diría
+  // «A las 9:30 entra Daily meeting» de una reunión que empieza a las 11:30:
+  // la misma hora inventada que `nextTouchesEnd` está para evitar. Quien cierra
+  // el rato por ese lado pasa a ser el reloj, y el reloj no tiene nombre.
+  const clipEnd =
+    clampToNow && nowMinutes !== null && nowMinutes < neighbourEnd ? nowMinutes : null
+  const clipped = clipEnd !== null
+  const rawEnd = clipEnd ?? neighbourEnd
 
   // Los dos bordes pueden cruzarse (un vecino que se alargó por encima del
   // otro): la ventana se queda vacía en el borde de la izquierda, nunca al
@@ -153,7 +160,7 @@ export function buildGapRealWindow({
     endShiftMinutes: endMinutes - plannedEndMinutes,
     previousIsRunning: previous?.isRunning ?? false,
     nextIsRunning: next?.isRunning ?? false,
-    nextTouchesEnd: next !== null,
+    nextTouchesEnd: next !== null && !clipped,
     previousTouchesStart: previous !== null,
   }
 }
@@ -211,6 +218,21 @@ export function describePlacementBlocker(
 ): string | null {
   const validation: PlacementValidation = validatePlacement(input, space)
   if (validation.valid || validation.message === null) return null
+
+  // **La ventana que se quedó sin sitio** (hallazgo 1 de la revisión de la
+  // tajada 2). Un vecino que se comió el hueco entero deja `startMinutes ===
+  // endMinutes`, y entonces la frase de siempre dice la misma hora dos veces:
+  // «Aquí cabe algo entre las 11:40 y las 11:40». Bloquea bien, pero no se
+  // entiende. Aquí se dice lo que pasa, sin culpa y sin llamar «vacío» a nada.
+  // Va **antes** de la salida por duración: con la ventana sin sitio, la hora
+  // ya está fuera y da igual cuánto dure.
+  if (space.endMinutes <= space.startMinutes) {
+    const clause = beforeClause(space) ?? afterClause(space)
+    return clause === null
+      ? `${NO_ROOM_LEFT} Lo de al lado ocupó todo este rato.`
+      : `${NO_ROOM_LEFT} ${clause}`
+  }
+
   // «Dile cuánto dura» no habla de ningún borde: nombrar ahí al vecino sería
   // ruido sobre una frase que ya dice qué hacer.
   if (input.durationMinutes === null || input.durationMinutes < 1) return validation.message
@@ -219,6 +241,9 @@ export function describePlacementBlocker(
   const clause = start < space.startMinutes ? beforeClause(space) : afterClause(space)
   return clause === null ? validation.message : `${validation.message} ${clause}`
 }
+
+/** El principio de la frase cuando la ventana se quedó sin un minuto dentro. */
+const NO_ROOM_LEFT = 'Aquí ya no queda rato libre.'
 
 function beforeClause(space: GapWindow & Partial<RealGapWindow>): string | null {
   const when = formatTimeForDisplay(minutesToTime(space.startMinutes))

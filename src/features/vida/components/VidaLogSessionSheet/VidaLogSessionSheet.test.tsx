@@ -489,3 +489,74 @@ describe('VidaLogSessionSheet — anclada a un hueco (criterios 222 a 229)', () 
     expect(screen.queryByText(/Aquí caben/)).toBeNull()
   })
 })
+
+/**
+ * **La duración de siempre** (FEAT-011, tajada 3): lo que sueles tardar en esa
+ * actividad viene puesto, con su caída ordenada cuando no hay ese dato — y la
+ * frase solo cuando el número **es** la costumbre.
+ */
+describe('VidaLogSessionSheet — la duración que sueles tardar (criterios 238 a 240)', () => {
+  /** Un hueco de 8:00 a 8:40 con «Daily meeting» al otro lado. */
+  const GAP = { startMinutes: 480, endMinutes: 520, nextBlockTitle: 'Daily meeting' }
+
+  it('criterio 238 — manda la costumbre por encima de lo que dice la plantilla', () => {
+    renderSheet({
+      gapWindow: GAP,
+      initial: { startTime: '08:00' },
+      usualDurations: { 'a-s1': 35 },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    // La plantilla dice 20; la costumbre, 35.
+    expect(screen.getByLabelText('minutos')).toHaveValue('35')
+    expect(screen.getByText(/Sueles tardar 35m/)).toBeInTheDocument()
+  })
+
+  it('criterio 239 — sin ese dato se cae a la plantilla, y no se dice nada de costumbre', () => {
+    renderSheet({ gapWindow: GAP, initial: { startTime: '08:00' } })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    expect(screen.getByLabelText('minutos')).toHaveValue('20')
+    expect(screen.queryByText(/Sueles tardar/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 239 — lo que no cabe se recorta al hueco, sin llamarlo costumbre', () => {
+    renderSheet({
+      gapWindow: GAP,
+      initial: { startTime: '08:00' },
+      usualDurations: { 'a-s1': 60 },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    // 60 no cabe en 40: se recorta a lo que queda —la píldora de «Todo el
+    // hueco» se enciende sola— y entonces ya no es «lo que sueles tardar».
+    expect(screen.getByRole('button', { name: 'Todo el hueco, 40 min' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.queryByText(/Sueles tardar/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 240 — tocada a mano, la frase se va con el número', () => {
+    renderSheet({
+      gapWindow: GAP,
+      initial: { startTime: '08:00' },
+      usualDurations: { 'a-s1': 35 },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    expect(screen.getByText(/Sueles tardar 35m/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '15' }))
+    expect(screen.queryByText(/Sueles tardar/)).not.toBeInTheDocument()
+  })
+
+  it('sin hueco, «Registrar tiempo pasado» de la cabecera sigue igual que en FEAT-004', () => {
+    renderSheet({ usualDurations: { 'a-s1': 35 } })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    // Sin bordes contra los que recortar, la duración es la de la plantilla y
+    // nadie propone `DEFAULT_BLOCK_MINUTES` donde antes no había nada.
+    expect(screen.getByLabelText('minutos')).toHaveValue('20')
+    expect(screen.queryByText(/Sueles tardar/)).not.toBeInTheDocument()
+  })
+})

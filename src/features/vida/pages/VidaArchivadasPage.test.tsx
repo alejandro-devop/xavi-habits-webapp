@@ -97,7 +97,7 @@ const archivedItem: VidaItem = {
 
 function loaded(list: Activity[]): QueryState {
   return {
-    data: { activities: list, page: 1, limit: 200, total: list.length },
+    data: { activities: list, page: 1, limit: 100, total: list.length },
     isPending: false,
     fetchStatus: 'idle',
     isError: false,
@@ -121,7 +121,7 @@ describe('VidaArchivadasPage', () => {
   it('pide el listado con status cancelled y con los VidaItem desactivados (criterio 24)', () => {
     renderWithProviders(<VidaArchivadasPage />)
 
-    expect(activitiesFilters[0]).toMatchObject({ status: 'cancelled', page: 1, limit: 200 })
+    expect(activitiesFilters[0]).toMatchObject({ status: 'cancelled', page: 1, limit: 100 })
     expect(vidaItemsQueryArgs[0]).toEqual([true])
   })
 

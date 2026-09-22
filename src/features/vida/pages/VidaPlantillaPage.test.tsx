@@ -129,7 +129,7 @@ beforeEach(() => {
   createItem = { mutate: vi.fn(), isPending: false, isError: false }
   itemsQuery = ready<VidaItem[]>([])
   settingsQuery = ready(SETTINGS)
-  activitiesQuery = ready<ActivitiesResponse>({ activities: [], page: 1, limit: 200, total: 0 })
+  activitiesQuery = ready<ActivitiesResponse>({ activities: [], page: 1, limit: 100, total: 0 })
 })
 
 afterEach(() => {
@@ -362,7 +362,7 @@ describe('los estados (criterios 10, 11 y 12)', () => {
         { id: 'a-3', title: 'Vieja', status: 'cancelled' },
       ] as unknown as ActivitiesResponse['activities'],
       page: 1,
-      limit: 200,
+      limit: 100,
       total: 3,
     })
     renderWithProviders(<VidaPlantillaPage />)
@@ -611,7 +611,7 @@ describe('«Añadir a mi Vida» (criterios 29-34 y 40)', () => {
         catalogActivity('a-3', 'Salir a correr', 'cancelled'),
       ],
       page: 1,
-      limit: 200,
+      limit: 100,
       total: 3,
     })
   })
@@ -718,7 +718,7 @@ describe('«Añadir a mi Vida» (criterios 29-34 y 40)', () => {
     activitiesQuery = ready<ActivitiesResponse>({
       activities: [],
       page: 1,
-      limit: 200,
+      limit: 100,
       total: 0,
     })
     renderWithProviders(<VidaPlantillaPage />)

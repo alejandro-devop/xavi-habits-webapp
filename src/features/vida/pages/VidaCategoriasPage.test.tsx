@@ -93,7 +93,7 @@ beforeEach(() => {
     isError: false,
     refetch,
   }
-  activitiesState = { data: { activities, page: 1, limit: 200, total: activities.length } }
+  activitiesState = { data: { activities, page: 1, limit: 100, total: activities.length } }
 })
 
 describe('VidaCategoriasPage', () => {

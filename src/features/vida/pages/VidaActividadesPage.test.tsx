@@ -101,7 +101,7 @@ const activities = [
 
 function loaded(list: Activity[] = activities, total = list.length): QueryState {
   return {
-    data: { activities: list, page: 1, limit: 200, total },
+    data: { activities: list, page: 1, limit: 100, total },
     isPending: false,
     fetchStatus: 'idle',
     isError: false,

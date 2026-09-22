@@ -14,8 +14,14 @@ import { compareVidaNames } from '@/features/vida/utils/vida-text.utils'
  * catálogo no enseña controles de página: trae un lote y, si no cabía entero,
  * lo dice en una línea. Vive aquí y no en la página porque las archivadas piden
  * el mismo lote con otro filtro.
+ *
+ * **Son 100 porque el API no acepta más.** El tope lo valida el resolver y el
+ * SDL vendorizado no lo dice (`limit: Int`, sin máximo), así que pedir 200
+ * —lo que se hizo hasta ahora— devuelve `BAD_USER_INPUT` «Number must be less
+ * than or equal to 100» y la pantalla entera se cae. Si alguna vez sube, sube
+ * en el API primero.
  */
-export const CATALOG_LIMIT = 200
+export const CATALOG_LIMIT = 100
 
 /** No es un id del API: es la llave del grupo que no tiene categoría. */
 export const UNCATEGORIZED_GROUP_ID = '__sin-categoria__'

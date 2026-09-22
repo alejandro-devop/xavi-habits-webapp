@@ -100,7 +100,7 @@ beforeEach(() => {
   )
   // El catálogo fresco con el que se deduplica por nombre (criterio 37 de
   // FEAT-005): vacío por defecto, que es el primer minuto de verdad.
-  getActivities.mockResolvedValue({ activities: [], page: 1, limit: 200, total: 0 })
+  getActivities.mockResolvedValue({ activities: [], page: 1, limit: 100, total: 0 })
   createVidaItem.mockImplementation(async (input) =>
     ({
       id: `v-${input.activityId}`,
@@ -278,7 +278,7 @@ describe('useCreateStartingActivities · el primer minuto de la plantilla', () =
       // Con tilde y en minúsculas: se reconoce igual, como con las categorías.
       activities: [activity('bañarme', 'c-yo')],
       page: 1,
-      limit: 200,
+      limit: 100,
       total: 1,
     })
     const { result } = renderHook(() => useCreateStartingActivities(), { wrapper })
@@ -300,7 +300,7 @@ describe('useCreateStartingActivities · el primer minuto de la plantilla', () =
     getActivities.mockResolvedValue({
       activities: [{ ...activity('Bañarme', 'c-yo'), status: 'cancelled' }],
       page: 1,
-      limit: 200,
+      limit: 100,
       total: 1,
     })
     const { result } = renderHook(() => useCreateStartingActivities(), { wrapper })

@@ -369,3 +369,123 @@ describe('VidaLogSessionSheet — corregir lo registrado (criterio 35)', () => {
     })
   })
 })
+
+/* ── FEAT-011, tajada 1: anclada a un hueco que ya pasó ──────────────────── */
+
+describe('VidaLogSessionSheet — anclada a un hueco (criterios 222 a 229)', () => {
+  /** Un hueco de 8:00 a 8:40 con «Daily meeting» al otro lado. */
+  const GAP = { startMinutes: 480, endMinutes: 520, nextBlockTitle: 'Daily meeting' }
+
+  function renderInGap(window = GAP) {
+    return renderSheet({ gapWindow: window, initial: { startTime: '08:00' } })
+  }
+
+  it('criterios 222 y 223 — es la misma hoja, con el nombre del hueco y su hora puesta', () => {
+    renderInGap()
+
+    expect(screen.getByText('¿Qué hiciste?')).toBeInTheDocument()
+    expect(screen.getByText('Viernes · en el hueco de 8:00 a 8:40')).toBeInTheDocument()
+    // El principio del hueco, no «media hora antes de ahora» (8:54).
+    expect(screen.getByLabelText('Hora a la que empezó')).toHaveValue('08:00')
+    // **Un solo buscador** (criterio 38 de FEAT-004): el de siempre.
+    expect(screen.getAllByRole('button', { name: /Poner lavadora/ })).toHaveLength(1)
+  })
+
+  it('criterio 224 — la duración arranca en la de la plantilla, nunca en el hueco entero', () => {
+    renderInGap()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    expect(screen.getByLabelText('minutos')).toHaveValue('20')
+    expect(screen.getByRole('button', { name: /Todo el hueco/ })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('criterio 228 — solo se ofrece lo que cabe, y «Todo el hueco» pone lo que queda', () => {
+    renderInGap()
+
+    expect(screen.getByRole('button', { name: '15' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: '30' })).toBeEnabled()
+    // 45 y 1h no caben en 40 minutos: se apagan, no desaparecen.
+    expect(screen.getByRole('button', { name: '45' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '1h' })).toBeDisabled()
+    expect(screen.getByText('Aquí caben 40 min.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Todo el hueco, 40 min' }))
+    expect(createMutation.mutate).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar' }))
+    expect(createMutation.mutate.mock.calls[0][0]).toMatchObject({
+      startTime: '08:00',
+      durationMinutes: 40,
+    })
+  })
+
+  it('criterio 227 — con lo que cabe, dice lo que queda libre y quién está al otro lado', () => {
+    renderInGap()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.click(screen.getByRole('button', { name: '15' }))
+    expect(
+      screen.getByText(/Queda libre 25m antes de Daily meeting\./),
+    ).toBeInTheDocument()
+    // La hora de fin la sigue diciendo la línea de FEAT-008, sin repetirse.
+    expect(document.getElementById('vida-log-end-time')?.textContent).toContain('8:15')
+  })
+
+  it('criterio 226 — lo que se pasa del final apaga Guardar y se dice sin pulsar nada', () => {
+    renderInGap()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('horas'), { target: { value: '1' } })
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Desde las 8:00 caben 40 min. Elige menos tiempo o empieza antes.',
+    )
+    expect(screen.getByRole('button', { name: 'Registrar' })).toBeDisabled()
+
+    // Y vuelve a encenderse al corregir.
+    fireEvent.change(screen.getByLabelText('horas'), { target: { value: '0' } })
+    fireEvent.change(screen.getByLabelText('minutos'), { target: { value: '30' } })
+    expect(screen.getByRole('button', { name: 'Registrar' })).toBeEnabled()
+  })
+
+  it('criterio 225 — también por arriba: una hora fuera del hueco no entra', () => {
+    renderInGap()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('Hora a la que empezó'), {
+      target: { value: '07:30' },
+    })
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Esa hora se sale de este rato libre. Aquí cabe algo entre las 8:00 y las 8:40.',
+    )
+    expect(screen.getByRole('button', { name: 'Registrar' })).toBeDisabled()
+    expect(createMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 229 — guardar sigue siendo la misma llamada de siempre', () => {
+    renderInGap()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.click(screen.getByRole('button', { name: '15' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar' }))
+
+    expect(createMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(createMutation.mutate.mock.calls[0][0]).toMatchObject({
+      date: '2026-09-18',
+      startTime: '08:00',
+      durationMinutes: 15,
+    })
+  })
+
+  it('sin hueco, la hoja de la cabecera no cambia ni una palabra (criterio 56)', () => {
+    renderSheet()
+
+    expect(screen.getByText('Registrar tiempo pasado')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Todo el hueco/ })).toBeNull()
+    expect(screen.queryByText(/Aquí caben/)).toBeNull()
+  })
+})

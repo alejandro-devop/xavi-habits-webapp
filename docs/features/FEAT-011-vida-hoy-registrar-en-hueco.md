@@ -1,7 +1,7 @@
 ---
 id: FEAT-011
 title: Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste
-status: planned
+status: building
 architect: yes    # concepto nuevo: la ventana **real** del hueco (bordes de lo vivido, no de lo planeado), que hoy no existe en ningún sitio
 area: features/vida
 requested: 2026-09-22
@@ -700,7 +700,7 @@ prueba sola.
 
 | # | Qué hace | Archivos | Criterios | Estado |
 |---|---|---|---|---|
-| 1 | **El hueco pasado se pulsa y cuentas qué hiciste**, validado contra los bordes del **plan**. | `VidaAgendaGap.tsx:79-92` + `.module.scss` (44 px) · `VidaLogSessionSheet.tsx:50,128,133,222,246,327,371,171` · `VidaDurationPills.tsx` («Todo el hueco») · `VidaHoyPage.tsx:1005,504,736,931` · tests en `VidaHoyPage.test.tsx` y `VidaLogSessionSheet.test.tsx` · **verificar** `vida-execution.utils.test.ts` (230) | 220–232, y de paso 243, 244, 246–249 (la puerta es `canLogPast && executionKnown`) | pending |
+| 1 | **El hueco pasado se pulsa y cuentas qué hiciste**, validado contra los bordes del **plan**. | `VidaAgendaGap.tsx:79-92` + `.module.scss` (44 px) · `VidaLogSessionSheet.tsx:50,128,133,222,246,327,371,171` · `VidaDurationPills.tsx` («Todo el hueco») · `VidaHoyPage.tsx:1005,504,736,931` · tests en `VidaHoyPage.test.tsx` y `VidaLogSessionSheet.test.tsx` · **verificar** `vida-execution.utils.test.ts` (230) | 220–232, y de paso 243, 244, 246–249 (la puerta es `canLogPast && executionKnown`) | aceptada |
 | 2 | **La ventana real.** | **crea** `utils/vida-gap-window.utils.ts` + `.test.ts` · `vida-execution.utils.ts:648-672, 757-769, 790` · `VidaHoyPage.tsx` (pasar `realWindowByGapId[...] ?? gapToWindow(gap)`) · `VidaLogSessionSheet.tsx:222-234` (la frase de por qué se mueve) y `handleLog` (`describePlacementBlocker`) | 233–237 | pending |
 | 3 | **La otra cara del hueco y la duración de siempre.** | `vida-patterns.utils.ts:981` + su test · `VidaHoyPage.tsx:319-321` y `logInGap` · `VidaAgendaGap.tsx:108-232` (el «Registrar» secundario) · `buildGapRealWindow({ clampToNow: true })` para el criterio 242 | 238–242 | pending |
 
@@ -716,8 +716,339 @@ pantalla, y el 251 solo lo cierra el usuario con la API despierta.
 
 ## 3. Construction — feature-builder
 
-*(pendiente)*
+### Tajada 1
+
+**Resumen para quien revise:**
+1. En Hoy, un hueco **que ya pasó** trae ahora «Registrar lo que hice» y abre la
+   hoja de siempre (`mode: 'log'`) **anclada al hueco**: empieza en el principio
+   del hueco, las píldoras se recortan a lo que cabe y **Guardar se apaga**
+   mientras no quepa. La ventana son los bordes del **plan** (`gapToWindow`), tal
+   como pedía la tajada.
+2. Está en `VidaAgendaGap` (rama nueva), `VidaLogSessionSheet` (prop
+   `gapWindow`), `VidaDurationPills` (píldora «Todo el hueco») y `VidaHoyPage`
+   (`logInGap`). `vida-gap-form.utils.ts` **no se tocó** (criterio 236).
+3. **Lo que es más probable que haya roto:** el renglón del hueco pasado ya no
+   es un `<p>` suelto, es una `<section>` con `aria-label="Libre de …"` y el
+   texto partido en dos nodos. **Dos aserciones de `VidaHoyPage.test.tsx`
+   dejaron de pasar por eso y las cambié** (líneas 451 y 491 de `main`). Si algo
+   más leía «Libre 6:30 – 9:24 · 2h 54» de un tirón, se entera aquí. Segundo
+   sospechoso: `VidaDurationPills` lo comparten tres pantallas y le toqué el
+   cálculo de `isFree`.
+
+**Qué se construyó, archivo por archivo:**
+
+- `src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx` — la rama
+  muerta se partió en tres: `isSliver` (o pasado sin quien escuche) sigue
+  **exactamente igual** que hoy; `isPast` con `onLogPast` pinta la caja con sus
+  horas, su tamaño y **un** `<button>` «Registrar lo que hice»; el hueco futuro
+  no se tocó. Props nuevas: `onLogPast` e `isPastDay` (ver «por qué así»).
+- `…/VidaAgendaGap.module.scss` — `.card[data-past='true']` (gris, el color es
+  lo que separa las dos caras) y `.logButton` con **`min-height: 2.75rem`**,
+  copiado de `VidaTemplateGapRow.module.scss:41-58`. Medido en el navegador: 44
+  px exactos.
+- `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` —
+  prop **`gapWindow?: GapWindow | null`** y, con ella, la figura de
+  `VidaPlaceInGapSheet`: `getMaxDurationForStartTime` → `validatePlacement` en
+  cada render → `disabled` del footer → `describeLeftovers` en la línea de lo que
+  queda; `chooseActivity` no preselecciona una duración de plantilla que no
+  quepa; `handleLog` valida el hueco **antes** de `validateLogPast` y la
+  mutación no cambia; título «¿Qué hiciste?» y subtítulo «Martes · en el hueco
+  de 9:30 a 11:30». **Sin `gapWindow` la hoja es literalmente la de ayer.**
+- `src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx` — prop
+  aditiva `fillMinutes` → píldora **«Todo el hueco»**, apagada por defecto.
+- `…/VidaDurationPills.module.scss` — `.pillFill` (sin el ancho mínimo de las
+  fijas: es una palabra, no un número).
+- `src/features/vida/pages/VidaHoyPage.tsx` — `logInGap(gap)` (gemelo de
+  `askAboutNoData`), `gapWindow` en `LogSheetState` y en la hoja, y la puerta
+  `onLogPast={canLogPast && executionKnown ? logInGap : undefined}`.
+- Tests: **8** casos nuevos en `VidaLogSessionSheet.test.tsx`, **10** en
+  `VidaHoyPage.test.tsx` y **1** en `vida-execution.utils.test.ts` (criterio
+  230, que era de verificar, no de escribir: `sliceGap` ya lo hacía).
+
+**Por qué así, y qué se descartó:**
+
+- **`isPastDay` es una desviación del plan y hay que mirarla.** El plan decía
+  «rama `isPast && onLogPast`», pero **`gap.isPast` es `false` en un día de la
+  tira**: sale de comparar con el reloj y `useVidaNowMinute(isToday)` devuelve
+  `null` fuera de hoy, así que ningún hueco de un día pasado viene marcado. Con
+  solo `gap.isPast`, el criterio 232 era falso (lo cazó el test). Alternativas
+  descartadas: tocar `buildDayAgenda` (el plan lo prohíbe) y clonar el `gap` con
+  `isPast: true` desde la página (mentir sobre el dato para acertar en la
+  pintura). La página, que es quien sabe que el día ya pasó, lo dice con una
+  prop.
+- **`durationPillsForWindow` y `getPlacementLeftovers` no se cablearon**: se usó
+  el camino vivo (`maxMinutes` de `VidaDurationPills` y `describeLeftovers`),
+  como manda el plan. Siguen sin usarse en producción.
+- **La previsualización se esconde cuando no cabe.** Es el molde
+  (`VidaPlaceInGapSheet:286` pide `validation.valid`): decir «se apunta encima
+  de tu día» de algo que Guardar está negando son dos frases contrarias en la
+  misma pantalla.
+- **La frase del criterio 227 va repartida**, como pidió el arquitecto: la hora
+  de fin la dice `VidaEndTimeLine` (FEAT-008) y lo que queda,
+  `describeLeftovers`. En pantalla se lee «Acaba a las 9:50» y «Queda libre 1h 40
+  antes de Daily meeting». **No** es la frase literal del render («De 9:30 a
+  9:45. Quedan 1 h 45 libres en este hueco»): dice los dos números, con otras
+  palabras y sin repetir nada.
+
+**Verificación** (línea base de `docs/features/ENVIRONMENT.md`, 2026-09-22):
+
+| Qué | Base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos |
+| `pnpm test` | 2 fallos de 1673 | **2 fallos de 1692** (los mismos `SearchSelect` ×2; +19 son los casos nuevos) |
+| `pnpm build` | chunk inicial 1.100,58 kB | **1.102,43 kB** (+1,85 kB: es el código nuevo, no hay import nuevo) |
+
+**En el navegador** (arnés temporal `harness-feat011.html` + `src/harness-feat011.tsx`,
+**ya borrados**; `/app/*` está detrás del login y los agentes no entran):
+
+- A **375 px**: `scrollWidth === clientWidth === 375` con el hueco pintado y con
+  la hoja abierta **y el aviso puesto**. El botón del hueco mide **44,0 px** de
+  alto medidos sobre el DOM. *(La captura sale a doble tamaño: `devicePixelRatio`
+  es 2 en este arnés; el DOM sí mide 375, medido a mano.)*
+- Con el aviso puesto, `Registrar` tiene `disabled === true`, `cursor:
+  not-allowed`, el aviso queda en `bottom: 690` y el botón en `top: 739`: **se
+  ven los dos a la vez**, sin scroll (criterio 248).
+- **Oscuro**: hueco pasado gris (`rgba(168,179,199,.08)` sobre borde al 45 %)
+  frente al futuro verde (mint al 5 %/35 %); el botón se invierte solo
+  (`#eef2ff` sobre `#0b1220`, ~16:1) y el aviso se lee (criterio 249).
+- Texto largo: con un bloque vecino de 60 caracteres («Daily meeting con el
+  equipo de plataforma y diseño») ni el renglón ni el subtítulo ni el aviso
+  producen scroll horizontal (criterio 247).
+
+**Criterios, uno a uno:**
+
+- **220 ✅** — el hueco pasado trae «Registrar lo que hice» y **un solo** botón
+  (`getAllByRole('button')` dentro del hueco → 1). Visto en el navegador.
+- **221 ✅** — el sliver sigue siendo la línea de siempre, sin `aria-label` de
+  caja y sin controles (test dedicado + visto: «Libre 9:37 – 9:47 · 10m»).
+- **222 ✅** — misma hoja, `mode: 'log'`, título «¿Qué hiciste?», subtítulo
+  «Martes · en el hueco de 9:30 a 11:30». **Un solo buscador** (comprobado).
+- **223 ✅** — abre en el principio del hueco (`08:45` en el test de pantalla,
+  no `08:54`), y cambiar la hora revalida (test del criterio 225).
+- **224 ✅** — arranca en la duración de la plantilla (20 min) y nunca en el
+  hueco entero; sin actividad elegida, la duración va vacía.
+- **225 ⚠️ parcial** — valida **por arriba y por abajo** con las palabras que ya
+  existen, pero **no nombra todavía el bloque del otro lado**: esa cláusula es
+  `describePlacementBlocker`, que vive en el archivo de la **tajada 2**. Hoy se
+  lee «Desde las 9:30 caben 2 h. Elige menos tiempo o empieza antes.» y no «…a
+  las 11:30 entra Daily meeting». Lo dejo dicho, no reescrito.
+- **226 ✅** — `disabled` real, verificado en el DOM y en dos tests; vuelve a
+  encenderse al corregir.
+- **227 ✅ con matiz** — se dicen los dos números, repartidos entre
+  `VidaEndTimeLine` («Acaba a las 9:50») y `describeLeftovers` («Queda libre 1h
+  40 antes de Daily meeting»); lo que sobra **antes** también se dice, porque es
+  la misma función de siempre. No es la frase literal del render (ver arriba).
+- **228 ✅** — `maxMinutes` apaga 45 y 1h en un hueco de 40 min y lo dice («Aquí
+  caben 40 min.»); «Todo el hueco» pone los minutos exactos que quedan. **Se
+  pinta solo cuando ese número no es ya una píldora fija**, para que no haya dos
+  controles encendidos diciendo lo mismo.
+- **229 ✅** — `activityFollowUpAdd` con fecha, hora y minutos elegidos; el test
+  de pantalla comprueba que **ninguna** de las tres mutaciones de
+  `activityDayPlan` se llama.
+- **230 ✅ (verificado, no reescrito)** — test nuevo en
+  `vida-execution.utils.test.ts`: dos registros dentro del mismo hueco dejan
+  `session · gap · session · gap`, los trozos suman 120 − 15 − 20, ninguno es
+  sliver y el de cola conserva su `nextBlockTitle`. En pantalla, cada trozo
+  vuelve a ofrecer «Registrar lo que hice» por la misma rama.
+- **231 ✅** — no se tocó el camino de fallo: sigue el `onSuccess` local y el
+  `Alert`. Cubierto por los tests que ya existían (criterio 36).
+- **232 ✅** — día pasado: los dos huecos ofrecen contar y no hay **ni un**
+  control de plan; día futuro: nada (dos tests).
+- **243 ✅** — con el día en vuelo la página devuelve el esqueleto antes de
+  llegar a los huecos; test que lo fija.
+- **244 ✅** — con `activityDayFollowUps` caído (`executionKnown === false`) el
+  hueco **no ofrece registrar** y sigue diciendo sus minutos.
+- **245 ✅ (de paso)** — día sin plan: el hueco pasado grande ofrece contar; el
+  texto de «aún no hay plan» no se tocó.
+- **246 ✅** — test sobre el texto de la pantalla: ni «perdido», ni
+  «desperdiciado», ni «vacío», ni «en blanco», ni «por qué no». Las palabras
+  siguen siendo «Libre» y «Registrar lo que hice».
+- **247 ✅** — medido con nombres de 60 caracteres (ver arriba).
+- **248 ✅** — medido a 375 px con el aviso puesto (ver arriba).
+- **249 ✅** — medido en oscuro (ver arriba).
+- **250 ✅** — tabla de arriba. El chunk crece 1,85 kB; es código nuevo, sin
+  dependencias nuevas.
+- **251 ⏳ solo el usuario** — reconstruir una mañana a trozos con la API
+  despierta. Pasos: entrar en `/app/vida/hoy`, pulsar «Registrar lo que hice» en
+  un hueco de la mañana, elegir algo y 15 min, guardar; ver la sesión «fuera del
+  plan» en su hora y el hueco **encogido** con su botón; repetir dentro de lo que
+  queda; intentar una tercera que no quepa y ver **Guardar apagado**; comprobar
+  en `/app/vida/revision` que lo registrado se cuenta.
+
+**Lo que encontré y no toqué (fuera de alcance):**
+
+- `gap.isPast` **no describe lo que su nombre dice** en un día que no es hoy;
+  hoy se compensa desde la página. Si la tajada 2 necesita la misma distinción
+  en `buildDayExecution`, ahí hay una decisión que merece dos líneas de plan.
+- `durationPillsForWindow` y `getPlacementLeftovers` siguen sin uso en
+  producción (ya lo dijo el arquitecto). No las borro: no es mi tajada.
+- El `Button` en `disabled` dentro de la hoja baja a `opacity: .55` y **en
+  oscuro se distingue poco** de su estado normal. Es del sistema de diseño,
+  igual que el `variant="danger"` que ya está apuntado en `ENVIRONMENT.md`.
+
+**Estado del árbol:** sin commitear. Arnés borrado (`harness-feat011.html` y
+`src/harness-feat011.tsx` no existen). `graphify update .` ejecutado.
 
 ## 4. Review — feature-reviewer
 
-*(pendiente)*
+### Tajada 1 — El hueco pasado se pulsa y cuentas qué hiciste
+
+**Veredicto: `accepted`** — los criterios 220–224, 226 y 228–232 se cumplen y los
+he verificado yo, **incluido el caso que pedías montar: un día de atrás de la
+tira ofrece registrar en sus huecos y guarda de verdad**. El **225** queda
+parcial por una razón que he comprobado y que es buena —aunque no exactamente la
+que él da—, y el **227** dice los dos números repartidos en vez de en una frase:
+lo juzgo abajo. La desviación del `isPastDay` **es la salida correcta**.
+
+**La desviación del `isPastDay`: es la salida correcta, y por qué**
+
+El problema es real y lo confirmé leyendo el dato: `gap.isPast` sale de comparar
+el hueco con `nowMinutes`, y `useVidaNowMinute(isToday)` devuelve **`null`**
+fuera de hoy, así que en un día de la tira **ningún** hueco viene marcado. Con
+la rama tal como la describía el plan, el criterio 232 era falso. Las tres
+salidas posibles:
+
+1. **Tocar `buildDayAgenda`** para que sepa que el día entero pasó: es una
+   función pura, entregada, que alimenta la agenda, el presupuesto, la leyenda y
+   el cruce con las sesiones. Cambiar ahí el significado de `isPast` por una
+   pantalla es el tipo de cambio que se paga en sitios que nadie vuelve a mirar.
+2. **Clonar el `gap` mintiendo en el dato**: sería falsear la estructura que
+   luego leen otros; el peor de los tres.
+3. **Decirlo desde quien lo sabe** —la página— con una prop. Es lo que ha hecho.
+
+**Y no deja dos verdades que puedan discrepar**, que era tu pregunta: los dos
+términos son **complementarios, no competidores**. `gap.isPast` responde «¿este
+hueco quedó detrás del reloj **dentro de hoy**?» y `isPastDay` responde «¿el día
+que miro es anterior a hoy?». El componente los une con un **`||`**, que es
+monótono: en un día pasado el segundo es `true` y el primero irrelevante; en hoy
+manda el primero; en un día futuro los dos son `false`. No hay combinación en la
+que se contradigan. Lo único que queda —y lo anoto— es que **un consumidor nuevo
+que lea `gap.isPast` a secas en un día pasado seguirá leyendo `false`**: eso ya
+pasaba antes de esta tajada, pero ahora hay dos sitios donde mirar. La deuda
+honrada, para cuando alguien toque la agenda, es que `buildDayAgenda` reciba el
+«este día ya pasó» —o un `nowMinutes` de fin de día— y entonces esta prop
+sobraría.
+
+**Y lo comprobé donde importa.** Test temporal mío (borrado) sobre la página, en
+el día **2026-09-17** de la tira: el hueco de 6:30 a 9:00 ofrece «Registrar lo
+que hiciste…», la hoja abre anclada —«¿Qué hiciste?», «…en el hueco de 6:30 a
+9:00», inicio **06:30**—, la duración **no** es el hueco entero, y al guardar
+sale **un** `activityFollowUpAdd` con
+`{ date: '2026-09-17', startTime: '06:30', durationMinutes: 30 }` y **cero**
+mutaciones del plan (`add`, `edit`, `set` y `remove`, las cuatro espiadas).
+
+**Criterios, uno por uno**
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 220 | **cumplido** | El hueco pasado trae **una** salida y ninguna de planear: en mi arnés, la fila tiene exactamente **un** `button`, con `aria-label` «Registrar lo que hiciste entre las 9:30 y las 11:30». |
+| 221 | **cumplido** | El resto de 10 min se pinta «Libre 8:45 – 8:55 · 10m» y su fila tiene **cero** botones. Visto y medido. |
+| 222 | **cumplido** | Abre `VidaLogSessionSheet` —la misma— con «¿Qué hiciste?» y «Martes · en el hueco de…». Es un **dato** (`gapWindow`), no un cuarto modo: sin él la hoja es la de siempre. |
+| 223 | **cumplido** | El inicio viene en el principio del hueco (`06:30` en mi caso, `08:45` en el suyo) y se puede cambiar: al cambiarlo revalida —lo probé moviéndolo fuera del hueco—. |
+| 224 | **cumplido** | La duración **no** arranca en el hueco entero: con un hueco de 2h 30 los campos no quedan en «2»/«30» (aserción mía). Sale de `chooseActivity` con la duración de la plantilla, y **solo si cabe**. |
+| 225 | **parcial, y aceptable** | Ver abajo. |
+| 226 | **cumplido, espiado por los dos lados** | Por arriba, su test: la píldora «45» deshabilitada y «Registrar» deshabilitado. **Por abajo, el mío**: con la hora puesta antes del hueco, «Registrar» sale `disabled`, el aviso dice «se sale de este rato libre» **sin pulsar nada**, y al pulsarlo igualmente `createFollowUp` **no se llama**. |
+| 227 | **parcial de forma, no de fondo** | Ver abajo. |
+| 228 | **cumplido** | `maxMinutes` y `fillMinutes` van a `VidaDurationPills`: solo se ofrecen las que caben desde la hora elegida y hay «Todo el hueco». |
+| 229 | **cumplido** | Mi test: un `activityFollowUpAdd` con la fecha del día mostrado y **cero** mutaciones de plan. |
+| 230 | **cumplido** | Sale de `buildDayExecution` + `sliceGap`, que no se han tocado; su test lo afirma sobre la agenda después de guardar. |
+| 231 | **cumplido** | El camino de error de la hoja es el de FEAT-004, intacto: `handleLog` no cierra si la mutación falla. |
+| 232 | **cumplido, verificado por mí** | Arriba. Y el día futuro no ofrece nada (`canLogPast` es `isToday || isPast`). |
+| 236 | **cumplido** | **`vida-gap-form.utils.ts` no aparece en el diff**: `git diff --stat` de ese archivo está vacío. El camino de planear no cambia ni una palabra. |
+
+**El 225: por qué es aceptable, y la corrección a su razón**
+
+`validatePlacement` dice **cuánto cabe** y **las dos salidas** —«Desde las 10:45
+caben 45 min. Elige menos tiempo o empieza antes.»— pero **no nombra el bloque
+del otro lado**, que el criterio pide. Lo doy por aceptable en esta tajada,
+**pero no por la razón que él escribe**: el nombre **sí está disponible ya**
+—`gapToWindow` copia `nextBlockTitle`, y `describeLeftovers` lo usa («antes de
+Daily meeting»)—. Lo que de verdad lo impide es otra cosa, y es mejor razón:
+**meter esa cláusula dentro de `validatePlacement` cambiaría el mensaje del
+camino de planear**, que el criterio 236 congela expresamente. Decirlo sin tocar
+aquello obliga a una frase nueva al lado —`describePlacementBlocker`—, que es lo
+que la tajada 2 trae. Así que: **parcial con buen motivo**, y la razón correcta
+conviene que quede escrita, porque la que hay invita a pensar que falta el dato
+cuando lo que falta es el sitio donde decirlo.
+
+**El 227: los dos números están, pero repartidos**
+
+El render pide «De 9:30 a **9:45**. Quedan **1 h 45** libres en este hueco.».
+Lo que hay: la hora de fin la dice `VidaEndTimeLine` bajo «Cuánto duró» —«→
+Acaba a las 9:45», que llegó con FEAT-008— y lo que queda lo dice
+`describeLeftovers` en la línea de previsualización. **No se ha perdido ningún
+dato** y repetir la hora de fin sería contar dos veces lo mismo, así que la
+decisión es defendible. Lo que sí se pierde es **la unidad de la frase**: el
+render los ataba en una sola oración, a un golpe de vista, y ahora están a dos
+alturas distintas de la hoja con dos redacciones. No lo devuelvo —el criterio
+pide que se digan «a la vez» las dos cosas, y se dicen, en la misma pantalla y
+sin pulsar nada— pero si el usuario echa de menos la frase del render, unirlas
+es trabajo de copy, no de arquitectura. Queda como hallazgo.
+
+**La hoja es cruce de tres features: comprobado que no se rompe**
+
+`VidaLogSessionSheet` lleva encima el campo de hora de FEAT-013 y los dos campos
+más la línea de fin de FEAT-008, las dos entregadas. Lo nuevo entra **como un
+dato opcional** (`gapWindow`), y todo lo anclado cuelga de
+`anchor = mode === 'log' ? gapWindow : null`:
+
+- **«Empezar algo» no se entera**: `anchor` es `null` en `mode: 'start'` por
+  construcción, así que ni título, ni subtítulo, ni validación de hueco, ni
+  `maxMinutes` cambian ahí.
+- **«Registrar tiempo pasado» de la cabecera tampoco**: se abre sin `gapWindow`,
+  así que conserva su título y su frase («Algo que ya hiciste el …»).
+- Su archivo de test suma **120 líneas y borra 0**: ninguna afirmación de
+  FEAT-004, FEAT-008 ni FEAT-013 se ha tocado.
+
+**Las dos aserciones viejas que cambió: no relajan nada**
+
+Eran dos lecturas de un tirón —`getByText('Libre 10:30 – 11:30 · 1h')` y
+`getByText('Libre 6:30 – 9:24 · 2h 54')`— que ya no existen porque el renglón
+pasado dejó de ser un único `<p>`. Las nuevas leen **las dos partes dentro de la
+fila** (`Libre 10:30 – 11:30` + `1h`) **y además** afirman que no hay ningún
+botón de planear. Es más, no menos.
+
+**Estados, medidos por mí a 375 px y en oscuro**
+
+**Las cifras son del DOM, no de la imagen** —la captura a doble tamaño nos ha
+aparecido hoy en varios arneses; en este salió bien, y aun así lo que reporto
+está medido—:
+
+- El botón «Registrar lo que hice» mide **44,0 × 147,9 px** en los dos casos:
+  cumple el tamaño de toque que este módulo fijó en FEAT-008 y que reescribimos
+  en el criterio 150 de FEAT-009. **Esto es lo que había que hacer**, y aquí se
+  ha hecho desde el principio.
+- `scrollWidth === clientWidth === 375` y **0 nodos desbordados**.
+- En oscuro el botón **invierte** (texto oscuro sobre claro): **16,74:1**; «Libre
+  9:30 – 11:30» **9,93:1** y la línea del resto fino **9,94:1**. Muy por encima
+  de 4,5:1 — y sin el problema del `ghost` que encontré en FEAT-009.
+
+**Línea base, corrida entera por mí**
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1673 | 2 de 1692 | **2 fallidos de 1692**, 110 archivos de 111 en verde |
+| `pnpm build` | 1.100,58 kB | 1.102,43 kB | **exit 0**, `index` **1.102,43 kB** (+1,85), `app-icons` **620,20 kB sin tocar** |
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **«Pasado» se decide en dos sitios** (`gap.isPast` y la prop `isPastDay`).
+   No pueden discrepar tal como se combinan, pero la deuda honrada es que el
+   dato lo sepa `buildDayAgenda`.
+2. **La razón declarada para aplazar el 225 no es la correcta** (el nombre del
+   vecino ya está en la ventana; lo que falta es dónde decirlo sin tocar el
+   mensaje de planear). La conclusión sí lo es.
+3. **El 227 dice los dos números en dos sitios**, no en la frase del render.
+4. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1692** tests y
+   **1.102,43 kB**). **No lo he tocado.**
+
+**Lo que no he podido revisar:** el recorrido con sesión —pulsar el hueco de
+ayer con el dedo, registrar, y ver el resto encogerse—, y los criterios que esta
+tajada deja para el usuario. Y recuerdo, porque manda sobre esta feature, la
+premisa del plan: **esto convierte un renglón muerto en un gesto de dos toques**,
+que es exactamente la dirección correcta; lo que queda por ver con datos reales
+es si la duración que propone acierta lo suficiente como para no tener que
+tocarla casi nunca (eso lo trae la tajada 3).

@@ -2445,8 +2445,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
-    "mtime": 1790085911.343255,
-    "ast_hash": "7049a930df98b30445b1900f57351f5a",
+    "mtime": 1790094466.026028,
+    "ast_hash": "7dec1e2d75ce25eedd1b3c67455a9c07",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790093677.5948937,
-    "ast_hash": "227913e5ab063c80c170d21c9615f4b5",
+    "mtime": 1790094256.9962542,
+    "ast_hash": "522e549ba3f742bd1a523c01fa18c604",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790088874.014425,
-    "ast_hash": "bceb257a0ed0150480a8aeff22406087",
+    "mtime": 1790094118.5314178,
+    "ast_hash": "12e8f84f6ea41e663feeaa31b19fec0c",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2815,8 +2815,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx": {
-    "mtime": 1790093027.4046905,
-    "ast_hash": "4e6bc860b5e0bf1d74ab83bf156aaf47",
+    "mtime": 1790094431.592714,
+    "ast_hash": "d3aa4e9b468531d25fb9a56d94f35752",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/index.ts": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.test.tsx": {
-    "mtime": 1790086147.1823988,
-    "ast_hash": "a4a69bc4f1c7f7c710d718610088720c",
+    "mtime": 1790094630.4064958,
+    "ast_hash": "316177fb9fb8810f8e73334e014d48ff",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-template.utils.test.ts": {
@@ -3680,13 +3680,13 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-008-vida-horas-y-minutos.md": {
-    "mtime": 1790093682.6789267,
-    "ast_hash": "6c2971223da5b710a9cce38bae2f4270",
+    "mtime": 1790094061.740906,
+    "ast_hash": "f6960e29d64ed096dfc0ce62529d78d5",
     "semantic_hash": ""
   },
   "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md": {
-    "mtime": 1790087245.1362169,
-    "ast_hash": "66ef2136b295f10aadd4d25da4b7a5b5",
+    "mtime": 1790094392.3035738,
+    "ast_hash": "b854ff832517b12c69782fb723831733",
     "semantic_hash": ""
   },
   "docs/vida/assets/09-vida-cuanto.html": {
@@ -3730,8 +3730,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-011-vida-hoy-registrar-en-hueco.md": {
-    "mtime": 1790056929.119427,
-    "ast_hash": "624d69ec475e939ffd2f35d5bd29bded",
+    "mtime": 1790094209.4962623,
+    "ast_hash": "2a0a6ef6985b3f81db7a2e9f28f4ebed",
     "semantic_hash": ""
   },
   "docs/features/FEAT-012-vida-la-noche.md": {
@@ -3772,6 +3772,11 @@
   "docs/vida/assets/14-vida-lo-que-viene.html": {
     "mtime": 1790093343.9023523,
     "ast_hash": "6442f0e128bf471a241f9566e853b45f",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260922_162345_donde_vive_la_ventana_real_de_un_hueco__bordes_de.md": {
+    "mtime": 1790094225.224411,
+    "ast_hash": "4909705f6732f52a1e5c7bff080032a2",
     "semantic_hash": ""
   }
 }

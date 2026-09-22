@@ -46,6 +46,16 @@ type VidaDurationPillsProps = {
    */
   maxMinutes?: number
   /**
+   * **«Todo el hueco»** (FEAT-011, criterio 228): los minutos exactos que quedan
+   * hasta el borde, en una píldora. Es aditiva y por defecto **no existe**: la
+   * hoja del catálogo y el camino de planear no se enteran de esta prop.
+   *
+   * Solo se pinta cuando ese número **no es ya una de las píldoras fijas**: con
+   * 45 minutos de hueco, la píldora «45» hace exactamente lo mismo y dos
+   * controles encendidos a la vez para el mismo dato serían una mentira.
+   */
+  fillMinutes?: number | null
+  /**
    * Cómo se escribe «libre»: **un campo de minutos** (lo de siempre) o **dos
    * campos, horas y minutos**. Es aditiva y el defecto es `'minutes'` a
    * propósito: las pantallas que no lo piden no se enteran de esta prop
@@ -86,16 +96,28 @@ export function VidaDurationPills({
   disabled = false,
   label = 'Cuánto',
   maxMinutes,
+  fillMinutes,
   freeInput = 'minutes',
   describedById,
 }: VidaDurationPillsProps) {
   const freeId = useId()
   const capId = useId()
+  // «Todo el hueco» solo cuando ese número no está ya en las píldoras fijas.
+  const fill =
+    fillMinutes !== undefined &&
+    fillMinutes !== null &&
+    fillMinutes > 0 &&
+    !DURATION_PILLS.includes(fillMinutes)
+      ? fillMinutes
+      : null
+  const isFill = fill !== null && value === fill
   // «Libre» empieza abierto si lo que hay puesto no es ninguna de las píldoras
   // (un ítem guardado con 50 min, por ejemplo): si no, la duración se vería en
-  // ninguna parte.
-  const [freeOpen, setFreeOpen] = useState(value !== null && !DURATION_PILLS.includes(value))
-  const isFree = freeOpen || (value !== null && !DURATION_PILLS.includes(value))
+  // ninguna parte. Lo que enciende «Todo el hueco» ya se ve en su píldora.
+  const [freeOpen, setFreeOpen] = useState(
+    value !== null && !DURATION_PILLS.includes(value) && value !== fillMinutes,
+  )
+  const isFree = freeOpen || (value !== null && !DURATION_PILLS.includes(value) && !isFill)
 
   // El reparto en (h, m) es **estado de pantalla**, no dato. Se vuelve a
   // repartir cuando `value` llega distinto de lo último que emitimos —una
@@ -182,6 +204,28 @@ export function VidaDurationPills({
         >
           libre
         </button>
+
+        {/* Lo que queda hasta el borde del hueco, de una vez (criterio 228). Va
+            la última: la duración por defecto **nunca** es el hueco entero, así
+            que esto es una salida, no la propuesta. */}
+        {fill !== null ? (
+          <button
+            type="button"
+            className={[styles.pill, styles.pillFill, isFill && !freeOpen ? styles.pillOn : '']
+              .filter(Boolean)
+              .join(' ')}
+            aria-pressed={isFill && !freeOpen}
+            aria-label={`Todo el hueco, ${formatDurationMinutes(fill)}`}
+            disabled={disabled}
+            onClick={() => {
+              setFreeOpen(false)
+              // Volver a tocarla la quita, como las fijas.
+              onChange(isFill && !freeOpen ? null : fill)
+            }}
+          >
+            Todo el hueco
+          </button>
+        ) : null}
       </div>
 
       {isFree && freeInput === 'hoursAndMinutes' ? (

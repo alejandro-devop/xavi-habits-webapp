@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import type { AgendaGap } from '@/features/vida/utils/vida-agenda.utils'
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
 import {
   VIDA_MOVED_THRESHOLD_MINUTES,
@@ -397,6 +398,39 @@ describe('buildDayExecution: la agenda con lo real dentro', () => {
     const gapsAfter = execution.entries.filter((entry) => entry.kind === 'gap')
     const total = gapsAfter.reduce((sum, gap) => sum + gap.trackMinutes, 0) + loose.trackMinutes
     expect(total).toBe(at('23:00') - at('06:30') - 30)
+  })
+
+  it('criterio 230 de FEAT-011 — dos registros en el mismo hueco dejan dos sesiones y el resto libre', () => {
+    // Un hueco de 9:30 a 11:30 (entre dos bloques) y dos ratos contados dentro:
+    // el hueco **se encoge y no desaparece**, que es lo que deja reconstruir
+    // una mañana a trozos.
+    const agenda = agendaOf([
+      block('b1', 'Desayunar', '09:00', '09:30'),
+      block('b2', 'Daily meeting', '11:30', '12:00'),
+    ])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'perros', '09:30', 15), session('s2', 'banco', '10:00', 20)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    const middle = execution.entries.filter(
+      (entry) => entry.startMinutes >= at('09:30') && entry.endMinutes <= at('11:30'),
+    )
+    expect(middle.map((entry) => entry.kind)).toEqual(['session', 'gap', 'session', 'gap'])
+    const gaps = middle.filter((entry): entry is AgendaGap => entry.kind === 'gap')
+    // 9:45 → 10:00 y 10:20 → 11:30: los dos siguen siendo huecos de verdad.
+    expect(gaps.map((gap) => [gap.startMinutes, gap.endMinutes])).toEqual([
+      [at('09:45'), at('10:00')],
+      [at('10:20'), at('11:30')],
+    ])
+    expect(gaps.every((gap) => gap.isSliver === false)).toBe(true)
+    expect(gaps[1]!.nextBlockTitle).toBe('Actividad Daily meeting')
+    // Y siguen sumando lo que medía el hueco entero: 2 h menos lo registrado.
+    const libre = gaps.reduce((sum, gap) => sum + gap.durationMinutes, 0)
+    expect(libre).toBe(120 - 15 - 20)
   })
 
   it('el movido: sombra en la hora planeada y lo real donde ocurrió, contado una vez', () => {

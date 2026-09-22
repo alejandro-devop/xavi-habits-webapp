@@ -11,6 +11,12 @@ import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.t
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
 import { formatDayHeading } from '@/features/vida/utils/vida-date.utils'
+import type { GapWindow } from '@/features/vida/utils/vida-gap-form.utils'
+import {
+  describeLeftovers,
+  getMaxDurationForStartTime,
+  validatePlacement,
+} from '@/features/vida/utils/vida-gap-form.utils'
 import {
   editSessionInput,
   logSessionInput,
@@ -20,6 +26,7 @@ import {
 import {
   formatDurationFromMinutes,
   formatTimeForDisplay,
+  minutesToTime,
   normalizeTimeForDisplay,
 } from '@/features/vida/utils/vida-time.utils'
 import { Alert } from '@/shared/ui/Alert'
@@ -49,6 +56,17 @@ type VidaLogSessionSheetProps = {
   defaultStartTime: string
   /** Hora y duración **ya puestas** (lo usará el «¿Qué pasó?» de la tajada 4). */
   initial?: { startTime?: string; durationMinutes?: number } | null
+  /**
+   * **El hueco al que va anclado lo que se registra** (FEAT-011, criterio 222).
+   * Con ventana, la hoja valida por arriba y por abajo con lo que ya existe
+   * —`validatePlacement`, el mismo camino y las mismas palabras que planear— y
+   * **Guardar se apaga mientras no cabe** (criterio 226).
+   *
+   * Sin ella, la hoja es exactamente la de siempre: «Registrar tiempo pasado»
+   * de la cabecera no cambia ni una palabra (criterio 56 de FEAT-004). Es un
+   * **dato**, no un cuarto modo.
+   */
+  gapWindow?: GapWindow | null
   /** La sesión que se corrige, en el modo `edit` (criterio 35). */
   session?: ActivityFollowUp | null
   /**
@@ -105,6 +123,7 @@ export function VidaLogSessionSheet({
   defaultStartTime,
   initial = null,
   session = null,
+  gapWindow = null,
   onStart,
 }: VidaLogSessionSheetProps) {
   const createMutation = useCreateActivityFollowUpMutation()
@@ -131,13 +150,26 @@ export function VidaLogSessionSheet({
   const isPending = createMutation.isPending || editMutation.isPending || isStarting
   const sessionTitle = session?.activity?.title ?? 'Actividad'
 
+  /* ── Anclada a un hueco (FEAT-011) ──────────────────────────────────────
+   *
+   * Todo lo de abajo es **la figura de `VidaPlaceInGapSheet`**, con las mismas
+   * funciones: lo más que cabe desde la hora elegida, la validación en cada
+   * render y lo que queda libre. Aquí no se calcula ninguna aritmética nueva.
+   */
+  const anchor = mode === 'log' ? gapWindow : null
+  const anchored = anchor !== null
+  const maxMinutes = anchor ? getMaxDurationForStartTime(startTime, anchor) : 0
+  const placement = anchor ? validatePlacement({ startTime, durationMinutes }, anchor) : null
+
   function chooseActivity(activity: PickedActivity, templateMinutes: number | null) {
     setChosen(activity)
     setFormError(null)
     // Lo que la plantilla dice que dura viene puesto y se puede cambiar. En
     // «Empezar algo» no se mira: ahí no hay duración que elegir.
+    // Anclada a un hueco, lo que no cabe **no se preselecciona**: sería una
+    // píldora encendida y apagada a la vez (molde: `VidaPlaceInGapSheet`).
     if (mode === 'log' && durationMinutes === null && templateMinutes !== null) {
-      setDurationMinutes(templateMinutes)
+      if (!anchored || templateMinutes <= maxMinutes) setDurationMinutes(templateMinutes)
     }
   }
 
@@ -172,6 +204,16 @@ export function VidaLogSessionSheet({
     if (!chosen) {
       setFormError('Elige qué hiciste.')
       return
+    }
+    // Dentro del hueco primero: es la regla más estrecha y la que sabe decir
+    // cuánto cabe. Lo de siempre (nada del futuro, nada de otro día) sigue
+    // detrás, intacto.
+    if (anchor) {
+      const placed = validatePlacement({ startTime, durationMinutes }, anchor)
+      if (!placed.valid) {
+        setFormError(placed.message)
+        return
+      }
     }
     const result = validateLogPast({ date, startTime, durationMinutes, now: new Date() })
     if (!result.valid) {
@@ -225,14 +267,27 @@ export function VidaLogSessionSheet({
       ? 'Empezar algo'
       : mode === 'edit'
         ? `Corregir «${sessionTitle}»`
-        : 'Registrar tiempo pasado'
+        : anchored
+          ? '¿Qué hiciste?'
+          : 'Registrar tiempo pasado'
+
+  // Abierta desde un hueco, el subtítulo dice **de qué rato se está hablando**:
+  // el día y las horas del hueco que se pulsó, no una frase general.
+  const gapSubtitle =
+    gapWindow === null
+      ? null
+      : `${capitalizeFirst(dayLabel)} · en el hueco de ${formatTimeForDisplay(
+          minutesToTime(gapWindow.startMinutes),
+        )} a ${formatTimeForDisplay(minutesToTime(gapWindow.endMinutes))}`
 
   const description =
     mode === 'start'
       ? 'Si ya llevas un rato, dinos desde qué hora. Cuando termines nos dices cuánto duró.'
       : mode === 'edit'
         ? 'Cambia la hora, cuánto duró o lo que quieras recordar de ese rato.'
-        : `Algo que ya hiciste el ${formatDayHeading(date).toLowerCase()}, esté o no en tu plan.`
+        : anchored && gapSubtitle !== null
+          ? gapSubtitle
+          : `Algo que ya hiciste el ${formatDayHeading(date).toLowerCase()}, esté o no en tu plan.`
 
   const submitLabel = mode === 'start' ? 'Empezar' : mode === 'edit' ? 'Guardar' : 'Registrar'
 
@@ -244,7 +299,9 @@ export function VidaLogSessionSheet({
       <Button
         type="button"
         isLoading={isPending}
-        disabled={isPending || (mode !== 'edit' && chosen === null)}
+        // **Nunca se guarda algo imposible para avisar después** (criterio
+        // 226): con hueco, el botón sigue a la validación en cada render.
+        disabled={isPending || (mode !== 'edit' && chosen === null) || placement?.valid === false}
         onClick={mode === 'start' ? handleStart : mode === 'edit' ? handleEdit : handleLog}
       >
         {submitLabel}
@@ -329,6 +386,10 @@ export function VidaLogSessionSheet({
                 label="Cuánto duró"
                 freeInput="hoursAndMinutes"
                 describedById="vida-log-end-time"
+                // Solo lo que cabe desde la hora elegida, y «Todo el hueco»
+                // como salida (criterio 228). Sin hueco, las de siempre.
+                maxMinutes={anchored ? maxMinutes : undefined}
+                fillMinutes={anchored ? maxMinutes : null}
                 value={durationMinutes}
                 disabled={isPending}
                 onChange={(minutes) => {
@@ -369,19 +430,34 @@ export function VidaLogSessionSheet({
         {/* Lo que va a quedar registrado, dicho antes de guardarlo. Solo cuando
             las preguntas están resueltas: antes sería una cuenta sobre algo que
             todavía no existe. */}
-        {mode === 'log' && chosen && durationMinutes !== null ? (
+        {/* Con hueco, la previsualización solo se pinta si **de verdad cabe**:
+            decir «se apunta encima de tu día» de algo que no se puede guardar
+            sería prometer lo que Guardar está negando (molde:
+            `VidaPlaceInGapSheet`, que pide `validation.valid`). */}
+        {mode === 'log' && chosen && durationMinutes !== null && placement?.valid !== false ? (
           <p className={styles.preview}>
             <strong className={styles.previewLine}>
               {chosen.title} · {formatTimeForDisplay(startTime)} ·{' '}
               {formatDurationFromMinutes(durationMinutes)}
             </strong>
+            {/* **Lo que queda libre en el hueco** (criterio 227). La hora de fin
+                ya la dice `VidaEndTimeLine` ahí arriba: repetirla sería contar
+                dos veces lo mismo. */}
+            {anchor && placement?.valid
+              ? `${describeLeftovers({ startTime, durationMinutes }, anchor)} `
+              : ''}
             Se apunta encima de tu día. Tu plan se queda como está.
           </p>
         ) : null}
 
-        {formError ? (
+        {/* El aviso de que no cabe se lee **sin pulsar nada**, debajo de los
+            campos de los que habla, y con las palabras que ya existen. */}
+        {(formError ??
+        (placement && !placement.valid && durationMinutes !== null
+          ? placement.message
+          : null)) ? (
           <p className={styles.error} role="alert">
-            {formError}
+            {formError ?? placement?.message}
           </p>
         ) : null}
 
@@ -395,4 +471,9 @@ export function VidaLogSessionSheet({
       </div>
     </SteppedModal>
   )
+}
+
+/** «martes» → «Martes»: el subtítulo empieza el día con mayúscula. */
+function capitalizeFirst(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }

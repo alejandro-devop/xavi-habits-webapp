@@ -447,8 +447,15 @@ describe('VidaHoyPage — la marca de «Ahora» aguanta todo el día (criterio 2
     renderAt(11, 30)
 
     expect(screen.getByText('Ahora')).toBeInTheDocument()
-    // 10:30–13:00 partido: lo que pasó se lee, pero sin fichas.
-    expect(screen.getByText('Libre 10:30 – 11:30 · 1h')).toBeInTheDocument()
+    // 10:30–13:00 partido: lo que pasó se lee, y **sin fichas de plan** —desde
+    // FEAT-011 trae su única salida, la de contar qué hiciste (criterio 220)—.
+    const pasado = screen.getByLabelText('Libre de 10:30 – 11:30')
+    expect(within(pasado).getByText('Libre 10:30 – 11:30')).toBeInTheDocument()
+    expect(within(pasado).getByText('1h')).toBeInTheDocument()
+    expect(
+      within(pasado).getByRole('button', { name: 'Registrar lo que hiciste entre las 10:30 y las 11:30' }),
+    ).toBeInTheDocument()
+    expect(within(pasado).queryByRole('button', { name: /^Poner / })).toBeNull()
     const queda = screen.getByLabelText('Libre de 11:30 – 13:00')
     expect(within(queda).getByText('1h 30')).toBeInTheDocument()
   })
@@ -488,7 +495,9 @@ describe('VidaHoyPage — hoy sin plan', () => {
     // El día entero es un hueco, partido por la marca de «ahora»: lo que ya pasó
     // y lo que queda por delante.
     expect(screen.getByLabelText('Libre de 9:24 – 23:00')).toBeInTheDocument()
-    expect(screen.getByText('Libre 6:30 – 9:24 · 2h 54')).toBeInTheDocument()
+    const pasado = screen.getByLabelText('Libre de 6:30 – 9:24')
+    expect(within(pasado).getByText('Libre 6:30 – 9:24')).toBeInTheDocument()
+    expect(within(pasado).getByText('2h 54')).toBeInTheDocument()
   })
 
   // **Deroga** la afirmación de la tajada 2 («"Armar desde la plantilla" NO se
@@ -1985,5 +1994,146 @@ describe('el aviso pegado al bloque, en Hoy (criterios 87 a 94)', () => {
     expect(
       screen.getAllByText(/La duración que se ofrece es la que sueles tardar/).length,
     ).toBeGreaterThan(0)
+  })
+})
+
+/* ── FEAT-011, tajada 1: registrar en el hueco que ya pasó ───────────────── */
+
+describe('VidaHoyPage — el hueco que ya pasó se pulsa (criterios 220 a 232)', () => {
+  /** El hueco de 8:45 a 9:24: entre «Bañarme» y la marca de «ahora». */
+  const HUECO_PASADO = 'Registrar lo que hiciste entre las 8:45 y las 9:24'
+
+  it('criterio 220 — el hueco pasado trae una salida, y solo una: contar qué hiciste', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const hueco = screen.getByLabelText('Libre de 8:45 – 9:24')
+    expect(within(hueco).getByRole('button', { name: HUECO_PASADO })).toBeInTheDocument()
+    // Ni fichas de plantilla ni «+ otra cosa»: en el pasado no se planea.
+    expect(within(hueco).queryByRole('button', { name: /^Poner / })).toBeNull()
+    expect(within(hueco).queryByText('+ otra cosa')).toBeNull()
+    expect(within(hueco).getAllByRole('button')).toHaveLength(1)
+  })
+
+  it('criterio 221 — un resto de menos de 15 min sigue siendo una línea sin controles', () => {
+    // 8:45 → 8:55, y «ahora» a las 8:55: un hueco pasado de 10 minutos.
+    planQuery = ready([block('b1', 'Bañarme', '08:00', '08:45'), block('b2', 'Leer', '08:55', '09:30')])
+    vi.setSystemTime(new Date(2026, 8, 18, 9, 40, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('Libre 8:45 – 8:55 · 10m')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Libre de 8:45 – 8:55')).toBeNull()
+  })
+
+  it('criterios 222, 223 y 224 — abre la hoja de siempre, anclada al hueco', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: HUECO_PASADO }))
+
+    const hoja = screen.getByRole('dialog')
+    expect(within(hoja).getByText('¿Qué hiciste?')).toBeInTheDocument()
+    expect(within(hoja).getByText('Viernes · en el hueco de 8:45 a 9:24')).toBeInTheDocument()
+    // El principio del hueco, no «media hora antes de ahora».
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue('08:45')
+    // La duración no arranca puesta: la pone lo que se elija (criterio 224).
+    expect(within(hoja).getByRole('button', { name: '15' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+  })
+
+  it('criterio 229 — guardar escribe la sesión y no toca el plan', () => {
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: HUECO_PASADO }))
+
+    const hoja = screen.getByRole('dialog')
+    fireEvent.click(within(hoja).getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.click(within(hoja).getByRole('button', { name: '15' }))
+    fireEvent.click(within(hoja).getByRole('button', { name: 'Registrar' }))
+
+    expect(createFollowUpMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(createFollowUpMutation.mutate.mock.calls[0][0]).toMatchObject({
+      date: '2026-09-18',
+      startTime: '08:45',
+      durationMinutes: 15,
+    })
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+    expect(editMutation.mutate).not.toHaveBeenCalled()
+    expect(setMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 226 — lo que no cabe en el hueco no se puede guardar', () => {
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: HUECO_PASADO }))
+
+    const hoja = screen.getByRole('dialog')
+    fireEvent.click(within(hoja).getByRole('button', { name: /Poner lavadora/ }))
+    // 39 minutos de hueco: «45» y «1h» ni siquiera se ofrecen.
+    expect(within(hoja).getByRole('button', { name: '45' })).toBeDisabled()
+    fireEvent.change(within(hoja).getByLabelText('horas'), { target: { value: '2' } })
+    expect(within(hoja).getByRole('button', { name: 'Registrar' })).toBeDisabled()
+    expect(createFollowUpMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 232 — un día pasado ofrece contar en todos sus huecos y nada de plan', () => {
+    plansByDate = {
+      '2026-09-17': [{ ...block('x1', 'Leer un rato', '09:00', '09:30'), date: '2026-09-17' }],
+    }
+    viewedDate = '2026-09-17'
+    planQuery = ready(plansByDate['2026-09-17'])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    const antes = screen.getByLabelText('Libre de 6:30 – 9:00')
+    const despues = screen.getByLabelText('Libre de 9:30 – 23:00')
+    expect(
+      within(antes).getByRole('button', { name: /Registrar lo que hiciste/ }),
+    ).toBeInTheDocument()
+    expect(
+      within(despues).getByRole('button', { name: /Registrar lo que hiciste/ }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Poner / })).toBeNull()
+    expect(screen.queryByText('+ otra cosa')).toBeNull()
+  })
+
+  it('criterio 232 — un día futuro no ofrece contar: no hay pasado que contar', () => {
+    viewedDate = '2026-09-19'
+    planQuery = ready([])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.queryByRole('button', { name: /Registrar lo que hiciste/ })).toBeNull()
+  })
+
+  it('criterio 244 — con lo vivido caído, el hueco no ofrece registrar a ciegas', () => {
+    dayFollowUpsQuery = {
+      data: undefined,
+      isPending: false,
+      isError: true,
+      fetchStatus: 'idle',
+      refetch: vi.fn(),
+    }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.queryByRole('button', { name: /Registrar lo que hiciste/ })).toBeNull()
+    // Y el hueco sigue ahí, con sus minutos: la leyenda tiene que cuadrar.
+    expect(screen.getByText('Libre 8:45 – 9:24 · 39m')).toBeInTheDocument()
+  })
+
+  it('criterio 243 — mientras el día está en vuelo no hay ningún hueco que pulsar', () => {
+    planQuery = { isPending: true, isError: false, fetchStatus: 'fetching', refetch: vi.fn() }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.queryByRole('button', { name: /Registrar lo que hiciste/ })).toBeNull()
+    expect(screen.getByText('Cargando tu día…')).toBeInTheDocument()
+  })
+
+  it('criterio 246 — ni una palabra de reproche en el hueco que ya pasó', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const texto = document.body.textContent ?? ''
+    expect(texto).not.toMatch(/perdid|desperdici|en blanco|vacío|por qué no/i)
+    expect(screen.getAllByText(/^Libre /).length).toBeGreaterThan(0)
   })
 })

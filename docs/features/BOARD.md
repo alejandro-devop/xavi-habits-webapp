@@ -19,9 +19,43 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
-| FEAT-011 | planned | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
+| FEAT-011 | building | 1/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
+
+**FEAT-011 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** El
+hueco pasado deja de ser texto muerto: trae **una** salida de **44,0 × 147,9 px**
+—medidos por mí, el tamaño de toque que el módulo fijó en FEAT-008 y que
+reescribimos en el 150 de FEAT-009— y abre la hoja de siempre **anclada al
+hueco**. **La desviación del `isPastDay` es la salida correcta**: `gap.isPast`
+sale de un reloj que fuera de hoy es `null`, así que en un día de la tira ningún
+hueco venía marcado y el criterio 232 era falso; tocar `buildDayAgenda` —pura,
+entregada y leída por agenda, presupuesto y leyenda— o clonar el `gap` mintiendo
+eran peores. Y **no deja dos verdades que puedan discrepar**: los dos términos
+son complementarios y se unen con un `||` monótono (día pasado → manda la prop;
+hoy → manda el dato; futuro → los dos `false`). **Verificado por mí en el día
+2026-09-17 de la tira**: el hueco ofrece registrar, la hoja abre con «¿Qué
+hiciste?», «…en el hueco de 6:30 a 9:00» e inicio **06:30**, la duración **no**
+es el hueco entero, y guardar manda **un** `activityFollowUpAdd`
+(`date: '2026-09-17'`, `startTime: '06:30'`, `durationMinutes: 30`) con **cero**
+mutaciones del plan. **Guardar apagado de verdad por los dos lados**: su test
+cubre el de arriba y **el mío el de abajo** —hora anterior al hueco: botón
+`disabled`, aviso sin pulsar nada y `createFollowUp` sin llamadas—.
+**`vida-gap-form.utils.ts` no aparece en el diff** (criterio 236) y la hoja, que
+es cruce de FEAT-004, FEAT-008 y FEAT-013, suma **120 líneas de test y borra 0**:
+lo anclado cuelga de `mode === 'log' && gapWindow`, así que «Empezar algo» y el
+«Registrar tiempo pasado» de la cabecera no cambian. Las dos aserciones viejas
+que tocó **afirman más** (leen las dos partes de la fila **y** que no hay botón
+de planear). En oscuro: botón **16,74:1**, «Libre …» 9,93:1, resto fino 9,94:1,
+sin desbordes a 375 px —**cifras del DOM**, como él—. Dos parciales, juzgados:
+el **225** (no nombra el bloque vecino) es aceptable **pero su razón no es la
+correcta** —el nombre ya está en la ventana; lo que falta es dónde decirlo sin
+cambiar el mensaje del camino de planear, que el 236 congela—; y el **227** dice
+los dos números repartidos entre la línea de fin de FEAT-008 y la
+previsualización: no se pierde ningún dato, se pierde la unidad de la frase del
+render, y unirlas es copy. Línea base corrida entera: typecheck limpio, lint
+14/0, **2 fallos de 1692**, build exit 0 con el chunk en **1.102,43 kB** (+1,85).
+Siguiente: el `feature-builder`, tajada 2 (la ventana real).
 
 **FEAT-009 `delivered` 3/3** (2026-09-22, revisor). **Tajada 3 aceptada y con
 ella la feature entregada.** Lo que había que verificar y no creerse: **el

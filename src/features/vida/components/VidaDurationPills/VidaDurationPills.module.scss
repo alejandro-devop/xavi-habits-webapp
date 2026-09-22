@@ -55,6 +55,12 @@
   color: var(--color-primary-hover);
 }
 
+/* «Todo el hueco» dice una palabra, no un número: no cabe en los 3 rem de las
+   fijas y no se recorta (criterio 247). */
+.pillFill {
+  min-width: 0;
+}
+
 .free {
   display: flex;
   align-items: center;

@@ -499,6 +499,25 @@ export function VidaHoyPage() {
     })
   }
 
+  /**
+   * **«Registrar lo que hice»** en un hueco que ya pasó (FEAT-011, criterio
+   * 222): la misma hoja de registrar, **anclada a ese hueco**. El inicio viene
+   * puesto en el principio del hueco (criterio 223) y la duración **no**: la
+   * pone la actividad que se elija, nunca el hueco entero (criterio 224).
+   *
+   * En esta tajada la ventana son los bordes **del plan** (`gapToWindow`, lo
+   * mismo que usa el camino de planear). La tajada 2 cambia la fuente de esta
+   * misma prop por la ventana real; nada más de aquí se mueve.
+   */
+  function logInGap(gap: AgendaGap) {
+    const gapWindow = gapToWindow(gap)
+    openLogSheet({
+      mode: 'log',
+      gapWindow,
+      initial: { startTime: minutesToTime(gapWindow.startMinutes) },
+    })
+  }
+
   /** **«¿Qué pasó?»** de un tramo sin dato: la hoja con sus horas (criterio 48). */
   function askAboutNoData(slice: NoDataSlice) {
     openLogSheet({
@@ -759,6 +778,16 @@ export function VidaHoyPage() {
                     ? (gap) => openSheet({ kind: 'place', gapWindow: gapToWindow(gap) })
                     : undefined
                 }
+                // **Contar hacia atrás** (criterio 220). Solo en los días en
+                // que se registra —hoy y los pasados (criterio 232)— y solo
+                // con lo vivido cargado: sin saber qué hay dentro del hueco,
+                // ofrecer registrar sería escribir a ciegas (criterios 243 y
+                // 244). Mientras el día está en vuelo no se llega aquí: arriba
+                // se pinta el esqueleto.
+                onLogPast={canLogPast && executionKnown ? logInGap : undefined}
+                // En un día de la tira **todo** ya pasó, y sus huecos no traen
+                // la marca: allí no hay reloj (criterio 232).
+                isPastDay={isPast}
                 isPlacing={addMutation.isPending}
               />
             )}
@@ -946,6 +975,8 @@ export function VidaHoyPage() {
           }
           session={logSheet.mode === 'edit' ? logSheet.session : null}
           initial={logSheet.mode === 'edit' ? null : (logSheet.initial ?? null)}
+          // El hueco al que va anclado, cuando se abrió desde uno (FEAT-011).
+          gapWindow={logSheet.mode === 'edit' ? null : (logSheet.gapWindow ?? null)}
           onStart={(activityId, startTime) => sessionActions.start(activityId, startTime)}
         />
       ) : null}
@@ -1007,5 +1038,7 @@ type LogSheetState =
       mode: Extract<VidaLogSessionMode, 'start' | 'log'>
       /** Hora y duración **ya puestas**: el rato de un bloque o de un tramo sin dato. */
       initial?: { startTime?: string; durationMinutes?: number }
+      /** El hueco desde el que se abrió, si se abrió desde uno (FEAT-011). */
+      gapWindow?: GapWindow
     }
   | { mode: Extract<VidaLogSessionMode, 'edit'>; session: ActivityFollowUp }

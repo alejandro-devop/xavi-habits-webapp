@@ -34,6 +34,19 @@
   background: color-mix(in srgb, var(--color-primary) 5%, transparent);
 }
 
+/* El hueco que **ya pasó** (FEAT-011, criterio 220): la misma caja, en gris.
+   Lo que viene es verde porque es sitio donde poner algo; lo que pasó ya no lo
+   es, y el color es lo que separa las dos caras de un vistazo (criterio 249).
+   Se cambian borde y fondo, nunca el contraste del texto. */
+.card[data-past='true'] {
+  border-color: color-mix(in srgb, var(--color-text-secondary) 45%, transparent);
+  background: color-mix(in srgb, var(--color-text-secondary) 8%, transparent);
+
+  .free {
+    color: var(--color-text-secondary);
+  }
+}
+
 .head {
   display: flex;
   flex-wrap: wrap;
@@ -154,6 +167,44 @@ button.chip {
   color: var(--color-text-secondary);
   font-size: 0.6875rem;
   line-height: 1.5;
+}
+
+/* ── La salida del hueco pasado ──────────────────────────────────────────── */
+
+/* «Registrar lo que hice». **44 px de alto** (`min-height: 2.75rem`), la medida
+   que FEAT-009 fijó para un hueco pulsable en `VidaTemplateGapRow`: es un
+   objetivo de dedo y fallarlo aquí abre otra cosa. No hereda el `2rem` de
+   `.chip`, que es una ficha entre muchas y no el único control de la fila.
+
+   Relleno con el par de contraste del tema (`--color-text` sobre `--color-bg`):
+   se invierte solo en oscuro y evita el tropiezo conocido de los botones de
+   color sólido del sistema. */
+.logButton {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: 0.3rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
 }
 
 /* ── El resto de menos de 15 minutos ─────────────────────────────────────── */

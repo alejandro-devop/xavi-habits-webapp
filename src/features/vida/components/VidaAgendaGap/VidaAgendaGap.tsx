@@ -37,6 +37,24 @@ type VidaAgendaGapProps = {
   ) => void
   /** «+ otra cosa»: abre la hoja de tres preguntas (criterio 24). */
   onOpenSheet?: (gap: AgendaGap) => void
+  /**
+   * **«Registrar lo que hice»** (FEAT-011, criterio 220): la salida del hueco
+   * que **ya pasó**. Quien escuche abre la hoja de registrar **anclada a este
+   * hueco**; aquí no se decide nada más que el gesto.
+   *
+   * Sin esta prop —un día futuro, o lo vivido que no se pudo cargar— el hueco
+   * pasado se queda **exactamente como estaba**: una línea con sus minutos y
+   * ningún control (criterios 232 y 244).
+   */
+  onLogPast?: (gap: AgendaGap) => void
+  /**
+   * **El día entero ya pasó.** `gap.isPast` sale de comparar el hueco con el
+   * reloj, y en un día de atrás no hay reloj que mirar (`useVidaNowMinute` da
+   * `null`), así que **ninguno** de sus huecos viene marcado. Quien sabe que el
+   * día es pasado es la página, y lo dice aquí: si no, registrar en un día de
+   * la tira no se ofrecería nunca (criterio 232).
+   */
+  isPastDay?: boolean
   /** Hay una colocación en vuelo: las fichas no admiten un segundo toque. */
   isPlacing?: boolean
 }
@@ -53,12 +71,16 @@ type VidaAgendaGapProps = {
  * que deja montar este componente en un arnés o en un día pasado (tajada 4, en
  * solo lectura) sin pintar controles que no llevan a ninguna parte.
  *
- * Los tramos más cortos que `MIN_GAP_MINUTES` (`isSliver`) y **los que ya
- * pasaron** (`isPast`) se pintan igual —una línea con sus minutos— pero sin
- * fichas: si desaparecieran, la leyenda del presupuesto dejaría de cuadrar con
- * lo que se ve (criterio 14), y ofrecer algo para un rato que ya pasó no tiene
- * sentido. El hueco que contiene a «ahora» lo parte `buildDayAgenda`, así que
- * la mitad de después ya llega con el tamaño que de verdad queda.
+ * Los tramos más cortos que `MIN_GAP_MINUTES` (`isSliver`) se pintan como una
+ * línea con sus minutos y **sin ningún control**: si desaparecieran, la leyenda
+ * del presupuesto dejaría de cuadrar con lo que se ve (criterio 14), y un resto
+ * de diez minutos no es sitio donde ofrecer nada (criterio 221).
+ *
+ * **Los que ya pasaron** (`isPast`) no ofrecen planear —planear hacia atrás no
+ * significa nada— pero sí **contar**: con `onLogPast` traen una salida, y solo
+ * una, «Registrar lo que hice» (criterio 220). Sin ella se quedan como la línea
+ * de antes. El hueco que contiene a «ahora» lo parte `buildDayAgenda`, así que
+ * cada mitad llega ya con su lado del reloj.
  */
 export function VidaAgendaGap({
   gap,
@@ -67,16 +89,21 @@ export function VidaAgendaGap({
   showTemplateHint = false,
   onPlaceSuggestion,
   onOpenSheet,
+  onLogPast,
+  isPastDay = false,
   isPlacing = false,
 }: VidaAgendaGapProps) {
   const canPlace = Boolean(onPlaceSuggestion)
   const rangeLabel = formatGapRange(gap)
   const sizeLabel = formatDurationFromMinutes(gap.durationMinutes)
+  const isPast = gap.isPast || isPastDay
+  const fromLabel = formatTimeForDisplay(minutesToTime(gap.startMinutes))
+  const toLabel = formatTimeForDisplay(minutesToTime(gap.endMinutes))
 
-  // Un resto de menos de 15 min, o un tramo que ya pasó: se pinta con sus
-  // minutos —si desapareciera, la leyenda dejaría de cuadrar (criterio 14)—
-  // pero sin fichas. En el pasado no hay nada que colocar.
-  if (gap.isSliver || gap.isPast) {
+  // Un resto de menos de 15 min, o un tramo que ya pasó **sin nadie que escuche
+  // el registro**: se pinta con sus minutos —si desapareciera, la leyenda
+  // dejaría de cuadrar (criterio 14)— pero sin ningún control.
+  if (gap.isSliver || (isPast && !onLogPast)) {
     return (
       <li className={styles.row} data-sliver={gap.isSliver ? 'true' : undefined}>
         <span className={styles.gutter}>
@@ -87,6 +114,39 @@ export function VidaAgendaGap({
         <p className={styles.sliver}>
           Libre {rangeLabel} · {sizeLabel}
         </p>
+      </li>
+    )
+  }
+
+  // El rato que ya pasó: sus horas, su tamaño y **una** salida, la de contar
+  // qué hiciste (criterio 220). Ni fichas de plantilla ni «+ otra cosa»: en el
+  // pasado no hay nada que colocar.
+  if (isPast) {
+    return (
+      <li className={styles.row}>
+        <span className={styles.gutter}>
+          <time className={styles.time} dateTime={minutesToTime(gap.startMinutes)}>
+            {fromLabel}
+          </time>
+        </span>
+
+        <section className={styles.card} data-past="true" aria-label={`Libre de ${rangeLabel}`}>
+          <p className={styles.head}>
+            <span className={styles.free}>Libre {rangeLabel}</span>
+            <span className={styles.size}>{sizeLabel}</span>
+          </p>
+          <button
+            type="button"
+            className={styles.logButton}
+            // Lo que se oye dice **qué** se hace y **de qué rato**: una lista de
+            // huecos iguales necesita la hora en el rótulo (molde:
+            // `VidaTemplateGapRow`).
+            aria-label={`Registrar lo que hiciste entre las ${fromLabel} y las ${toLabel}`}
+            onClick={() => onLogPast?.(gap)}
+          >
+            Registrar lo que hice
+          </button>
+        </section>
       </li>
     )
   }

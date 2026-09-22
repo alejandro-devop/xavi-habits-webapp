@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — la barra de trabajo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --violet:#7c3aed; --violet-2:#a78bfa;
+    --work:#38bdf8; --work-2:#0ea5e9; --work-deep:#0369a1; --work-text:#7dd3fc;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:960px;margin:0 0 6px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:38px 0 12px}
+  .note{font-size:13px;color:var(--ink-soft);margin:12px 0 0;line-height:1.7}
+  .note b{color:#e2e8f0}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--work-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  .phone{width:100%;max-width:375px;border-radius:38px;padding:9px;background:#020617;box-shadow:0 26px 60px -24px rgba(0,0,0,.9)}
+  .screen{position:relative;overflow:hidden;width:100%;border-radius:30px;background:var(--bg);padding:14px 12px 16px}
+
+  /* ── El presupuesto del día que YA existe, en gris, solo para situar ── */
+  .budget{padding:11px 12px;border-radius:16px;background:var(--card);border:1px solid var(--edge);opacity:.62}
+  .budget .bh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .budget .bd{font-size:13px;font-weight:700;letter-spacing:-.01em}
+  .budget .br{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .budget .btrack{display:flex;height:7px;border-radius:999px;overflow:hidden;margin:9px 0 7px;background:rgba(148,163,184,.12)}
+  .budget .btrack span{display:block;height:100%}
+  .budget .bleg{display:flex;gap:10px;font-family:'Inter',sans-serif;font-size:9.5px;color:var(--ink-dim)}
+  .ghosted{margin-top:6px;text-align:center;font-family:'Inter',sans-serif;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:#475569}
+
+  /* ── LA BARRA DE TRABAJO: lo nuevo ── */
+  .work{margin-top:10px;padding:13px 13px 12px;border-radius:17px;background:linear-gradient(180deg,rgba(56,189,248,.09),var(--card-2));border:1px solid rgba(56,189,248,.26)}
+  .whead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .wlabel{font-size:13px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+  .wlabel i{font-style:normal;font-size:12px}
+  .wcount{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .wcount b{color:var(--work-text);font-weight:700}
+  .wtrack{position:relative;display:flex;height:10px;border-radius:999px;overflow:hidden;margin:10px 0 0;background:rgba(148,163,184,.13)}
+  .wtrack span{display:block;height:100%}
+  .fill{background:linear-gradient(90deg,var(--work-2),var(--work))}
+  .over{background:var(--work-deep)}
+  .wtrack .goal{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(226,232,240,.55);border-radius:2px}
+  .wline{margin:11px 0 0;font-size:14.5px;font-weight:700;letter-spacing:-.02em;line-height:1.35}
+  .wline b{color:var(--work-text)}
+  .wsub{margin:5px 0 0;font-family:'Inter',sans-serif;font-size:11.5px;line-height:1.55;color:var(--ink-soft)}
+  .wsub b{color:#e2e8f0;font-weight:700}
+  .nodata{display:flex;gap:7px;align-items:flex-start;margin-top:10px;padding:8px 9px;border-radius:11px;background:rgba(15,23,42,.6);border:1px solid rgba(148,163,184,.15)}
+  .nodata .i{flex:0 0 auto;font-size:11px;line-height:1.55;color:var(--ink-dim)}
+  .nodata p{margin:0;font-family:'Inter',sans-serif;font-size:11px;line-height:1.55;color:var(--ink-soft)}
+  .nodata p b{color:#e2e8f0;font-weight:700}
+
+  /* La pregunta */
+  .ask{margin-top:10px;padding:14px 13px;border-radius:17px;background:var(--card);border:1.5px dashed rgba(56,189,248,.35)}
+  .askq{font-size:14.5px;font-weight:700;letter-spacing:-.02em;line-height:1.35}
+  .askw{margin:5px 0 0;font-family:'Inter',sans-serif;font-size:11.5px;line-height:1.55;color:var(--ink-soft)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+  .chip{display:flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;background:rgba(15,23,42,.7);border:1px solid rgba(148,163,184,.2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600}
+  .chip i{font-style:normal;font-size:12px}
+  .chip.on{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.5);color:#bae6fd}
+  .askskip{margin:11px 0 0;text-align:center;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--ink-dim)}
+
+  /* El formulario de categoría, tajada 1 */
+  .form{padding:2px 2px 0}
+  .ftitle{font-size:15px;font-weight:700;letter-spacing:-.02em;margin:2px 0 12px}
+  .field{margin-bottom:12px}
+  .flabel{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+  .finput{padding:10px 11px;border-radius:12px;background:var(--card);border:1px solid var(--edge);font-size:13px}
+  .swatches{display:flex;gap:6px;flex-wrap:wrap}
+  .sw{width:24px;height:24px;border-radius:8px}
+  .sw.sel{outline:2px solid #e2e8f0;outline-offset:2px}
+  .check{display:flex;gap:10px;align-items:flex-start;padding:11px;border-radius:13px;background:var(--card);border:1px solid rgba(56,189,248,.3)}
+  .box{flex:0 0 auto;width:19px;height:19px;border-radius:6px;background:var(--work-2);display:grid;place-items:center;font-size:12px;color:#04202f;font-weight:700;margin-top:1px}
+  .box.off{background:transparent;border:1.5px solid rgba(148,163,184,.4)}
+  .check .ct{font-size:13px;font-weight:600;letter-spacing:-.01em}
+  .check .cw{margin:3px 0 0;font-family:'Inter',sans-serif;font-size:11px;line-height:1.5;color:var(--ink-soft)}
+  .save{margin-top:14px;padding:12px;border-radius:13px;background:var(--mint);color:#04261c;text-align:center;font-family:'Inter',sans-serif;font-size:14px;font-weight:700}
+
+  .decide{margin-top:34px;padding:16px 18px;border-radius:16px;background:var(--card);border:1px solid var(--edge)}
+  .decide h2{font-size:15px;margin:0 0 4px;letter-spacing:-.02em}
+  .decide p{font-size:13px;color:var(--ink-soft);line-height:1.7;margin:10px 0 0}
+  .decide p b{color:#f1f5f9}
+  .decide .k{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--work-text);display:block;margin-bottom:2px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>La barra de trabajo</h1>
+  <p class="lede">Marcas <b>una vez</b>, en la categoría, qué cuenta como trabajo. A partir de ahí Hoy suma solo —incluida la sesión que tienes en marcha ahora mismo— y en vez de darte un número que tendrías que restar, te dice <b>la hora a la que paras</b>. Nada de avisos, nada de reproches: se mira y ya.</p>
+
+  <p class="caption">El día, según va</p>
+  <div class="row">
+
+    <!-- 1 -->
+    <div class="moment">
+      <div class="mtitle">1 · Media mañana<small>Llevas un rato. Todavía no importa.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bh"><span class="bd">Lunes 22 de septiembre · 11:05</span></div>
+          <div class="br">te quedan 5h 40m hasta las 23:00</div>
+          <div class="btrack"><span style="width:34%;background:var(--mint)"></span><span style="width:12%;background:var(--violet)"></span><span style="width:54%;background:rgba(148,163,184,.25)"></span></div>
+          <div class="bleg">hecho 4h 05m · en marcha 1h 25m · libre 6h 30m</div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+
+        <div class="work">
+          <div class="whead">
+            <span class="wlabel"><i>💼</i> Trabajo</span>
+            <span class="wcount"><b>3h 40m</b> de 8h</span>
+          </div>
+          <div class="wtrack">
+            <span class="fill" style="width:46%"></span>
+          </div>
+          <p class="wline">A este ritmo paras a las <b>15:25</b>.</p>
+          <p class="wsub">Cuenta <b>Working at lululemon</b>, en marcha desde las 10:57.</p>
+        </div>
+      </div></div>
+      <p class="note">La cifra grande no es el total: es <b>una hora</b>. «3h 40m» te obliga a restar; «paras a las 15:25» se obedece sin pensar. El total queda arriba, pequeño, por si lo buscas.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="moment">
+      <div class="mtitle">2 · Cerca del final<small>Quedan 10 minutos de jornada.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bh"><span class="bd">Lunes 22 de septiembre · 18:30</span></div>
+          <div class="br">te quedan 4h 30m hasta las 23:00</div>
+          <div class="btrack"><span style="width:62%;background:var(--mint)"></span><span style="width:8%;background:var(--violet)"></span><span style="width:30%;background:rgba(148,163,184,.25)"></span></div>
+          <div class="bleg">hecho 8h 40m · en marcha 1h 05m · libre 4h 30m</div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+
+        <div class="work">
+          <div class="whead">
+            <span class="wlabel"><i>💼</i> Trabajo</span>
+            <span class="wcount"><b>7h 50m</b> de 8h</span>
+          </div>
+          <div class="wtrack">
+            <span class="fill" style="width:98%"></span>
+          </div>
+          <p class="wline">A este ritmo paras a las <b>18:40</b>.</p>
+          <p class="wsub">Cuenta <b>Daily meeting</b>, en marcha desde las 17:25.</p>
+        </div>
+      </div></div>
+      <p class="note">Aquí <b>no cambia nada de color</b> y no aparece ningún aviso. La barra está casi llena, que es información suficiente. Si te quieres ir a las 18:40, ahí está la hora.</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="moment">
+      <div class="mtitle">3 · Te pasaste<small>Nueve y pico. Sin regaños.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bh"><span class="bd">Lunes 22 de septiembre · 19:50</span></div>
+          <div class="br">te quedan 3h 10m hasta las 23:00</div>
+          <div class="btrack"><span style="width:70%;background:var(--mint)"></span><span style="width:6%;background:var(--violet)"></span><span style="width:24%;background:rgba(148,163,184,.25)"></span></div>
+          <div class="bleg">hecho 9h 55m · en marcha 45m · libre 3h 10m</div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+
+        <div class="work">
+          <div class="whead">
+            <span class="wlabel"><i>💼</i> Trabajo</span>
+            <span class="wcount"><b>9h 10m</b> de 8h</span>
+          </div>
+          <div class="wtrack">
+            <span class="fill" style="width:87%"></span><span class="over" style="width:13%"></span>
+            <span class="goal" style="left:87%"></span>
+          </div>
+          <p class="wline">Llevas <b>9h 10m</b>.</p>
+          <p class="wsub">Pasaste las 8h a las <b>18:40</b>.</p>
+        </div>
+      </div></div>
+      <p class="note">Ni rojo, ni ámbar, ni exclamación, ni «llevas demasiado». El azul se hace <b>más oscuro</b> pasada la raya y se dice el dato: cuánto llevas y a qué hora cruzaste. Lo que hagas con eso es tuyo.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Los casos que se suelen olvidar</p>
+  <div class="row">
+
+    <!-- 4 -->
+    <div class="moment">
+      <div class="mtitle">4 · Hay horas que no sé leer<small>Sesiones sin categoría.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="work">
+          <div class="whead">
+            <span class="wlabel"><i>💼</i> Trabajo</span>
+            <span class="wcount"><b>5h 20m</b> de 8h</span>
+          </div>
+          <div class="wtrack"><span class="fill" style="width:67%"></span></div>
+          <p class="wline">A este ritmo paras a las <b>21:10</b>.</p>
+          <div class="nodata"><span class="i">●</span><p><b>2h 40m sin dato</b> hoy. Esas sesiones no tienen categoría, así que no sé si fueron trabajo y no las he sumado.</p></div>
+        </div>
+      </div></div>
+      <p class="note">Esto es lo que hace que la barra se pueda creer. Una barra que dice 5h 20m el día que trabajaste 8 es <b>peor que ninguna barra</b>. Si no lo sé, lo digo. Una sesión con categoría que <b>no</b> es trabajo no sale aquí: de esa ya se sabe que no cuenta.</p>
+    </div>
+
+    <!-- 5 -->
+    <div class="moment">
+      <div class="mtitle">5 · Hoy no has trabajado<small>Y hay trabajo marcado.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="work">
+          <div class="whead">
+            <span class="wlabel"><i>💼</i> Trabajo</span>
+            <span class="wcount"><b>0m</b> de 8h</span>
+          </div>
+          <div class="wtrack"></div>
+          <p class="wline">Si arrancas ahora, acabarías a las <b>19:05</b>.</p>
+        </div>
+      </div></div>
+      <p class="note">La barra aparece igual, vacía. Es la misma cuenta —ahora más lo que queda—, solo que dicha en condicional, porque todavía no hay ritmo del que proyectar. <b>Un domingo no te dice nada más</b>: si no trabajas, no pasa nada.</p>
+    </div>
+
+    <!-- 6 -->
+    <div class="moment">
+      <div class="mtitle">6 · Un día de la semana pasada<small>Se mira, no se proyecta.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="work">
+          <div class="whead">
+            <span class="wlabel"><i>💼</i> Trabajo</span>
+            <span class="wcount"><b>8h 45m</b> de 8h</span>
+          </div>
+          <div class="wtrack"><span class="fill" style="width:91%"></span><span class="over" style="width:9%"></span><span class="goal" style="left:91%"></span></div>
+          <p class="wline">Trabajaste <b>8h 45m</b>.</p>
+          <p class="wsub">Pasaste las 8h a las <b>18:20</b>.</p>
+        </div>
+      </div></div>
+      <p class="note">En un día que ya terminó no hay «ahora» desde el que proyectar, así que <b>desaparece la línea de la hora</b> y se habla en pasado. En un día <b>futuro</b> la barra no aparece: no hay nada vivido que sumar.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Cómo empieza: marcar qué es trabajo</p>
+  <div class="row">
+
+    <!-- 7 -->
+    <div class="moment">
+      <div class="mtitle">7 · En la categoría<small>Un campo más. Se marca una vez y ya.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="form">
+          <div class="ftitle">Editar categoría</div>
+          <div class="field"><div class="flabel">Cómo la llamas</div><div class="finput">Trabajo</div></div>
+          <div class="field"><div class="flabel">Icono</div><div class="finput">💼 &nbsp; Maletín</div></div>
+          <div class="field"><div class="flabel">Color</div>
+            <div class="swatches">
+              <span class="sw" style="background:#ef4444"></span><span class="sw" style="background:#f97316"></span>
+              <span class="sw" style="background:#eab308"></span><span class="sw" style="background:#10b981"></span>
+              <span class="sw sel" style="background:#38bdf8"></span><span class="sw" style="background:#7c3aed"></span>
+              <span class="sw" style="background:#ec4899"></span><span class="sw" style="background:#64748b"></span>
+            </div>
+          </div>
+          <div class="field">
+            <div class="check">
+              <span class="box">✓</span>
+              <span><span class="ct">Esto es trabajo</span>
+              <p class="cw">Sus horas suman en la barra de trabajo de Hoy, que te dice a qué hora llevas 8 horas.</p></span>
+            </div>
+          </div>
+          <div class="save">Guardar</div>
+        </div>
+      </div></div>
+      <p class="note">Se marca <b>la categoría, no cada sesión</b>: marcar sesión por sesión sería un clic por registro, y eso es exactamente lo que hace que dejes de registrar. Pueden ser <b>varias</b> categorías —«Trabajo», «Reuniones», «Lululemon»—, pero la jornada de 8h es una sola, tuya.</p>
+    </div>
+
+    <!-- 8 -->
+    <div class="moment">
+      <div class="mtitle">8 · Si nunca marcaste nada<small>La segunda puerta, desde Hoy.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bh"><span class="bd">Lunes 22 de septiembre · 11:05</span></div>
+          <div class="br">te quedan 5h 40m hasta las 23:00</div>
+          <div class="btrack"><span style="width:34%;background:var(--mint)"></span><span style="width:12%;background:var(--violet)"></span><span style="width:54%;background:rgba(148,163,184,.25)"></span></div>
+          <div class="bleg">hecho 4h 05m · en marcha 1h 25m · libre 6h 30m</div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+
+        <div class="ask">
+          <p class="askq" style="margin:0">¿Cuál de estas es tu trabajo?</p>
+          <p class="askw">Toco una y te digo, cada día, cuánto llevas trabajado y a qué hora llegas a las 8 horas.</p>
+          <div class="chips">
+            <span class="chip"><i>💼</i> Trabajo</span>
+            <span class="chip"><i>🧑‍💻</i> Lululemon</span>
+            <span class="chip"><i>🏋️</i> Ejercicio</span>
+            <span class="chip"><i>📚</i> Estudio</span>
+            <span class="chip"><i>🏠</i> Casa</span>
+          </div>
+          <p class="askskip">Ahora no</p>
+        </div>
+      </div></div>
+      <p class="note">Un toque escribe <b>exactamente la misma casilla</b> del formulario: un campo, dos puertas. La barra aparece ahí mismo, ya contando, sin recargar y sin ir a Ajustes. Y una vez marcada una, <b>la pregunta no vuelve</b>.</p>
+    </div>
+
+  </div>
+
+  <div class="decide">
+    <h2>Lo que quiero que mires antes de construir</h2>
+    <p><span class="k">El color</span>El trabajo estrena un <b>azul propio</b>: el mint ya es «hecho» y el violeta es «en marcha» en la barra del día, y el ámbar y el rojo están reservados para avisos —que aquí no puede haber ninguno. Pasada la jornada el azul <b>se hace más oscuro</b>, no se vuelve alarma.</p>
+    <p><span class="k">La redacción en cero</span>Con cero minutos digo <b>«si arrancas ahora, acabarías a las…»</b> en vez de «a este ritmo paras a las…», porque sin ritmo no hay «este ritmo». Es la misma cuenta; si prefieres una sola frase para todos los casos, se cambia.</p>
+    <p><span class="k">«Sin dato»</span>En Revisión, a las sesiones sin categoría se les llama <b>«Sin categoría»</b>. Aquí las llamo <b>«sin dato»</b>, que es la palabra del módulo, porque no son una fila de un desglose: son una <b>advertencia de lo que la barra no puede saber</b>. Si te chirría tener dos palabras en dos pantallas, unificamos —y entonces mandaría «sin dato» en las dos.</p>
+    <p><span class="k">La jornada</span>Nace en <b>8 horas</b> y por ahora <b>no hay pantalla para cambiarla</b>. Si algún día quieres 6 o 10, cuelga de Ajustes de Vida, al lado de la hora de inicio y fin del día.</p>
+    <p><span class="k">Lo que acepto a sabiendas</span>Desmarcar una categoría <b>cambia también el pasado</b>: la suma se calcula cada vez, no se guarda por día. Es honesto —es lo que de verdad cuentas como trabajo— y congelar cada día al cerrarlo es maquinaria que hoy no vale lo que cuesta.</p>
+  </div>
+
+</div>
+</body>
+</html>

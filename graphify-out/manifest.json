@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790106196.936486,
-    "ast_hash": "4ee0e4666e39932dc85b11e5a24eaf31",
+    "mtime": 1790110420.5430462,
+    "ast_hash": "af681c1ed189560e5eb10c800a748bf5",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790109937.0687559,
-    "ast_hash": "8e0dcc0a1f7bf31963ec8d1a0917a88b",
+    "mtime": 1790114387.4419456,
+    "ast_hash": "72d611998ec22e50a610622a6cffd087",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790110001.623935,
-    "ast_hash": "58cbb7da29c5c9f959f6b20da6749b94",
+    "mtime": 1790114612.6064851,
+    "ast_hash": "e9f741f20d6f15de2e450cbfdd35b612",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790108167.0562832,
-    "ast_hash": "eb5e054da136974092a29b7bfa17cb40",
+    "mtime": 1790114445.1470838,
+    "ast_hash": "6e008903017e46ab677849cd7ec4a95a",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3725,8 +3725,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-010-vida-hoy-que-toca-ahora.md": {
-    "mtime": 1790105835.396878,
-    "ast_hash": "d40a5e4c5884b19d8be353f884d6f991",
+    "mtime": 1790114454.6221066,
+    "ast_hash": "78fc35e1296464ef9383f225c4778021",
     "semantic_hash": ""
   },
   "docs/features/FEAT-011-vida-hoy-registrar-en-hueco.md": {
@@ -3807,6 +3807,61 @@
   "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.test.tsx": {
     "mtime": 1790107831.7826686,
     "ast_hash": "a7e115e7daa1a3cf1d16696f1d469974",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx": {
+    "mtime": 1790114427.695042,
+    "ast_hash": "056c422162392ac5b94c681d0e14a047",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaUpNextCard/index.ts": {
+    "mtime": 1790110283.32069,
+    "ast_hash": "dd4be371ee268170338b3565bd13aba3",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-up-next.utils.test.ts": {
+    "mtime": 1790110759.5169888,
+    "ast_hash": "16b6fe1235e4e35344de65af6843d448",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-up-next.utils.ts": {
+    "mtime": 1790110232.2335556,
+    "ast_hash": "a7bf4818cc406209a1afbfd327b834e9",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-016-vida-barra-de-trabajo.md": {
+    "mtime": 1790114270.2226655,
+    "ast_hash": "023a80786751e3702f4ad98cbd3099de",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/15-vida-barra-de-trabajo.html": {
+    "mtime": 1790110632.6815877,
+    "ast_hash": "55e0255f61c5a88a471161f73e024503",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/16-vida-barra-de-trabajo-formas.html": {
+    "mtime": 1790111064.0578864,
+    "ast_hash": "9b437935222176adfb999ff6baeee223",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/17-vida-barra-de-trabajo-donut.html": {
+    "mtime": 1790111163.7671661,
+    "ast_hash": "497dbac70b0fe113d4f0294f059311ee",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/18-vida-arcos-familia.html": {
+    "mtime": 1790111363.4287124,
+    "ast_hash": "20dc63609db39440f65e24bd6c5d0b44",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260922_210235_d\u00f3nde_vive_el_cat\u00e1logo_de_categor\u00edas_de_actividad.md": {
+    "mtime": 1790110955.4035745,
+    "ast_hash": "4b580daeb2e166556880a8cbf1d9cf75",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260922_215822_activity_category_catalog_iswork_vidacategoryform.md": {
+    "mtime": 1790114302.4947426,
+    "ast_hash": "4dbb9b4a634ec82aa169fb882a1b79e3",
     "semantic_hash": ""
   }
 }

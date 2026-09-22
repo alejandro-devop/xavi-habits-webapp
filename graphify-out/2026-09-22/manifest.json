@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790106196.936486,
-    "ast_hash": "4ee0e4666e39932dc85b11e5a24eaf31",
+    "mtime": 1790110420.5430462,
+    "ast_hash": "af681c1ed189560e5eb10c800a748bf5",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790108980.3464105,
-    "ast_hash": "afa0e4307d0cccd45000fade2ba93ef8",
+    "mtime": 1790113678.4092667,
+    "ast_hash": "810883d8a71f3c1b0ce1ecc94719f330",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790109042.4186988,
-    "ast_hash": "b6fd2f913465e57a5deca2772e5eac1e",
+    "mtime": 1790113696.2503083,
+    "ast_hash": "e1ecee7d309fa822ddb882e98bce2ad0",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790108167.0562832,
-    "ast_hash": "eb5e054da136974092a29b7bfa17cb40",
+    "mtime": 1790113629.425153,
+    "ast_hash": "585e483d1f539edc7cadaa32f7c7bb2c",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3010,8 +3010,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.ts": {
-    "mtime": 1790109219.0844395,
-    "ast_hash": "54c3085a2fe4b54331fba331a46d9d1c",
+    "mtime": 1790109990.5249043,
+    "ast_hash": "abb7788100debfa9b240853a6fff464a",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.test.tsx": {
@@ -3725,8 +3725,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-010-vida-hoy-que-toca-ahora.md": {
-    "mtime": 1790105835.396878,
-    "ast_hash": "d40a5e4c5884b19d8be353f884d6f991",
+    "mtime": 1790113533.1819305,
+    "ast_hash": "9eeca0397095461f174f8b503342e2b4",
     "semantic_hash": ""
   },
   "docs/features/FEAT-011-vida-hoy-registrar-en-hueco.md": {
@@ -3790,8 +3790,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-014-vida-tolerancia-del-hueco.md": {
-    "mtime": 1790109164.283221,
-    "ast_hash": "8b00592d226d0c9d2c99235e06b53e20",
+    "mtime": 1790109912.231686,
+    "ast_hash": "3309a761781155e46be7748f11432626",
     "semantic_hash": ""
   },
   "docs/features/FEAT-015-habitos-metricas.md": {
@@ -3807,6 +3807,56 @@
   "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.test.tsx": {
     "mtime": 1790107831.7826686,
     "ast_hash": "a7e115e7daa1a3cf1d16696f1d469974",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx": {
+    "mtime": 1790113533.1649306,
+    "ast_hash": "4ec8969d21fffd9b8f15b42630a2eb0d",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaUpNextCard/index.ts": {
+    "mtime": 1790110283.32069,
+    "ast_hash": "dd4be371ee268170338b3565bd13aba3",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-up-next.utils.test.ts": {
+    "mtime": 1790110759.5169888,
+    "ast_hash": "16b6fe1235e4e35344de65af6843d448",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-up-next.utils.ts": {
+    "mtime": 1790110232.2335556,
+    "ast_hash": "a7bf4818cc406209a1afbfd327b834e9",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-016-vida-barra-de-trabajo.md": {
+    "mtime": 1790113656.605216,
+    "ast_hash": "b1bf68838d59218b5f52f8749c292003",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/15-vida-barra-de-trabajo.html": {
+    "mtime": 1790110632.6815877,
+    "ast_hash": "55e0255f61c5a88a471161f73e024503",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/16-vida-barra-de-trabajo-formas.html": {
+    "mtime": 1790111064.0578864,
+    "ast_hash": "9b437935222176adfb999ff6baeee223",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/17-vida-barra-de-trabajo-donut.html": {
+    "mtime": 1790111163.7671661,
+    "ast_hash": "497dbac70b0fe113d4f0294f059311ee",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/18-vida-arcos-familia.html": {
+    "mtime": 1790111363.4287124,
+    "ast_hash": "20dc63609db39440f65e24bd6c5d0b44",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260922_210235_d\u00f3nde_vive_el_cat\u00e1logo_de_categor\u00edas_de_actividad.md": {
+    "mtime": 1790110955.4035745,
+    "ast_hash": "4b580daeb2e166556880a8cbf1d9cf75",
     "semantic_hash": ""
   }
 }

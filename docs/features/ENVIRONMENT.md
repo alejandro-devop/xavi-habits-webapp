@@ -100,8 +100,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 1746** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
-| Paquete | `pnpm build` | chunk inicial **1.106,50 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 1783** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
+| Paquete | `pnpm build` | chunk inicial **1.112,22 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 Cerrar cada tajada con `pnpm build`, no solo con `pnpm typecheck`: son el mismo `tsc -b`, pero el estado incremental de `typecheck` dejó pasar una vez un `TS2783` que el build sí cazó (FEAT-003, tajada 3).
 
@@ -111,6 +111,35 @@ va con su módulo baja el total y es correcto; un fallo nuevo o un error de
 lint nuevo no se acepta.
 
 Después de cambiar código: `graphify update .` (regla de `CLAUDE.md`).
+
+### El otro repositorio: `xavi-platform-node`
+
+La tabla de arriba es **solo de este repositorio**. Cuando una tajada toca el
+API (FEAT-003, FEAT-012 y FEAT-016 lo hacen), su línea base es **otra y mucho
+peor**, medida el 2026-09-22 en `/home/jako/Developer/xavi-platform-node`:
+
+| Qué | Comando | Línea base hoy (2026-09-22) |
+|---|---|---|
+| Tipos | `npx tsc --noEmit` | limpio, exit 0 |
+| Tests | `npm test` (jest) | **3 fallos de 560**, y **6 suites de 51 en rojo** — las dos cifras no cuadran porque cuatro suites ni llegan a correr: revientan al compilar el test (`ts-jest`). Los 3 fallos reales: `syncHabitStreakFromLogs > updates streak, max_streak and days from accomplished logs`, `HabitService > addHabitLog > creates log when date is available` y `Expense Resolvers > walletExpenseUpdate > should update an expense`. Las suites que no compilan: `habit-streak`, `sleep-follow-up-sync.service`, `standup.service` (y `habit-streak` arrastra a las de hábitos) — `HabitStreakFields` ganó `habit_type`, `period_days` y `restart_count` y los tests no se actualizaron. |
+| Linter | `npm run lint` | **895 problemas (583 errores / 312 warnings)**, casi todos `prettier/prettier`. **No es una puerta utilizable**: aquí la regla no puede ser «14/0» sino **no empeorar los archivos que tocas**, comparando antes y después solo en esos ficheros. Y **nunca correr `lint:fix` a lo ancho**: reformatearía medio repositorio en un commit que despliega. |
+
+Dos cosas más de ese repositorio que ahorran turnos y no se deducen mirando por
+encima: **los tests de resolvers solo existen para `expense` y `wallet`**
+(`tests/unit/graphql/resolvers/`), así que un resolver nuevo no tiene vecino que
+imitar salvo esos dos; y **la forma de probar una transacción** allí es el mock
+de `connect()` de `tests/unit/services/activity-day-plan.service.test.ts:34-45`.
+
+**Todo eso es preexistente y de hábitos, gastos, sueño y standup** — ninguna de
+las suites rotas toca `activity_categories` ni `user_settings`, que es donde
+cae el trabajo de Vida. Aun así se mide antes y después: la regla sigue siendo
+«no peor que la línea base», solo que la línea base aquí ya viene rota.
+
+**Y lo más importante de este repositorio: un push a `main` despliega.** Cloud
+Run y Render a la vez. `RUN_MIGRATIONS: 'false'` en `render.yaml`, así que el
+despliegue **no corre las migraciones**: alguien las corre a mano contra la base
+de producción. Hay una pendiente, la **068 de FEAT-012**, que viajará en el
+siguiente push aunque no sea suya.
 
 **Contratos GraphQL de Vida.** `src/features/vida/graphql/contracts.test.ts`
 valida cada documento del módulo con `graphql` (devDependency; **no se importa

@@ -18,12 +18,66 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
 | FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
-| FEAT-010 | planned | 0/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-22 |
+| FEAT-010 | building | 1/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-22 |
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
+| FEAT-016 | planned | 0/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
+
+**FEAT-016 `planned` 0/3** (2026-09-22, arquitecto). **Sección 2 reescrita
+entera contra el modelo de metas; la 1 no se tocó.** Lo que queda fijado: tabla
+**`vida_goals`** (slug, nombre, icono, color, `target_minutes`, `order_index`) y
+`activity_categories.goal_id` nullable con `ON DELETE SET NULL`, **en una sola
+migración** (`069_vida_goals.sql`) porque la FK no deja separarlas — el
+precedente es la 025, que crea la tabla y añade la columna en el mismo archivo.
+**La carrera está resuelta y escrita**: `UNIQUE (user_id, slug)` +
+`INSERT … ON CONFLICT (user_id, slug) DO UPDATE … RETURNING *` (el `DO NOTHING`
+no devuelve fila y el `SELECT` de rescate vuelve a abrir la ventana) + el
+`ensure` y el `UPDATE` del puntero **en la misma transacción**, en
+`src/services/vida-goal.service.ts`, **no en el cliente**. La entidad entra por
+el **módulo `vida` del API**, que ya está registrado: cero líneas en `schema.ts`
+y `resolvers.ts`. **El puntero NO viaja por `activityCategoryEdit`** —el cliente
+no tiene id de meta al primer uso— sino por una mutación propia
+`activityCategoryGoalSet`, y por eso **la trampa del `.refine` no se pisa**
+(queda anotada por si alguien revierte la decisión). El arco y el cálculo toman
+**la meta como dato** (`buildGoalArcs` devuelve un array de arcos, cada uno con
+su `goal` entera); que hoy se vea una sola lo garantiza la base —una meta por
+usuario por el índice único—, **no un tope en la vista**. Referencia:
+`VidaDayBudget` en el front, `activity-category.service.ts` +
+`activity-day-plan.service.ts:95-140` en el API. Tres tajadas, mismo corte que
+la sección 1. Siguiente: el `feature-builder`, tajada 1 — y ojo con la
+secuencia: push del API y **migración a mano contra Neon** (con la 068 de
+FEAT-012 de acompañante) antes de poder aceptarla.
+
+**FEAT-016 `specified` 0/3** (2026-09-22, analista). **Sección 1 rehecha: el
+usuario vio el render y cambió una decisión de fondo — «una meta, no una
+casilla».** Vuelve de `planned` a `specified` porque la sección 2 del
+arquitecto quedó escrita contra el plan viejo (dos columnas, `isWork`
+booleano) y hay que rehacerla contra el nuevo (tabla de metas + puntero); no
+se toca ni se borra, la reescribe él. Mueren explícitamente los criterios 481
+y 482 de la versión anterior (las dos columnas) y el 490 viejo se funde con
+el 492 nuevo; el resto se renumera 481–503 dentro del mismo rango. El título
+deja de hablar de «barra»: la forma aprobada es un **arco** (render vigente
+`docs/vida/assets/18-vida-arcos-familia.html`, panel 1; `15-`, `16-` y `17-`
+quedan descartados). El área pierde `features/settings`: el objetivo de
+minutos ya no vive en `user_settings`, vive en la meta. Comprobado por mí,
+no heredado: `isWorkout` es de solo escritura en el esquema GraphQL
+(`ActivityInput`/`ActivityEditInput` lo tienen, `type Activity` no —
+`xavi-platform-node/src/graphql/modules/activity/activity.schema.ts:83-101,190,204`),
+así que el arco de «Workout» queda fuera de alcance con razón verificada; y
+el `.refine` de `activityCategoryEditInputSchema`
+(`xavi-platform-node/src/validators/schemas/activity.schemas.ts:135-152`)
+sigue sin contar ningún campo de meta, así que guardar solo `{ id, <el
+puntero> }` se rechazaría hoy si nadie lo añade a esa condición. Lo que
+empeora frente al plan viejo, dicho sin maquillar: la tajada 1 es más grande
+—crea una tabla de verdad, no dos columnas— y la creación automática de
+«Trabajo, 8h» es una regla implícita con un riesgo de condición de carrera
+(dos categorías marcadas casi a la vez antes de que exista la meta) que
+queda para quien construya, no resuelto aquí. Ninguna decisión bloquea: D-A,
+D-B y D-C siguen en pie sin reabrirse. Siguiente: el `feature-architect`,
+sección 2 entera.
 
 **FEAT-014 `delivered` 2/2** (2026-09-22, revisor). **Tajada 2 aceptada y con
 ella la feature entregada: la fusión es de verdad sin efecto.** Conté el gemelo

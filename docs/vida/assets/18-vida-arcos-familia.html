@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>La familia de arcos</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --violet:#7c3aed;
+    --work:#38bdf8; --work-2:#0ea5e9; --work-deep:#075985;
+    --study:#f59e0b; --sweat:#f43f5e; --sleep:#818cf8;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:960px;margin:0 0 6px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:36px 0 12px}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:0;line-height:1.65}
+  .note b{color:#e2e8f0}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .ctitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#7dd3fc}
+  .ctitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:3px;font-size:11.5px;line-height:1.5}
+
+  .phone{width:100%;max-width:375px;border-radius:34px;padding:9px;background:#020617;box-shadow:0 22px 52px -22px rgba(0,0,0,.9)}
+  .screen{border-radius:27px;background:var(--bg);padding:13px 12px 15px}
+  .budget{padding:10px 11px;border-radius:15px;background:var(--card);border:1px solid var(--edge);opacity:.55}
+  .budget .bd{font-size:12.5px;font-weight:700;letter-spacing:-.01em}
+  .budget .br{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:1px}
+  .budget .btrack{display:flex;height:6px;border-radius:999px;overflow:hidden;margin:8px 0 0;background:rgba(148,163,184,.12)}
+  .budget .btrack span{display:block;height:100%}
+  .ghosted{margin:5px 0 9px;text-align:center;font-family:'Inter',sans-serif;font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:#475569}
+
+  /* ── un arco solo ── */
+  .one{padding:13px 13px 11px;border-radius:17px;background:linear-gradient(180deg,rgba(56,189,248,.08),var(--card-2));border:1px solid rgba(56,189,248,.24)}
+  .ohead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .olabel{font-size:12.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+  .olabel i{font-style:normal;font-size:12px}
+  .ocount{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ocount b{color:#7dd3fc;font-weight:700}
+  .bigarc{display:flex;justify-content:center;margin:6px 0 -12px}
+  .bigarc svg{width:100%;max-width:216px;height:auto;display:block}
+  .osub{margin:16px 0 0;font-family:'Inter',sans-serif;font-size:11px;line-height:1.5;color:var(--ink-soft);text-align:center}
+  .osub b{color:#e2e8f0;font-weight:700}
+
+  /* ── la fila de arcos ── */
+  .arcs{display:flex;gap:7px;padding:12px 10px 10px;border-radius:17px;background:var(--card-2);border:1px solid var(--edge)}
+  .arc{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px 4px;border-radius:12px}
+  .arc.lead{background:rgba(56,189,248,.09);box-shadow:inset 0 0 0 1px rgba(56,189,248,.26)}
+  .aname{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim);display:flex;align-items:center;gap:3px;max-width:100%;overflow:hidden;white-space:nowrap}
+  .arc svg{width:100%;max-width:96px;height:auto;display:block;margin:1px 0 -6px}
+  .ahour{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .amin{font-family:'Inter',sans-serif;font-size:9.5px;color:#475569;font-variant-numeric:tabular-nums;margin-top:1px}
+  .arclegend{margin:9px 2px 0;font-family:'Inter',sans-serif;font-size:10.5px;line-height:1.5;color:var(--ink-dim);text-align:center}
+
+  .anum{font-family:'Inter',sans-serif;font-weight:700;fill:#f1f5f9;font-variant-numeric:tabular-nums}
+  .acap{font-family:'Inter',sans-serif;font-weight:600;fill:#64748b;letter-spacing:.07em}
+  .aend{font-family:'Inter',sans-serif;font-weight:700;fill:#475569;font-variant-numeric:tabular-nums}
+
+  /* ── formulario ── */
+  .form{padding:2px}
+  .ftitle{font-size:14px;font-weight:700;letter-spacing:-.02em;margin:2px 0 11px}
+  .flabel{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px}
+  .finput{padding:9px 10px;border-radius:11px;background:var(--card);border:1px solid var(--edge);font-size:12.5px;margin-bottom:11px}
+  .check{display:flex;gap:9px;align-items:flex-start;padding:10px;border-radius:12px;background:var(--card);border:1px solid rgba(56,189,248,.3)}
+  .box{flex:0 0 auto;width:18px;height:18px;border-radius:5px;background:var(--work-2);display:grid;place-items:center;font-size:11px;color:#04202f;font-weight:700;margin-top:1px}
+  .ct{font-size:12.5px;font-weight:600;letter-spacing:-.01em}
+  .cw{margin:3px 0 0;font-family:'Inter',sans-serif;font-size:10.5px;line-height:1.5;color:var(--ink-soft)}
+  .goals{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+  .g{display:flex;align-items:center;gap:5px;padding:7px 10px;border-radius:999px;background:rgba(15,23,42,.7);border:1px solid rgba(148,163,184,.2);font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600}
+  .g i{font-style:normal}
+  .g.on{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.5);color:#bae6fd}
+  .arrow{text-align:center;color:#334155;font-size:15px;margin:9px 0}
+
+  /* ── mapa de los cuatro ── */
+  .map{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+  .m{padding:14px 15px;border-radius:15px;background:var(--card);border:1px solid var(--edge);border-left-width:3px}
+  .m h3{margin:0 0 3px;font-size:13.5px;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+  .m .verdict{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px}
+  .m p{font-size:12.5px;line-height:1.6;color:var(--ink-soft);margin:0}
+  .m p b{color:#f1f5f9}
+  .m.yes{border-left-color:#10b981} .m.yes .verdict{color:#34d399}
+  .m.half{border-left-color:#f59e0b} .m.half .verdict{color:#fbbf24}
+  .m.no{border-left-color:#64748b} .m.no .verdict{color:#94a3b8}
+
+  .fork{margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .f{padding:16px 17px;border-radius:16px;background:var(--card);border:1px solid var(--edge)}
+  .f.win{background:linear-gradient(180deg,rgba(56,189,248,.09),var(--card));border-color:rgba(56,189,248,.3)}
+  .f h3{margin:0 0 6px;font-size:14.5px;letter-spacing:-.02em}
+  .f .tag{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7dd3fc;display:block;margin-bottom:3px}
+  .f p{font-size:12.5px;line-height:1.65;color:var(--ink-soft);margin:8px 0 0}
+  .f p b{color:#f1f5f9}
+  .f code{font-family:'Inter',ui-monospace,monospace;font-size:11.5px;color:#7dd3fc;background:rgba(56,189,248,.1);padding:1px 5px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>La familia de arcos</h1>
+  <p class="lede">Si piensas en <b>«Sueño», «Workout», «Estudiar»</b>, entonces el arco no es una decoración para el trabajo: es <b>la pieza de la que va a haber varias</b>. Y eso cambia dos cosas desde hoy — el arco tiene que ser legible en pequeño y en fila, y lo que se guarda en la base de datos no puede ser una casilla llamada «es trabajo». Aquí está adónde lleva, y qué te cuesta.</p>
+
+  <p class="caption">Hoy y mañana</p>
+  <div class="row">
+
+    <!-- 1 -->
+    <div class="col">
+      <div class="ctitle">1 · Lo que se construye ahora<small>Una sola meta. El arco grande, la hora enorme.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bd">Lunes 22 de septiembre · 11:05</div>
+          <div class="br">te quedan 5h 40m hasta las 23:00</div>
+          <div class="btrack"><span style="width:34%;background:var(--mint)"></span><span style="width:12%;background:var(--violet)"></span><span style="width:54%;background:rgba(148,163,184,.25)"></span></div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+
+        <div class="one">
+          <div class="ohead"><span class="olabel"><i>💼</i> Trabajo</span><span class="ocount"><b>3h 40m</b> de 8h</span></div>
+          <div class="bigarc">
+            <svg viewBox="0 0 220 124" role="img" aria-label="3 horas 40 minutos de 8 horas; a este ritmo paras a las 15:25">
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="14" stroke-linecap="round" pathLength="100" />
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="#38bdf8" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="46 100" />
+              <text class="acap" x="110" y="72" text-anchor="middle" font-size="9.5">A ESTE RITMO PARAS</text>
+              <text class="anum" x="110" y="102" text-anchor="middle" font-size="34">15:25</text>
+              <text class="aend" x="18" y="121" text-anchor="start" font-size="9.5">0h</text>
+              <text class="aend" x="202" y="121" text-anchor="end" font-size="9.5">8h</text>
+            </svg>
+          </div>
+          <p class="osub">Cuenta <b>Working at lululemon</b>, en marcha desde las 10:15.</p>
+        </div>
+      </div></div>
+      <p class="note">Con una sola meta el arco se lo puede permitir todo: la hora a 34 px y el total arriba. <b>Esto es FEAT-016 tal cual</b>, sin nada de lo de al lado.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="col">
+      <div class="ctitle">2 · Cuando haya tres<small>El mismo arco, en pequeño y en fila. Nada se rediseña.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bd">Lunes 22 de septiembre · 11:05</div>
+          <div class="br">te quedan 5h 40m hasta las 23:00</div>
+          <div class="btrack"><span style="width:34%;background:var(--mint)"></span><span style="width:12%;background:var(--violet)"></span><span style="width:54%;background:rgba(148,163,184,.25)"></span></div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+
+        <div class="arcs">
+          <div class="arc lead">
+            <span class="aname">💼 Trabajo</span>
+            <svg viewBox="0 0 104 58" role="img" aria-label="Trabajo, 3 horas 40 de 8 horas, paras a las 15:25">
+              <path d="M12 50 A 40 40 0 0 1 92 50" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="9" stroke-linecap="round" pathLength="100" />
+              <path d="M12 50 A 40 40 0 0 1 92 50" fill="none" stroke="#38bdf8" stroke-width="9" stroke-linecap="round" pathLength="100" stroke-dasharray="46 100" />
+            </svg>
+            <span class="ahour" style="color:#7dd3fc">15:25</span>
+            <span class="amin">3h 40m / 8h</span>
+          </div>
+          <div class="arc">
+            <span class="aname">📚 Estudiar</span>
+            <svg viewBox="0 0 104 58" role="img" aria-label="Estudiar, 25 de 60 minutos, acabas a las 11:40">
+              <path d="M12 50 A 40 40 0 0 1 92 50" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="9" stroke-linecap="round" pathLength="100" />
+              <path d="M12 50 A 40 40 0 0 1 92 50" fill="none" stroke="#f59e0b" stroke-width="9" stroke-linecap="round" pathLength="100" stroke-dasharray="42 100" />
+            </svg>
+            <span class="ahour" style="color:#fbbf24">11:40</span>
+            <span class="amin">25m / 1h</span>
+          </div>
+          <div class="arc">
+            <span class="aname">🏋️ Workout</span>
+            <svg viewBox="0 0 104 58" role="img" aria-label="Workout, sin minutos de 30, acabarías a las 11:35">
+              <path d="M12 50 A 40 40 0 0 1 92 50" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="9" stroke-linecap="round" pathLength="100" />
+            </svg>
+            <span class="ahour" style="color:#94a3b8">11:35</span>
+            <span class="amin">0m / 30m</span>
+          </div>
+        </div>
+        <p class="arclegend">La hora de cada uno: <b style="color:#94a3b8">cuándo la cumples si sigues así</b>.</p>
+      </div></div>
+      <p class="note">Tres arcos caben en 375 px con la hora legible a 14 px. Lo que se cae al encoger es <b>el texto de dentro</b>, no el arco: la hora baja debajo y el total se hace minúsculo. Por eso el arco aguanta y el donut no — un donut de 96 px tiene el agujero vacío.</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="col">
+      <div class="ctitle">3 · Dónde se marca<small>El mismo campo, que crece cuando hay más de una meta.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="form">
+          <div class="ftitle">Editar categoría</div>
+          <div class="flabel">Cómo la llamas</div><div class="finput">Trabajo</div>
+          <div class="flabel">Icono y color</div><div class="finput">💼 &nbsp;·&nbsp; azul</div>
+
+          <div class="flabel">Hoy, con una meta</div>
+          <div class="check">
+            <span class="box">✓</span>
+            <span><span class="ct">Esto es trabajo</span>
+            <p class="cw">Sus horas suman en el arco de trabajo de Hoy.</p></span>
+          </div>
+
+          <div class="arrow">↓</div>
+
+          <div class="flabel">El día que tengas varias</div>
+          <div class="check" style="flex-direction:column;gap:2px">
+            <span class="ct">¿Para qué cuenta esta categoría?</span>
+            <div class="goals">
+              <span class="g on"><i>💼</i> Trabajo</span>
+              <span class="g"><i>📚</i> Estudiar</span>
+              <span class="g"><i>🏋️</i> Workout</span>
+              <span class="g" style="color:var(--ink-dim)">+ nueva</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">La casilla de hoy y los botones de mañana son <b>el mismo campo</b>: mientras solo haya una meta se dibuja como casilla —un toque, cero preguntas—, y el día que haya dos se dibuja como lista. Nadie migra nada ni reaprende nada.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Los cuatro que nombraste, uno por uno</p>
+  <div class="map">
+    <div class="m yes">
+      <h3>💼 Trabajo</h3>
+      <div class="verdict">encaja · es FEAT-016</div>
+      <p>Categorías marcadas, minutos del día, objetivo de 8h. <b>Todo el cálculo ya está resuelto</b> en el plan del arquitecto.</p>
+    </div>
+    <div class="m yes">
+      <h3>📚 Estudiar</h3>
+      <div class="verdict">encaja · sale gratis</div>
+      <p>Es <b>exactamente la misma forma</b> que trabajo, con otro número: marcas la categoría y pones el objetivo. Si el dato se guarda bien hoy, esto no es una feature, es una fila más.</p>
+    </div>
+    <div class="m half">
+      <h3>🏋️ Workout</h3>
+      <div class="verdict">a medias · falta leerlo</div>
+      <p>Ya existe <code style="font-family:inherit;color:#fbbf24">is_workout</code> en <b>la actividad</b> (migración 060), pero <b>solo se puede escribir, no leer</b>: no está en el tipo <code style="font-family:inherit;color:#fbbf24">Activity</code> del API, así que hoy no se puede pintar su arco sin tocar el backend. Y «entrené o no» es un sí/no, no unos minutos: o le pones un objetivo en minutos, o el arco no es su forma.</p>
+    </div>
+    <div class="m no">
+      <h3>🌙 Sueño</h3>
+      <div class="verdict">no encaja · ya tiene lo suyo</div>
+      <p>Dormir <b>cruza la medianoche</b> y el módulo entero no sabe cruzarla. Además ya tiene su propio modelo —la hora de acostarte y la de levantarte de <b>FEAT-012, «la noche»</b>, que está en cola— y un puntero propio en tus ajustes. Su arco, si llega, cuelga de esa feature, no de esta.</p>
+    </div>
+  </div>
+
+  <p class="caption">La única decisión que hay que tomar hoy</p>
+  <div class="fork">
+    <div class="f">
+      <span class="tag">Opción 1</span>
+      <h3>Una casilla por concepto</h3>
+      <p>Lo que estaba planeado: <code>is_work</code> en la categoría y <code>vida_work_target_minutes</code> en tus ajustes. <b>Es lo más barato hoy</b> y la tajada 1 empieza esta tarde.</p>
+      <p>El precio llega en el segundo: «Estudiar» sería <b>otra columna, otra migración, otro campo en el formulario</b> y un componente que ya no sabe ser genérico. Al tercero, el formulario tiene cuatro casillas sueltas y nadie sabe de dónde salió el orden.</p>
+    </div>
+    <div class="f win">
+      <span class="tag">Opción 2 · la que te recomiendo</span>
+      <h3>Una meta, no una casilla</h3>
+      <p>Una tabla pequeña —<code>vida_goals</code>: nombre, icono, color, minutos objetivo— y en la categoría un <code>goal_id</code> que apunta a una. <b>FEAT-016 crea una sola meta</b>, «Trabajo, 8h», la primera vez que contestas la pregunta, y la pantalla nunca enseña más de una.</p>
+      <p>El día que quieras «Estudiar 1h» <b>no hay migración ni código nuevo</b>: es una fila, y la fila de arcos aparece sola. Cuesta una tabla más que la opción 1 — <b>una tarde, no una semana</b>— y se paga entera la primera vez que añadas la segunda.</p>
+    </div>
+    <div class="f">
+      <span class="tag">Lo que no cambia</span>
+      <h3>Elijas la que elijas</h3>
+      <p>El arco, el cálculo, la hora en el centro, la confesión de «sin dato» y la pregunta con botones <b>son idénticos en las dos</b>. Lo único que cambia es la forma del dato debajo, y por eso hay que decidirlo <b>antes</b> de escribir la migración — no después.</p>
+      <p>Si me dices <b>«opción 2»</b>, reescribo la tajada 1 con la meta y arrancamos. Si me dices <b>«opción 1, ya veremos»</b>, también arranco: es tu app y el coste es conocido.</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

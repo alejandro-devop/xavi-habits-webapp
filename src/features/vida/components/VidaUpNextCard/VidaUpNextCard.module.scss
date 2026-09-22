@@ -1,0 +1,204 @@
+/* «Lo que viene»: **mint, y punteado solo en el punto**.
+   El criterio 214 pide tres distinciones a la vez: que no se confunda con una
+   fila normal de la agenda, que no se confunda con la línea de AHORA (violeta
+   sólido) y que **nunca** use el trazo punteado violeta del aviso de FEAT-007.
+   Por eso el color sale de `--aura-ring-from` —el mint de la marca, el mismo
+   que usan `VidaDayBudget` y `VidaReviewBridge`— con `--color-success` de
+   respaldo, siempre por `color-mix` sobre el token: ni un literal, que es lo
+   que dejaría el texto ilegible en tema oscuro. */
+.row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+/* La misma canaleta de 2.75rem que el bloque y el hueco: la hora de la
+   plantilla cae en la misma regleta que las demás filas (criterio 371). */
+.gutter {
+  display: flex;
+  flex: 0 0 2.75rem;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  padding-top: 0.85rem;
+}
+
+.time {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Punteado: la tarjeta **no es** un tramo del día, es una propuesta. */
+.tick {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-top: 0.2rem;
+  border: 2px dashed color-mix(in srgb, var(--aura-ring-from, var(--color-success)) 65%, transparent);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1.5px solid color-mix(in srgb, var(--aura-ring-from, var(--color-success)) 40%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--aura-ring-from, var(--color-success)) 8%, var(--color-surface));
+}
+
+.kicker {
+  margin: 0;
+  min-width: 0;
+  color: color-mix(in srgb, var(--aura-ring-from, var(--color-success)) 75%, var(--color-text));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+/* El mismo color de categoría que la fila del bloque: lo que enseña la tarjeta
+   y lo que enseña la lista son la misma cosa (criterio 211). */
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+/* `min-width: 0` es lo que hace verdadero el criterio 213: sin él, un nombre
+   largo empuja la tarjeta y saca scroll horizontal en 375 px. */
+.body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* El botón: ancho entero, el peso visual de la tarjeta. Un toque y ya. */
+.play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.75rem 0.85rem;
+  border: none;
+  border-radius: 0.875rem;
+  background: var(--aura-ring-from, var(--color-success));
+  /* Tinta oscura sobre mint, y **es un literal a propósito**: el fondo es mint
+     en los dos temas (`#10b981` en claro, `#4edea3` en oscuro), así que lo que
+     rompería el contraste aquí sería el blanco —2,5:1 medido sobre el mint
+     claro—, no el literal. `#04261c` da 6,8:1 en claro y ~10:1 en oscuro, y es
+     el color que fija el render aprobado. */
+  color: #04261c;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+
+/* Qué falta para poder empezar (criterio 189): una línea, sin botón muerto. */
+.blocked {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* La frase de verdad, **pegada al botón y antes de las salidas**. */
+.truth {
+  display: flex;
+  gap: 0.45rem;
+  margin: 0;
+  min-width: 0;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.truthDot {
+  flex: 0 0 auto;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-top: 0.4rem;
+  border-radius: 999px;
+  background: var(--aura-ring-from, var(--color-success));
+}
+
+.exits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.15rem 0.75rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.exit {
+  padding: 0.15rem 0;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+}

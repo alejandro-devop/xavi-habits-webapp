@@ -54,8 +54,10 @@ let viewedDate: string
 vi.mock('@/features/vida/hooks/useActivityDayPlan', () => ({
   // Por fecha desde la tajada 4: la página pide el día visto y `VidaDayActions`
   // pide el mismo día de la semana pasada, y no pueden responder lo mismo.
-  useActivityDayPlanQuery: (date: string) =>
-    date === viewedDate ? planQuery : ready(plansByDate[date] ?? []),
+  useActivityDayPlanQuery: (date: string) => {
+    countCall('dayPlan')
+    return date === viewedDate ? planQuery : ready(plansByDate[date] ?? [])
+  },
   useAddDayPlanItemMutation: () => addMutation,
   useEditDayPlanItemMutation: () => editMutation,
   useRemoveDayPlanItemMutation: () => removeMutation,
@@ -83,7 +85,10 @@ vi.mock('@/features/vida/hooks/useActivities', () => ({
   }),
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
-  useVidaSuggestionsForDateQuery: () => suggestionsQuery,
+  useVidaSuggestionsForDateQuery: () => {
+    countCall('suggestions')
+    return suggestionsQuery
+  },
   // Desde la tajada 5: el bloque «Mañana» del lateral lee la plantilla entera
   // (`vidaItems`) para saber qué trae **mañana**, que no es el día visto.
   useVidaItemsQuery: () => itemsQuery,
@@ -98,7 +103,10 @@ vi.mock('@/features/vida/hooks/useVidaItems', () => ({
 // Las tres mutaciones de sesión entran desde la tajada 3: la hoja de registrar
 // crea y corrige, y el «···» de una sesión la quita del registro.
 vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
-  useActivityDayFollowUpsQuery: () => dayFollowUpsQuery,
+  useActivityDayFollowUpsQuery: () => {
+    countCall('dayFollowUps')
+    return dayFollowUpsQuery
+  },
   useCreateActivityFollowUpMutation: () => createFollowUpMutation,
   useUpdateActivityFollowUpMutation: () => updateFollowUpMutation,
   useDeleteActivityFollowUpMutation: () => deleteFollowUpMutation,
@@ -118,9 +126,19 @@ let patternsResult: {
   answerSuggestion: ReturnType<typeof vi.fn>
 }
 let patternsEnabled: boolean[]
+/**
+ * **Cuántas veces se pide cada cosa** (FEAT-010, criterio 204). «Lo que viene»
+ * se deriva de lo que la pantalla ya tiene: si alguna vez estrena una consulta
+ * o un hook, estos números lo dicen.
+ */
+let queryCalls: Record<string, number>
+function countCall(name: string) {
+  queryCalls[name] = (queryCalls[name] ?? 0) + 1
+}
 let updateItemMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 vi.mock('@/features/vida/hooks/useVidaPatterns', () => ({
   useVidaPatterns: (input: { enabled: boolean }) => {
+    countCall('patterns')
     patternsEnabled.push(input.enabled)
     return patternsResult
   },
@@ -149,7 +167,10 @@ let startSession: ReturnType<typeof vi.fn>
 let finishSession: ReturnType<typeof vi.fn>
 
 vi.mock('@/features/vida/hooks/useVidaOpenSession', () => ({
-  useVidaOpenSession: () => openSession,
+  useVidaOpenSession: () => {
+    countCall('openSession')
+    return openSession
+  },
   useVidaSessionPlannedMinutes: () => null,
 }))
 vi.mock('@/features/vida/hooks/useVidaSessionActions', () => ({
@@ -184,6 +205,26 @@ function openFollowUp(activityId: string, startTime = '09:00'): ActivityFollowUp
       category: { id: 'c1', name: 'Cuidado', color: '#10B981', icon: 'heart' },
     },
   }
+}
+
+/**
+ * **La fila del plan, no la tarjeta de «Lo que viene»** (FEAT-010). Desde que
+ * la tarjeta existe, el nombre de lo propuesto se lee **dos veces** en la
+ * pantalla **a propósito**: el bloque se queda en la lista, en su hora y con su
+ * «▶ Empezar», y la tarjeta es una segunda entrada al mismo gesto (criterio
+ * 211). Buscar el nombre a secas encuentra los dos; esto se queda con el del
+ * plan.
+ */
+function planRow(title: string): HTMLElement {
+  const row = screen
+    .getAllByText(title)
+    .map((node) => node.closest('li'))
+    .find(
+      (li): li is HTMLLIElement =>
+        li !== null && li.querySelector('[aria-label="Lo que viene"]') === null,
+    )
+  if (!row) throw new Error(`No hay fila del plan para «${title}»`)
+  return row
 }
 
 function ready<T>(data: T): Query<T> {
@@ -291,6 +332,12 @@ beforeEach(() => {
   patternsResult = { patterns: [], answerSuggestion: vi.fn() }
   updateItemMutation = { mutate: vi.fn(), isPending: false, isError: false }
   patternsEnabled = []
+  queryCalls = {}
+  // Las notas de aparato viven fuera de React y **no se limpian solas**.
+  // Devolverlas aquí y no al final de cada prueba: una limpieza al final solo
+  // corre si la prueba pasa, y una asercion caída dejaría a las siguientes un
+  // día con bloques «no se pudo» —el fallo en cascada que esconde la causa.
+  useVidaDeviceNotesStore.setState({ blockNotes: {} })
   startSession = vi.fn().mockResolvedValue({ ok: true })
   finishSession = vi.fn().mockResolvedValue({ ok: true })
 })
@@ -314,7 +361,7 @@ describe('VidaHoyPage — el día con plan', () => {
     // un bloque **cuya hora ya pasó** se lee dentro de «planeado 45 min ·
     // pendiente» (criterio 39), así que se busca en su fila y no suelta: lo que
     // este caso afirma —que el bloque dice cuánto dura— no cambia.
-    expect(screen.getByText('Bañarme').closest('li')).toHaveTextContent('45 min')
+    expect(planRow('Bañarme')).toHaveTextContent('45 min')
     expect(screen.getByText('1 h')).toBeInTheDocument()
   })
 
@@ -372,7 +419,7 @@ describe('VidaHoyPage — el día con plan', () => {
     expect(screen.getByText('Ahora')).toBeInTheDocument()
     expect(Element.prototype.scrollIntoView).toHaveBeenCalledWith({ block: 'center' })
     // Lo de antes de la marca sigue en el documento: no se pliega ni se oculta.
-    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+    expect(planRow('Bañarme')).toBeInTheDocument()
   })
 
   /**
@@ -628,7 +675,7 @@ describe('VidaHoyPage — los estados', () => {
 
     expect(screen.getByText(/No pudimos cargar lo que trae tu plantilla/)).toBeInTheDocument()
     // Y la agenda se pinta igual: el plan sí cargó.
-    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+    expect(planRow('Bañarme')).toBeInTheDocument()
   })
 })
 
@@ -1172,7 +1219,7 @@ describe('VidaHoyPage — lo real encima de lo planeado (FEAT-004, tajada 2)', (
     expect(screen.getByText('Llamada con el banco')).toBeInTheDocument()
     expect(screen.getByText('8:50 – 9:15 · 25m')).toBeInTheDocument()
     // Y el plan **no se toca**: los tres bloques siguen ahí.
-    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+    expect(planRow('Bañarme')).toBeInTheDocument()
   })
 
   it('criterio 23 — el movido deja sombra con «→ hecho a las 11:40» y lo real donde ocurrió', () => {
@@ -1258,7 +1305,7 @@ describe('VidaHoyPage — lo real encima de lo planeado (FEAT-004, tajada 2)', (
     renderWithProviders(<VidaHoyPage />)
 
     expect(screen.getByText(/No pudimos cargar lo que viviste/)).toBeInTheDocument()
-    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+    expect(planRow('Bañarme')).toBeInTheDocument()
     // Y **no se afirma nada** de lo vivido: ni tramos nuevos ni etiquetas.
     expect(screen.queryByText(/^sin dato /)).not.toBeInTheDocument()
     expect(screen.queryByText('✓ calcado')).not.toBeInTheDocument()
@@ -1511,7 +1558,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
     // Son las 9:24: «Bañarme» (08:00–08:45) ya pasó y «Leer un rato» (10:00) no.
     renderWithProviders(<VidaHoyPage />)
 
-    const banarme = screen.getByText('Bañarme').closest('li')!
+    const banarme = planRow('Bañarme')
     expect(within(banarme).getByText('pendiente')).toBeInTheDocument()
     expect(screen.queryByText('no hecho')).not.toBeInTheDocument()
     const leer = screen.getByText('Leer un rato').closest('li')!
@@ -1531,7 +1578,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
   it('criterios 40 y 60 — las tres salidas, las tres a un toque y del mismo tipo', () => {
     renderWithProviders(<VidaHoyPage />)
 
-    const banarme = screen.getByText('Bañarme').closest('li')!
+    const banarme = planRow('Bañarme')
     const grupo = within(banarme).getByRole('group', { name: 'Qué pasó con Bañarme' })
     const botones = within(grupo).getAllByRole('button')
     expect(botones.map((boton) => boton.textContent)).toEqual([
@@ -1546,7 +1593,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
   it('criterio 41 — «Lo hice» registra la hora y la duración planeadas', () => {
     renderWithProviders(<VidaHoyPage />)
 
-    const banarme = screen.getByText('Bañarme').closest('li')!
+    const banarme = planRow('Bañarme')
     fireEvent.click(within(banarme).getByRole('button', { name: 'Lo hice' }))
 
     expect(createFollowUpMutation.mutate).toHaveBeenCalledWith({
@@ -1568,7 +1615,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
     planQuery = ready([block('b9', 'Estirar', '09:00', '10:00')])
     renderWithProviders(<VidaHoyPage />)
 
-    const fila = screen.getByText('Estirar').closest('li')!
+    const fila = planRow('Estirar')
     // A esta hora el bloque aún no es «pendiente», así que las salidas no se
     // ofrecen: esto comprueba la red de debajo, no la puerta.
     expect(within(fila).queryByRole('button', { name: 'Lo hice' })).not.toBeInTheDocument()
@@ -1640,7 +1687,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
   it('criterio 42 — «Hice otra cosa» abre la hoja con el rato del bloque puesto', () => {
     renderWithProviders(<VidaHoyPage />)
 
-    const banarme = screen.getByText('Bañarme').closest('li')!
+    const banarme = planRow('Bañarme')
     fireEvent.click(within(banarme).getByRole('button', { name: 'Hice otra cosa' }))
 
     const hoja = screen
@@ -1662,7 +1709,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
     ])
     renderWithProviders(<VidaHoyPage />)
 
-    const banarme = screen.getByText('Bañarme').closest('li')!
+    const banarme = planRow('Bañarme')
     expect(within(banarme).getByText('no hecho')).toBeInTheDocument()
     expect(within(banarme).getByText('en su lugar,', { exact: false })).toBeInTheDocument()
     const via = within(banarme).getByRole('link', { name: 'Llamada con el banco' })
@@ -1675,7 +1722,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
   it('criterios 43, 44 y 45 — «No se pudo», con razón opcional y dicho en el aparato', () => {
     renderWithProviders(<VidaHoyPage />)
 
-    const banarme = () => screen.getByText('Bañarme').closest('li')!
+    const banarme = () => planRow('Bañarme')
     fireEvent.click(within(banarme()).getByRole('button', { name: 'No se pudo' }))
 
     // Marcado al instante: no contar nada ya es una respuesta válida.
@@ -1801,7 +1848,7 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
     expect(screen.queryByRole('button', { name: 'Lo hice' })).not.toBeInTheDocument()
     expect(screen.queryByText('Sin dato')).not.toBeInTheDocument()
     // Y el plan se sigue viendo.
-    expect(screen.getByText('Bañarme')).toBeInTheDocument()
+    expect(planRow('Bañarme')).toBeInTheDocument()
   })
 
   it('criterio 59 — nada de lo nuevo usa una palabra de culpa', () => {
@@ -2372,5 +2419,320 @@ describe('VidaHoyPage — el hueco se valida contra lo vivido (criterios 233 a 2
     expect(createFollowUpMutation.mutate).toHaveBeenCalledTimes(1)
     expect(updateFollowUpMutation.mutate).not.toHaveBeenCalled()
     expect(deleteFollowUpMutation.mutate).not.toHaveBeenCalled()
+  })
+})
+
+/* ── «Lo que viene» (FEAT-010, tajada 1) ────────────────────────────────────
+ *
+ * Criterios 180, 183, 186, 188, 189, 196, 204, 205, 207, 208, 210, 211, 215,
+ * 216, 370–376, 378 y 379.
+ *
+ * Con el reloj del fichero —viernes 18 a las 9:24— y el plan de siempre
+ * (Bañarme 8:00, Leer un rato 10:00, Cocinar 13:00), la regla del criterio 375
+ * propone **Bañarme**: es el más reciente cuya hora ya llegó.
+ */
+
+/** La tarjeta, o `null` si no se pintó **ningún** nodo (criterio 180). */
+function upNextCard(): HTMLElement | null {
+  return screen.queryByRole('region', { name: 'Lo que viene' })
+}
+
+describe('VidaHoyPage — «Lo que viene»', () => {
+  it('va dentro de la lista, justo debajo de la línea de AHORA cuando no hay nada en marcha (criterio 370)', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const card = upNextCard()
+    expect(card).not.toBeNull()
+
+    const row = card!.closest('li')!
+    // Hija directa del `<ol>` de la agenda, no colgada fuera de la lista.
+    expect(row.parentElement?.tagName).toBe('OL')
+    const previous = row.previousElementSibling
+    expect(previous).not.toBeNull()
+    expect(previous).toHaveTextContent('Ahora')
+  })
+
+  it('lo que se lee, palabra por palabra del render (criterios 183, 371, 372, 373)', () => {
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    expect(within(card).getByText('Lo que viene')).toBeInTheDocument()
+    expect(within(card).getByText('Bañarme')).toBeInTheDocument()
+    expect(within(card).getByText('En tu plantilla, a las 8:00 · suele durarte 45 min')).toBeInTheDocument()
+    expect(
+      within(card).getByText(
+        'Arranca cuando pulses, no a las 8:00. Y los 45 min son lo que suele durarte: se registra lo que dure de verdad.',
+      ),
+    ).toBeInTheDocument()
+    // La hora de la plantilla, en la canaleta, y **ninguna hora de fin**.
+    expect(card.closest('li')!.querySelector('time')).toHaveTextContent('8:00')
+    expect(card.textContent ?? '').not.toMatch(/acabarías|hasta las/i)
+  })
+
+  it('un solo toque arranca, y **la duración planeada no viaja** (criterios 188, 196, 374)', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+
+    // Éste es **el** criterio de la feature: se manda la actividad y nada más.
+    // Ni los 45 min del plan, ni las 8:00 de la ficha: la hora la pone el reloj
+    // de la mutación y la duración la pone cuándo se termine.
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+    // Sin hoja, sin elegir, sin confirmar: entre el clic y la mutación no se
+    // abre nada.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('con algo en marcha cuelga de su fila y dice qué se dará por terminada (criterios 370 y 378)', () => {
+    openSession = {
+      session: openFollowUp('a-fuera', '09:00'),
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    dayFollowUpsQuery = ready([openFollowUp('a-fuera', '09:00')])
+
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    expect(card).toHaveTextContent(
+      'Al hacerlo, «Leer un rato» se dará por terminada a esa hora.',
+    )
+    const previous = card.closest('li')!.previousElementSibling
+    expect(previous).toHaveTextContent('Leer un rato')
+    // El cierre **no lo manda la tarjeta**: es la D1 de FEAT-013, dentro de
+    // `start`. Aquí no sale ninguna mutación de cierre por su cuenta.
+    expect(finishSession).not.toHaveBeenCalled()
+    expect(updateFollowUpMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('lo que dice la tarjeta y lo que dice la lista son lo mismo (criterio 211)', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const card = upNextCard()!
+    const row = planRow('Bañarme')
+    // El bloque **se queda en la lista, en su hora**: la tarjeta es una segunda
+    // entrada al mismo gesto, no una mudanza.
+    expect(row).toHaveTextContent('Bañarme')
+    expect(row).toHaveTextContent('45 min')
+    expect(card).toHaveTextContent('Bañarme')
+    expect(card).toHaveTextContent('45 min')
+    expect(row.querySelector('time')).toHaveTextContent('8:00')
+    expect(card.closest('li')!.querySelector('time')).toHaveTextContent('8:00')
+  })
+
+  it('las salidas van debajo, con la N real y ninguna en un menú (criterio 376)', () => {
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    // Tres bloques abiertos, uno propuesto: quedan dos.
+    fireEvent.click(within(card).getByRole('button', { name: 'Ver las otras 2' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+    expect(within(card).getByRole('button', { name: 'Empezar otra cosa' })).toBeInTheDocument()
+    // «Ya la hice» es de la tajada 2: aquí todavía no se escribe.
+    expect(within(card).queryByRole('button', { name: 'Ya la hice' })).not.toBeInTheDocument()
+  })
+
+  it('no propone lo ya resuelto: pasa al siguiente (criterio 186)', () => {
+    // Bañarme ya tiene su sesión: la regla salta a «Leer un rato»… que a las
+    // 9:24 no ha llegado, así que se propone por ser el siguiente por hora.
+    dayFollowUpsQuery = ready([
+      {
+        ...openFollowUp('a-b1', '08:00'),
+        id: 'f-hecha',
+        durationMinutes: 45,
+        isOpen: false,
+        endTime: '08:45',
+        activity: {
+          id: 'a-b1',
+          title: 'Bañarme',
+          category: { id: 'c1', name: 'Cuidado', color: '#10B981', icon: 'heart' },
+        },
+      },
+    ])
+
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(upNextCard()).toHaveTextContent('Leer un rato')
+    expect(upNextCard()).not.toHaveTextContent('Bañarme')
+  })
+
+  it('en un día pasado o futuro no se pinta ningún nodo (criterio 180)', () => {
+    viewedDate = '2026-09-17'
+    window.history.pushState({}, '', '/app/vida/hoy?d=2026-09-17')
+    plansByDate['2026-09-17'] = PLAN
+
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(upNextCard()).toBeNull()
+    window.history.pushState({}, '', '/')
+  })
+
+  it('con lo vivido en vuelo o caído no afirma nada (criterios 208 y 209)', () => {
+    dayFollowUpsQuery = { isPending: true, isError: false, fetchStatus: 'fetching', refetch: vi.fn() }
+    const { unmount } = renderWithProviders(<VidaHoyPage />)
+    expect(upNextCard()).toBeNull()
+    unmount()
+
+    dayFollowUpsQuery = { isPending: false, isError: true, fetchStatus: 'idle', refetch: vi.fn() }
+    renderWithProviders(<VidaHoyPage />)
+    expect(upNextCard()).toBeNull()
+  })
+
+  it('sin poder empezar no pinta un botón que no va a funcionar (criterio 189)', () => {
+    openSession = {
+      session: null,
+      startInstant: null,
+      isFromAnotherDay: true,
+      isDisabled: false,
+      isPending: false,
+    }
+
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    expect(within(card).queryByRole('button', { name: /^Empezar Bañarme ahora$/ })).not.toBeInTheDocument()
+    expect(card).toHaveTextContent(
+      'Tienes una sesión de otro día sin cerrar. Contéstala en la barra de arriba y podrás empezar esto.',
+    )
+  })
+
+  it('cuesta cero: las mismas consultas con tarjeta y sin ella (criterio 204)', () => {
+    // Sin tarjeta: todo el plan resuelto en este aparato.
+    useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b1', null)
+    useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b2', null)
+    useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b3', null)
+    const { unmount } = renderWithProviders(<VidaHoyPage />)
+    expect(upNextCard()).toBeNull()
+    const sinTarjeta = { ...queryCalls }
+    unmount()
+
+    queryCalls = {}
+    useVidaDeviceNotesStore.setState({ blockNotes: {} })
+    renderWithProviders(<VidaHoyPage />)
+    expect(upNextCard()).not.toBeNull()
+
+    expect(queryCalls).toEqual(sinTarjeta)
+  })
+
+  it('el reloj corre sin mover el foco ni remontar la tarjeta (criterios 205 y 207)', async () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const boton = screen.getByRole('button', { name: 'Empezar Bañarme ahora' })
+    boton.focus()
+    expect(document.activeElement).toBe(boton)
+    const volverAEnfocar = vi.spyOn(boton, 'focus')
+
+    await act(async () => {
+      vi.advanceTimersByTime(60_000)
+    })
+
+    expect(document.activeElement).toBe(boton)
+    expect(document.activeElement).not.toBe(document.body)
+    // Un tic **no mueve nada**: la tarjeta no toca el foco (criterio 205).
+    expect(volverAEnfocar).not.toHaveBeenCalled()
+    // El titular es lo único que se anuncia, y en `polite` (criterio 207).
+    const vivo = upNextCard()!.querySelector('[aria-live]')
+    expect(vivo).toHaveAttribute('aria-live', 'polite')
+    expect(upNextCard()!.querySelector('[role="alert"]')).toBeNull()
+  })
+
+  it('al cambiar de ancla la tarjeta se mueve y el foco vuelve al botón, nunca a `body` (criterios 205 y 379)', async () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const boton = screen.getByRole('button', { name: 'Empezar Bañarme ahora' })
+    boton.focus()
+    const fila = upNextCard()!.closest('li')!
+    expect(fila.previousElementSibling).toHaveTextContent('Ahora')
+    const volverAEnfocar = vi.spyOn(boton, 'focus')
+
+    // Arranca algo: el ancla pasa de la marca de AHORA a la fila de la sesión
+    // nueva y la tarjeta **cambia de sitio dentro del `<ol>`**. Es el gesto
+    // principal de la feature, no un caso raro.
+    openSession = {
+      session: openFollowUp('a-fuera', '09:00'),
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    dayFollowUpsQuery = ready([openFollowUp('a-fuera', '09:00')])
+    await act(async () => {
+      vi.advanceTimersByTime(60_000)
+    })
+
+    const despues = upNextCard()!.closest('li')!
+    // El mismo nodo en otro sitio: React la **mueve**, no la remonta…
+    expect(despues).toBe(fila)
+    expect(despues.previousElementSibling).toHaveTextContent('Leer un rato')
+    // …y mover un nodo que contiene al elemento enfocado manda el foco a
+    // `body` en el navegador real (medido en Chromium). La tarjeta se lo
+    // devuelve al botón equivalente en el mismo commit.
+    expect(volverAEnfocar).toHaveBeenCalled()
+    expect(document.activeElement).toBe(boton)
+    expect(document.activeElement).not.toBe(document.body)
+  })
+
+  it('lo que vive en `aria-live` es lo que cambia, no el rótulo (criterio 207)', async () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const vivos = upNextCard()!.querySelectorAll('[aria-live]')
+    expect(vivos).toHaveLength(1)
+    const vivo = vivos[0]!
+    expect(vivo).toHaveAttribute('aria-live', 'polite')
+    // La región se llama «Lo que viene»; lo que se anuncia es **el titular**.
+    expect(vivo).toHaveTextContent('Bañarme')
+    expect(vivo.textContent).not.toContain('Lo que viene')
+
+    // Cambia lo propuesto sin tocar el reloj: «Bañarme» queda resuelto y la
+    // regla pasa a «Leer un rato».
+    await act(async () => {
+      useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b1', null)
+    })
+
+    const despues = upNextCard()!.querySelector('[aria-live]')!
+    // El mismo nodo con otro texto: eso es lo que un lector de pantalla
+    // anuncia. Una región viva cuyo texto nunca cambia no dice nada.
+    expect(despues).toBe(vivo)
+    expect(despues).toHaveTextContent('Leer un rato')
+    expect(upNextCard()!.querySelector('[role="alert"]')).toBeNull()
+  })
+
+  it('el nombre recortado sigue disponible entero (criterio 213)', () => {
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    // `.name` recorta con ellipsis: el nombre completo tiene que quedar a mano
+    // también para el ratón, no solo en el `aria-label` del botón.
+    expect(within(card).getByText('Bañarme')).toHaveAttribute('title', 'Bañarme')
+  })
+
+  it('ni una palabra de reproche en la pantalla con tarjeta (criterio 210)', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const texto = upNextCard()!.textContent ?? ''
+    for (const palabra of [
+      'tarde',
+      'te saltaste',
+      'perdiste',
+      'fallaste',
+      'deberías',
+      'desperdicio',
+      'vacío',
+      'todavía no has',
+    ]) {
+      expect(texto.toLowerCase()).not.toContain(palabra)
+    }
+  })
+
+  it('no pinta ninguna fila de hueco ni toca lo de FEAT-011 (criterio 216)', () => {
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    expect(card).not.toHaveTextContent('Libre')
+    expect(within(card).queryByRole('button', { name: /Registrar lo que hice/ })).not.toBeInTheDocument()
   })
 })

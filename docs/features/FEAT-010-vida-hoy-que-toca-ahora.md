@@ -1,11 +1,11 @@
 ---
 id: FEAT-010
 title: Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic
-status: planned
+status: building
 architect: yes    # vive dentro de la lista de la agenda y se mueve con la sesión en marcha, y retira dos superficies de FEAT-003 derogando criterios entregados
 area: features/vida
 requested: 2026-09-22
-updated: 2026-09-22   # plan escrito: tarjeta dentro del bucle, util puro nuevo y retirada contada consumidor a consumidor
+updated: 2026-09-22   # tajada 1 **aceptada** en segunda revisión (205, 207 y 213 cerrados; 212, 214 y 218 a mano por el usuario). Siguiente: tajada 2
 ---
 
 # FEAT-010 — Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic
@@ -375,7 +375,7 @@ y, al explicarle qué hacían:
 
 | # | What it does | State |
 |---|---|---|
-| 1 | **«Lo que viene», dentro de la línea, con la promesa escrita y un clic.** Debajo de lo que está pasando (o en la línea de AHORA), la siguiente cosa de la plantilla con «suele durarte N», **la frase de verdad siempre**, «▶ Empezar ahora» de un solo toque, y las salidas pequeñas debajo. **Ya es útil sola, y es la feature entera en su caso normal:** el usuario pulsa. Criterios 180, 183, 184, 186, 187, 188, 189, 196, 203–217, 370–376, 378, 379. | pending |
+| 1 | **«Lo que viene», dentro de la línea, con la promesa escrita y un clic.** Debajo de lo que está pasando (o en la línea de AHORA), la siguiente cosa de la plantilla con «suele durarte N», **la frase de verdad siempre**, «▶ Empezar ahora» de un solo toque, y las salidas pequeñas debajo. **Ya es útil sola, y es la feature entera en su caso normal:** el usuario pulsa. Criterios 180, 183, 184, 186, 187, 188, 189, 196, 203–217, 370–376, 378, 379. | aceptada |
 | 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo «· se pasó de la hora» con «Ya la hice» escrita, la mitad «ya llegó» de la regla de elección, y el momento en que la plantilla se acabó: cuánto te queda de día y «Empezar algo». Criterios 192, 193, 197, 375 (segunda mitad), 377. | pending |
 | 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con sus derogaciones escritas (FEAT-003 18, 19, 23 y la mitad del 48; FEAT-007 la mitad del 91), «+ otra cosa» y «Armar mañana» intactos, y los cuatro caminos comprobados uno a uno. Criterios 380–385. | pending |
 
@@ -738,7 +738,7 @@ y se cierra en la tajada 2. Queda anotado, no reescrito.
 
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
-| 1 | **«Lo que viene» dentro de la línea, con la promesa y un clic.** La regla entera, el anclaje, la tarjeta y el arranque de un toque. Sin candidatos, no se pinta nada (eso es la tajada 2). | **crea** `utils/vida-up-next.utils.ts` + `.test.ts` · **crea** `components/VidaUpNextCard/{VidaUpNextCard.tsx,.module.scss,index.ts}` · `VidaHoyPage.tsx:8` (import), tras `:260` (el `useMemo`), tras `:321` (`usualByActivityId`), `:647` (`map`→`flatMap` + `renderEntry`), antes de `:642` (`upNextCard`) · `vida-patterns.utils.ts` tras `:981` + su test **solo si FEAT-011 t3 no ha llegado** · `VidaHoyPage.test.tsx` | 180, 183, 184, 186, 187, 188, 189, 196, 203, 204, 205, 206, 207, 208, 210, 211, 212, 213, 214, 215, 216, 217, 370, 371, 372, 373, 374, **375 entero**, 376, 378, 379 · 209 su primera mitad | pending |
+| 1 | **«Lo que viene» dentro de la línea, con la promesa y un clic.** La regla entera, el anclaje, la tarjeta y el arranque de un toque. Sin candidatos, no se pinta nada (eso es la tajada 2). | **crea** `utils/vida-up-next.utils.ts` + `.test.ts` · **crea** `components/VidaUpNextCard/{VidaUpNextCard.tsx,.module.scss,index.ts}` · `VidaHoyPage.tsx:8` (import), tras `:260` (el `useMemo`), tras `:321` (`usualByActivityId`), `:647` (`map`→`flatMap` + `renderEntry`), antes de `:642` (`upNextCard`) · `vida-patterns.utils.ts` tras `:981` + su test **solo si FEAT-011 t3 no ha llegado** · `VidaHoyPage.test.tsx` | 180, 183, 184, 186, 187, 188, 189, 196, 203, 204, 205, 206, 207, 208, 210, 211, 212, 213, 214, 215, 216, 217, 370, 371, 372, 373, 374, **375 entero**, 376, 378, 379 · 209 su primera mitad | aceptada |
 | 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo, «Ya la hice» y la cara apagada con lo que queda de día. | `utils/vida-up-next.utils.ts` (`variant: 'empty'`, `isOverdue`, `showDidIt`) + su test · `VidaUpNextCard.tsx` y su `.module.scss` (trazo apagado y punteado) · `VidaHoyPage.tsx` (pasar `budget`/`dayHours.endTime` y enganchar `markBlockDone` en `:474`) · `VidaHoyPage.test.tsx` (los números coinciden con `VidaDayBudget`) | 192, 193, 197, 377 · 209 su segunda mitad · 218 (el usuario) | pending |
 | 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con los cuatro caminos comprobados uno a uno. | ver el plan de retirada | 380, 381, 382, 383, 384, 385 | pending |
 
@@ -855,3 +855,646 @@ misma rama**. Con eso dado, el orden es:
   arriba está leído sobre `main` (`30a0d40`). Las líneas de `VidaHoyPage.tsx`,
   `VidaLogSessionSheet.tsx` y `vida-execution.utils.ts` **se habrán movido** para
   cuando se construya: se localizan por el texto citado, no por el número.
+
+## 3. Construction — feature-builder
+
+### Tajada 1 — «Lo que viene», dentro de la línea, con la promesa y un clic
+
+**Resumen para el revisor:**
+
+1. Dentro del `<ol>` de la agenda de Hoy, **justo debajo de lo que está pasando**
+   (o de la línea de AHORA), sale una tarjeta mint que dice qué toca luego según
+   el plan, con «suele durarte N», la frase de verdad **siempre**, y un
+   «▶ Empezar ahora» que **arranca en un solo toque**.
+2. Vive en `utils/vida-up-next.utils.ts` (puro, 20 tests) +
+   `components/VidaUpNextCard/` + cuatro añadidos en `VidaHoyPage.tsx`.
+3. **Lo que más probablemente rompí:** el `map` del bucle de la agenda pasó a
+   `flatMap` y su cuerpo se **extrajo tal cual** a `renderEntry(entry)`. Es un
+   corta y pega de 148 líneas: si algo de la agenda se pinta raro —una fila
+   perdida, una `key` duplicada, el `ref` de «Ahora»—, **mirad ahí primero**. Y
+   lo segundo: **el nombre de lo propuesto se lee ahora dos veces en pantalla a
+   propósito** (criterio 211), lo que rompió 10 tests de `VidaHoyPage.test.tsx`
+   que hacían `getByText('Bañarme')`; los arreglé con un ayudante `planRow()`,
+   no cambiando la pantalla.
+
+**Lo que se construyó**
+
+| Archivo | Qué lleva |
+|---|---|
+| `src/features/vida/utils/vida-up-next.utils.ts` **(nuevo)** | Las cuatro funciones del plan: `collectResolvedBlockIds` (las tres fuentes del 186), `pickUpNextBlock` (la regla del 375 entera + el desempate del 184), `findUpNextAnchorId` (los cuatro anclajes del 370) y `buildUpNext` (todos los textos escritos). **Sin una sola constante de minutos.** |
+| `src/features/vida/utils/vida-up-next.utils.test.ts` **(nuevo)** | 20 casos: los tres del 375, los tres del 184, los cuatro anclajes del 370, los textos del 183/371/372/373/376/378, el 189 y el barrido de lenguaje del 210. |
+| `src/features/vida/components/VidaUpNextCard/{VidaUpNextCard.tsx,.module.scss,index.ts}` **(nuevo)** | El `<li>` tonto, copiado de `VidaBlockHint`: canaleta de `2.75rem` con la hora en gris, trazo **mint** por `color-mix` sobre `--aura-ring-from` y punto **punteado**. |
+| `src/features/vida/pages/VidaHoyPage.tsx` | Dos `import`, el `useMemo` de `upNext` (debajo del de `usualDurationsByActivity`, como pedía el plan), `const upNextCard`, y el bucle de la agenda: `map` → `flatMap` con `renderEntry(entry)` extraído **sin tocar su contenido**. |
+| `src/features/vida/pages/VidaHoyPage.test.tsx` | 14 casos nuevos, el ayudante `planRow()` y contadores de consultas (`queryCalls`) para el criterio 204. |
+
+**Por qué así, y qué descarté**
+
+- **Tres desvíos del plan, los tres dichos en voz alta:**
+  1. **`formatDurationMinutes` en vez de `formatDurationFromMinutes`.** El plan
+     nombraba la segunda, que escribe «30m» y «4h». El render aprobado escribe
+     «30 min» y «4 h», que es lo que dice el criterio 183 literalmente — y es
+     además **la misma función que usa la fila del bloque**, que es lo que hace
+     verdadero el criterio 211. Mandó el render.
+  2. **El artículo de la frase de verdad se elige por el número**: «los 30 min»,
+     «las 4 h». El criterio 373 cita la frase con 30 min; «los 4 h» no se lee en
+     castellano y el criterio 373 exige la misma frase **con 4 h**.
+  3. **`usualDurationsByActivityId` no se creó**: FEAT-011 tajada 3 ya la dejó en
+     `main` y **ya estaba instanciada** en `VidaHoyPage.tsx` como
+     `usualDurationsByActivity`. Se consume esa, como mandaba el plan.
+- **La duración planeada no viaja a la sesión, y hay un test que lo afirma con
+  una igualdad exacta**: `expect(startSession.mock.calls[0]).toEqual(['a-b1'])`.
+  Un argumento, el `activityId`. Ni los 45 min del plan, ni las 8:00 de la ficha.
+  El camino fácil aquí era pasar `start(activityId, startTime)` —la firma lo
+  admite, la usa la hoja— y habría registrado la hora de la plantilla en vez de
+  la del reloj; por eso el test compara el array entero y no solo el primer
+  argumento.
+- **Lo que no se creó**, como pedía el plan: ni `kind` nuevo en
+  `buildDayExecution`, ni hook, ni consulta, ni temporizador, ni hoja nueva, ni
+  documento GraphQL, ni icono. «Ver las otras N» y «Empezar otra cosa» llaman las
+  dos a `openLogSheet({ mode: 'start' })` (D1, opción (c)): cero UI nueva.
+- **El literal `#04261c`** es el único color escrito a mano, y está comentado en
+  el `.scss`: es la tinta **sobre** el botón mint, que es mint en los dos temas.
+  Lo que rompería el contraste ahí sería el blanco (2,5:1 medido sobre `#10b981`).
+
+**Verificación**
+
+| Qué | Resultado |
+|---|---|
+| `pnpm typecheck` | limpio |
+| `pnpm lint` | **14 errores / 0 warnings** — la línea base exacta. (Tuve uno de más, `NO_COULD_NOT` sin usar en el test nuevo; borrado.) |
+| `pnpm test` (línea base al empezar) | `Tests 2 failed | 1744 passed (1746)` — los dos de `SearchSelect`. `IconPicker` no apareció. |
+| `pnpm test` (al terminar) | `Tests 2 failed | 1778 passed (1780)` — **los mismos dos**. +34 tests (20 del util, 14 de la página). |
+| `pnpm vitest run VidaHoyPage.test.tsx` | `138 passed (138)` |
+| `pnpm build` | exit 0. Chunk inicial **1.111,79 kB** (línea base 1.106,50) → **+5,29 kB**, que son el util y el componente. `app-icons` **620,20 kB, sin mover**: no entró ningún icono nuevo al arranque. |
+| `graphify update .` | hecho (4037 nodos) |
+
+**Criterios que cierra, uno a uno**
+
+- **180** ✔ Cuatro puertas en el `useMemo`: `isToday`, `nowMinutes !== null`, el
+  reloj dentro de `[dayStart, dayEnd)` y un ancla. Sin todas, `upNext` es `null`
+  y **no se pinta ningún nodo**. Test: en `?d=2026-09-17` no hay región.
+- **183, 371, 372, 373** ✔ Test de página que compara los textos literales:
+  «Lo que viene», «En tu plantilla, a las 8:00 · suele durarte 45 min», la frase
+  de verdad entera, la hora en el `<time>` de la canaleta y **ninguna hora de
+  fin**. La costumbre manda sobre la plantilla: test del util.
+- **184, 375** ✔ Los seis casos, en el test del util (11:05→11:30 · 13:40→13:00
+  y no 18:00 · 20:00→18:00 · inicio menor · menos duración · orden de la agenda).
+- **186** ✔ Las tres fuentes en `collectResolvedBlockIds`, con test del util y
+  test de página (con Bañarme registrado, propone «Leer un rato»).
+- **187** ✔ «Empezar otra cosa» llama a `openLogSheet({ mode: 'start' })`, la
+  misma hoja. Test: abre `role="dialog"`.
+- **188** ✔ `isSessionBusy={sessionActions.isBusy}` — **la misma variable** que
+  ya frena el «▶ Empezar» del bloque, que ya era de página. Test: un clic, una
+  llamada.
+- **189** ✔ Con `isFromAnotherDay`, no hay botón y sale la línea que lleva a la
+  barra. Test de página.
+- **196** ✔ `start(activityId)` **sin hora**: la pone la mutación. Test de la
+  igualdad exacta del array de argumentos.
+- **203** ✔ No se tocó nada de la barra fija (`AppLayout`).
+- **204** ✔ Test con contadores: **las mismas consultas** con tarjeta y sin ella
+  (`expect(queryCalls).toEqual(sinTarjeta)`). Cero hooks nuevos.
+- **205, 207, 379** ✔ `key="up-next"` constante e **hija directa del `<ol>`**:
+  React la mueve, no la remonta. Test: con el foco en el botón, un tic de 60 s lo
+  deja donde estaba, nunca en `body`. `aria-live="polite"` solo en el titular,
+  sin `role="alert"`.
+- **206** ✔ `aria-label="Empezar Bañarme ahora"`; el triángulo va `aria-hidden`.
+- **208 y 209 (primera mitad)** ✔ Con lo vivido en vuelo o caído, no hay tarjeta:
+  no afirma nada. Test de página con los dos estados.
+- **210** ✔ Barrido de las ocho palabras sobre el DOM de la tarjeta y sobre los
+  textos del util.
+- **211** ✔ Test que compara fila y tarjeta: mismo nombre, misma duración, misma
+  hora. **El bloque se queda en la lista con su «▶ Empezar».**
+- **215** ✔ La tarjeta entra por `flatMap` en el `<ol>`, **fuera** del
+  `<Fragment>` donde vive el aviso de FEAT-007; `pickBlockHints` no se tocó y un
+  bloque en marcha no lleva aviso, así que no hay disputa de orden.
+- **216** ✔ Test: la tarjeta no dice «Libre» ni ofrece «Registrar lo que hice».
+  `VidaAgendaGap.tsx` **no se tocó**.
+- **217** ✔ Tabla de arriba.
+- **370** ✔ Test de posición: la tarjeta es hija directa del `<ol>` y su hermana
+  anterior es la línea de AHORA sin nada en marcha, y la fila de la sesión viva
+  con algo en marcha.
+- **374** ✔ Test: entre el clic y `activityFollowUpStart` **no se abre ningún
+  diálogo ni ninguna hoja**.
+- **376** ✔ «Ver las otras 2» (N real, y no se escribe con 0), «Empezar otra
+  cosa» siempre, ninguna en un menú. «Ya la hice» **no** se escribe todavía: es
+  la tajada 2 (criterios 193 y 197), tal como las repartió la tabla del plan.
+- **378** ✔ La coletilla con el nombre real. Test: además afirma que la tarjeta
+  **no manda ninguna mutación de cierre por su cuenta**.
+
+**Pendientes de prueba a mano** (todo `/app/*` está detrás del login y los
+agentes no entran — `ENVIRONMENT.md`; el arquitecto ya lo anticipó):
+
+- **212 (375 px)**: abrir Hoy en un móvil de 375 px con algo en marcha. Que no
+  haya scroll horizontal y que el botón, la frase de verdad y la línea de salidas
+  quepan dentro de la canaleta de la agenda.
+- **213 (texto largo)**: poner en el plan una actividad con ~60 caracteres de
+  nombre y comprobar que se recorta con puntos suspensivos sin empujar nada.
+- **214 (oscuro y trazo)**: mirarla en tema oscuro y comprobar de un vistazo que
+  no se confunde con la línea de AHORA (violeta sólido) ni con el aviso punteado
+  violeta de FEAT-007, y que todos sus textos se leen.
+- **218**: es criterio de fase y lo cierra el usuario con la API despierta.
+- **193, 197, 377, 192 y la segunda mitad del 209**: son la **tajada 2**, no
+  están construidos.
+
+**Riesgos**
+
+- **El `flatMap` y `renderEntry`.** El riesgo real de esta tajada. Los 138 tests
+  de la página pasan, que es la mejor red que hay, pero es un movimiento de 148
+  líneas.
+- **El nombre duplicado en pantalla.** Es correcto por el criterio 211, pero
+  cualquier test futuro que busque un nombre a secas en Hoy se encontrará dos.
+  Por eso el ayudante `planRow()` está documentado en el propio fichero.
+- **`queryCalls` en los mocks del test.** Toqué cinco factorías de `vi.mock`
+  para contar llamadas. Si algún test futuro cuenta consultas, ahí está el
+  contador.
+
+**Lo que encontré y no estaba en el plan** (no lo toqué, criterio de alcance):
+
+- **`--color-on-primary` no existe** en `_theme-variables.scss`. Lo busqué para
+  la tinta del botón mint y no está; se resolvió con el literal comentado.
+- **`AgendaBlock` no guarda de qué ítem de plantilla salió**, como decía el
+  plan, pero además **`couldNotItemIds` va por `item.id`** y no por `block.id`:
+  hoy coinciden, y `collectResolvedBlockIds` no depende de que coincidan.
+- **El árbol tiene dos ficheros sin seguir que no son míos**:
+  `docs/features/FEAT-016-vida-barra-de-trabajo.md` y
+  `docs/vida/assets/15-vida-barra-de-trabajo.html`. Ni los leí ni los toqué.
+
+**Estado del árbol:** sin commitear.
+
+### Tajada 1 (vuelta de la devolución) — el foco al mudarse, el anuncio de lo que cambia y el nombre entero
+
+**Resumen para el revisor:** los dos motivos de la devolución están arreglados en
+**el mismo componente** (`VidaUpNextCard.tsx`): la tarjeta ahora **se acuerda de
+qué llevaba el foco y se lo devuelve cuando cambia de ancla**, y el
+`aria-live="polite"` se ha mudado del rótulo constante **al titular**, que es lo
+único que cambia cuando cambia lo propuesto; de paso, el `title` del criterio 213.
+No se tocó `vida-up-next.utils.ts`, ni `VidaHoyPage.tsx`, ni el `.scss`, ni el
+`flatMap` de 148 líneas que ya diste por bueno.
+**Lo que más probablemente he roto:** la devolución del foco. Vive en un
+`useLayoutEffect` que dispara **en cada cambio de `anchorId`**; si algún día el
+ancla cambia sin que la tarjeta se mueva, o si el usuario deja el foco en `body`
+justo antes de una mudanza, la tarjeta **se lleva el foco al botón** sin que nadie
+se lo pida. Está acotado con tres guardas y explicado abajo, pero es el sitio
+donde mirar. El segundo sitio: el rótulo «Lo que viene» **ya no es región viva**,
+así que si alguien contaba con que se anunciara al aparecer la tarjeta, ya no.
+
+**Qué se construyó**
+
+- `src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx` — tres cambios:
+  1. **El foco sobrevive a la mudanza (205 / 379).** `focusedRef` recuerda el
+     último elemento enfocado **dentro** del `<li>` (`onFocus`, que es
+     `focusin` y burbujea) y lo olvida cuando el foco **se va a otro elemento**
+     (`onBlur`/`focusout` con `relatedTarget` fuera de la tarjeta). Un
+     `useLayoutEffect` con dependencia `[upNext.anchorId]` compara el ancla
+     anterior con la nueva y, **solo si cambió**, devuelve el foco. Tres guardas
+     para no robarlo: se exige que haya memoria (`focusedRef`), que el nodo siga
+     conectado, y que **nadie más** tenga el foco (se permite `body`, `null` o el
+     propio destino; cualquier otro elemento gana).
+  2. **La región viva es el titular (207).** `aria-live="polite"` sale del `<p>`
+     del rótulo —cuyo texto es siempre la constante `'Lo que viene'`— y pasa al
+     `<p className={styles.name}>`. Sigue habiendo **una sola** región viva,
+     sigue siendo `polite` y no hay `role="alert"`. El nombre de la región
+     (`aria-label="Lo que viene"` del `<section>`) no se toca.
+  3. **El nombre entero disponible (213).** `title={upNext.title}` en esa misma
+     línea, que es la que recorta con `ellipsis`.
+- `src/features/vida/pages/VidaHoyPage.test.tsx` — **tres pruebas nuevas** y una
+  ampliada:
+  - «al cambiar de ancla la tarjeta se mueve y el foco vuelve al botón, nunca a
+    `body`»: enfoca «Empezar Bañarme ahora», **provoca la mudanza** (sesión
+    abierta + `advanceTimersByTime(60_000)`, con lo que el ancla pasa de AHORA a
+    la fila de la sesión), y afirma que el `<li>` es **el mismo nodo** en otro
+    sitio, que el hermano anterior cambió a «Leer un rato», que
+    `document.activeElement` es el botón y no `body`, y —con un espía sobre
+    `boton.focus`— que **la devolución ocurrió de verdad**. Sin el arreglo,
+    `focus()` no se llama nunca y la prueba cae aunque jsdom conserve el foco.
+  - «lo que vive en `aria-live` es lo que cambia, no el rótulo»: cambia lo
+    propuesto **sin tocar el reloj** (`markBlockCouldNot` sobre `b1`) y afirma
+    que el nodo vivo es el mismo y su texto pasó de «Bañarme» a «Leer un rato»,
+    que hay **una** región viva y que no dice «Lo que viene». Devuelve el store
+    de aparato a cero al final (no se limpia solo entre pruebas; ése fue el
+    único susto de la tanda).
+  - «el nombre recortado sigue disponible entero»: `title` en la línea del nombre.
+  - La prueba del reloj ya existente suma ahora `expect(volverAEnfocar).not.toHaveBeenCalled()`:
+    **un tic no mueve nada y no toca el foco**.
+
+**Por qué así, y qué descarté**
+
+El revisor daba dos vías. **Descarté «dejar la tarjeta siempre en el mismo sitio
+del array y mover lo demás»**: eso obliga a reordenar las filas de la agenda por
+`flatMap` o por CSS `order`, cambia el orden del DOM que lee un lector de
+pantalla y toca el bucle que acabas de verificar línea a línea. La devolución del
+foco cabe **entera dentro del componente**, no toca la página y no mueve ni una
+línea del `flatMap`.
+
+La forma del arreglo **está medida, no deducida** (Chromium del panel):
+
+- Mover un `<li>` que contiene al botón enfocado deja
+  `document.activeElement === document.body` **y no dispara ningún evento de
+  foco** (`blur`/`focusout`: lista vacía). Por eso la memoria de `focusedRef`
+  sobrevive a la mudanza sin necesitar trucos.
+- **Volver a enfocar en el mismo tic funciona** (`restored: true`), y por eso el
+  efecto es `useLayoutEffect` —antes de que el navegador pinte— y no `useEffect`.
+- **Enfocar lo que ya está enfocado no dispara nada** (`refocusSameElementEvents: []`),
+  así que la llamada es inocua cuando el foco no se perdió (jsdom).
+- **Deshabilitar el botón enfocado no mueve el foco** en este Chromium
+  (`focusOnBtn: true`): el `isSessionBusy` del criterio 188 no abre un segundo
+  agujero, y por eso el efecto no necesita reintentos.
+
+Una decisión pequeña que conviene ver: el `focusout` con `relatedTarget` vacío
+**no** borra la memoria. En el navegador real ese evento no llega a existir, pero
+**jsdom sí lo emite al mover el nodo**; borrar ahí haría imposible la devolución
+en la prueba y no aportaría nada en producción.
+
+**Verificación**
+
+| Qué | Resultado |
+|---|---|
+| `pnpm typecheck` | limpio (sin salida) |
+| `pnpm lint` | `✖ 14 problems (14 errors, 0 warnings)` — la línea base exacta |
+| `pnpm test` | `Tests  2 failed \| 1781 passed (1783)`, los dos de `SearchSelect`. `IconPicker` no apareció. Eran 1780 y ahora 1783: **las tres pruebas nuevas** |
+| `pnpm test src/features/vida/pages/VidaHoyPage.test.tsx` | `141 passed (141)` |
+| `pnpm build` | exit 0 · inicial **1.112,20 kB** (venía de 1.111,79: +0,41 kB, el efecto y los dos manejadores) · `app-icons` **620,20 kB sin mover** · `IconPicker` 4,64 kB |
+
+**En el navegador de verdad, con un arnés temporal** (`harness-upnext.html` +
+`src/harness-upnext.tsx`, **borrados los dos antes de reportar**): el componente
+real dentro de un `<ol>` con dos filas y el mismo `flatMap` de la página; se
+enfoca el botón y se pulsa «Empezar ahora», que cambia el ancla. Medido:
+
+```
+before: { prevRow: 'row-now', btnLabel: 'Empezar Bañarme ahora',
+          liveText: 'Bañarme', liveAttr: 'polite',
+          kickerText: 'Lo que viene', kickerHasLive: false }
+focusedBefore: true
+after:  { prevRow: 'row-sesion', sameLiNode: true, sameButtonNode: true,
+          liveText: 'Leer un rato', liveSameNode: true, liveTitle: 'Leer un rato',
+          liveCount: 1,
+          activeIsBody: false, activeIsButton: true,
+          activeLabel: 'Empezar Leer un rato ahora' }
+```
+
+Es decir, en Chromium: la tarjeta **se movió** (de `row-now` a `row-sesion`) sin
+remontarse (`sameLiNode`, `sameButtonNode`), el foco **no acabó en `body`** sino
+en el botón equivalente, y **la región viva cambió de texto sin cambiar de nodo**,
+que es justo lo que hace hablar a un lector de pantalla.
+
+**Criterios que cierra**
+
+- **205** ✔ entero, incluida la segunda mitad. Medido arriba en Chromium
+  (`activeIsBody: false`, `activeIsButton: true`) y protegido por la prueba que
+  **provoca la mudanza**, no el tic. La otra mitad sigue como estaba: no roba el
+  foco al montarse (la memoria arranca vacía) y no hace `scrollIntoView`.
+- **207** ✔ entero: una sola región `polite`, en **el titular**, cuyo texto pasa
+  de «Bañarme» a «Leer un rato» cuando cambia lo propuesto, y que **no cambia con
+  el reloj**. Sin `assertive` ni `role="alert"`.
+- **213** — su mitad de código: el nombre completo queda disponible en `title`,
+  que es lo que faltaba. **La mitad visual (que un nombre de ~60 caracteres no
+  rompa la tarjeta ni produzca scroll horizontal) sigue pendiente de prueba a
+  mano**: no la reclamo.
+- **217** ✔ reproducida la línea base exacta (tabla de arriba).
+
+**Pendientes de prueba a mano, sin cambio respecto a tu revisión:** 212 (375 px),
+213 (la mitad visual), 214 (oscuro y trazo) y 218. `/app/vida/hoy` está detrás del
+login y los agentes no entran con credenciales. Pasos, en orden: abrir
+`/app/vida/hoy` con la plantilla del día cargada; (1) a 375 px, comprobar que no
+hay scroll horizontal; (2) poner en la plantilla una actividad de ~60 caracteres
+y comprobar que se recorta con puntos suspensivos, que **el ratón ve el nombre
+entero al posarse encima** (el `title` nuevo) y que el botón no se sale; (3) en
+tema oscuro, comprobar que el trazo de la tarjeta es mint y el punto punteado, sin
+confundirse con la línea violeta de AHORA ni con el aviso de FEAT-007; (4) con
+un lector de pantalla, pulsar «Empezar ahora» y comprobar que **se oye el nombre
+nuevo** y que el foco sigue en el botón.
+
+**Riesgos**
+
+- **La devolución del foco es lo nuevo y lo delicado.** Se dispara con el cambio
+  de `anchorId`; hoy eso solo pasa cuando algo arranca o termina, que son gestos
+  del usuario. El caso incómodo es: foco en el botón → clic en un hueco sin nada
+  (el foco se va a `body` **con** `relatedTarget` vacío, así que la memoria no se
+  borra) → si en ese momento cambiara el ancla, la tarjeta se llevaría el foco.
+  Para llegar ahí hay que cambiar de ancla **sin tocar ningún control**, porque
+  tocar cualquiera borra la memoria.
+- **El rótulo ya no es región viva.** Si en la tajada 2 el rótulo pasa a decir
+  «Lo que viene · se pasó de la hora», ese cambio **no se anunciará** — y creo que
+  está bien así (lo dispara el reloj, y el 207 pide justo que el reloj no hable),
+  pero que conste escrito para quien construya la tajada 2.
+- **`markBlockCouldNot` en una prueba ensucia el store de aparato.** Lo devuelvo a
+  cero dentro de la prueba; si alguien añade otra con notas de aparato, mismo
+  cuidado.
+
+**Lo que encontré y no toqué:** nada nuevo fuera de lo ya anotado. No amplié el
+alcance: la tajada 2 (192, 193, 197, 377) no se construyó y `vida-up-next.utils.ts`
+sigue con `showDidIt: false`.
+
+**Estado del árbol:** sin commitear.
+
+## 4. Review — feature-reviewer
+
+### Tajada 1 — «Lo que viene», dentro de la línea, con la promesa y un clic
+
+**Veredicto: `returned`** — dos criterios de accesibilidad marcados con ✔ no se
+cumplen en su mitad operativa: el **205** («nunca en `body`», y **vale también
+cuando la tarjeta cambia de sitio**) y el **207** («se anuncia **cuando cambia la
+actividad propuesta**»). Los dos caen justo sobre **el gesto principal de la
+feature** —pulsar «Empezar ahora»—, que es cuando la tarjeta se mueve y cuando
+cambia lo propuesto. Todo lo demás está bien, y lo que más se temía —que la
+duración del plan llegara a la mutación— **no pasa por ningún camino**.
+
+**Criterios, uno a uno**
+
+*Cumplidos, con evidencia propia*
+
+- **180** ✔ Cuatro puertas en el `useMemo` (`isToday`, `nowMinutes !== null`,
+  `[dayStart, dayEnd)`, ancla) y ninguna rama pinta nodo vacío: `upNext === null`
+  → `upNextCard === null` → el `flatMap` devuelve `[renderEntry(entry)]`.
+- **183, 371, 372, 373** ✔ Leídos en `buildUpNext` y contrastados con el render
+  14: «Lo que viene», «En tu plantilla, a las 8:00 · suele durarte 45 min», la
+  frase de verdad entera y **ninguna hora de fin en ninguna rama**. La costumbre
+  manda sobre la plantilla (`usualMinutes ?? block.durationMinutes`).
+- **184, 375** ✔ `pickUpNextBlock` es puro y **sin una sola constante de
+  minutos**: `arrived = startMinutes <= ahora` → `Math.max`, si no `Math.min`, y
+  el desempate en tres pasos (inicio, duración, orden de `buildDayAgenda`).
+- **186** ✔ Las tres fuentes en `collectResolvedBlockIds`, y `couldNotItemIds`
+  por `item.id`, que es como se guarda la nota.
+- **187** ✔ `onStartSomethingElse` → `openLogSheet({ mode: 'start' })`. Sin
+  segunda hoja.
+- **188** ✔ `isSessionBusy={sessionActions.isBusy}`: **la misma** variable que
+  frena el «▶ Empezar» del bloque, y el `busyRef` de `useVidaSessionActions`
+  cierra la puerta en el mismo tic.
+- **189** ✔ Con `canStart === false` no se pinta botón: se pinta `blockedNote`.
+- **196 y lo que el usuario puso por encima de todo** ✔ **Verificado a mano por
+  la cadena entera**, no solo por el test: la tarjeta llama
+  `sessionActions.start(upNext.activityId)` con **un argumento**; `start` hace
+  `startSessionInput(activityId, now, undefined)` → `startTime` = reloj
+  (`vida-session.utils.ts:151-163`); y el cierre de lo que estuviera en marcha es
+  `closeSessionInput(session, startedAt)` con `startedAt = sessionStartInstant(input.date, input.startTime) ?? now`
+  — **el mismo reloj**. Ni `durationMinutes` del plan ni `startMinutes` de la
+  ficha tienen un camino hasta la mutación, **tampoco por la rama de la sesión
+  que se da por terminada**. El test de igualdad exacta del array
+  (`toEqual(['a-b1'])`) es la red correcta.
+- **203** ✔ No se tocó `AppLayout` ni `VidaModuleLayout`.
+- **204** ✔ Contadores en cinco factorías de `vi.mock` y `expect(queryCalls).toEqual(sinTarjeta)`.
+  Cero hooks nuevos en el `useMemo`.
+- **206** ✔ `aria-label="Empezar Bañarme ahora"`, triángulo `aria-hidden`.
+- **208 y 209 (primera mitad)** ✔ Con `isPending`/`isError` de lo vivido no hay
+  tarjeta.
+- **210** ✔ Barrido de las ocho palabras. Ninguna aparece en los textos del util.
+- **211** ✔ Mismo `formatDurationMinutes` y misma `buildDayAgenda` que la fila; el
+  bloque **se queda en la lista con su «▶ Empezar»**.
+- **215** ✔ La tarjeta entra en el `<ol>` **fuera** del `<Fragment>` del bloque;
+  `pickBlockHints` no se tocó.
+- **216** ✔ `VidaAgendaGap.tsx` sin tocar; la tarjeta no pinta fila de hueco.
+- **217** ✔ Reproducido entero por el revisor: `typecheck` limpio · `lint`
+  **14/0 exacto** · `test` **2 fallos de 1780**, los dos de `SearchSelect`
+  (`IconPicker` no apareció) · `build` exit 0, chunk inicial **1.111,79 kB** y
+  `app-icons` **620,20 kB sin mover**. Ningún documento GraphQL nuevo.
+- **370** ✔ Hija directa del `<ol>`, detrás de la fila del ancla. Y el ancla se
+  elige bien: sesión suelta en marcha → su fila; bloque en marcha → el bloque;
+  nada en marcha → la marca de AHORA (`id: 'now'`, `vida-agenda.utils.ts:101`).
+- **374** ✔ Un `onClick` → `start`. Sin hoja, sin confirmación.
+- **376** ✔ `othersCount = openCount - 1`, y con 0 no se escribe.
+- **378** ✔ La coletilla sale del **ancla**, no de la sesión abierta a secas, y la
+  tarjeta no manda ninguna mutación de cierre.
+
+*No cumplidos*
+
+- **205** ✘ **en su segunda mitad, que está en negrita en el criterio**: «Vale
+  también cuando la tarjeta cambia de sitio (criterio 379)». La tarjeta es un
+  `<li>` con `key="up-next"` dentro del mismo `<ol>`: React **la mueve** (no la
+  remonta, eso es correcto), pero **mover un nodo del DOM que contiene al
+  elemento enfocado manda el foco a `body`**. Medido por el revisor en el
+  Chromium del panel, no deducido:
+  `ol.insertBefore(li, null)` con el `<button>` de dentro enfocado →
+  `document.activeElement === document.body` (`afterMove: false`,
+  `activeIsBody: true`). Y el movimiento **no es un caso raro**: ocurre en el
+  gesto principal, al pulsar «Empezar ahora» y pasar el ancla de AHORA a la fila
+  de la sesión nueva. El test que hay solo cubre el **tic de reloj**, donde la
+  tarjeta **no se mueve**, así que no toca el clause que falla.
+- **207** ✘ **en su segunda mitad**: «se anuncia **cuando cambia la actividad
+  propuesta**». El `aria-live="polite"` está en el `<p className={styles.kicker}>`,
+  cuyo contenido en esta tajada es **siempre** la constante `UP_NEXT_KICKER`
+  (`'Lo que viene'`). Una región `aria-live` cuyo texto nunca cambia **no anuncia
+  nada**: cuando la actividad propuesta pasa de «Bañarme» a «Leer un rato», el
+  lector de pantalla se queda mudo. El nombre de la región ya es «Lo que viene»
+  (criterio 207, primera mitad), así que «la línea del titular» no puede ser esa
+  misma constante. El test solo comprueba que el atributo existe y vale `polite`,
+  no que se anuncie algo.
+
+*Siguen pendientes de prueba a mano —el usuario, con la API despierta—*
+
+- **212** (375 px), **213** (texto largo), **214** (oscuro y trazo) y **218** (el
+  criterio de fase). `/app/vida/hoy` redirige a `/auth/login` y los agentes no
+  entran con credenciales (`ENVIRONMENT.md`). El `.scss` está escrito a favor
+  (`min-width: 0` en `.row/.body/.card`, `text-overflow: ellipsis` en `.name`,
+  `overflow-wrap: anywhere` en meta, frase de verdad y salidas; el mint sale de
+  `--aura-ring-from` por `color-mix`, nunca punteado violeta), pero **eso es una
+  lectura, no una medida**: quedan pendientes.
+- **192, 193, 197, 209 (segunda mitad), 377** son la tajada 2 y no se reclaman.
+- **380–385** son la tajada 3, excluida a propósito.
+
+**Qué se rompió cerca, y cómo lo busqué**
+
+1. **El movimiento de 148 líneas (`map` → `flatMap` + `renderEntry`), que es lo
+   que el constructor señaló primero.** No lo leí a ojo: comparé los conjuntos de
+   líneas del diff sin espacios
+   (`git diff -U0 | grep '^-'` frente a `grep '^+'`, normalizados y ordenados).
+   **Solo tres líneas borradas no reaparecen idénticas**: el `execution.entries.map((entry) => {`,
+   su `})}` de cierre y el `import type { NoDataSlice }` (que ahora trae también
+   `ExecutionEntry`). **Todo lo demás reaparece carácter por carácter**, y en el
+   mismo orden. Es un movimiento, no un refactor.
+   - **Claves de React:** las mismas de antes (`"now"`, `entry.id` en la sesión,
+     `<Fragment key={entry.id}>`), ahora dentro de un array plano donde se suma
+     `key="up-next"`. Sin duplicados.
+   - **Orden:** `flatMap` conserva el orden de `execution.entries`; la tarjeta
+     entra **detrás** del ancla.
+   - **Casos que devolvían `null`:** no había ninguno. Las tres salidas del
+     cuerpo devuelven elemento.
+   - **El `ref` de «Ahora»:** sigue en el `<li>` de `kind === 'now'`, intacto, y
+     el test de `scrollIntoView` pasa.
+2. **Los 10 tests que se arreglaron con `planRow()`.** Comprobado que **no
+   aflojan**: `planRow` descarta la fila cuyo `<li>` contiene
+   `[aria-label="Lo que viene"]` y **lanza** si no queda ninguna otra, así que si
+   la fila del plan desapareciera el test seguiría fallando (y si el nombre
+   desapareciera del todo, `getAllByText` falla antes). Lo único que se pierde
+   es la queja de `getByText` ante **duplicados**: con dos filas de plan iguales,
+   `planRow` se queda con la primera en vez de fallar. Es un hallazgo, no un
+   motivo de devolución.
+3. **Quién más usa lo que se tocó.** `graphify explain "VidaHoyPage"` y
+   `graphify explain "findNextBlockId"`: la página solo la consume el router, y
+   `findNextBlockId` sigue con su único llamador (no se reusó, como mandaba el
+   plan). Los dos ficheros nuevos no tienen más consumidores que la página.
+   `usualDurationsByActivityId`, `pickBlockHints`, `suggestionsForGap` y
+   `VidaAgendaGap` aparecen en el diff **solo como contexto sin tocar**.
+4. **Lo que vive al lado en la misma pantalla:** el aviso de FEAT-007 (dentro del
+   `<Fragment>` del bloque, la tarjeta va fuera), el hueco de FEAT-011 (sin
+   tocar) y la barra fija de sesión (`AppLayout`, sin tocar). Los 138 tests de
+   `VidaHoyPage.test.tsx` pasan y la suite entera está en la línea base exacta.
+
+**Estados que nadie construye**
+
+- **Sin datos** ✔ cubierto por diseño: sin candidato no hay tarjeta (la cara de
+  «ya no queda nada» es la tajada 2, y está dicho).
+- **Cargando** ✔ criterio 208, con test.
+- **Error** ✔ primera mitad del 209, con test.
+- **Sin permisos** ✔ criterio 189 (`canStart === false`), con test.
+- **Texto largo** — pendiente de medir (criterio 213). El CSS está escrito a
+  favor. **Un hallazgo propio:** `.name` recorta con `ellipsis` y
+  `white-space: nowrap`, pero **el nombre completo no queda disponible en ningún
+  sitio** —ni `title`, ni `aria-label` en esa línea—, y el criterio 213 pide
+  literalmente que «el nombre completo sigue disponible». El `aria-label` del
+  botón sí lo lleva entero, lo que salva al lector de pantalla pero no al ratón.
+- **Móvil** — pendiente de medir (criterio 212).
+
+**¿Duplica algo que ya existía?** No, contrastado contra la sección 2: no se creó
+`kind` nuevo en `buildDayExecution`, ni hook, ni consulta, ni temporizador, ni
+hoja, ni documento GraphQL, ni icono; `usualDurationsByActivityId` se **reusó**
+(la de FEAT-011 tajada 3, ya en `main`) en vez de crearse; `findNextBlockId`
+**no** se reusó, que es lo que el plan pedía; y la regla vive en su util propio y
+no en `vida-agenda.utils.ts`, que no sabe de sesiones. El desvío de
+`formatDurationMinutes` sobre `formatDurationFromMinutes` está bien elegido: es
+lo que hace verdadero el criterio 211.
+
+**Hallazgos que no devuelven la tajada**
+
+- **La frase de verdad diverge del render 14 en su momento 2.** El render, con
+  algo en marcha, escribe la versión **corta** («Arranca cuando pulses. Al
+  hacerlo, «Daily meeting» se dará por terminada a esa hora.»); la
+  implementación escribe **siempre la larga** y le pega la coletilla. **Manda el
+  criterio 373** («va SIEMPRE… en los cuatro momentos»), así que la
+  implementación es la correcta; queda anotado porque el render aprobado dice
+  otra cosa y alguien lo mirará.
+- **Las salidas.** El render las separa con « · » y la implementación usa dos
+  botones con `gap`. Preferencia de estilo.
+- **`planRow()` tolera duplicados** (arriba).
+- **El nombre largo no queda disponible al ratón** (arriba).
+
+**Para el constructor, lo que hay que arreglar para volver a revisión**
+
+1. **Criterio 205/379:** que el foco sobreviva al movimiento de la tarjeta.
+   Cualquiera de las dos vías sirve, y las dos son pequeñas: devolver el foco al
+   botón equivalente después de que cambie el ancla, o dejar la tarjeta siempre
+   en el mismo sitio del array y mover lo demás. **Con un test que la mueva de
+   ancla** (de AHORA a la fila de la sesión) y afirme que `document.activeElement`
+   no es `body` — el test de hoy solo avanza el reloj, que no mueve nada.
+2. **Criterio 207:** que lo que vive en `aria-live="polite"` sea la línea que
+   **cambia** cuando cambia la actividad propuesta, no la constante «Lo que
+   viene». Con un test que cambie lo propuesto y afirme que el texto del nodo
+   `aria-live` cambió.
+
+### Tajada 1 — segunda revisión, tras el arreglo
+
+**Veredicto: `accepted`.** Los dos motivos de la devolución están cerrados, el
+hallazgo del 213 también, y **el arreglo no tocó nada de lo que ya estaba
+verificado**. Lo comprobé, no me lo creí.
+
+**Los dos motivos, uno a uno**
+
+- **205 ✔ (la segunda mitad, la que faltaba).** El mecanismo es correcto y su
+  premisa la volví a medir yo en el Chromium del panel, porque de ella depende
+  todo: al mover un `<li>` con `ol.insertBefore`, con un botón de dentro
+  enfocado, `document.activeElement` pasa a `body` **y no se dispara ningún
+  evento de foco** (`events: []`). Es decir: el movimiento es **mudo**, la
+  memoria de `focusedRef` sigue en pie y volver a enfocar funciona
+  (`afterRestore: true`). Enfocar lo que ya está enfocado tampoco dispara nada,
+  así que la restauración no se muerde la cola.
+  Las **tres guardas bastan**, caso por caso:
+  - *El usuario ya movió el foco a otra cosa* — si se fue a un elemento real,
+    `focusout` trae `relatedTarget` y la memoria se borra: no hay a quién
+    devolver nada. Si el foco lo tiene otro elemento en el momento del efecto,
+    la tercera guarda (`active !== body && active !== target`) corta. **No hay
+    robo.**
+  - *El ancla no cambió* — `previousAnchor === upNext.anchorId` sale antes; un
+    tic de reloj no toca el foco, y el test lo afirma con un espía sobre
+    `focus`.
+  - *La tarjeta perdió el botón* (`canStart` a `false`) — `isConnected` corta y
+    no se enfoca un nodo desgajado.
+- **207 ✔.** El `aria-live="polite"` está ahora en el `<p>` del **titular**, que
+  es lo que cambia. Comprobado en el DOM del test que **hay exactamente una**
+  región viva dentro de la tarjeta (`querySelectorAll('[aria-live]')` con
+  longitud 1), que su texto es «Bañarme» y **no** «Lo que viene», y que no hay
+  ningún `role="alert"`. El rótulo se quedó sin `aria-live`, que es lo correcto:
+  una región viva de texto constante no anuncia nada.
+- **213 ✔ en su mitad comprobable:** `title={upNext.title}` en la línea que
+  recorta. La mitad visual (que el recorte ocurra y no empuje nada a 375 px)
+  sigue siendo prueba a mano.
+
+**Que los tests fallen sin el arreglo, no solo con él**
+
+- *El del movimiento*: no se apoya en el `activeElement` de jsdom —que podría
+  dar verde por su cuenta—, sino en un **espía sobre `boton.focus`** con
+  `expect(volverAEnfocar).toHaveBeenCalled()`. Sin la restauración no hay
+  llamada y el test cae. Además afirma que es **el mismo nodo `<li>`** y que su
+  hermano anterior cambió: si alguien «arreglara» esto reordenando y remontando,
+  también caería.
+- *El del anuncio*: `expect(vivo.textContent).not.toContain('Lo que viene')` más
+  `toHaveLength(1)`. Con el `aria-live` en el rótulo —como estaba— falla por las
+  dos.
+- *El del `title`*: falla sin el atributo.
+- *El del reloj*: su asercion nueva (`not.toHaveBeenCalled()`) es la red contra
+  pasarse de restaurar.
+
+**Qué pudo romper el arreglo, y cómo lo miré**
+
+- **Lo ya verificado está intacto, comprobado y no dicho de palabra:** repetí la
+  comparación de conjuntos de líneas del diff de `VidaHoyPage.tsx` y sale
+  **idéntica a la de la primera revisión** (mismo conjunto borrado, mismo
+  conjunto añadido; las únicas tres líneas que no reaparecen siguen siendo el
+  `map(`, su `})}` y el `import type`). El `flatMap` y las 148 líneas de
+  `renderEntry` **no se tocaron**. Las fechas del árbol lo confirman:
+  `VidaHoyPage.tsx` y `vida-up-next.utils.ts` son anteriores al arreglo; solo
+  cambiaron `VidaUpNextCard.tsx` y `VidaHoyPage.test.tsx`.
+- **Superficie del cambio:** dos `useRef`, un `useLayoutEffect` y dos manejadores
+  en el `<li>` de un componente que **nadie más usa** (solo `VidaHoyPage`), más
+  un atributo `title` y el traslado de `aria-live`. No hay API nueva, ni props
+  nuevas, ni nada que llegue a la mutación: el botón sigue llamando
+  `start(activityId)` con **un** argumento.
+- **El arnés está borrado y no quedó referenciado:** no existen
+  `harness-upnext.html` ni `src/harness-upnext.tsx`, y un barrido por `harness`
+  en `.ts/.tsx/.html/.json` fuera de `node_modules` no devuelve nada.
+
+**Línea base, reproducida entera por el revisor**
+
+`typecheck` limpio · `lint` **14 errores / 0 warnings** · `test` **2 fallos de
+1783**, los dos de `SearchSelect` (`IconPicker` no apareció) · `build` exit 0,
+chunk inicial **1.112,20 kB** y `app-icons` **620,20 kB sin mover**. Coincide
+con lo declarado, al kilobyte.
+
+**Las dos cosas que el constructor anotó**
+
+- **El almacén de notas del aparato sucio entre tests: bien visto, a medio
+  resolver.** Limpiar al final del `it` funciona **si el test pasa**; si una
+  asercion cae antes, el `setState` no llega a correr y los tests siguientes
+  heredan un día con bloques «no se pudo», que es exactamente el fallo en
+  cascada que esconde la causa. **Recomendación (no bloquea):** que el reinicio
+  viva en el `beforeEach` del fichero, al lado de `queryCalls = {}`, y que los
+  dos `it` dejen de limpiar a mano.
+- **El rótulo ya no se anuncia: de acuerdo, y queda escrito para la tajada 2.**
+  El criterio 207 pide que el reloj **calle**, y «· se pasó de la hora» lo
+  dispararía el reloj. La regla para la tajada 2 es: **una sola región viva en
+  la tarjeta, y es la del titular**; el rótulo no se vuelve a poner vivo, y la
+  cara del criterio 377 —que no tiene titular de actividad— simplemente no
+  tiene ninguna.
+
+**Hallazgos nuevos, ninguno bloqueante**
+
+- **La restauración puede desplazar la pantalla.** `target.focus()` va sin
+  `preventScroll`, así que si el usuario dejó la tarjeta fuera de vista, la
+  vuelta del foco la trae a la vista. El caso es estrecho (hace falta que el
+  foco se haya ido a `body` sin `relatedTarget` —clic en zona no enfocable— y
+  que justo después cambie el ancla), pero el criterio 379 dice «no desplaza la
+  pantalla bajo el dedo de quien estaba leyendo otra cosa». **Un carácter lo
+  cierra:** `target.focus({ preventScroll: true })`.
+- **Si el ancla cambiara con el botón todavía deshabilitado, el foco se
+  quedaría en `body` y no hay reintento.** Medido en Chromium: deshabilitar el
+  botón enfocado **no** mueve `activeElement` (sigue en el botón, y por eso la
+  memoria no se pierde), pero tras la mudanza `focus()` sobre un botón
+  deshabilitado no hace nada. En la app real no debería ocurrir:
+  `invalidateFollowUpQueries` **solo invalida** (no escribe en la caché), así
+  que el ancla cambia cuando vuelve el refetch, bastante después de que
+  `unlock()` libere `isBusy`. Queda anotado por si algún día se mete una
+  escritura optimista.
+
+**Lo que sigue para el usuario, y es lo único que queda de esta tajada**
+
+- **212 (375 px)**, **214 (oscuro y trazo)**, **la mitad visual del 213** y
+  **218 (el criterio de fase)**: `/app/vida/hoy` está detrás del login y los
+  agentes no entran con credenciales (`ENVIRONMENT.md`). Los pasos están abajo.

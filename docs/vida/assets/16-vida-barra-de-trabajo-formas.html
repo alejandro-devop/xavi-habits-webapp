@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tres formas de ver la jornada</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --violet:#7c3aed;
+    --work:#38bdf8; --work-2:#0ea5e9; --work-deep:#075985; --work-text:#7dd3fc;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:960px;margin:0 0 6px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:36px 0 12px}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:0;line-height:1.65}
+  .note b{color:#e2e8f0}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:20px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .ctitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--work-text)}
+  .ctitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:3px;font-size:11.5px;line-height:1.5}
+
+  .frame{border-radius:22px;padding:8px;background:#020617;box-shadow:0 20px 48px -22px rgba(0,0,0,.9);display:flex;flex-direction:column;gap:8px}
+  .state{border-radius:16px;background:var(--bg);padding:11px 11px 12px}
+  .skicker{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:9px;display:flex;justify-content:space-between}
+  .skicker span:last-child{color:#475569;letter-spacing:.04em;font-weight:600}
+
+  .work{padding:12px 12px 11px;border-radius:15px;background:linear-gradient(180deg,rgba(56,189,248,.08),var(--card-2));border:1px solid rgba(56,189,248,.24)}
+  .whead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .wlabel{font-size:12.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+  .wlabel i{font-style:normal;font-size:12px}
+  .wcount{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .wcount b{color:var(--work-text);font-weight:700}
+  .wline{margin:10px 0 0;font-size:14px;font-weight:700;letter-spacing:-.02em;line-height:1.35}
+  .wline b{color:var(--work-text)}
+  .wsub{margin:4px 0 0;font-family:'Inter',sans-serif;font-size:11px;line-height:1.5;color:var(--ink-soft)}
+  .wsub b{color:#e2e8f0;font-weight:700}
+
+  /* ── A · El arco ── */
+  .dial{display:flex;justify-content:center;margin:8px 0 -14px}
+  .dial svg{width:100%;max-width:210px;height:auto;display:block}
+  .dialnum{font-family:'Inter',sans-serif;font-weight:700;fill:#e2e8f0;font-variant-numeric:tabular-nums}
+  .dialcap{font-family:'Inter',sans-serif;font-weight:600;fill:#64748b;letter-spacing:.06em}
+  .dialend{font-family:'Inter',sans-serif;font-weight:700;fill:#64748b;font-variant-numeric:tabular-nums}
+
+  /* ── B · Los ocho bloques ── */
+  .blocks{display:flex;align-items:flex-end;gap:5px;margin-top:11px}
+  .blk{flex:1 1 0;min-width:0;height:34px;border-radius:7px;background:rgba(148,163,184,.13);border:1px solid rgba(148,163,184,.16);position:relative;overflow:hidden}
+  .blk .in{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,var(--work),var(--work-2))}
+  .blk.extra{background:transparent;border:1px dashed rgba(56,189,248,.38);height:26px}
+  .blk.extra .in{background:var(--work-deep)}
+  .gap{flex:0 0 9px;height:34px;display:flex;align-items:center;justify-content:center;color:#334155;font-size:11px}
+  .bscale{display:flex;justify-content:space-between;margin-top:5px;font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:#475569;letter-spacing:.04em}
+
+  /* ── C · La franja del día ── */
+  .strip{margin-top:12px}
+  .axis{position:relative;height:22px;border-radius:7px;background:rgba(148,163,184,.1);overflow:hidden}
+  .axis .seg{position:absolute;top:0;bottom:0;background:linear-gradient(180deg,var(--work),var(--work-2))}
+  .axis .seg.past{background:var(--work-deep)}
+  .axis .proj{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(115deg,rgba(56,189,248,.34) 0 4px,transparent 4px 8px);border:1px dashed rgba(56,189,248,.5);border-left:none;border-radius:0 6px 6px 0}
+  .axis .now{position:absolute;top:-3px;bottom:-3px;width:2px;background:#e2e8f0;border-radius:2px}
+  .axis .cross{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(226,232,240,.55)}
+  .ticks{position:relative;height:15px;margin-top:4px;font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:#475569;font-variant-numeric:tabular-nums}
+  .ticks span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+  .flag{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:var(--work-text);font-variant-numeric:tabular-nums}
+
+  .verdict{margin-top:34px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+  .vcard{padding:15px 16px;border-radius:16px;background:var(--card);border:1px solid var(--edge)}
+  .vcard h3{margin:0 0 7px;font-size:14px;letter-spacing:-.02em}
+  .vcard .pro,.vcard .con{font-size:12.5px;line-height:1.6;color:var(--ink-soft);margin:6px 0 0;display:flex;gap:7px}
+  .vcard .pro i,.vcard .con i{font-style:normal;flex:0 0 auto;font-weight:700}
+  .vcard .pro i{color:#34d399}
+  .vcard .con i{color:#94a3b8}
+  .vcard b{color:#f1f5f9}
+  .pick{margin-top:28px;padding:16px 18px;border-radius:16px;background:linear-gradient(180deg,rgba(56,189,248,.08),var(--card));border:1px solid rgba(56,189,248,.28)}
+  .pick h2{font-size:15px;margin:0 0 4px;letter-spacing:-.02em}
+  .pick p{font-size:13px;color:var(--ink-soft);line-height:1.7;margin:9px 0 0}
+  .pick p b{color:#f1f5f9}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Tres formas de ver la jornada</h1>
+  <p class="lede">El mismo lunes, los mismos tres momentos, el mismo texto. Lo único que cambia es <b>la forma</b>: una barra que se llena no es lo único posible, y cada una de estas tres te dice algo distinto de un vistazo. Elige una —o dime qué trozo de cada una te sirve— y construyo esa.</p>
+
+  <p class="caption">Un lunes, a las 11:05 · a las 18:30 · a las 19:50</p>
+  <div class="row">
+
+    <!-- ════════ A · EL ARCO ════════ -->
+    <div class="col">
+      <div class="ctitle">A · El arco<small>La jornada como un dial. La aguja apunta a dónde vas; el número grande es la hora de parar.</small></div>
+      <div class="frame">
+
+        <div class="state">
+          <div class="skicker"><span>Media mañana</span><span>11:05</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>3h 40m</b> de 8h</span></div>
+            <div class="dial">
+              <svg viewBox="0 0 220 128" role="img" aria-label="3 horas 40 minutos de 8 horas">
+                <path d="M22 110 A 88 88 0 0 1 198 110" fill="none" stroke="rgba(148,163,184,.16)" stroke-width="13" stroke-linecap="round" pathLength="100" />
+                <path d="M22 110 A 88 88 0 0 1 198 110" fill="none" stroke="#38bdf8" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="46 100" />
+                <text class="dialnum" x="110" y="98" text-anchor="middle" font-size="34">15:25</text>
+                <text class="dialcap" x="110" y="116" text-anchor="middle" font-size="10">PARAS A LAS</text>
+                <text class="dialend" x="18" y="126" text-anchor="start" font-size="9.5">0h</text>
+                <text class="dialend" x="202" y="126" text-anchor="end" font-size="9.5">8h</text>
+              </svg>
+            </div>
+            <p class="wsub">Cuenta <b>Working at lululemon</b>, en marcha desde las 10:15.</p>
+          </div>
+        </div>
+
+        <div class="state">
+          <div class="skicker"><span>Cerca del final</span><span>18:30</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>7h 50m</b> de 8h</span></div>
+            <div class="dial">
+              <svg viewBox="0 0 220 128" role="img" aria-label="7 horas 50 minutos de 8 horas">
+                <path d="M22 110 A 88 88 0 0 1 198 110" fill="none" stroke="rgba(148,163,184,.16)" stroke-width="13" stroke-linecap="round" pathLength="100" />
+                <path d="M22 110 A 88 88 0 0 1 198 110" fill="none" stroke="#38bdf8" stroke-width="13" stroke-linecap="round" pathLength="100" stroke-dasharray="98 100" />
+                <text class="dialnum" x="110" y="98" text-anchor="middle" font-size="34">18:40</text>
+                <text class="dialcap" x="110" y="116" text-anchor="middle" font-size="10">PARAS A LAS</text>
+                <text class="dialend" x="18" y="126" text-anchor="start" font-size="9.5">0h</text>
+                <text class="dialend" x="202" y="126" text-anchor="end" font-size="9.5">8h</text>
+              </svg>
+            </div>
+            <p class="wsub">Cuenta <b>Daily meeting</b>, en marcha desde las 17:40.</p>
+          </div>
+        </div>
+
+        <div class="state">
+          <div class="skicker"><span>Te pasaste</span><span>19:50</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>9h 10m</b> de 8h</span></div>
+            <div class="dial">
+              <svg viewBox="0 0 220 128" role="img" aria-label="9 horas 10 minutos, pasaste las 8 horas">
+                <path d="M22 110 A 88 88 0 0 1 198 110" fill="none" stroke="rgba(148,163,184,.16)" stroke-width="13" stroke-linecap="round" pathLength="100" />
+                <path d="M22 110 A 88 88 0 0 1 198 110" fill="none" stroke="#0ea5e9" stroke-width="13" stroke-linecap="round" pathLength="100" />
+                <path d="M32 110 A 78 78 0 0 1 208 110" fill="none" stroke="#075985" stroke-width="7" stroke-linecap="round" pathLength="100" stroke-dasharray="15 100" />
+                <text class="dialnum" x="110" y="96" text-anchor="middle" font-size="30">9h 10m</text>
+                <text class="dialcap" x="110" y="115" text-anchor="middle" font-size="10">PASASTE LAS 8H A LAS 18:40</text>
+                <text class="dialend" x="18" y="126" text-anchor="start" font-size="9.5">0h</text>
+                <text class="dialend" x="202" y="126" text-anchor="end" font-size="9.5">8h</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <p class="note">El arco <b>no se rompe ni se pone rojo</b> al pasarte: se cierra entero y le sale un hilo más fino y más oscuro por fuera. La hora manda hasta que dejas de poder cumplirla; entonces el número grande pasa a ser el total.</p>
+    </div>
+
+    <!-- ════════ B · LOS OCHO BLOQUES ════════ -->
+    <div class="col">
+      <div class="ctitle">B · Los ocho bloques<small>Ocho horas, ocho casillas. Se cuentan con el ojo, sin leer ni un número.</small></div>
+      <div class="frame">
+
+        <div class="state">
+          <div class="skicker"><span>Media mañana</span><span>11:05</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>3h 40m</b> de 8h</span></div>
+            <div class="blocks">
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:67%"></span></span>
+              <span class="blk"></span><span class="blk"></span><span class="blk"></span><span class="blk"></span>
+            </div>
+            <div class="bscale"><span>1ª HORA</span><span>8ª</span></div>
+            <p class="wline">A este ritmo paras a las <b>15:25</b>.</p>
+          </div>
+        </div>
+
+        <div class="state">
+          <div class="skicker"><span>Cerca del final</span><span>18:30</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>7h 50m</b> de 8h</span></div>
+            <div class="blocks">
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:83%"></span></span>
+            </div>
+            <div class="bscale"><span>1ª HORA</span><span>8ª</span></div>
+            <p class="wline">A este ritmo paras a las <b>18:40</b>.</p>
+          </div>
+        </div>
+
+        <div class="state">
+          <div class="skicker"><span>Te pasaste</span><span>19:50</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>9h 10m</b> de 8h</span></div>
+            <div class="blocks">
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="blk"><span class="in" style="height:100%"></span></span>
+              <span class="gap">·</span>
+              <span class="blk extra"><span class="in" style="height:100%"></span></span>
+              <span class="blk extra"><span class="in" style="height:17%"></span></span>
+            </div>
+            <div class="bscale"><span>1ª HORA</span><span>8ª · DE MÁS</span></div>
+            <p class="wline">Llevas <b>9h 10m</b>.</p>
+            <p class="wsub">Pasaste las 8h a las <b>18:40</b>.</p>
+          </div>
+        </div>
+
+      </div>
+      <p class="note">Lo que hace esto distinto: <b>las horas de más viven fuera de la jornada</b>, separadas por un punto y en trazo discontinuo. No estiran la barra ni la rompen — sencillamente están ahí, contadas aparte, sin que nadie las llame nada.</p>
+    </div>
+
+    <!-- ════════ C · LA FRANJA DEL DÍA ════════ -->
+    <div class="col">
+      <div class="ctitle">C · La franja del día<small>Tu trabajo pintado sobre las horas reales. Ves <b>cuándo</b> trabajaste y dónde cae el final.</small></div>
+      <div class="frame">
+
+        <div class="state">
+          <div class="skicker"><span>Media mañana</span><span>11:05</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>3h 40m</b> de 8h</span></div>
+            <div class="strip">
+              <div class="axis">
+                <span class="seg" style="left:3.03%;width:17.17%"></span>
+                <span class="seg" style="left:22.73%;width:5.05%"></span>
+                <span class="proj" style="left:27.78%;width:26.26%"></span>
+                <span class="now" style="left:27.78%"></span>
+              </div>
+              <div class="ticks">
+                <span style="left:3.03%">07:00</span>
+                <span style="left:27.78%;color:#e2e8f0">ahora</span>
+                <span class="flag" style="left:54.04%">15:25 ↓</span>
+                <span style="left:100%">23:00</span>
+              </div>
+            </div>
+            <p class="wline">A este ritmo paras a las <b>15:25</b>.</p>
+          </div>
+        </div>
+
+        <div class="state">
+          <div class="skicker"><span>Cerca del final</span><span>18:30</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>7h 50m</b> de 8h</span></div>
+            <div class="strip">
+              <div class="axis">
+                <span class="seg" style="left:9.09%;width:24.24%"></span>
+                <span class="seg" style="left:39.39%;width:18.18%"></span>
+                <span class="seg" style="left:67.68%;width:5.05%"></span>
+                <span class="proj" style="left:72.73%;width:1.01%"></span>
+                <span class="now" style="left:72.73%"></span>
+              </div>
+              <div class="ticks">
+                <span style="left:9.09%">08:00</span>
+                <span style="left:39.39%">13:00</span>
+                <span class="flag" style="left:76%">18:40 ↓</span>
+                <span style="left:100%">23:00</span>
+              </div>
+            </div>
+            <p class="wline">A este ritmo paras a las <b>18:40</b>.</p>
+          </div>
+        </div>
+
+        <div class="state">
+          <div class="skicker"><span>Te pasaste</span><span>19:50</span></div>
+          <div class="work">
+            <div class="whead"><span class="wlabel"><i>💼</i> Trabajo</span><span class="wcount"><b>9h 10m</b> de 8h</span></div>
+            <div class="strip">
+              <div class="axis">
+                <span class="seg" style="left:9.09%;width:24.24%"></span>
+                <span class="seg" style="left:39.39%;width:18.18%"></span>
+                <span class="seg" style="left:67.68%;width:6.06%"></span>
+                <span class="seg past" style="left:73.74%;width:7.07%"></span>
+                <span class="cross" style="left:73.74%"></span>
+                <span class="now" style="left:80.81%"></span>
+              </div>
+              <div class="ticks">
+                <span style="left:9.09%">08:00</span>
+                <span style="left:39.39%">13:00</span>
+                <span class="flag" style="left:73.74%">18:40</span>
+                <span style="left:100%">23:00</span>
+              </div>
+            </div>
+            <p class="wline">Llevas <b>9h 10m</b>.</p>
+            <p class="wsub">Pasaste las 8h a las <b>18:40</b>.</p>
+          </div>
+        </div>
+
+      </div>
+      <p class="note">Aquí el rayado no es adorno: es <b>el futuro</b>. Lo macizo es lo trabajado, lo rayado es lo que te falta puesto sobre las horas que aún no han pasado, y por eso el final <b>se ve caer</b> en un sitio del día. Al pasarte, el tramo posterior a las 8h se pinta más oscuro en su hora real.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Qué gana y qué pierde cada una</p>
+  <div class="verdict">
+    <div class="vcard">
+      <h3>A · El arco</h3>
+      <p class="pro"><i>+</i><span>La <b>hora de parar</b> es lo más grande de la pantalla. Imposible no verla, imposible confundirla con un total.</span></p>
+      <p class="pro"><i>+</i><span>Ocupa poca altura y no compite con la barra del día que ya está encima.</span></p>
+      <p class="con"><i>−</i><span>Un dial es <b>menos preciso de leer</b>: a ojo no sabes si vas por 3h40 o por 4h. El número pequeño de arriba tiene que cargar con esa precisión.</span></p>
+      <p class="con"><i>−</i><span>Es la forma más «widget» de las tres: se parece menos al resto del módulo.</span></p>
+    </div>
+    <div class="vcard">
+      <h3>B · Los ocho bloques</h3>
+      <p class="pro"><i>+</i><span>Las 8 horas <b>se vuelven contables</b>. «Las 8 que me corresponden» deja de ser una abstracción y pasa a ser ocho cosas que se terminan.</span></p>
+      <p class="pro"><i>+</i><span>Lo que te pasas vive <b>fuera</b> de la jornada, aparte, sin romper nada ni inventar un color de alarma.</span></p>
+      <p class="con"><i>−</i><span>A 375 px son ocho casillas estrechas; con las de más, diez. Es lo que más apretado queda en móvil.</span></p>
+      <p class="con"><i>−</i><span>No dice <b>cuándo</b> trabajaste, igual que la barra lisa.</span></p>
+    </div>
+    <div class="vcard">
+      <h3>C · La franja del día</h3>
+      <p class="pro"><i>+</i><span>Es la única que contesta <b>dos preguntas</b>: cuánto llevas y a qué horas fue. «Arranqué a las 8 y sigo a las 19:50» se ve de un golpe.</span></p>
+      <p class="pro"><i>+</i><span>La hora de parar <b>cae en un sitio del día</b>, no es un número suelto: ves cuánta tarde te queda después.</span></p>
+      <p class="con"><i>−</i><span>Es la más parecida a la barra del día que ya está justo encima. Dos franjas seguidas pueden leerse como <b>lo mismo dos veces</b>.</span></p>
+      <p class="con"><i>−</i><span>Con muchas sesiones cortas se llena de trocitos y pierde la calma de las otras dos.</span></p>
+    </div>
+  </div>
+
+  <div class="pick">
+    <h2>Si me obligas a elegir</h2>
+    <p><b>B, los ocho bloques.</b> Tu frase era «quiero trabajar explícitamente las 8 horas que me corresponden»: ocho bloques convierten esa frase en algo que se termina y se cuenta, y resuelven solas el problema más delicado de toda la feature —qué hacer cuando te pasas— sin un solo color de alarma, sacando esas horas fuera de la jornada en vez de estirar nada.</p>
+    <p>Y no son excluyentes: <b>C se puede quedar para el día pasado</b>, cuando ya no hay hora que proyectar y lo único interesante es a qué horas trabajaste. También puedes decirme «los bloques de B con la hora grande de A» y eso es una sola forma más, no un lío.</p>
+  </div>
+
+</div>
+</body>
+</html>

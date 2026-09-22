@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
 import { VidaAgendaBlock } from '@/features/vida/components/VidaAgendaBlock'
@@ -10,6 +11,7 @@ import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
 import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
+import { VidaUpNextCard } from '@/features/vida/components/VidaUpNextCard'
 import type { VidaLogSessionMode } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
@@ -47,7 +49,7 @@ import {
   collectDayClosing,
   plannedSessionMinutes,
 } from '@/features/vida/utils/vida-execution.utils'
-import type { NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
+import type { ExecutionEntry, NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
 import type { VidaBlockHint as BlockHint } from '@/features/vida/utils/vida-patterns.utils'
 import {
   pickBlockHints,
@@ -55,6 +57,12 @@ import {
   usualDurationsByItemId,
 } from '@/features/vida/utils/vida-patterns.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
+import {
+  buildUpNext,
+  collectResolvedBlockIds,
+  findUpNextAnchorId,
+  pickUpNextBlock,
+} from '@/features/vida/utils/vida-up-next.utils'
 import {
   getBlockNote,
   isNoDataDismissed,
@@ -330,6 +338,100 @@ export function VidaHoyPage() {
     () => usualDurationsByActivityId(patterns.patterns),
     [patterns.patterns],
   )
+
+  /* ── «Lo que viene» (FEAT-010, tajada 1) ────────────────────────────────
+   *
+   * **Cuesta cero** (criterio 204): es un `useMemo` puro sobre lo que la
+   * pantalla ya tiene —la agenda, la ejecución, las notas de este aparato, la
+   * costumbre y el reloj de `useVidaNowMinute`, que ya está montado—. **Ni una
+   * consulta nueva, ni un temporizador nuevo.**
+   *
+   * Y lo que **no** hace, que es la razón de ser de la feature: la duración
+   * planeada del bloque **no entra en ninguna mutación**. Se escribe como texto
+   * («suele durarte 4 h»), la frase de verdad lo dice en la misma tarjeta y el
+   * botón manda `start(activityId)` **sin duración y sin hora**: el cronómetro
+   * nace en el segundo del toque (criterios 188, 196 y 373).
+   *
+   * Las cuatro puertas, en este orden:
+   *
+   * 1. **Solo en hoy y dentro del día** (criterio 180): sin `isToday`, sin
+   *    reloj o con el reloj fuera de `[dayStart, dayEnd)` **no se pinta ningún
+   *    nodo** —ni vacío ni escondido por CSS—.
+   * 2. **Con los datos en vuelo no se afirma nada** (criterio 208).
+   * 3. **Sin saber lo vivido no se propone** (criterio 209, su primera mitad):
+   *    proponer sin saber qué está hecho es afirmar lo que no se sabe.
+   * 4. **Sin candidato, no hay tarjeta.** La cara de «ya no queda nada» es el
+   *    criterio 377 y llega en la tajada 2.
+   */
+  const upNext = useMemo(() => {
+    if (!isToday || nowMinutes === null) return null
+    const dayStartMinutes = parseTimeToMinutes(dayHours.startTime)
+    const dayEndMinutes = parseTimeToMinutes(dayHours.endTime)
+    if (dayStartMinutes === null || dayEndMinutes === null) return null
+    if (nowMinutes < dayStartMinutes || nowMinutes >= dayEndMinutes) return null
+    if (isDisabled || isPending || isPlanError) return null
+    if (!executionKnown) return null
+
+    const anchorId = findUpNextAnchorId({
+      entries: execution.entries,
+      byBlockId: execution.byBlockId,
+    })
+    if (anchorId === null) return null
+
+    const resolvedBlockIds = collectResolvedBlockIds({
+      blocks: agenda.blocks,
+      byBlockId: execution.byBlockId,
+      insteadByBlockId: execution.insteadByBlockId,
+      couldNotItemIds,
+    })
+    const block = pickUpNextBlock({ blocks: agenda.blocks, resolvedBlockIds, nowMinutes })
+    if (block === null) return null
+
+    // El nombre de lo que está corriendo, para la coletilla del criterio 378.
+    // Sale del **ancla**, no de la sesión abierta a secas: si el ancla es la
+    // marca de AHORA no hay nada en marcha y la coletilla no se escribe.
+    const anchorEntry = execution.entries.find((entry) => entry.id === anchorId) ?? null
+    const runningTitle =
+      anchorEntry === null || anchorEntry.kind === 'now' || anchorEntry.kind === 'gap'
+        ? null
+        : anchorEntry.kind === 'session'
+          ? anchorEntry.span.title
+          : (anchorEntry.item.activity?.title ?? 'lo que tienes en marcha')
+
+    return buildUpNext({
+      block,
+      anchorId,
+      usualMinutes: usualDurationsByActivity[block.item.activityId] ?? null,
+      runningTitle,
+      nowMinutes,
+      openCount: agenda.blocks.length - resolvedBlockIds.size,
+      canStart,
+      // Qué falta para poder empezar (criterio 189). La pregunta de la sesión
+      // de otro día **ya está en la barra fija del módulo**, que sigue en
+      // todas las pantallas (criterio 203): la tarjeta lleva hasta ahí, no
+      // estrena un segundo sitio donde contestarla.
+      blockedNote: openSession.isFromAnotherDay
+        ? 'Tienes una sesión de otro día sin cerrar. Contéstala en la barra de arriba y podrás empezar esto.'
+        : 'Para empezar algo necesitas tu sesión iniciada.',
+    })
+  }, [
+    isToday,
+    nowMinutes,
+    dayHours.startTime,
+    dayHours.endTime,
+    isDisabled,
+    isPending,
+    isPlanError,
+    executionKnown,
+    execution.entries,
+    execution.byBlockId,
+    execution.insteadByBlockId,
+    agenda.blocks,
+    couldNotItemIds,
+    usualDurationsByActivity,
+    canStart,
+    openSession.isFromAnotherDay,
+  ])
 
   // **Dos avisos como mucho, y nunca dos del mismo bloque** (criterio 88). La
   // regla entera vive en `pickBlockHints`, que es puro y está probado; aquí
@@ -661,6 +763,184 @@ export function VidaHoyPage() {
   const buildNotes =
     buildDay.lastBuild?.date === date ? describeBuildDay(buildDay.lastBuild.summary) : null
 
+  /**
+   * Una fila de la agenda. **Su contenido no cambia una coma**: se extrajo del
+   * `map` tal cual para que la tarjeta de «Lo que viene» pueda entrar como
+   * hermana suya en el `flatMap` de abajo (FEAT-010, criterio 370).
+   */
+  function renderEntry(entry: ExecutionEntry): ReactNode {
+      if (entry.kind === 'now') {
+        return (
+          <li className={styles.nowRow} ref={nowRef} key="now">
+            <span className={styles.nowTime}>{nowLabel}</span>
+            <span className={styles.nowLine} aria-hidden />
+            <span className={styles.nowPill}>Ahora</span>
+          </li>
+        )
+      }
+      if (entry.kind === 'session') {
+        // Algo que pasó y no es de ningún bloque, o lo real de un movido: en
+        // **su** hora, punteado, sin tocar el plan (criterios 22 y 23).
+        return (
+          <VidaAgendaSession
+            key={entry.id}
+            entry={entry}
+            // Corregir y «Quitar del registro» (criterio 35). Se ofrece en
+            // los mismos días en que se registra —hoy y pasados—, y **no**
+            // en uno futuro, donde no hay nada que corregir.
+            onEdit={
+              canLogPast
+                ? (session) => openLogSheet({ mode: 'edit', session })
+                : undefined
+            }
+          />
+        )
+      }
+      return (
+        <Fragment key={entry.id}>
+          {entry.kind === 'block' ? (
+            <>
+            <VidaAgendaBlock
+              block={entry}
+              isNext={entry.id === nextBlockId}
+              nowMinutes={nowMinutes}
+              // Sin `date` el bloque no pinta el «···»: en un día pasado no
+              // hay nada que quitar ni que cambiar de hora (criterio 38).
+              date={canPlan ? date : null}
+              onEdit={canPlan ? editBlock : undefined}
+              // **El bloque**, no la actividad: con dos bloques de la misma
+              // actividad el mismo día, el cruce de D1 dice cuál está en
+              // marcha y el otro se queda quieto (hallazgo 2 de la tajada 1).
+              isRunning={execution.byBlockId[entry.id]?.isRunning ?? false}
+              execution={execution.byBlockId[entry.id] ?? null}
+              sessionStartInstant={openSession.startInstant}
+              // La otra mitad del criterio 1: «▶ Empezar» tampoco se pinta en
+              // un bloque que **ya tiene** sesión, esté en marcha o cerrada.
+              onStart={
+                canStart && !execution.byBlockId[entry.id] && entry.item.activityId !== runningActivityId
+                  ? (block) => void sessionActions.start(block.item.activityId)
+                  : undefined
+              }
+              onFinish={() => void sessionActions.finishNow()}
+              onOpenFinishModal={
+                openSession.session ? () => openFinishModal(openSession.session!) : undefined
+              }
+              isSessionBusy={sessionActions.isBusy}
+              // **Lo que falta** (tajada 4). Con lo vivido caído no se pasa
+              // nada de esto: no se afirma «no hecho» de lo que no se pudo
+              // comprobar (criterio 58).
+              missing={executionKnown ? execution.missingByBlockId[entry.id] : null}
+              instead={execution.insteadByBlockId[entry.id] ?? null}
+              couldNot={getBlockNote(blockNotes, date, entry.item.id)}
+              outcomes={
+                executionKnown && canLogPast
+                  ? {
+                      onDid: () => markBlockDone(entry),
+                      onDidSomethingElse: () => logInsteadOfBlock(entry),
+                      onCouldNot: (reason) =>
+                        markBlockCouldNot(date, entry.item.id, reason),
+                      onClearCouldNot: () => clearBlockNote(date, entry.item.id),
+                      isBusy: createFollowUpMutation.isPending,
+                    }
+                  : null
+              }
+              // Corregir y quitar **la sesión de este bloque** (criterios 35
+              // y 41): el camino más común —empezarlo y terminarlo— también
+              // se corrige, y también en un día pasado.
+              onEditSession={
+                canLogPast ? (session) => openLogSheet({ mode: 'edit', session }) : undefined
+              }
+            />
+            {/* **Pegado al bloque y debajo de él** (criterios 87 y 94): así
+                no lo tapa ni lo empuja fuera de vista, y `VidaAgendaBlock`
+                —entregado y revisado en FEAT-004— no se toca. */}
+            {hintByBlockId[entry.id] ? (
+              <VidaBlockHint
+                hint={hintByBlockId[entry.id]!}
+                onApply={applyBlockHint}
+                onDismiss={(hint) => patterns.answerSuggestion(hint.suggestion)}
+                isSaving={editMutation.isPending}
+              />
+            ) : null}
+            </>
+          ) : noDataByGapId[entry.id] ? (
+            // Un rato ya pasado del que no se sabe nada (criterios 47 a 49).
+            // Solo con el día cerrado y algo registrado: ver
+            // `buildNoDataSlices`, donde está escrito por qué.
+            <VidaAgendaNoData
+              slice={noDataByGapId[entry.id]!}
+              isDismissed={isNoDataDismissed(dismissedNoData, date, entry.id)}
+              onAsk={canLogPast ? askAboutNoData : undefined}
+              onLeaveIt={
+                canLogPast ? (slice) => dismissNoData(date, slice.id) : undefined
+              }
+            />
+          ) : (
+            <VidaAgendaGap
+              gap={entry}
+              dayLabel={dayLabel}
+              showTemplateHint={canPlan && entry.id === firstRealGapId}
+              // En un día pasado el hueco **no ofrece nada**: ni fichas, ni
+              // «+ otra cosa» (criterio 38). Ofrecer algo para un rato que ya
+              // pasó sería un control que no lleva a ninguna parte.
+              suggestions={
+                canPlan
+                  ? suggestionsForGap({
+                      suggestions,
+                      gap: entry,
+                      planItems,
+                      // **El dato sin pedir nada** (criterio 91). Vacío
+                      // mientras no haya cuatro datos de esa actividad: la
+                      // ficha es entonces exactamente la de antes.
+                      usualDurations,
+                    })
+                  : NO_SUGGESTIONS
+              }
+              onPlaceSuggestion={canPlan ? placeSuggestion : undefined}
+              onOpenSheet={
+                canPlan
+                  ? (gap) => openSheet({ kind: 'place', gapWindow: gapToWindow(gap) })
+                  : undefined
+              }
+              // **Contar hacia atrás** (criterio 220). Solo en los días en
+              // que se registra —hoy y los pasados (criterio 232)— y solo
+              // con lo vivido cargado: sin saber qué hay dentro del hueco,
+              // ofrecer registrar sería escribir a ciegas (criterios 243 y
+              // 244). Mientras el día está en vuelo no se llega aquí: arriba
+              // se pinta el esqueleto.
+              onLogPast={canLogPast && executionKnown ? logInGap : undefined}
+              // En un día de la tira **todo** ya pasó, y sus huecos no traen
+              // la marca: allí no hay reloj (criterio 232).
+              isPastDay={isPast}
+              isPlacing={addMutation.isPending}
+            />
+          )}
+        </Fragment>
+      )
+  }
+
+  // **Lo que viene**, ya construida antes de la lista: la lista solo decide
+  // **dónde** entra (criterio 370). Sin propuesta no se pinta ningún nodo, ni
+  // vacío ni escondido por CSS (criterio 180).
+  const upNextCard = upNext ? (
+    <VidaUpNextCard
+      key="up-next"
+      upNext={upNext}
+      // **Un solo toque**: `start(activityId)` y nada más. Sin hoja, sin
+      // elegir, sin confirmar (criterio 374), y **sin la duración planeada**:
+      // la hora la pone el reloj de la mutación (criterios 188 y 196).
+      onStart={() => void sessionActions.start(upNext.activityId)}
+      // La **misma** hoja de siempre, no una segunda (criterio 187). Y «Ver
+      // las otras N» abre esa misma hoja, que ya pone la plantilla del día
+      // arriba del todo (D1, opción (c)): cero UI nueva.
+      onStartSomethingElse={() => openLogSheet({ mode: 'start' })}
+      onSeeOthers={() => openLogSheet({ mode: 'start' })}
+      // La misma variable que ya frena el «▶ Empezar» del bloque: dos toques
+      // no crean dos sesiones (criterio 188).
+      isSessionBusy={sessionActions.isBusy}
+    />
+  ) : null
+
   // La marca de «Ahora» la coloca `buildDayAgenda`, dentro del tramo que
   // contiene al reloj: aquí solo se pinta. Antes se decidía en esta página
   // —«la primera entrada que empieza después de ahora»— y por eso desaparecía
@@ -670,156 +950,15 @@ export function VidaHoyPage() {
     // 33): es un plan, no lo que está pasando. Se apagan los bordes, no el
     // texto: el contraste de lo que se lee no se toca (criterio 55).
     <ol className={styles.agenda} data-tone={isToday ? undefined : 'plan'}>
-      {execution.entries.map((entry) => {
-        if (entry.kind === 'now') {
-          return (
-            <li className={styles.nowRow} ref={nowRef} key="now">
-              <span className={styles.nowTime}>{nowLabel}</span>
-              <span className={styles.nowLine} aria-hidden />
-              <span className={styles.nowPill}>Ahora</span>
-            </li>
-          )
-        }
-        if (entry.kind === 'session') {
-          // Algo que pasó y no es de ningún bloque, o lo real de un movido: en
-          // **su** hora, punteado, sin tocar el plan (criterios 22 y 23).
-          return (
-            <VidaAgendaSession
-              key={entry.id}
-              entry={entry}
-              // Corregir y «Quitar del registro» (criterio 35). Se ofrece en
-              // los mismos días en que se registra —hoy y pasados—, y **no**
-              // en uno futuro, donde no hay nada que corregir.
-              onEdit={
-                canLogPast
-                  ? (session) => openLogSheet({ mode: 'edit', session })
-                  : undefined
-              }
-            />
-          )
-        }
-        return (
-          <Fragment key={entry.id}>
-            {entry.kind === 'block' ? (
-              <>
-              <VidaAgendaBlock
-                block={entry}
-                isNext={entry.id === nextBlockId}
-                nowMinutes={nowMinutes}
-                // Sin `date` el bloque no pinta el «···»: en un día pasado no
-                // hay nada que quitar ni que cambiar de hora (criterio 38).
-                date={canPlan ? date : null}
-                onEdit={canPlan ? editBlock : undefined}
-                // **El bloque**, no la actividad: con dos bloques de la misma
-                // actividad el mismo día, el cruce de D1 dice cuál está en
-                // marcha y el otro se queda quieto (hallazgo 2 de la tajada 1).
-                isRunning={execution.byBlockId[entry.id]?.isRunning ?? false}
-                execution={execution.byBlockId[entry.id] ?? null}
-                sessionStartInstant={openSession.startInstant}
-                // La otra mitad del criterio 1: «▶ Empezar» tampoco se pinta en
-                // un bloque que **ya tiene** sesión, esté en marcha o cerrada.
-                onStart={
-                  canStart && !execution.byBlockId[entry.id] && entry.item.activityId !== runningActivityId
-                    ? (block) => void sessionActions.start(block.item.activityId)
-                    : undefined
-                }
-                onFinish={() => void sessionActions.finishNow()}
-                onOpenFinishModal={
-                  openSession.session ? () => openFinishModal(openSession.session!) : undefined
-                }
-                isSessionBusy={sessionActions.isBusy}
-                // **Lo que falta** (tajada 4). Con lo vivido caído no se pasa
-                // nada de esto: no se afirma «no hecho» de lo que no se pudo
-                // comprobar (criterio 58).
-                missing={executionKnown ? execution.missingByBlockId[entry.id] : null}
-                instead={execution.insteadByBlockId[entry.id] ?? null}
-                couldNot={getBlockNote(blockNotes, date, entry.item.id)}
-                outcomes={
-                  executionKnown && canLogPast
-                    ? {
-                        onDid: () => markBlockDone(entry),
-                        onDidSomethingElse: () => logInsteadOfBlock(entry),
-                        onCouldNot: (reason) =>
-                          markBlockCouldNot(date, entry.item.id, reason),
-                        onClearCouldNot: () => clearBlockNote(date, entry.item.id),
-                        isBusy: createFollowUpMutation.isPending,
-                      }
-                    : null
-                }
-                // Corregir y quitar **la sesión de este bloque** (criterios 35
-                // y 41): el camino más común —empezarlo y terminarlo— también
-                // se corrige, y también en un día pasado.
-                onEditSession={
-                  canLogPast ? (session) => openLogSheet({ mode: 'edit', session }) : undefined
-                }
-              />
-              {/* **Pegado al bloque y debajo de él** (criterios 87 y 94): así
-                  no lo tapa ni lo empuja fuera de vista, y `VidaAgendaBlock`
-                  —entregado y revisado en FEAT-004— no se toca. */}
-              {hintByBlockId[entry.id] ? (
-                <VidaBlockHint
-                  hint={hintByBlockId[entry.id]!}
-                  onApply={applyBlockHint}
-                  onDismiss={(hint) => patterns.answerSuggestion(hint.suggestion)}
-                  isSaving={editMutation.isPending}
-                />
-              ) : null}
-              </>
-            ) : noDataByGapId[entry.id] ? (
-              // Un rato ya pasado del que no se sabe nada (criterios 47 a 49).
-              // Solo con el día cerrado y algo registrado: ver
-              // `buildNoDataSlices`, donde está escrito por qué.
-              <VidaAgendaNoData
-                slice={noDataByGapId[entry.id]!}
-                isDismissed={isNoDataDismissed(dismissedNoData, date, entry.id)}
-                onAsk={canLogPast ? askAboutNoData : undefined}
-                onLeaveIt={
-                  canLogPast ? (slice) => dismissNoData(date, slice.id) : undefined
-                }
-              />
-            ) : (
-              <VidaAgendaGap
-                gap={entry}
-                dayLabel={dayLabel}
-                showTemplateHint={canPlan && entry.id === firstRealGapId}
-                // En un día pasado el hueco **no ofrece nada**: ni fichas, ni
-                // «+ otra cosa» (criterio 38). Ofrecer algo para un rato que ya
-                // pasó sería un control que no lleva a ninguna parte.
-                suggestions={
-                  canPlan
-                    ? suggestionsForGap({
-                        suggestions,
-                        gap: entry,
-                        planItems,
-                        // **El dato sin pedir nada** (criterio 91). Vacío
-                        // mientras no haya cuatro datos de esa actividad: la
-                        // ficha es entonces exactamente la de antes.
-                        usualDurations,
-                      })
-                    : NO_SUGGESTIONS
-                }
-                onPlaceSuggestion={canPlan ? placeSuggestion : undefined}
-                onOpenSheet={
-                  canPlan
-                    ? (gap) => openSheet({ kind: 'place', gapWindow: gapToWindow(gap) })
-                    : undefined
-                }
-                // **Contar hacia atrás** (criterio 220). Solo en los días en
-                // que se registra —hoy y los pasados (criterio 232)— y solo
-                // con lo vivido cargado: sin saber qué hay dentro del hueco,
-                // ofrecer registrar sería escribir a ciegas (criterios 243 y
-                // 244). Mientras el día está en vuelo no se llega aquí: arriba
-                // se pinta el esqueleto.
-                onLogPast={canLogPast && executionKnown ? logInGap : undefined}
-                // En un día de la tira **todo** ya pasó, y sus huecos no traen
-                // la marca: allí no hay reloj (criterio 232).
-                isPastDay={isPast}
-                isPlacing={addMutation.isPending}
-              />
-            )}
-          </Fragment>
-        )
-      })}
+      {execution.entries.flatMap((entry) =>
+        // **La tarjeta cuelga de la fila del ancla, como hija directa del
+        //  `<ol>` y con una `key` constante.** Es lo que hace que React la
+        //  **mueva** cuando cambia de sitio en vez de desmontarla y remontarla:
+        //  metida dentro del `<Fragment key={entry.id}>` de la fila, cambiar de
+        //  ancla cambiaría de padre, el foco se iría a `body` y los criterios
+        //  205 y 379 se caerían.
+        entry.id === upNext?.anchorId ? [renderEntry(entry), upNextCard] : [renderEntry(entry)],
+      )}
     </ol>
   )
 

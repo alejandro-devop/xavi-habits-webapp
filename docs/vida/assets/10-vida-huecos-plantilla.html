@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — los huecos en la plantilla</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#006c49; --violet:#7c3aed; --violet-text:#5b21b6;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-2:rgba(255,255,255,.78); --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:#475569;line-height:1.7;max-width:900px;margin:0 0 6px}
+  .lede b{color:#0f172a}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  .phone{width:100%;max-width:375px;border-radius:38px;padding:9px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6)}
+  .screen{position:relative;overflow:hidden;width:100%;border-radius:30px;background:var(--canvas);isolation:isolate;padding-bottom:14px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(100px)}
+  .o1{width:70%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-20%;left:-10%}
+  .o2{width:60%;aspect-ratio:1;background:rgba(210,187,255,.32);top:10%;right:-20%}
+  .z{position:relative;z-index:1}
+  .body{padding:12px 12px 0}
+
+  .tsum{padding:11px 13px 10px;border-radius:18px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);margin-bottom:12px}
+  .tsum .top{display:flex;align-items:baseline;gap:8px}
+  .tsum .d{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mint-text)}
+  .tsum .left{margin-left:auto;font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft)}
+  .tsum .left b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .track{height:10px;border-radius:999px;background:rgba(15,23,42,.06);overflow:hidden;display:flex;margin:9px 0 0}
+  .track i{display:block;height:100%}
+  .track .plan{background:repeating-linear-gradient(135deg,rgba(16,185,129,.45) 0 4px,rgba(16,185,129,.2) 4px 8px)}
+  .tsum .win{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:8px}
+
+  .agenda{position:relative;padding-left:44px}
+  .rail{position:absolute;left:36px;top:2px;bottom:2px;width:2px;background:rgba(15,23,42,.08)}
+  .slot{position:relative;margin-bottom:7px}
+  .slot .t{position:absolute;left:-44px;top:10px;width:30px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-13px;top:13px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid rgba(16,185,129,.55)}
+  .card{padding:9px 11px;border-radius:15px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);display:flex;align-items:center;gap:9px;min-width:0}
+  .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+  .txt{min-width:0}
+  .nm{font-weight:600;font-size:12.5px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+
+  /* EL HUECO — lo nuevo. Una fila, una línea, pulsable. */
+  .gap{position:relative;margin-bottom:7px}
+  .gap .g{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:13px;
+        border:1.5px dashed rgba(16,185,129,.45);background:rgba(16,185,129,.06)}
+  .gap .g .lab{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:var(--mint-text);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gap .g .lab b{font-weight:700}
+  .gap .g .plus{margin-left:auto;width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,.16);color:var(--mint-text);display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto;line-height:1}
+  .gap.thin .g{border:0;background:transparent;padding:3px 11px}
+  .gap.thin .lab{color:var(--ink-dim);font-weight:500}
+
+  /* la línea del ítem sin duración: dice la verdad, no es un hueco */
+  .unk{margin-bottom:7px;padding:7px 11px;border-radius:13px;background:rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.08)}
+  .unk p{margin:0;font-size:11.5px;line-height:1.5;color:var(--ink-soft)}
+  .unk p b{color:var(--ink);font-weight:700}
+  .unk .fix{display:inline-block;margin-top:6px;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:var(--mint-text);border:1px solid rgba(16,185,129,.35);border-radius:999px;padding:4px 10px}
+
+  /* el panel que se abre al pulsar */
+  .sheet{border-radius:19px;background:var(--canvas);padding:14px 13px 15px;border:1px solid rgba(15,23,42,.08)}
+  .grab{width:34px;height:4px;border-radius:999px;background:rgba(15,23,42,.14);margin:0 auto 12px}
+  .stitle{font-size:15px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .ssub{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin:3px 0 0}
+  .pick{margin-top:11px;padding:9px 10px;border-radius:13px;background:#fff;border:1px solid rgba(15,23,42,.12);display:flex;align-items:center;gap:9px}
+  .pick .ph{font-family:'Inter',sans-serif;font-size:12px;color:#94a3b8}
+  .pick .chev{margin-left:auto;color:#94a3b8}
+  .field{margin-top:12px}
+  .lbl{font-family:'Inter',sans-serif;font-size:12px;font-weight:700}
+  .lbl span{font-weight:500;color:var(--ink-dim)}
+  .inputs{display:flex;gap:8px;margin-top:7px}
+  .box{flex:1;min-width:0;border-radius:13px;background:#fff;border:1px solid rgba(16,185,129,.5);padding:8px 10px;display:flex;align-items:baseline;gap:6px;box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+  .box .v{font-family:'Inter',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  .box .u{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-dim);margin-left:auto}
+  .end{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-top:9px}
+  .end b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .from{font-family:'Inter',sans-serif;font-size:11px;color:var(--mint-text);background:rgba(16,185,129,.1);border-radius:999px;padding:4px 9px;display:inline-block;margin-top:10px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Los huecos llegan a la plantilla</h1>
+  <p class="lede">Hoy la plantilla dice «libre 15h» en la barra y luego enseña una lista de cosas pegadas: el tiempo libre <b>existe como número y no como sitio</b>. Estos son los tres marcos del martes real: el hueco normal, el hueco fino, y el ítem que no dice cuánto dura. La regla que manda sobre todo lo demás: <b>un hueco que no se sabe, no se pinta</b>.</p>
+
+  <p class="caption">A · La lista con sus huecos</p>
+  <div class="row">
+
+    <div class="moment">
+      <div class="mtitle">1 · El martes, entero<small>Los mismos tres ítems de siempre, y ahora lo que hay entre ellos.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <div class="tsum">
+            <div class="top"><span class="d">Martes</span><span class="left"><b>2h</b> puestas de 17h</span></div>
+            <div class="track"><i class="plan" style="width:6%"></i><i style="width:3%"></i><i class="plan" style="width:3%"></i><i style="width:12%"></i><i class="plan" style="width:3%"></i><i style="width:73%"></i></div>
+            <div class="win">Tu día · 5:00 → 22:00</div>
+          </div>
+
+          <div class="agenda"><div class="rail"></div>
+
+            <div class="gap"><div class="g"><span class="lab">Libre <b>5:00 → 8:00</b> · 3 h</span><span class="plus">+</span></div></div>
+
+            <div class="slot"><span class="t">8:00</span><span class="dot"></span>
+              <div class="card"><span class="ic" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm">Working at lululemon</span><span class="meta">1 h · M</span></span></div></div>
+
+            <div class="slot"><span class="t">9:00</span><span class="dot" style="border-color:rgba(124,58,237,.5)"></span>
+              <div class="card"><span class="ic" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm">Desayunar</span><span class="meta">30 min · M</span></span></div></div>
+
+            <div class="gap"><div class="g"><span class="lab">Libre <b>9:30 → 11:30</b> · 2 h</span><span class="plus">+</span></div></div>
+
+            <div class="slot"><span class="t">11:30</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card"><span class="ic" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm">Daily meeting</span><span class="meta">30 min · M</span></span></div></div>
+
+            <div class="gap"><div class="g"><span class="lab">Libre <b>12:00 → 22:00</b> · 10 h</span><span class="plus">+</span></div></div>
+
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Las <b>dos horas entre el desayuno y el daily</b> eran lo invisible. Ahora son una fila con su hora, su fin y su tamaño. Los bordes del día también cuentan: de 5:00 a 8:00 hay tres horas tuyas que nadie te estaba enseñando.</p>
+    </div>
+
+    <div class="moment">
+      <div class="mtitle">2 · Los dos casos raros<small>El hueco de cinco minutos y el ítem sin duración.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <div class="agenda"><div class="rail"></div>
+
+            <div class="slot"><span class="t">8:00</span><span class="dot"></span>
+              <div class="card"><span class="ic" style="background:rgba(2,132,199,.12)">🚿</span>
+                <span class="txt"><span class="nm">Bañarme</span><span class="meta">55 min · M</span></span></div></div>
+
+            <div class="gap thin"><div class="g"><span class="lab">Libre 8:55 → 9:00 · 5 min</span></div></div>
+
+            <div class="slot"><span class="t">9:00</span><span class="dot" style="border-color:rgba(124,58,237,.5)"></span>
+              <div class="card"><span class="ic" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm">Desayunar</span><span class="meta">30 min · M</span></span></div></div>
+
+            <div class="slot"><span class="t">10:00</span><span class="dot" style="border-color:rgba(148,163,184,.7)"></span>
+              <div class="card"><span class="ic" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm">Working at lululemon</span><span class="meta">sin duración · M</span></span></div></div>
+
+            <div class="unk">
+              <p>No sabemos cuánto dura <b>Working at lululemon</b>, así que no podemos decir qué queda libre hasta las 14:00.</p>
+              <span class="fix">Ponerle duración</span>
+            </div>
+
+            <div class="slot"><span class="t">14:00</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card"><span class="ic" style="background:rgba(16,185,129,.12)">🐕</span>
+                <span class="txt"><span class="nm">Pasear a los peludos</span><span class="meta">45 min · M</span></span></div></div>
+
+            <div class="gap"><div class="g"><span class="lab">Libre <b>14:45 → 22:00</b> · 7 h 15</span><span class="plus">+</span></div></div>
+
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Un hueco de <b>5 minutos</b> se pinta igual pero en línea fina y <b>sin nada que pulsar</b>: si desapareciera, la barra diría que hay libre donde la lista no enseña nada. Y donde no se sabe, <b>se dice</b>: la línea gris no es un hueco, no se puede pulsar, y trae la única salida honesta —ponerle duración—.</p>
+    </div>
+
+    <div class="moment">
+      <div class="mtitle">3 · Al pulsar el hueco<small>Se abre el alta, con la hora y la duración ya puestas.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <div class="sheet">
+            <div class="grab"></div>
+            <p class="stitle">Añadir a mi Vida</p>
+            <p class="ssub">Martes · en el hueco de 9:30 a 11:30</p>
+
+            <div class="pick"><span class="ic" style="background:rgba(15,23,42,.06)">🔍</span><span class="ph">Elige una actividad…</span><span class="chev">›</span></div>
+
+            <div class="field">
+              <div class="lbl">A qué hora</div>
+              <div class="inputs"><div class="box"><span class="v">9:30</span><span class="u">inicio</span></div></div>
+            </div>
+
+            <div class="field">
+              <div class="lbl">Cuánto <span>· puedes cambiarlo</span></div>
+              <div class="inputs">
+                <div class="box"><span class="v">2</span><span class="u">horas</span></div>
+                <div class="box"><span class="v">0</span><span class="u">min</span></div>
+              </div>
+              <div class="end">→ Acaba a las <b>11:30</b></div>
+            </div>
+
+            <span class="from">Viene del hueco que pulsaste</span>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">En la plantilla, añadir es <b>elegir del catálogo</b>, no escribir un título: por eso se abre «Añadir a mi Vida» y no la hoja del ítem. La hora y la duración llegan <b>del hueco entero</b> y son editables desde el primer segundo — la hora de fin de arriba cuadra con el final del hueco, que es la comprobación de que las dos cosas hablan el mismo idioma.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Lo que este render decide</p>
+  <p class="note"><b>El hueco vive dentro de la misma lista</b>, entre tarjeta y tarjeta, no en una columna aparte ni en un mapa de calor: el ojo ya recorre esa lista de arriba abajo y el tiempo libre es una parada más del recorrido.</p>
+  <p class="note"><b>Tres formas y ninguna más:</b> el hueco normal (pulsable, con su «+»), el fino de menos de 15 minutos (se ve, no se pulsa) y la línea de lo que no se sabe (gris, honesta, con salida). <b>Los solapes no producen hueco y no se comentan</b> — la plantilla los permite a propósito.</p>
+  <p class="note"><b>La lista tiene que cuadrar con la barra:</b> la suma de los huecos pintados es exactamente el «libre» que dice «Tu día». Si un ítem no dice cuánto dura, esa parte no se afirma — y por eso hay una línea que lo explica en vez de un número inventado.</p>
+  <p class="note"><b>Ni una consulta nueva.</b> Todo sale de los ítems que la pantalla ya tiene cargados.</p>
+
+</div>
+</body>
+</html>

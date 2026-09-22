@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — el campo «Cuánto»</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#006c49; --violet:#7c3aed; --violet-text:#5b21b6;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-2:rgba(255,255,255,.78); --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:#475569;line-height:1.7;max-width:880px;margin:0 0 6px}
+  .lede b{color:#0f172a}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  /* el marco: un trozo de hoja a 375 px, no una pantalla entera */
+  .frag{width:100%;max-width:375px;border-radius:26px;background:#0f172a;padding:9px;box-shadow:0 26px 60px -24px rgba(15,23,42,.6)}
+  .sheet{border-radius:19px;background:var(--canvas);padding:14px 13px 15px;position:relative;overflow:hidden}
+  .grab{width:34px;height:4px;border-radius:999px;background:rgba(15,23,42,.14);margin:0 auto 12px}
+  .field + .field{margin-top:14px}
+  .lbl{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:-.01em}
+  .lbl span{font-weight:500;color:var(--ink-dim)}
+  .inputs{display:flex;gap:8px;margin-top:7px}
+  .box{flex:1;min-width:0;border-radius:13px;background:#fff;border:1px solid rgba(15,23,42,.12);padding:8px 10px;display:flex;align-items:baseline;gap:6px}
+  .box.focus{border-color:rgba(16,185,129,.55);box-shadow:0 0 0 3px rgba(16,185,129,.14)}
+  .box .v{font-family:'Inter',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .box .v.empty{color:#cbd5e1}
+  .box .u{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-dim);margin-left:auto}
+  .caret{display:inline-block;width:1.5px;height:16px;background:var(--mint);vertical-align:-2px;margin-left:1px}
+
+  .pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .p{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px;background:rgba(15,23,42,.05);color:var(--ink-soft);white-space:nowrap}
+  .p.on{background:#fff;color:var(--mint-text);box-shadow:0 8px 20px -9px rgba(16,185,129,.45);border:1px solid rgba(16,185,129,.35)}
+
+  /* (2) la hora de fin: dato de lo que escribes ahora. Sin caja, sin acento. */
+  .end{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-top:9px;display:flex;gap:6px;align-items:baseline;line-height:1.5}
+  .end .arrow{color:var(--ink-dim);font-weight:700}
+  .end b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .end.waiting{color:var(--ink-dim);font-weight:500}
+  .end .after{display:block;color:var(--ink-dim);font-weight:500;font-size:11.5px;margin-top:3px}
+
+  /* (3) la línea de FEAT-007: historia, y por eso va la última */
+  .adv{margin-top:11px;padding:9px 10px;border-radius:13px;border:1px dashed rgba(124,58,237,.45);background:rgba(124,58,237,.05)}
+  .adv .h{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--violet-text)}
+  .adv .b{font-size:12.5px;line-height:1.5;margin-top:4px}
+  .adv .b b{font-weight:700}
+  .adv .outs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .adv .o{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--violet);color:#fff}
+  .adv .o.ghost{background:transparent;color:var(--violet-text);border:1px solid rgba(124,58,237,.35)}
+  .adv.flat{border-style:solid;border-color:rgba(15,23,42,.1);background:rgba(15,23,42,.03)}
+  .adv.flat .h{color:var(--ink-dim)}
+
+  .order{display:flex;gap:6px;align-items:center;margin-top:12px;padding-top:10px;border-top:1px dashed rgba(15,23,42,.1);font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim)}
+  .order i{width:16px;height:16px;border-radius:50%;background:rgba(15,23,42,.08);color:var(--ink-soft);display:grid;place-items:center;font-style:normal;font-size:9.5px;font-weight:700;flex:0 0 auto}
+
+  .warn{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;color:#9a3412;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);border-radius:11px;padding:7px 9px;margin-top:8px;line-height:1.5}
+  .warn b{color:#7c2d12}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>El campo «Cuánto», con sus cuatro estados</h1>
+  <p class="lede">Es un <b>fragmento</b>, no una pantalla: el marco B de <code>06-vida-plantilla.html</code> ya está aprobado y esto cambia un control dentro de él. Lo que hay que mirar es el <b>orden fijo</b> bajo «Cuánto» —<b>(1)</b> los dos campos y las píldoras, <b>(2)</b> la hora de fin, <b>(3)</b> lo que dicen tus semanas— y que la hora de fin <b>no entra en la caja violeta</b> ni le roba el acento: una es lo que estás escribiendo ahora, la otra es historia.</p>
+
+  <p class="caption">Los cuatro estados</p>
+  <div class="row">
+
+    <!-- 1 -->
+    <div class="moment">
+      <div class="mtitle">1 · Vacío<small>Nada escrito todavía: no hay fin que enseñar y no se inventa uno.</small></div>
+      <div class="frag"><div class="sheet">
+        <div class="grab"></div>
+        <div class="field">
+          <div class="lbl">A qué hora <span>· opcional</span></div>
+          <div class="inputs"><div class="box"><span class="v">19:00</span><span class="u">inicio</span></div></div>
+        </div>
+        <div class="field">
+          <div class="lbl">Cuánto <span>· opcional</span></div>
+          <div class="inputs">
+            <div class="box"><span class="v empty">0</span><span class="u">horas</span></div>
+            <div class="box"><span class="v empty">0</span><span class="u">min</span></div>
+          </div>
+          <div class="pills"><span class="p">15 min</span><span class="p">30 min</span><span class="p">45 min</span><span class="p">1 h</span></div>
+          <div class="order"><i>1</i> campos <i>2</i> <span style="opacity:.5">sin fin</span> <i>3</i> <span style="opacity:.5">sin historia</span></div>
+        </div>
+      </div></div>
+      <p class="note">Las píldoras <b>se quedan</b>: son el camino rápido y siguen escribiendo en los dos campos. Sin duración <b>no hay línea de fin</b>, y no se usan los 30 min por defecto como si los hubieras elegido tú.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="moment">
+      <div class="mtitle">2 · 1 h 20, con su fin<small>El caso que pediste, y con historia debajo.</small></div>
+      <div class="frag"><div class="sheet">
+        <div class="grab"></div>
+        <div class="field">
+          <div class="lbl">A qué hora <span>· opcional</span></div>
+          <div class="inputs"><div class="box"><span class="v">19:00</span><span class="u">inicio</span></div></div>
+        </div>
+        <div class="field">
+          <div class="lbl">Cuánto <span>· opcional</span></div>
+          <div class="inputs">
+            <div class="box focus"><span class="v">1</span><span class="u">horas</span></div>
+            <div class="box"><span class="v">20</span><span class="u">min</span></div>
+          </div>
+          <div class="pills"><span class="p">15 min</span><span class="p">30 min</span><span class="p">45 min</span><span class="p">1 h</span></div>
+          <div class="end"><span class="arrow">→</span><span>Acaba a las <b>20:20</b></span></div>
+          <div class="adv">
+            <div class="h">Lo que dicen tus semanas</div>
+            <div class="b">Sueles tardar <b>1 h 35</b>, y aquí dice 1 h 20. <b>13 de 15</b> veces.</div>
+            <div class="outs"><span class="o">Ponerlo en 1 h 35</span><span class="o ghost">Dejarlo</span></div>
+          </div>
+          <div class="order"><i>1</i> campos <i>2</i> fin <i>3</i> historia</div>
+        </div>
+      </div></div>
+      <p class="note">La hora de fin se recalcula <b>mientras escribes</b>, no al salir del campo, y siempre sobre el total de verdad. Va en texto llano: si se pintara dentro de la caja violeta parecería una opinión del sistema, y es un hecho.</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="moment">
+      <div class="mtitle">3 · Sin hora de inicio<small>Hay duración, pero no de dónde contar.</small></div>
+      <div class="frag"><div class="sheet">
+        <div class="grab"></div>
+        <div class="field">
+          <div class="lbl">A qué hora <span>· opcional</span></div>
+          <div class="inputs"><div class="box"><span class="v empty">--:--</span><span class="u">inicio</span></div></div>
+        </div>
+        <div class="field">
+          <div class="lbl">Cuánto <span>· opcional</span></div>
+          <div class="inputs">
+            <div class="box"><span class="v">1</span><span class="u">horas</span></div>
+            <div class="box focus"><span class="v">20</span><span class="u">min</span></div>
+          </div>
+          <div class="pills"><span class="p">15 min</span><span class="p">30 min</span><span class="p">45 min</span><span class="p">1 h</span></div>
+          <div class="end waiting"><span class="arrow">→</span><span>Ponle hora y te digo a qué hora acaba</span></div>
+          <div class="adv flat">
+            <div class="h">Lo que dicen tus semanas</div>
+            <div class="b">Esto te sale como lo tienes puesto. Aquí no hay nada que proponer.</div>
+          </div>
+          <div class="order"><i>1</i> campos <i>2</i> fin <i>3</i> historia</div>
+        </div>
+      </div></div>
+      <p class="note">El hueco <b>no se deja mudo</b>: dice qué falta para poder contar. Nunca «Acaba a la 1:20» contando desde medianoche, que es la forma fácil de mentir aquí.</p>
+    </div>
+
+    <!-- 4 -->
+    <div class="moment">
+      <div class="mtitle">4 · Cruzando la medianoche<small>El caso incómodo, dicho entero.</small></div>
+      <div class="frag"><div class="sheet">
+        <div class="grab"></div>
+        <div class="field">
+          <div class="lbl">A qué hora <span>· opcional</span></div>
+          <div class="inputs"><div class="box"><span class="v">23:30</span><span class="u">inicio</span></div></div>
+        </div>
+        <div class="field">
+          <div class="lbl">Cuánto <span>· opcional</span></div>
+          <div class="inputs">
+            <div class="box"><span class="v">1</span><span class="u">horas</span></div>
+            <div class="box focus"><span class="v">20</span><span class="u">min</span></div>
+          </div>
+          <div class="pills"><span class="p">15 min</span><span class="p">30 min</span><span class="p">45 min</span><span class="p">1 h</span></div>
+          <div class="end"><span class="arrow">→</span><span>Acaba a las <b>0:50</b><span class="after">ya del día siguiente</span></span></div>
+          <div class="warn">Hoy lo cortará a las <b>23:59</b> al armar el día.</div>
+          <div class="order"><i>1</i> campos <i>2</i> fin <i>3</i> historia</div>
+        </div>
+      </div></div>
+      <p class="note">Las dos frases van juntas y ninguna se calla: la de arriba es <b>lo que pediste</b>, la de abajo es <b>lo que la app hará de verdad</b> cuando arme el día. Lo que no se enseña jamás es «23:59» a secas como si fuera el fin que elegiste.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Lo que este fragmento decide</p>
+  <p class="note"><b>Dos campos, no uno.</b> «Horas» y «minutos» por separado, con teclado numérico, y la conversión por debajo: el API sigue recibiendo minutos y nada cambia en el servidor. Lo guardado se abre repartido —95 minutos son <b>1 h 35</b>, no dos campos vacíos—.</p>
+  <p class="note"><b>Escribir 90 en «minutos» no es un error.</b> Se acepta y se acomoda solo a 1 h 30; la hora de fin, mientras tanto, ya cuenta 90 minutos y no 90 horas.</p>
+  <p class="note"><b>El orden nunca cambia:</b> campos → fin → historia. Es la única forma de que la línea nueva y la que FEAT-007 acaba de poner ahí no se peleen, y de que a 375 px no se solapen.</p>
+  <p class="note"><b>Lo que este fragmento no toca:</b> el cálculo que ya viaja al API (<code>calculateEndTime</code>, que recorta a 23:59) se queda exactamente como está; si hace falta saber cruzar medianoche para <i>enseñar</i>, se añade al lado.</p>
+
+</div>
+</body>
+</html>

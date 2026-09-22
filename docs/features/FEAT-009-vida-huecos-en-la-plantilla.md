@@ -10,6 +10,17 @@ updated: 2026-09-22
 
 # FEAT-009 — Los huecos llegan a la plantilla
 
+> **D1 resuelta por el usuario el 2026-09-22: FEAT-008 va primero.** Se construye
+> «horas y minutos» y después los huecos, para que la precarga nazca ya contra los dos
+> campos y no haya que rehacerla. El traspaso queda como lo escribió el analista:
+> FEAT-009 entrega **minutos enteros + `HH:mm`**, FEAT-008 los reparte, y **su hora de
+> fin tiene que ser el final del hueco**. No se fusionan: cada una se entrega sola.
+
+> **D2 resuelta: render hecho.** `docs/vida/assets/10-vida-huecos-plantilla.html`
+> —marco A a 375 px con las tres formas del hueco (normal, fino, y la línea del ítem sin
+> duración) y el panel de alta con hora y duración precargadas—. **Pendiente de la
+> aprobación del usuario**; hasta entonces la tajada 1 no arranca.
+
 ## 1. La petición — feature-analyst
 
 **Resumen para quien venga detrás:** en `/app/vida/plantilla`, entre un ítem y

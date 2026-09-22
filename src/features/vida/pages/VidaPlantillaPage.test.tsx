@@ -32,6 +32,13 @@ type Query<T> = {
   refetch: () => void
 }
 
+/**
+ * **Cada vez que un hook de consulta se monta o se vuelve a llamar**, por su
+ * nombre. Es el espía del criterio 147: entrar en la plantilla —y pulsar un
+ * hueco— no puede estrenar ninguna consulta que no estuviera ya.
+ */
+let queryHooks: string[]
+
 let itemsQuery: Query<VidaItem[]>
 let settingsQuery: Query<UserSettings>
 let activitiesQuery: Query<ActivitiesResponse>
@@ -43,6 +50,7 @@ let createItem: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError:
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useVidaItemsQuery: (includeInactive?: boolean) => {
     lastIncludeInactive = includeInactive
+    queryHooks.push('vidaItems')
     return itemsQuery
   },
   // Las que estrena la tajada 2: «Activar», restarle un día y quitarlo; la de
@@ -55,13 +63,16 @@ vi.mock('@/features/vida/hooks/useVidaItems', () => ({
 // guard de Vida **lanza**, así que se mockean aquí igual que en el test de la
 // propia hoja. Es el aviso que dejó escrito la tajada 1.
 vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
-  useActivityCategoriesQuery: () => ({
-    data: [],
-    isPending: false,
-    isError: false,
-    fetchStatus: 'idle',
-    refetch: vi.fn(),
-  }),
+  useActivityCategoriesQuery: () => {
+    queryHooks.push('activityCategories')
+    return {
+      data: [],
+      isPending: false,
+      isError: false,
+      fetchStatus: 'idle',
+      refetch: vi.fn(),
+    }
+  },
   useCreateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
 // El lote de «Copiar este día a otros» orquesta sobre `api/`, como su molde
@@ -69,7 +80,10 @@ vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
 // que lo que se afirme sea el cuerpo que viajaría.
 vi.mock('@/features/vida/api/vida-items.api')
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
-  useUserSettingsQuery: () => settingsQuery,
+  useUserSettingsQuery: () => {
+    queryHooks.push('userSettings')
+    return settingsQuery
+  },
   useUpdateUserSettingsMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
 /* La ventana de seis semanas (FEAT-007, tajada 4). Se mockea el hook —como en
@@ -83,12 +97,16 @@ let patternsResult: {
 }
 vi.mock('@/features/vida/hooks/useVidaPatterns', () => ({
   useVidaPatterns: (input: { enabled: boolean }) => {
+    queryHooks.push('vidaPatterns')
     patternsEnabled.push(input.enabled)
     return patternsResult
   },
 }))
 vi.mock('@/features/vida/hooks/useActivities', () => ({
-  useActivitiesQuery: () => activitiesQuery,
+  useActivitiesQuery: () => {
+    queryHooks.push('activities')
+    return activitiesQuery
+  },
   useCreateActivityMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
   useUpdateActivityMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
@@ -156,6 +174,7 @@ beforeEach(() => {
   deleteItem = { mutate: vi.fn(), isPending: false, isError: false }
   createItem = { mutate: vi.fn(), isPending: false, isError: false }
   itemsQuery = ready<VidaItem[]>([])
+  queryHooks = []
   patternsEnabled = []
   patternsResult = { patterns: [], answerSuggestion: vi.fn() }
   settingsQuery = ready(SETTINGS)
@@ -366,13 +385,19 @@ describe('los huecos de la plantilla (criterios 140-149)', () => {
     ])
     renderWithProviders(<VidaPlantillaPage />)
 
-    expect(within(agenda()).getByText('Libre 8:55 → 9:00 · 5m')).toBeInTheDocument()
-    // Los únicos botones de la lista siguen siendo las tarjetas: en esta
-    // tajada ni el hueco ni la línea de «no sabemos» son pulsables.
+    const fino = within(agenda()).getByText('Libre 8:55 → 9:00 · 5m')
+    expect(fino).toBeInTheDocument()
+    // **El resto de 5 min no se pulsa** ni desde la tajada 2, que es cuando
+    // los huecos de 15 min o más se volvieron botones: el fino sigue siendo un
+    // `<p>` y no hay ningún rótulo que hable de las 8:55.
+    expect(fino.tagName).toBe('P')
+    expect(fino.closest('button')).toBeNull()
     const rotulos = within(agenda())
       .getAllByRole('button')
       .map((button) => button.getAttribute('aria-label') ?? button.textContent)
-    expect(rotulos).toEqual(['Abrir Bañarme', 'Abrir Desayunar'])
+    expect(rotulos.filter((texto) => texto?.includes('8:55'))).toHaveLength(0)
+    expect(rotulos).toContain('Abrir Bañarme')
+    expect(rotulos).toContain('Abrir Desayunar')
   })
 
   it('en un solape no aparece ningún hueco entre los dos (criterio 144)', () => {
@@ -402,12 +427,15 @@ describe('los huecos de la plantilla (criterios 140-149)', () => {
     expect(within(agenda()).queryByText(/^Libre 10:00/)).not.toBeInTheDocument()
   })
 
-  it('si es el último, la línea habla del final del día (criterio 146)', () => {
+  // La línea dice **la hora** también cuando el corte es el fin del día: el
+  // criterio 146 escribe su ejemplo con el número («…hasta las 22:00») y el
+  // módulo dice los números en todas partes. El día del test acaba a las 23:00.
+  it('si es el último, la línea dice **la hora** del fin del día (criterio 146)', () => {
     itemsQuery = ready([item('sin', { startTime: '10:00', title: 'Working at lululemon' })])
     renderWithProviders(<VidaPlantillaPage />)
 
     expect(within(agenda()).getByText(/^No sabemos cuánto dura/).textContent).toBe(
-      'No sabemos cuánto dura Working at lululemon, así que no podemos decir qué queda libre hasta el final del día.',
+      'No sabemos cuánto dura Working at lululemon, así que no podemos decir qué queda libre hasta las 23:00.',
     )
   })
 
@@ -891,6 +919,238 @@ describe('«Añadir a mi Vida» (criterios 29-34 y 40)', () => {
     })
     renderWithProviders(<VidaPlantillaPage />)
     expect(screen.getByText('Todavía no tienes actividades')).toBeInTheDocument()
+  })
+})
+
+/**
+ * **El toque precarga** (FEAT-009, tajada 2, criterios 153-162 y 170).
+ *
+ * El día del test va de **6:30 a 23:00** y tiene dos cosas puestas, así que la
+ * lista trae tres huecos: **6:30 → 8:00** (90 min), **8:40 → 9:00** (20 min) y
+ * **9:30 → 23:00**.
+ *
+ * `window.matchMedia` del arnés devuelve `false` para todo, así que **el caso
+ * por defecto de este bloque es móvil**: el panel se abre dentro de la hoja. El
+ * de escritorio se monta a mano, como en `VidaRevisionPage.test.tsx:649`.
+ */
+describe('pulsar un hueco precarga la hora y la duración (criterios 153-162 y 170)', () => {
+  const agenda = () => screen.getByRole('list', { name: /viernes, ordenado por hora/i })
+  /** El hueco, por lo que se oye: es el `aria-label` del criterio 162. */
+  const gap = (name: string | RegExp) => within(agenda()).getByRole('button', { name })
+  const panels = () => screen.getAllByRole('region', { name: 'Añadir a mi Vida' })
+  /** El último montado: en móvil la hoja; en escritorio, el aside. */
+  const panel = () => panels()[panels().length - 1]!
+
+  function desktop(): () => void {
+    const original = window.matchMedia
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query.includes('min-width'),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as unknown as typeof window.matchMedia
+    return () => {
+      window.matchMedia = original
+    }
+  }
+
+  beforeEach(() => {
+    itemsQuery = ready([
+      item('1', { startTime: '08:00', durationMinutes: 40, title: 'Pasear a las mascotas' }),
+      item('2', { startTime: '09:00', durationMinutes: 30, title: 'Bañarme' }),
+    ])
+    // «Leer» **no está** en la plantilla, así que su botón es «+ Añadir» y no
+    // «+ Otra hora»: es el camino del criterio 153, elegir del catálogo.
+    activitiesQuery = ready<ActivitiesResponse>({
+      activities: [catalogActivity('a-9', 'Leer')],
+      page: 1,
+      limit: 100,
+      total: 1,
+    })
+  })
+
+  it('el hueco es un botón alcanzable con su hora y su tamaño (criterio 162)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const nombres = within(agenda())
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label'))
+    expect(nombres).toContain('Poner algo a las 6:30, 1 h 30 min libres')
+    expect(nombres).toContain('Poner algo a las 8:40, 20 min libres')
+  })
+
+  it('pulsarlo abre «Añadir a mi Vida» y **no la hoja del ítem** (criterio 153)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(gap('Poner algo a las 8:40, 20 min libres'))
+
+    // En móvil el panel vive en la hoja: aparece un segundo montaje.
+    expect(panels()).toHaveLength(2)
+    expect(
+      within(panel()).getByText(/^Viene del hueco que pulsaste/).textContent,
+    ).toBe('Viene del hueco que pulsaste · para las 8:40 · 20m libres')
+    // La hoja del ítem se monta con `sheetSession`, que es quien enciende la
+    // ventana de patrones: si no se enciende, no se ha abierto.
+    expect(patternsEnabled.some(Boolean)).toBe(false)
+  })
+
+  it('**elegir la actividad conserva** la hora y la duración del hueco (criterios 154 y 155)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(gap('Poner algo a las 8:40, 20 min libres'))
+    fireEvent.click(within(panel()).getByRole('button', { name: '+ Añadir' }))
+
+    expect(within(panel()).getByLabelText(/A qué hora/)).toHaveValue('08:40')
+    // Los dos campos de FEAT-008, ya repartidos: 20 min son «0» y «20».
+    expect(within(panel()).getByLabelText('horas')).toHaveValue('0')
+    expect(within(panel()).getByLabelText('minutos')).toHaveValue('20')
+    // Y el día visible sigue marcado.
+    expect(within(panel()).getByRole('button', { name: 'viernes' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('un hueco de 90 min se lee «1» y «30», nunca «90» (criterios 155 y 170)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(gap('Poner algo a las 6:30, 1 h 30 min libres'))
+    fireEvent.click(within(panel()).getByRole('button', { name: '+ Añadir' }))
+
+    expect(within(panel()).getByLabelText(/A qué hora/)).toHaveValue('06:30')
+    expect(within(panel()).getByLabelText('horas')).toHaveValue('1')
+    expect(within(panel()).getByLabelText('minutos')).toHaveValue('30')
+  })
+
+  it('por el «+» flotante **se sigue vaciando** como siempre (criterio 154)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Añadir a mi Vida' }))
+    fireEvent.click(within(panel()).getByRole('button', { name: '+ Añadir' }))
+
+    expect(within(panel()).queryByText(/^Viene del hueco/)).not.toBeInTheDocument()
+    expect(within(panel()).getByLabelText(/A qué hora/)).toHaveValue('')
+    // Sin duración no hay campos de «libre» abiertos: ninguna píldora encendida.
+    expect(within(panel()).queryByLabelText('horas')).not.toBeInTheDocument()
+  })
+
+  it('pulsar tres huecos y cerrar **no guarda nada ni pide nada nuevo** (criterios 156 y 147)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    const antes = [...new Set(queryHooks)].sort()
+
+    fireEvent.click(gap('Poner algo a las 8:40, 20 min libres'))
+    fireEvent.click(gap('Poner algo a las 6:30, 1 h 30 min libres'))
+    fireEvent.click(gap('Poner algo a las 9:30, 13 h 30 min libres'))
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    // **Cero mutaciones**: un hueco pulsado es una propuesta, no un guardado.
+    expect(createItem.mutate).not.toHaveBeenCalled()
+    expect(updateItem.mutate).not.toHaveBeenCalled()
+    expect(deleteItem.mutate).not.toHaveBeenCalled()
+    // Y **ni una consulta nueva**: los mismos hooks que ya había, y la ventana
+    // de patrones sigue apagada. La capa de API tampoco se toca.
+    expect([...new Set(queryHooks)].sort()).toEqual(antes)
+    expect(patternsEnabled.some(Boolean)).toBe(false)
+    for (const spy of Object.values(vidaItemsApi)) {
+      if (typeof spy === 'function' && 'mock' in spy) expect(spy).not.toHaveBeenCalled()
+    }
+  })
+
+  it('guardar desde el hueco manda **el mismo cuerpo** que escribirlo a mano (criterio 157)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(gap('Poner algo a las 8:40, 20 min libres'))
+    fireEvent.click(within(panel()).getByRole('button', { name: '+ Añadir' }))
+    fireEvent.click(within(panel()).getByRole('button', { name: 'Añadir a mi Vida' }))
+
+    expect(createItem.mutate).toHaveBeenCalledTimes(1)
+    const input = createItem.mutate.mock.calls[0]![0]
+    expect(input).toEqual({
+      activityId: 'a-9',
+      days: ['friday'],
+      startTime: '08:40',
+      durationMinutes: 20,
+    })
+  })
+
+  it('la lista se recoloca sola: guardar 20 min en un hueco de 60 deja el resto (criterio 158)', () => {
+    // La lista sale de `items`, así que esto es lo que se ve cuando la mutación
+    // invalida y la consulta vuelve con el ítem nuevo dentro.
+    itemsQuery = ready([
+      item('1', { startTime: '08:00', durationMinutes: 40, title: 'Pasear a las mascotas' }),
+      item('nuevo', { startTime: '08:40', durationMinutes: 20, title: 'Leer' }),
+      item('2', { startTime: '09:40', durationMinutes: 30, title: 'Bañarme' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const libres = within(agenda())
+      .getAllByText(/^Libre /)
+      .map((row) => row.textContent)
+    expect(libres).not.toContain('Libre 8:40 → 9:00 · 20m')
+    expect(libres).toContain('Libre 9:00 → 9:40 · 40m')
+  })
+
+  it('**otro hueco sustituye la hora y la duración** y no toca lo elegido (criterio 160)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+    fireEvent.click(gap('Poner algo a las 8:40, 20 min libres'))
+    fireEvent.click(within(panel()).getByRole('button', { name: '+ Añadir' }))
+    // Se marca un día más a mano: pulsar otro hueco no puede deshacerlo.
+    fireEvent.click(within(panel()).getByRole('button', { name: 'lunes' }))
+
+    fireEvent.click(gap('Poner algo a las 6:30, 1 h 30 min libres'))
+
+    expect(within(panel()).getByLabelText(/A qué hora/)).toHaveValue('06:30')
+    expect(within(panel()).getByLabelText('horas')).toHaveValue('1')
+    expect(within(panel()).getByLabelText('minutos')).toHaveValue('30')
+    // La actividad elegida sigue elegida —el mini-formulario no se ha ido— y
+    // los días siguen como los dejó el usuario.
+    expect(within(panel()).getByText('Leer')).toBeInTheDocument()
+    expect(within(panel()).getByRole('button', { name: 'lunes' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(within(panel()).getByRole('button', { name: 'viernes' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('lo que no se pulsa sigue sin pulsarse: el fino y la línea de «no sabemos» (criterio 161)', () => {
+    itemsQuery = ready([
+      item('1', { startTime: '08:00', durationMinutes: 40, title: 'Pasear a las mascotas' }),
+      item('2', { startTime: '08:50', durationMinutes: 30, title: 'Bañarme' }),
+      item('sin', { startTime: '12:00', title: 'Working at lululemon' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const fino = within(agenda()).getByText('Libre 8:40 → 8:50 · 10m')
+    expect(fino.tagName).toBe('P')
+    expect(fino.closest('button')).toBeNull()
+    const linea = within(agenda()).getByText(/^No sabemos cuánto dura/)
+    expect(linea.tagName).toBe('P')
+    expect(linea.closest('button')).toBeNull()
+    expect(linea).not.toHaveAttribute('role')
+    const rotulos = within(agenda())
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label') ?? button.textContent)
+    expect(rotulos.filter((texto) => texto?.includes('12:00'))).toHaveLength(0)
+  })
+
+  it('en escritorio no se abre ninguna hoja encima y el foco va al buscador (criterio 159)', () => {
+    const restore = desktop()
+    try {
+      renderWithProviders(<VidaPlantillaPage />)
+      fireEvent.click(gap('Poner algo a las 8:40, 20 min libres'))
+
+      // El panel ya estaba a la vista: **no** hay un segundo montaje ni diálogo.
+      expect(panels()).toHaveLength(1)
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(within(panel()).getByText(/^Viene del hueco que pulsaste/).textContent).toBe(
+        'Viene del hueco que pulsaste · para las 8:40 · 20m libres',
+      )
+      expect(document.activeElement).toBe(screen.getByLabelText('Buscar en tus actividades'))
+    } finally {
+      restore()
+    }
   })
 })
 

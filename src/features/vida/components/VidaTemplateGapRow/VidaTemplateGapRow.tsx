@@ -50,9 +50,11 @@ type VidaTemplateGapRowProps = {
  */
 export function VidaTemplateGapRow({ row, onPlace, onSetDuration }: VidaTemplateGapRowProps) {
   if (row.kind === 'unknown') {
-    const untilLabel = row.isDayEnd
-      ? 'el final del día'
-      : `las ${formatTimeForDisplay(minutesToTime(row.untilMinutes))}`
+    // **La hora, también cuando el corte es el final del día**: el módulo dice
+    // los números en todas partes y el criterio 146 escribe el ejemplo con el
+    // suyo («…hasta las 22:00»). `untilMinutes` ya es `windowEnd` en ese caso,
+    // así que no hay dos frases: hay una.
+    const untilLabel = `las ${formatTimeForDisplay(minutesToTime(row.untilMinutes))}`
 
     return (
       <li className={styles.row}>

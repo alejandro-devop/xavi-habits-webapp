@@ -2445,8 +2445,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
-    "mtime": 1790058437.874211,
-    "ast_hash": "2184807ac4802ea20ac9676544db8f3b",
+    "mtime": 1790085911.343255,
+    "ast_hash": "7049a930df98b30445b1900f57351f5a",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790058296.2054255,
-    "ast_hash": "a205be44792ff105e6de24773dcbc17a",
+    "mtime": 1790086526.2257063,
+    "ast_hash": "f55c40a19235c070c62148debff9a339",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790057550.6618893,
-    "ast_hash": "e056b22088f0f6e21ee064e322ca9ece",
+    "mtime": 1790059542.6502378,
+    "ast_hash": "7bff0a2168c0818f93bcf9a6a5759cf4",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2500,8 +2500,8 @@
     "semantic_hash": ""
   },
   "docs/vida/PLAN.md": {
-    "mtime": 1790057288.65942,
-    "ast_hash": "6438d5593f2b9806c60b284446e82529",
+    "mtime": 1790086501.7523777,
+    "ast_hash": "32ebcfd18fbcc0ed4c95e449eae2b34d",
     "semantic_hash": ""
   },
   "docs/vida/assets/00-vida-hoy.html": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.test.tsx": {
-    "mtime": 1790058648.511859,
-    "ast_hash": "b52bbefaeb6af2973878ff90836a25d3",
+    "mtime": 1790086147.1823988,
+    "ast_hash": "a4a69bc4f1c7f7c710d718610088720c",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-template.utils.test.ts": {
@@ -3400,8 +3400,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx": {
-    "mtime": 1790056203.3884559,
-    "ast_hash": "cd43c3fb774e8c18d764bc30b793d537",
+    "mtime": 1790085864.0650122,
+    "ast_hash": "0f63aad6bd2769f47d35c41e813c22b7",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateAddPanel/VidaTemplateAddSheet.tsx": {
@@ -3410,8 +3410,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateAddPanel/index.ts": {
-    "mtime": 1789955631.175522,
-    "ast_hash": "4a64b97d540a10e3fdaad9188b51464f",
+    "mtime": 1790085932.7511077,
+    "ast_hash": "f31cd8903509421fd299b435853d65fc",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateCopyDay/VidaTemplateCopyDay.tsx": {
@@ -3685,8 +3685,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md": {
-    "mtime": 1790058296.2014253,
-    "ast_hash": "504b0230fbbfa73d55e200b75348f175",
+    "mtime": 1790085834.2259572,
+    "ast_hash": "674967d0acd7d90fc3105d5678a49cb9",
     "semantic_hash": ""
   },
   "docs/vida/assets/09-vida-cuanto.html": {
@@ -3715,8 +3715,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateGapRow/VidaTemplateGapRow.tsx": {
-    "mtime": 1790058399.6577299,
-    "ast_hash": "e42f8729b3a58de5937970570fa641e2",
+    "mtime": 1790085882.0719209,
+    "ast_hash": "ee444505316acfc773d59dc97d6cae48",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateGapRow/index.ts": {
@@ -3747,6 +3747,11 @@
   "graphify-out/memory/query_20260922_062202_feat_009__donde_vive_la_geometria_del_hueco_en_el.md": {
     "mtime": 1790058122.760232,
     "ast_hash": "a74c0148d5e4e2e9449a2b816bd761d0",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-013-vida-empezar-con-hora.md": {
+    "mtime": 1790086492.5710132,
+    "ast_hash": "25f4bb472476652b29952fad750c6382",
     "semantic_hash": ""
   }
 }

@@ -17,11 +17,57 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
 | FEAT-008 | building | 1/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
-| FEAT-009 | building | 1/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
+| FEAT-009 | building | 2/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | specified | 0/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
+
+**FEAT-009 `building` 2/3** (2026-09-22, revisor). **Tajada 2 aceptada, con una
+recomendación que va primero: el criterio 150 hay que reescribirlo y el hueco
+pulsable tiene que medir 44 px.** Lo que se entrega hoy —**30,8 × 297,4 px**,
+medidos por mí en el navegador— cumple el 150 **como está escrito** (la mitad de
+una tarjeta son 33,35) y es a la vez un defecto de uso bajo la premisa nueva del
+usuario («registrar no puede costar más que hacer»): ese criterio se redactó
+cuando la fila era **texto** —es una regla de densidad— y en esta tajada la fila
+pasa a ser **el atajo principal para llenar el día**; FEAT-008 ya fijó 44 px
+para los campos de la misma pantalla, y fallar el toque abre la hoja del ítem de
+arriba, que son dos pasos y una corrección. **Propuesta con número:** una sola
+línea de texto, sin scroll a 375 px, **≥ 44 px** el hueco pulsable y **≤ dos
+tercios** del alto de una tarjeta (a 44 sigue siendo 66 % de 66,7); el hueco
+fino y la línea de «no sabemos», que no se pulsan, se quedan. No devuelvo la
+tajada porque el constructor no puede cumplir el criterio viejo y la premisa
+nueva a la vez: **es el analista quien tiene que reescribir el 150**, y hasta
+entonces el hueco no debería entregarse a 30,8 px (una línea de `padding`, lo
+primero de la tajada 3). Todo lo demás, verificado: 153–162, el 147 **con
+espías**, el 170 (un hueco de 90 min se lee «1» y «30», la puerta de FEAT-008
+viva) y el 169. `pick()` conserva la precarga del hueco y **sigue vaciando** por
+el «+» flotante; el `token` en `useState` sustituye hora y duración **sin tocar**
+actividad ni días; el matiz del 153 —los campos no se ven hasta elegir la
+actividad— **lo doy por aceptable y hasta mejor**: enseñar antes el catálogo es
+el paso que la persona ya iba a dar. Cerrado mi encargo de la tajada 1: la línea
+del ítem sin duración dice **«hasta las 23:00»**, leído en pantalla. Sin
+regresiones en FEAT-005 (el test de la página no borra ni una afirmación) y
+`grep -rn "Acaba a las" src/` sigue en **cero**. Línea base corrida entera:
+typecheck limpio, lint 14/0, **2 fallos de 1622**, build exit 0 con el chunk en
+**1.097,09 kB** (+0,74). Otros hallazgos: con una actividad ya elegida, pulsar
+un hueco **no mueve el foco** y un lector de pantalla no se entera del cambio
+(un `aria-live` en «Viene del hueco que pulsaste» lo arreglaría).
+**Intendencia:** el 5173 lo dejó arriba el constructor y lo usé; no arranqué ni
+paré nada. Siguiente: el `feature-builder`, tajada 3 —y el analista, con el 150.
+
+**FEAT-009 `in-review` 2/3** (2026-09-22, constructor). **Tajada 2 en revisión,
+sin commitear.** Pulsar un hueco de 15 min o más abre «Añadir a mi Vida» con la
+hora y la duración del hueco puestas —la hoja en móvil, el panel del aside en
+escritorio, sin hoja encima— y **elegir la actividad ya no las borra**: `pick()`
+solo vacía cuando no hay hueco detrás, que es lo que el plan señalaba como el
+fallo que rompía la feature. El reparto de FEAT-008 sale gratis (90 → «1» y
+«30»); **la hora de fin sigue sin escribirse**, es de FEAT-008 tajada 2. Por
+encargo del usuario, la línea del ítem sin duración que cierra el día dice ahora
+**la hora** («hasta las 23:00»). Línea base: typecheck limpio, lint **14/0**, **2
+fallos de 1622**, chunk **1.097,09 kB**. **Aviso**: arranqué un dev server en el
+**5173** (el del usuario estaba apagado) y **no tengo `preview_stop`** para
+bajarlo.
 
 **FEAT-009 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** Los
 trece criterios (140–152) y el 169, comprobados uno a uno, y **la deuda visual

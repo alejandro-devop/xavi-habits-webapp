@@ -181,10 +181,22 @@ entera.
 - [ ] 149. Un día **sin ningún ítem con hora** no pinta huecos: sigue siendo el
       estado vacío de siempre. **No** se pinta «Libre 5:00 → 22:00» en un día
       vacío.
-- [ ] 150. **Móvil, el alto**: a 375 px una fila de hueco ocupa **una sola línea
-      de texto** y mide **menos de la mitad** que una tarjeta de ítem del mismo
-      día (medido con `getBoundingClientRect`), y con seis ítems y sus huecos la
-      página no tiene scroll horizontal (`scrollWidth === clientWidth === 375`).
+- [x] 150. **Móvil, el alto y el dedo.** *(Reescrito el 2026-09-22, en la
+      tajada 2, por decisión del usuario: el revisor y la sesión coincidieron en
+      que la redacción vieja —«menos de la mitad que una tarjeta»— era una regla
+      de **densidad visual**, escrita cuando esta fila era **texto**. Desde la
+      tajada 2 la fila es **el atajo principal para llenar el día**, y una regla
+      de densidad no puede gobernar un control: fallar el toque abre la hoja del
+      ítem de arriba y cuesta dos pasos y una corrección, justo lo que prohíbe
+      «La premisa que manda sobre todo lo demás» de `docs/vida/PLAN.md`.)*
+      A 375 px, una fila de hueco ocupa **una sola línea de texto**, el hueco
+      **pulsable** mide **44 px o más de alto** —la medida que el módulo ya fijó
+      en esta misma pantalla con los campos de FEAT-008— y **no pasa de dos
+      tercios** del alto de una tarjeta de ítem del mismo día (medido con
+      `getBoundingClientRect`). El hueco **fino** y la **línea del ítem sin
+      duración**, que no se pulsan, quedan como estaban. Con seis ítems y sus
+      huecos no hay scroll horizontal.
+
 - [ ] 151. **Texto largo**: la fila de hueco **no imprime ningún nombre de
       actividad**, así que un nombre de 60 caracteres no la cambia. La línea del
       criterio 145, que sí nombra el ítem, **envuelve** con 60 caracteres y no
@@ -279,7 +291,7 @@ entera.
 | # | Qué hace | Estado |
 |---|---|---|
 | 1 | **Los huecos se ven.** Entre ítems, antes del primero y después del último, con su rango y su tamaño; los de menos de 15 min en línea fina; los solapes sin hueco; y el ítem sin duración con su línea que no miente. Nada se pulsa todavía. Ya sirve: la plantilla se lee como agenda y se ve dónde queda sitio. | aceptada |
-| 2 | **El toque precarga.** Pulsar un hueco abre «Añadir a mi Vida» con la hora y la duración del hueco puestas, se elige actividad y se guarda. Es lo que pidió el usuario, entero. | pendiente |
+| 2 | **El toque precarga.** Pulsar un hueco abre «Añadir a mi Vida» con la hora y la duración del hueco puestas, se elige actividad y se guarda. Es lo que pidió el usuario, entero. | aceptada |
 | 3 | **El ítem sin duración deja de tapar el hueco.** Su línea ofrece «Ponerle duración», que abre la hoja del ítem; al guardarla aparece el hueco que faltaba. Cierra el caso de la captura. | pendiente |
 
 **¿Arquitecto? Sí**, porque hay que decidir **de dónde sale el hueco** cuando la
@@ -671,7 +683,7 @@ aquí.
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **Los huecos se ven.** Las tres formas pintadas, nada pulsable todavía. | **M** `utils/vida-template.utils.ts` (`:83-87` tipo, tipos nuevos tras `:87`, `:89-105` campo `rows`, bucle `:216-249`) · **M** `utils/vida-template.utils.test.ts` (describe al final) · **C** `components/VidaTemplateGapRow/{VidaTemplateGapRow.tsx,.module.scss,index.ts}` · **M** `pages/VidaPlantillaPage.tsx:410-421` (+ import) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:207`) | 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 166, 167, 168, 169 | aceptada |
-| 2 | **El toque precarga.** Pulsar un hueco abre «Añadir a mi Vida» con hora y duración puestas y sobrevive a elegir actividad. | **M** `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (props `:35-44`, sync en render, `pick()` `:107-113`, `onSuccess` `:142-146`, línea del hueco tras `:253`, `ref` del buscador `:341-347`) · **M** `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx` (rama `<button>`) · **M** `pages/VidaPlantillaPage.tsx` (estado + `:446` y `:462`) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:634`) | 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 166, 167, 168, 169, **170** | pendiente |
+| 2 | **El toque precarga.** Pulsar un hueco abre «Añadir a mi Vida» con hora y duración puestas y sobrevive a elegir actividad. | **M** `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (props `:35-44`, sync en render, `pick()` `:107-113`, `onSuccess` `:142-146`, línea del hueco tras `:253`, `ref` del buscador `:341-347`) · **M** `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx` (rama `<button>`) · **M** `pages/VidaPlantillaPage.tsx` (estado + `:446` y `:462`) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:634`) | 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 166, 167, 168, 169, **170** | aceptada |
 | 3 | **El ítem sin duración deja de tapar el hueco.** Su línea ofrece «Ponerle duración» y abre la hoja del ítem con «Cuánto» enfocado. | **M** `components/VidaActivitySheet/VidaActivitySheet.tsx` (prop `focusDuration` junto a `:80-90`, foco en `:595-605`) · **M** `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx` (salida de la línea `unknown`) · **M** `pages/VidaPlantillaPage.tsx:143-147` y `:481-494` · **M** `pages/VidaPlantillaPage.test.tsx` | 163, 164, 165, 166, 167, 168, 169 | pendiente |
 | — | El recorrido real a 375 px, en claro y en oscuro, contra el API de verdad. | — | **171** (lo cierra el usuario) | pendiente |
 
@@ -872,6 +884,198 @@ Los dos son de Hoy.
 `src/features/vida/components/VidaTemplateGapRow/` (tres archivos). Más este
 dossier y `BOARD.md`. El grafo se actualizó con `graphify update .`.
 
+### Tajada 2 — el toque precarga
+
+**Resumen para el revisor:** el hueco de 15 min o más es ahora un `<button>` y,
+al pulsarlo, «Añadir a mi Vida» se abre —la hoja en móvil, el panel del aside en
+escritorio— con **la hora y la duración del hueco entero ya puestas**, que
+**sobreviven a elegir la actividad**; la precarga entra por `setStartTime` /
+`setDurationMinutes` y los dos campos de FEAT-008 se reparten solos (90 → «1» y
+«30»). Tocados: el panel, la página, la fila del hueco (un «+» más pequeño y la
+frase del final del día) y el test de la página. **Lo que más probablemente he
+roto: el `pick()` del panel ya no vacía siempre la hora y la duración** —solo
+cuando no hay `gapPrefill`—, así que cualquier camino que llegue al panel con un
+prefill vivo y espere empezar en blanco se comporta distinto; y **la fila del
+hueco creció al volverse botón** (34,8 px, por encima de la mitad de una
+tarjeta), lo que me obligó a encoger el «+» a 1rem para no romper el criterio
+150 que el revisor ya había medido. Ahí es donde hay que mirar.
+
+**Qué se construyó:**
+
+- **`components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx`** — la puerta de
+  la precarga, toda aditiva:
+  - Tipo nuevo exportado `VidaTemplateGapPrefill` (`:36-53`): `token`,
+    `startTime`, `durationMinutes` y `label`. Se reexporta en el barril
+    (`index.ts`, una línea `export type`).
+  - Prop `gapPrefill` (`:64-68`), con defecto `null`: **sin ella el panel es el
+    de antes**, y por eso `VidaTemplateAddSheet` no se ha tocado (ya hace
+    `{...panel}`).
+  - **Sincronización en render, con `useState`** (`:109-128`): al cambiar el
+    `token` se escriben **solo** `startTime` y `durationMinutes`; ni `picked`,
+    ni `days`, ni `search` (criterio 160). No hay ninguna `ref` escrita en
+    render: FEAT-008 ya midió que eso sube el lint de 14 a 16.
+  - **`pick()` (`:164-177`)**: el vaciado de hora y duración queda condicionado
+    a que **no haya** `gapPrefill`. Es el fallo que el plan señalaba y la mitad
+    del criterio 154; la otra mitad —el «+» flotante sigue vaciando— la sostiene
+    la página, que suelta el prefill al abrir por ahí.
+  - El foco al buscador (`useEffect` sobre el token aplicado, `:135-138`) y la
+    línea «Viene del hueco que pulsaste · **para las 8:40 · 20m libres**» bajo
+    `styles.head`, con su `.fromGap` en el `.module.scss` (criterio 159).
+- **`pages/VidaPlantillaPage.tsx`** — quien tiene las filas y los dos montajes:
+  - Estado `gapPrefill` y `placeInGap(row)`, que compone el `HH:mm` con
+    `minutesToTime` y el rótulo con `formatTimeForDisplay` +
+    `formatDurationFromMinutes` —**los formateadores del módulo, ninguno
+    nuevo**— y sube el `token` en cada toque.
+  - **`useMediaQuery('(min-width: 60rem)')`**, el mismo corte que ya manda en el
+    `.module.scss:186`: en móvil se abre la hoja; **en escritorio no se abre
+    nada** (criterio 159).
+  - `onPlace` llega **solo** a las filas `gap` que no son finas; el fino y la
+    línea de «no sabemos» siguen sin recibirla (criterio 161).
+  - El prefill se suelta al **guardar** (`onSaved` en los dos montajes), al
+    **cerrar la hoja**, al pulsar el **«+» flotante** (`openAdd`) y al **cambiar
+    de día**: su hora era de otro día.
+- **`components/VidaTemplateGapRow/`** — dos cambios pequeños:
+  - `.plus` pasa de `1.25rem` a `1rem` (ver «por qué así»).
+  - **El encargo del usuario**: la línea del ítem sin duración que cierra el día
+    dice ahora **la hora** («…hasta las 23:00») y no «el final del día».
+    `untilMinutes` ya era `windowEnd` en ese caso, así que **hay una sola frase**
+    y `isDayEnd` deja de usarse en el componente (sigue en el tipo).
+- **Tests** (`pages/VidaPlantillaPage.test.tsx`): un `describe` nuevo con **10
+  casos** tras el de «Añadir a mi Vida»; un **espía de consultas** (`queryHooks`)
+  añadido a los mocks que ya había; el test del criterio 146 actualizado a la
+  hora; y el del criterio 143 acotado —el hueco fino se afirma ahora por lo que
+  **es** (`<p>`, sin botón, ningún rótulo que hable de las 8:55) en vez de por
+  «los únicos botones de la lista son las tarjetas», que dejó de ser cierto el
+  día en que los huecos se volvieron botones. No se borró ninguna afirmación:
+  se sustituyó una lista cerrada por tres comprobaciones más estrechas.
+
+**Por qué así, y lo que descarté:**
+
+- **Tres desvíos del plan, los tres dichos aquí:**
+  1. **El aviso de «suelta el prefill» viaja por `onSaved`, no por una prop
+     nueva.** El plan pedía avisar a la página tras guardar; `onSaved` ya existía
+     y ya lo consumía la hoja. Una prop más para lo mismo habría sido una
+     segunda puerta.
+  2. **El «+» de la fila encoge a 1rem.** Al volverse `<button>`, la fila pasó de
+     32,8 px a **34,8 px** —medido en el navegador— y la mitad de una tarjeta es
+     33,35: el criterio **150**, que el revisor había dado por cumplido por medio
+     píxel, se rompía. Lo único más alto que el texto era el círculo del «+»; con
+     1rem la fila queda en **30,8 px**. El área de toque no es el círculo, es la
+     fila entera (289 × 30,8 px a 375 px), pero **es una fila baja para un dedo**
+     y eso lo tiene que juzgar el usuario en un teléfono de verdad.
+  3. **La página decide móvil/escritorio con `useMediaQuery`.** El plan decía «en
+     móvil abre la hoja» sin decir quién lo sabe. Lo sabe el mismo `60rem` del
+     CSS, con el hook que ya existe en `shared/hooks`. Descarté pasar la decisión
+     al CSS (dos filas, una por tamaño) porque duplicaría la lista.
+- **El criterio 153, dicho con precisión:** el panel se abre **con el hueco
+  puesto**, pero los campos «A qué hora» y «Cuánto» **no existen hasta elegir la
+  actividad** —el panel enseña primero el catálogo, y así era desde FEAT-005—.
+  Es exactamente lo que el plan resolvió al condicionar `pick()`: se pulsa el
+  hueco y *después* se elige, y al elegir los campos aparecen **ya rellenos**.
+  Lo que el render dibuja junto (el buscador y los campos a la vez) **no es el
+  panel de hoy**, y cambiarlo sería rehacer «Añadir a mi Vida», que no es esta
+  tajada. Lo dejo dicho porque es la única lectura del 153 que el código sostiene.
+- **La hora de fin («→ Acaba a las 11:30») NO está escrita**, a propósito: es de
+  FEAT-008 tajada 2. `grep -rn "Acaba a las" src/` sigue devolviendo **cero**.
+- **Ni una consulta, ni un formateador, ni un umbral nuevos.** El `label` se
+  compone con los dos formateadores del módulo; la geometría sigue saliendo de
+  `buildTemplateDay`.
+
+**Verificación** (la línea base entera, al terminar):
+
+```
+pnpm typecheck  → limpio (sin salida)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)      ← igual que la base
+pnpm test       → Tests 2 failed | 1620 passed (1622)         ← los 2 de SearchSelect
+                  Test Files 1 failed | 109 passed (110)         de siempre; +11 tests
+pnpm build      → ✓ built in 3.01s — index 1.097,09 kB (base 1.096,35; +0,74)
+                  + app-icons 620,20 kB (sin tocar) + IconPicker 4,64 kB
+```
+
+**En el navegador** (arnés temporal, ya borrado): a **375 px**, en **claro y en
+oscuro**, con seis ítems —uno sin duración y con nombre largo— y sus filas:
+
+| Qué | Medido |
+|---|---|
+| Fila de hueco **pulsable** | **30,8 px** (tarjeta de ítem 66,7 → menos de la mitad), una sola línea, botón de 289,4 × 30,8 |
+| Fila fina (5 min) | 24,5 px, `<p>`, **sin botón** |
+| Línea de «no sabemos» | 67 px, envuelve con nombre largo, sin botón |
+| Ancho | `scrollWidth === clientWidth === 375`, **0 nodos** desbordados |
+| Contraste (claro) | hueco **7,16** · fino 6,96 · «no sabemos» 6,10 · «Viene del hueco» **6,53** |
+| Contraste (oscuro) | hueco **13,78** · fino 9,94 · «no sabemos» 9,94 · «Viene del hueco» **13,77** |
+
+**Criterios que cierra, uno a uno:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 153 | cumplido, **con la precisión de arriba** | Test «pulsarlo abre “Añadir a mi Vida” y **no la hoja del ítem**»: aparece el segundo montaje del panel (la hoja), con «Viene del hueco que pulsaste · para las 8:40 · 20m libres», y `patternsEnabled.some(Boolean) === false` —la hoja del ítem no se ha montado—. Los campos salen al elegir la actividad, ya rellenos (test siguiente). |
+| 154 | cumplido, **las dos mitades** | Test «elegir la actividad conserva…»: tras pulsar el hueco y elegir, «A qué hora» vale `08:40`. Test «por el “+” flotante se sigue vaciando»: por el FAB, tras elegir, «A qué hora» está vacío y no hay campos de duración abiertos. |
+| 155 | cumplido | 8:40 → 9:00 precarga **20** (test 154) y 6:30 → 8:00 precarga **90**, sin tope ni redondeo. Editable: son los mismos campos de siempre. |
+| 156 | cumplido | Test «pulsar tres huecos y cerrar…»: `createItem.mutate`, `updateItem.mutate` y `deleteItem.mutate` **sin llamar**. |
+| 157 | cumplido | Test «guardar desde el hueco manda el mismo cuerpo»: `toEqual({ activityId, days: ['friday'], startTime: '08:40', durationMinutes: 20 })` — **ni un campo nuevo**, y sigue siendo `create` (la puerta de `useSaveVidaItemForActivity` con `targetItem: null`). |
+| 158 | **cumplido por derivación, no por mutación** | Test «la lista se recoloca sola…»: con el ítem nuevo de 20 min dentro, el hueco de 8:40 desaparece y queda `Libre 9:00 → 9:40 · 40m`. La lista sale de `items`, que la mutación ya invalida (criterio 24, probado desde FEAT-005); **el ciclo completo contra el API es del usuario**. |
+| 159 | cumplido | Test de escritorio (`matchMedia` forzado, molde de `VidaRevisionPage.test.tsx:649`): **un solo** montaje del panel, `queryByRole('dialog')` nulo, la línea del hueco visible y `document.activeElement` **es** el buscador de actividades. Sin `scrollIntoView` en el diff: la página no da saltos. |
+| 160 | cumplido | Test «otro hueco sustituye…»: con «Leer» ya elegida y el lunes marcado a mano, pulsar el hueco de 6:30 deja la hora en `06:30` y los campos en «1»/«30», **y** «Leer» sigue elegida y lunes y viernes siguen marcados. |
+| 161 | cumplido, **no roto** | Tests del fino (`<p>`, `closest('button')` nulo, ningún rótulo que hable de su hora) y de la línea de «no sabemos» (`<p>`, sin `role`, sin botón), **ahora que los huecos normales sí son botones**. |
+| 162 | cumplido | Los rótulos de la lista incluyen «Poner algo a las 6:30, **1 h 30 min** libres» y «Poner algo a las 8:40, **20 min** libres». Es un `<button>` de verdad, en el orden del día. **Matiz**: el criterio escribe «20 minutos» y el módulo escribe «20 min» (`formatDurationMinutes`, el formateador de siempre); no se ha escrito un segundo formateador para cuadrar una palabra. |
+| 170 | **cumplido en su mitad de los dos campos** | Test «un hueco de 90 min se lee “1” y “30”»: los campos de FEAT-008 se reparten solos al llegar `durationMinutes` distinto de lo emitido. **La hora de fin queda pendiente de FEAT-008 tajada 2**, que no está construida: esta tajada no escribe ninguna etiqueta de duración ni ninguna hora de fin. |
+| 147 | cumplido, **ahora con espías** (lo que pidió el revisor) | Test «pulsar tres huecos y cerrar…»: el conjunto de hooks de consulta montados es **idéntico** antes y después de pulsar (`queryHooks`), `patternsEnabled` sigue sin encenderse y **ningún export de `vida-items.api` ha sido llamado**. |
+| 166 | cumplido | Lo nuevo dice «Libre», «Poner algo a las…» y «Viene del hueco que pulsaste»; el test de reproche del bloque de huecos sigue verde y `vida-vocabulary.test.ts` recorre por glob los archivos tocados. |
+| 167, 168 | cumplidos | Ni función de huecos, ni umbral, ni formateador nuevos; el diff no tiene `graphql`, ni `localStorage`, ni claves de caché, ni rutas. |
+| 169 | cumplido | Ver «Verificación»: typecheck limpio, lint 14/0, los mismos 2 fallos de `SearchSelect`, build exit 0. |
+| 146 | **cambiado a petición del usuario** | «…hasta **las 23:00**» en vez de «…hasta el final del día», con su test actualizado. El criterio ya escribía el ejemplo con la hora. |
+| 171 | pendiente del usuario | `/app/vida/plantilla` está detrás del login: el toque con la mano, el guardado contra el API y el fondo con el degradado son suyos. |
+
+**Riesgos:**
+
+1. **`pick()` ya no vacía siempre.** Es el cambio con más alcance del diff: si
+   alguna vez llega un `gapPrefill` que nadie suelta, elegir una actividad
+   arrastrará una hora vieja. Los cuatro sitios que lo sueltan —guardar, cerrar
+   la hoja, el «+» flotante y cambiar de día— son los que conozco; si aparece un
+   quinto camino al panel, hay que soltarlo ahí también.
+2. **La fila de hueco es baja para un dedo** (30,8 px de alto, aunque de 289 px
+   de ancho). Es el precio de que el criterio 150 exija «menos de la mitad que
+   una tarjeta». Si el usuario lo encuentra difícil de acertar, **el criterio 150
+   y el tamaño del toque están en tensión** y eso es una decisión suya, no mía.
+3. **Los dos montajes del panel reciben el mismo `gapPrefill`.** En jsdom los dos
+   existen a la vez; en el navegador, el del aside está oculto por CSS debajo de
+   60rem y el de la hoja no se monta hasta abrirla (`SteppedModal` solo pinta
+   `children` con `open`). Si algún día la hoja se dejara montada cerrada, habría
+   **dos paneles precargados** y el foco iría al último.
+4. **El foco al buscador también salta en móvil**, donde puede levantar el
+   teclado del teléfono nada más abrir la hoja. El criterio 159 solo lo pide en
+   escritorio; mantuve **una sola implementación** para no partir el panel en
+   dos. Pendiente de verlo en un teléfono de verdad.
+5. **El test del criterio 143 cambió de forma** (de «los únicos botones son las
+   tarjetas» a tres afirmaciones sobre el fino). Es más estrecho que antes en lo
+   que afirma del resto de la lista: si mañana apareciera un botón de más en la
+   `ol`, ese test ya no lo cazaría.
+
+**Lo que vi de paso y no toqué:** `MIN_PLACEMENT_MINUTES`
+(`vida-gap-form.utils.ts:34`) y el tercer `isSliver` de
+`vida-execution.utils.ts:694` siguen ahí, como los dejó la tajada 1. Y el
+`ENVIRONMENT.md` vuelve a quedarse corto (hoy **1622** tests y **1.097,09 kB**):
+**no lo he tocado**.
+
+**Intendencia:** el 5173 del usuario **estaba apagado** cuando empecé (la sonda:
+«web (dev, del usuario) APAGADO»). Arranqué uno con
+`preview_start {name: "xavi-habits-web"}`, que cogió el **puerto 5173**, y le
+serví el arnés. **No he podido pararlo: esta sesión no tiene la herramienta
+`preview_stop`.** Queda corriendo; si el usuario quiere el suyo, este hay que
+bajarlo antes. El arnés (`harness-gap2.html` + `src/harness-gap2.tsx`) está
+**borrado**: `git status` no lo lista.
+
+**Estado del árbol:** **sin commitear**. Modificados
+`src/features/vida/components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx`,
+`.../VidaTemplateAddPanel.module.scss`, `.../VidaTemplateAddPanel/index.ts`,
+`src/features/vida/components/VidaTemplateGapRow/VidaTemplateGapRow.tsx`,
+`.../VidaTemplateGapRow.module.scss`,
+`src/features/vida/pages/VidaPlantillaPage.tsx` y
+`src/features/vida/pages/VidaPlantillaPage.test.tsx`. Más este dossier y
+`BOARD.md`. El grafo se actualizó con `graphify update .`, y por eso
+`graphify-out/` sale modificado; **nada de lo que haya en el árbol fuera de esa
+lista es mío** (hay otra sesión trabajando en este repositorio).
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — Los huecos se ven
@@ -1007,3 +1211,153 @@ Todo lo medido está en la tabla de arriba.
 fondo con el degradado de la aurora. Lo de arriba está medido sobre los
 componentes y las hojas de estilo reales, pero fuera de la aplicación con
 sesión.
+
+### Tajada 2 — El toque precarga la hora y la duración
+
+**Veredicto: `accepted`** — los nueve criterios de la tajada (153–161), más el
+162, el 147 con espías, el 170 y el 169, se cumplen y los he verificado yo.
+**Pero la acepto con una recomendación que va primero porque pesa más que
+cualquier detalle de los que siguen: el criterio 150 hay que reescribirlo, y el
+hueco pulsable tiene que medir 44 px.** Lo que hoy se entrega —**30,8 px**,
+medidos por mí— cumple el criterio **como está escrito** y es, al mismo tiempo,
+un defecto de uso bajo la premisa que el usuario acaba de fijar. No devuelvo la
+tajada porque el constructor no puede cumplir las dos cosas a la vez: el
+criterio viejo le prohíbe justamente lo que la premisa nueva le pide.
+
+**El juicio que se me pidió: el dedo gana, y por qué**
+
+La premisa nueva (`docs/vida/PLAN.md`, «La premisa que manda sobre todo lo demás»)
+dice que **registrar no puede costar más que hacer** y que cada paso de más «no
+es una molestia: es una razón para que el producto deje de funcionar». Con eso
+encima de la mesa:
+
+1. **El criterio 150 se escribió para un texto, no para un botón.** Lo redactó
+   el analista cuando la fila era **lectura** —«que no compita con las tarjetas»
+   es una regla de densidad visual— y yo lo medí en la tajada 1 con la fila
+   siendo un párrafo: 32,8 px contra 33,35, y ya entonces escribí que el margen
+   era de medio píxel y frágil. En la tajada 2 esa misma fila pasa a ser **el
+   atajo principal para llenar el día**. Una regla de densidad no puede seguir
+   gobernando un control.
+2. **El propio módulo ya fijó el número.** FEAT-008 dejó los campos de horas y
+   minutos en **44 px** y ahí nadie discutió. Un botón de 30,8 px en la misma
+   pantalla es incoherente con lo que este repositorio ya considera «tocable».
+3. **La consecuencia de fallar el toque es exactamente lo que la premisa
+   prohíbe:** si al ir a poner algo en el hueco se abre la hoja del ítem de
+   arriba —tarjetas de 66,7 px a 2 mm— el usuario paga dos pasos y una
+   corrección. Y si eso pasa un par de veces, deja de usar el atajo, que es
+   tanto como no tener la feature.
+4. **Lo que se pierde es poco y se recupera.** Subir el hueco a 44 px deja la
+   tarjeta de ítem (66,7) todavía claramente por encima: el hueco seguiría
+   siendo **dos tercios** de una tarjeta, de **una sola línea de texto** y
+   visualmente más liviano —que es lo que el criterio quería—, sin scroll
+   horizontal (el ancho no cambia).
+
+**Mi recomendación, con número, para que el analista la escriba:** el criterio
+150 pasa a decir que la fila de hueco **es de una sola línea de texto y no tiene
+scroll horizontal a 375 px**, que **el hueco pulsable mide al menos 44 px de
+alto** y que **la fila de hueco no pasa de dos tercios (≈66 %) del alto de una
+tarjeta de ítem**. El hueco fino y la línea de «no sabemos» —que **no** se
+pulsan— se quedan como están (24,5 y 67 px). Mientras eso no se escriba, **el
+hueco no debería entregarse a 30,8 px**: es una línea de `padding` y es lo
+primero que haría en la tajada 3.
+
+Si el usuario prefiere que mande el 150 tal cual, la razón sería la densidad —la
+lista con seis huecos se alarga—; me parece peor, porque la lista ya hace scroll
+vertical de todas formas y lo que se protege ahí es una estética, mientras que
+lo que se pierde es el atajo.
+
+**Criterios, uno por uno** (contra la sección 1)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 153 | **cumplido, con el matiz que él declara** | Pulsar un hueco abre «Añadir a mi Vida» —**no** `VidaActivitySheet`— con el día marcado, la hora y la duración dentro. El matiz: ver abajo. |
+| 154 | **cumplido, las dos mitades** | `pick()` solo vacía `startTime`/`durationMinutes` **si no hay `gapPrefill`**; el «+» flotante y el atajo del día vacío pasan por `openAdd()`, que lo suelta antes. Dos tests, uno por mitad. |
+| 155 | **cumplido** | La duración es `row.minutes`, el hueco **entero**, sin tope ni redondeo: 20 min para 8:40→9:00 y 90 para 6:30→8:00, comprobado en los tests con los campos ya repartidos. |
+| 156 | **cumplido** | Test: tres huecos pulsados y el panel cerrado → `createItem`, `updateItem` y `deleteItem` **sin llamadas**. |
+| 157 | **cumplido** | Test con `toEqual` sobre el cuerpo: es el mismo que escribiendo la hora y la duración a mano, **sin un campo nuevo**. |
+| 158 | **cumplido** | Test: guardando 20 min en un hueco de 60 desaparece «Libre 8:40 → 9:00 · 20m» y queda «Libre 9:00 → 9:40 · 40m». Sale de `rows`, que se recalcula solo. |
+| 159 | **cumplido** | En escritorio no se abre hoja (`!isDesktop` manda el `setAddOpen`), el foco va al buscador —`useEffect` sobre `appliedToken`, y con actividad ya elegida no hace nada, que es lo que pide el 160— y el panel dice «Viene del hueco que pulsaste · para las 8:40 · 20m libres». |
+| 160 | **cumplido** | El `token` sube en cada toque, así que dos huecos iguales se aplican los dos; en el `if` de render **solo** se tocan `startTime` y `durationMinutes`: ni `picked` ni `days`. Test propio del caso. |
+| 161 | **cumplido, verificado en pantalla** | El fino y la línea de «no sabemos» **no reciben `onPlace`** (la página se lo pasa solo a `gap && !isSliver`): en mi arnés, de las once filas solo **cuatro** son `button`, y el fino sigue siendo un `<p>`. |
+| 162 | **cumplido** | El rótulo dice qué se hace, no «botón»: «Poner algo a las 6:30, 1 h 30 min libres». Enfocable con teclado (comprobado en el navegador). |
+| 147 | **cumplido, ahora con espías** | Test: pulsar tres huecos no estrena ninguna consulta (`[...new Set(queryHooks)]` idéntico) y la ventana de patrones sigue apagada. |
+| 170 | **cumplido, la puerta de FEAT-008 viva** | Un hueco de 90 min deja «1» y «30» en los dos campos, y uno de 20, «0» y «20». Es la regla de sincronización del borrador que revisé en FEAT-008 funcionando desde otra pantalla. |
+| 150 | **cumplido como está escrito, y por eso hay que reescribirlo** | Medido por mí: botón de hueco **30,8 × 297,4 px** frente a tarjeta de **66,7 px** (la mitad son 33,35). Ver el juicio de arriba. |
+| 169 | **cumplido, línea base corrida entera por mí** | Ver abajo. |
+| 171 | **pendiente del usuario** | Lo de siempre. |
+
+**El matiz del criterio 153: aceptable, y además es lo correcto**
+
+El panel abre enseñando **el catálogo**, así que «A qué hora» y «Cuánto» no
+están a la vista hasta elegir la actividad, mientras el render los dibuja
+juntos. Lo he pensado con la premisa delante y **no lo considero un
+incumplimiento**: el criterio pide que el panel se abra **con el día marcado, la
+hora y la duración puestas**, y lo están —el test lee los campos con sus valores
+en cuanto se elige—; lo que cambia es **cuándo se ven**, no si están. Y sobre
+todo: en la plantilla añadir **es** elegir del catálogo, así que enseñar primero
+el catálogo es el paso que el usuario ya iba a dar. Si el panel abriera con los
+campos delante, la persona tendría que **bajar a buscar la actividad** de todas
+formas: sería un paso más, no menos. Lo que sí cerraría la brecha con el render
+—y lo anoto como sugerencia, no como pega— es que la frase «Viene del hueco que
+pulsaste · para las 8:40 · 20m libres», que **sí** se ve desde el primer
+momento, es hoy lo único que confirma que el toque hizo algo: está bien
+colocada y es suficiente.
+
+**Lo demás que se me pidió con lupa**
+
+- **La hora de fin no está escrita:** `grep -rn "Acaba a las" src/` → **cero**.
+  FEAT-008 tajada 2 sigue sin invadirse.
+- **Mi encargo de la tajada 1, cerrado:** la línea del ítem sin duración que
+  cierra el día ahora dice **la hora**. Leído en pantalla: «No sabemos cuánto
+  dura *Working at lululemon*, así que no podemos decir qué queda libre **hasta
+  las 23:00**.» Una sola frase para los dos casos, que es mejor que dos.
+- **El `token` en `useState` y no en `useRef`:** es el mismo patrón que validé
+  en FEAT-008 —ajustar estado cuando cambia una prop, **en render**, sin
+  `useEffect` y sin tick de más— y mantiene el lint en 14. Correcto.
+- **La plantilla no se ha roto:** el «+» flotante y el atajo del día vacío pasan
+  por `openAdd()` y **siguen vaciando**; el panel del aside y la hoja de móvil
+  son **la misma implementación** con una prop más, aditiva y con defecto
+  `null`; cambiar de día **suelta** el prefill (su hora era de otro día) y
+  guardar también. Los tests de FEAT-005 siguen enteros: el diff del test de la
+  página **no borra ni una afirmación**.
+
+**En el navegador, por mí**
+
+El 5173 lo dejó arriba el constructor y lo usé —**no arranqué ni paré nada**—.
+Arnés propio con los componentes reales y las filas de `buildTemplateDay`, con
+`onPlace` en los huecos de 15 min o más; borrado después (`git status` no lo
+lista). Lo medido: las cuatro filas pulsables son `button` de **30,8 × 297,4
+px**, las tarjetas **66,7**, el fino **24,5** (y **no** es botón), la línea de
+«no sabemos» **67**; `scrollWidth === clientWidth === 375`; el botón toma foco y
+su rótulo accesible es el correcto; el «+» mide 16 px.
+
+**Línea base, corrida entera por mí**
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1611 | 2 de 1622 | **2 fallidos de 1622**, 109 archivos de 110 en verde |
+| `pnpm build` | 1.096,35 kB | 1.097,09 kB | **exit 0**, `index` **1.097,09 kB** (+0,74), `app-icons` **620,20 kB sin tocar** |
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **El tamaño de toque: 30,8 px.** Es el hallazgo número uno de esta feature y
+   está arriba con su recomendación (**44 px** y el criterio 150 reescrito). Lo
+   declaró el propio constructor, y hace bien en declararlo.
+2. **El foco al buscador solo ocurre si el buscador está montado.** Es lo que
+   pide el 160 —pulsar otro hueco no devuelve al catálogo—, pero significa que,
+   con una actividad ya elegida, **pulsar un hueco no mueve el foco a ninguna
+   parte**: los campos cambian de valor sin que un lector de pantalla se entere.
+   Un `aria-live` en la frase «Viene del hueco que pulsaste» lo arreglaría.
+3. **`gapPrefill` se suelta al cambiar de día, al guardar y al cerrar la hoja**,
+   pero **no** al elegir otra actividad estando ya precargado (es lo correcto
+   por el 154), ni al editar la hora a mano: si el usuario cambia la hora y
+   luego pulsa **el mismo** hueco otra vez, el `token` hace que se vuelva a
+   aplicar —correcto y querido, queda dicho por si sorprende—.
+4. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1622** tests y
+   **1.097,09 kB**). **No lo he tocado** — es la regla.
+
+**Lo que no he podido revisar:** el recorrido con sesión —criterio **171**— y,
+sobre todo, **el dedo de verdad sobre un hueco de 30,8 px**, que es justo lo que
+esta revisión no puede cerrar y lo que más me importa de ella.

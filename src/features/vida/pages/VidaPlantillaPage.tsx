@@ -5,6 +5,7 @@ import { VidaStartingPoints } from '@/features/vida/components/VidaStartingPoint
 import {
   VidaTemplateAddPanel,
   VidaTemplateAddSheet,
+  type VidaTemplateGapPrefill,
 } from '@/features/vida/components/VidaTemplateAddPanel'
 import { VidaTemplateDaySummary } from '@/features/vida/components/VidaTemplateDaySummary'
 import { VidaTemplateDayTabs } from '@/features/vida/components/VidaTemplateDayTabs'
@@ -36,7 +37,14 @@ import {
   buildTemplateWeekGrid,
   buildWeekTotals,
   countTemplateByDay,
+  type TemplateGapRow,
 } from '@/features/vida/utils/vida-template.utils'
+import {
+  formatDurationFromMinutes,
+  formatTimeForDisplay,
+  minutesToTime,
+} from '@/features/vida/utils/vida-time.utils'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 import { Card } from '@/shared/ui/Card'
@@ -109,6 +117,20 @@ export function VidaPlantillaPage() {
   /** La hoja de «Añadir a mi Vida» en móvil; en escritorio el panel va suelto. */
   const [addOpen, setAddOpen] = useState(false)
   /**
+   * **El hueco que se acaba de pulsar** (FEAT-009, tajada 2). Vive aquí porque
+   * la página es la dueña de los **dos** montajes del panel —el aside y la
+   * hoja— y de las filas: pasarlo por props es el mismo árbol, sin ruta, sin
+   * contexto y sin `localStorage`.
+   */
+  const [gapPrefill, setGapPrefill] = useState<VidaTemplateGapPrefill | null>(null)
+  /**
+   * **El mismo corte que manda en el CSS** (`:186`, `60rem`): por debajo el
+   * aside no se pinta y el panel vive en la hoja; por encima el panel ya está a
+   * la vista y abrir una hoja encima sería tapar la lista que se acaba de
+   * pulsar (criterio 159).
+   */
+  const isDesktop = useMediaQuery('(min-width: 60rem)')
+  /**
    * **La semana entera en móvil** (criterio 48): un estado más de esta misma
    * página, **sin ruta nueva** —`vida-paths.ts` no se toca—. En escritorio la
    * cuadrícula está siempre, así que este interruptor solo manda debajo de
@@ -140,6 +162,36 @@ export function VidaPlantillaPage() {
   })
   const editingPattern =
     editing === null ? null : (patterns.patterns.find((entry) => entry.itemId === editing.id) ?? null)
+
+  /**
+   * **Pulsar un hueco es decir «lo quiero aquí»** (criterios 153 y 160): se
+   * precargan la hora y la duración del hueco **entero** —sin tope y sin
+   * redondeo— y nada más. No guarda nada (criterio 156) y no abre la hoja del
+   * ítem: en la plantilla añadir es **elegir del catálogo**.
+   *
+   * El `token` sube en cada toque para que pulsar **otro** hueco se aplique
+   * aunque traiga los mismos minutos.
+   */
+  function placeInGap(row: TemplateGapRow) {
+    const startTime = minutesToTime(row.startMinutes)
+    setGapPrefill((current) => ({
+      token: (current?.token ?? 0) + 1,
+      startTime,
+      durationMinutes: row.minutes,
+      label: `para las ${formatTimeForDisplay(startTime)} · ${formatDurationFromMinutes(row.minutes)} libres`,
+    }))
+    if (!isDesktop) setAddOpen(true)
+  }
+
+  /**
+   * El «+» flotante y el atajo del día vacío: **sin hueco detrás**. Se suelta el
+   * prefill para que elegir una actividad vuelva a vaciar la hora y la duración,
+   * que es la otra mitad del criterio 154.
+   */
+  function openAdd() {
+    setGapPrefill(null)
+    setAddOpen(true)
+  }
 
   function openSheet(item: VidaItem) {
     setEditing(item)
@@ -361,7 +413,17 @@ export function VidaPlantillaPage() {
       </section>
 
       <div className={styles.dayView} data-hidden={weekOpen ? 'true' : 'false'}>
-      <VidaTemplateDayTabs value={day} onChange={setDay} counts={counts} today={today}>
+      {/* Cambiar de día **suelta el hueco**: su hora era la de otro día y la
+          frase «para las 8:40» dejaría de ser verdad aquí. */}
+      <VidaTemplateDayTabs
+        value={day}
+        onChange={(next) => {
+          setDay(next)
+          setGapPrefill(null)
+        }}
+        counts={counts}
+        today={today}
+      >
         <div className={styles.day}>
           <VidaTemplateDaySummary
             day={templateDay}
@@ -399,7 +461,7 @@ export function VidaPlantillaPage() {
                 action={
                   // Desde la tajada 3 la salida **no sale de la pantalla**
                   // (criterio 29): abre el mismo panel de añadir.
-                  <Button variant="secondary" onClick={() => setAddOpen(true)}>
+                  <Button variant="secondary" onClick={openAdd}>
                     Añadir a mi Vida
                   </Button>
                 }
@@ -426,7 +488,14 @@ export function VidaPlantillaPage() {
                         isActivating={activatingId === row.entry.item.id}
                       />
                     ) : (
-                      <VidaTemplateGapRow key={row.id} row={row} />
+                      <VidaTemplateGapRow
+                        key={row.id}
+                        row={row}
+                        // **Solo el hueco de 15 min o más se pulsa** (criterios
+                        // 143 y 161): al fino y a la línea de «no sabemos» no
+                        // les llega `onPlace`, así que siguen siendo texto.
+                        onPlace={row.kind === 'gap' && !row.isSliver ? placeInGap : undefined}
+                      />
                     ),
                   )}
                 </ol>
@@ -454,7 +523,15 @@ export function VidaPlantillaPage() {
           abajo. Es **la misma implementación** en los dos sitios. */}
       <aside className={styles.aside} aria-label="Añadir a mi Vida">
         <Card className={styles.panel} padding="lg">
-          <VidaTemplateAddPanel day={day} items={items} onOpenItem={openSheet} />
+          <VidaTemplateAddPanel
+            day={day}
+            items={items}
+            onOpenItem={openSheet}
+            gapPrefill={gapPrefill}
+            // Guardado el hueco, se suelta: si no, la siguiente actividad que
+            // se eligiera seguiría conservando la hora vieja (criterio 154).
+            onSaved={() => setGapPrefill(null)}
+          />
         </Card>
       </aside>
       </div>
@@ -464,7 +541,7 @@ export function VidaPlantillaPage() {
       <button
         type="button"
         className={styles.fab}
-        onClick={() => setAddOpen(true)}
+        onClick={openAdd}
         aria-label="Añadir a mi Vida"
       >
         <span aria-hidden>+</span>
@@ -472,9 +549,14 @@ export function VidaPlantillaPage() {
 
       <VidaTemplateAddSheet
         open={addOpen}
-        onClose={() => setAddOpen(false)}
+        onClose={() => {
+          setAddOpen(false)
+          setGapPrefill(null)
+        }}
         day={day}
         items={items}
+        gapPrefill={gapPrefill}
+        onSaved={() => setGapPrefill(null)}
         onOpenItem={(item) => {
           setAddOpen(false)
           openSheet(item)

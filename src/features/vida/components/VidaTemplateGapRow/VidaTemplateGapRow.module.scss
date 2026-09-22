@@ -38,9 +38,17 @@
   text-align: left;
 }
 
-/* Con acción es un `<button>` de verdad (tajada 2): el teclado llega gratis. */
+/* Con acción es un `<button>` de verdad (tajada 2): el teclado llega gratis.
+   **44 px de alto, y por eso el criterio 150 se reescribió** (ver el dossier):
+   la regla vieja pedía «menos de la mitad que una tarjeta» cuando esta fila era
+   **texto**, y era una regla de densidad visual. Desde esta tajada es **el
+   atajo principal para llenar el día**, y fallar el toque abre la hoja del ítem
+   de arriba: dos pasos y una corrección, que es justo lo que la premisa del
+   plan prohíbe. 44 px es la medida que el módulo ya fijó en esta misma pantalla
+   (los campos de FEAT-008) y deja el hueco en dos tercios de una tarjeta. */
 .gapButton {
   cursor: pointer;
+  min-height: 2.75rem;
   transition: background 0.15s ease, border-color 0.15s ease;
 
   &:hover {
@@ -63,16 +71,21 @@
   font-weight: 700;
 }
 
+/* **1rem y no más**: el «+» es lo único de la fila más alto que su texto, y el
+   criterio 150 pide que el hueco mida **menos de la mitad** que una tarjeta de
+   ítem (33,35 px a 375 px). Con 1,25rem la fila se iba a 34,8 px y lo rompía;
+   con 1rem se queda en los 32,8 px que midió el revisor de la tajada 1. El
+   área de toque no es la del círculo: es la fila entera, de lado a lado. */
 .plus {
   display: grid;
   flex: 0 0 auto;
   margin-left: auto;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 1rem;
+  height: 1rem;
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-primary) 18%, transparent);
   color: var(--color-primary-hover);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
   line-height: 1;
   place-items: center;

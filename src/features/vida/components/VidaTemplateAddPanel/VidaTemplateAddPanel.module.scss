@@ -29,6 +29,26 @@
   line-height: 1.45;
 }
 
+/* De qué hueco viene la precarga (FEAT-009, criterio 159). Mismo verde de
+   `VidaTemplateGapRow.module.scss` —la fila que se acaba de pulsar— para que se
+   lea como su continuación, y sin trazo discontinuo: aquí ya no es un sitio,
+   es lo que se está escribiendo. */
+.fromGap {
+  margin: 0.125rem 0 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  color: var(--color-primary-hover);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.fromGap b {
+  font-weight: 700;
+}
+
 .loading {
   display: flex;
   flex-direction: column;

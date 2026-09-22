@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
@@ -33,6 +33,25 @@ import { Input } from '@/shared/ui/Input'
 import { Skeleton } from '@/shared/ui/Skeleton'
 import styles from './VidaTemplateAddPanel.module.scss'
 
+/**
+ * Lo que trae **un hueco pulsado** en la plantilla (FEAT-009, tajada 2): la
+ * hora y la duración del hueco entero, más la frase que dice de dónde vienen.
+ *
+ * El `token` es lo que distingue «he pulsado otro hueco» de «no ha pasado
+ * nada»: **sube en cada toque**, así que dos huecos con los mismos valores se
+ * aplican los dos (criterio 160). Sin él, pulsar un hueco idéntico después de
+ * haber editado la hora a mano no haría nada.
+ */
+export type VidaTemplateGapPrefill = {
+  token: number
+  /** `HH:mm`, el inicio del hueco. */
+  startTime: string
+  /** Los minutos del hueco **entero**, sin tope y sin redondeo (criterio 155). */
+  durationMinutes: number
+  /** «para las 8:40 · 20m libres»: la compone la página, que es quien tiene la fila. */
+  label: string
+}
+
 export type VidaTemplateAddPanelProps = {
   /** El día que se está viendo: viene marcado y es contra el que se avisa. */
   day: VidaDayOfWeek
@@ -42,6 +61,11 @@ export type VidaTemplateAddPanelProps = {
   onOpenItem?: (item: VidaItem) => void
   /** Se llama al guardar bien; en móvil es lo que cierra la hoja. */
   onSaved?: () => void
+  /**
+   * El hueco que se acaba de pulsar, o `null` cuando se llega por el «+»
+   * flotante. Es **aditiva**: sin ella el panel es exactamente el de antes.
+   */
+  gapPrefill?: VidaTemplateGapPrefill | null
 }
 
 /**
@@ -72,6 +96,7 @@ export function VidaTemplateAddPanel({
   items,
   onOpenItem,
   onSaved,
+  gapPrefill = null,
 }: VidaTemplateAddPanelProps) {
   const [search, setSearch] = useState('')
   const [picked, setPicked] = useState<Activity | null>(null)
@@ -79,6 +104,38 @@ export function VidaTemplateAddPanel({
   const [startTime, setStartTime] = useState('')
   const [durationMinutes, setDurationMinutes] = useState<number | null>(null)
   const [daysError, setDaysError] = useState<string | null>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  /**
+   * **La precarga del hueco, aplicada en render** (FEAT-009, criterios 153, 155
+   * y 160). `appliedToken` es **estado, no un `useRef`**: leer o escribir una
+   * `ref` en render es lo que prohíbe el compilador de React —FEAT-008 lo midió
+   * en este mismo repositorio: sube el lint de 14 a 16— y esto es el patrón de
+   * «ajustar estado cuando cambia una prop».
+   *
+   * Se tocan **solo la hora y la duración**: ni la actividad elegida ni los días
+   * marcados, porque pulsar otro hueco es decir «lo quiero aquí», no empezar de
+   * cero (criterio 160). Los dos campos de «Cuánto» se reparten solos: se los
+   * reparte `VidaDurationPills` en cuanto `value` le llega distinto de lo último
+   * que emitió (FEAT-008), así que 90 min se leen «1» y «30» (criterio 170).
+   */
+  const [appliedToken, setAppliedToken] = useState<number | null>(null)
+  if (gapPrefill && gapPrefill.token !== appliedToken) {
+    setAppliedToken(gapPrefill.token)
+    setStartTime(gapPrefill.startTime)
+    setDurationMinutes(gapPrefill.durationMinutes)
+  }
+  if (!gapPrefill && appliedToken !== null) setAppliedToken(null)
+
+  // El foco va **al buscador de actividades** (criterio 159): lo que falta
+  // después de pulsar un hueco es elegir qué poner ahí. Si ya hay una actividad
+  // elegida el buscador no está montado y esto no hace nada —el `?.` es la
+  // condición—, que es justo lo que pide el criterio 160: pulsar otro hueco no
+  // devuelve al catálogo.
+  useEffect(() => {
+    if (appliedToken === null) return
+    searchRef.current?.focus()
+  }, [appliedToken])
 
   const activitiesQuery = useActivitiesQuery({ page: 1, limit: CATALOG_LIMIT })
   const { data: categories = [] } = useActivityCategoriesQuery()
@@ -107,8 +164,14 @@ export function VidaTemplateAddPanel({
   function pick(activity: Activity) {
     setPicked(activity)
     setDays([day])
-    setStartTime('')
-    setDurationMinutes(null)
+    // **Elegir la actividad no borra lo que puso el hueco** (criterio 154): en
+    // la plantilla añadir es elegir del catálogo, así que se pulsa el hueco y
+    // *después* se elige, y vaciar aquí tiraría la precarga entera. Por el «+»
+    // flotante `gapPrefill` es `null` y se vacía como siempre.
+    if (!gapPrefill) {
+      setStartTime('')
+      setDurationMinutes(null)
+    }
     setDaysError(null)
   }
 
@@ -250,6 +313,13 @@ export function VidaTemplateAddPanel({
         <p className={styles.lead}>
           Tus actividades. Eliges una y le pones días, hora y cuánto — aquí mismo.
         </p>
+        {/* De qué hueco viene (criterio 159). Una sola implementación: vale
+            para el aside de escritorio y para la hoja de móvil. */}
+        {gapPrefill ? (
+          <p className={styles.fromGap}>
+            Viene del hueco que pulsaste · <b>{gapPrefill.label}</b>
+          </p>
+        ) : null}
       </div>
 
       {picked ? (
@@ -339,6 +409,7 @@ export function VidaTemplateAddPanel({
       ) : (
         <>
           <Input
+            ref={searchRef}
             type="search"
             value={search}
             aria-label="Buscar en tus actividades"

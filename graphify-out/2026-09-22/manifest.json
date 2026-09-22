@@ -2445,8 +2445,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
-    "mtime": 1790054007.721207,
-    "ast_hash": "562d56a09dd351156cab9a1f8f1773d1",
+    "mtime": 1790058437.874211,
+    "ast_hash": "2184807ac4802ea20ac9676544db8f3b",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790056094.6291177,
-    "ast_hash": "08cd37247b2eca16e4c6ce52ae83c52d",
+    "mtime": 1790058296.2054255,
+    "ast_hash": "a205be44792ff105e6de24773dcbc17a",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790055281.551005,
-    "ast_hash": "40940a34f8de229fc4ff861c0c3afeea",
+    "mtime": 1790057550.6618893,
+    "ast_hash": "e056b22088f0f6e21ee064e322ca9ece",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2500,8 +2500,8 @@
     "semantic_hash": ""
   },
   "docs/vida/PLAN.md": {
-    "mtime": 1790056627.085657,
-    "ast_hash": "8c911a3cfb53c5cba8bd90c592e1f393",
+    "mtime": 1790057288.65942,
+    "ast_hash": "6438d5593f2b9806c60b284446e82529",
     "semantic_hash": ""
   },
   "docs/vida/assets/00-vida-hoy.html": {
@@ -3350,18 +3350,18 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.test.tsx": {
-    "mtime": 1790054377.4417186,
-    "ast_hash": "327931c7f1a2ac0e698ffa94d6c493b3",
+    "mtime": 1790058648.511859,
+    "ast_hash": "b52bbefaeb6af2973878ff90836a25d3",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-template.utils.test.ts": {
-    "mtime": 1789957238.4797485,
-    "ast_hash": "68c24b64abad01d7d60d44820c4d629b",
+    "mtime": 1790058494.5729246,
+    "ast_hash": "df570fd3490a44a79860b9b228a4935d",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-template.utils.ts": {
-    "mtime": 1789957916.5013735,
-    "ast_hash": "7e1e2e9b71f890256689582bf9949efd",
+    "mtime": 1790058355.7741768,
+    "ast_hash": "68e3a735318bb733cb361e2cade309ad",
     "semantic_hash": ""
   },
   "docs/features/FEAT-006-vida-revision.md": {
@@ -3680,13 +3680,13 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-008-vida-horas-y-minutos.md": {
-    "mtime": 1790056094.6311178,
-    "ast_hash": "c7ef4dfb4052f00f3b0d4019411e9c3d",
+    "mtime": 1790057488.7880788,
+    "ast_hash": "8d333770290cc310f8bba40414cc865b",
     "semantic_hash": ""
   },
   "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md": {
-    "mtime": 1790056132.7895875,
-    "ast_hash": "6d67bd5ffca13a2580b14d0b57ed5f98",
+    "mtime": 1790058296.2014253,
+    "ast_hash": "504b0230fbbfa73d55e200b75348f175",
     "semantic_hash": ""
   },
   "docs/vida/assets/09-vida-cuanto.html": {
@@ -3712,6 +3712,41 @@
   "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md": {
     "mtime": 1790055948.8063202,
     "ast_hash": "204420014212b67cf55d6ea4c951dcbc",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateGapRow/VidaTemplateGapRow.tsx": {
+    "mtime": 1790058399.6577299,
+    "ast_hash": "e42f8729b3a58de5937970570fa641e2",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaTemplateGapRow/index.ts": {
+    "mtime": 1790058421.5620058,
+    "ast_hash": "2f41a5bdcdc14d1591dad0c7b4e267eb",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-010-vida-hoy-que-toca-ahora.md": {
+    "mtime": 1790056994.208359,
+    "ast_hash": "e10bbbd61c0168bb9d96a9fcee10b53b",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-011-vida-hoy-registrar-en-hueco.md": {
+    "mtime": 1790056929.119427,
+    "ast_hash": "624d69ec475e939ffd2f35d5bd29bded",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-012-vida-la-noche.md": {
+    "mtime": 1790057692.4737318,
+    "ast_hash": "f3e52238d3cec677435e25f4c72761e2",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/13-vida-dormir.html": {
+    "mtime": 1790057210.8863678,
+    "ast_hash": "4d6f9be79e96f9a56e5daa2e69adafa9",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260922_062202_feat_009__donde_vive_la_geometria_del_hueco_en_el.md": {
+    "mtime": 1790058122.760232,
+    "ast_hash": "a74c0148d5e4e2e9449a2b816bd761d0",
     "semantic_hash": ""
   }
 }

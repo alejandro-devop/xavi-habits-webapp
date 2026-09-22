@@ -182,6 +182,46 @@ vi.mock('@/features/vida/hooks/useVidaWeekFollowUps', () => ({
     }
   },
 }))
+/**
+ * **La ventana de seis semanas** de FEAT-007. Igual que los dos hooks de
+ * arriba: sus consultas tienen su propio test (`useVidaHistoryWindow.test.tsx`,
+ * que es donde se mide el coste del criterio 103) y aquí lo que importa es
+ * **cuándo se monta** y qué se pinta con lo que devuelve.
+ */
+type HistoryDay = {
+  date: string
+  planItems: ActivityDayPlanItem[]
+  followUps: ActivityFollowUp[]
+  isPending?: boolean
+  isError?: boolean
+}
+let historyDays: HistoryDay[]
+let historyPending: boolean
+let historyError: boolean
+const historyRefetch = vi.fn()
+/** Cada vez que la ventana se monta. **Vacío en «Un día» y en «La semana».** */
+let historyMounts: { enabled: boolean; today: string }[]
+
+vi.mock('@/features/vida/hooks/useVidaHistoryWindow', () => ({
+  useVidaHistoryWindow: ({ enabled, today }: { enabled: boolean; today: string }) => {
+    historyMounts.push({ enabled, today })
+    const days = historyDays.map((day) => ({
+      isPending: false,
+      isError: false,
+      ...day,
+    }))
+    return {
+      dates: days.map((day) => day.date),
+      from: days[0]?.date ?? '',
+      to: days[days.length - 1]?.date ?? '',
+      days,
+      byDate: Object.fromEntries(days.map((day) => [day.date, day])),
+      isPending: historyPending,
+      hasError: historyError,
+      refetch: historyRefetch,
+    }
+  },
+}))
 // El «qué» de la hoja: el catálogo tiene su propio test y aquí solo estorba
 // (monta `useVidaQueryGuard`, que pide el proveedor de arranque de sesión).
 vi.mock('@/features/vida/hooks/useActivities', () => ({
@@ -356,6 +396,11 @@ beforeEach(() => {
   askedPlanDates = []
   askedWeekFollowUpDates = []
   updateVidaItem.mockReset()
+  historyDays = []
+  historyPending = false
+  historyError = false
+  historyMounts = []
+  historyRefetch.mockReset()
 })
 
 afterEach(() => {
@@ -916,7 +961,9 @@ describe('la revisión rellena el día (criterios 35–44)', () => {
 /* ── Tajada 4: la semana y el puente (criterios 45–60) ──────────────────── */
 
 async function openWeek(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole('button', { name: 'Ver por semana' }))
+  // La sección se abre desde el control de tres pestañas que estrena
+  // FEAT-007 (criterio 64); antes era un botón suelto que decía lo mismo.
+  await user.click(screen.getByRole('tab', { name: 'La semana' }))
 }
 
 /** Las siete filas de la semana, **no** los siete enlaces de la tira. */
@@ -935,7 +982,7 @@ describe('la semana (criterios 45, 46, 47, 48, 49, 51 y 53)', () => {
     expect(askedRanges).toEqual([])
   })
 
-  it('«Ver por semana» enseña **siete filas** y se vuelve sin salir de la pantalla (45, 46)', async () => {
+  it('«La semana» enseña **siete filas** y se vuelve sin salir de la pantalla (45, 46)', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     weekPlanItems = { [FRIDAY]: PLAN }
     weekSessions = { [FRIDAY]: SESSIONS }
@@ -949,7 +996,7 @@ describe('la semana (criterios 45, 46, 47, 48, 49, 51 y 53)', () => {
     // La cabecera sigue siendo «Revisión»: ni ruta nueva ni píldora nueva.
     expect(screen.getByRole('heading', { level: 1, name: 'Revisión' })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Volver al día' }))
+    await user.click(screen.getByRole('tab', { name: 'Un día' }))
     expect(screen.getByText('Viernes 18 de septiembre · día cerrado')).toBeInTheDocument()
   })
 
@@ -1094,5 +1141,197 @@ describe('el puente a la plantilla (criterios 54, 57, 58 y 59)', () => {
     for (const word of ['desperdici', 'fallaste', 'perdiste', 'deberías', 'cumplimiento', '%']) {
       expect(text).not.toContain(word)
     }
+  })
+})
+
+/**
+ * **«Lo que se repite»** (FEAT-007, tajada 1): criterios 64, 65, 66, 67, 68,
+ * 69, 71, 72 y 73.
+ *
+ * La aritmética tiene su test puro en `utils/vida-adherence.utils.test.ts` y
+ * el coste de la ventana, el suyo en `hooks/useVidaHistoryWindow.test.tsx`.
+ * Aquí se comprueba lo que solo se ve montando la pantalla: que el control
+ * tiene tres secciones, que **la ventana no se monta hasta abrir la suya**, y
+ * que lo que se lee no lleva ni un porcentaje suelto ni una palabra de bronca.
+ */
+describe('Revisión · Lo que se repite (FEAT-007, tajada 1)', () => {
+  function pad(n: number): string {
+    return String(n).padStart(2, '0')
+  }
+
+  /** Un día con `planned` bloques, de los que `followed` se siguieron. */
+  function historyDay(date: string, planned: number, followed: number): HistoryDay {
+    return {
+      date,
+      planItems: Array.from({ length: planned }, (_, index) =>
+        blockOn(date, `hp${index}`, `ad${index}`, `Cosa ${index}`, `${pad(8 + index)}:00`, `${pad(8 + index)}:30`),
+      ),
+      followUps: Array.from({ length: followed }, (_, index) =>
+        sessionOn(date, `hs${index}`, `ad${index}`, `Cosa ${index}`, `${pad(8 + index)}:00`, 30),
+      ),
+    }
+  }
+
+  /** Cuatro días de cinco bloques desde el lunes, con `followed` seguidos. */
+  function historyWeek(monday: string, followed: number): HistoryDay[] {
+    const day = Number(monday.slice(8))
+    return Array.from({ length: 4 }, (_, index) =>
+      historyDay(`${monday.slice(0, 8)}${pad(day + index)}`, 5, followed),
+    )
+  }
+
+  async function openPatterns(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('tab', { name: 'Lo que se repite' }))
+  }
+
+  it('la pantalla tiene **tres** secciones y cambiar de una a otra no mueve la URL (64)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage('?d=2026-09-18')
+
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs.map((tab) => tab.textContent)).toEqual(['Un día', 'La semana', 'Lo que se repite'])
+
+    await openPatterns(user)
+    expect(screen.getByRole('heading', { name: 'Lo que se repite' })).toBeInTheDocument()
+    // Ni ruta nueva, ni `?d=` tocado, ni píldora nueva: la cabecera es la
+    // misma y el día visto sigue siendo el de la URL —el enrutador es de
+    // memoria, así que lo que se comprueba es qué fecha se pide y que volver
+    // a «Un día» devuelve exactamente el mismo día, sin recargar nada.
+    expect(screen.getByRole('heading', { level: 1, name: 'Revisión' })).toBeInTheDocument()
+    expect(new Set(askedDates)).toEqual(new Set(['2026-09-18']))
+
+    await user.click(screen.getByRole('tab', { name: 'Un día' }))
+    expect(screen.getByText('Viernes 18 de septiembre · día cerrado')).toBeInTheDocument()
+    expect(new Set(askedDates)).toEqual(new Set(['2026-09-18']))
+  })
+
+  it('la ventana de seis semanas **no se monta** hasta abrir su sección (A5, 103)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    weekPlanItems = { [FRIDAY]: PLAN }
+    weekSessions = { [FRIDAY]: SESSIONS }
+    renderPage()
+
+    expect(historyMounts).toHaveLength(0)
+
+    // Tampoco con «La semana» abierta: esa sección cuesta lo de ayer.
+    await user.click(screen.getByRole('tab', { name: 'La semana' }))
+    expect(historyMounts).toHaveLength(0)
+
+    await openPatterns(user)
+    expect(historyMounts.length).toBeGreaterThan(0)
+    expect(historyMounts[0]).toEqual({ enabled: true, today: '2026-09-19' })
+  })
+
+  it('con dos semanas cuenta la adherencia en fracción, y el porcentaje va al lado (65, 66, 67)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    historyDays = [...historyWeek('2026-08-31', 4), ...historyWeek('2026-09-07', 4)]
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.getByText('De cada 10 bloques que planeas, sigues 8.')).toBeInTheDocument()
+    expect(
+      screen.getByText(/Con 2 semanas de datos\. Las semanas con menos de 3 días planeados/),
+    ).toBeInTheDocument()
+    expect(screen.getAllByText('16/20')).toHaveLength(2)
+
+    // **Ningún porcentaje sin su fracción**: cada nodo con «%» convive con una
+    // fracción en su misma caja.
+    const conPorcentaje = [...container.querySelectorAll('*')].filter(
+      (node) => node.children.length === 0 && /%/.test(node.textContent ?? ''),
+    )
+    expect(conPorcentaje).toHaveLength(2)
+    for (const node of conPorcentaje) {
+      expect(node.parentElement?.textContent ?? '').toMatch(/\d+\/\d+/)
+    }
+  })
+
+  it('un día de la semana con menos de tres semanas dice cuántas lleva, no «0/0» (69)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    historyDays = [...historyWeek('2026-08-31', 4), ...historyWeek('2026-09-07', 4)]
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    const rejilla = screen.getByRole('list', { name: 'Por día de la semana' })
+    expect(within(rejilla).getAllByText('2 sem')).toHaveLength(4)
+    expect(within(rejilla).getAllByText('0 sem')).toHaveLength(3)
+    expect(container.textContent).not.toContain('0/0')
+    expect(container.textContent).toContain('a partir de 3 se puede hablar de')
+  })
+
+  it('con una sola semana no hay barras a cero: hay espera con fechas de verdad (71)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    historyDays = historyWeek('2026-09-07', 4)
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.getByText('Llevas 4 días con plan.')).toBeInTheDocument()
+    expect(screen.getByText('Lo que llega después')).toBeInTheDocument()
+    expect(
+      screen.getByText('A partir de 2 semanas completas · te falta 1, la del 14 al 20 de septiembre'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('A partir de 3 semanas · llevas 4 días de 21')).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Semana a semana' })).not.toBeInTheDocument()
+    expect(container.textContent).not.toContain('%')
+  })
+
+  it('mientras no llega nada hay esqueletos, no cifras a cero (72)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    historyPending = true
+    historyDays = [
+      { date: '2026-09-14', planItems: [], followUps: [], isPending: true },
+      { date: '2026-09-15', planItems: [], followUps: [], isPending: true },
+    ]
+    renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.getByText('Mirando tus últimas semanas…')).toBeInTheDocument()
+    expect(screen.queryByText(/De cada 10 bloques/)).not.toBeInTheDocument()
+  })
+
+  it('una consulta caída se dice con «Reintentar» y **no afirma que no hay datos** (72)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    historyError = true
+    historyDays = [
+      ...historyWeek('2026-08-31', 4),
+      ...historyWeek('2026-09-07', 4),
+      { date: '2026-09-14', planItems: [], followUps: [], isError: true },
+    ]
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.getByText('Falta algún día de estas semanas')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(historyRefetch).toHaveBeenCalledTimes(1)
+    // Lo que sí llegó se sigue contando: la sección no se apaga entera.
+    expect(screen.getByText('De cada 10 bloques que planeas, sigues 8.')).toBeInTheDocument()
+    expect(container.textContent).not.toContain('no tienes datos')
+  })
+
+  it('no hay una sola palabra de reproche en toda la sección (73)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    historyDays = [...historyWeek('2026-08-31', 1), ...historyWeek('2026-09-07', 0)]
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    const texto = (container.textContent ?? '').toLowerCase()
+    for (const palabra of [
+      'desperdicio',
+      'fallaste',
+      'incumpliste',
+      'deberías',
+      'perdiste',
+      'racha',
+      'cumplimiento',
+      'objetivo incumplido',
+    ]) {
+      expect(texto).not.toContain(palabra)
+    }
+    expect(texto).not.toMatch(/\bmal\b/)
   })
 })

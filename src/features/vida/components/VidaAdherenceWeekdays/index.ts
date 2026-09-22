@@ -1,0 +1,1 @@
+export { VidaAdherenceWeekdays } from './VidaAdherenceWeekdays'

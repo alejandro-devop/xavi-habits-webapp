@@ -1,0 +1,144 @@
+/* Las filas de semana del marco A: mes y días · barra · fracción con su
+   porcentaje pequeño. A 375 px caben porque solo la barra se encoge. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.when {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 3.4rem;
+}
+
+.month {
+  color: var(--color-text-secondary);
+  font-size: 0.625rem;
+  text-transform: lowercase;
+}
+
+.days {
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Lo planeado, rayado: es una intención, no un resultado. Lo seguido, sólido,
+   encima. Mismos tonos que `VidaReviewWeek` y que la barra de Hoy. */
+.track {
+  position: relative;
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-primary) 45%, transparent) 0 0.1875rem,
+    color-mix(in srgb, var(--color-primary) 14%, transparent) 0.1875rem 0.375rem
+  );
+}
+
+.followed {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-primary);
+}
+
+.figures {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+}
+
+.fraction {
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* El porcentaje va pequeño y **siempre** debajo de su fracción: nunca solo. */
+.percent {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.swatch {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 999px;
+
+  &[data-kind='followed'] {
+    background: var(--color-primary);
+  }
+
+  &[data-kind='planned'] {
+    background: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 55%, transparent) 0 0.125rem,
+      color-mix(in srgb, var(--color-primary) 18%, transparent) 0.125rem 0.25rem
+    );
+  }
+}
+
+.srOnly {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}

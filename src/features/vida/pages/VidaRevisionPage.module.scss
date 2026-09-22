@@ -172,3 +172,32 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* El control de tres secciones (criterio 64). Las píldoras las pinta
+   `shared/ui/Tabs`; aquí solo se le da aire y se deja que el panel no meta
+   una caja de más alrededor de lo que ya venía maquetado. */
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.sectionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* «Lo que se repite»: una columna, y a 375 px nada se sale. */
+.patterns {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--color-text) 2%, transparent);
+}

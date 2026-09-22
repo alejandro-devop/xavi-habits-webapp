@@ -1,6 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 import { authPaths } from '@/features/auth/router/auth-paths'
+import { VidaAdherenceSummary } from '@/features/vida/components/VidaAdherenceSummary'
+import { VidaAdherenceWeekdays } from '@/features/vida/components/VidaAdherenceWeekdays'
+import { VidaAdherenceWeeks } from '@/features/vida/components/VidaAdherenceWeeks'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
 import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaReviewCategories } from '@/features/vida/components/VidaReviewCategories'
@@ -16,6 +19,7 @@ import {
   useCreateActivityFollowUpMutation,
 } from '@/features/vida/hooks/useActivityFollowUps'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
+import { useVidaHistoryWindow } from '@/features/vida/hooks/useVidaHistoryWindow'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
 import { useVidaItemsQuery, useUpdateVidaItemMutation } from '@/features/vida/hooks/useVidaItems'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
@@ -28,6 +32,7 @@ import {
   isNoDataDismissed,
   useVidaDeviceNotesStore,
 } from '@/features/vida/store/vida-device-notes.store'
+import { buildAdherence } from '@/features/vida/utils/vida-adherence.utils'
 import type { AgendaBlock } from '@/features/vida/utils/vida-agenda.utils'
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
 import {
@@ -37,6 +42,7 @@ import {
   getMondayOfWeek,
   getVidaDayOfWeek,
   parseYmdToLocalDate,
+  shiftYmd,
 } from '@/features/vida/utils/vida-date.utils'
 import type { NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
 import { buildDayExecution, plannedSessionMinutes } from '@/features/vida/utils/vida-execution.utils'
@@ -68,6 +74,7 @@ import { Card } from '@/shared/ui/Card'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { Skeleton } from '@/shared/ui/Skeleton'
+import { Tabs } from '@/shared/ui/Tabs'
 import styles from './VidaRevisionPage.module.scss'
 
 /** A partir de aquí caben los dos carriles del marco D. */
@@ -75,21 +82,22 @@ const DESKTOP_QUERY = '(min-width: 60rem)'
 
 const DAYS_IN_WEEK = 7
 
+/** Las tres secciones de Revisión. Estado local: **la URL no se mueve**. */
+type ReviewView = 'day' | 'week' | 'patterns'
+
 /**
- * Las tres funciones de calendario de la semana **están copiadas de
+ * Las dos funciones de calendario de la semana **están copiadas de
  * `VidaSemanaPage.tsx`, no importadas**, y queda dicho: allí son funciones
  * locales de aquella página y moverlas a `vida-date.utils.ts` tocaría una
  * pantalla entregada que esta tajada no toca (el plan lo escribe así en la
  * implementación de referencia). `formatReviewWeekRange` sí cambia de forma:
  * el criterio 46 pide «14 – 20 de septiembre», con el mes escrito entero, y
  * aquella dice «14 – 20 sept».
+ *
+ * La tercera, `shiftYmd`, **sí se fue**: estaba privada aquí y privada en
+ * `vida-window.utils.ts`, y la ventana de seis semanas de F6 necesitaba una
+ * tercera copia. Ahora sale de `vida-date.utils.ts`.
  */
-function shiftYmd(date: string, days: number): string {
-  const local = parseYmdToLocalDate(date)
-  local.setDate(local.getDate() + days)
-  return formatDateToYmd(local)
-}
-
 /** El lunes de la semana que contiene esa fecha, en `YYYY-MM-DD`. */
 function mondayOf(date: string): string {
   return formatDateToYmd(getMondayOfWeek(parseYmdToLocalDate(date)))
@@ -176,13 +184,14 @@ export function VidaRevisionPage() {
    * entera de FEAT-005. La píldora «Revisión» sigue encendida y el día visto
    * sigue viajando en la URL, así que volver del navegador no pierde el día.
    */
-  const [view, setView] = useState<'day' | 'week'>('day')
+  const [view, setView] = useState<ReviewView>('day')
   const weekMonday = mondayOf(date)
   const weekDates = useMemo(
     () => Array.from({ length: DAYS_IN_WEEK }, (_, index) => shiftYmd(weekMonday, index)),
     [weekMonday],
   )
   const isWeek = view === 'week'
+  const isPatterns = view === 'patterns'
 
   const {
     planItems,
@@ -455,13 +464,44 @@ export function VidaRevisionPage() {
             Registrar tiempo pasado
           </Button>
         )}
-        {/* **Ver por semana**: la tercera salida del marco A. No es un enlace
-            porque no cambia de sitio — es la misma pantalla mirando siete días
-            (criterio 45). */}
-        <Button variant="ghost" size="sm" onClick={() => setView('week')}>
-          Ver por semana
-        </Button>
       </div>
+    )
+  }
+
+  /**
+   * **Las tres secciones de Revisión** (criterio 64): «Un día» · «La semana» ·
+   * «Lo que se repite».
+   *
+   * Es `@/shared/ui/Tabs` —aquí no se escriben pestañas a mano—, envuelto como
+   * lo envuelve `VidaTemplateDayTabs`: trae `role="tablist"`, las flechas ←/→
+   * y el panel enlazado por `aria-controls` sin código nuevo de
+   * accesibilidad. Sustituye a los dos botones sueltos que había («Ver por
+   * semana» y «Volver al día»), que decían lo mismo peor.
+   *
+   * **El estado es local y la URL no se mueve**: `vida-paths.ts` no gana
+   * ningún destino y la barra de Vida sigue con sus cuatro píldoras. El día
+   * visto sigue viajando en el `?d=`, así que cambiar de sección no lo pierde.
+   *
+   * Va en todas las ramas de la pantalla —también en la de cargando y en las
+   * de error— a propósito: si el plan de un día no carga, se tiene que poder
+   * saltar a «Lo que se repite», que no depende de ese día.
+   */
+  function sections(children: ReactNode) {
+    return (
+      <Tabs
+        value={view}
+        onChange={(next) => setView(next as ReviewView)}
+        className={styles.sections}
+      >
+        <Tabs.List>
+          <Tabs.Tab value="day">Un día</Tabs.Tab>
+          <Tabs.Tab value="week">La semana</Tabs.Tab>
+          <Tabs.Tab value="patterns">Lo que se repite</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value={view}>
+          <div className={styles.sectionBody}>{children}</div>
+        </Tabs.Panel>
+      </Tabs>
     )
   }
 
@@ -484,20 +524,47 @@ export function VidaRevisionPage() {
     )
   }
 
+  /**
+   * **Lo que se repite** (criterios 64–73, FEAT-007 tajada 1).
+   *
+   * Va **antes** de la rama de «cargando»: esta sección no mira el día abierto
+   * y no tiene por qué esperar a su consulta. Lo que sí espera es lo suyo, y
+   * lo dice con sus propios esqueletos.
+   */
+  if (isPatterns) {
+    return (
+      <div className={styles.root}>
+        {header()}
+        {strip()}
+        {sections(
+          <VidaPatternsSection
+            today={today}
+            nowMinutes={nowMinutes}
+            dayHours={{ startTime: hours.startTime, endTime: hours.endTime }}
+          />,
+        )}
+      </div>
+    )
+  }
+
   if (isPending) {
     return (
       <div className={styles.root}>
         {header()}
         {strip()}
-        <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
-          <Skeleton width="100%" height={96} radius="1.25rem" />
-          <Skeleton width="100%" height={88} radius="1.25rem" />
-          {[0, 1, 2].map((row) => (
-            <Skeleton key={row} width="100%" height={54} radius="1rem" />
-          ))}
-          <Skeleton width="100%" height={120} radius="1.25rem" />
-          <span className={styles.srOnly}>Cargando cómo fue tu día…</span>
-        </div>
+        {sections(
+          <>
+            <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
+              <Skeleton width="100%" height={96} radius="1.25rem" />
+              <Skeleton width="100%" height={88} radius="1.25rem" />
+              {[0, 1, 2].map((row) => (
+                <Skeleton key={row} width="100%" height={54} radius="1rem" />
+              ))}
+              <Skeleton width="100%" height={120} radius="1.25rem" />
+              <span className={styles.srOnly}>Cargando cómo fue tu día…</span>
+            </div>
+          </>,
+        )}
       </div>
     )
   }
@@ -513,60 +580,57 @@ export function VidaRevisionPage() {
       <div className={styles.root}>
         {header()}
         {strip()}
-
-        <section className={styles.section} aria-labelledby="vida-review-week">
-          <h2 className={styles.sectionTitle} id="vida-review-week">
-            Tu semana
-          </h2>
-          <p className={styles.sectionNote}>{formatReviewWeekRange(weekMonday)}</p>
-        </section>
-
-        {hasWeekError ? (
-          <Alert variant="warning" title="Falta algún día de la semana">
-            <p className={styles.errorText}>
-              De los días que no pudimos cargar no se afirma nada: quedan marcados abajo.
-            </p>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                weekPlans.refetch()
-                weekFollowUps.refetch()
-              }}
-            >
-              Reintentar
-            </Button>
-          </Alert>
-        ) : null}
-
-        {isWeekPending ? (
-          <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
-            {weekDates.map((weekDate) => (
-              <Skeleton key={weekDate} width="100%" height={48} radius="1rem" />
-            ))}
-            <span className={styles.srOnly}>Cargando tu semana…</span>
-          </div>
-        ) : (
+        {sections(
           <>
-            {weekLine.length > 0 ? (
-              <VidaReviewStory
-                dateLabel={formatWeekStoryLabel(weekMonday)}
-                statusLabel="la semana en una frase"
-                sentences={weekLine}
-              />
-            ) : null}
-            <VidaReviewWeek rows={weekRows} />
-            {/* **El puente**, y solo aquí: sus consultas se montan con la
-                semana abierta, nunca en la vista de día (A5). */}
-            <VidaReviewBridgeSection weekMonday={weekMonday} today={today} dayHours={dayHours} />
-          </>
-        )}
+            <section className={styles.section} aria-labelledby="vida-review-week">
+              <h2 className={styles.sectionTitle} id="vida-review-week">
+                Tu semana
+              </h2>
+              <p className={styles.sectionNote}>{formatReviewWeekRange(weekMonday)}</p>
+            </section>
 
-        <div className={styles.exits}>
-          <Button variant="secondary" size="sm" onClick={() => setView('day')}>
-            Volver al día
-          </Button>
-        </div>
+            {hasWeekError ? (
+              <Alert variant="warning" title="Falta algún día de la semana">
+                <p className={styles.errorText}>
+                  De los días que no pudimos cargar no se afirma nada: quedan marcados abajo.
+                </p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    weekPlans.refetch()
+                    weekFollowUps.refetch()
+                  }}
+                >
+                  Reintentar
+                </Button>
+              </Alert>
+            ) : null}
+
+            {isWeekPending ? (
+              <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
+                {weekDates.map((weekDate) => (
+                  <Skeleton key={weekDate} width="100%" height={48} radius="1rem" />
+                ))}
+                <span className={styles.srOnly}>Cargando tu semana…</span>
+              </div>
+            ) : (
+              <>
+                {weekLine.length > 0 ? (
+                  <VidaReviewStory
+                    dateLabel={formatWeekStoryLabel(weekMonday)}
+                    statusLabel="la semana en una frase"
+                    sentences={weekLine}
+                  />
+                ) : null}
+                <VidaReviewWeek rows={weekRows} />
+                {/* **El puente**, y solo aquí: sus consultas se montan con la
+                    semana abierta, nunca en la vista de día (A5). */}
+                <VidaReviewBridgeSection weekMonday={weekMonday} today={today} dayHours={dayHours} />
+              </>
+            )}
+          </>,
+        )}
       </div>
     )
   }
@@ -578,15 +642,19 @@ export function VidaRevisionPage() {
       <div className={styles.root}>
         {header()}
         {strip()}
-        <Alert variant="danger" title="No pudimos cargar tu plan de ese día">
-          <p className={styles.errorText}>
-            Sin él no se puede comparar nada. Revisa tu conexión e inténtalo otra vez; lo tuyo
-            sigue guardado.
-          </p>
-          <Button variant="secondary" size="sm" onClick={refetch}>
-            Reintentar
-          </Button>
-        </Alert>
+        {sections(
+          <>
+            <Alert variant="danger" title="No pudimos cargar tu plan de ese día">
+              <p className={styles.errorText}>
+                Sin él no se puede comparar nada. Revisa tu conexión e inténtalo otra vez; lo tuyo
+                sigue guardado.
+              </p>
+              <Button variant="secondary" size="sm" onClick={refetch}>
+                Reintentar
+              </Button>
+            </Alert>
+          </>,
+        )}
       </div>
     )
   }
@@ -598,17 +666,21 @@ export function VidaRevisionPage() {
       <div className={styles.root}>
         {header()}
         {strip()}
-        <Card className={styles.panel} padding="lg">
-          <EmptyState
-            title={review.emptyNotice?.title ?? 'Este día todavía no ha pasado'}
-            description={review.emptyNotice?.body ?? ''}
-            action={
-              <Button variant="secondary" to={vidaPaths.hoyForDate(date)}>
-                Planearlo en Hoy
-              </Button>
-            }
-          />
-        </Card>
+        {sections(
+          <>
+            <Card className={styles.panel} padding="lg">
+              <EmptyState
+                title={review.emptyNotice?.title ?? 'Este día todavía no ha pasado'}
+                description={review.emptyNotice?.body ?? ''}
+                action={
+                  <Button variant="secondary" to={vidaPaths.hoyForDate(date)}>
+                    Planearlo en Hoy
+                  </Button>
+                }
+              />
+            </Card>
+          </>,
+        )}
       </div>
     )
   }
@@ -621,28 +693,32 @@ export function VidaRevisionPage() {
       <div className={styles.root}>
         {header()}
         {strip()}
-        <Alert variant="warning" title="No pudimos leer lo que viviste ese día">
-          <p className={styles.errorText}>
-            Tu plan sí está, así que abajo queda lo que tenías puesto. De lo que pasó no se
-            afirma nada hasta poder mirarlo.
-          </p>
-          <Button variant="secondary" size="sm" onClick={refetch}>
-            Reintentar
-          </Button>
-        </Alert>
-        {review.ghostRows.length > 0 ? (
-          <section className={styles.section} aria-labelledby="vida-review-plan-only">
-            <h2 className={styles.sectionTitle} id="vida-review-plan-only">
-              Lo que tenías planeado
-            </h2>
-            <ol className={styles.rows}>
-              {review.ghostRows.map((row) => (
-                <VidaReviewRow key={row.id} row={row} isGhost />
-              ))}
-            </ol>
-          </section>
-        ) : null}
-        {exits()}
+        {sections(
+          <>
+            <Alert variant="warning" title="No pudimos leer lo que viviste ese día">
+              <p className={styles.errorText}>
+                Tu plan sí está, así que abajo queda lo que tenías puesto. De lo que pasó no se
+                afirma nada hasta poder mirarlo.
+              </p>
+              <Button variant="secondary" size="sm" onClick={refetch}>
+                Reintentar
+              </Button>
+            </Alert>
+            {review.ghostRows.length > 0 ? (
+              <section className={styles.section} aria-labelledby="vida-review-plan-only">
+                <h2 className={styles.sectionTitle} id="vida-review-plan-only">
+                  Lo que tenías planeado
+                </h2>
+                <ol className={styles.rows}>
+                  {review.ghostRows.map((row) => (
+                    <VidaReviewRow key={row.id} row={row} isGhost />
+                  ))}
+                </ol>
+              </section>
+            ) : null}
+            {exits()}
+          </>,
+        )}
       </div>
     )
   }
@@ -655,216 +731,219 @@ export function VidaRevisionPage() {
     <div className={styles.root}>
       {header()}
       {strip()}
-
-      {failed.length > 0 ? (
-        // Una consulta caída y las otras no: se dice **qué** falta en vez de
-        // dejar la pantalla a medias sin explicación (criterio 23).
-        <Alert variant="warning" title="Falta una parte de tu día">
-          <p className={styles.errorText}>
-            No pudimos cargar {failed.join(' ni ')}. Lo demás es correcto.
-          </p>
-          <Button variant="secondary" size="sm" onClick={refetch}>
-            Reintentar
-          </Button>
-        </Alert>
-      ) : null}
-
-      {/* Una escritura que no salió **se dice**, sin reprochar y sin perder
-          nada de lo elegido: la hoja se queda abierta con lo suyo y «Lo hice»
-          no cambió nada (criterio 43). */}
-      {createFollowUpMutation.isError ? (
-        <Alert variant="warning" title="No pudimos guardar eso">
-          <p className={styles.errorText}>
-            Se quedó sin apuntar. Revisa tu conexión y vuelve a intentarlo cuando quieras; lo
-            demás de tu día sigue igual.
-          </p>
-        </Alert>
-      ) : null}
-
-      <div className={styles.layout}>
-        <div className={styles.side}>
-          {review.story.length > 0 ? (
-            <VidaReviewStory
-              dateLabel={review.dateLabel}
-              statusLabel={review.statusLabel}
-              sentences={review.story}
-            />
-          ) : null}
-
-          {/* Sin nada registrado no hay cifra grande, porque no hay nada que
-              contar — y no hay ninguna frase que juzgue (criterios 19 y 21). */}
-          {review.emptyNotice ? (
-            <Card className={styles.empty} padding="md">
-              <h2 className={styles.emptyTitle}>{review.emptyNotice.title}</h2>
-              <p className={styles.emptyBody}>{review.emptyNotice.body}</p>
-              {review.emptyNotice.hint ? (
-                <p className={styles.emptyHint}>{review.emptyNotice.hint}</p>
-              ) : null}
-              {/* Las tres salidas del marco E, con **el mismo peso visual**:
-                  misma `className`, ninguna destacada sobre las otras
-                  (criterio 39). «Dejarlo así» cierra el asunto **del día
-                  entero** y no vuelve a preguntar en este aparato. */}
-              {canFill && !dayDismissed ? (
-                <div className={styles.emptyActions}>
-                  <button type="button" className={styles.emptyAction} onClick={logPast}>
-                    Registrar tiempo pasado
-                  </button>
-                  <button type="button" className={styles.emptyAction} onClick={askAboutWholeDay}>
-                    ¿Qué pasó?
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.emptyAction}
-                    onClick={() => dismissNoData(date, WHOLE_DAY_SLICE_ID)}
-                  >
-                    Dejarlo así
-                  </button>
-                </div>
-              ) : null}
-              {canFill && dayDismissed ? (
-                <p className={styles.emptyHint}>Lo dejaste así.</p>
-              ) : null}
-            </Card>
-          ) : null}
-
-          {review.figures && review.hasExecution ? (
-            <VidaReviewFigures
-              figures={review.figures}
-              onLogPast={canFill ? logPast : undefined}
-            />
-          ) : null}
-
-          {/* «Lo que no se hizo», con su razón: solo en escritorio, donde el
-              marco D lo pone a mano de la columna izquierda (criterio 22). En
-              el móvil ya está en su fila, y decirlo dos veces sería leerlo dos
-              veces con lector de pantalla. */}
-          {isDesktop && review.missingRows.length > 0 ? (
-            <section className={styles.section} aria-labelledby="vida-review-missing">
-              <h2 className={styles.sectionTitle} id="vida-review-missing">
-                Lo que no se hizo
-              </h2>
-              <p className={styles.sectionNote}>Con su razón, si la hay.</p>
-              <ol className={styles.rows}>
-                {review.missingRows.map((row) => (
-                  <VidaReviewRow
-                    key={`missing-${row.id}`}
-                    row={row}
-                    onDone={canFill ? markRowDone : undefined}
-                    isSaving={createFollowUpMutation.isPending}
-                  />
-                ))}
-              </ol>
-            </section>
-          ) : null}
-        </div>
-
-        <div className={styles.main}>
-          {/* El plan en trazo fantasma del marco E: lo que tenías puesto, sin
-              afirmar de cada bloque que no se hizo (criterio 19). */}
-          {review.ghostRows.length > 0 ? (
-            <section className={styles.section} aria-labelledby="vida-review-ghost">
-              <h2 className={styles.sectionTitle} id="vida-review-ghost">
-                Lo que tenías planeado
-              </h2>
-              <p className={styles.sectionNote}>Marca lo que sí hiciste.</p>
-              <ol className={styles.rows}>
-                {review.ghostRows.map((row) => (
-                  <VidaReviewRow
-                    key={row.id}
-                    row={row}
-                    isGhost
-                    onDone={canFill ? markRowDone : undefined}
-                    isSaving={createFollowUpMutation.isPending}
-                  />
-                ))}
-              </ol>
-            </section>
-          ) : null}
-
-          {review.rows.length > 0 ? (
-            <section className={styles.section} aria-labelledby="vida-review-rows">
-              <h2 className={styles.sectionTitle} id="vida-review-rows">
-                {planFrenteARealTitle}
-              </h2>
-              {/* Una sola derivación, dos pinturas: en escritorio los dos
-                  carriles alineados por hora, en el móvil la lista compacta.
-                  Nunca las dos a la vez — ni en pantalla ni en el DOM. */}
-              {isDesktop ? (
-                <VidaReviewLanes rows={review.lanes} />
-              ) : (
-                <ol className={styles.rows}>
-                  {review.rows.map((row) => (
-                    <VidaReviewRow
-                      key={row.id}
-                      row={row}
-                      onDone={canFill ? markRowDone : undefined}
-                      isSaving={createFollowUpMutation.isPending}
-                    />
-                  ))}
-                </ol>
-              )}
-            </section>
-          ) : null}
-
-          {/* Fuera del plan: su cuenta y sus minutos (criterio 16). En
-              escritorio ya va dentro de los carriles, sin nada enfrente. */}
-          {!isDesktop && review.offPlan.length > 0 ? (
-            <section className={styles.section} aria-labelledby="vida-review-offplan">
-              <h2 className={styles.sectionTitle} id="vida-review-offplan">
-                Fuera del plan · {review.offPlan.length} · {review.offPlanMinutesLabel}
-              </h2>
-              <ol className={styles.rows}>
-                {review.offPlan.map((row) => (
-                  <VidaReviewOffPlanRow key={row.id} row={row} />
-                ))}
-              </ol>
-            </section>
-          ) : null}
-
-          {/* **En qué se repartió el día** (criterios 26–33). Va **al final**,
-              debajo de los carriles: es lo que se mira al final, no al empezar.
-              Los botones de cada tramo son de la tajada 3. */}
-          {showsCategories ? (
-            <section className={styles.section} aria-labelledby="vida-review-categories">
-              <h2 className={styles.sectionTitle} id="vida-review-categories">
-                Minutos por categoría
-              </h2>
-              <p className={styles.sectionNote}>
-                En qué se repartió el día · misma paleta que tus categorías.
+      {sections(
+        <>
+          {failed.length > 0 ? (
+            // Una consulta caída y las otras no: se dice **qué** falta en vez de
+            // dejar la pantalla a medias sin explicación (criterio 23).
+            <Alert variant="warning" title="Falta una parte de tu día">
+              <p className={styles.errorText}>
+                No pudimos cargar {failed.join(' ni ')}. Lo demás es correcto.
               </p>
-              <VidaReviewCategories breakdown={breakdown} />
-            </section>
+              <Button variant="secondary" size="sm" onClick={refetch}>
+                Reintentar
+              </Button>
+            </Alert>
           ) : null}
 
-          {noDataSlices.length > 0 ? (
-            <section className={styles.section} aria-labelledby="vida-review-nodata">
-              <h2 className={styles.sectionTitle} id="vida-review-nodata">
-                {noDataSlices.length === 4
-                  ? 'Los cuatro tramos más largos sin registrar'
-                  : noDataSlices.length === 1
-                    ? 'El tramo más largo sin registrar'
-                    : `Los ${noDataSlices.length} tramos más largos sin registrar`}
-              </h2>
-              <VidaReviewNoDataList
-                slices={noDataSlices}
-                onAsk={canFill ? askAboutNoData : undefined}
-                onLeaveIt={canFill ? (slice) => dismissNoData(date, slice.id) : undefined}
-                isDismissed={(slice) => isNoDataDismissed(dismissedNoData, date, slice.id)}
-              />
-            </section>
+          {/* Una escritura que no salió **se dice**, sin reprochar y sin perder
+              nada de lo elegido: la hoja se queda abierta con lo suyo y «Lo hice»
+              no cambió nada (criterio 43). */}
+          {createFollowUpMutation.isError ? (
+            <Alert variant="warning" title="No pudimos guardar eso">
+              <p className={styles.errorText}>
+                Se quedó sin apuntar. Revisa tu conexión y vuelve a intentarlo cuando quieras; lo
+                demás de tu día sigue igual.
+              </p>
+            </Alert>
           ) : null}
 
-          {/* Lo del aparato se dice **una vez**, donde se lee (criterio 15). */}
-          {showsDeviceNote ? (
-            <p className={styles.deviceNote}>
-              Las razones de «no se pudo» y lo que dejas así se guardan en este aparato: en otro
-              no estarán.
-            </p>
-          ) : null}
+          <div className={styles.layout}>
+            <div className={styles.side}>
+              {review.story.length > 0 ? (
+                <VidaReviewStory
+                  dateLabel={review.dateLabel}
+                  statusLabel={review.statusLabel}
+                  sentences={review.story}
+                />
+              ) : null}
 
-          {exits()}
-        </div>
-      </div>
+              {/* Sin nada registrado no hay cifra grande, porque no hay nada que
+                  contar — y no hay ninguna frase que juzgue (criterios 19 y 21). */}
+              {review.emptyNotice ? (
+                <Card className={styles.empty} padding="md">
+                  <h2 className={styles.emptyTitle}>{review.emptyNotice.title}</h2>
+                  <p className={styles.emptyBody}>{review.emptyNotice.body}</p>
+                  {review.emptyNotice.hint ? (
+                    <p className={styles.emptyHint}>{review.emptyNotice.hint}</p>
+                  ) : null}
+                  {/* Las tres salidas del marco E, con **el mismo peso visual**:
+                      misma `className`, ninguna destacada sobre las otras
+                      (criterio 39). «Dejarlo así» cierra el asunto **del día
+                      entero** y no vuelve a preguntar en este aparato. */}
+                  {canFill && !dayDismissed ? (
+                    <div className={styles.emptyActions}>
+                      <button type="button" className={styles.emptyAction} onClick={logPast}>
+                        Registrar tiempo pasado
+                      </button>
+                      <button type="button" className={styles.emptyAction} onClick={askAboutWholeDay}>
+                        ¿Qué pasó?
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.emptyAction}
+                        onClick={() => dismissNoData(date, WHOLE_DAY_SLICE_ID)}
+                      >
+                        Dejarlo así
+                      </button>
+                    </div>
+                  ) : null}
+                  {canFill && dayDismissed ? (
+                    <p className={styles.emptyHint}>Lo dejaste así.</p>
+                  ) : null}
+                </Card>
+              ) : null}
+
+              {review.figures && review.hasExecution ? (
+                <VidaReviewFigures
+                  figures={review.figures}
+                  onLogPast={canFill ? logPast : undefined}
+                />
+              ) : null}
+
+              {/* «Lo que no se hizo», con su razón: solo en escritorio, donde el
+                  marco D lo pone a mano de la columna izquierda (criterio 22). En
+                  el móvil ya está en su fila, y decirlo dos veces sería leerlo dos
+                  veces con lector de pantalla. */}
+              {isDesktop && review.missingRows.length > 0 ? (
+                <section className={styles.section} aria-labelledby="vida-review-missing">
+                  <h2 className={styles.sectionTitle} id="vida-review-missing">
+                    Lo que no se hizo
+                  </h2>
+                  <p className={styles.sectionNote}>Con su razón, si la hay.</p>
+                  <ol className={styles.rows}>
+                    {review.missingRows.map((row) => (
+                      <VidaReviewRow
+                        key={`missing-${row.id}`}
+                        row={row}
+                        onDone={canFill ? markRowDone : undefined}
+                        isSaving={createFollowUpMutation.isPending}
+                      />
+                    ))}
+                  </ol>
+                </section>
+              ) : null}
+            </div>
+
+            <div className={styles.main}>
+              {/* El plan en trazo fantasma del marco E: lo que tenías puesto, sin
+                  afirmar de cada bloque que no se hizo (criterio 19). */}
+              {review.ghostRows.length > 0 ? (
+                <section className={styles.section} aria-labelledby="vida-review-ghost">
+                  <h2 className={styles.sectionTitle} id="vida-review-ghost">
+                    Lo que tenías planeado
+                  </h2>
+                  <p className={styles.sectionNote}>Marca lo que sí hiciste.</p>
+                  <ol className={styles.rows}>
+                    {review.ghostRows.map((row) => (
+                      <VidaReviewRow
+                        key={row.id}
+                        row={row}
+                        isGhost
+                        onDone={canFill ? markRowDone : undefined}
+                        isSaving={createFollowUpMutation.isPending}
+                      />
+                    ))}
+                  </ol>
+                </section>
+              ) : null}
+
+              {review.rows.length > 0 ? (
+                <section className={styles.section} aria-labelledby="vida-review-rows">
+                  <h2 className={styles.sectionTitle} id="vida-review-rows">
+                    {planFrenteARealTitle}
+                  </h2>
+                  {/* Una sola derivación, dos pinturas: en escritorio los dos
+                      carriles alineados por hora, en el móvil la lista compacta.
+                      Nunca las dos a la vez — ni en pantalla ni en el DOM. */}
+                  {isDesktop ? (
+                    <VidaReviewLanes rows={review.lanes} />
+                  ) : (
+                    <ol className={styles.rows}>
+                      {review.rows.map((row) => (
+                        <VidaReviewRow
+                          key={row.id}
+                          row={row}
+                          onDone={canFill ? markRowDone : undefined}
+                          isSaving={createFollowUpMutation.isPending}
+                        />
+                      ))}
+                    </ol>
+                  )}
+                </section>
+              ) : null}
+
+              {/* Fuera del plan: su cuenta y sus minutos (criterio 16). En
+                  escritorio ya va dentro de los carriles, sin nada enfrente. */}
+              {!isDesktop && review.offPlan.length > 0 ? (
+                <section className={styles.section} aria-labelledby="vida-review-offplan">
+                  <h2 className={styles.sectionTitle} id="vida-review-offplan">
+                    Fuera del plan · {review.offPlan.length} · {review.offPlanMinutesLabel}
+                  </h2>
+                  <ol className={styles.rows}>
+                    {review.offPlan.map((row) => (
+                      <VidaReviewOffPlanRow key={row.id} row={row} />
+                    ))}
+                  </ol>
+                </section>
+              ) : null}
+
+              {/* **En qué se repartió el día** (criterios 26–33). Va **al final**,
+                  debajo de los carriles: es lo que se mira al final, no al empezar.
+                  Los botones de cada tramo son de la tajada 3. */}
+              {showsCategories ? (
+                <section className={styles.section} aria-labelledby="vida-review-categories">
+                  <h2 className={styles.sectionTitle} id="vida-review-categories">
+                    Minutos por categoría
+                  </h2>
+                  <p className={styles.sectionNote}>
+                    En qué se repartió el día · misma paleta que tus categorías.
+                  </p>
+                  <VidaReviewCategories breakdown={breakdown} />
+                </section>
+              ) : null}
+
+              {noDataSlices.length > 0 ? (
+                <section className={styles.section} aria-labelledby="vida-review-nodata">
+                  <h2 className={styles.sectionTitle} id="vida-review-nodata">
+                    {noDataSlices.length === 4
+                      ? 'Los cuatro tramos más largos sin registrar'
+                      : noDataSlices.length === 1
+                        ? 'El tramo más largo sin registrar'
+                        : `Los ${noDataSlices.length} tramos más largos sin registrar`}
+                  </h2>
+                  <VidaReviewNoDataList
+                    slices={noDataSlices}
+                    onAsk={canFill ? askAboutNoData : undefined}
+                    onLeaveIt={canFill ? (slice) => dismissNoData(date, slice.id) : undefined}
+                    isDismissed={(slice) => isNoDataDismissed(dismissedNoData, date, slice.id)}
+                  />
+                </section>
+              ) : null}
+
+              {/* Lo del aparato se dice **una vez**, donde se lee (criterio 15). */}
+              {showsDeviceNote ? (
+                <p className={styles.deviceNote}>
+                  Las razones de «no se pudo» y lo que dejas así se guardan en este aparato: en otro
+                  no estarán.
+                </p>
+              ) : null}
+
+              {exits()}
+            </div>
+          </div>
+        </>,
+      )}
 
       {/* **La hoja de FEAT-004, tal cual** (criterios 37 y 38): ni una segunda
           hoja, ni un segundo «qué». Con `key` por apertura, y el fallo se lee
@@ -1010,5 +1089,100 @@ function VidaReviewBridgeSection({
       onMove={(chosen) => updateItem.mutate({ id: chosen.itemId, startTime: chosen.proposedTime })}
       onDismiss={(chosen) => dismissBridge(weekMonday, chosen.itemId)}
     />
+  )
+}
+
+/**
+ * **«Lo que se repite»: la adherencia de las últimas seis semanas**
+ * (FEAT-007, tajada 1, criterios 64–73).
+ *
+ * Es un componente aparte **por el coste**, igual que `VidaReviewBridgeSection`
+ * y por la misma razón (A5): sus consultas solo existen mientras está montado,
+ * y solo se monta con **su sección abierta**. «Un día» y «La semana» siguen
+ * costando exactamente lo de ayer.
+ *
+ * Lo que pide, y por qué (criterio 103, medido en el dossier):
+ *
+ * - **Los planes de la ventana, uno por día**, con la clave de día que ya
+ *   existe. Son hasta 42 porque **el esquema no tiene consulta de plan por
+ *   rango** y esta feature no crea documentos GraphQL. Los que la tira, la
+ *   semana y el puente ya trajeron son aciertos de caché.
+ * - **Las sesiones, una sola consulta de rango**, la misma que usa el puente.
+ *
+ * **Aquí no se escribe nada.** Esta tajada es solo lectura: ni una sugerencia,
+ * ni un botón que cambie la plantilla. Eso nace en la tajada 2.
+ */
+function VidaPatternsSection({
+  today,
+  nowMinutes,
+  dayHours,
+}: {
+  today: string
+  nowMinutes: number | null
+  dayHours: { startTime: string; endTime: string }
+}) {
+  const history = useVidaHistoryWindow({ enabled: true, today })
+
+  const adherence = useMemo(
+    () => buildAdherence({ days: history.days, dayHours, today, nowMinutes }),
+    [history.days, dayHours, today, nowMinutes],
+  )
+
+  // Nada ha llegado todavía: esqueletos, y **ninguna cifra a cero** mientras
+  // tanto. Con parte de los días ya dentro se pinta lo que hay: la sección
+  // dice «con N semanas de datos» y no se queda bloqueada esperando a 43
+  // respuestas.
+  const nothingYet = history.isPending && history.days.every((day) => day.isPending)
+
+  return (
+    <>
+      <section className={styles.section} aria-labelledby="vida-review-patterns">
+        <h2 className={styles.sectionTitle} id="vida-review-patterns">
+          Lo que se repite
+        </h2>
+        <p className={styles.sectionNote}>
+          Sale de tus propios días · no hay nada que configurar
+        </p>
+      </section>
+
+      {/* Una consulta caída **no es «no tienes datos»** (criterio 72): se dice
+          qué pasó, se ofrece reintentar, y lo que sí llegó se sigue contando. */}
+      {history.hasError ? (
+        <Alert variant="warning" title="Falta algún día de estas semanas">
+          <p className={styles.errorText}>
+            De los días que no pudimos cargar no se afirma nada: las cuentas de abajo son de los
+            que sí llegaron.
+          </p>
+          <Button variant="secondary" size="sm" onClick={history.refetch}>
+            Reintentar
+          </Button>
+        </Alert>
+      ) : null}
+
+      {nothingYet ? (
+        <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
+          <Skeleton width="100%" height={72} radius="1.25rem" />
+          {[0, 1, 2, 3].map((row) => (
+            <Skeleton key={row} width="100%" height={28} radius="0.75rem" />
+          ))}
+          <Skeleton width="100%" height={64} radius="1rem" />
+          <span className={styles.srOnly}>Mirando tus últimas semanas…</span>
+        </div>
+      ) : (
+        <div className={styles.patterns}>
+          <VidaAdherenceSummary adherence={adherence} />
+          {adherence.hasAdherence ? (
+            <>
+              <VidaAdherenceWeeks weeks={adherence.weeks} />
+              <VidaAdherenceWeekdays
+                weekdays={adherence.weekdays}
+                weeksLabel={adherence.weeksLabel}
+                note={adherence.weekdayNote}
+              />
+            </>
+          ) : null}
+        </div>
+      )}
+    </>
   )
 }

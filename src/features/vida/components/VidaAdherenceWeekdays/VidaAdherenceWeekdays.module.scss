@@ -1,0 +1,91 @@
+/* Las siete casillas del marco A. A 375 px la rejilla reparte el ancho en
+   siete columnas iguales: nunca hay scroll horizontal, la cifra se encoge. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.weeks {
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.cell {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.4rem 0.15rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+}
+
+.letter {
+  color: var(--color-text-secondary);
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+/* La casilla que todavía espera se dice en secundario: no es un resultado
+   bajo, es que aún no hay de qué hablar. */
+.value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  .cell[data-enough='true'] & {
+    color: var(--color-text);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.srOnly {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}

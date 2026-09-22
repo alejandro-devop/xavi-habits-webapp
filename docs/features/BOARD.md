@@ -15,10 +15,34 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
-| FEAT-007 | planned | 0/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
+| FEAT-007 | building | 1/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-007 `building` 1/4** (2026-09-21, revisor). **Tajada 1 aceptada.** Los
+catorce criterios (64–73 y 101–104) comprobados uno a uno contra la sección 1,
+línea base **corrida entera de nuevo por el revisor** y no peor: typecheck
+limpio, lint 14/0, 2 fallos preexistentes de 1479, build exit 0 con el chunk en
+1.065,85 kB. Sin regresiones en «Un día», «La semana» ni el puente (el diff del
+test de la página borra **3** líneas y ninguna es una afirmación de FEAT-006).
+Verificadas las tres desviaciones del constructor: `buildAdherence` **usa**
+`buildWeekReview` —criterio 70 cierto por construcción—, el «0 consultas con la
+sección cerrada» está sujeto por montaje **y** por espía sobre la API, y el
+nombre de 60 caracteres del criterio 72 no aplica porque la tajada no pinta
+ningún texto del usuario. Cinco hallazgos anotados en la sección 4, ninguno
+bloqueante; los más vivos: **la frase del render que nombra el día que menos se
+parece al plan se omitió a propósito** (regla de «ni una palabra de reproche»,
+decisión que el usuario puede revertir en una línea) y **`ENVIRONMENT.md` tiene
+la línea base vieja** (1439 tests, 1.054,0 kB). Pendiente del usuario: criterios
+105 y 106, y 375 px y oscuro dentro de `/app/*`.
+
+**FEAT-007 `in-review`** (2026-09-21, constructor). **Tajada 1 construida y
+verificada**, sin commitear: «Lo que se repite» es la tercera sección de
+Revisión y cuenta la adherencia de las últimas seis semanas en fracción. Coste
+medido (criterio 103): 43 consultas en frío, 22 llegando desde Revisión, 0 al
+volver a abrir. Línea base no peor: typecheck limpio, lint 14/0, 2 fallos
+preexistentes de 1479, chunk inicial 1.065,81 kB (+11,8 kB).
 
 **FEAT-007 `planned`** (2026-09-21, arquitecto). Plan escrito en la sección 2.
 **Referencia: la tajada 4 de FEAT-006 entera** — `vida-week-review.utils.ts` +

@@ -60,6 +60,13 @@ const FORBIDDEN: [string, RegExp][] = [
   ['culpa: «fallaste»', /fallaste|fallast/i],
   ['«cancelar» sobre una sesión o un bloque', /cancelar|cancelad[oa]s?\b/i],
   ['«eliminar» sobre una sesión o un bloque', /eliminar|eliminad[oa]s?\b/i],
+  // Las siete de FEAT-007 (criterio 73). «mal» **necesita frontera de
+  // palabra**: sin ella revienta con «formal», «normal» y «malla».
+  ['culpa: «incumpliste» / «objetivo incumplido»', /incumpl/i],
+  ['culpa: «deberías»', /deber[íi]as/i],
+  ['culpa: «mal»', /\bmal\b/i],
+  ['culpa: «racha»', /\bracha/i],
+  ['culpa: «cumplimiento»', /cumplimiento/i],
 ]
 
 describe('el vocabulario de Vida (criterios 14 y 59)', () => {

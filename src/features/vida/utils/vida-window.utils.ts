@@ -21,6 +21,7 @@ import {
   getCurrentLocalDate,
   getMondayOfWeek,
   parseYmdToLocalDate,
+  shiftYmd,
 } from '@/features/vida/utils/vida-date.utils'
 import { normalizeTimeForApi, parseTimeToMinutes } from '@/features/vida/utils/vida-time.utils'
 
@@ -35,12 +36,6 @@ export type PlanningWindow = {
   from: string
   /** Último día alcanzable, `YYYY-MM-DD`. */
   to: string
-}
-
-function shiftYmd(date: string, days: number): string {
-  const d = parseYmdToLocalDate(date)
-  d.setDate(d.getDate() + days)
-  return formatDateToYmd(d)
 }
 
 /**

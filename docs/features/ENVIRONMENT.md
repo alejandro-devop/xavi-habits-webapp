@@ -96,12 +96,12 @@ Valores válidos del campo `area:` de un dossier:
 
 ## Comprobaciones que existen
 
-| Qué | Comando | Línea base hoy (2026-09-19) |
+| Qué | Comando | Línea base hoy (2026-09-21) |
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 1439** (`SearchSelect` ×2, preexistentes) |
-| Paquete | `pnpm build` | chunk inicial **1.054,0 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 1479** (`SearchSelect` ×2, preexistentes) |
+| Paquete | `pnpm build` | chunk inicial **1.065,85 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 Cerrar cada tajada con `pnpm build`, no solo con `pnpm typecheck`: son el mismo `tsc -b`, pero el estado incremental de `typecheck` dejó pasar una vez un `TS2783` que el build sí cazó (FEAT-003, tajada 3).
 

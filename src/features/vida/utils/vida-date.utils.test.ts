@@ -9,6 +9,7 @@ import {
   isFutureDate,
   isToday,
   parseYmdToLocalDate,
+  shiftYmd,
 } from '@/features/vida/utils/vida-date.utils'
 
 afterEach(() => {
@@ -77,5 +78,25 @@ describe('el día de la semana y el encabezado (FEAT-003, tajada 2)', () => {
   it('«Viernes 18»: mayúscula inicial y número del día', () => {
     expect(formatDayHeading('2026-09-18')).toBe('Viernes 18')
     expect(formatDayHeading('2026-09-01')).toBe('Martes 1')
+  })
+})
+
+describe('shiftYmd, la única (FEAT-007, tajada 1)', () => {
+  it('mueve días adelante y atrás sin salirse del mes ni del año', () => {
+    expect(shiftYmd('2026-09-18', 1)).toBe('2026-09-19')
+    expect(shiftYmd('2026-09-18', -1)).toBe('2026-09-17')
+    expect(shiftYmd('2026-09-30', 1)).toBe('2026-10-01')
+    expect(shiftYmd('2026-01-01', -1)).toBe('2025-12-31')
+  })
+
+  it('cruza el cambio de hora sin perder un día', () => {
+    // El último domingo de octubre de 2026 (25) es el cambio en Europa: con
+    // aritmética de milisegundos, el día siguiente se quedaría en el 25.
+    expect(shiftYmd('2026-10-24', 1)).toBe('2026-10-25')
+    expect(shiftYmd('2026-10-25', 1)).toBe('2026-10-26')
+  })
+
+  it('las seis semanas de la ventana caen donde tienen que caer', () => {
+    expect(shiftYmd('2026-09-14', -35)).toBe('2026-08-10')
   })
 })

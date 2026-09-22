@@ -1,7 +1,7 @@
 ---
 id: FEAT-007
 title: Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos
-status: planned
+status: building
 architect: yes
 area: features/vida
 requested: 2026-09-21
@@ -301,7 +301,7 @@ Verticales, cada una usable sola.
 
 | # | Qué hace | Estado |
 |---|---|---|
-| 1 | **La sección existe y cuenta tu adherencia.** Tercera sección en Revisión («Lo que se repite»), con la frase, las semanas en fracción, los días de la semana con su umbral y la espera con fechas cuando no hay bastante. Solo lectura: ni una sugerencia todavía. Criterios 64–73, 101–104. | pending |
+| 1 | **La sección existe y cuenta tu adherencia.** Tercera sección en Revisión («Lo que se repite»), con la frase, las semanas en fracción, los días de la semana con su umbral y la espera con fechas cuando no hay bastante. Solo lectura: ni una sugerencia todavía. Criterios 64–73, 101–104. | **aceptada** |
 | 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta por actividad, la que va bien que no propone nada, la pregunta con el número dentro, el `vidaItemUpdate` que cambia la plantilla sin tocar ningún día armado, «Dejarlo» guardado en el aparato con la regla de las 4 semanas, y el estado de pocos datos del marco F. Criterios 74–86. | pending |
 | 3 | **El aviso llega al planear.** En Hoy, dos avisos como mucho pegados a su bloque, con sus dos salidas, y la duración habitual en los chips del hueco. Criterios 87–94. | pending |
 | 4 | **El dato donde se edita, y el escritorio.** La línea bajo «A qué hora» y bajo «Cuánto» en la hoja de la plantilla, y en escritorio la rejilla con el lateral de «Sin contestar», «Contestadas» y «De dónde sale todo esto». Criterios 95–100. | pending |
@@ -745,7 +745,7 @@ modelo de sugerencia que nace en la 2; la 2 consume la ventana que nace en la
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **La sección existe y cuenta tu adherencia.** Ventana de 6 semanas, derivado de adherencia y tercera sección de Revisión, solo lectura. | **Crea:** `hooks/useVidaHistoryWindow.ts` (+test), `utils/vida-adherence.utils.ts` (+test), `components/VidaAdherenceSummary/`, `VidaAdherenceWeeks/`, `VidaAdherenceWeekdays/`. **Modifica:** `pages/VidaRevisionPage.tsx` (:87, :179, :~455 el control con `Tabs`, :~511 la rama, :945 `VidaPatternsSection`), su `.module.scss` y `.test.tsx`, `utils/vida-date.utils.ts` (+test), `utils/vida-window.utils.ts:39`, `vida-vocabulary.test.ts:56` | 64-73, 101-104 | pending |
+| 1 | **La sección existe y cuenta tu adherencia.** Ventana de 6 semanas, derivado de adherencia y tercera sección de Revisión, solo lectura. | **Crea:** `hooks/useVidaHistoryWindow.ts` (+test), `utils/vida-adherence.utils.ts` (+test), `components/VidaAdherenceSummary/`, `VidaAdherenceWeeks/`, `VidaAdherenceWeekdays/`. **Modifica:** `pages/VidaRevisionPage.tsx` (:87, :179, :~455 el control con `Tabs`, :~511 la rama, :945 `VidaPatternsSection`), su `.module.scss` y `.test.tsx`, `utils/vida-date.utils.ts` (+test), `utils/vida-window.utils.ts:39`, `vida-vocabulary.test.ts:56` | 64-73, 101-104 | **aceptada** |
 | 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta, pregunta con el número dentro, `vidaItemUpdate`, «Dejarlo» con la regla de las 4 semanas, marco F. | **Crea:** `utils/vida-patterns.utils.ts` (+test), `hooks/useVidaPatterns.ts` (+test), `components/VidaPatternCard/`. **Modifica:** `store/vida-device-notes.store.ts` (`patternAnswers`), `pages/VidaRevisionPage.tsx` (`VidaPatternsSection` + la condición simétrica en :1003), `.module.scss`, `.test.tsx` | 74-86 (+101, 104) | pending |
 | 3 | **El aviso llega al planear.** Dos avisos pegados a su bloque en Hoy y la duración habitual en los chips del hueco. | **Crea:** `components/VidaBlockHint/`. **Modifica:** `pages/VidaHoyPage.tsx:~551` + `.module.scss` + `.test.tsx`, `components/VidaAgendaGap/VidaAgendaGap.tsx:111-150`, `utils/vida-agenda.utils.ts:423,473` (lookup opcional de duración habitual, por defecto vacío para que el criterio 92 sea cierto por construcción), `utils/vida-patterns.utils.ts` (`pickBlockHints`) | 87-94 (+101, 104) | pending |
 | 4 | **El dato donde se edita, y el escritorio.** Líneas bajo «A qué hora» y «Cuánto», y la rejilla con su lateral. | **Crea:** `components/VidaPatternsAside/`. **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx:472,504,517` + `.module.scss` + `.test.tsx`, `pages/VidaPlantillaPage.tsx` (monta la ventana diferida y pasa `pattern` a la hoja), `pages/VidaRevisionPage.tsx` (rejilla + lateral con `isDesktop`, :172) | 95-100 (+101, 104) | pending |
@@ -766,8 +766,447 @@ tajada 4 sigue siendo `docs/vida/assets/08-vida-entiende.html`.
 
 ## 3. Construcción — feature-builder
 
-*(pendiente)*
+### Tajada 1 — La sección existe y cuenta tu adherencia
+
+**Resumen para quien revise.** «Lo que se repite» existe: tercera sección de
+Revisión en un control de pestañas de verdad, con la adherencia de las últimas
+seis semanas en fracción, sus umbrales dichos en voz alta y la espera con
+fechas reales cuando no hay bastante. Todo el derivado es puro y reutiliza
+`buildWeekReview`, así que **no hay una segunda definición de «seguido»**.
+**Lo que más probablemente he roto: la pantalla de Revisión entera.** Sus
+siete ramas de retorno —cargando, sin sesión, plan caído, día futuro, lo
+vivido caído, el día y la semana— ahora envuelven su contenido en
+`Tabs.Panel`, y los dos botones sueltos («Ver por semana» y «Volver al día»)
+**ya no existen**: cualquier flujo o costumbre que dependiera de ellos cambia.
+Mirar ahí primero.
+
+**Qué se construyó**
+
+*Se crea:*
+
+- `src/features/vida/utils/vida-adherence.utils.ts` — el derivado puro.
+  `buildAdherence(input)` → `{ computableWeeks, plannedDaysInWindow, headline,
+  dataNote, weeks, weeksLabel, weekdays, weekdayNote, waiting, waitingNote,
+  hasAdherence }`, con las cifras **ya compuestas** (fracción, porcentaje,
+  rangos de fecha, frases). Umbrales exportados: `ADHERENCE_MIN_WEEKS = 2`,
+  `ADHERENCE_TREND_WEEKS = 3`, `WEEKDAY_MIN_WEEKS = 3`,
+  `WEEK_MIN_PLANNED_DAYS = 3`. Ni un `new Date()`.
+- `src/features/vida/utils/vida-adherence.utils.test.ts` — 15 casos.
+- `src/features/vida/hooks/useVidaHistoryWindow.ts` — la ventana.
+  `VIDA_HISTORY_WEEKS = 6`, planes por `vidaKeys.dayPlan.byDate` (uno por día)
+  y sesiones por `vidaKeys.followUps.range` (**una**). `staleTime` 5 min en el
+  pasado, 30 s en hoy, `gcTime` 30 min. `enabled` por parámetro.
+- `src/features/vida/hooks/useVidaHistoryWindow.test.tsx` — 9 casos, y es
+  donde vive la medida del criterio 103.
+- `src/features/vida/components/VidaAdherenceSummary/` — frase, «Con N
+  semanas de datos» y «Lo que llega después» (marco F).
+- `src/features/vida/components/VidaAdherenceWeeks/` — filas de semana con la
+  barra (planeado rayado, seguido sólido) y la fracción con su porcentaje.
+- `src/features/vida/components/VidaAdherenceWeekdays/` — las siete casillas.
+
+*Se modifica:*
+
+- `src/features/vida/pages/VidaRevisionPage.tsx` — `ReviewView` con tres
+  valores; `sections()`, el control con `@/shared/ui/Tabs` que envuelve el
+  contenido de **todas** las ramas; la rama `isPatterns`, **antes** de la de
+  «cargando» (esta sección no mira el día abierto y no espera a su consulta);
+  `VidaPatternsSection` al final del archivo, hermano de
+  `VidaReviewBridgeSection`; fuera la copia privada de `shiftYmd` y fuera los
+  dos botones sueltos.
+- `src/features/vida/pages/VidaRevisionPage.module.scss` — `.sections`,
+  `.sectionBody`, `.patterns`.
+- `src/features/vida/pages/VidaRevisionPage.test.tsx` — `openWeek` ahora pulsa
+  la pestaña; ocho casos nuevos para la sección.
+- `src/features/vida/utils/vida-date.utils.ts` (+ su test) — `shiftYmd`
+  exportado, **una sola vez**.
+- `src/features/vida/utils/vida-window.utils.ts` — su copia privada delega.
+- `src/features/vida/vida-vocabulary.test.ts` — `FORBIDDEN` suma «incumpl»,
+  «deberías», «\bmal\b», «racha» y «cumplimiento» (criterio 73).
+
+**Por qué así, y qué se descartó**
+
+1. **`buildAdherence` no imita `buildWeekReview`: lo usa.** El plan lo daba
+   como molde. Llamarlo directamente es más barato y, sobre todo, hace el
+   criterio 70 cierto **por construcción**: la cifra de cada día es la de
+   `collectDayClosing`, sin una línea de aritmética nueva. Hay un test que
+   compara la suma de la adherencia con la de `buildWeekReview` sobre los
+   mismos días. Se descartó copiar el bucle: habrían sido dos definiciones.
+2. **Solo cuentan los días cerrados.** Un día en vuelo, caído, futuro o el de
+   hoy a medias no suma ni en «seguido» ni en «planeado»: es la regla de
+   `buildWeekLine` (criterio 52 de FEAT-006). Por eso «la semana en curso
+   cuenta hasta hoy» es literalmente cierto, y la leyenda lo dice.
+3. **El control va en todas las ramas de la pantalla, también en las de
+   error.** Si el plan de un día no carga, se tiene que poder saltar a «Lo que
+   se repite», que no depende de ese día. La excepción es la rama **sin
+   sesión**: ahí no hay nada que mirar en ninguna de las tres y el control
+   ofrecería puertas cerradas.
+4. **`VIDA_HISTORY_WEEKS` vive en el hook, no en `vida-patterns.utils.ts`.**
+   Ese archivo es de la tajada 2 y no existe todavía; el plan le pone allí un
+   `VIDA_PATTERN_WEEKS`. **Que lo importe de aquí**, no que escriba el
+   segundo: si Hoy mirase cuatro semanas y Revisión seis, la misma costumbre
+   tendría dos números.
+5. **No se nombra el día que menos se parece al plan.** El render lo escribe
+   («los martes, los que menos»); el pie solo nombra el que **más** se parece,
+   y solo si destaca, que es la regla de `buildWeekLine`. Señalar un día flojo
+   es la única frase del marco A que se lee como reproche, y la regla de
+   producto del módulo manda sobre el render en eso. **Es una desviación
+   consciente del render aprobado**: si se quiere tal cual, es una línea.
+6. **La frase cambia de forma cuando la proporción redondea a cero.** «De cada
+   10 … sigues 0» es un cero en la cara; en ese caso se dice la cuenta
+   literal, «Has seguido 2 de 71 bloques en estas 3 semanas». Sigue siendo
+   exacto y sigue yendo en fracción.
+7. **`gcTime` de 30 min solo en los planes.** La consulta de rango de sesiones
+   es `useActivityFollowUpsInDatesQuery`, que ya existe y la comparte el
+   puente: tocarle el reposo le cambiaría el coste a FEAT-006. Volver a la
+   sección pasado un minuto cuesta **1** consulta, no 43.
+
+**Verificación**
+
+*Línea base entera (`docs/features/ENVIRONMENT.md`), al terminar:*
+
+| Qué | Antes | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos |
+| `pnpm test` | 2 fallos de 1439 | **2 fallos de 1479** (los mismos dos de `SearchSelect`; +40 tests nuevos) |
+| `pnpm build` | chunk inicial 1.054,0 kB | **1.065,81 kB** (+11,8 kB), `app-icons` **620,20 kB sin tocar**, `IconPicker` 4,64 kB, exit 0 |
+
+*Criterio 103 — el coste de abrir la sección, medido, no prometido*
+(`useVidaHistoryWindow.test.tsx`, con `useQueries` de verdad y espías sobre la
+API):
+
+- **En frío, un domingo (peor caso): 43 consultas** = **42** planes +
+  **1** rango. Test: `expect(getActivityDayPlan).toHaveBeenCalledTimes(42)` y
+  `getActivityFollowUpsInDates` **1**, con `('2026-08-10', '2026-09-20')`.
+- **Un lunes (mejor caso): 36 días** → 37 consultas.
+- **Llegando desde Revisión**, con los 20 días que la tira, la semana y el
+  puente ya dejaron en la **misma** clave: **22 consultas nuevas**. Medido
+  sembrando 20 entradas de caché.
+- **Volver a abrir la sección** dentro del reposo: **0 consultas de plan**
+  (desmontar y montar contra el mismo `QueryClient`). La de sesiones sí puede
+  repetirse pasado su minuto: **1**.
+- **Las otras dos secciones no pagan nada**: con «Un día» y con «La semana»
+  abiertas, `useVidaHistoryWindow` **no se monta ni una vez**
+  (`expect(historyMounts).toHaveLength(0)` en `VidaRevisionPage.test.tsx`).
+- **Contra el API de verdad esto no se ha medido**, y es lo que el criterio
+  105 deja al usuario: 42 consultas en paralelo contra Render (plan gratuito,
+  duerme a los 15 min) es el número que puede doler. **La palanca, si duele,
+  es bajar `VIDA_HISTORY_WEEKS` a 4** —una línea—, con la advertencia del
+  plan: la regla de vuelta de D1 son 4 semanas y se justifica con que la
+  ventana sea más larga que el silencio.
+
+*En el navegador.* `/app/*` está detrás del login y los agentes no entran con
+credenciales. Se montó un **arnés temporal** (`arnes-adherencia.html` +
+`src/harness/arnes-adherencia.tsx`) con datos sintéticos, se miró a **375 px**
+en claro y en oscuro, y **se borró**: `git status` no lo lista. Lo medido ahí:
+
+- `document.documentElement.scrollWidth === clientWidth === 375`: **sin scroll
+  horizontal**, y ningún elemento no absoluto desbordado.
+- **Criterio 67 sobre el DOM real**: 5 nodos con «%», y **los 5** conviven con
+  una fracción en su misma caja (`pctOk: true`).
+- **Oscuro legible**: marco A y marco F, con la barra en mint sobre el rayado
+  y las casillas «0 sem» en secundario.
+
+**Criterios que cierra, uno por uno**
+
+- **64 ✅** Tres pestañas, `['Un día', 'La semana', 'Lo que se repite']`, con
+  `role="tab"` y las flechas de `shared/ui/Tabs`. La URL no se mueve: el test
+  comprueba que solo se pide `2026-09-18` antes y después de cambiar de
+  sección, y que volver a «Un día» devuelve el mismo día. `vida-paths.ts` y
+  `app-nav.config.ts` no aparecen en el diff.
+- **65 ✅** «De cada 10 bloques que planeas, sigues 8.» con 2 semanas; la
+  coletilla «Llevas 3 semanas subiendo.» solo con 3+ y serie estrictamente
+  ascendente; con la serie plana o bajando, **una sola frase** y ni la palabra
+  «baja» (test explícito).
+- **66 ✅** «Con 2 semanas de datos. Las semanas con menos de 3 días planeados
+  se quedan fuera, para que una semana de viaje no arrastre la línea.», literal
+  y con el número real; con cero semanas computables dice «Todavía no hay
+  ninguna semana con 3 días planeados o más» y mantiene la explicación.
+- **67 ✅** Fila por semana con mes, días, barra (rayado + sólido) y «16/20»
+  con «80 %» debajo. Comprobado sobre `container.textContent` en el test de la
+  página y sobre el DOM real en el arnés.
+- **68 ✅** La semana de 2 días planeados no se pinta y no mueve la frase
+  (test); `isCurrent` marca la semana en curso y la leyenda dice «la semana en
+  curso cuenta hasta hoy».
+- **69 ✅** Siete casillas; con 3+ semanas, fracción; con menos, «2 sem»; un
+  día nunca planeado, «0 sem» y **nunca «0/0»** (comprobado sobre el texto).
+  El pie explica «a partir de 3 se puede hablar de…».
+- **70 ✅** No hay una segunda definición: `buildAdherence` llama a
+  `buildWeekReview`. El test compara las dos sumas y son iguales.
+- **71 ✅** Con una sola semana computable: ni barras, ni pantalla vacía. «Lo
+  que llega después» con «A partir de 2 semanas completas · te falta 1, la del
+  14 al 20 de septiembre» y «A partir de 3 semanas · llevas 4 días de 21», más
+  la línea «Esto no depende de que planees más ni mejor: sale de los días que
+  vives». Y **ni un «%»** en toda la sección en ese estado.
+- **72 ⚠️ casi entero.** Cargando (esqueletos, sin cifras a cero), error con
+  «Reintentar» que **no** dice «no tienes datos» y sigue contando lo que sí
+  llegó, 375 px sin scroll y oscuro legible: comprobados. **Lo que no
+  aplica**: «un nombre de actividad de 60 caracteres» — en esta tajada **no se
+  pinta ningún nombre de actividad**; llega con las tarjetas de la tajada 2.
+- **73 ✅** Barrido sobre el texto renderizado (test de la página) y sobre el
+  código nuevo (`vida-vocabulary.test.ts`, que ya recorre los archivos nuevos
+  solo y ahora prohíbe cinco palabras más).
+- **101 ✅** Ni un documento GraphQL, ni una mutación, ni un tipo de `api/`,
+  ni una ruta, ni una clave de `localStorage`. `graphql/`, `api/` y
+  `store/` no aparecen en el diff.
+- **102 ✅** Ninguna clave nueva en `vidaKeys`: `dayPlan.byDate` y
+  `followUps.range`, las dos existentes. La decisión del rango la tomó el
+  arquitecto y queda ejercida tal cual.
+- **103 ✅** Medido arriba.
+- **104 ✅** Tabla de arriba. El chunk crece **11,8 kB** y **ninguno de
+  iconos**.
+
+**Pendiente de prueba manual, del usuario** (nadie puede cerrarlo desde aquí):
+
+- **105 y 106**: con la API despierta y sus semanas de verdad. Pasos: entrar
+  en `/app/vida/revision`, pulsar «Lo que se repite», comprobar que la frase y
+  las fracciones cuadran con lo que recuerda, que las semanas de viaje no
+  están, y volver a «Un día» para ver que el día sigue donde estaba. Y
+  **medir la espera real de abrir la sección** la primera vez del día, que es
+  cuando Render puede estar dormido.
+- **Criterio 72 en el aparato real**: 375 px y oscuro **dentro de `/app/*`**,
+  que es lo que ningún arnés reproduce del todo.
+
+**Riesgos — dónde mirar si algo se rompió**
+
+1. **Las siete ramas de `VidaRevisionPage`**, que ahora meten un `div` de
+   panel entre la raíz y el contenido. Los 60 tests de la página pasan, pero
+   el CSS de `.layout` y del lateral de escritorio (`isDesktop`) vive una caja
+   más adentro.
+2. **Los dos botones que desaparecieron.** Cualquier prueba manual, guion o
+   costumbre que dijera «Ver por semana» ya no lo encuentra.
+3. **`shiftYmd` compartida.** `vida-window.utils.ts` la usa en la tira, en la
+   ventana de planeación y en «copiar de la semana pasada». Es el mismo
+   cálculo, con su test nuevo de cambio de hora, pero el radio es todo el
+   módulo.
+4. **`gcTime` de 30 minutos sobre `dayPlan.byDate`.** React Query se queda con
+   el mayor de los observadores: abrir la sección una vez hace que **todos**
+   esos días vivan media hora en memoria aunque se vuelva a Hoy. Es querido; el
+   coste es memoria, no consultas.
+5. **`FORBIDDEN` con `\bmal\b`.** Si alguien escribe «mal» en un literal
+   nuevo del módulo, el test del vocabulario falla — y puede parecer que rompió
+   otra cosa.
+
+**Estado del árbol:** sin commitear.
+
+**Además, para quien venga detrás** (no se tocó, es alcance de otro):
+
+- **Arranqué un servidor de desarrollo** para el arnés (`preview_start`,
+  acabó en el **5174** por `autoPort`) y **no pude pararlo**: esta sesión no
+  tiene la herramienta `preview_stop` que nombra `ENVIRONMENT.md`. Queda
+  dicho; el del usuario en el 5173 no se tocó.
+- `VidaSemanaPage.tsx:39` tiene **otra** copia privada de `shiftYmd`. No entra
+  en esta tajada (tocaría una pantalla entregada que no se toca), pero ahora
+  que la función está exportada, es un borrado de cinco líneas.
 
 ## 4. Revisión — feature-reviewer
 
-*(pendiente)*
+### Tajada 1 — La sección existe y cuenta tu adherencia
+
+**Veredicto: `accepted`** — los diez criterios de la tajada (64–73) y los cuatro
+transversales (101–104) se cumplen con evidencia que he vuelto a correr yo, y no
+he encontrado ninguna regresión en «Un día», «La semana» ni el puente. Las tres
+desviaciones que el constructor declara quedan **verificadas y bien resueltas**.
+Lo que queda pendiente es lo que ningún agente puede cerrar (105, 106 y el 72
+dentro de `/app/*`), más cinco hallazgos que **no** devuelven la tajada.
+
+**Criterios, uno por uno** (contra la sección 1, no contra el resumen)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 64 | **cumplido** | `VidaRevisionPage.tsx:~470` monta `@/shared/ui/Tabs` con `['Un día','La semana','Lo que se repite']`; el estado es `useState<ReviewView>` local. `git diff --stat` **solo toca 7 archivos**: ni `vida-paths.ts`, ni `vida.routes.tsx`, ni `app-nav.config.ts`. El test «la pantalla tiene tres secciones…» afirma `new Set(askedDates) === {'2026-09-18'}` antes y después de cambiar de sección: la URL no se mueve y el día no se recarga. |
+| 65 | **cumplido** | `headlineFor` + el bloque de tendencia en `vida-adherence.utils.ts:361-366`: la coletilla exige `computableWeeks >= 3` **y** `risingRun >= 3`, y `risingRun` corta en `current <= previous` (serie plana **también** calla). No hay ninguna rama que diga que baja. Máximo dos frases por construcción (`headline` es un array al que solo se empuja una vez). |
+| 66 | **cumplido** | `dataNote` se compone en las **dos** ramas (`:292-295`) y `VidaAdherenceSummary` lo pinta siempre, también en la de espera. Con cero semanas dice «Todavía no hay ninguna semana con 3 días planeados o más» y **mantiene** la explicación del viaje. |
+| 67 | **cumplido** | `AdherenceWeek` lleva `fractionLabel` y `percentLabel` y el componente los pinta **en la misma caja** (`.figures`). El test barre `container.querySelectorAll('*')`: 2 nodos con «%», los 2 con una fracción en su `parentElement`. La barra es `aria-hidden` y el ancho va por `style`, no por texto. |
+| 68 | **cumplido** | `computableBuckets` filtra `plannedDays >= 3 && planned > 0` **antes** de las medias, y `buildAdherence` solo suma filas con `row.status === 'closed'`, que es la regla de `buildWeekLine`: por eso «la semana en curso cuenta hasta hoy» es cierto por construcción y no una promesa de copy. La leyenda solo aparece si `hasCurrent`. |
+| 69 | **cumplido** | `weekdays` recorre los siete `VIDA_DAY_ORDER`; `hasEnough = weeksWithPlan >= 3`; por debajo, `fractionLabel = null` y `waitingLabel = 'N sem'`. **Nunca se compone «0/0»**: con `weeksWithPlan === 0` el label es «0 sem» (test: `container.textContent` no contiene `0/0`). El pie explica el umbral **siempre** (`buildWeekdayNote` nunca devuelve `[]`: si no hay días cortos dice «Cada casilla habla desde 3 semanas con plan»). |
+| 70 | **cumplido, y es la desviación que mejor sale** | Ver abajo. |
+| 71 | **cumplido** | Rama `!hasAdherence` (`:297-333`): no hay `weeks`, no hay `weekdays`, y sí dos filas de espera con `thresholdLabel` + `missingLabel`. `missingWeeks()` nombra semanas **con fecha real** (`formatWeekSpan`) saltándose las que ya cuentan. El test afirma «A partir de 2 semanas completas · te falta 1, la del 14 al 20 de septiembre» y que `container.textContent` **no contiene ni un «%»**. |
+| 72 | **cumplido en lo que aplica; el resto, prueba manual** | Cargando: `nothingYet` solo cuando **todos** los días están en vuelo → esqueletos, y el test afirma que no hay «De cada 10 bloques». Error: «Falta algún día de estas semanas» + «Reintentar» (`history.refetch`, que repite **solo lo caído**), y el test afirma que el texto **no** dice «no tienes datos» y que lo que sí llegó se sigue contando. 375 px y oscuro: los tres `.module.scss` nuevos usan **solo tokens** (`--color-text`, `--color-text-secondary`, `--color-primary`, `--color-glass-border`), `min-width: 0` en toda la cadena y `grid-template-columns: repeat(7, minmax(0,1fr))` con `overflow:hidden` + `text-overflow: ellipsis` en la casilla — no hay ni un ancho fijo que pueda desbordar. **La comprobación dentro de `/app/*` sigue pendiente del usuario** (límite estructural del repositorio). El trozo del nombre de 60 caracteres: ver abajo. |
+| 73 | **cumplido** | Dos barridos, y los dos los he leído: el del DOM (nueve palabras sobre `container.textContent`, incluida `\bmal\b`) y el de los fuentes (`vida-vocabulary.test.ts` usa `import.meta.glob('./**/*.{ts,tsx}')`, así que **los archivos nuevos entran solos**, sin lista que mantener). Las cinco reglas nuevas son correctas y la frontera de palabra en «mal» está bien puesta. |
+| 101 | **cumplido** | `git diff --stat` + los untracked: **ni un archivo** bajo `graphql/`, `api/`, `store/` ni `routes/`. Ninguna clave de `localStorage` nueva. |
+| 102 | **cumplido** | `useVidaHistoryWindow` usa `vidaKeys.dayPlan.byDate(date)` y, vía `useActivityFollowUpsInDatesQuery`, `vidaKeys.followUps.range(from,to)`. Las dos existían. |
+| 103 | **cumplido, y verificado por mí** | Ver abajo. |
+| 104 | **cumplido, línea base corrida entera por mí** | Ver abajo. |
+| 105, 106 | **pendientes del usuario** | Con la API despierta y sus semanas de verdad. No los aprueba nadie desde aquí. |
+
+**Las tres desviaciones conscientes, juzgadas**
+
+1. **«`buildWeekReview` no se imita, se usa» — es verdad y no arrastra nada.**
+   `buildAdherence` (`vida-adherence.utils.ts:248`) llama a `buildWeekReview` con
+   los días de la ventana y **solo suma**: `row.followedCount` y
+   `row.plannedCount`, que salen de `collectDayClosing` (`vida-week-review.utils.ts:185,233`).
+   Busqué aritmética paralela en el archivo nuevo y **no hay ninguna**: ni un
+   recuento de `followUps`, ni un `planItems.length` usado como «planeado». El
+   único filtro propio es `row.status === 'closed'`, que es la misma regla que
+   `buildWeekReview` aplica en su propio resumen (`:292`), no una segunda
+   definición. Lo que sí arrastra, y es correcto que lo haga, es el trato de
+   `isPending`/`isError`: `buildWeekReview` ya los devuelve como filas `pending`
+   y `error` con cifras a cero, y el filtro `closed` las descarta antes de sumar
+   — un día caído **no** se cuenta como cero seguidos. Criterio 70: cierto por
+   construcción, sin efecto colateral.
+
+2. **La frase que nombra el día que menos se parece: la omisión está bien
+   resuelta, y no deja hueco mudo.** Abrí el render (`docs/vida/assets/08-vida-entiende.html:333`):
+   dice «Los **miércoles** son los que más se parecen a tu plan; **los martes,
+   los que menos**. De **sábado y domingo** hay 2 semanas con plan: a partir de 3
+   se puede hablar de ellos, y mientras tanto se dice así.» Lo que se ha quitado
+   es **exactamente** la oración subordinada «los martes, los que menos», y nada
+   más: el resto del pie está literal en `buildWeekdayNote`. El pie **nunca queda
+   vacío** —lo comprobé sobre las tres ramas de la función: o dice el día que más
+   destaca, o dice qué días esperan y desde cuándo, o dice «Cada casilla habla
+   desde 3 semanas con plan»—, y el dato que la frase borrada daba **sigue a la
+   vista**: la casilla de cada día lleva su fracción y su `sr-only` con el número
+   entero. Es decir, el usuario puede ver que el martes va flojo; lo que la
+   pantalla no hace es **señalárselo**. Eso es justamente la regla dura del
+   módulo, y el criterio 73 la manda por encima del render. Aprobado. Queda como
+   **hallazgo para el usuario**, que es quien aprobó ese render: si la quiere
+   tal cual, es una línea en `buildWeekdayNote`.
+
+3. **El nombre de 60 caracteres del criterio 72 no aplica: confirmado.** Recorrí
+   los tres componentes nuevos y el tipo `VidaAdherence` entero: lo único que se
+   pinta son letras de día, meses de tres letras, rangos de números, fracciones,
+   porcentajes y frases fijas. **No hay un solo campo de texto libre del usuario
+   en toda la superficie de la tajada** — `AdherenceWeek`, `AdherenceWeekday` y
+   `AdherenceWaitingRow` no tienen ningún `name` ni `title` que venga de una
+   actividad (`row.title` de la espera es literal: «Adherencia semana a semana»).
+   El trozo del criterio llega con las tarjetas de la tajada 2, y ahí habrá que
+   cobrárselo.
+
+**El coste (criterio 103): comprobado de verdad, y por dos vías**
+
+El número que importaba era el «0 mientras la sección está cerrada», y está
+sujetado por los dos extremos, no por uno:
+
+- **Por montaje** (`VidaRevisionPage.test.tsx`): `VidaPatternsSection` solo se
+  instancia dentro de la rama `isPatterns`, así que con «Un día» o «La semana»
+  abiertas el hook **ni siquiera existe**. El test lo afirma con un espía sobre
+  el módulo: `expect(historyMounts).toHaveLength(0)` en el primer pintado **y**
+  después de abrir «La semana»; solo al pulsar la tercera pestaña pasa a
+  `{ enabled: true, today: '2026-09-19' }`. Esto es más fuerte que un `enabled:
+  false`: no hay observador, no hay caché tocada, no hay nada.
+- **Por consulta** (`useVidaHistoryWindow.test.tsx`, con `useQueries` de verdad y
+  espías sobre la API): con `enabled: false`, `getActivityDayPlan` y
+  `getActivityFollowUpsInDates` **no se llaman ni una vez** —y el hook devuelve
+  `isPending: false`, así que una sección cerrada tampoco se queda girando—.
+  En frío un domingo, **42 + 1 = 43**, con el rango exacto `('2026-08-10',
+  '2026-09-20')`. Un lunes, 36 + 1. Llegando desde Revisión con 20 días
+  sembrados, **22**. Desmontar y volver a montar contra el mismo `QueryClient`:
+  `toHaveBeenCalledTimes(42)` sigue siendo 42, es decir **0 planes nuevos**.
+  El `enabled` del rango de sesiones lo apaga el propio hook pasando `''`
+  (`useActivityFollowUps.ts:39`: `guard && Boolean(from) && Boolean(to)`).
+
+Las cifras del reporte son las que miden los tests. **Contra el API real no está
+medido y así queda dicho**: 42 consultas en paralelo contra Render dormido es lo
+que el criterio 105 deja al usuario.
+
+**`shiftYmd`: una sola exportación, y las copias de la tajada retiradas**
+
+`grep -rn "shiftYmd" src/` sobre el árbol actual: la **única** definición de los
+archivos tocados es `vida-date.utils.ts:142`. `vida-window.utils.ts` la importa
+(su copia privada de la línea 39 está borrada en el diff) y `VidaRevisionPage.tsx`
+también. Queda la tercera en `VidaSemanaPage.tsx:39`, **que no era de esta
+tajada** y no se ha tocado: correcto, esa pantalla está entregada. Las tres
+implementaciones son idénticas (`parseYmdToLocalDate` + `setDate` +
+`formatDateToYmd`), así que la delegación no cambia ningún resultado, y el test
+nuevo de `vida-date.utils.test.ts` cubre el cambio de hora.
+
+**Lo que se rompió cerca: cómo busqué**
+
+Revisión es de hace dos días y esta tajada le cambia la página entera, así que
+empecé por donde el constructor dijo que mirase:
+
+- **`graphify explain "VidaRevisionPage"`** (grado 18): hacia fuera llama a sus
+  nueve hooks y a sus tres funciones locales; **hacia dentro solo la contiene su
+  propio archivo**. Nadie importa la página salvo el router, así que el radio de
+  la refactorización es la propia pantalla. (El grafo es de antes del cambio,
+  que para «quién dependía de esto» es justo lo que hace falta.)
+- **Las siete ramas de retorno, leídas una a una en el diff.** El envoltorio en
+  `sections(...)` es **re-indentación pura**: comparé el contenido de cada rama
+  antes y después y no cambia ni un literal, ni una condición, ni un `prop`. El
+  puente (`VidaReviewBridgeSection`) sigue **exactamente donde estaba**, dentro
+  de la rama de semana y detrás de `isWeekPending`, así que su coste diferido
+  (A5 de FEAT-006) no se ha movido. La rama **sin sesión** (`isDisabled`) se
+  queda fuera del control, y está bien razonado: tres puertas cerradas.
+- **`git diff --numstat` del test de la página: 242 añadidas, 3 borradas.** Las
+  tres son el `click` del helper `openWeek`, el `click` de «Volver al día» y el
+  título de un `it`. **Ninguna afirmación de FEAT-006 se ha relajado ni
+  borrado**, que era el riesgo real de una refactorización así.
+- **Los dos botones que desaparecen:** `grep -rn "Ver por semana\|Volver al día"`
+  sobre `src/` y `docs/`. En `src/` no queda ninguna referencia viva salvo la de
+  `VidaPlantillaPage.tsx:332`, que es **otro** «Volver al día» (el de la
+  cuadrícula de la plantilla, FEAT-005 criterio 48) y **no se ha tocado**.
+- **La suite entera**, corrida por mí: 107 archivos pasan, incluidos los 60+
+  casos de `VidaRevisionPage.test.tsx`, los de `VidaSemanaPage`, los de
+  `VidaHoyPage` y `vida-window.utils.test.ts` (que es quien paga el cambio de
+  `shiftYmd`).
+
+**No he encontrado ninguna regresión funcional.** Lo único que se pierde es la
+**etiqueta** «Ver por semana», y va como hallazgo, no como devolución: el
+criterio 45 de FEAT-006 pide «pasar a la semana y volver, sin salir de la
+píldora y sin ruta nueva», y eso se sigue cumpliendo —mejor, con `role="tablist"`
+y flechas— pero el guion de prueba manual de aquel dossier
+(`FEAT-006-vida-revision.md:1848`) nombra el botón por su texto y ya no lo
+encontrará.
+
+**Estados que nadie construye**
+
+| Estado | Cómo queda |
+|---|---|
+| **Sin datos** | Construido, y es lo mejor de la tajada: la espera con fechas reales en vez de barras a cero. Con cero semanas computables, `dataNote` cambia de forma y sigue explicando el filtro. |
+| **Cargando** | Construido. Esqueletos solo si **nada** ha llegado; con parte de los días dentro se pinta lo que hay en vez de bloquear la sección tras 43 respuestas. Buena decisión. |
+| **Error** | Construido, y distingue «falló una consulta» de «no tienes datos», que es literalmente lo que pedía el criterio 72. «Reintentar» repite solo lo caído. |
+| **Sin permisos** | No aplica: toda la ruta vive tras `/app/*` y la rama `isDisabled` (sin sesión) no ofrece el control. |
+| **Texto largo** | **No aplica en esta tajada** — no se pinta ningún texto del usuario. Se cobra en la tajada 2. |
+| **Móvil 375 px** | Verificado por código (tokens, `min-width:0`, `minmax(0,1fr)`, elipsis en la casilla) y por el arnés del constructor. **Dentro de `/app/*` lo cierra el usuario.** |
+| **Oscuro** | Igual: ni un color literal en los tres `.scss` nuevos. **Lo cierra el usuario.** |
+
+**¿Duplica algo que ya existía?** (contra la sección 2)
+
+No. Lo comprobé sobre «lo que NO hay que crear» del plan: las pestañas son
+`@/shared/ui/Tabs`, no unas escritas a mano; el derivado del día es
+`buildWeekReview`, no un bucle nuevo; las claves de caché son las dos que ya
+existían; y `VIDA_HISTORY_WEEKS` se deja en el hook **para que la tajada 2 lo
+importe en vez de escribir un segundo número** — la desviación del punto 4 del
+constructor es correcta y evita justo la duplicación que el arquitecto temía. El
+único archivo con lógica de fechas que se ha movido, `shiftYmd`, se ha movido
+**hacia** la única definición, no hacia una más.
+
+**Línea base, corrida entera por mí** (no la del constructor)
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos (`Tabs.tsx` ×4, `toast.context` , `render.tsx`, …) |
+| `pnpm test` | 2 de 1439 | 2 de 1479 | **2 fallidos de 1479**, 107 archivos en verde; los dos son `SearchSelect` |
+| `pnpm build` | 1.054,0 kB | 1.065,81 kB | **exit 0**, `index` **1.065,85 kB**, `app-icons` **620,20 kB sin tocar**, `IconPicker` 4,64 kB |
+
+Nadie la ha empeorado. Los 40 gramos de diferencia con el número del constructor
+(1.065,85 frente a 1.065,81) son ruido de compilación, no un cambio.
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **La frase del día flojo del render no está.** Decisión de producto correcta,
+   pero **el render lo aprobó el usuario**: que lo sepa y decida.
+2. **La etiqueta «Ver por semana» desapareció** y el guion manual de FEAT-006 la
+   nombra. Conviene tocar ese guion cuando alguien pase por ahí.
+3. **`HEREDADOS` en `vida-vocabulary.test.ts` exime a cuatro archivos de *todas*
+   las palabras prohibidas**, y ahora también de las cinco nuevas. La lista se
+   escribió para «cancelar»/«eliminar» del catálogo; con las de FEAT-007 dentro,
+   esos cuatro archivos podrían decir «racha» o «cumplimiento» sin que nadie se
+   entere. No es de esta tajada, pero el filtro debería ser por palabra.
+4. **`ENVIRONMENT.md` tiene la línea base vieja** (2 de **1439**, chunk
+   **1.054,0 kB**, fecha 2026-09-19). Hoy son 1479 tests y 1.065,85 kB. **No lo
+   he tocado** —es la regla—, pero alguien tendría que actualizarlo o el próximo
+   agente comparará contra un mapa viejo.
+5. **Hay un servidor de desarrollo del constructor vivo en el 5174**, que él dijo
+   no poder parar. Yo tampoco arranco ni paro nada: queda dicho para el usuario.
+   Recordatorio de `ENVIRONMENT.md`: el 5174 abre la app pero la API responde
+   CORS, así que no sirve para probar nada real.
+
+**Lo que no he podido revisar**, y lo digo en vez de aprobarlo por simpatía: el
+recorrido real dentro de `/app/vida/revision` con datos del usuario —los
+criterios **105** y **106**, y el trozo de **375 px y oscuro dentro de `/app/*`**
+del **72**—. Es el límite estructural del repositorio (los agentes no entran con
+credenciales), no un descuido de esta revisión.
+

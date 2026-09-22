@@ -1,0 +1,1 @@
+export { VidaAdherenceSummary } from './VidaAdherenceSummary'

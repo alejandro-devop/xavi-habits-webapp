@@ -129,3 +129,18 @@ export function formatDayHeading(date: string): string {
   const label = VIDA_DAY_LABELS[getVidaDayOfWeek(date)]
   return `${label.charAt(0).toUpperCase()}${label.slice(1)} ${parseYmdToLocalDate(date).getDate()}`
 }
+
+/**
+ * `date` movida `days` días, en fecha local (`YYYY-MM-DD`).
+ *
+ * Vivía **dos veces privada** —en `vida-window.utils.ts` y en
+ * `VidaRevisionPage.tsx`— y la ventana de seis semanas de F6 necesitaba una
+ * tercera. Se exporta una sola y las dos copias pasan a usar esta: es el mismo
+ * cálculo, y tres copias del mismo desplazamiento de días son tres sitios
+ * donde arreglar el mismo error.
+ */
+export function shiftYmd(date: string, days: number): string {
+  const local = parseYmdToLocalDate(date)
+  local.setDate(local.getDate() + days)
+  return formatDateToYmd(local)
+}

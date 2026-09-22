@@ -10,6 +10,15 @@ updated: 2026-09-22
 
 # FEAT-008 — El tiempo se escribe en horas y minutos, y se ve a qué hora acabas
 
+> **El usuario pidió explícitamente la tajada 3 el 2026-09-22, así que deja de ser
+> «la prescindible».** Viendo la modal **«Registrar tiempo pasado»** —donde ya hay
+> hora de inicio *y* duración, así que el fin es calculable y útil— dijo: «quisiera
+> tener también una visual de la hora a la que finaliza». Con eso, la decisión (a)
+> del analista —tirar la tajada 3 y cerrar la feature en 2/3 sin deuda— **queda
+> descartada por el usuario**: la línea de fin va también en `VidaLogSessionSheet`.
+> Sigue dependiendo de la tajada 2, que es donde nace `VidaEndTimeLine`, y esa
+> sigue **bloqueada** hasta que apruebe `docs/vida/assets/09-vida-cuanto.html`.
+
 ## 1. The request — feature-analyst
 
 **Summary for whoever's next:** el campo único «en minutos» de **«Cuánto»** pasa

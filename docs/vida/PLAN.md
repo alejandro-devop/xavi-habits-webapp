@@ -161,6 +161,27 @@ Todo derivado en cliente de plan + real de las últimas semanas; **nada de backe
 
 Lo que «aprender» **no** puede hacer sin backend, y se anota como frontera: recordar preferencias entre dispositivos, sugerencias que necesiten más historia de la que cabe traer al cliente, y cualquier modelo que no sea una regla.
 
+## La premisa que manda sobre todo lo demás
+
+**Registrar lo que haces no puede costar más que hacerlo.** Cuantos más clics y
+más acciones pida la app, más se pospone; y lo que se pospone, no se registra.
+El módulo entero —la revisión, los patrones, la adherencia— vive de que haya
+datos, así que **cada paso de más no es una molestia: es una razón para que el
+producto deje de funcionar**.
+
+De ahí salen tres reglas duras, y valen para toda feature de este plan:
+
+1. **Una intención del usuario, una acción.** Si algo obliga a partir en dos
+   pasos lo que la persona vive como una sola cosa —«estoy trabajando desde las
+   8:07»—, eso es **un defecto de la feature**, no una salida aceptable, y se
+   escribe así en el dossier.
+2. **Encontrar cómo se puede hacer hoy no es lo mismo que que sea usable.** Un
+   apaño con lo que ya existe solo se ofrece si **de verdad** resuelve el caso.
+   Decir «ya se puede» sobre un camino de dos pasos es peor que decir «hoy no se
+   puede, lo construimos».
+3. **Lo que la app pide, se pide una vez.** Una confirmación diaria es **un
+   toque**, se puede ignorar y no vuelve a insistir.
+
 ## Cómo se ejecuta
 
 1. **Arranque:** `/forja-init` en este repositorio — crea `docs/features/` con protocolo, tablero y `ENVIRONMENT.md` (puertos, qué no arrancar, comprobaciones). Hoy no existe aquí; existe en `xavi-active-api`.

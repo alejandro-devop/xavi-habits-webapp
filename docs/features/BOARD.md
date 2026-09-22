@@ -361,6 +361,23 @@ no la he revisado: no hay ni un criterio del 119 al 128 en el diff. Siguiente: e
 usuario con el criterio 134 (el teclado numérico en un móvil de verdad es lo
 único que nadie puede ver desde aquí), y la tajada 2 cuando apruebe el render.
 
+**Orden decidido por el usuario el 2026-09-22: primero se termina Vida, y
+hábitos espera.** La cola, en firme:
+
+1. **FEAT-011** — los huecos pasados de Hoy. Tajada 3 (la última) en construcción.
+2. **FEAT-014** — la tolerancia del hueco (los 13 minutos). No arranca hasta que
+   FEAT-011 esté entregada: comparten tres archivos.
+3. **FEAT-010** — «Lo que viene». Ya tiene arquitectura. Su **tajada 3 va la última
+   de todas**: retira las fichas del hueco y el panel lateral, y no se quita un
+   camino antes de que el sustituto esté en pantalla.
+4. **FEAT-013** — tajadas 2 y 3 (corregir la hora de una sesión ya en marcha).
+5. **FEAT-012** — la noche. El API ya está desplegado (`73e3c44`), pero **falta
+   correr la migración `068` contra producción**: `RUN_MIGRATIONS` está en `false`
+   en Render a propósito, así que no se ejecuta sola. Hasta entonces las tres
+   columnas no existen y una noche no se puede guardar.
+6. **FEAT-015** — las métricas de un hábito. **Encolada detrás de todo Vida**, por
+   decisión del usuario. Tiene seis decisiones suyas pendientes, ninguna urgente.
+
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
 

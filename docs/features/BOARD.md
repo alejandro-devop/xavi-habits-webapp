@@ -24,7 +24,67 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
-| FEAT-016 | planned | 0/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
+| FEAT-016 | building | 1/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
+| FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
+
+**FEAT-016 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada en la
+segunda vuelta.** Lo devuelto está arreglado: el encadenado crear → apuntar se
+afirma ahora dentro del caso «+ nueva» que ya existía —una llamada, con
+`{ categoryId: 'plantas', attached: true }`, y **después** de la de crear, por
+`invocationCallOrder`—, y el `categoryId` sale del resultado del primer viaje,
+así que lo que se prueba es la cadena y no su sombra. Comprobé con una sonda
+temporal (borrada) que esa aserción **cae de verdad** si las llamadas se
+invierten o si falta la segunda. Los dos mocks a medias, completos; busqué un
+tercero y no lo hay (`VidaArchivadasPage` mocka solo la consulta y no monta la
+hoja). Hallazgo anotado, sin devolver: el caso **sin marcar** del formulario de
+crear perdió su aserción y lo que queda en `VidaCategoriasPage.test.tsx` es el
+de **editar**, que es otro camino. Líneas base reproducidas en los dos
+repositorios y, en el front, **los mismos hashes de artefacto** que la vuelta
+anterior: tocando solo tests, el paquete es idéntico bit a bit. **Sigue sin
+commitear y sin desplegar; las migraciones 068 y 069 sin correr.** Quedan las
+tajadas 2 y 3.
+
+**FEAT-016 `in-review` 1/3** (2026-09-22, constructor, 2ª vuelta). **Lo devuelto
+arreglado, y era solo de test.** El caso «+ nueva» de `VidaActivitySheet.test.tsx`
+ahora marca la casilla y afirma que la mutación de la meta viaja una vez, con
+`{ categoryId, attached: true }` y **después** de la de crear
+(`mock.invocationCallOrder`); y los mocks a medias de `VidaActividadesPage.test.tsx`
+y `VidaPlantillaPage.test.tsx` están completos. El revisor tenía razón en que la
+vía barata bastaba: el caso ya montaba el paso apilado — **851 ms el caso, 7,42 s
+el archivo**, sin tocar el `IconPicker`. **Ni una línea del API ni del producto
+en esta vuelta**; el `build` devuelve el mismo artefacto. Sigue sin commit, sin
+push y **sin correr la 069**. Detalle en la sección 3.
+
+**FEAT-016 `returned` 0/3** (2026-09-22, revisor). **Tajada 1 devuelta, y no
+por lo construido.** El servicio, la migración y la casilla están bien: el
+índice único `(user_id, slug)`, el `ON CONFLICT … DO UPDATE … RETURNING *` y el
+`ensure` + `UPDATE` dentro del mismo `BEGIN … COMMIT` están verificados en el
+SQL y en el servicio, y si el `UPDATE` falla el `ROLLBACK` se lleva también la
+meta. Criterios 481, 482, 483, 485, 486 y 487 cumplidos; 488 cumplido en tests
+con la parte de red pendiente a mano. Lo que falta es **red en la ruta que
+estrena la feature**: crear una categoría con la casilla marcada no tiene ni un
+test que afirme que salen las dos mutaciones en orden (solo está probado el
+caso sin marcar), y esa ruta decide el orden de las llamadas y que el error del
+segundo viaje se trague y se cierre el paso igual. Había salida barata: el caso
+«+ nueva» de `VidaActivitySheet.test.tsx` ya monta el paso, ya paga el
+`IconPicker` diferido y ya pulsa «Crear categoría»; marcar la casilla antes no
+añade ningún montaje. De paso, dos mocks quedaron a medias y hoy pasan por
+casualidad (`VidaActividadesPage.test.tsx` sin `mutateAsync` y sin
+`useSetActivityCategoryGoalMutation`; `VidaPlantillaPage.test.tsx` igual).
+Líneas base reproducidas enteras en los dos repositorios, sin regresiones.
+**Nada commiteado, nada empujado, ninguna migración corrida.**
+
+**FEAT-016 `in-review` 1/3** (2026-09-22, constructor). **Tajada 1 construida y
+sin commitear, en los dos repositorios.** API: migración `069_vida_goals.sql`
+(tabla `vida_goals` + `activity_categories.goal_id`, **sin correr**),
+`vida-goal.service.ts` con el upsert `ON CONFLICT … DO UPDATE` dentro de la
+transacción, la mutación `activityCategoryGoalSet` en el módulo vida y sus
+tests. Front: SDL recopiado, `goalId`/`goal` en las cuatro selecciones del
+catálogo, un documento de mutación nuevo (y su nombre en `contracts.test.ts`), y
+la casilla «Esto es trabajo» en los dos formularios. Líneas base respetadas en
+los dos repos. **Orden obligado antes de probar a mano: push del API → correr la
+069 (y decidir la 068) → front**; el front nuevo contra el API viejo deja el
+catálogo de categorías sin datos. Detalle en la sección 3.
 
 **FEAT-016 `planned` 0/3** (2026-09-22, arquitecto). **Sección 2 reescrita
 entera contra el modelo de metas; la 1 no se tocó.** Lo que queda fijado: tabla
@@ -568,6 +628,10 @@ hábitos espera.** La cola, en firme:
    columnas no existen y una noche no se puede guardar.
 6. **FEAT-015** — las métricas de un hábito. **Encolada detrás de todo Vida**, por
    decisión del usuario. Tiene seis decisiones suyas pendientes, ninguna urgente.
+7. **FEAT-017** — más iconos, más colores y el sorteo al crear una categoría de
+   Vida. **«Pueden ir al final», literal: la última de la cola, detrás incluso de
+   FEAT-015.** Pedida el mismo día que el resto, pero el propio usuario la marcó
+   de menor prioridad.
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.

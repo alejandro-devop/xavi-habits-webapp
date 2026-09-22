@@ -20,18 +20,26 @@ import { renderWithProviders } from '@/test/render'
 
 type MutationStub = {
   mutate: ReturnType<typeof vi.fn>
+  mutateAsync: ReturnType<typeof vi.fn>
   reset: ReturnType<typeof vi.fn>
   isPending: boolean
   isError: boolean
 }
 
 function buildMutation(): MutationStub {
-  return { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false }
+  return {
+    mutate: vi.fn(),
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    reset: vi.fn(),
+    isPending: false,
+    isError: false,
+  }
 }
 
 let createActivity: MutationStub
 let updateActivity: MutationStub
 let createCategory: MutationStub
+let setCategoryGoal: MutationStub
 let createVidaItem: MutationStub
 let updateVidaItem: MutationStub
 let categories: ActivityCategory[]
@@ -44,6 +52,7 @@ vi.mock('@/features/vida/hooks/useActivities', () => ({
 vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
   useActivityCategoriesQuery: () => ({ data: categories, ...categoriesQuery }),
   useCreateActivityCategoryMutation: () => createCategory,
+  useSetActivityCategoryGoalMutation: () => setCategoryGoal,
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useCreateVidaItemMutation: () => createVidaItem,
@@ -59,6 +68,8 @@ function buildCategory(overrides: Partial<ActivityCategory> = {}): ActivityCateg
     description: null,
     icon: 'house-chimney',
     color: '#8b5cf6',
+    goalId: null,
+    goal: null,
     ...overrides,
   }
 }
@@ -102,6 +113,7 @@ beforeEach(() => {
   createActivity = buildMutation()
   updateActivity = buildMutation()
   createCategory = buildMutation()
+  setCategoryGoal = buildMutation()
   createVidaItem = buildMutation()
   updateVidaItem = buildMutation()
   categoriesQuery = { isPending: false, isError: false, fetchStatus: 'idle', refetch: vi.fn() }
@@ -194,20 +206,38 @@ describe('VidaActivitySheet', () => {
       await screen.findByRole('radiogroup', { name: 'Color de la categoría' }),
     ).toBeInTheDocument()
     expect(screen.getAllByRole('radio')).toHaveLength(17)
+    // Y la casilla de la meta, con su línea (criterio 485: es el segundo de los
+    // dos formularios de categoría).
+    expect(
+      await screen.findByRole('checkbox', { name: 'Esto es trabajo' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Sus horas suman en el arco de trabajo de Hoy.')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Cómo la llamas'), 'Plantas')
     await user.click(screen.getByRole('radio', { name: 'Menta' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Esto es trabajo' }))
+    // Al volver, la nueva queda elegida y lo escrito abajo sigue ahí.
+    categories = [...categories, buildCategory({ id: 'plantas', name: 'Plantas', icon: null })]
+    createCategory.mutateAsync.mockResolvedValue({ id: 'plantas', name: 'Plantas' })
     await user.click(screen.getByRole('button', { name: 'Crear categoría' }))
 
-    expect(createCategory.mutate).toHaveBeenCalledTimes(1)
-    expect(createCategory.mutate.mock.calls[0][0]).toMatchObject({
+    expect(createCategory.mutateAsync).toHaveBeenCalledTimes(1)
+    expect(createCategory.mutateAsync.mock.calls[0][0]).toMatchObject({
       name: 'Plantas',
       color: '#10b981',
     })
 
-    // Al volver, la nueva queda elegida y lo escrito abajo sigue ahí.
-    categories = [...categories, buildCategory({ id: 'plantas', name: 'Plantas', icon: null })]
-    act(() => createCategory.mutate.mock.calls[0][1].onSuccess({ id: 'plantas', name: 'Plantas' }))
+    // Con la casilla marcada son **dos viajes, en este orden**: el puntero
+    // necesita el id de la categoría, que no existe hasta que se crea
+    // (criterios 484 y 485). El orden se afirma, no se supone.
+    await waitFor(() => expect(setCategoryGoal.mutateAsync).toHaveBeenCalledTimes(1))
+    expect(setCategoryGoal.mutateAsync.mock.calls[0][0]).toEqual({
+      categoryId: 'plantas',
+      attached: true,
+    })
+    expect(setCategoryGoal.mutateAsync.mock.invocationCallOrder[0]).toBeGreaterThan(
+      createCategory.mutateAsync.mock.invocationCallOrder[0],
+    )
 
     await waitFor(() => {
       expect(screen.getByLabelText('Cómo la llamas')).toHaveValue('Regar las plantas')

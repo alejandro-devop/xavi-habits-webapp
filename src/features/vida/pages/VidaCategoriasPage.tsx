@@ -8,6 +8,7 @@ import {
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import {
   useActivityCategoriesQuery,
+  useSetActivityCategoryGoalMutation,
   useUpdateActivityCategoryMutation,
 } from '@/features/vida/hooks/useActivityCategories'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
@@ -50,12 +51,14 @@ export function VidaCategoriasPage() {
   } = useActivityCategoriesQuery()
   const { data: activitiesData } = useActivitiesQuery({ page: 1, limit: CATALOG_LIMIT })
   const updateMutation = useUpdateActivityCategoryMutation()
+  const setGoalMutation = useSetActivityCategoryGoalMutation()
 
   const [editing, setEditing] = useState<ActivityCategory | null>(null)
   const [values, setValues] = useState<VidaCategoryFormValues>({
     name: '',
     icon: null,
     color: null,
+    isWork: false,
   })
 
   const counts = useMemo(
@@ -72,23 +75,45 @@ export function VidaCategoriasPage() {
   )
 
   function openEdit(category: ActivityCategory) {
-    setValues({ name: category.name, icon: category.icon, color: category.color })
+    setValues({
+      name: category.name,
+      icon: category.icon,
+      color: category.color,
+      isWork: Boolean(category.goalId),
+    })
     setEditing(category)
   }
 
+  const isSaving = updateMutation.isPending || setGoalMutation.isPending
+
   function closeForm() {
-    if (updateMutation.isPending) return
+    if (isSaving) return
     setEditing(null)
   }
 
-  function handleSubmit(next: VidaCategoryFormValues) {
+  /**
+   * Un guardado, aunque el puntero a la meta viaje por su propia mutación
+   * (criterio 486): no hay pantalla intermedia ni confirmación aparte, y la
+   * segunda llamada **solo** sale si la casilla cambió de verdad.
+   */
+  async function handleSubmit(next: VidaCategoryFormValues) {
     if (!editing) return
-    updateMutation.mutate(
-      { id: editing.id, name: next.name, icon: next.icon, color: next.color },
+    const goalChanged = next.isWork !== Boolean(editing.goalId)
+    try {
+      await updateMutation.mutateAsync({
+        id: editing.id,
+        name: next.name,
+        icon: next.icon,
+        color: next.color,
+      })
+      if (goalChanged) {
+        await setGoalMutation.mutateAsync({ categoryId: editing.id, attached: next.isWork })
+      }
+      setEditing(null)
+    } catch {
       // Solo se cierra si de verdad se guardó: si falla, el formulario se queda
       // abierto con lo escrito y el hook de F0 avisa con su toast.
-      { onSuccess: () => setEditing(null) },
-    )
+    }
   }
 
   function shell(children: React.ReactNode) {
@@ -209,10 +234,10 @@ export function VidaCategoriasPage() {
         <VidaCategoryForm
           values={values}
           onChange={setValues}
-          onSubmit={handleSubmit}
+          onSubmit={(next) => void handleSubmit(next)}
           onCancel={closeForm}
           submitLabel="Guardar"
-          loading={updateMutation.isPending}
+          loading={isSaving}
         />
       </Modal>
     </>,

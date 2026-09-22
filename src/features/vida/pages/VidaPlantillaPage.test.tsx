@@ -73,7 +73,20 @@ vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
       refetch: vi.fn(),
     }
   },
-  useCreateActivityCategoryMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
+  // `mutateAsync` incluido a propósito: el paso de crear categoría encadena
+  // crear → apuntar a la meta con `await`, aunque esta suite no lo recorra.
+  useCreateActivityCategoryMutation: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+    isError: false,
+  }),
+  useSetActivityCategoryGoalMutation: () => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+    isError: false,
+  }),
 }))
 // El lote de «Copiar este día a otros» orquesta sobre `api/`, como su molde
 // (`useBuildWeekFromTemplate`): se mockea la capa de API y **no el hook**, para

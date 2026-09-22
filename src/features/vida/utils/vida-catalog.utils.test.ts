@@ -38,6 +38,8 @@ function buildCategory(overrides: Partial<ActivityCategory> = {}): ActivityCateg
     description: null,
     icon: 'spa',
     color: '#0284c7',
+    goalId: null,
+    goal: null,
     ...overrides,
   }
 }

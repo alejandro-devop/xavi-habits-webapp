@@ -1,7 +1,11 @@
 import { useState } from 'react'
-import { useCreateActivityCategoryMutation } from '@/features/vida/hooks/useActivityCategories'
+import {
+  useCreateActivityCategoryMutation,
+  useSetActivityCategoryGoalMutation,
+} from '@/features/vida/hooks/useActivityCategories'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
+import { Checkbox } from '@/shared/ui/Checkbox'
 import { ColorPicker } from '@/shared/ui/ColorPicker'
 import { FormField } from '@/shared/ui/FormField'
 import { IconPicker } from '@/shared/ui/IconPicker'
@@ -27,32 +31,44 @@ type Props = {
 export function CreateVidaCategoryStep({ onCreated }: Props) {
   const { pop } = useModalStep()
   const createMutation = useCreateActivityCategoryMutation()
+  const setGoalMutation = useSetActivityCategoryGoalMutation()
 
   const [name, setName] = useState('')
   const [icon, setIcon] = useState<string | null>(null)
   const [color, setColor] = useState<string | null>(null)
+  const [isWork, setIsWork] = useState(false)
   const [nameError, setNameError] = useState<string | null>(null)
 
-  const isMutating = createMutation.isPending
+  const isMutating = createMutation.isPending || setGoalMutation.isPending
 
-  function handleCreate() {
+  async function handleCreate() {
     const trimmed = name.trim()
     if (!trimmed) {
       setNameError('Ponle un nombre a la categoría.')
       return
     }
     setNameError(null)
-    createMutation.mutate(
-      { name: trimmed, icon, color },
-      {
-        // Solo se vuelve al formulario si de verdad se creó. Si falla, el paso
-        // se queda abierto con lo escrito (criterio 16).
-        onSuccess: (category) => {
-          onCreated(category.id)
-          pop()
-        },
-      },
-    )
+    try {
+      const category = await createMutation.mutateAsync({ name: trimmed, icon, color })
+      if (isWork) {
+        // **Dos viajes a propósito, y es lo único que se puede hacer aquí:** el
+        // puntero necesita el id de la categoría, que no existe hasta que se
+        // crea. Si este segundo falla, la categoría queda creada y sin marcar
+        // —recuperable desde la casilla de editar— y el hook ya lo dice con su
+        // toast, así que el paso se cierra igual: dejarlo abierto invitaría a
+        // crear la misma categoría dos veces.
+        try {
+          await setGoalMutation.mutateAsync({ categoryId: category.id, attached: true })
+        } catch {
+          // Avisado por el toast del hook.
+        }
+      }
+      onCreated(category.id)
+      pop()
+    } catch {
+      // Solo se vuelve al formulario si de verdad se creó. Si falla, el paso
+      // se queda abierto con lo escrito (criterio 16).
+    }
   }
 
   return (
@@ -91,6 +107,15 @@ export function CreateVidaCategoryStep({ onCreated }: Props) {
         />
       </div>
 
+      <Checkbox
+        id="new-vida-category-is-work"
+        checked={isWork}
+        onChange={(event) => setIsWork(event.target.checked)}
+        disabled={isMutating}
+        label="Esto es trabajo"
+        description="Sus horas suman en el arco de trabajo de Hoy."
+      />
+
       {createMutation.isError ? (
         <Alert variant="danger">
           No pudimos crear la categoría. Revisa la conexión y vuelve a intentarlo; lo que
@@ -102,7 +127,7 @@ export function CreateVidaCategoryStep({ onCreated }: Props) {
         <Button type="button" variant="ghost" onClick={pop} disabled={isMutating}>
           Cancelar
         </Button>
-        <Button type="button" onClick={handleCreate} isLoading={isMutating}>
+        <Button type="button" onClick={() => void handleCreate()} isLoading={isMutating}>
           Crear categoría
         </Button>
       </div>

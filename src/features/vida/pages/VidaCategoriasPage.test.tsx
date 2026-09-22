@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { VidaCategoriasPage } from '@/features/vida/pages/VidaCategoriasPage'
@@ -23,7 +23,8 @@ type CategoriesState = {
 }
 
 const refetch = vi.fn()
-const updateCategory = { mutate: vi.fn(), isPending: false, isError: false }
+const updateCategory = { mutateAsync: vi.fn(), isPending: false, isError: false }
+const setCategoryGoal = { mutateAsync: vi.fn(), isPending: false, isError: false }
 
 let categoriesState: CategoriesState
 let activitiesState: { data: { activities: Activity[]; page: number; limit: number; total: number } }
@@ -31,6 +32,7 @@ let activitiesState: { data: { activities: Activity[]; page: number; limit: numb
 vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
   useActivityCategoriesQuery: () => categoriesState,
   useUpdateActivityCategoryMutation: () => updateCategory,
+  useSetActivityCategoryGoalMutation: () => setCategoryGoal,
 }))
 vi.mock('@/features/vida/hooks/useActivities', () => ({
   useActivitiesQuery: () => activitiesState,
@@ -45,6 +47,8 @@ function buildCategory(overrides: Partial<ActivityCategory> = {}): ActivityCateg
     description: null,
     icon: 'house-chimney',
     color: '#8b5cf6',
+    goalId: null,
+    goal: null,
     ...overrides,
   }
 }
@@ -69,7 +73,23 @@ function buildActivity(overrides: Partial<Activity> = {}): Activity {
 
 const categories = [
   buildCategory(),
-  buildCategory({ id: 'yo', name: 'Yo', icon: 'spa', color: '#0284c7', orderIndex: 1 }),
+  buildCategory({
+    id: 'yo',
+    name: 'Yo',
+    icon: 'spa',
+    color: '#0284c7',
+    orderIndex: 1,
+    goalId: 'goal-work',
+    goal: {
+      id: 'goal-work',
+      slug: 'work',
+      name: 'Trabajo',
+      icon: 'briefcase',
+      color: '#0284c7',
+      targetMinutes: 480,
+      orderIndex: 0,
+    },
+  }),
 ]
 
 const activities = [
@@ -84,8 +104,12 @@ const activities = [
 
 beforeEach(() => {
   refetch.mockReset()
-  updateCategory.mutate.mockReset()
+  updateCategory.mutateAsync.mockReset()
+  updateCategory.mutateAsync.mockResolvedValue(undefined)
   updateCategory.isPending = false
+  setCategoryGoal.mutateAsync.mockReset()
+  setCategoryGoal.mutateAsync.mockResolvedValue(undefined)
+  setCategoryGoal.isPending = false
   categoriesState = {
     data: categories,
     isPending: false,
@@ -125,13 +149,15 @@ describe('VidaCategoriasPage', () => {
     await user.type(input, 'Hogar')
     await user.click(within(dialog).getByRole('button', { name: 'Guardar' }))
 
-    expect(updateCategory.mutate).toHaveBeenCalledTimes(1)
-    expect(updateCategory.mutate.mock.calls[0][0]).toEqual({
+    expect(updateCategory.mutateAsync).toHaveBeenCalledTimes(1)
+    expect(updateCategory.mutateAsync.mock.calls[0][0]).toEqual({
       id: 'casa',
       name: 'Hogar',
       icon: 'house-chimney',
       color: '#8b5cf6',
     })
+    // La casilla no se tocó: el puntero no viaja.
+    expect(setCategoryGoal.mutateAsync).not.toHaveBeenCalled()
   })
 
   it('con el nombre vacío no envía y señala el campo', async () => {
@@ -143,21 +169,71 @@ describe('VidaCategoriasPage', () => {
     await user.clear(within(dialog).getByLabelText('Cómo la llamas'))
     await user.click(within(dialog).getByRole('button', { name: 'Guardar' }))
 
-    expect(updateCategory.mutate).not.toHaveBeenCalled()
+    expect(updateCategory.mutateAsync).not.toHaveBeenCalled()
     expect(within(dialog).getByText('Ponle un nombre a la categoría.')).toBeInTheDocument()
   })
 
   it('si la mutación falla el formulario no se cierra (criterio 16)', async () => {
     const user = userEvent.setup()
-    // El `mutate` no llama a su `onSuccess`: es exactamente lo que pasa al fallar.
+    updateCategory.mutateAsync.mockRejectedValueOnce(new Error('sin red'))
     renderWithProviders(<VidaCategoriasPage />)
 
     await user.click(screen.getByRole('button', { name: 'Editar Casa' }))
     const dialog = await screen.findByRole('dialog', { name: 'Editar categoría' })
     await user.click(within(dialog).getByRole('button', { name: 'Guardar' }))
 
-    expect(updateCategory.mutate).toHaveBeenCalledTimes(1)
+    expect(updateCategory.mutateAsync).toHaveBeenCalledTimes(1)
     expect(screen.getByRole('dialog', { name: 'Editar categoría' })).toBeInTheDocument()
+  })
+
+  it('la casilla «Esto es trabajo» llega marcada si la categoría apunta a una meta (criterio 485)', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<VidaCategoriasPage />)
+
+    await user.click(screen.getByRole('button', { name: 'Editar Yo' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Editar categoría' })
+    const box = within(dialog).getByLabelText('Esto es trabajo')
+
+    expect(box).toBeChecked()
+    expect(
+      within(dialog).getByText('Sus horas suman en el arco de trabajo de Hoy.'),
+    ).toBeInTheDocument()
+  })
+
+  it('marcar la casilla y guardar apunta la categoría a la meta, sin pantalla intermedia (criterios 484 y 486)', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<VidaCategoriasPage />)
+
+    await user.click(screen.getByRole('button', { name: 'Editar Casa' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Editar categoría' })
+    await user.click(within(dialog).getByLabelText('Esto es trabajo'))
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+
+    await waitFor(() => expect(setCategoryGoal.mutateAsync).toHaveBeenCalledTimes(1))
+    // Sin `goalId`: es el servidor quien crea la meta «Trabajo» si no existe.
+    expect(setCategoryGoal.mutateAsync.mock.calls[0][0]).toEqual({
+      categoryId: 'casa',
+      attached: true,
+    })
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: 'Editar categoría' })).not.toBeInTheDocument(),
+    )
+  })
+
+  it('desmarcarla suelta el puntero', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<VidaCategoriasPage />)
+
+    await user.click(screen.getByRole('button', { name: 'Editar Yo' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Editar categoría' })
+    await user.click(within(dialog).getByLabelText('Esto es trabajo'))
+    await user.click(within(dialog).getByRole('button', { name: 'Guardar' }))
+
+    await waitFor(() => expect(setCategoryGoal.mutateAsync).toHaveBeenCalledTimes(1))
+    expect(setCategoryGoal.mutateAsync.mock.calls[0][0]).toEqual({
+      categoryId: 'yo',
+      attached: false,
+    })
   })
 
   it('sin sesión ofrece entrar en vez de girar para siempre (criterio 29)', () => {

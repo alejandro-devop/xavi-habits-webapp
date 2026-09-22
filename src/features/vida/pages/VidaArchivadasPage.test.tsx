@@ -78,6 +78,8 @@ const categories: ActivityCategory[] = [
     description: null,
     icon: 'house-chimney',
     color: '#8b5cf6',
+    goalId: null,
+    goal: null,
   },
 ]
 

@@ -1,7 +1,7 @@
 ---
 id: FEAT-016
 title: El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras
-status: planned
+status: building
 architect: yes    # toca el API en otro repo (nace una tabla de metas, no dos columnas) y una agregación viva que no existe hoy; razón completa en la sección 1
 area: features/vida, API (xavi-platform-node)
 requested: 2026-09-22
@@ -329,7 +329,7 @@ aquí con el 492 nuevo. Todo lo demás se renumera dentro del mismo rango
 
 | # | Qué hace | Estado |
 |---|---|---|
-| 1 | **La meta nace.** Tabla de metas y su migración, el puntero en `activity_categories`, la creación automática de «Trabajo, 8h» al primer uso, y la casilla en los dos formularios de categoría. El usuario ya puede marcar sus categorías mientras se construye el resto. Criterios 481–488. | pendiente |
+| 1 | **La meta nace.** Tabla de metas y su migración, el puntero en `activity_categories`, la creación automática de «Trabajo, 8h» al primer uso, y la casilla en los dos formularios de categoría. El usuario ya puede marcar sus categorías mientras se construye el resto. Criterios 481–488. | aceptada |
 | 2 | **El arco.** Aparece en Hoy cuando al menos una categoría apunta a la meta, suma en vivo (incluida la sesión en marcha), la línea de hora, sin reproche pasadas las 8h, la confesión de «sin dato», y su comportamiento en días futuros/pasados. Criterios 489–499. | pendiente |
 | 3 | **La pregunta cuando nada apunta a una meta.** El segundo camino al mismo puntero, desde Hoy. Criterios 500–503. | pendiente |
 
@@ -1089,7 +1089,7 @@ se copian del tono de `VidaBlockOutcomes`.
 
 | # | Qué hace | Archivos | Criterios | Estado |
 |---|---|---|---|---|
-| 1 | **La meta nace.** Tabla `vida_goals`, el `goal_id` en `activity_categories`, la creación automática sin carrera, y la casilla en los dos formularios. | **API:** `migrations/069_vida_goals.sql` (nuevo) · `src/types/services/vida.types.ts` · `src/types/services/activity-category.types.ts` · `src/services/vida-goal.service.ts` (nuevo) · `src/services/activity-category.service.ts` (`CategoryRow` L9-19 y `mapCategory` L21-32) · `src/graphql/modules/vida/vida.schema.ts` · `src/graphql/modules/vida/vida.resolvers.ts` · `src/validators/schemas/vida.schemas.ts` · `tests/unit/services/vida-goal.service.test.ts` (nuevo) · `tests/unit/services/activity-category.service.test.ts` · `tests/unit/validators/vida.schemas.test.ts`. **Front:** `src/features/vida/graphql/schema/vida.schema.graphql` (recopiar) · `src/features/vida/graphql/activity-categories.graphql.ts` · `src/features/vida/graphql/contracts.test.ts` (un nombre en la lista L77-81) · `src/features/vida/types/vida-goal.types.ts` (nuevo) · `src/features/vida/types/activity-category.types.ts` · `src/features/vida/api/activity-categories.api.ts` · `src/features/vida/hooks/useActivityCategories.ts` · `src/features/vida/components/VidaCategoryForm/VidaCategoryForm.tsx` (+ `.module.scss`) · `src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx` (+ `.module.scss`) · `src/features/vida/pages/VidaCategoriasPage.tsx` (~L55-58, ~L74-76, ~L84-91) · `src/features/vida/pages/VidaCategoriasPage.test.tsx`. | 481–488 | pendiente |
+| 1 | **La meta nace.** Tabla `vida_goals`, el `goal_id` en `activity_categories`, la creación automática sin carrera, y la casilla en los dos formularios. | **API:** `migrations/069_vida_goals.sql` (nuevo) · `src/types/services/vida.types.ts` · `src/types/services/activity-category.types.ts` · `src/services/vida-goal.service.ts` (nuevo) · `src/services/activity-category.service.ts` (`CategoryRow` L9-19 y `mapCategory` L21-32) · `src/graphql/modules/vida/vida.schema.ts` · `src/graphql/modules/vida/vida.resolvers.ts` · `src/validators/schemas/vida.schemas.ts` · `tests/unit/services/vida-goal.service.test.ts` (nuevo) · `tests/unit/services/activity-category.service.test.ts` · `tests/unit/validators/vida.schemas.test.ts`. **Front:** `src/features/vida/graphql/schema/vida.schema.graphql` (recopiar) · `src/features/vida/graphql/activity-categories.graphql.ts` · `src/features/vida/graphql/contracts.test.ts` (un nombre en la lista L77-81) · `src/features/vida/types/vida-goal.types.ts` (nuevo) · `src/features/vida/types/activity-category.types.ts` · `src/features/vida/api/activity-categories.api.ts` · `src/features/vida/hooks/useActivityCategories.ts` · `src/features/vida/components/VidaCategoryForm/VidaCategoryForm.tsx` (+ `.module.scss`) · `src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx` (+ `.module.scss`) · `src/features/vida/pages/VidaCategoriasPage.tsx` (~L55-58, ~L74-76, ~L84-91) · `src/features/vida/pages/VidaCategoriasPage.test.tsx`. | 481–488 | aceptada |
 | 2 | **El arco.** La suma viva por meta, la hora en grande, la frase sin reproche, «sin dato», y los días pasados y futuros. | `src/features/vida/utils/vida-goals.utils.ts` (nuevo) · `src/features/vida/utils/vida-goals.utils.test.ts` (nuevo) · `src/features/vida/components/VidaGoalArc/{VidaGoalArc.tsx,VidaGoalArcRow.tsx,VidaGoalArc.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (import, `useActivityCategoriesQuery`, el `useMemo`, el render bajo `<VidaDayBudget/>`) · `src/features/vida/pages/VidaHoyPage.module.scss` (si hace falta hueco) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API.** | 489–499 | pendiente |
 | 3 | **La pregunta cuando nada apunta a una meta.** | `src/features/vida/components/VidaGoalPrompt/{VidaGoalPrompt.tsx,VidaGoalPrompt.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (la rama `arcs.length === 0` y `useSetActivityCategoryGoalMutation`) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API, ningún documento nuevo, ninguna invalidación nueva.** | 500–503 | pendiente |
 
@@ -1136,6 +1136,577 @@ borran antes de reportar**) y el DOM. Y la migración **no la corre un agente**.
 
 *(una entrada por tajada, añadida debajo)*
 
+### Tajada 1 — La meta nace
+
+**Resumen para quien revise:**
+1. Nace la tabla `vida_goals` en el API con su migración `069`, el puntero
+   `activity_categories.goal_id`, la mutación propia `activityCategoryGoalSet`
+   (que crea la meta «Trabajo, 480 min» sola y sin carrera), y la casilla «Esto
+   es trabajo» en **los dos** formularios de categoría del front.
+2. Dos repositorios tocados, **nada commiteado y nada desplegado**; la
+   migración **no se ha corrido** contra ninguna base.
+3. **Lo que más probablemente rompí:** el tipo `ActivityCategory` del front ganó
+   dos campos **obligatorios** (`goalId`, `goal`), así que **toda fixture de
+   categoría en tests** tuvo que crecer — toqué siete archivos de test por eso.
+   Y cambié `mutate` por `mutateAsync` en el guardado de `VidaCategoriasPage` y
+   en `CreateVidaCategoryStep`: si algún test de otra rama mockea `mutate` de
+   esas dos mutaciones, se cae. Tercer sospechoso: cualquier consumidor del
+   catálogo de categorías recibe ahora una selección GraphQL más grande —el
+   `goal` embebido—, y si el backend desplegado no tiene todavía el campo, esa
+   consulta **falla entera** (ver «Riesgos»).
+
+**Qué se construyó:**
+
+*API (`~/Developer/xavi-platform-node`, sin commitear):*
+
+- `migrations/069_vida_goals.sql` (**nuevo**) — tabla `vida_goals` con
+  `UNIQUE (user_id, slug)`, `CHECK` de 1..1440 minutos, índice por usuario y
+  trigger de `updated_at`; y en el mismo archivo la columna
+  `activity_categories.goal_id UUID REFERENCES vida_goals(id) ON DELETE SET NULL`
+  con su índice parcial. `DOWN` comentado, como la 068. **No se ha corrido.**
+- `src/types/services/vida.types.ts` — `VidaGoal` y `SetCategoryGoalInput`.
+- `src/types/services/activity-category.types.ts` — `goalId: string | null` en
+  `ActivityCategory`.
+- `src/services/activity-category.service.ts` — `goal_id` en `CategoryRow` y
+  `goalId` en `mapCategory`. `createCategory`/`updateCategory` intactos (usan
+  `RETURNING *`, comprobado: el campo viaja sin tocarlos).
+- `src/services/vida-goal.service.ts` (**nuevo**) — `WORK_GOAL`
+  (`slug: 'work'`, «Trabajo», 480, `briefcase`, **`#0284c7`**, el azul núcleo de
+  la paleta del front, no el `#38bdf8` del render), `ensureDefaultGoal` con el
+  `INSERT … ON CONFLICT (user_id, slug) DO UPDATE SET name = vida_goals.name
+  RETURNING *`, `getGoalById`, `listGoals` y `setCategoryGoal` con
+  `BEGIN/COMMIT/ROLLBACK/release` sobre un solo `client`.
+- `src/graphql/modules/vida/vida.schema.ts` — `type VidaGoal`, `extend type
+  ActivityCategory { goalId, goal }`, `input ActivityCategoryGoalSetInput` y la
+  mutación `activityCategoryGoalSet`. Ni `schema.ts` ni `resolvers.ts` tocados.
+- `src/graphql/modules/vida/vida.resolvers.ts` — `ActivityCategory.goal` (igual
+  que `Activity.category`) y la mutación con `withValidatedResolver`.
+- `src/validators/schemas/vida.schemas.ts` — `vidaGoalCategorySetInputSchema`.
+- `tests/unit/services/vida-goal.service.test.ts` (**nuevo**, 7 casos),
+  `tests/unit/services/activity-category.service.test.ts` (+2),
+  `tests/unit/validators/vida.schemas.test.ts` (+5).
+
+*Front (`~/Developer/xavi-habits-webapp`, sin commitear):*
+
+- `src/features/vida/graphql/schema/vida.schema.graphql` — recopiado literal
+  del árbol de trabajo del API (extraído del `gql` con un script, no a mano),
+  con la fecha de la cabecera actualizada.
+- `src/features/vida/graphql/activity-categories.graphql.ts` — `goalId` y el
+  bloque `goal { … }` en las cuatro selecciones que ya existían (criterio 487:
+  **ningún documento de consulta nuevo**) + el documento de mutación nuevo
+  `ACTIVITY_CATEGORY_GOAL_SET_MUTATION`.
+- `src/features/vida/graphql/contracts.test.ts` — el nombre nuevo en la lista
+  literal, entre `…_EDIT_MUTATION` y `…_QUERY`.
+- `src/features/vida/types/vida-goal.types.ts` (**nuevo**) y
+  `activity-category.types.ts` (`goalId`, `goal`, `ActivityCategoryGoalSetInput`).
+- `src/features/vida/api/activity-categories.api.ts` — `setActivityCategoryGoal`.
+- `src/features/vida/hooks/useActivityCategories.ts` —
+  `useSetActivityCategoryGoalMutation`, con `invalidateActivityCategoryQueries`
+  reusada.
+- `src/features/vida/components/VidaCategoryForm/VidaCategoryForm.tsx` —
+  `isWork` en `VidaCategoryFormValues` y la casilla con su línea.
+- `src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx`
+  — la misma casilla y el encadenado crear → apuntar.
+- `src/features/vida/pages/VidaCategoriasPage.tsx` — estado inicial, `openEdit`
+  (la casilla llega marcada si `goalId`), y el guardado.
+- Tests tocados por el tipo o por la casilla:
+  `VidaCategoriasPage.test.tsx` (+3 casos), `VidaActivitySheet.test.tsx`,
+  `useActivityCategories.test.tsx`, `useCreateStartingActivities.test.tsx`,
+  `VidaActividadesPage.test.tsx`, `VidaArchivadasPage.test.tsx`,
+  `vida-catalog.utils.test.ts`.
+
+**Por qué así, y qué se descartó:**
+
+- **Cuatro desvíos del plan, ninguno de diseño**, y los digo porque el plan
+  daba otra letra pequeña:
+  1. **`setCategoryGoal` no usa `getOwnedCategoryOrThrow` ni `mapCategory`**:
+     son privados de `activity-category.service.ts` y **en este repositorio
+     ningún servicio exporta su mapper** (comprobado: cero `export function
+     map…` en `src/services`). Usa el público
+     `activityCategoryService.getCategoryById`, que hace las dos cosas —
+     comprobar propiedad antes de abrir la transacción y devolver la categoría
+     mapeada después del `COMMIT`. Cuesta dos consultas de más en una acción
+     rara; la alternativa era duplicar el mapper o exponer internos.
+  2. **El `UPDATE` del puntero lleva `AND user_id` y comprueba filas**: si no
+     casa ninguna, lanza `ForbiddenError` dentro de la transacción y hace
+     `ROLLBACK`. Es la comprobación de propiedad **dentro** de la ventana de la
+     transacción, no solo antes.
+  3. **La casilla usa el `Checkbox` de `@/shared/ui/Checkbox`**, que ya trae
+     `label` + `description` + `aria-describedby`: no hace falta ningún
+     `.module.scss` nuevo en los dos formularios (el plan los dejaba «si hace
+     falta»).
+  4. **`useSetActivityCategoryGoalMutation` no lanza toast de éxito** (sí de
+     error). Al guardar la edición viaja junto a `activityCategoryEdit`, que ya
+     dice «Categoría actualizada»: dos avisos por un guardado serían ruido.
+- **Guardar en editar es `mutateAsync` encadenado**: primero nombre/icono/color,
+  después el puntero **solo si la casilla cambió**, y el modal se cierra al
+  final. Con `mutate` + `onSuccess` anidados el cierre quedaba a merced de dos
+  callbacks y el estado de carga no cubría la segunda llamada.
+- **En crear son dos viajes y no se puede hacer en uno** sin ensanchar el API:
+  la mutación de crear categoría (`activityCategoryAdd`) no acepta el puntero
+  —el plan lo prohíbe a propósito, porque el `.refine` de
+  `activityCategoryEditInputSchema` y la creación de la meta son dos problemas
+  distintos— y el id de la categoría no existe antes de crearla. Mirado el
+  código: la única forma de un solo viaje sería un campo `goalAttached` en
+  `ActivityCategoryInput` + su rama en `createCategory`, que es API nuevo. **No
+  lo hice**; queda dicho, como pediste, en vez de hecho.
+- **El `.refine` de `activity.schemas.ts` no se tocó**, como manda el plan: el
+  puntero viaja por su mutación propia.
+
+**Verificación:**
+
+*Front* — `pnpm typecheck`: limpio (sin salida). `pnpm lint`: **14 errores / 0
+warnings**, los mismos de la línea base (el último sigue siendo el
+`react-refresh/only-export-components`). `pnpm test`: **2 fallos de 1788**
+(línea base 2 de 1783; los cinco de más son míos) — los dos son los de
+`SearchSelect`, y el `IconPicker` flaky no salió esta vez. `pnpm build`: exit 0,
+chunk inicial **1.115,06 kB** (línea base 1.112,22 kB: **+2,84 kB**, que es la
+selección GraphQL nueva, el tipo, el hook, la función de API y las dos
+casillas), `app-icons` **620,20 kB sin mover** e `IconPicker` 4,64 kB.
+
+*API* — `npx tsc --noEmit`: **limpio, exit 0**. `npm test`: **3 fallos de 574 y
+6 suites de 52 en rojo** — misma cifra de fallos y de suites rojas que la línea
+base (3/560 y 6/51); el total sube porque añadí 14 casos y la suite de más es
+`vida-goal.service.test.ts`, **en verde**. `npx eslint` sobre los siete archivos
+de `src/` que toqué: **2 problemas, los dos preexistentes y en líneas que no
+toqué** (el docstring de `clientId` en `vida.schema.ts` y la unión de días en
+`vida.types.ts`); los cuatro que introduje al escribir los `"""…"""` en una
+línea los corregí a mano. **No se corrió `lint:fix`.** Los tres archivos de
+`tests/` dan el mismo error de parseo de siempre (no están en el `tsconfig`),
+también preexistente.
+
+**Criterios que cierra:**
+
+- **481 ✔** — `migrations/069_vida_goals.sql`: `vida_goals` con `name`, `icon`,
+  `color`, `target_minutes`, `order_index` (y `slug`).
+- **482 ✔** — `goal_id UUID` **nullable** en `activity_categories`, sin `UNIQUE`
+  en la columna: dos categorías pueden apuntar a la misma meta. El test
+  `vida-goal.service.test.ts` → «reuses the existing goal instead of creating a
+  second one» lo prueba del lado del servicio.
+- **483 ✔** — los minutos están solo en `vida_goals.target_minutes`;
+  `user_settings` no se tocó (cero diferencias en ese archivo, comprobado con
+  `git status`) y `activity_categories` solo ganó el puntero.
+- **484 ✔ (en test, no contra base viva)** — `ensureDefaultGoal` con el upsert y
+  la transacción; probado en `vida-goal.service.test.ts`: se comprueba el `SQL`
+  literal (`ON CONFLICT (user_id, slug)` + `DO UPDATE`), los parámetros
+  (`['work','Trabajo','briefcase','#0284c7',480]`), el `BEGIN`/`COMMIT`, y que
+  con meta previa **no** sale un segundo `INSERT`. Lado front, `VidaCategoriasPage.test.tsx`
+  manda `{ categoryId, attached: true }` **sin `goalId`**: es el servidor quien
+  la crea. **Que de verdad no nazcan dos metas con dos toques concurrentes solo
+  se puede confirmar contra Postgres**: queda como prueba a mano (abajo).
+- **485 ✔** — los dos archivos. Editar: `VidaCategoriasPage.test.tsx` → «la
+  casilla … llega marcada si la categoría apunta a una meta» comprueba la
+  casilla y el texto «Sus horas suman en el arco de trabajo de Hoy.». Crear:
+  `VidaActivitySheet.test.tsx` → «+ nueva» comprueba la misma casilla y la misma
+  línea dentro de `CreateVidaCategoryStep`. Es una **casilla**, no una lista.
+- **486 ✔** — `VidaCategoriasPage.test.tsx` → «marcar la casilla y guardar
+  apunta la categoría a la meta, sin pantalla intermedia»: un clic en la
+  casilla, un clic en «Guardar», ninguna confirmación, y el modal se cierra. El
+  caso de desmarcar tiene su propio test (`attached: false`).
+- **487 ✔** — `activity-categories.graphql.ts`: las cuatro selecciones que ya
+  existían crecieron; no hay documento de **consulta** nuevo. El único
+  documento nuevo es de mutación y está en la lista de `contracts.test.ts`, que
+  pasa (77 casos).
+- **488 ✔ parcialmente, con la parte de red pendiente** — ninguna pantalla
+  cambia de comportamiento: las suites de `VidaActividadesPage`,
+  `VidaArchivadasPage`, `VidaActivitySheet` (42 casos) y `VidaCategoriasPage`
+  pasan solo con la fixture crecida, sin tocar sus expectativas. **Lo que no se
+  puede comprobar desde aquí** es la pantalla real contra el API desplegado:
+  mientras el backend no lleve el campo, la consulta del catálogo falla entera
+  (ver «Riesgos»).
+
+**Lo que queda a mano del usuario** (todo esto está detrás del login, y los
+agentes no entran):
+
+1. **Empujar el API** (`xavi-platform-node`, sin commitear hoy). Ojo: ese push
+   despliega Cloud Run y Render, y arrastra la **068 de FEAT-012**, que sigue
+   sin correr.
+2. **Correr `069_vida_goals.sql` a mano contra Neon** (y decidir qué pasa con la
+   068). **Antes de desplegar el front**, o mejor a la vez: en cuanto el front
+   nuevo pida `goalId`/`goal` a un backend viejo, el catálogo de categorías
+   entero devuelve error.
+3. En Ajustes → Categorías, editar una categoría, marcar «Esto es trabajo» y
+   guardar; volver a abrirla y ver la casilla marcada. Desmarcar y repetir.
+4. Crear una categoría desde la hoja de actividad («+ nueva») con la casilla
+   marcada y comprobar que queda marcada al editarla.
+5. **La prueba de la carrera:** marcar dos categorías distintas casi a la vez
+   (dos pestañas) y comprobar en la base que hay **una sola** fila en
+   `vida_goals` con `slug = 'work'`.
+
+**Riesgos:**
+
+- **El front nuevo exige un backend nuevo.** `goalId` y `goal` están en las
+  cuatro selecciones del catálogo: contra el API actual, `activityCategories`
+  devuelve error de validación y **Categorías, Actividades y la hoja de
+  actividad se quedan sin catálogo**. No es degradación suave. Orden obligado:
+  API primero.
+- **`ActivityCategory` ganó dos campos obligatorios en el front.** Cualquier
+  rama viva con una fixture de categoría no compilará hasta añadir
+  `goalId`/`goal`.
+- **`mutate` → `mutateAsync`** en `VidaCategoriasPage` y
+  `CreateVidaCategoryStep`: los mocks de test que solo tenían `mutate` fallan.
+- **El `DO UPDATE` toca `updated_at` de la meta** en cada `ensure` que no cambia
+  nada (el trigger). Cosmético y aceptado en el plan.
+- **La migración no se ha ejecutado** en ningún sitio: el SQL está razonado y
+  copiado de precedentes, pero **nadie lo ha visto aplicarse**.
+- **Lo que no llegué a cubrir con un test automático:** el encadenado
+  crear → apuntar de `CreateVidaCategoryStep`. Escribí dos casos que lo probaban
+  y **pasaban aislados pero no en la corrida del archivo entero**
+  (`VidaActivitySheet.test.tsx`, 42 casos: el paso apilado carga el `IconPicker`
+  en diferido y la cadena se pasaba del tiempo; no es el flaky del `IconPicker`
+  que documenta `ENVIRONMENT.md`, pero huele al mismo sitio). Los quité en vez
+  de dejarlos en rojo o de subirles el tiempo hasta que colaran. Lo que **sí**
+  quedó probado ahí es que la casilla y su línea se pintan en ese formulario;
+  el encadenado se apoya en el tipado y en el punto 4 de la prueba a mano.
+
+**Estado del árbol:** **sin commitear en los dos repositorios.** Nada de `push`,
+ninguna migración corrida, ningún `lint:fix`. En el front, `graphify update .`
+sí se corrió (4.070 nodos), así que `graphify-out/` sale también modificado.
+
+### Tajada 1 — segunda vuelta (lo devuelto)
+
+**Resumen para quien revise:**
+1. Los dos arreglos pedidos, **los dos de test**: el caso «+ nueva» que ya
+   existía ahora marca la casilla y afirma la segunda llamada **y su orden**, y
+   los dos mocks a medias de `VidaActividadesPage` y `VidaPlantillaPage` están
+   completos.
+2. **Ni una línea del API ni del producto** cambió en esta vuelta: solo tres
+   archivos `.test.tsx` del front.
+3. **Lo que más probablemente rompí:** nada nuevo, y lo digo con la medida
+   delante — el `pnpm build` devuelve el **mismo artefacto byte a byte**
+   (`index-VIzbn6Ne.js`, 1.115,06 kB), que es lo que se espera de un cambio que
+   solo toca tests. El único riesgo real es que el caso «+ nueva» ahora hace
+   **dos** afirmaciones más dentro de un archivo que ya era el más lento del
+   módulo: si algún día se pasa de tiempo, el sitio a mirar es ese.
+
+**Qué se arregló:**
+
+- `src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx` —
+  dentro del caso «+ nueva» que ya existía (no uno nuevo): se marca la casilla
+  antes de pulsar «Crear categoría» y se afirma que
+  `setCategoryGoal.mutateAsync` se llama **una vez** con
+  `{ categoryId: 'plantas', attached: true }` y **después** de
+  `createCategory.mutateAsync` — el orden con
+  `mock.invocationCallOrder`, aferrado y no supuesto. Sustituye al
+  `expect(setCategoryGoal.mutateAsync).not.toHaveBeenCalled()` que había ahí;
+  el caso «sin marcar» sigue cubierto en `VidaCategoriasPage.test.tsx` («Editar»
+  guarda el cambio sin tocar la casilla → la mutación de la meta no viaja).
+- `src/features/vida/pages/VidaActividadesPage.test.tsx` — `buildMutation()`
+  gana `mutateAsync` y el mock del módulo gana
+  `useSetActivityCategoryGoalMutation`.
+- `src/features/vida/pages/VidaPlantillaPage.test.tsx` — lo mismo en el mock de
+  `useActivityCategories`.
+
+**El revisor tenía razón y el dato lo confirma.** Lo que se me pasaba de tiempo
+era un caso **nuevo** que repetía el montaje entero de la hoja y del paso
+apilado; añadir un clic y dos afirmaciones al caso que **ya** monta todo eso no
+cuesta nada. Medido: el caso «+ nueva» tarda **851 ms** y el archivo entero
+**7,42 s** (antes de este cambio, 7,29 s). No hizo falta ni un test propio de
+`CreateVidaCategoryStep` ni `vi.mock('@/shared/ui/IconPicker')`.
+
+**Verificación (las dos líneas base, otra vez):**
+
+*Front* — `pnpm typecheck` limpio · `pnpm lint` **14 errores / 0 warnings** ·
+`pnpm test` **2 fallos de 1788**, y esta vez con nombre:
+`SearchSelect > filters options by search query` y
+`SearchSelect > selects an option` (el flaky del `IconPicker` no salió) ·
+`pnpm build` exit 0, chunk inicial **1.115,06 kB**, `app-icons` **620,20 kB sin
+mover**, `IconPicker` 4,64 kB.
+
+*API* — `npx tsc --noEmit` **limpio** · `npm test` **3 fallos de 574 y 6 suites
+de 52 en rojo**, las mismas de siempre. **El API no se tocó en esta vuelta**
+(`git status` del repo hermano idéntico al de la primera).
+
+**Criterios:** los mismos que cerraba la primera vuelta (481–487, y 488 salvo la
+parte de red). Lo que cambia es que **484 y 485 ya no dependen del tipado en el
+camino de crear**: la cadena crear → apuntar está afirmada, con su orden.
+
+**Anotado para quien siga, idea del revisor que NO se implementó aquí** (es
+mejora, no defecto, y esta devolución venía apretada): el `UPDATE` del puntero
+en `vida-goal.service.ts` podría hacer `RETURNING *` y
+`activity-category.service.ts` exportar **solo** `mapCategory` —función pura,
+no un interno peligroso—. Ahorraría las dos llamadas a `getCategoryById` y, lo
+que más importa, quitaría la lectura de después del `COMMIT`, que hoy ocurre
+**fuera** de la transacción. Quien lo haga: `mapCategory` sería el primer mapper
+exportado de `src/services/` en ese repositorio, así que conviene decirlo en su
+comentario para que no parezca un accidente.
+
+**Estado del árbol:** sin commitear en los dos repositorios, sin push, sin
+ninguna migración corrida. `graphify update .` corrido tras el cambio.
+
 ## 4. Revisión — feature-reviewer
 
 *(una entrada por tajada)*
+
+### Tajada 1 — devuelta
+
+**Veredicto: devuelta.** No por lo construido —el servicio, la migración y la
+casilla están bien— sino por **la ruta que estrena la feature y que nadie
+comprueba**: crear una categoría con la casilla marcada. No queda ni un test
+que afirme que salen las dos mutaciones en orden, y detrás del login yo no
+puedo verlo. La salida barata existía y está señalada abajo.
+
+**Criterios, uno a uno** (contra la sección 1):
+
+- **481 — cumple.** `migrations/069_vida_goals.sql`: `vida_goals` con `name`,
+  `icon`, `color`, `target_minutes`, `order_index`, `slug`, `CHECK
+  (target_minutes > 0 AND <= 1440)` y `UNIQUE (user_id, slug)`. Leído el SQL,
+  no la prosa.
+- **482 — cumple.** `goal_id UUID REFERENCES vida_goals(id) ON DELETE SET
+  NULL`, nullable, **sin `UNIQUE` en la columna**: dos categorías pueden
+  apuntar a la misma meta. Índice parcial `WHERE goal_id IS NOT NULL`.
+- **483 — cumple.** Los minutos viven solo en `vida_goals.target_minutes`.
+  `git status` del API no lista ningún archivo de `user_settings`; el diff de
+  `activity_categories` es el puntero y nada más.
+- **484 — cumple en el camino de editar; sin comprobar en el de crear.** El
+  servicio está bien (ver «la carrera»); `VidaCategoriasPage.test.tsx` prueba
+  el camino de editar mandando `{ categoryId, attached: true }` **sin
+  `goalId`**. El camino de **crear** —que el propio criterio nombra («desde la
+  casilla del formulario»)— no tiene test y no es verificable desde fuera del
+  login. Esta es la razón de la devolución.
+- **485 — cumple.** Los dos archivos, `Checkbox` con `label` + `description` +
+  `aria-describedby` (`src/shared/ui/Checkbox/Checkbox.tsx`). Es casilla, no
+  lista. Probado en `VidaCategoriasPage.test.tsx` y en
+  `VidaActivitySheet.test.tsx:212`.
+- **486 — cumple.** Un clic en la casilla, un clic en «Guardar», ninguna
+  pantalla intermedia; la segunda mutación solo sale si la casilla cambió
+  (`goalChanged`). Con test propio y con el de desmarcar.
+- **487 — cumple.** `activity-categories.graphql.ts`: +64 líneas, **ningún
+  documento de consulta nuevo**; el único documento nuevo es
+  `ACTIVITY_CATEGORY_GOAL_SET_MUTATION`, y está en la lista literal de
+  `contracts.test.ts`.
+- **488 — cumple en tests, y la parte de red queda pendiente a mano, que es
+  correcto.** Las suites de `VidaActividadesPage`, `VidaArchivadasPage`,
+  `VidaActivitySheet` y `VidaCategoriasPage` pasan solo con la fixture
+  crecida. Dos matices que el constructor no dice: (a) el orden de despliegue
+  no es una recomendación, es parte del criterio —entre el front nuevo y el
+  API viejo, esas tres pantallas se quedan **sin catálogo**—; (b) dos mocks
+  quedaron incompletos (abajo).
+
+**La carrera — las tres cosas, verificadas en el SQL y en el servicio:**
+
+1. **Índice único: existe de verdad.** `CONSTRAINT vida_goals_user_slug_unique
+   UNIQUE (user_id, slug)` en la tabla, no solo en el comentario.
+2. **`DO UPDATE`, no `DO NOTHING`.** `ON CONFLICT (user_id, slug) DO UPDATE SET
+   name = vida_goals.name RETURNING *` (`vida-goal.service.ts:78-84`): con
+   conflicto devuelve y bloquea la fila existente, que es justo lo que
+   `DO NOTHING` no hace.
+3. **Una sola transacción.** `BEGIN` → `ensureDefaultGoal` → `UPDATE
+   activity_categories SET goal_id …` → `COMMIT`, sobre el mismo `client`
+   (`setCategoryGoal`). Busqué caminos que escriban el puntero fuera:
+   `grep -rn "goal_id" src/` en el API da **una sola** escritura, la de dentro
+   de la transacción; `createCategory` y `updateCategory` no lo tocan y usan
+   `RETURNING *`, así que el campo viaja sin modificarlos.
+4. **Si el `UPDATE` falla, la meta se revierte.** El `throw` cae en el `catch`
+   que hace `ROLLBACK` antes de relanzar, y el `ensure` iba dentro: no queda
+   meta huérfana. Probado en `vida-goal.service.test.ts` → «rolls back and
+   releases when the pointer update matches no row».
+   Lo que **no** está comprobado y solo se ve contra Postgres es que dos
+   sesiones concurrentes no dejen dos filas: queda como paso a mano.
+
+**El hueco que el constructor declara — por qué devuelve:**
+
+Lo que queda probado del camino de crear es la casilla *pintada* y el caso
+**sin marcar** (`VidaActivitySheet.test.tsx:229`,
+`expect(setCategoryGoal.mutateAsync).not.toHaveBeenCalled()`). No queda **nada**
+afirmando el caso marcado. Y había salida: ese mismo test —«+ nueva» crea la
+categoría…, que **pasa hoy**— ya monta el paso apilado, ya paga la carga
+diferida del `IconPicker`, ya encuentra la casilla por su rol y ya pulsa «Crear
+categoría» esperando la cadena `async`. Marcar la casilla antes del clic y
+añadir una afirmación no añade ni un render ni una carga: no es el caso que se
+pasaba de tiempo. Lo que se pasaba de tiempo era **un caso nuevo** que repetía
+el montaje entero; no es lo mismo, y por eso no acepto que no hubiera salida.
+Alternativas, por si se prefiere otra: un test propio de
+`CreateVidaCategoryStep` aislado (hoy no existe ninguno en su carpeta), o
+`vi.mock('@/shared/ui/IconPicker')` en ese archivo.
+
+Importa además porque la ruta sin red no es trivial: decide **el orden** de las
+dos llamadas, y decide **tragarse el error del segundo viaje y cerrar el paso
+igual**. Eso es una decisión de producto sin un solo test que la sujete.
+
+**`mutate` → `mutateAsync`: qué quedó suelto.**
+`grep -rn "useCreateActivityCategoryMutation\|useSetActivityCategoryGoalMutation" src/`
+da dos mocks incompletos que **hoy pasan por casualidad**, porque ninguna de
+esas dos suites llega a abrir «+ nueva» (comprobado: cero apariciones de
+`'+ nueva'` en ambos archivos):
+
+- `src/features/vida/pages/VidaActividadesPage.test.tsx:28-29 y 43-46` —
+  `buildMutation()` devuelve `{ mutate, reset, isPending, isError }`, **sin
+  `mutateAsync`**, y el mock del módulo **no incluye**
+  `useSetActivityCategoryGoalMutation`. Esa página monta `VidaActivitySheet`:
+  el día que un test de ahí abra el paso de crear, revienta con «no es una
+  función».
+- `src/features/vida/pages/VidaPlantillaPage.test.tsx:76` — el mismo mock a
+  medias (`mutate: vi.fn()`), también sin `useSetActivityCategoryGoalMutation`.
+
+Los dos son trampas puestas, no fallos de hoy. Se arreglan en dos líneas y van
+en la devolución.
+
+**Caso de error del segundo viaje.** Recuperable y no silencioso en los dos
+formularios: `useSetActivityCategoryGoalMutation` tiene `onError` con
+`toast.error('No pudimos guardar la meta de la categoría')`. Al **editar**, el
+`catch` deja el modal abierto con lo escrito. Al **crear**, el paso se cierra y
+la categoría queda creada y sin marcar —lo que el plan acepta—, con el toast
+encima; se recupera desde la casilla de editar. Sin toast de éxito propio: de
+acuerdo, el de «Categoría actualizada» ya suena.
+
+**Que la pantalla no limite a una meta.** El test con dos metas que pidió el
+arquitecto es de `vida-goals.utils.test.ts`, que es de **la tajada 2**: aquí no
+se puede exigir todavía, y se exige al revisar esa. En lo de esta tajada no hay
+ningún tope escondido: la casilla no lee ninguna lista de metas ni indexa un
+`goals[0]`; manda `{ categoryId, attached }` sin `goalId` y el servidor decide.
+El campo se llama `isWork` en `VidaCategoryFormValues` y no `goalId`, con el
+porqué escrito encima: cuando haya varias, el campo pasa a lista sin tocar el
+API. No hay `slice(0, 1)` en ninguna parte del diff.
+
+**`setCategoryGoal` con `getCategoryById` público.** Me parece bien y no lo
+devuelvo: son dos lecturas de más en una acción rara, a cambio de no exportar
+internos ni duplicar el mapper, y la comprobación de propiedad se repite
+**dentro** de la transacción (`AND user_id` + filas afectadas), que es lo que
+de verdad importa. La salida mejor que no se vio, por si se recoge alguna vez:
+el `UPDATE` ya podría hacer `RETURNING *` y `activity-category.service.ts`
+exportar solo su `mapCategory` —una función pura, no un interno peligroso—;
+eso ahorraría **las dos** consultas y, de paso, la lectura de después del
+`COMMIT`, que hoy ocurre fuera de la transacción.
+
+**Qué más miré cerca, y cómo.** `graphify explain "CreateVidaCategoryStep"` (da
+sus tres llamadas: `useModalStep`, `useCreateActivityCategoryMutation`,
+`useSetActivityCategoryGoalMutation`) y `graphify query "who uses
+ActivityCategory type and the activity categories catalog"` para los
+consumidores del tipo; confirmado abriendo los archivos. En el API, que no
+tiene grafo, `grep -rn "goal_id|goalId|vida_goals" src/`. Las dos líneas base
+reproducidas enteras: front `typecheck` limpio, `lint` **14/0**, `test` **2
+fallos de 1788** (los dos de `SearchSelect`; el `IconPicker` flaky no salió),
+`build` exit 0 con chunk inicial **1.115,06 kB** y `app-icons` **620,20 kB sin
+mover**; API `tsc --noEmit` exit 0 y `npm test` **3 fallos de 574, 6 suites de
+52 en rojo**, las mismas seis de la línea base, con `vida-goal.service.test.ts`
+en verde. Ninguna regresión medible: la única que encontré es la de los dos
+mocks incompletos, que es de red de seguridad, no de comportamiento.
+
+**Estados que nadie construye.** Vacío, carga y error no cambian: los dos
+formularios ya los tenían y la casilla no depende de ningún dato que pueda
+faltar (`Boolean(category.goalId)`). Permisos no aplica en el front (un solo
+usuario) y en el API está cubierto por partida doble. **Texto largo** no
+aplica: la etiqueta y su línea son fijas. **Móvil a 375 px**: no lo pude
+comprobar —el formulario vive detrás del login y no monté arnés—, pero el
+`Checkbox` es el compartido y ya se usa en formularios del mismo ancho; queda
+como **no revisado**, no como aprobado.
+
+**¿Duplica algo que ya existía?** No, contra la sección 2: ningún documento de
+consulta nuevo, ninguna función de invalidación nueva (reusa
+`invalidateActivityCategoryQueries`), ninguna Query `vidaGoals` ni hook de
+metas en el API, nada en `user_settings`, ningún `.module.scss` nuevo (usa el
+`Checkbox` compartido) y ningún formateador nuevo. El `.refine` de
+`activity.schemas.ts` sigue sin tocarse, como manda el plan.
+
+**Lo que hay que hacer para que pase** (nada más que esto):
+
+1. Un test del encadenado crear → apuntar: marcar la casilla dentro del caso
+   «+ nueva» que ya existe en `VidaActivitySheet.test.tsx` y afirmar que
+   `setCategoryGoal.mutateAsync` se llama **una vez**, con
+   `{ categoryId: 'plantas', attached: true }`, **después** de
+   `createCategory.mutateAsync`.
+2. Completar los dos mocks a medias: `mutateAsync` en el `buildMutation()` de
+   `VidaActividadesPage.test.tsx` y `useSetActivityCategoryGoalMutation` en el
+   mock del módulo de ese archivo y de `VidaPlantillaPage.test.tsx`.
+
+Nada del API hay que tocar.
+
+### Tajada 1 — segunda vuelta: aceptada
+
+**Veredicto: aceptada.** Lo devuelto está arreglado y el arreglo no rompió
+nada. Reviso **solo** eso y lo que pueda haberse llevado por delante; el resto
+—la carrera en sus tres piezas, el error recuperable, que no haya tope a una
+sola meta— quedó bueno en la primera vuelta y esta vuelta no lo toca (el árbol
+del API está intacto: mismos once archivos, `git diff --stat` idéntico y los
+tres nuevos con el mismo `md5`).
+
+**1. El encadenado, ahora con red.** Dentro del caso «+ nueva» que ya existía
+(`VidaActivitySheet.test.tsx`): se marca la casilla antes de «Crear categoría»
+y se afirma `setCategoryGoal.mutateAsync` **una vez**, con
+`{ categoryId: 'plantas', attached: true }`, y **después** de
+`createCategory.mutateAsync` vía `mock.invocationCallOrder`. No es una
+afirmación hueca: el `categoryId` sale del `mockResolvedValue({ id: 'plantas' })`
+del **primer** viaje, así que lo que se prueba es que el id del uno alimenta al
+otro, que es justo lo que no se podía hacer en una sola llamada.
+
+**2. Que la aserción de orden sea de orden.** Comprobado a mano, no razonado:
+sonda temporal con dos `vi.fn()` (creada, corrida y **borrada**;
+`src/__rev_order_probe.test.ts` ya no existe). `toBeGreaterThan` sobre
+`invocationCallOrder` **lanza** en los dos casos malos —llamadas invertidas, y
+segunda llamada ausente (el índice queda `undefined`)— y solo pasa en el orden
+correcto. La regresión que importa la caza: si alguien quitara el `if (isWork)`
+o el `await`, el caso cae.
+
+**3. Cobertura cambiada, no sumada — y hay que decirlo con precisión.** El
+`expect(setCategoryGoal.mutateAsync).not.toHaveBeenCalled()` que vivía en ese
+caso **se fue**, y lo que hay en `VidaCategoriasPage.test.tsx:160` **no es el
+mismo camino**: es el formulario de **editar** (la guarda `goalChanged`), no la
+rama falsa del `if (isWork)` de `CreateVidaCategoryStep`. O sea: crear una
+categoría **sin** marcar la casilla y que el puntero no viaje ya no lo prueba
+nadie. **No devuelvo por esto** —la rama positiva vale más que la negativa, el
+estado nace en `false` y está cableado a la casilla, y un tercer caso pagaría
+otra vez el montaje entero que fue el problema de origen—, pero queda escrito
+como hallazgo: si algún día se quita ese `if`, toda categoría nueva nacería
+marcada como trabajo y ninguna suite se enteraría.
+
+**4. Los mocks a medias, y si quedaba un tercero.** Completados los dos:
+`VidaActividadesPage.test.tsx` (`buildMutation()` con `mutateAsync` y
+`useSetActivityCategoryGoalMutation` en el mock del módulo) y
+`VidaPlantillaPage.test.tsx` (los dos hooks con `mutateAsync`). Busqué el
+tercero: `grep -rn "vi.mock('@/features/vida/hooks/useActivityCategories'"
+src/` da **cinco** archivos. Tres ya estaban bien y el quinto,
+`VidaArchivadasPage.test.tsx`, mocka **solo** `useActivityCategoriesQuery` — y
+está bien así: esa página no monta `VidaActivitySheet` (las dos únicas que lo
+montan son Actividades y Plantilla, comprobado en el `.tsx` de cada una), así
+que no tiene ninguna mutación que doblar. **No queda ninguno con la forma
+vieja.**
+
+**Líneas base, reproducidas las dos.** Front: `typecheck` exit 0 · `lint`
+**14 errores / 0 warnings** · `test` **2 fallos de 1788** (`SearchSelect >
+filters options by search query` y `SearchSelect > selects an option`; el flaky
+del `IconPicker` no salió) · `build` exit 0, chunk inicial **1.115,06 kB**,
+`app-icons` **620,20 kB**. Y la mirada que pedía el artefacto: no es que las
+cifras coincidan, es que **los hashes son los mismos** que la primera vuelta
+(`index-VIzbn6Ne.js`, `app-icons-C_2IJqUq.js`, `IconPicker-COcHAhsf.js`,
+`index-jJlQAt8W.css`). Vite nombra por contenido: bit a bit, lo que se
+desplegaría es idéntico. Es exactamente lo que debe pasar tocando solo tests, y
+es la prueba de que el arreglo no se coló en el paquete. API: `npx tsc
+--noEmit` exit 0 · `npm test` **3 fallos de 574 y 6 suites de 52 en rojo**, las
+mismas de la línea base.
+
+**Criterios 481–488: cumplidos.** Los de la primera vuelta siguen igual; el 484
+y el 486 ganan ahora el camino de **crear**, que era lo que faltaba. Queda
+pendiente a mano, como siempre estuvo y sin disimulo: el recorrido real detrás
+del login y la prueba de la carrera contra Postgres.
+
+**Lo que no revisé.** A 375 px sigue **sin revisar** (formulario tras el login,
+no monté arnés). Y el `RETURNING *` + exportar `mapCategory` queda anotado sin
+implementar, por orden del coordinador: no lo reclamo aquí.
+
+**Nota que no es mía:** `docs/features/ENVIRONMENT.md` aparece modificado en el
+árbol con un párrafo nuevo sobre los mocks de módulo de `useActivityCategories`.
+**No lo escribí yo** —el revisor no toca ese archivo—; lo digo para que conste
+quién lo cambió y que el cambio es correcto.
+
+**Para el usuario — el orden es obligado, no una recomendación:**
+
+1. **Commit y push del API** (`~/Developer/xavi-platform-node`). Ese push
+   despliega **Cloud Run y Render a la vez**, y arrastra la migración **068 de
+   FEAT-012**, que sigue sin correr, además de la **069** de esta tajada.
+2. **Correr a mano contra Neon la 068 y la 069**, en ese orden. Render no migra
+   al arrancar (`RUN_MIGRATIONS: 'false'`), así que nadie lo hace por ti.
+3. **Solo entonces, el front.** El catálogo nuevo pide `goalId` y `goal`:
+   contra un backend viejo, `activityCategories` falla entera y **Categorías,
+   Actividades y la hoja de actividad se quedan sin catálogo**. No hay
+   degradación suave.
+4. En **Ajustes → Categorías**, editar una categoría, marcar «Esto es trabajo»,
+   guardar; reabrirla y ver la casilla marcada. Desmarcar y repetir.
+5. Crear una categoría desde la hoja de actividad («+ nueva») **con la casilla
+   marcada** y comprobar, al editarla, que llega marcada.
+6. **La prueba de la carrera:** marcar dos categorías distintas casi a la vez,
+   en dos pestañas, y comprobar en la base que hay **una sola** fila en
+   `vida_goals` con `slug = 'work'`.
+
+Todavía **no hay arco**: eso es la tajada 2. Lo que esta tajada te deja hacer
+es marcar tus categorías de trabajo para que, cuando llegue, ya tengan historia.

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qué hice esta vez</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-2:#34d399; --violet:#7c3aed; --violet-2:#a78bfa;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:960px;margin:0 0 6px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:36px 0 12px}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:0;line-height:1.65}
+  .note b{color:#e2e8f0}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .ctitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-2)}
+  .ctitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:3px;font-size:11.5px;line-height:1.5}
+  .ctitle.have{color:var(--ink-dim)}
+
+  .phone{width:100%;max-width:375px;border-radius:34px;padding:9px;background:#020617;box-shadow:0 22px 52px -22px rgba(0,0,0,.9)}
+  .screen{border-radius:27px;background:var(--bg);padding:13px 12px 15px}
+
+  .agenda{position:relative;padding-left:44px}
+  .rail{position:absolute;left:36px;top:2px;bottom:2px;width:2px;background:rgba(148,163,184,.14)}
+  .slot{position:relative;margin-bottom:8px}
+  .slot .t{position:absolute;left:-44px;top:11px;width:32px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-13px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2.5px solid rgba(148,163,184,.45)}
+  .card{padding:9px 11px;border-radius:14px;background:var(--card);border:1px solid var(--edge);display:flex;align-items:flex-start;gap:9px;min-width:0}
+  .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:13px;flex:0 0 auto;background:rgba(2,132,199,.18);margin-top:1px}
+  .txt{min-width:0;flex:1}
+  .nm{font-weight:600;font-size:12.5px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .what{font-family:'Inter',sans-serif;font-size:11.5px;color:#cbd5e1;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .what b{color:var(--mint-2);font-weight:600}
+  .meta{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:3px;font-variant-numeric:tabular-nums}
+  .card.run{border-color:rgba(124,58,237,.45);background:linear-gradient(180deg,rgba(124,58,237,.12),var(--card))}
+  .card.done{opacity:.62}
+  .pencil{flex:0 0 auto;font-size:10.5px;color:#475569;margin-top:2px}
+  .nowline{display:flex;align-items:center;gap:8px;margin:2px 0 9px 0}
+  .nowline .h{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums;width:32px;text-align:right;margin-left:-44px}
+  .nowline .b{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;color:#fff;background:var(--violet);border-radius:999px;padding:3px 9px}
+  .nowline .l{flex:1;height:1.5px;background:var(--violet)}
+
+  /* barra de sesión en marcha */
+  .bar{padding:12px;border-radius:16px;background:linear-gradient(180deg,rgba(124,58,237,.14),var(--card-2));border:1px solid rgba(124,58,237,.34)}
+  .bhead{display:flex;align-items:center;gap:9px}
+  .btitle{font-size:13.5px;font-weight:700;letter-spacing:-.02em;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btime{font-family:'Inter',sans-serif;font-size:11px;color:var(--violet-2);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .noteline{display:flex;align-items:center;gap:8px;margin-top:9px;padding:8px 10px;border-radius:11px;background:rgba(15,23,42,.6);border:1px dashed rgba(148,163,184,.26)}
+  .noteline.filled{border-style:solid;border-color:rgba(52,211,153,.32);background:rgba(16,185,129,.07)}
+  .noteline .i{flex:0 0 auto;font-size:11px;color:#475569}
+  .noteline .i.on{color:var(--mint-2)}
+  .noteline p{margin:0;flex:1;min-width:0;font-family:'Inter',sans-serif;font-size:11.5px;line-height:1.45;color:var(--ink-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .noteline.filled p{color:#e2e8f0}
+  .bactions{display:flex;gap:7px;margin-top:9px}
+  .bact{flex:1;padding:10px;border-radius:11px;text-align:center;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;background:rgba(15,23,42,.6);border:1px solid rgba(148,163,184,.2)}
+  .bact.stop{background:var(--mint);color:#04261c;border-color:transparent}
+
+  /* hoja de nota */
+  .sheet{border-radius:16px;background:var(--card-2);border:1px solid var(--edge);padding:13px}
+  .shead{font-size:14.5px;font-weight:700;letter-spacing:-.02em}
+  .ssub{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);margin:3px 0 0}
+  .field{margin-top:11px;padding:10px 11px;border-radius:12px;background:var(--bg);border:1.5px solid rgba(52,211,153,.4);font-family:'Inter',sans-serif;font-size:13px;color:#e2e8f0;min-height:44px}
+  .caret{display:inline-block;width:1.5px;height:15px;background:var(--mint-2);vertical-align:-2px;margin-left:1px}
+  .count{font-family:'Inter',sans-serif;font-size:10px;color:#475569;text-align:right;margin-top:4px}
+  .again{margin-top:10px}
+  .againlab{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{padding:7px 10px;border-radius:999px;background:rgba(15,23,42,.7);border:1px solid rgba(148,163,184,.2);font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-soft);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sactions{display:flex;gap:7px;margin-top:12px}
+  .sact{flex:1;padding:11px;border-radius:12px;text-align:center;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;background:rgba(15,23,42,.6);border:1px solid rgba(148,163,184,.2)}
+  .sact.ok{background:var(--mint);color:#04261c;border-color:transparent}
+
+  /* tarjeta lo que viene */
+  .next{border-radius:16px;padding:12px;border:1.5px solid rgba(16,185,129,.4);background:linear-gradient(180deg,rgba(16,185,129,.1),var(--card-2))}
+  .kicker{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mint-2)}
+  .who{display:flex;align-items:center;gap:9px;margin-top:8px}
+  .nm2{font-size:14.5px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  .when{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:2px}
+  .plays{display:flex;gap:7px;margin-top:11px}
+  .play{flex:1;padding:12px;border-radius:12px;background:var(--mint);color:#04261c;text-align:center;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700}
+  .addnote{flex:0 0 auto;padding:12px 13px;border-radius:12px;background:rgba(15,23,42,.6);border:1px solid rgba(148,163,184,.24);font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--ink-soft)}
+
+  .have{padding:14px 15px;border-radius:15px;background:var(--card);border:1px solid var(--edge);border-left:3px solid #10b981}
+  .have h3{margin:0 0 6px;font-size:13.5px;letter-spacing:-.02em}
+  .have p{margin:0;font-size:12.5px;line-height:1.6;color:var(--ink-soft)}
+  .have p b{color:#f1f5f9}
+
+  .decide{margin-top:32px;padding:16px 18px;border-radius:16px;background:var(--card);border:1px solid var(--edge)}
+  .decide h2{font-size:15px;margin:0 0 4px;letter-spacing:-.02em}
+  .decide p{font-size:13px;color:var(--ink-soft);line-height:1.7;margin:10px 0 0}
+  .decide p b{color:#f1f5f9}
+  .decide .k{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mint-2);display:block;margin-bottom:2px}
+  .state{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+  .s{padding:13px 15px;border-radius:14px;background:var(--card);border:1px solid var(--edge);border-left-width:3px}
+  .s h4{margin:0 0 3px;font-size:13px;letter-spacing:-.02em}
+  .s .v{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+  .s p{margin:0;font-size:12.5px;line-height:1.55;color:var(--ink-soft)}
+  .s.ya{border-left-color:#10b981} .s.ya .v{color:#34d399}
+  .s.falta{border-left-color:#a78bfa} .s.falta .v{color:#a78bfa}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Qué hice esta vez</h1>
+  <p class="lede">«Trabajo en lululemon» es <b>siempre lo mismo</b>; «revisando MRs» es <b>lo de hoy</b>. Por eso la nota es de la sesión y no de la actividad: mañana la misma actividad dirá otra cosa. Y la buena noticia — <b>el sitio donde guardarla ya existe</b>: la base de datos ya tiene ese campo y la app ya lo escribe al terminar y al registrar algo pasado. Lo que falta es poder ponerlo <b>antes</b>, <b>durante</b> y <b>desde la línea del día</b>.</p>
+
+  <p class="caption">Para qué sirve: la línea del día, con y sin notas</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="ctitle">1 · Así se lee tu día<small>La nota va en su propia línea, debajo del nombre.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="agenda"><div class="rail"></div>
+
+          <div class="slot"><span class="t">08:00</span><span class="dot"></span>
+            <div class="card done"><span class="ic">💼</span>
+              <span class="txt"><span class="nm">Trabajo en lululemon</span>
+              <span class="what">Revisando MRs</span>
+              <span class="meta">08:00 – 10:30 · 2h 30m</span></span>
+              <span class="pencil">✎</span></div></div>
+
+          <div class="slot"><span class="t">10:30</span><span class="dot"></span>
+            <div class="card done"><span class="ic" style="background:rgba(148,163,184,.14)">☕</span>
+              <span class="txt"><span class="nm">Café</span>
+              <span class="meta">10:30 – 10:50 · 20m</span></span></div></div>
+
+          <div class="slot"><span class="t">10:50</span><span class="dot"></span>
+            <div class="card done"><span class="ic">💼</span>
+              <span class="txt"><span class="nm">Trabajo en lululemon</span>
+              <span class="what">Daily + planning del sprint</span>
+              <span class="meta">10:50 – 11:40 · 50m</span></span>
+              <span class="pencil">✎</span></div></div>
+
+          <div class="slot"><span class="t">11:40</span><span class="dot" style="border-color:var(--violet)"></span>
+            <div class="card run"><span class="ic">💼</span>
+              <span class="txt"><span class="nm">Trabajo en lululemon</span>
+              <span class="what">Bug del carrito — reproduciendo</span>
+              <span class="meta">11:40 – 12:25 · 45m · en marcha</span></span>
+              <span class="pencil">✎</span></div></div>
+
+          <div class="nowline"><span class="h">12:25</span><span class="b">AHORA</span><span class="l"></span></div>
+        </div>
+      </div></div>
+      <p class="note">Tres sesiones de <b>la misma actividad</b> y tres días distintos dentro del mismo día. Sin la nota, esa línea dice «Trabajo, Trabajo, Trabajo» y no se puede releer. Con ella, tu semana se vuelve legible — y <b>Revisión hereda esto gratis</b>.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">2 · Durante, sin parar nada<small>La sesión en marcha lleva la nota encima.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="bar">
+          <div class="bhead"><span class="ic">💼</span><span class="btitle">Trabajo en lululemon</span><span class="btime">45m</span></div>
+          <div class="noteline"><span class="i">✎</span><p>¿Qué estás haciendo?</p></div>
+          <div class="bactions"><span class="bact">Pausar</span><span class="bact stop">Terminar</span></div>
+        </div>
+
+        <div style="height:14px"></div>
+
+        <div class="bar">
+          <div class="bhead"><span class="ic">💼</span><span class="btitle">Trabajo en lululemon</span><span class="btime">52m</span></div>
+          <div class="noteline filled"><span class="i on">✎</span><p>Bug del carrito — reproduciendo</p></div>
+          <div class="bactions"><span class="bact">Pausar</span><span class="bact stop">Terminar</span></div>
+        </div>
+      </div></div>
+      <p class="note">Una línea, siempre visible mientras algo corre. Tocarla abre el teclado y <b>guardar no para el cronómetro</b> ni cierra nada. Se puede cambiar las veces que quieras: si empezaste revisando MRs y acabaste en una reunión, lo reescribes.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">3 · Al tocar la nota<small>Y lo que hace que no cueste: lo de la última vez.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="sheet">
+          <div class="shead">¿Qué estás haciendo?</div>
+          <p class="ssub">Trabajo en lululemon · desde las 11:40</p>
+          <div class="field">Bug del carrito — reproduciendo<span class="caret"></span></div>
+          <div class="count">29 / 140</div>
+
+          <div class="again">
+            <div class="againlab">Lo de otras veces</div>
+            <div class="chips">
+              <span class="chip">Revisando MRs</span>
+              <span class="chip">Daily + planning del sprint</span>
+              <span class="chip">Soporte y tickets</span>
+            </div>
+          </div>
+
+          <div class="sactions"><span class="sact">Cancelar</span><span class="sact ok">Guardar</span></div>
+        </div>
+      </div></div>
+      <p class="note">Las píldoras son <b>tus últimas notas de esa misma actividad</b>. Escribir a mano cuesta; tocar una píldora cuesta un dedo. Es la diferencia entre que uses esto un mes o tres días — <b>igual que el resto del módulo, registrar no puede costar</b>.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Antes de empezar: sin estorbar el toque único</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="ctitle">4 · El botón no cambia<small>Empezar sigue siendo un toque. La nota es opcional y va al lado.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="next">
+          <span class="kicker">Lo que viene</span>
+          <div class="who"><span class="ic">💼</span>
+            <span><span class="nm2">Trabajo en lululemon</span><span class="when">En tu plantilla, a las 11:30 · suele durarte 3 h</span></span></div>
+          <div class="plays"><span class="play">▶ Empezar ahora</span><span class="addnote">✎</span></div>
+        </div>
+
+        <div style="height:16px"></div>
+
+        <div class="next" style="border-color:rgba(16,185,129,.28)">
+          <span class="kicker">Lo que viene</span>
+          <div class="who"><span class="ic">💼</span>
+            <span><span class="nm2">Trabajo en lululemon</span><span class="when">En tu plantilla, a las 11:30 · suele durarte 3 h</span></span></div>
+          <div class="noteline filled" style="margin-top:10px"><span class="i on">✎</span><p>Revisando MRs</p></div>
+          <div class="plays"><span class="play">▶ Empezar ahora</span></div>
+        </div>
+      </div></div>
+      <p class="note">Esto es lo único delicado de toda la feature. <b>El botón grande no se toca y no pide nada</b>: quien no quiera nota, pulsa y arranca como hoy. El lápiz de al lado es para cuando ya sabes qué vas a hacer; una vez escrita, la nota se ve y el botón vuelve a ocupar la fila entera.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle have">5 · Al terminar — ya existe<small>Esto funciona hoy y no se toca.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="sheet">
+          <div class="shead">Terminar sesión</div>
+          <p class="ssub">Trabajo en lululemon · 11:40 – 12:25 · 45m</p>
+          <div class="field" style="border-color:rgba(148,163,184,.3)">Bug del carrito — reproducido y parcheado</div>
+          <div class="sactions"><span class="sact">Seguir</span><span class="sact ok">Terminar</span></div>
+        </div>
+      </div></div>
+      <div class="have">
+        <h3>Y también existe ya</h3>
+        <p>Cuando <b>registras algo que ya hiciste</b> —rellenar un hueco pasado— la caja de la nota está ahí desde el primer día. Lo que esta feature añade es que <b>lo escrito en cualquiera de los cuatro momentos sea la misma nota</b>, no cuatro cosas distintas.</p>
+      </div>
+      <p class="note">El campo de la nota <b>ya viaja al servidor</b> en los tres momentos que hacen falta —al arrancar, al registrar y al editar—, así que esto <b>no necesita ni una migración ni tocar el API</b>. Es sacar a la pantalla algo que ya está guardado.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">6 · Desde la línea, después<small>Lo que se te olvidó escribir, se escribe luego.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="agenda"><div class="rail"></div>
+          <div class="slot"><span class="t">14:00</span><span class="dot"></span>
+            <div class="card done"><span class="ic">💼</span>
+              <span class="txt"><span class="nm">Trabajo en lululemon</span>
+              <span class="what" style="color:#475569">＋ añadir qué hiciste</span>
+              <span class="meta">14:00 – 16:40 · 2h 40m</span></span></div></div>
+          <div class="slot"><span class="t">16:40</span><span class="dot"></span>
+            <div class="card done"><span class="ic">🏋️</span>
+              <span class="txt"><span class="nm">Gimnasio</span>
+              <span class="meta">16:40 – 17:30 · 50m</span></span></div></div>
+        </div>
+      </div></div>
+      <p class="note">Una sesión terminada sin nota <b>no grita</b>: ofrece un «＋ añadir qué hiciste» en gris, del mismo tamaño que el resto, y solo en el día que estás mirando. En Gimnasio ni eso aparece — <b>no toda actividad pide explicación</b>, y una línea vacía en cada fila sería ruido diario.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Los cuatro momentos que pediste, y de cuál venimos</p>
+  <div class="state">
+    <div class="s falta"><h4>Antes de empezar</h4><div class="v">falta</div><p>El campo ya viaja al arrancar la sesión; no hay dónde escribirlo. Es el punto 4, y el que no puede estorbar el toque único.</p></div>
+    <div class="s falta"><h4>Durante</h4><div class="v">falta</div><p>La barra de la sesión en marcha hoy no enseña ni deja editar la nota. Es el punto 2 y 3, y probablemente el que más vas a usar.</p></div>
+    <div class="s ya"><h4>Al terminar</h4><div class="v">ya existe</div><p>La caja está en la ventana de terminar sesión y guarda bien. No se toca.</p></div>
+    <div class="s falta"><h4>En la línea del día</h4><div class="v">falta</div><p>La nota <b>no se pinta</b> en ninguna fila, ni terminada ni en marcha, así que hoy es invisible aunque la escribas. Es la mitad del valor de la feature.</p></div>
+  </div>
+
+  <div class="decide">
+    <h2>Lo que decido yo y puedes tumbar en una línea</h2>
+    <p><span class="k">De quién es la nota</span>De <b>la sesión</b>, no de la actividad. «Trabajo en lululemon» es siempre lo mismo; lo que cambia es lo de hoy. Dos sesiones de la misma actividad el mismo día pueden decir cosas distintas —y en el primer dibujo lo hacen.</p>
+    <p><span class="k">Empieza en blanco</span>Cada sesión <b>nace sin nota</b>, no arrastra la de ayer: si se copiara, en tres días estarías leyendo algo que ya no es verdad y dejarías de fiarte de la línea. En su lugar, <b>las últimas notas de esa actividad se ofrecen como píldoras</b> de un toque.</p>
+    <p><span class="k">Una línea, no un diario</span>Cabe un renglón —unos 140 caracteres— y en la línea del día se recorta con puntos suspensivos. Si quieres párrafos, eso es otra cosa y probablemente pertenece a la descripción de la actividad, que ya existe.</p>
+    <p><span class="k">Cómo se llama</span>En la pantalla la pregunta es <b>«¿Qué estás haciendo?»</b> mientras corre y <b>«¿Qué hiciste?»</b> cuando ya terminó. No la llamo «nota» ni «descripción» en ningún sitio visible: nadie tiene ganas de rellenar un campo, pero casi todo el mundo contesta una pregunta.</p>
+    <p><span class="k">Lo que esto no es</span>No son etiquetas, ni subtareas —que ya existen y son otra cosa—, ni un campo que se pueda buscar todavía. Es una línea que te deja releer tu semana.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -2,12 +2,14 @@ import {
   ACTIVITY_CATEGORIES_QUERY,
   ACTIVITY_CATEGORY_ADD_MUTATION,
   ACTIVITY_CATEGORY_EDIT_MUTATION,
+  ACTIVITY_CATEGORY_GOAL_SET_MUTATION,
   ACTIVITY_CATEGORY_QUERY,
   ACTIVITY_CATEGORY_REMOVE_MUTATION,
 } from '@/features/vida/graphql/activity-categories.graphql'
 import type {
   ActivityCategory,
   ActivityCategoryEditInput,
+  ActivityCategoryGoalSetInput,
   ActivityCategoryInput,
 } from '@/features/vida/types/activity-category.types'
 import { graphqlRequest } from '@/shared/api/graphql-client'
@@ -26,6 +28,10 @@ type ActivityCategoryAddData = {
 
 type ActivityCategoryEditData = {
   activityCategoryEdit: ActivityCategory
+}
+
+type ActivityCategoryGoalSetData = {
+  activityCategoryGoalSet: ActivityCategory
 }
 
 type ActivityCategoryRemoveData = {
@@ -71,4 +77,18 @@ export async function deleteActivityCategory(id: string): Promise<boolean> {
     { id },
   )
   return data.activityCategoryRemove
+}
+
+/**
+ * Apunta (o desapunta) una categoría a una meta. Un viaje: si la meta no
+ * existe todavía, el servidor la crea en la misma transacción.
+ */
+export async function setActivityCategoryGoal(
+  input: ActivityCategoryGoalSetInput,
+): Promise<ActivityCategory> {
+  const data = await graphqlRequest<
+    ActivityCategoryGoalSetData,
+    { input: ActivityCategoryGoalSetInput }
+  >(ACTIVITY_CATEGORY_GOAL_SET_MUTATION, { input })
+  return data.activityCategoryGoalSet
 }

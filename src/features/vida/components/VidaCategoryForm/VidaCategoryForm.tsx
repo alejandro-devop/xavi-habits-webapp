@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/shared/ui/Button'
+import { Checkbox } from '@/shared/ui/Checkbox'
 import { ColorPicker } from '@/shared/ui/ColorPicker'
 import { FormField } from '@/shared/ui/FormField'
 import { IconPicker } from '@/shared/ui/IconPicker'
@@ -10,6 +11,15 @@ export type VidaCategoryFormValues = {
   name: string
   icon: string | null
   color: string | null
+  /**
+   * La categoría apunta a la meta de trabajo.
+   *
+   * **Se llama `isWork` y no `goalId` a propósito**: hoy el formulario no puede
+   * producir un id, porque la meta puede no existir todavía — la crea el
+   * servidor la primera vez. El día que haya más de una meta este campo pasa a
+   * `goalId: string | null` y el campo se dibuja como lista, sin tocar el API.
+   */
+  isWork: boolean
 }
 
 type Props = {
@@ -22,9 +32,9 @@ type Props = {
 }
 
 /**
- * Nombre, icono y color de una categoría de Vida: los tres campos del criterio
- * 27 y ni uno más. Es el mismo trío de `CreateVidaCategoryStep` —el paso que se
- * apila en la hoja— pero **sin mutar nada**: aquí el formulario es tonto y la
+ * Nombre, icono, color y la meta de una categoría de Vida. Son los mismos
+ * campos de `CreateVidaCategoryStep` —el paso que se apila en la hoja— pero
+ * **sin mutar nada**: aquí el formulario es tonto y la
  * pantalla decide qué mutación toca, como `HabitCategoryForm` en hábitos.
  *
  * El icono entra por `IconPickerLazy` (lo que exporta `@/shared/ui/IconPicker`)
@@ -87,6 +97,15 @@ export function VidaCategoryForm({
           label="Color de la categoría"
         />
       </div>
+
+      <Checkbox
+        id="vida-category-is-work"
+        checked={values.isWork}
+        onChange={(event) => onChange({ ...values, isWork: event.target.checked })}
+        disabled={loading}
+        label="Esto es trabajo"
+        description="Sus horas suman en el arco de trabajo de Hoy."
+      />
 
       <div className={styles.actions}>
         <Button type="button" variant="ghost" onClick={onCancel} disabled={loading}>

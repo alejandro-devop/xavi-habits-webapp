@@ -112,6 +112,15 @@ lint nuevo no se acepta.
 
 Después de cambiar código: `graphify update .` (regla de `CLAUDE.md`).
 
+**Trampa recurrente: los mocks de módulo de `useActivityCategories`.** Cada vez
+que una mutación de categorías cambia de forma —añadir una, o pasar de `mutate`
+a `mutateAsync`—, aparecen suites que **siguen en verde por casualidad**: su
+`buildMutation()` no tiene el método nuevo, o el `vi.mock` del módulo no lista
+el hook nuevo, y pasan solo porque esa suite no recorre el camino que lo usa.
+Visto en FEAT-016 tajada 1 con `VidaActividadesPage.test.tsx` y
+`VidaPlantillaPage.test.tsx`. Al tocar ese módulo, **búscalos y complétalos
+aunque estén verdes**: son trampas puestas para quien venga detrás.
+
 ### El otro repositorio: `xavi-platform-node`
 
 La tabla de arriba es **solo de este repositorio**. Cuando una tajada toca el
@@ -135,11 +144,30 @@ las suites rotas toca `activity_categories` ni `user_settings`, que es donde
 cae el trabajo de Vida. Aun así se mide antes y después: la regla sigue siendo
 «no peor que la línea base», solo que la línea base aquí ya viene rota.
 
-**Y lo más importante de este repositorio: un push a `main` despliega.** Cloud
-Run y Render a la vez. `RUN_MIGRATIONS: 'false'` en `render.yaml`, así que el
-despliegue **no corre las migraciones**: alguien las corre a mano contra la base
-de producción. Hay una pendiente, la **068 de FEAT-012**, que viajará en el
-siguiente push aunque no sea suya.
+**Y lo más importante de este repositorio: un push a `main` despliega Y migra.**
+Verificado el 2026-09-22 leyendo `.github/workflows/deploy.yml` y el historial
+de ejecuciones, porque **este párrafo dijo lo contrario durante un rato y era
+falso**:
+
+- El workflow salta con cada push a `main`, construye la imagen y **ejecuta las
+  migraciones pendientes como un job de Cloud Run** (`gcloud run jobs execute
+  xavi-migrate --wait`, `npm run migrate`, `--max-retries=0`) contra el
+  `DATABASE_URL` del secreto `database-url`. Como **espera** y no reintenta, una
+  migración que falle tumba el despliegue: no hay despliegue a medias en
+  silencio.
+- Solo **después** despliega Cloud Run; Render auto-despliega por su cuenta.
+- `RUN_MIGRATIONS: 'false'` en `render.yaml` **no** significa «nadie migra»:
+  significa que **el contenedor de Render no migra al arrancar** (no tiene
+  pre-deploy en el plan free y se reinicia en cada spin-down). Migra el job de
+  Cloud Run, y como **las dos instancias comparten la misma base de Neon**, migra
+  para las dos.
+
+Corolario que se dio por pendiente sin comprobarlo: **la migración 068 de
+FEAT-012 ya corrió**. Viajó en `73e3c44` y su ejecución del workflow terminó en
+verde (2026-09-22, 9m15s). No hay ninguna migración pendiente de correr a mano.
+
+Lo que sigue siendo del usuario es **el push**, no la migración: despliega a dos
+sitios y toca datos de producción.
 
 **Contratos GraphQL de Vida.** `src/features/vida/graphql/contracts.test.ts`
 valida cada documento del módulo con `graphql` (devDependency; **no se importa

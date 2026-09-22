@@ -3,6 +3,7 @@ import * as activityCategoriesApi from '@/features/vida/api/activity-categories.
 import { useVidaQueryGuard } from '@/features/vida/hooks/useVidaQueryGuard'
 import type {
   ActivityCategoryEditInput,
+  ActivityCategoryGoalSetInput,
   ActivityCategoryInput,
 } from '@/features/vida/types/activity-category.types'
 import { invalidateActivityCategoryQueries } from '@/features/vida/utils/invalidate-vida-queries'
@@ -67,6 +68,31 @@ export function useUpdateActivityCategoryMutation() {
     },
     onError: (error) => {
       toast.error(toErrorMessage(error, 'No pudimos guardar la categoría'))
+    },
+  })
+}
+
+/**
+ * Apuntar (o desapuntar) una categoría a una meta. Reusa la invalidación que ya
+ * existe: al volver el catálogo, todo lo que dependa de la meta se recalcula
+ * solo, sin recargar la página.
+ *
+ * **Sin toast de éxito a propósito**: al guardar el formulario esta mutación
+ * viaja junto a `activityCategoryEdit`, que ya dice «Categoría actualizada»;
+ * dos avisos por un solo guardado serían ruido. El de error sí está, porque al
+ * crear es el segundo viaje y puede fallar solo.
+ */
+export function useSetActivityCategoryGoalMutation() {
+  const queryClient = useQueryClient()
+  const toast = useToast()
+  return useMutation({
+    mutationFn: (input: ActivityCategoryGoalSetInput) =>
+      activityCategoriesApi.setActivityCategoryGoal(input),
+    onSuccess: (_data, variables) => {
+      invalidateActivityCategoryQueries(queryClient, { id: variables.categoryId })
+    },
+    onError: (error) => {
+      toast.error(toErrorMessage(error, 'No pudimos guardar la meta de la categoría'))
     },
   })
 }

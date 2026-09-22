@@ -24,9 +24,20 @@ type QueryState = {
 
 const refetch = vi.fn()
 
-/** La hoja se monta con la pantalla: sus mutaciones no hacen nada aquí. */
+/**
+ * La hoja se monta con la pantalla: sus mutaciones no hacen nada aquí. El
+ * `mutateAsync` está aunque esta suite no abra «+ nueva» — el paso de crear
+ * categoría encadena crear → apuntar a la meta con `await`, y un doble sin él
+ * reventaría en cuanto alguien añadiera ese recorrido aquí.
+ */
 function buildMutation() {
-  return { mutate: vi.fn(), reset: vi.fn(), isPending: false, isError: false }
+  return {
+    mutate: vi.fn(),
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    reset: vi.fn(),
+    isPending: false,
+    isError: false,
+  }
 }
 let sheetMutation: ReturnType<typeof buildMutation>
 
@@ -43,6 +54,7 @@ vi.mock('@/features/vida/hooks/useActivities', () => ({
 vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
   useActivityCategoriesQuery: () => categoriesState,
   useCreateActivityCategoryMutation: () => sheetMutation,
+  useSetActivityCategoryGoalMutation: () => sheetMutation,
 }))
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   // Se guarda el argumento: si alguien quita el `includeInactive`, el test se
@@ -83,6 +95,8 @@ function buildCategory(overrides: Partial<ActivityCategory> = {}): ActivityCateg
     description: null,
     icon: 'house-chimney',
     color: '#8b5cf6',
+    goalId: null,
+    goal: null,
     ...overrides,
   }
 }

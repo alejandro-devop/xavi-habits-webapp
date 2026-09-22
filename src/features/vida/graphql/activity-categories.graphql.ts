@@ -8,6 +8,16 @@ export const ACTIVITY_CATEGORIES_QUERY = `
       description
       icon
       color
+      goalId
+      goal {
+        id
+        slug
+        name
+        icon
+        color
+        targetMinutes
+        orderIndex
+      }
     }
   }
 `
@@ -22,6 +32,16 @@ export const ACTIVITY_CATEGORY_QUERY = `
       description
       icon
       color
+      goalId
+      goal {
+        id
+        slug
+        name
+        icon
+        color
+        targetMinutes
+        orderIndex
+      }
     }
   }
 `
@@ -36,6 +56,16 @@ export const ACTIVITY_CATEGORY_ADD_MUTATION = `
       description
       icon
       color
+      goalId
+      goal {
+        id
+        slug
+        name
+        icon
+        color
+        targetMinutes
+        orderIndex
+      }
     }
   }
 `
@@ -50,6 +80,16 @@ export const ACTIVITY_CATEGORY_EDIT_MUTATION = `
       description
       icon
       color
+      goalId
+      goal {
+        id
+        slug
+        name
+        icon
+        color
+        targetMinutes
+        orderIndex
+      }
     }
   }
 `
@@ -57,5 +97,29 @@ export const ACTIVITY_CATEGORY_EDIT_MUTATION = `
 export const ACTIVITY_CATEGORY_REMOVE_MUTATION = `
   mutation ActivityCategoryRemove($id: ID!) {
     activityCategoryRemove(id: $id)
+  }
+`
+
+export const ACTIVITY_CATEGORY_GOAL_SET_MUTATION = `
+  mutation ActivityCategoryGoalSet($input: ActivityCategoryGoalSetInput!) {
+    activityCategoryGoalSet(input: $input) {
+      id
+      userId
+      orderIndex
+      name
+      description
+      icon
+      color
+      goalId
+      goal {
+        id
+        slug
+        name
+        icon
+        color
+        targetMinutes
+        orderIndex
+      }
+    }
   }
 `

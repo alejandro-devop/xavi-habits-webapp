@@ -48,6 +48,8 @@ const mockCategory = {
   description: null,
   icon: null,
   color: '#10B981',
+  goalId: null,
+  goal: null,
 }
 
 beforeEach(() => {

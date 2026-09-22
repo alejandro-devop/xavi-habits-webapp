@@ -5,6 +5,7 @@ import { VidaAgendaBlock } from '@/features/vida/components/VidaAgendaBlock'
 import { VidaAgendaGap } from '@/features/vida/components/VidaAgendaGap'
 import { VidaAgendaNoData } from '@/features/vida/components/VidaAgendaNoData'
 import { VidaAgendaSession } from '@/features/vida/components/VidaAgendaSession'
+import { VidaBlockHint } from '@/features/vida/components/VidaBlockHint'
 import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
@@ -12,12 +13,16 @@ import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSh
 import type { VidaLogSessionMode } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
-import { useAddDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
+import {
+  useAddDayPlanItemMutation,
+  useEditDayPlanItemMutation,
+} from '@/features/vida/hooks/useActivityDayPlan'
 import { useCreateActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
 import { useBuildDayFromTemplate } from '@/features/vida/hooks/useBuildDayFromTemplate'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
 import { useVidaOpenSession } from '@/features/vida/hooks/useVidaOpenSession'
+import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
 import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActions'
 import { useVidaSessionUi } from '@/features/vida/hooks/useVidaSessionUi'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
@@ -43,6 +48,11 @@ import {
   plannedSessionMinutes,
 } from '@/features/vida/utils/vida-execution.utils'
 import type { NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
+import type { VidaBlockHint as BlockHint } from '@/features/vida/utils/vida-patterns.utils'
+import {
+  pickBlockHints,
+  usualDurationsByItemId,
+} from '@/features/vida/utils/vida-patterns.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
 import {
   getBlockNote,
@@ -267,6 +277,104 @@ export function VidaHoyPage() {
     executionKnown && execution.budget.form === 'closed'
       ? buildDayClosingLine(collectDayClosing({ execution, agenda, couldNotItemIds }))
       : null
+
+  /* ── Lo que se repite, traído a Hoy (FEAT-007, tajada 3) ───────────────
+   *
+   * **La ventana de seis semanas se monta diferida, y no siempre.** Hoy es la
+   * pantalla que más se abre del módulo y la ventana son 42 consultas de plan
+   * más una de rango: montarla en el primer pintado sería castigar la pantalla
+   * más usada por un aviso que puede esperar dos segundos. En Revisión esto se
+   * contiene solo —la sección está cerrada hasta que la abres—; aquí no hay
+   * sección que abrir, así que el interruptor es explícito y tiene **cuatro**
+   * condiciones:
+   *
+   * 1. **El día se puede planear** (`canPlan`). Un día pasado se mira: no hay
+   *    nada que proponerle, así que no paga ni una consulta (criterio 38).
+   * 2. **Los datos propios de la pantalla ya resolvieron.** El primer pintado
+   *    de Hoy no espera a nadie, que es lo que pide el criterio 92.
+   * 3. **Hay algo de lo que hablar**: o un plan armado, o una plantilla con la
+   *    que armarlo. Sin ninguna de las dos no hay bloque al que pegar un aviso
+   *    ni ficha a la que ponerle una duración.
+   * 4. Y la de siempre: **hay sesión** (el propio hook lo comprueba).
+   *
+   * El coste medido está escrito en el dossier (criterio 103). El resumen:
+   * abrir Hoy en frío pasa de ~13 consultas a ~53 el peor día, y **volver a
+   * abrirla en la misma sesión cuesta cero**, porque los días cerrados de la
+   * ventana ya no caducan solos.
+   */
+  const canShowPatterns = canPlan && !isDisabled && !isPending && !isPlanError
+  const patterns = useVidaPatterns({
+    enabled: canShowPatterns && (planItems.length > 0 || suggestions.length > 0),
+    // **El hoy de verdad**, no el día que se mira: la ventana mira hacia atrás
+    // desde hoy y es **la misma** para las tres pantallas. Si Hoy mirase desde
+    // el día visto, la misma costumbre tendría un número distinto en cada
+    // pantalla y la regla de los diez minutos de D1 dispararía sola.
+    today,
+    nowMinutes,
+    dayHours,
+  })
+
+  // La duración que sueles tardar, para los chips del hueco (criterio 91).
+  // Vacío mientras no haya patrones: Hoy es entonces el de FEAT-003/004.
+  const usualDurations = useMemo(
+    () => usualDurationsByItemId(patterns.patterns),
+    [patterns.patterns],
+  )
+
+  // **Dos avisos como mucho, y nunca dos del mismo bloque** (criterio 88). La
+  // regla entera vive en `pickBlockHints`, que es puro y está probado; aquí
+  // solo se le dan los bloques del día con el sitio que tienen para moverse.
+  const blockHints = useMemo(() => {
+    if (!canShowPatterns) return []
+    return pickBlockHints({
+      patterns: patterns.patterns,
+      blocks: agenda.blocks.map((block) => {
+        const space = getBlockEditWindow(agenda, block.id)
+        return {
+          blockId: block.id,
+          activityId: block.item.activityId,
+          startMinutes: block.startMinutes,
+          durationMinutes: block.durationMinutes,
+          windowStartMinutes: space?.startMinutes ?? block.startMinutes,
+          windowEndMinutes: space?.endMinutes ?? block.endMinutes,
+          // Un bloque que ya terminó, o que ya tiene sesión, no está «por
+          // planear»: cambiarle la hora a toro pasado no es un aviso, es
+          // llegar tarde.
+          isDone:
+            Boolean(execution.byBlockId[block.id]) ||
+            (nowMinutes !== null && block.endMinutes <= nowMinutes),
+        }
+      }),
+      scopeLabel: isToday ? 'solo para hoy' : `solo para el ${formatDayHeading(date).toLowerCase()}`,
+    })
+  }, [canShowPatterns, patterns.patterns, agenda, execution.byBlockId, nowMinutes, isToday, date])
+
+  const hintByBlockId = useMemo(
+    () => Object.fromEntries(blockHints.map((hint) => [hint.blockId, hint])),
+    [blockHints],
+  )
+
+  const editMutation = useEditDayPlanItemMutation()
+
+  /**
+   * **Sí**: cambia **el bloque de este día** y nada más (criterio 89, D2). Es
+   * un `activityDayPlanItemEdit`, la misma mutación que usa la hoja de «cambiar
+   * hora o duración»: **cero llamadas a `vidaItemUpdate`**, la plantilla no se
+   * entera. Lo que la plantilla tiene que cambiar se decide con calma en «Lo
+   * que se repite», que es donde la consecuencia cabe escrita entera.
+   */
+  function applyBlockHint(hint: BlockHint) {
+    const block = agenda.blocks.find((candidate) => candidate.id === hint.blockId)
+    if (!block) return
+    const startTime =
+      'startTime' in hint.dayPatch ? hint.dayPatch.startTime : minutesToTime(block.startMinutes)
+    const durationMinutes =
+      'durationMinutes' in hint.dayPatch ? hint.dayPatch.durationMinutes : block.durationMinutes
+    editMutation.mutate({
+      itemId: block.item.id,
+      ...toDayPlanTimes(startTime, durationMinutes),
+    })
+  }
 
   // La hoja: una `key` por apertura, como `VidaActividadesPage`. Se remonta
   // limpia sin que nadie tenga que vaciarla a mano, y se queda montada al
@@ -548,6 +656,7 @@ export function VidaHoyPage() {
         return (
           <Fragment key={entry.id}>
             {entry.kind === 'block' ? (
+              <>
               <VidaAgendaBlock
                 block={entry}
                 isNext={entry.id === nextBlockId}
@@ -599,6 +708,18 @@ export function VidaHoyPage() {
                   canLogPast ? (session) => openLogSheet({ mode: 'edit', session }) : undefined
                 }
               />
+              {/* **Pegado al bloque y debajo de él** (criterios 87 y 94): así
+                  no lo tapa ni lo empuja fuera de vista, y `VidaAgendaBlock`
+                  —entregado y revisado en FEAT-004— no se toca. */}
+              {hintByBlockId[entry.id] ? (
+                <VidaBlockHint
+                  hint={hintByBlockId[entry.id]!}
+                  onApply={applyBlockHint}
+                  onDismiss={(hint) => patterns.answerSuggestion(hint.suggestion)}
+                  isSaving={editMutation.isPending}
+                />
+              ) : null}
+              </>
             ) : noDataByGapId[entry.id] ? (
               // Un rato ya pasado del que no se sabe nada (criterios 47 a 49).
               // Solo con el día cerrado y algo registrado: ver
@@ -621,7 +742,15 @@ export function VidaHoyPage() {
                 // pasó sería un control que no lleva a ninguna parte.
                 suggestions={
                   canPlan
-                    ? suggestionsForGap({ suggestions, gap: entry, planItems })
+                    ? suggestionsForGap({
+                        suggestions,
+                        gap: entry,
+                        planItems,
+                        // **El dato sin pedir nada** (criterio 91). Vacío
+                        // mientras no haya cuatro datos de esa actividad: la
+                        // ficha es entonces exactamente la de antes.
+                        usualDurations,
+                      })
                     : NO_SUGGESTIONS
                 }
                 onPlaceSuggestion={canPlan ? placeSuggestion : undefined}

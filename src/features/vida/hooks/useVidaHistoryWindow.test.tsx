@@ -243,3 +243,61 @@ describe('useVidaHistoryWindow — lo que no se sabe', () => {
     expect(result.current.byDate['2026-09-17']?.followUps).toEqual([])
   })
 })
+
+/**
+ * **Lo que cuesta traer esto a Hoy** (FEAT-007, tajada 3, criterio 103).
+ *
+ * Hoy es la pantalla que más se abre del módulo, así que aquí se mide lo que la
+ * ventana le añade: lo que la propia pantalla ya trajo (su día y los siete de
+ * la tira) son aciertos de caché, y **volver a Hoy dentro de la sesión no pide
+ * ni un plan más**, porque un día cerrado ya no caduca solo.
+ */
+describe('useVidaHistoryWindow — el coste de traerla a Hoy (criterio 103)', () => {
+  it('el día visto y la tira ya están: la ventana solo pide lo que falta', async () => {
+    const client = newClient()
+    // Lo que Hoy trae por su cuenta antes de que la ventana se monte: el día
+    // visto (`useActivityDayPlanQuery`) y la tira (`useVidaWeekPlans`, siete
+    // días desde dos antes). De la tira, solo tres caen dentro de la ventana:
+    // los cuatro de delante son futuro.
+    for (const ymd of ['2026-09-18', '2026-09-19', SUNDAY]) {
+      client.setQueryData(vidaKeys.dayPlan.byDate(ymd), [block(ymd)])
+    }
+
+    const { result } = renderHook(
+      () => useVidaHistoryWindow({ enabled: true, today: SUNDAY }),
+      { wrapper: wrapper(client) },
+    )
+
+    await waitFor(() => expect(result.current.isPending).toBe(false))
+    // 42 − 3 = 39 planes nuevos, más **una** de sesiones.
+    expect(getActivityDayPlan).toHaveBeenCalledTimes(39)
+    expect(getActivityFollowUpsInDates).toHaveBeenCalledTimes(1)
+  })
+
+  it('volver a Hoy media hora después de irse: cero planes nuevos', async () => {
+    const client = newClient()
+    const first = renderHook(
+      () => useVidaHistoryWindow({ enabled: true, today: SUNDAY }),
+      { wrapper: wrapper(client) },
+    )
+    await waitFor(() => expect(first.result.current.isPending).toBe(false))
+    expect(getActivityDayPlan).toHaveBeenCalledTimes(42)
+    first.unmount()
+
+    // Un día cerrado no caduca solo: lo único que lo caduca es una escritura,
+    // y todas pasan por `invalidateDayPlanQueries`. Aquí se comprueba que ni
+    // siquiera el paso del tiempo lo hace.
+    const realNow = Date.now()
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(realNow + 1000 * 60 * 10)
+    const second = renderHook(
+      () => useVidaHistoryWindow({ enabled: true, today: SUNDAY }),
+      { wrapper: wrapper(client) },
+    )
+    await waitFor(() => expect(second.result.current.isPending).toBe(false))
+    // **Los 41 días cerrados salen gratis**: la única que se vuelve a pedir es
+    // la de hoy, que sí cambia y sigue con sus treinta segundos de reposo.
+    expect(getActivityDayPlan).toHaveBeenCalledTimes(43)
+    expect(getActivityDayPlan).toHaveBeenLastCalledWith(SUNDAY)
+    clock.mockRestore()
+  })
+})

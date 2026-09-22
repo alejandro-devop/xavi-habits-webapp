@@ -87,6 +87,10 @@ vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   // Desde la tajada 5: el bloque «Mañana» del lateral lee la plantilla entera
   // (`vidaItems`) para saber qué trae **mañana**, que no es el día visto.
   useVidaItemsQuery: () => itemsQuery,
+  // **Espía de la plantilla** (FEAT-007, criterio 89): en Hoy, aceptar un aviso
+  // cambia **el día**, nunca la plantilla. Hoy la página ni siquiera importa
+  // esta mutación; el espía está para que se entere alguien si algún día sí.
+  useUpdateVidaItemMutation: () => updateItemMutation,
 }))
 // Lo vivido del día visto (FEAT-004, tajada 2). Se mockea **la consulta**, no
 // `useVidaDayData`: lo que hay que comprobar es que la pantalla cruza de verdad
@@ -98,6 +102,28 @@ vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
   useCreateActivityFollowUpMutation: () => createFollowUpMutation,
   useUpdateActivityFollowUpMutation: () => updateFollowUpMutation,
   useDeleteActivityFollowUpMutation: () => deleteFollowUpMutation,
+}))
+/**
+ * **Los patrones de las últimas seis semanas** (FEAT-007, tajada 3). Se mockea
+ * **el hook**, que es el único punto de entrada de las tres pantallas y tiene
+ * su propio test; lo que esta pantalla tiene que hacer bien es **elegir** dos
+ * avisos, pegarlos a su bloque y no tocar la plantilla al aceptarlos — y eso
+ * pasa por `pickBlockHints` de verdad, que se ejecuta aquí sin mockear.
+ *
+ * Por defecto **vacío**: así, salvo que un caso diga lo contrario, Hoy es
+ * exactamente el Hoy de FEAT-003/004 (criterio 92).
+ */
+let patternsResult: {
+  patterns: unknown[]
+  answerSuggestion: ReturnType<typeof vi.fn>
+}
+let patternsEnabled: boolean[]
+let updateItemMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+vi.mock('@/features/vida/hooks/useVidaPatterns', () => ({
+  useVidaPatterns: (input: { enabled: boolean }) => {
+    patternsEnabled.push(input.enabled)
+    return patternsResult
+  },
 }))
 vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
@@ -262,6 +288,9 @@ beforeEach(() => {
     isDisabled: false,
     isPending: false,
   }
+  patternsResult = { patterns: [], answerSuggestion: vi.fn() }
+  updateItemMutation = { mutate: vi.fn(), isPending: false, isError: false }
+  patternsEnabled = []
   startSession = vi.fn().mockResolvedValue({ ok: true })
   finishSession = vi.fn().mockResolvedValue({ ok: true })
 })
@@ -1753,5 +1782,186 @@ describe('VidaHoyPage — pendiente, las tres salidas, sin dato y la frase de ci
     for (const prohibida of ['desperdici', 'perdiste', 'fallaste', 'cancelar', 'eliminar']) {
       expect(texto).not.toContain(prohibida)
     }
+  })
+})
+
+/* ── Los avisos al planear (FEAT-007, tajada 3: criterios 87 a 94) ───────── */
+
+/** Una tarjeta de «Lo que se repite», de las que ya llegan filtradas por D1. */
+function patternWith(
+  overrides: Partial<{
+    itemId: string
+    activityId: string
+    title: string
+    occurrences: number
+    offsetMinutes: number
+    kind: 'duration' | 'start-time' | 'drop-day'
+    dayPatch: { durationMinutes: number } | { startTime: string } | null
+    usualDurationMinutes: number | null
+  }> = {},
+) {
+  const {
+    itemId = 'i-b2',
+    activityId = 'a-b2',
+    title = 'Leer un rato',
+    occurrences = 6,
+    offsetMinutes = 25,
+    kind = 'duration',
+    dayPatch = { durationMinutes: 60 },
+    usualDurationMinutes = null,
+  } = overrides
+  return {
+    itemId,
+    usualDurationMinutes,
+    occurrences,
+    suggestion: {
+      id: `${kind}|${itemId}`,
+      kind,
+      itemId,
+      activityId,
+      title,
+      icon: 'fa-book',
+      color: null,
+      offsetMinutes,
+      dayOfWeek: null,
+      basis: 'base',
+      ask: 'pregunta',
+      consequence: 'consecuencia',
+      affirmativeLabel: 'Ponerlo en 1h',
+      dismissLabel: 'Dejarlo',
+      templatePatch: { durationMinutes: 60 },
+      dayPatch,
+    },
+  }
+}
+
+describe('el aviso pegado al bloque, en Hoy (criterios 87 a 94)', () => {
+  it('criterio 92 — sin datos suficientes, Hoy es EXACTAMENTE el de FEAT-003/004', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.queryByText(/De tus últimas semanas/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Así está bien/)).not.toBeInTheDocument()
+    // Ni leyenda nueva en los huecos, ni espacio reservado donde iría.
+    expect(screen.queryByText(/sueles tardar/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/la que sueles tardar/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 87 — el aviso va pegado a SU bloque, numerado y con las dos salidas', () => {
+    patternsResult.patterns = [patternWith()]
+    renderWithProviders(<VidaHoyPage />)
+
+    const aviso = screen.getByText('De tus últimas semanas').closest('li')!
+    expect(within(aviso).getByText('1 de 1')).toBeInTheDocument()
+    expect(within(aviso).getByText(/Leer un rato te suele llevar 25 min más/)).toBeInTheDocument()
+    expect(within(aviso).getByText(/¿lo dejamos en 1h\?/)).toBeInTheDocument()
+    expect(within(aviso).getByRole('button', { name: 'Sí, 1h' })).toBeInTheDocument()
+    expect(within(aviso).getByRole('button', { name: 'Así está bien' })).toBeInTheDocument()
+
+    // **Pegado**: el aviso va justo debajo del bloque del que habla, y el
+    // bloque sigue delante (criterio 94: no lo tapa ni lo empuja fuera).
+    const filas = Array.from(document.querySelectorAll('li'))
+    const bloque = screen.getByText('Leer un rato').closest('li')!
+    expect(filas.indexOf(aviso)).toBe(filas.indexOf(bloque) + 1)
+  })
+
+  it('criterio 89 — «Sí» cambia SOLO el bloque de ese día; la plantilla no se toca', () => {
+    patternsResult.patterns = [patternWith()]
+    renderWithProviders(<VidaHoyPage />)
+
+    const aviso = screen.getByText('De tus últimas semanas').closest('li')!
+    // Y lo dice **antes** de tocar nada.
+    expect(
+      within(aviso).getByText('Esto cambia solo para hoy: tu plantilla se queda como está.'),
+    ).toBeInTheDocument()
+
+    fireEvent.click(within(aviso).getByRole('button', { name: 'Sí, 1h' }))
+
+    expect(editMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(editMutation.mutate).toHaveBeenCalledWith({
+      itemId: 'b2',
+      startTime: '10:00',
+      endTime: '11:00',
+    })
+    // **Cero** llamadas a la plantilla y a las otras tres del plan del día.
+    expect(updateItemMutation.mutate).not.toHaveBeenCalled()
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+    expect(removeMutation.mutate).not.toHaveBeenCalled()
+    expect(setMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 90 — «Así está bien» no llama a nadie: guarda la respuesta y ya', () => {
+    patternsResult.patterns = [patternWith()]
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Así está bien' }))
+
+    expect(patternsResult.answerSuggestion).toHaveBeenCalledTimes(1)
+    expect(editMutation.mutate).not.toHaveBeenCalled()
+    expect(updateItemMutation.mutate).not.toHaveBeenCalled()
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 88 — con tres candidatos se pintan DOS y el tercero no aparece', () => {
+    patternsResult.patterns = [
+      patternWith({ itemId: 'i-b2', activityId: 'a-b2', title: 'Leer un rato', occurrences: 9 }),
+      patternWith({
+        itemId: 'i-b3',
+        activityId: 'a-b3',
+        title: 'Cocinar y almorzar',
+        occurrences: 7,
+        dayPatch: { durationMinutes: 90 },
+      }),
+      patternWith({
+        itemId: 'i-b1',
+        activityId: 'a-b1',
+        title: 'Bañarme',
+        occurrences: 5,
+        dayPatch: { durationMinutes: 60 },
+      }),
+    ]
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getAllByText('De tus últimas semanas')).toHaveLength(2)
+    expect(screen.getByText('1 de 2')).toBeInTheDocument()
+    expect(screen.getByText('2 de 2')).toBeInTheDocument()
+    expect(screen.queryByText(/Bañarme te suele llevar/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 93 — ningún aviso se lee como alarma, y el día se arma ignorándolos', () => {
+    patternsResult.patterns = [patternWith()]
+    renderWithProviders(<VidaHoyPage />)
+
+    const aviso = screen.getByText('De tus últimas semanas').closest('li')!
+    expect(within(aviso).queryByRole('alert')).not.toBeInTheDocument()
+    const texto = aviso.textContent!.toLowerCase()
+    for (const palabra of ['desperdicio', 'fallaste', 'incumpl', 'deberías', 'perdiste', 'error']) {
+      expect(texto).not.toContain(palabra)
+    }
+    // Sin tocar nada, el plan del día no se mueve: eso es «se puede ignorar».
+    expect(editMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('un día pasado no paga la ventana ni recibe avisos (criterio 38 sigue en pie)', () => {
+    viewedDate = '2026-09-14'
+    patternsResult.patterns = [patternWith()]
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-14'] },
+    })
+
+    expect(patternsEnabled.every((enabled) => enabled === false)).toBe(true)
+    expect(screen.queryByText('De tus últimas semanas')).not.toBeInTheDocument()
+  })
+
+  it('criterio 91 — los chips del hueco ofrecen la duración que sueles tardar, y lo dicen', () => {
+    suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
+    patternsResult.patterns = [
+      patternWith({ itemId: 's1', activityId: 'a-s1', usualDurationMinutes: 55, dayPatch: null }),
+    ]
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getAllByText('sueles tardar 55m').length).toBeGreaterThan(0)
+    expect(
+      screen.getAllByText(/La duración que se ofrece es la que sueles tardar/).length,
+    ).toBeGreaterThan(0)
   })
 })

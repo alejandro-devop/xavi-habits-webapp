@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1789959456.012215,
-    "ast_hash": "6ffab1eb80a1863445f308c7ce31107e",
+    "mtime": 1790052206.9896836,
+    "ast_hash": "293d9dfccc0d115bf4602c419940db3b",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790050658.4862711,
-    "ast_hash": "e808a2501c5394ca7fdad65185860a12",
+    "mtime": 1790051607.8078952,
+    "ast_hash": "b1ff0574917ae8ca09dbacce3e1abbc0",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790048519.2289135,
-    "ast_hash": "520c67c8afbcd8cc58a6da7375d2d1f7",
+    "mtime": 1790051649.6083574,
+    "ast_hash": "31c6eaa826036dd77d3075b233acd065",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2955,8 +2955,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx": {
-    "mtime": 1789930120.630562,
-    "ast_hash": "b2ee63491c861d6d43922e8fe5e18f2e",
+    "mtime": 1790052096.0644073,
+    "ast_hash": "fe6a09f4b89e7d9853b26d52fcb2aa31",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaAgendaGap/index.ts": {
@@ -3000,18 +3000,18 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1789959784.0851488,
-    "ast_hash": "0ebe5e7bfb70b9f3f3bc3231a5d21df7",
+    "mtime": 1790052452.3125234,
+    "ast_hash": "3f086eedb773198a4b65e87a04288910",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
-    "mtime": 1789923462.136957,
-    "ast_hash": "e354c40d7fb134e2c3a25f09be25c18e",
+    "mtime": 1790052336.2891777,
+    "ast_hash": "ce0e4aaebde27e78c25e82f63ab63a71",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.ts": {
-    "mtime": 1789929994.9204636,
-    "ast_hash": "676fb21f019bb3835e9fb627f168f77d",
+    "mtime": 1790052073.5581493,
+    "ast_hash": "533c5327a831341ea61fdce5558a069c",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.test.tsx": {
@@ -3590,13 +3590,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaHistoryWindow.test.tsx": {
-    "mtime": 1790047379.5041196,
-    "ast_hash": "d8677c269d06db46d1c6e2566ccae801",
+    "mtime": 1790052541.7345629,
+    "ast_hash": "d301dd97b4b8a916c6c46343fa1c65d7",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaHistoryWindow.ts": {
-    "mtime": 1790046962.8869486,
-    "ast_hash": "df016abc12963b933e481776ef4faefb",
+    "mtime": 1790052249.931179,
+    "ast_hash": "b06aa0aafcd44fb28296ea8b9c7d2553",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-adherence.utils.test.ts": {
@@ -3610,8 +3610,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-007-vida-sistema-entiende.md": {
-    "mtime": 1790050640.2030456,
-    "ast_hash": "088be43eb59bc593f9aa5f94f563178e",
+    "mtime": 1790051727.6722271,
+    "ast_hash": "0594a3b24e8e260f4e8fbe58d0cedfaf",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260922_030753_feat_007__ventana_de_42_dias__derivado_de_patrones.md": {
@@ -3640,13 +3640,23 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-patterns.utils.test.ts": {
-    "mtime": 1790050987.3374715,
-    "ast_hash": "dcf497006904bae7a10f7f384a3aa9fc",
+    "mtime": 1790052302.3307846,
+    "ast_hash": "f5f1ee52aaa38d77cee6b23ffc9e8362",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-patterns.utils.ts": {
-    "mtime": 1790050881.4665112,
-    "ast_hash": "1ef30a3addc01877451545cbd675bae4",
+    "mtime": 1790052317.4459596,
+    "ast_hash": "f01d2421f81bd06534092cc08b2fc29c",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaBlockHint/VidaBlockHint.tsx": {
+    "mtime": 1790052116.30664,
+    "ast_hash": "7c7423aa6367787ab46bde146bb5ed2a",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaBlockHint/index.ts": {
+    "mtime": 1790052131.203811,
+    "ast_hash": "8d2e2c491d964bf8e36184e6f062fd97",
     "semantic_hash": ""
   }
 }

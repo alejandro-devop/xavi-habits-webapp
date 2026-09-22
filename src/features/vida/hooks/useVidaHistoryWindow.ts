@@ -24,8 +24,19 @@ export const VIDA_HISTORY_WEEKS = 6
 
 const DAYS_IN_WEEK = 7
 
-/** Un día cerrado no cambia: media hora de reposo sobra y ahorra 42 consultas. */
-const PAST_STALE_TIME = 1000 * 60 * 5
+/**
+ * **Un día cerrado no cambia por su cuenta.** La tajada 1 le puso cinco
+ * minutos; la 3 lo sube a «no caduca» porque en Hoy —la pantalla que más se
+ * abre del módulo— cinco minutos significaban volver a pagar la ventana entera
+ * varias veces por sesión.
+ *
+ * Es seguro: lo único que cambia el plan de un día pasado es una escritura
+ * desde esta misma aplicación, y **todas** pasan por
+ * `invalidateDayPlanQueries(date)`, que lo marca caducado igual. El techo real
+ * de esta decisión es `WINDOW_GC_TIME`: media hora sin nadie mirando y la
+ * entrada se tira, así que a la vuelta se vuelve a pedir.
+ */
+const PAST_STALE_TIME = Number.POSITIVE_INFINITY
 /** Hoy sí cambia: el mismo que usa `useActivityDayPlanQuery`. */
 const TODAY_STALE_TIME = 1000 * 30
 /** Sin esto, ir a Hoy y volver a los seis minutos vuelve a pedir los 42. */

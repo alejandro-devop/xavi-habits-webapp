@@ -303,7 +303,7 @@ Verticales, cada una usable sola.
 |---|---|---|
 | 1 | **La sección existe y cuenta tu adherencia.** Tercera sección en Revisión («Lo que se repite»), con la frase, las semanas en fracción, los días de la semana con su umbral y la espera con fechas cuando no hay bastante. Solo lectura: ni una sugerencia todavía. Criterios 64–73, 101–104. | **aceptada** |
 | 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta por actividad, la que va bien que no propone nada, la pregunta con el número dentro, el `vidaItemUpdate` que cambia la plantilla sin tocar ningún día armado, «Dejarlo» guardado en el aparato con la regla de las 4 semanas, y el estado de pocos datos del marco F. Criterios 74–86. | **aceptada** |
-| 3 | **El aviso llega al planear.** En Hoy, dos avisos como mucho pegados a su bloque, con sus dos salidas, y la duración habitual en los chips del hueco. Criterios 87–94. | pending |
+| 3 | **El aviso llega al planear.** En Hoy, dos avisos como mucho pegados a su bloque, con sus dos salidas, y la duración habitual en los chips del hueco. Criterios 87–94. | **aceptada** |
 | 4 | **El dato donde se edita, y el escritorio.** La línea bajo «A qué hora» y bajo «Cuánto» en la hoja de la plantilla, y en escritorio la rejilla con el lateral de «Sin contestar», «Contestadas» y «De dónde sale todo esto». Criterios 95–100. | pending |
 
 La tajada 1 es lo mínimo que ya sirve: sin ninguna sugerencia, un usuario con
@@ -747,7 +747,7 @@ modelo de sugerencia que nace en la 2; la 2 consume la ventana que nace en la
 |---|---|---|---|---|
 | 1 | **La sección existe y cuenta tu adherencia.** Ventana de 6 semanas, derivado de adherencia y tercera sección de Revisión, solo lectura. | **Crea:** `hooks/useVidaHistoryWindow.ts` (+test), `utils/vida-adherence.utils.ts` (+test), `components/VidaAdherenceSummary/`, `VidaAdherenceWeeks/`, `VidaAdherenceWeekdays/`. **Modifica:** `pages/VidaRevisionPage.tsx` (:87, :179, :~455 el control con `Tabs`, :~511 la rama, :945 `VidaPatternsSection`), su `.module.scss` y `.test.tsx`, `utils/vida-date.utils.ts` (+test), `utils/vida-window.utils.ts:39`, `vida-vocabulary.test.ts:56` | 64-73, 101-104 | **aceptada** |
 | 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta, pregunta con el número dentro, `vidaItemUpdate`, «Dejarlo» con la regla de las 4 semanas, marco F. | **Crea:** `utils/vida-patterns.utils.ts` (+test), `hooks/useVidaPatterns.ts` (+test), `components/VidaPatternCard/`. **Modifica:** `store/vida-device-notes.store.ts` (`patternAnswers`), `pages/VidaRevisionPage.tsx` (`VidaPatternsSection` + la condición simétrica en :1003), `.module.scss`, `.test.tsx` | 74-86 (+101, 104) | **aceptada** |
-| 3 | **El aviso llega al planear.** Dos avisos pegados a su bloque en Hoy y la duración habitual en los chips del hueco. | **Crea:** `components/VidaBlockHint/`. **Modifica:** `pages/VidaHoyPage.tsx:~551` + `.module.scss` + `.test.tsx`, `components/VidaAgendaGap/VidaAgendaGap.tsx:111-150`, `utils/vida-agenda.utils.ts:423,473` (lookup opcional de duración habitual, por defecto vacío para que el criterio 92 sea cierto por construcción), `utils/vida-patterns.utils.ts` (`pickBlockHints`) | 87-94 (+101, 104) | pending |
+| 3 | **El aviso llega al planear.** Dos avisos pegados a su bloque en Hoy y la duración habitual en los chips del hueco. | **Crea:** `components/VidaBlockHint/`. **Modifica:** `pages/VidaHoyPage.tsx:~551` + `.module.scss` + `.test.tsx`, `components/VidaAgendaGap/VidaAgendaGap.tsx:111-150`, `utils/vida-agenda.utils.ts:423,473` (lookup opcional de duración habitual, por defecto vacío para que el criterio 92 sea cierto por construcción), `utils/vida-patterns.utils.ts` (`pickBlockHints`) | 87-94 (+101, 104) | **aceptada** |
 | 4 | **El dato donde se edita, y el escritorio.** Líneas bajo «A qué hora» y «Cuánto», y la rejilla con su lateral. | **Crea:** `components/VidaPatternsAside/`. **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx:472,504,517` + `.module.scss` + `.test.tsx`, `pages/VidaPlantillaPage.tsx` (monta la ventana diferida y pasa `pattern` a la hoja), `pages/VidaRevisionPage.tsx` (rejilla + lateral con `isDesktop`, :172) | 95-100 (+101, 104) | pending |
 
 **Lo que cada tajada tiene que medir además de sus criterios:** el criterio 103
@@ -1371,6 +1371,311 @@ en `useVidaPatterns.test.tsx` («Contestadas» con la respuesta del puente).
 4. **`VidaAnsweredSuggestion.answer` ahora puede ser `null`.** Lo consumirá la
    tajada 4: quien pinte «Contestadas» tiene que mirar `source`, no asumir que
    hay número.
+
+**Estado del árbol:** sin commitear.
+
+### Tajada 3 — El aviso llega al planear
+
+**Resumen para quien revise.** Hoy ya no espera a que vayas a buscar el dato:
+un bloque planeado del que hay costumbre trae **su aviso pegado debajo**, en
+violeta punteado, numerado «1 de 2», con las dos salidas escritas y la
+consecuencia antes de los botones — **«solo para hoy: tu plantilla se queda
+como está»** (D2) —; y los chips del hueco ofrecen ya **la duración que sueles
+tardar** y lo dicen. **Lo que más probablemente he roto: el coste de abrir
+Hoy**, que es la pantalla más usada del módulo y que ahora monta la ventana de
+seis semanas (diferida, y solo cuando puede servir de algo). Lo segundo,
+`suggestionsForGap`, que es de FEAT-003 y ahora decide con **la duración
+habitual** también para saber si algo cabe en el hueco. Mirar ahí primero:
+`VidaHoyPage.tsx:~430` (el interruptor `canShowPatterns`) y
+`vida-agenda.utils.ts:~500` (`offeredFor`).
+
+**Qué se construyó**
+
+*Se crea:*
+
+- `src/features/vida/components/VidaBlockHint/` (`.tsx` + `.module.scss` +
+  `index.ts`) — el aviso del marco C. Es un `<li>` propio, **hermano del bloque
+  y debajo de él**, igual que `VidaAgendaNoData`, que era la referencia que el
+  encargo señalaba. Así no toco `VidaAgendaBlock` —entregado y revisado en
+  FEAT-004— y el bloque del que habla **no se tapa ni se empuja fuera de
+  vista** (criterio 94).
+
+*Se modifica:*
+
+- `src/features/vida/utils/vida-patterns.utils.ts` — **`pickBlockHints()`**, la
+  regla del criterio 88 entera en un sitio puro y probado; el tipo
+  `VidaBlockHint` con la cuenta, las dos etiquetas, la nota de alcance y el
+  `dayPatch`; **`usualDurationsByItemId()`**; y dos campos nuevos en
+  `VidaActivityPattern`: `usualDurationMinutes` y `usualDurationSamples`.
+- `src/features/vida/utils/vida-agenda.utils.ts` — `suggestionsForGap` recibe
+  `usualDurations` (**por defecto `{}`**) y `GapSuggestion` gana `isUsual`.
+- `src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx` — «sueles
+  tardar 55m» en el chip y en su `aria-label`, y la línea del pie del render
+  («la que sueles tardar, no la que pusiste») **solo si hay alguna**.
+- `src/features/vida/pages/VidaHoyPage.tsx` — monta `useVidaPatterns`
+  **diferido**, elige los avisos con `pickBlockHints`, los pinta pegados a su
+  bloque, aplica con `activityDayPlanItemEdit` y contesta con
+  `answerSuggestion`.
+- `src/features/vida/hooks/useVidaHistoryWindow.ts` — `PAST_STALE_TIME` pasa de
+  cinco minutos a **no caduca** (ver «el coste», abajo).
+- Tests: `vida-patterns.utils.test.ts` (+13), `vida-agenda.utils.test.ts` (+4),
+  `VidaHoyPage.test.tsx` (+8), `useVidaHistoryWindow.test.tsx` (+2), y **los 97
+  casos que Hoy ya tenía, sin tocar ni uno**.
+
+**Lo que NO se ha creado**, porque ya estaba: ni un documento GraphQL, ni una
+mutación, ni una ruta, ni una clave de caché, ni una de `localStorage`. La
+respuesta se guarda con `answerSuggestion` del hook de la tajada 2, que escribe
+en `patternAnswers` dentro de `xavi.vida.deviceNotes`.
+
+**El coste: medido, y qué se ha hecho para contenerlo (criterio 103)**
+
+Esto era lo delicado de la tajada y va con número.
+
+| Momento | Consultas de plan | Total nuevas |
+|---|---|---|
+| Abrir Hoy **antes** de esta tajada | 1 (el día) + 6 (la tira, sin repetir el día) + 1 (la misma fecha de la semana pasada, `VidaDayActions`) | ≈ **11** con las de sesiones, plantilla, ajustes y sesión abierta |
+| Abrir Hoy **en frío**, domingo, con plan | + **39** planes + **1** rango + **1** plantilla `items.list(true)` | ≈ **52** |
+| Abrir Hoy **en frío**, lunes | + 33 planes + 1 rango + 1 plantilla | ≈ **46** |
+| Llegar a Hoy **desde Revisión** (caché caliente) | **0** planes, **0** rango (misma clave `followUps.range(from,to)`, que se calcula desde hoy y es la misma en las dos pantallas), 0 plantilla | ≈ **11**, lo de siempre |
+| **Volver** a Hoy dentro de la misma sesión | **1** (solo la de hoy, que sí cambia) | ≈ 11 |
+| Un día **pasado**, o sin plan y sin plantilla | **0** | lo de siempre |
+
+Las dos primeras filas de la ventana están medidas en
+`useVidaHistoryWindow.test.tsx` con espías sobre la API (39 = 42 − los 3 días de
+la tira que caen dentro de la ventana; 43 en la vuelta = 42 + la de hoy). Las
+cuentas de la propia pantalla salen de leer sus hooks, no de un espía: dentro de
+`/app/*` no entro.
+
+**Lo que he decidido para que abrir Hoy no dispare 43 consultas sin más**, con
+su razón:
+
+1. **La ventana no se monta en el primer pintado y no siempre se monta.** Cuatro
+   condiciones (`VidaHoyPage.tsx`, `canShowPatterns`): el día **se puede
+   planear** —un día pasado paga cero—, **los datos propios ya resolvieron** —el
+   primer pintado no espera a nadie, criterio 92—, **hay plan o hay plantilla**
+   —sin ninguna de las dos no hay bloque al que pegar un aviso ni ficha a la que
+   ponerle duración— y hay sesión. Con la corrección de la tajada 2
+   (`useVidaItemsQuery(includeInactive, enabled)`) el interruptor apaga
+   **también** la plantilla: no se pide ni una consulta antes de tiempo.
+2. **La ventana se paga una vez por sesión, no una por apertura.** Los días
+   cerrados pasan de `staleTime` cinco minutos a **infinito**. Es seguro y no es
+   un atajo: lo único que cambia el plan de un día pasado es una escritura de
+   esta misma aplicación, y **todas** pasan por `invalidateDayPlanQueries(date)`,
+   que lo caduca igual. El techo real sigue siendo `gcTime` (media hora sin
+   nadie mirando y la entrada se tira). Con los cinco minutos de antes, un
+   recorrido normal —Hoy, Plantilla, Hoy, Revisión— podía pagar la ventana
+   **cuatro veces**; ahora la paga una.
+3. **Lo que NO he hecho, y por qué:** no he acortado la ventana en Hoy. El plan
+   lo prohíbe con un argumento que sigue siendo bueno —«si Hoy mirase 4 semanas
+   y Revisión 6, la misma sugerencia tendría dos números y la regla de los 10
+   min de D1 dispararía sola»— y bajar `VIDA_HISTORY_WEEKS` a 4 para todos
+   rompería la justificación de D1 (el silencio de cuatro semanas se sostiene
+   en que la ventana es más larga). Tampoco he metido los avisos detrás de un
+   toque: el render fija que el dato aparece **sin pedir nada**.
+
+**La salida natural, si esto duele con datos reales:** una consulta de rango de
+planes en el API (`activityDayPlansInDates`). No existe, está fuera de alcance
+por el criterio 101, y convertiría las 39 en **una**. Queda anotado aquí y no
+en una conversación.
+
+**Por qué así, y qué se descartó**
+
+1. **El aviso es un `<li>` hermano, no un trozo de `VidaAgendaBlock`.** El
+   bloque está entregado y revisado desde FEAT-004 y ya tiene seis
+   responsabilidades; meterle una séptima habría obligado a re-revisar FEAT-004.
+   La referencia que el encargo señalaba —`VidaAgendaNoData`— hace exactamente
+   esto. Debajo y no encima: así se cumple el criterio 94 por construcción.
+2. **Un aviso que al aceptarlo no cabe, no se pinta.** `pickBlockHints` recibe
+   de cada bloque el hueco que tiene alrededor (`getBlockEditWindow`) y descarta
+   el cambio que se comería el bloque siguiente. La alternativa era pintarlo y
+   dejar que el API lo rechazara con un «no pudimos cambiar ese bloque»: una
+   salida que no lleva a ninguna parte es peor que no ofrecerla, y el criterio
+   88 ya acepta que un candidato se quede en «Lo que se repite».
+3. **«Quitar el martes» no llega a Hoy.** Es la única de las tres formas sin
+   `dayPatch`, porque **un día armado no se des-planea desde un aviso** —eso ya
+   lo decía el tipo desde la tajada 2—. Se queda en la sección de patrones, que
+   es donde cambiar la plantilla tiene su consecuencia escrita entera.
+4. **Un bloque que ya terminó o que ya tiene sesión no recibe aviso.** «Al
+   planear» es antes, no después; cambiarle la hora a toro pasado no es una
+   sugerencia, es llegar tarde. Es decisión mía, no sale de ningún criterio.
+5. **El aviso desaparece solo al aceptarlo.** No hay bandera nueva: si el bloque
+   ya tiene el número que se propone, `appliesTo` devuelve `false` y no hay
+   aviso. El mismo mecanismo tapa el caso del día armado desde una plantilla ya
+   corregida.
+6. **«Sueles empezarlo 22 min más tarde», no «los domingos…».** El render dice
+   «Los domingos sueles salir sobre las 19:22», pero **la mediana es de todos
+   los días**, no de los domingos: decir «los domingos» sería afirmar algo que
+   el número no dice. Lo que sí es por día de la semana es `drop-day`, y esa no
+   llega aquí. **Desviación consciente del render**, y va en la dirección de no
+   fingir.
+7. **El violeta sí está, y el `#7C3AED` a pelo sigue sin estar.** La tajada 2
+   escribió que no había token de violeta; lo hay: **`--aura-ring-to`**
+   (`_theme-variables.scss:203` y `:270`, `#7c3aed` en claro y `#a78bfa` en
+   oscuro), que ya usan medio módulo de hábitos y el propio `VidaDayBudget` de
+   Vida. El aviso lo usa con `var(--color-primary)` de respaldo: **ni un color
+   literal**. Con esto el criterio 87 («violeta punteado») se cumple de verdad y
+   la desviación que la tajada 2 declaró se puede cerrar también allí, si se
+   quiere, en una línea.
+8. **Los chips: la costumbre manda también para saber si cabe.** Ofrecer 55 min
+   en un hueco de 40 porque la plantilla dice 30 sería colocar algo que no
+   entra. En cambio **un ítem sin duración en la plantilla sigue sin ella**: la
+   costumbre no le inventa una, porque el criterio 19 de FEAT-003 dice que eso
+   no se coloca a ciegas y no me toca a mí cambiarlo. Queda como hallazgo.
+9. **El umbral del chip son cuatro *datos registrados*, no cuatro apariciones.**
+   El criterio 91 dice «cuando hay 4 datos o más»; una actividad puede estar
+   ocho veces en el plan y tener dos sesiones. `usualDurationSamples` lo cuenta
+   aparte y está exportado.
+
+**Los tres hallazgos abiertos de la tajada 2**
+
+- **(a) Los dos desfases del puente** (`propuesta − actual` frente a
+  `mediana − plantilla`). **No me estorba y no lo he tocado**: vive en el cruce
+  puente↔patrón, que es de Revisión y no pasa por Hoy. Sigue abierto, con la
+  misma redacción del revisor.
+- **(b) `VidaAnsweredSuggestion.answer` puede ser `null`.** No me estorba: esta
+  tajada **no consume `answered`** —solo `patterns` y `answerSuggestion`—. Sigue
+  abierto **para la tajada 4**, que es quien pinta «Contestadas»: `source`
+  manda, y hay dos formas de frase, no una.
+- **(c) Una tarjeta desactivada y a la vez dentro de tolerancia imprime dos
+  líneas de cierre.** No me estorba —es la tarjeta de Revisión, y una
+  desactivada nunca llega aquí porque `mutedReason` ya le quitó la sugerencia en
+  la tajada 2—. Sigue abierto.
+
+**Verificación**
+
+*Línea base entera (`docs/features/ENVIRONMENT.md`), al terminar:*
+
+| Qué | Línea base del encargo | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio**, exit 0 |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos |
+| `pnpm test` | 2 fallos de 1526 | **2 fallos de 1554** (los mismos dos de `SearchSelect`; **+28 tests**) |
+| `pnpm build` | chunk inicial 1.080,83 kB | **1.085,17 kB** (+4,34 kB), `app-icons` **620,20 kB sin tocar**, `IconPicker` 4,64 kB, exit 0 |
+
+*En el navegador, que es lo que faltaba en las dos entregas anteriores.*
+`/app/*` está detrás del login y los agentes no entran con credenciales, así que
+monté un **arnés temporal** (`arnes-avisos.html` + `src/harness/arnes-avisos.tsx`)
+con los dos avisos —uno de duración y uno de hora, el segundo con un nombre de
+60 caracteres— y el hueco con sus chips, **servido por el 5173 del propio
+usuario**: no arranqué ningún servidor, `preview_start` con URL abre una
+pestaña. El arnés está **borrado** y `git status` no lo lista. Lo visto, a
+375 px:
+
+- **El aviso se pinta como el marco C**: caja de trazo **violeta punteado**,
+  cabecera «DE TUS ÚLTIMAS SEMANAS» en violeta, la píldora «1 de 2» / «2 de 2»,
+  la frase con el número en negrita, la línea de alcance y **las dos salidas**.
+  Captura tomada.
+- **Va pegado y debajo** de su bloque, sin tapar nada, con la canaleta de la
+  hora vacía para que no parezca otra cosa de la agenda.
+- **Sin desbordes**: `scrollWidth === clientWidth === 375` y **ni un nodo** con
+  `getBoundingClientRect().right > 375`. El nombre de 60 caracteres parte en
+  tres líneas dentro de su caja.
+- **Ni un «%»** en el texto renderizado.
+- **Oscuro legible** (`data-theme=dark`): el violeta pasa a `#a78bfa`, el trazo
+  punteado se lee y las dos salidas también. Captura tomada.
+- **El chip dice «Compra semana · sueles tardar 55m»** y el de al lado, sin
+  datos, sigue diciendo «20m» a secas, sin hueco reservado.
+
+**Criterios que cierra, uno por uno**
+
+- **87 ✅** Aviso pegado al bloque, violeta punteado, cabecera «De tus últimas
+  semanas» + «1 de 2», y las dos salidas escritas con el número dentro
+  («Sí, 1h», «Sí, 19:30») y «Así está bien». Test de la página sobre el DOM
+  (`VidaHoyPage.test.tsx`, «el aviso va pegado a SU bloque») **y** visto en el
+  navegador.
+- **88 ✅** `pickBlockHints`: dos como mucho, nunca dos del mismo bloque ni dos
+  de la misma sugerencia, ordenados **por veces repetidas** y solo con desfase
+  **de más de** 10 min y **sin contestar** (llegan ya filtradas por D1 desde
+  `useVidaPatterns`). Con tres candidatos se pintan dos y el tercero **no
+  aparece**: test puro y test de la página.
+- **89 ✅** La salida afirmativa manda **un** `activityDayPlanItemEdit` con
+  `{ itemId: 'b2', startTime: '10:00', endTime: '11:00' }` y **cero**
+  `vidaItemUpdate` —espía puesto en el mock de `useVidaItems`, que hoy la página
+  ni importa— y cero de las otras tres del plan. Y **lo dice antes**: «Esto
+  cambia solo para hoy: tu plantilla se queda como está.»
+- **90 ✅** «Así está bien» no llama a ninguna mutación y escribe la respuesta
+  con `answerSuggestion`, que es la misma de la tajada 2: entra en la regla de
+  las cuatro semanas del criterio 83 y calla la pregunta **en las tres
+  pantallas**. Test de la página.
+- **91 ✅** Los chips ofrecen la duración habitual con **cuatro datos
+  registrados o más** y lo dicen; con menos ofrecen la que pusiste **sin
+  etiqueta y sin hueco**. Cuatro tests en `vida-agenda.utils.test.ts`, dos en el
+  `utils` de patrones y uno de la página; visto en el navegador.
+- **92 ✅** Los **97 casos que Hoy ya tenía pasan sin tocar ni uno**, y hay un
+  test explícito que afirma que sin patrones no aparecen ni «De tus últimas
+  semanas», ni «Así está bien», ni «sueles tardar», ni la línea del pie. Además
+  es cierto **por construcción**: `usualDurations` por defecto es `{}` y
+  `pickBlockHints([])` devuelve `[]`.
+- **93 ✅** Ni rojo, ni icono de error, ni `role="alert"` (aserción en el test),
+  ni una palabra de la lista de reproche (barrido sobre el texto renderizado del
+  aviso y sobre el `utils`). Y **el día se arma entero ignorándolos**: sin tocar
+  nada no se llama a ninguna mutación, también afirmado.
+- **94 ✅ en lo que se puede aquí.** 375 px sin scroll horizontal con los dos
+  avisos abiertos, oscuro legible y el aviso **debajo** del bloque: medido en el
+  arnés con `getBoundingClientRect()` sobre todos los nodos. **Dentro de
+  `/app/*` lo cierra el usuario**, que es el límite del repositorio.
+- **101 ✅** El diff no toca `graphql/`, `api/` ni `routes/`, y no hay clave de
+  `localStorage` nueva: la respuesta va al `patternAnswers` que ya existía.
+- **103 ✅** Tabla de arriba, con la medida y con las dos decisiones de
+  contención escritas.
+- **104 ✅** Tabla de la línea base.
+
+**Pendiente de prueba manual, del usuario**
+
+- **105 y 106**, con la API despierta y sus semanas. Pasos nuevos de esta
+  tajada: abrir **Hoy** en un día con plan y comprobar que aparece **como mucho
+  un par de avisos** pegados a su bloque; pulsar la salida afirmativa de uno y
+  comprobar que **cambia ese bloque de ese día y la plantilla sigue igual**;
+  contestar el otro con «Así está bien», **recargar**, y ver que no vuelve a
+  preguntar —ni aquí ni en «Lo que se repite»—; y mirar un hueco para ver
+  «sueles tardar N» en una ficha con cuatro registros o más.
+- **La otra mitad del criterio 94**: 375 px y oscuro **dentro de `/app/*`**.
+- **El coste contra el API real.** Está medido en consultas, no en segundos:
+  39 peticiones en paralelo contra Render (plan gratuito, se duerme a los 15
+  min) es exactamente lo que nadie puede cronometrar desde aquí. Si al abrir Hoy
+  en frío se nota, la palanca escrita es la consulta de rango en el backend.
+
+**Riesgos — dónde mirar si algo se rompió**
+
+1. **El coste de Hoy.** Es el riesgo principal y está medido, no prometido. Si
+   algo va lento al abrir Hoy, es esto; el interruptor está en una línea
+   (`canShowPatterns`) y apagarlo devuelve Hoy a lo que costaba ayer.
+2. **`PAST_STALE_TIME` ahora es infinito**, y eso es de la tajada 1: afecta
+   **también a «Lo que se repite»**. Un día pasado cambiado desde **otro
+   navegador** no se ve hasta que la entrada caduca por `gcTime` (media hora) o
+   hasta una escritura local. Antes la ventana eran cinco minutos.
+3. **`suggestionsForGap` decide con la duración habitual.** Es de FEAT-003 y la
+   usan las fichas de todos los huecos: si la costumbre es más larga que la
+   plantilla, una ficha que antes cabía **puede dejar de ofrecerse**. Es
+   correcto —no cabría— pero es un cambio de comportamiento en una pantalla
+   entregada.
+4. **Un segundo `useEditDayPlanItemMutation` en la página.** La hoja ya usaba
+   uno; ahora hay dos instancias del mismo hook. Comparten clave e invalidación,
+   pero `isPending` es independiente: el aviso se deshabilita solo cuando el
+   cambio es suyo.
+5. **`VidaActivityPattern` tiene dos campos más.** Aditivos; el único consumidor
+   nuevo es `usualDurationsByItemId`. `VidaPatternCard` no los mira.
+6. **La cuenta «1 de 2» se escribe al final**, después de filtrar: si alguien
+   añade un filtro posterior en la página, la cuenta mentiría. Por eso el filtro
+   entero vive dentro de `pickBlockHints`.
+
+**Además, para quien venga detrás** (no se tocó, es alcance de otro):
+
+- **No arranqué ningún servidor.** El arnés se sirvió desde el **5173 del
+  usuario**; la pestaña del navegador que abrí es
+  `preview-local_e4cefb6f-76b2-4e58-b5c2-1431d439087a` y no levanta nada. El
+  **5174** del constructor de la tajada 1 sigue como quedó dicho en su reporte.
+- **`ENVIRONMENT.md` sigue con la línea base vieja** (2 de 1479, chunk
+  1.065,85 kB). Hoy son **1554 tests** y **1.085,17 kB**. **No lo he tocado**
+  —es la regla—, pero ya va cuatro tajadas por detrás.
+- **Hallazgo nuevo, no es mío:** una ficha **sin duración en la plantilla** pero
+  con cuatro registros propios podría ofrecerse con la duración habitual en vez
+  de abrir la hoja vacía. No lo he hecho porque cambiaría el criterio 19 de
+  FEAT-003, que está entregado; lo decide el usuario.
+- **Para la tajada 2, si alguien la vuelve a tocar:** el violeta del render
+  **sí** tiene token (`--aura-ring-to`). La desviación que declaró su punto 6 se
+  puede cerrar cambiando `--color-primary` por
+  `var(--aura-ring-to, var(--color-primary))` en las etiquetas de desfase.
 
 **Estado del árbol:** sin commitear.
 
@@ -2003,3 +2308,186 @@ píxeles.
 es el más fácil de probar: **planear algo y no registrarlo**; la tarjeta tiene
 que decir «no hay ninguna registrada», nunca «pasa como lo planeaste». Es el
 límite estructural del repositorio, no un descuido.
+
+### Tajada 3 — El aviso llega al planear
+
+**Veredicto: `accepted`** — los ocho criterios de la tajada (87–94) y los tres
+transversales (101, 103, 104) se cumplen con evidencia que he vuelto a producir
+yo, **incluida la del navegador: esta vez sí he visto la pantalla**, a 375 px, en
+claro y en oscuro. El coste —que es lo serio de esta tajada— está medido, no
+prometido, y **me parece defendible**, con una condición que escribo abajo y que
+le toca cerrar al usuario. Hoy no se ha roto: sus 97 casos pasan sin que se haya
+tocado ni uno.
+
+**El juicio sobre el coste, que es lo que se me pedía**
+
+Los números, verificados por mí corriendo sus tests con espías sobre la API
+(`useVidaHistoryWindow.test.tsx`): abrir Hoy en frío el peor día añade **39
+planes + 1 rango + 1 plantilla** a las ~11 que ya hacía; llegando desde Revisión
+**0 nuevas** (misma clave `dayPlan.byDate` y **el mismo** `followUps.range`,
+porque la ventana se calcula desde el **hoy de verdad** en las dos pantallas, no
+desde el día que se mira); **volver a Hoy dentro de la sesión: 1**, la de hoy;
+**un día pasado: 0**, porque `canPlan` apaga el interruptor antes de montar nada.
+
+**Me parece defendible, y estas son las cuatro razones**, en orden de peso:
+
+1. **El primer pintado no lo paga nadie.** El interruptor exige que los datos
+   propios de la pantalla ya hayan resuelto, así que Hoy aparece cuando aparecía
+   ayer y los avisos llegan después. Eso no es una promesa: es el criterio 92, y
+   está probado.
+2. **La alternativa barata estaba prohibida con un buen argumento.** Acortar la
+   ventana en Hoy rompe «una sola ventana para las tres pantallas» (la misma
+   costumbre tendría dos números y la regla de los diez minutos de D1 dispararía
+   sola), y acortarla para todos deja a D1 sin su justificación. El constructor
+   podía haberlo hecho en una línea y ha preferido no mentirle al modelo.
+3. **Lo que sí podía hacer, lo ha hecho**: no montar la ventana en días pasados
+   ni sin plan ni sin plantilla, apagar también la consulta de plantilla con el
+   mismo interruptor (gracias al `enabled` que nació en la corrección de la
+   tajada 2) y **dejar de caducar los días cerrados**, que es lo que convierte
+   «una vez por apertura» en «una vez por sesión».
+4. **El arreglo de verdad está escrito y es de backend**
+   (`activityDayPlansInDates`, 39 → 1), fuera de alcance por el criterio 101 y
+   anotado en el dossier en vez de en una conversación.
+
+**Y la condición, dicha sin adornos:** esto está medido **en consultas, no en
+segundos**, y 39 peticiones en paralelo contra Render gratuito —que duerme a los
+15 minutos— es justo el escenario que puede hacer que Hoy *parezca* rota en un
+móvil aunque el primer pintado sea instantáneo. **Eso no lo puede cerrar ningún
+agente**: va al criterio 105 como paso explícito —abrir Hoy en frío la primera
+vez del día y mirar si algo se atasca— y la palanca, si duele, es **una línea**
+(`canShowPatterns`), que devuelve Hoy a lo que costaba ayer sin tocar nada más.
+No devuelvo la tajada por esto: el aviso es el corazón del criterio de la fase
+(«al planear un día, al menos un aviso útil sale de datos propios») y el coste
+está contenido por donde se podía.
+
+**Criterios, uno por uno** (contra la sección 1)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 87 | **cumplido** | **Visto en el navegador**: caja de trazo **violeta punteado** (`border-style: dashed`, `rgb(124,58,237)/0.45` medido con `getComputedStyle`), cabecera «DE TUS ÚLTIMAS SEMANAS» en violeta con la píldora «1 de 2» / «2 de 2», y las dos salidas con el número dentro («Sí, 1h 10», «Sí, 19:30») más «Así está bien». En el DOM lo afirma además el test de la página. |
+| 88 | **cumplido** | `pickBlockHints` leído entero: solo sugerencias con `dayPatch`, desfase **estricto** `> 10 min`, bloque existente, no terminado, que no tenga ya el número, y que **quepa** en su hueco; `usedBlockIds` impide dos del mismo bloque; orden por repeticiones, luego desfase, luego id. `limit = 2` y la cuenta se escribe **después** de filtrar. Test de la página con tres candidatos: se pintan dos y el tercero no aparece. Busqué el caso de «dos del mismo bloque» y no se puede dar: el `find` descarta los ya usados. |
+| 89 | **cumplido, espiado** | `applyBlockHint` manda **un** `editMutation.mutate({ itemId, ...toDayPlanTimes(...) })` y nada más. El test afirma **una** llamada, `updateItemMutation.mutate` **sin llamadas** y las otras tres del plan (`add`, `remove`, `set`) tampoco. La consecuencia va **antes de los botones** y la leí en pantalla: «Esto cambia solo para hoy: tu plantilla se queda como está.» |
+| 90 | **cumplido** | «Así está bien» llama a `patterns.answerSuggestion` y a **ninguna** mutación (aserción sobre las cinco). Como la respuesta va al `patternAnswers` de la tajada 2, entra en la regla de las cuatro semanas del 83 y calla también en «Lo que se repite». |
+| 91 | **cumplido** | `usualDurationMinutes` sale de la **mediana de las sesiones reales** (no de la plantilla), redondeada a cinco minutos y **solo con cuatro sesiones registradas o más** —que es lo que el criterio dice, «4 datos», y no cuatro apariciones—. Sin dato, `usualDurations` no trae la clave, el chip dice la duración de siempre **sin etiqueta** y la frase del pie no se pinta (`suggestions.visible.some(isUsual)`). |
+| 92 | **cumplido, y por construcción** | `usualDurations` por defecto `{}` y `pickBlockHints([])` → `[]`: sin patrones, `suggestionsForGap` devuelve exactamente lo de antes. El test explícito afirma que no aparece «De tus últimas semanas», ni «Así está bien», ni «sueles tardar», ni la línea del pie. Y los **97 casos que Hoy ya tenía pasan sin tocar ni uno** (0 líneas borradas en su test, comprobado con `--numstat`). |
+| 93 | **cumplido** | Ni rojo ni icono de alarma: lo miré en pantalla y con `getComputedStyle`; no hay ningún `role="alert"` en el documento (aserción propia en el navegador y test en la página). El día se arma entero ignorándolos: sin tocar nada no se llama a ninguna mutación. Ni una palabra de la lista de reproche en las frases nuevas («te suele llevar 25 min más», «sueles empezarlo 22 min más tarde»). |
+| 94 | **cumplido en lo que se puede aquí** | **Medido por mí en el navegador**, a 375 px: `scrollWidth === clientWidth === 375` y **ni un nodo** con `right > 375`; el orden de la lista es `block, hint, block, hint` —el aviso va **debajo** y no tapa ni desplaza su bloque—; el nombre de 60 caracteres parte dentro de la caja. Oscuro: el violeta pasa a `#a78bfa`, el cuerpo a `#eef2ff` y la nota de alcance a `#a8b3c7`; todo legible. **Dentro de `/app/*` sigue siendo del usuario.** |
+| 101 | **cumplido** | El diff no toca `graphql/`, `api/` ni `routes/`, y no hay clave de `localStorage` nueva: la respuesta va al `patternAnswers` que ya existía. |
+| 103 | **cumplido, y verificado** | Las dos medidas nuevas corren con espías sobre la API y pasan: 39 + 1 llegando con la tira sembrada, y **43 tras volver** (42 + la de hoy) diez minutos después, es decir **0 planes nuevos**. Las cuentas de la pantalla salen de leer sus hooks, y eso queda dicho en el reporte en vez de disfrazado de medida. |
+| 104 | **cumplido, línea base corrida entera por mí** | Ver abajo. |
+| 105, 106 | **pendientes del usuario** | Con la API despierta. Esta tajada añade dos pasos: **cronometrar** la primera apertura de Hoy en frío, y comprobar que aceptar un aviso cambia el bloque **y no la plantilla**. |
+
+**En el navegador, por mí** (lo que las dos tajadas anteriores no tuvieron)
+
+El 5173 del usuario estaba arriba (`probe.sh`), así que **no arranqué ningún
+servidor**: monté un arnés temporal propio (`arnes-revisor.html` +
+`src/harness/arnes-revisor.tsx`) que pinta los dos avisos **dentro de la lista
+real de la agenda** (`VidaHoyPage.module.scss`, con `data-tone='plan'`), lo
+serví desde ese 5173 y **lo borré**: `git status` no lo lista. Los avisos los
+generó `pickBlockHints` de verdad, no los escribí a mano.
+
+Lo medido ahí está en la tabla. Y una cosa que solo se ve mirando:
+
+- **En un día solo planeado, el fondo violeta del aviso no se ve.** La regla
+  `.agenda[data-tone='plan'] > li > :is(article, section)` de
+  `VidaHoyPage.module.scss:68` gana por especificidad y sustituye el
+  `color-mix(--aura-ring-to 7%)` de la tarjeta por el vidrio de la agenda
+  (medido: `color(srgb 1 1 1 / 0.38)`). **El trazo punteado violeta y la
+  cabecera violeta sí quedan**, así que el criterio 87 se cumple igual y no
+  devuelvo nada por esto; pero el aviso se lee un punto más apagado justo en el
+  estado —«al planear»— para el que está hecho. Hallazgo 1.
+
+**El violeta: el token existía, y eso reabre lo de la tajada 2**
+
+Comprobado: `--aura-ring-to` (`src/app/styles/_theme-variables.scss:203` y
+`:270`) y **ya lo usaban `VidaDayBudget`, `VidaAgendaSession`,
+`VidaAgendaBlock`, `VidaReviewWeek` y la propia `VidaHoyPage`**. Es decir: la
+desviación que la tajada 2 declaró —«no hay token semántico de violeta»— **se
+apoyaba en una premisa falsa, y yo la di por buena en su revisión**. Queda
+corregido aquí: esta tajada usa `var(--aura-ring-to, var(--color-primary))` sin
+un solo color literal, y **cerrar aquello es una línea** en
+`VidaPatternCard.module.scss`. Lo dejo como hallazgo para el usuario, no lo
+arreglo yo: no toco código de producto.
+
+**Lo que se rompió cerca: cómo busqué**
+
+- **`grep` de los seis consumidores de lo que se ha tocado.** `suggestionsForGap`
+  se usa **solo** en `VidaHoyPage` (el hueco); `GapSuggestion.isUsual` es
+  aditivo; `VidaActivityPattern` gana dos campos que solo lee
+  `usualDurationsByItemId`; `VidaAgendaBlock` **no se ha tocado** y el aviso es
+  un `<li>` hermano, no un trozo suyo.
+- **Los 97 casos de `VidaHoyPage.test.tsx`: `git diff --numstat` da 210 añadidas
+  y 0 borradas.** Ninguna afirmación de FEAT-003/004 se ha relajado. La suite
+  entera, corrida por mí: 1.552 pasan.
+- **La suite del módulo** (Plantilla, Revisión, Semana, Actividades,
+  Archivadas): verde. `PAST_STALE_TIME` infinito afecta también a «Lo que se
+  repite» y sus tests siguen pasando.
+- **El reloj del día que no es hoy:** `useVidaNowMinute(isToday)` devuelve
+  `null` fuera de hoy, así que el `isDone` por hora no marca bloques de un día
+  futuro. Lo verifiqué porque era el sitio natural de un fallo silencioso.
+- **Días pasados:** `canPlan` los deja fuera del interruptor; hay test propio.
+
+**Una decisión que supera un criterio entregado, y hay que decirlo**
+
+`suggestionsForGap` ahora filtra por **la duración habitual**, no por la de la
+plantilla. El criterio **18 de FEAT-003** dice literal: «sugerencias cuyo
+`durationMinutes` **de su ítem de plantilla** es ≤ el tamaño del hueco». Con la
+costumbre por medio esa frase ya no describe el código. **No es una regresión**
+—su intención, «solo lo que cabe», se cumple mejor: ofrecer 55 min en un hueco
+de 40 porque la plantilla dice 30 sería colocar algo que no entra—, pero **el
+criterio 91 de esta feature deroga en parte el 18 de aquella**, y eso queda
+escrito aquí para que nadie lo descubra leyendo el dossier viejo. Hallazgo 2.
+
+**Estados que nadie construye**
+
+| Estado | Cómo queda |
+|---|---|
+| **Sin datos** | El mejor de esta tajada: sin patrones no hay aviso, ni leyenda, ni hueco reservado —criterio 92, cierto por construcción y con test—. |
+| **Cargando** | El aviso no tiene estado de carga **y está bien**: la ventana es diferida y lo que no ha llegado simplemente no se pinta. Hoy no espera a nadie. |
+| **Error** | Si la ventana cae, `patterns.hasError` no se pinta en Hoy: **no hay aviso y no hay mensaje**. Es defendible —un aviso que no llegó no es un fallo que contarle a nadie mientras armas el día— y ningún criterio de esta tajada pide lo contrario (el 72 es de la sección de Revisión). Lo anoto por si el usuario lo prefiere de otra forma. Hallazgo 3. |
+| **Sin permisos** | No aplica: `/app/*` y el interruptor exige sesión. |
+| **Texto largo** | Visto: el nombre de 60 caracteres **se repite entero dentro del aviso** («Organizar la casa… sueles empezarlo 22 min más tarde»), justo debajo del bloque que ya lo dice. Cabe, no desborda y no rompe nada, pero el aviso se vuelve un párrafo. Hallazgo 4. |
+| **Móvil 375 px** | Verificado por mí en el navegador, con los dos avisos abiertos. |
+| **Oscuro** | Verificado por mí. |
+
+**Línea base, corrida entera por mí**
+
+| Qué | Referencia del encargo | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1526 | 2 de 1554 | **2 fallidos de 1554**, 109 archivos de 110 en verde; los dos de `SearchSelect` |
+| `pnpm build` | 1.080,83 kB | 1.085,17 kB | **exit 0**, `index` **1.085,17 kB** (+4,34), `app-icons` **620,20 kB sin tocar**, `IconPicker` 4,64 kB |
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **El fondo violeta del aviso lo pisa la agenda en modo «plan»** (medido
+   arriba). Una línea de especificidad lo arreglaría; decide el usuario si le
+   importa, porque el trazo y la cabecera sí son violetas.
+2. **El criterio 18 de FEAT-003 queda derogado en parte** por el 91 de esta
+   feature: el filtro del hueco usa la costumbre, no la plantilla.
+3. **Si la ventana falla, en Hoy no se dice nada.** Silencio deliberado; queda
+   escrito por si se prefiere otra cosa.
+4. **El aviso repite el nombre entero de la actividad**, que ya está en el
+   bloque justo encima. Con nombres largos el aviso se lee como un párrafo.
+5. **`PAST_STALE_TIME` infinito**: un día pasado cambiado **desde otro
+   navegador** no se ve hasta que la entrada caduque por `gcTime` (media hora)
+   o hasta una escritura local. Afecta también a «Lo que se repite». Es el
+   precio escrito de la contención del coste y me parece bien pagado.
+6. **Sigue abierto de la tajada 2:** los dos desfases del puente
+   (`propuesta − actual` frente a `mediana − plantilla`), y
+   `VidaAnsweredSuggestion.answer` anulable, que la **tajada 4** tiene que mirar
+   por `source`. La tercera —dos líneas de cierre en una tarjeta desactivada—
+   sigue igual.
+7. **El violeta de la tajada 2 se puede cerrar en una línea**, ahora que se sabe
+   que el token existe (arriba). No lo toco yo.
+8. **`ENVIRONMENT.md` ya está al día** (2 de 1526, chunk 1.080,83 kB): alguien lo
+   actualizó y con esta tajada vuelve a quedarse corto (**1554** y **1.085,17
+   kB**). **No lo he tocado.** El **5174** que arrastrábamos desde la tajada 1
+   ya no responde: la sonda lo da apagado.
+
+**Lo que no he podido revisar:** el recorrido real dentro de `/app/vida/hoy`
+—criterios **105** y **106**, y **375 px y oscuro dentro de `/app/*`** del
+**94**—, y sobre todo **cuánto tarda de verdad** la primera apertura de Hoy en
+frío contra Render dormido, que es la única pregunta abierta que importa de esta
+tajada. Lo demás lo he visto con mis ojos y lo he medido con mis manos.

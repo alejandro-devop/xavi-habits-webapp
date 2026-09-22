@@ -9,8 +9,11 @@ import {
   buildActivityPatterns,
   isBridgeSilencedByAnswer,
   isSuggestionSilenced,
+  pickBlockHints,
   suggestionReturnDate,
+  usualDurationsByItemId,
   vidaPatternSuggestionId,
+  type BlockHintCandidate,
   type PatternDayInput,
   type VidaPatternSuggestion,
 } from '@/features/vida/utils/vida-patterns.utils'
@@ -579,5 +582,239 @@ describe('el orden y el vocabulario', () => {
       expect(texto).not.toContain(palabra)
     }
     expect(texto).not.toMatch(/\bmal\b/)
+  })
+})
+
+/* ── Los avisos de Hoy (FEAT-007, tajada 3: criterios 87, 88, 91 y 92) ──── */
+
+/** Un bloque del plan de hoy, con hueco de sobra alrededor. */
+function candidate(
+  overrides: Partial<BlockHintCandidate> & Pick<BlockHintCandidate, 'blockId' | 'activityId'>,
+): BlockHintCandidate {
+  return {
+    startMinutes: 9 * 60,
+    durationMinutes: 45,
+    windowStartMinutes: 7 * 60,
+    windowEndMinutes: 13 * 60,
+    isDone: false,
+    ...overrides,
+  }
+}
+
+function suggestionOf(overrides: Partial<VidaPatternSuggestion>): VidaPatternSuggestion {
+  return {
+    id: 'duration|i1',
+    kind: 'duration',
+    itemId: 'i1',
+    activityId: 'a1',
+    title: 'Organizar la casa',
+    icon: 'fa-list',
+    color: null,
+    offsetMinutes: 25,
+    dayOfWeek: null,
+    basis: '45 min planeados · 1h 10 reales',
+    ask: '¿Le damos 1h 10 en tu plantilla?',
+    consequence: 'En tu plantilla está 3 días (L X V): se cambia en todos.',
+    affirmativeLabel: 'Ponerlo en 1h 10',
+    dismissLabel: 'Dejarlo',
+    templatePatch: { durationMinutes: 70 },
+    dayPatch: { durationMinutes: 70 },
+    ...overrides,
+  }
+}
+
+describe('los avisos pegados al bloque, en Hoy (criterios 87 y 88)', () => {
+  it('sin patrones no hay ni un aviso: Hoy es exactamente el de antes (92)', () => {
+    expect(pickBlockHints({ patterns: [], blocks: [candidate({ blockId: 'b1', activityId: 'a1' })] }))
+      .toEqual([])
+  })
+
+  it('el aviso lleva su cuenta, las dos salidas escritas y el número dentro (87)', () => {
+    const [hint] = pickBlockHints({
+      patterns: [{ occurrences: 6, suggestion: suggestionOf({}) }],
+      blocks: [candidate({ blockId: 'b1', activityId: 'a1' })],
+    })
+
+    expect(hint?.header).toBe('De tus últimas semanas')
+    expect(hint?.counterLabel).toBe('1 de 1')
+    expect(hint?.basis).toBe('Organizar la casa te suele llevar 25 min más')
+    expect(hint?.ask).toBe('¿lo dejamos en 1h 10?')
+    expect(hint?.affirmativeLabel).toBe('Sí, 1h 10')
+    expect(hint?.dismissLabel).toBe('Así está bien')
+    // La consecuencia, **antes** de tocar nada: D2 y criterio 89.
+    expect(hint?.scopeNote).toBe('Esto cambia solo para hoy: tu plantilla se queda como está.')
+    expect(hint?.dayPatch).toEqual({ durationMinutes: 70 })
+  })
+
+  it('el de la hora dice la hora, y también con dos salidas', () => {
+    const [hint] = pickBlockHints({
+      patterns: [
+        {
+          occurrences: 5,
+          suggestion: suggestionOf({
+            id: 'start-time|i1',
+            kind: 'start-time',
+            offsetMinutes: 22,
+            templatePatch: { startTime: '19:30' },
+            dayPatch: { startTime: '19:30' },
+            title: 'Pasear a las mascotas',
+          }),
+        },
+      ],
+      blocks: [candidate({ blockId: 'b1', activityId: 'a1', startMinutes: 19 * 60, windowStartMinutes: 18 * 60, windowEndMinutes: 21 * 60 })],
+    })
+
+    expect(hint?.basis).toBe('Pasear a las mascotas sueles empezarlo 22 min más tarde')
+    expect(hint?.ask).toBe('¿lo ponemos a las 19:30?')
+    expect(hint?.affirmativeLabel).toBe('Sí, 19:30')
+  })
+
+  it('con tres candidatos se pintan DOS, los más repetidos, y el tercero no aparece (88)', () => {
+    const hints = pickBlockHints({
+      patterns: [
+        { occurrences: 4, suggestion: suggestionOf({ id: 'duration|i3', itemId: 'i3', activityId: 'a3' }) },
+        { occurrences: 9, suggestion: suggestionOf({ id: 'duration|i1', itemId: 'i1', activityId: 'a1' }) },
+        { occurrences: 7, suggestion: suggestionOf({ id: 'duration|i2', itemId: 'i2', activityId: 'a2' }) },
+      ],
+      blocks: [
+        candidate({ blockId: 'b1', activityId: 'a1' }),
+        candidate({ blockId: 'b2', activityId: 'a2' }),
+        candidate({ blockId: 'b3', activityId: 'a3' }),
+      ],
+    })
+
+    expect(hints).toHaveLength(2)
+    expect(hints.map((hint) => hint.blockId)).toEqual(['b1', 'b2'])
+    expect(hints.map((hint) => hint.counterLabel)).toEqual(['1 de 2', '2 de 2'])
+  })
+
+  it('nunca dos del mismo bloque, ni dos veces la misma sugerencia', () => {
+    const hints = pickBlockHints({
+      patterns: [{ occurrences: 6, suggestion: suggestionOf({}) }],
+      blocks: [
+        candidate({ blockId: 'b1', activityId: 'a1' }),
+        candidate({ blockId: 'b2', activityId: 'a1', startMinutes: 15 * 60, windowStartMinutes: 14 * 60, windowEndMinutes: 18 * 60 }),
+      ],
+    })
+
+    expect(hints).toHaveLength(1)
+    expect(hints[0]?.blockId).toBe('b1')
+  })
+
+  it('una contestada no llega aquí: el hook ya la calló (88, «entre las que no se han contestado»)', () => {
+    expect(
+      pickBlockHints({
+        patterns: [{ occurrences: 9, suggestion: null }],
+        blocks: [candidate({ blockId: 'b1', activityId: 'a1' })],
+      }),
+    ).toEqual([])
+  })
+
+  it('un desfase de diez minutos justos no sale en Hoy: el criterio pide MÁS de 10', () => {
+    expect(
+      pickBlockHints({
+        patterns: [
+          {
+            occurrences: 9,
+            suggestion: suggestionOf({ offsetMinutes: 10, dayPatch: { durationMinutes: 55 } }),
+          },
+        ],
+        blocks: [candidate({ blockId: 'b1', activityId: 'a1' })],
+      }),
+    ).toEqual([])
+  })
+
+  it('«quitar el martes» no se traduce a un día armado: sin `dayPatch`, sin aviso', () => {
+    expect(
+      pickBlockHints({
+        patterns: [
+          {
+            occurrences: 9,
+            suggestion: suggestionOf({
+              id: 'drop-day|i1|tuesday',
+              kind: 'drop-day',
+              offsetMinutes: 70,
+              dayOfWeek: 'tuesday',
+              templatePatch: { days: ['monday', 'wednesday'] },
+              dayPatch: null,
+            }),
+          },
+        ],
+        blocks: [candidate({ blockId: 'b1', activityId: 'a1' })],
+      }),
+    ).toEqual([])
+  })
+
+  it('un bloque que ya tiene el número que se propone no vuelve a preguntarlo', () => {
+    expect(
+      pickBlockHints({
+        patterns: [{ occurrences: 9, suggestion: suggestionOf({}) }],
+        blocks: [candidate({ blockId: 'b1', activityId: 'a1', durationMinutes: 70 })],
+      }),
+    ).toEqual([])
+  })
+
+  it('si el cambio no cabe en lo libre de alrededor, no se ofrece aquí', () => {
+    expect(
+      pickBlockHints({
+        patterns: [{ occurrences: 9, suggestion: suggestionOf({}) }],
+        blocks: [
+          candidate({ blockId: 'b1', activityId: 'a1', windowEndMinutes: 9 * 60 + 50 }),
+        ],
+      }),
+    ).toEqual([])
+  })
+
+  it('un bloque que ya terminó, o que ya tiene sesión, no recibe aviso', () => {
+    expect(
+      pickBlockHints({
+        patterns: [{ occurrences: 9, suggestion: suggestionOf({}) }],
+        blocks: [candidate({ blockId: 'b1', activityId: 'a1', isDone: true })],
+      }),
+    ).toEqual([])
+  })
+
+  it('ni una palabra de reproche en lo que se pinta (93)', () => {
+    const [hint] = pickBlockHints({
+      patterns: [{ occurrences: 6, suggestion: suggestionOf({ offsetMinutes: -25, dayPatch: { durationMinutes: 20 } }) }],
+      blocks: [candidate({ blockId: 'b1', activityId: 'a1' })],
+    })
+    const texto = [hint?.basis, hint?.ask, hint?.affirmativeLabel, hint?.dismissLabel, hint?.scopeNote]
+      .join(' ')
+      .toLowerCase()
+
+    expect(hint?.basis).toBe('Organizar la casa te suele llevar 25 min menos')
+    for (const palabra of ['desperdicio', 'fallaste', 'incumpl', 'deberías', 'perdiste', 'racha']) {
+      expect(texto).not.toContain(palabra)
+    }
+    expect(texto).not.toMatch(/\bmal\b/)
+  })
+})
+
+describe('la duración que sueles tardar, en los chips del hueco (criterio 91)', () => {
+  it('con cinco datos la trae, redondeada a cinco minutos', () => {
+    const { patterns } = build(
+      fiveDays({ startTime: '09:00', durationMinutes: 68 }),
+      [item({ id: 'i1', activityId: 'a1' })],
+    )
+
+    expect(patterns[0]?.usualDurationSamples).toBe(5)
+    expect(patterns[0]?.usualDurationMinutes).toBe(70)
+    expect(usualDurationsByItemId(patterns)).toEqual({ i1: 70 })
+  })
+
+  it('planeada cinco veces y registrada dos: **no** hay costumbre que ofrecer', () => {
+    const days = fiveDays(null)
+    const conDato = FIVE_DATES.slice(0, 2).map((date) =>
+      day(date, { activityId: 'a1', startTime: '09:00', durationMinutes: 45 }, {
+        startTime: '09:00',
+        durationMinutes: 68,
+      }),
+    )
+    const { patterns } = build([...conDato, ...days.slice(2)], [item({ id: 'i1', activityId: 'a1' })])
+
+    expect(patterns[0]?.usualDurationSamples).toBe(2)
+    expect(patterns[0]?.usualDurationMinutes).toBeNull()
+    expect(usualDurationsByItemId(patterns)).toEqual({})
   })
 })

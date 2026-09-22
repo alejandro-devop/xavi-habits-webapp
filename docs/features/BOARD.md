@@ -15,10 +15,64 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
-| FEAT-007 | building | 2/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
+| FEAT-007 | building | 3/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-007 `building` 3/4** (2026-09-22, revisor). **Tajada 3 aceptada.** Los
+ocho criterios (87–94) y los tres transversales (101, 103, 104) comprobados uno
+a uno, y **esta vez con el navegador abierto**: monté un arnés propio con los
+avisos que genera `pickBlockHints` de verdad, dentro de la lista real de la
+agenda, lo serví desde el **5173 del usuario** (no arranqué nada) y lo borré.
+Medido ahí a 375 px: `scrollWidth === clientWidth === 375`, ni un nodo
+desbordado, el orden es `bloque, aviso, bloque, aviso` —**debajo**, sin tapar ni
+desplazar—, trazo **violeta punteado** (`dashed`, `rgb(124,58,237)/0.45`),
+cabecera violeta con «1 de 2», la consecuencia **antes** de los botones y ningún
+`role="alert"`; en oscuro el violeta pasa a `#a78bfa` y todo se lee. **El coste,
+que era la pregunta:** 39 planes + 1 rango + 1 plantilla al abrir Hoy en frío el
+peor día, **0 nuevas llegando desde Revisión**, **1 al volver** y **0 en un día
+pasado** —verificado corriendo sus tests con espías—. **Me parece defendible**:
+el primer pintado no lo paga nadie (criterio 92, probado), acortar la ventana
+estaba prohibido con buen argumento, lo que se podía contener se contuvo
+(interruptor de cuatro condiciones, plantilla apagada con él, días cerrados que
+ya no caducan) y el arreglo de verdad —consulta de rango en el backend, 39 → 1—
+queda escrito. **La condición: está medido en consultas, no en segundos**;
+cronometrar la primera apertura de Hoy en frío contra Render dormido es del
+usuario (criterio 105) y la palanca, si duele, es una línea. La afirmativa manda
+**un** `activityDayPlanItemEdit` y **cero** `vidaItemUpdate` (espiadas las
+cinco); «Así está bien» no llama a nadie y entra en la regla de las cuatro
+semanas. Hoy no se ha roto: **0 líneas borradas** en sus 97 casos. Línea base
+corrida entera: typecheck limpio, lint 14/0, **2 fallos de 1554**, build exit 0
+con el chunk en **1.085,17 kB** (+4,34, ninguno de iconos). Ocho hallazgos en la
+sección 4; los que más pesan: **el fondo violeta del aviso lo pisa la agenda en
+modo «plan»** (el trazo y la cabecera sí quedan), **el criterio 18 de FEAT-003
+queda derogado en parte** por el 91 —el hueco filtra por la costumbre, no por la
+plantilla—, si la ventana falla **en Hoy no se dice nada**, y **el token de
+violeta sí existía**: la desviación que la tajada 2 declaró —y que yo di por
+buena— se cierra en una línea. Siguiente: el `feature-builder`, tajada 4, la
+última.
+
+**FEAT-007 `in-review` 3/4** (2026-09-21, constructor). **Tajada 3 construida y
+verificada: el aviso llega al planear.** En Hoy, un bloque del que hay
+costumbre trae su aviso **pegado debajo**, en violeta punteado
+(`--aura-ring-to`, que sí existe como token), numerado «1 de 2», con las dos
+salidas escritas y la consecuencia antes de los botones: **«solo para hoy: tu
+plantilla se queda como está»** (D2). Dos como mucho, nunca dos del mismo
+bloque, elegidos en `pickBlockHints` —puro y probado—; la salida afirmativa
+manda **un** `activityDayPlanItemEdit` y **cero** `vidaItemUpdate`; «Así está
+bien» entra en la regla de las cuatro semanas. Y los chips del hueco ofrecen ya
+**la duración que sueles tardar** y lo dicen. **El coste, medido y contenido**:
+abrir Hoy en frío pasa de ≈11 consultas a ≈52 el peor día (39 planes + rango +
+plantilla); llegando desde Revisión, **0 nuevas**; volviendo dentro de la
+sesión, **1**; un día pasado, **0**. Dos decisiones para eso: la ventana se
+monta **diferida y solo si puede servir**, y los días cerrados dejan de caducar
+solos (`invalidateDayPlanQueries` los caduca igual). **Línea base no peor**:
+typecheck limpio, lint 14/0, **2 fallos de 1554** (+28 tests), chunk
+**1.085,17 kB** (+4,34), `app-icons` sin tocar. **Visto en el navegador** con un
+arnés temporal ya borrado, a 375 px y en oscuro, servido por el 5173 del
+usuario: no se arrancó ningún servidor. Sin commitear. Criterios 87–94, 101,
+103 y 104 cerrados; 105, 106 y el trozo de `/app/*` del 94, del usuario.
 
 **FEAT-007 `building` 2/4** (2026-09-21, revisor). **Tajada 2 aceptada tras la
 corrección.** Lo que la devolvía está arreglado de raíz: fuera los `?? 0` de

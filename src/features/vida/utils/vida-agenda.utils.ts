@@ -418,6 +418,12 @@ export type GapSuggestion = {
   suggestion: VidaSuggestion
   /** La duración **de su ítem de plantilla** (D1). `null` si el ítem no la tiene. */
   durationMinutes: number | null
+  /**
+   * La duración que se ofrece es **la que sueles tardar**, no la que pusiste
+   * (FEAT-007, criterio 91). Quien pinta la ficha lo dice —«sueles tardar
+   * 55m»—; con `false` no hay etiqueta **ni hueco reservado** donde iría.
+   */
+  isUsual: boolean
 }
 
 export type GapSuggestions = {
@@ -433,6 +439,16 @@ export type SuggestionsForGapInput = {
   gap: AgendaGap
   planItems: ActivityDayPlanItem[]
   limit?: number
+  /**
+   * **La duración que sueles tardar, por id de ítem de plantilla** (FEAT-007,
+   * criterio 91). Sale de `usualDurationsByItemId()` y solo trae las que
+   * tienen cuatro datos o más.
+   *
+   * **Por defecto vacío, y eso es lo que hace verdadero el criterio 92**: sin
+   * patrones —o sin datos suficientes— este archivo devuelve exactamente lo
+   * que devolvía antes de F6, ficha a ficha.
+   */
+  usualDurations?: Record<string, number>
 }
 
 /** Cabe si tiene duración y no se pasa del hueco. */
@@ -475,6 +491,7 @@ export function suggestionsForGap({
   gap,
   planItems,
   limit = MAX_GAP_SUGGESTIONS,
+  usualDurations = {},
 }: SuggestionsForGapInput): GapSuggestions {
   // Un tramo que ya pasó no ofrece nada. Con la marca de «ahora» partiendo el
   // hueco, el que queda por delante ya tiene el tamaño correcto: es lo que
@@ -500,8 +517,20 @@ export function suggestionsForGap({
     return minutes >= gap.startMinutes && minutes < gap.endMinutes
   }
 
+  /**
+   * **La que sueles tardar manda sobre la que pusiste** (criterio 91), y manda
+   * también para saber si cabe: ofrecer 55 min en un hueco de 40 porque la
+   * plantilla dice 30 sería colocar algo que no entra. Un ítem **sin
+   * duración** sigue sin ella —no se coloca a ciegas, criterio 19—: la
+   * costumbre no le inventa una.
+   */
+  const offeredFor = (suggestion: VidaSuggestion): number | null =>
+    suggestion.item.durationMinutes === null
+      ? null
+      : (usualDurations[suggestion.item.id] ?? suggestion.item.durationMinutes)
+
   const withDuration = candidates
-    .filter((suggestion) => fitsInGap(gap, suggestion.item.durationMinutes))
+    .filter((suggestion) => fitsInGap(gap, offeredFor(suggestion)))
     .sort((a, b) => {
       // Lo que la plantilla pone justo a esta hora, primero: es lo que el
       // usuario ya había decidido para este rato.
@@ -509,12 +538,16 @@ export function suggestionsForGap({
       if (inside !== 0) return inside
       return a.item.orderIndex - b.item.orderIndex
     })
-    .map((suggestion) => ({ suggestion, durationMinutes: suggestion.item.durationMinutes }))
+    .map((suggestion) => ({
+      suggestion,
+      durationMinutes: offeredFor(suggestion),
+      isUsual: usualDurations[suggestion.item.id] !== undefined,
+    }))
 
   const withoutDuration = candidates
     .filter((suggestion) => suggestion.item.durationMinutes === null)
     .sort((a, b) => a.item.orderIndex - b.item.orderIndex)
-    .map((suggestion) => ({ suggestion, durationMinutes: null }))
+    .map((suggestion) => ({ suggestion, durationMinutes: null, isUsual: false }))
 
   const ordered = [...withDuration, ...withoutDuration]
 

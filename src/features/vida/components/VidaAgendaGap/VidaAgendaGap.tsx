@@ -108,7 +108,7 @@ export function VidaAgendaGap({
         {suggestions.visible.length > 0 ? (
           <>
             <ul className={styles.chips}>
-              {suggestions.visible.map(({ suggestion, durationMinutes }) => {
+              {suggestions.visible.map(({ suggestion, durationMinutes, isUsual }) => {
                 const category = suggestion.item.activity?.category ?? null
                 const colorStyle = category?.color
                   ? ({ '--vida-category-color': category.color } as CSSProperties)
@@ -118,6 +118,11 @@ export function VidaAgendaGap({
                   durationMinutes === null
                     ? 'sin duración'
                     : formatDurationFromMinutes(durationMinutes)
+                // **El dato sin pedir nada** (FEAT-007, criterio 91): cuando lo
+                // que se ofrece es lo que **sueles** tardar, la ficha lo dice.
+                // Con menos de cuatro datos no hay etiqueta **ni hueco
+                // reservado** donde iría: la ficha es la de antes.
+                const chipLabel = isUsual ? `sueles tardar ${durationLabel}` : durationLabel
                 const body = (
                   <>
                     <AppIcon
@@ -126,7 +131,9 @@ export function VidaAgendaGap({
                       decorative
                     />
                     <span className={styles.chipName}>{title}</span>
-                    <span className={styles.chipTime}>{durationLabel}</span>
+                    <span className={styles.chipTime} data-usual={isUsual ? '' : undefined}>
+                      {chipLabel}
+                    </span>
                   </>
                 )
                 return (
@@ -142,7 +149,7 @@ export function VidaAgendaGap({
                         aria-label={
                           durationMinutes === null
                             ? `Poner ${title} aquí, eligiendo cuánto dura`
-                            : `Poner ${title} a las ${formatTimeForDisplay(minutesToTime(gap.startMinutes))}, ${durationLabel}`
+                            : `Poner ${title} a las ${formatTimeForDisplay(minutesToTime(gap.startMinutes))}, ${chipLabel}`
                         }
                         onClick={() => onPlaceSuggestion?.(gap, suggestion, durationMinutes)}
                       >
@@ -174,6 +181,11 @@ export function VidaAgendaGap({
             <p className={styles.note}>
               De tu plantilla de {dayLabel}, lo que cabe aquí
               {suggestions.hiddenCount > 0 ? ` (y ${suggestions.hiddenCount} más)` : ''}.
+              {/* Solo cuando de verdad hay alguna costumbre que ofrecer: sin
+                  datos, esta frase no existe (criterio 92). */}
+              {suggestions.visible.some((entry) => entry.isUsual)
+                ? ' La duración que se ofrece es la que sueles tardar, no la que pusiste.'
+                : ''}
             </p>
           </>
         ) : showTemplateHint && suggestions.templateCount === 0 ? (

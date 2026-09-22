@@ -288,6 +288,18 @@ export type VidaActivityPattern = {
   durationLine: PatternLine
   /** «Los martes · 9:40 · +70 min», solo cuando un día se sale de la cuenta. */
   dayLine: PatternLine | null
+  /**
+   * **La duración que sueles tardar**, redondeada a cinco minutos (criterio
+   * 91). `null` con menos de `PATTERN_MIN_OCCURRENCES` **datos registrados**:
+   * la mediana de dos tardes no es una costumbre, y los chips del hueco
+   * ofrecen entonces la que pusiste, sin etiqueta.
+   *
+   * Ojo, no es lo mismo que `occurrences`: una actividad puede estar ocho
+   * veces en el plan y tener dos sesiones registradas.
+   */
+  usualDurationMinutes: number | null
+  /** Cuántas sesiones sostienen esa mediana. Se dice, no se esconde. */
+  usualDurationSamples: number
   weekdayCells: PatternWeekdayCell[]
   /** Qué mide la mini-fila: sin esto, las casillas no se entienden. */
   miniRowNote: string
@@ -723,6 +735,14 @@ function buildPattern(draft: PatternDraft): VidaActivityPattern {
     startLine,
     durationLine,
     dayLine,
+    // **La costumbre que los chips del hueco ofrecen sin que nadie la pida**
+    // (criterio 91). Sale de la misma mediana que la línea «Suele llevarte»:
+    // no hay una segunda cuenta de «lo que sueles tardar».
+    usualDurationMinutes:
+      durationMedian === null || realDurations.length < PATTERN_MIN_OCCURRENCES
+        ? null
+        : Math.max(DURATION_STEP, roundTo(durationMedian, DURATION_STEP)),
+    usualDurationSamples: realDurations.length,
     weekdayCells,
     miniRowNote,
     footnote: `${miniRowNote} · ${followedLabel}`,
@@ -935,4 +955,206 @@ function consequenceFor(item: VidaItem, daysLabel: string, verb: string): string
       ? `En tu plantilla está un día (${daysLabel}): ${verb} ahí.`
       : `En tu plantilla está ${dayCount} días (${daysLabel}): ${verb} en todos.`
   return `${where} Los días que ya tienes armados se quedan como están.`
+}
+
+/* ── Los avisos pegados al bloque, en Hoy (FEAT-007, tajada 3) ──────────── */
+
+/**
+ * **La duración que sueles tardar, por ítem de plantilla** (criterio 91).
+ *
+ * Devuelve **solo** las que tienen cuatro datos o más: con menos, la clave no
+ * está, el hueco ofrece la que pusiste y no hay etiqueta ni hueco vacío donde
+ * iría. Que el valor por defecto sea `{}` es lo que hace el criterio 92
+ * verdadero por construcción: sin patrones, Hoy es exactamente el de antes.
+ */
+export function usualDurationsByItemId(
+  patterns: Pick<VidaActivityPattern, 'itemId' | 'usualDurationMinutes'>[],
+): Record<string, number> {
+  const lookup: Record<string, number> = {}
+  for (const pattern of patterns) {
+    if (pattern.usualDurationMinutes !== null) {
+      lookup[pattern.itemId] = pattern.usualDurationMinutes
+    }
+  }
+  return lookup
+}
+
+/** Un bloque del plan **de ese día**, con el sitio que tiene para moverse. */
+export type BlockHintCandidate = {
+  /** El id del bloque del `activityDayPlan`, **no** el del ítem de plantilla. */
+  blockId: string
+  activityId: string
+  startMinutes: number
+  durationMinutes: number
+  /** Lo libre de alrededor, de `getBlockEditWindow`: dónde cabe el cambio. */
+  windowStartMinutes: number
+  windowEndMinutes: number
+  /**
+   * Ya terminó, o ya tiene sesión. Un aviso sobre un rato que ya pasó no es
+   * «al planear»: es llegar tarde.
+   */
+  isDone: boolean
+}
+
+export type VidaBlockHint = {
+  /** `sugerencia|bloque`: dos bloques de la misma actividad no comparten aviso. */
+  id: string
+  blockId: string
+  suggestion: VidaPatternSuggestion
+  /** «De tus últimas semanas». */
+  header: string
+  /** «1 de 2» (criterio 87). */
+  counterLabel: string
+  /** «Organizar la casa te suele llevar 25 min más». */
+  basis: string
+  /** «¿lo dejamos en 1h 10?». */
+  ask: string
+  /** «Sí, 1h 10»: el número va dentro (criterio 87). */
+  affirmativeLabel: string
+  /** «Así está bien». La segunda salida, siempre escrita. */
+  dismissLabel: string
+  /** **Antes de tocar nada**: «Solo para hoy…» (criterio 89, D2). */
+  scopeNote: string
+  /** Lo que manda el `activityDayPlanItemEdit`. Nunca la plantilla. */
+  dayPatch: VidaPatternDayPatch
+}
+
+export type PickBlockHintsInput = {
+  /**
+   * Las tarjetas **ya filtradas por la regla de D1** (`useVidaPatterns`): una
+   * contestada llega con `suggestion: null` y aquí no vuelve a decidirse nada.
+   * Se piden las tarjetas y no las sugerencias sueltas porque el orden del
+   * criterio 88 es **por número de repeticiones**, y ese número vive en la
+   * tarjeta.
+   */
+  patterns: Pick<VidaActivityPattern, 'occurrences' | 'suggestion'>[]
+  blocks: BlockHintCandidate[]
+  /** «Dos avisos como mucho por día» (criterio 88). */
+  limit?: number
+  /** Cómo se dice la fecha del día que se está armando: «solo para hoy». */
+  scopeLabel?: string
+}
+
+/** «solo para hoy» / «solo para el domingo»: lo que cambia y hasta dónde. */
+const DEFAULT_SCOPE_LABEL = 'solo para hoy'
+
+/**
+ * **Los dos avisos del día, elegidos aquí y no en la página** (criterio 88).
+ *
+ * La regla entera, en un sitio probable:
+ *
+ * 1. Solo sugerencias con `dayPatch`: «quitar el martes» cambia la plantilla y
+ *    en Hoy no tiene traducción — un día armado **no se des-planea** desde un
+ *    aviso, que es lo que dice el propio tipo desde la tajada 2.
+ * 2. **Desfase de más de diez minutos**, en estricto (el criterio dice «más
+ *    de 10 min»; la tarjeta de Revisión entra desde diez, así que una de
+ *    exactamente diez se ve allí y no aquí).
+ * 3. El bloque tiene que **existir en el plan de ese día**, no haber terminado
+ *    y **no tener ya el número que se propone**: preguntar «¿lo dejamos en 1h
+ *    10?» a un bloque que ya dura 1h 10 no es una pregunta. Eso es también lo
+ *    que hace desaparecer el aviso en cuanto se acepta.
+ * 4. Y el cambio tiene que **caber** en lo libre de alrededor: un aviso que al
+ *    aceptarlo choca con el bloque siguiente sería una salida que no lleva a
+ *    ninguna parte. Si no cabe, no se pinta aquí; sigue en «Lo que se repite».
+ * 5. **Dos como mucho**, nunca dos del mismo bloque ni dos de la misma
+ *    sugerencia, ordenados por veces repetidas y, a igualdad, por desfase.
+ *    Empate resuelto por el id: dos ejecuciones dan la misma lista.
+ */
+export function pickBlockHints(input: PickBlockHintsInput): VidaBlockHint[] {
+  const { patterns, blocks, limit = 2, scopeLabel = DEFAULT_SCOPE_LABEL } = input
+
+  const ranked = patterns
+    .filter((pattern) => pattern.suggestion?.dayPatch)
+    .filter(
+      (pattern) =>
+        Math.abs(pattern.suggestion?.offsetMinutes ?? 0) > PATTERN_TOLERANCE_MINUTES,
+    )
+    .sort(
+      (a, b) =>
+        b.occurrences - a.occurrences ||
+        Math.abs(b.suggestion?.offsetMinutes ?? 0) - Math.abs(a.suggestion?.offsetMinutes ?? 0) ||
+        (a.suggestion?.id ?? '').localeCompare(b.suggestion?.id ?? ''),
+    )
+
+  const hints: VidaBlockHint[] = []
+  const usedBlockIds = new Set<string>()
+
+  for (const pattern of ranked) {
+    if (hints.length >= limit) break
+    const suggestion = pattern.suggestion
+    const dayPatch = suggestion?.dayPatch
+    if (!suggestion || !dayPatch) continue
+
+    const block = blocks.find(
+      (candidate) =>
+        candidate.activityId === suggestion.activityId &&
+        !candidate.isDone &&
+        !usedBlockIds.has(candidate.blockId) &&
+        appliesTo(candidate, dayPatch),
+    )
+    if (!block) continue
+
+    usedBlockIds.add(block.blockId)
+    hints.push({
+      id: `${suggestion.id}|${block.blockId}`,
+      blockId: block.blockId,
+      suggestion,
+      header: 'De tus últimas semanas',
+      counterLabel: '',
+      basis: hintBasis(suggestion),
+      ask: hintAsk(dayPatch),
+      affirmativeLabel: `Sí, ${patchValueLabel(dayPatch)}`,
+      dismissLabel: 'Así está bien',
+      scopeNote: `Esto cambia ${scopeLabel}: tu plantilla se queda como está.`,
+      dayPatch,
+    })
+  }
+
+  // La cuenta se escribe al final, cuando ya se sabe cuántos hay: «1 de 2».
+  return hints.map((hint, index) => ({
+    ...hint,
+    counterLabel: `${index + 1} de ${hints.length}`,
+  }))
+}
+
+/** ¿Este bloque puede recibir el cambio, y le cambia algo? */
+function appliesTo(block: BlockHintCandidate, patch: VidaPatternDayPatch): boolean {
+  if ('durationMinutes' in patch) {
+    if (patch.durationMinutes === block.durationMinutes) return false
+    return block.startMinutes + patch.durationMinutes <= block.windowEndMinutes
+  }
+  const startMinutes = parseTimeToMinutes(patch.startTime)
+  if (startMinutes === block.startMinutes) return false
+  return (
+    startMinutes >= block.windowStartMinutes &&
+    startMinutes + block.durationMinutes <= block.windowEndMinutes
+  )
+}
+
+/**
+ * De dónde sale el aviso, en la voz del render: «te suele llevar 25 min más».
+ * Nunca «te pasaste»: es un dato, no una nota de conducta.
+ */
+function hintBasis(suggestion: VidaPatternSuggestion): string {
+  // **Minutos**, y no «1h 10»: el desfase se dice en la misma unidad en la que
+  // se mide, que es lo que hace `offsetLabel` en la tarjeta de Revisión.
+  const minutes = `${Math.abs(Math.round(suggestion.offsetMinutes))} min`
+  if (suggestion.kind === 'duration') {
+    return suggestion.offsetMinutes > 0
+      ? `${suggestion.title} te suele llevar ${minutes} más`
+      : `${suggestion.title} te suele llevar ${minutes} menos`
+  }
+  return `${suggestion.title} sueles empezarlo ${minutes} ${laterOrEarlier(suggestion.offsetMinutes)}`
+}
+
+function hintAsk(patch: VidaPatternDayPatch): string {
+  return 'durationMinutes' in patch
+    ? `¿lo dejamos en ${patchValueLabel(patch)}?`
+    : `¿lo ponemos a las ${patchValueLabel(patch)}?`
+}
+
+function patchValueLabel(patch: VidaPatternDayPatch): string {
+  return 'durationMinutes' in patch
+    ? formatDurationFromMinutes(patch.durationMinutes)
+    : formatTimeForDisplay(patch.startTime)
 }

@@ -2450,8 +2450,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.tsx": {
-    "mtime": 1790049271.3755753,
-    "ast_hash": "731feabb9f398974045ce7653c83117c",
+    "mtime": 1790050919.9618535,
+    "ast_hash": "f06288cb793fc03da5ac8016d3b1b4fc",
     "semantic_hash": ""
   },
   "src/features/vida/routes/vida-paths.ts": {
@@ -2480,8 +2480,8 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790048468.6633306,
-    "ast_hash": "71bb43b6cba2a551ef2aa9489b39e082",
+    "mtime": 1790050658.4862711,
+    "ast_hash": "e808a2501c5394ca7fdad65185860a12",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
@@ -2685,8 +2685,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaItems.ts": {
-    "mtime": 1789953708.4362028,
-    "ast_hash": "6c7998530da314d7c256fbb4b72050bb",
+    "mtime": 1790050856.8762972,
+    "ast_hash": "4fb7fdae2a863f20f86f666c931ae99b",
     "semantic_hash": ""
   },
   "src/features/vida/types/activity-day-plan.types.ts": {
@@ -3485,8 +3485,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.test.tsx": {
-    "mtime": 1790049628.442336,
-    "ast_hash": "697a17573b8fafdf964614e392ffe746",
+    "mtime": 1790051022.8968062,
+    "ast_hash": "a325aecd7f1176f008071ec1e715ccf7",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-review.utils.test.ts": {
@@ -3610,8 +3610,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-007-vida-sistema-entiende.md": {
-    "mtime": 1790048791.3274846,
-    "ast_hash": "9f54daba2527dd39ca9812d35bc5d99d",
+    "mtime": 1790050640.2030456,
+    "ast_hash": "088be43eb59bc593f9aa5f94f563178e",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260922_030753_feat_007__ventana_de_42_dias__derivado_de_patrones.md": {
@@ -3620,8 +3620,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaPatternCard/VidaPatternCard.tsx": {
-    "mtime": 1790049134.9026666,
-    "ast_hash": "ce0fada3ae5f5f3d8022a1f74858824e",
+    "mtime": 1790050842.5681744,
+    "ast_hash": "0ebad867af120942a384dbfc3d0d6aaf",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaPatternCard/index.ts": {
@@ -3630,23 +3630,23 @@
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaPatterns.test.tsx": {
-    "mtime": 1790049516.990878,
-    "ast_hash": "1fec429456e92f2c23ec9ca17bbfa254",
+    "mtime": 1790051040.7199764,
+    "ast_hash": "35e6ffb023497e9d743a19b002ad7303",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaPatterns.ts": {
-    "mtime": 1790049108.5852907,
-    "ast_hash": "ebe957c73c7169f2ab16ba96c62b9395",
+    "mtime": 1790050940.8690429,
+    "ast_hash": "c553263843af1b79569c76046da67655",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-patterns.utils.test.ts": {
-    "mtime": 1790049468.1842325,
-    "ast_hash": "62b10676d616139a7351dd84f8238772",
+    "mtime": 1790050987.3374715,
+    "ast_hash": "dcf497006904bae7a10f7f384a3aa9fc",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-patterns.utils.ts": {
-    "mtime": 1790049468.1832325,
-    "ast_hash": "9942bd60bdca2f985131a9d925717c19",
+    "mtime": 1790050881.4665112,
+    "ast_hash": "1ef30a3addc01877451545cbd675bae4",
     "semantic_hash": ""
   }
 }

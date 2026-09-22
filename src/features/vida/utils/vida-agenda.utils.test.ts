@@ -582,3 +582,53 @@ describe('findNextBlockId y formatGapRange', () => {
     expect(formatGapRange(gapOf(480, 540))).toBe('8:00 – 9:00')
   })
 })
+
+describe('la duración que sueles tardar, en las fichas del hueco (FEAT-007, criterios 91 y 92)', () => {
+  const gap = gapOf(630, 780) // 10:30 – 13:00, 150 min
+
+  it('sin costumbres, la ficha es EXACTAMENTE la de antes: la que pusiste y sin etiqueta', () => {
+    const { visible } = suggestionsForGap({
+      suggestions: [suggestion('compra', 30)],
+      gap,
+      planItems: [],
+    })
+
+    expect(visible[0]?.durationMinutes).toBe(30)
+    expect(visible[0]?.isUsual).toBe(false)
+  })
+
+  it('con cuatro datos o más ofrece la que sueles tardar, y lo dice', () => {
+    const { visible } = suggestionsForGap({
+      suggestions: [suggestion('compra', 30)],
+      gap,
+      planItems: [],
+      usualDurations: { compra: 55 },
+    })
+
+    expect(visible[0]?.durationMinutes).toBe(55)
+    expect(visible[0]?.isUsual).toBe(true)
+  })
+
+  it('la costumbre manda también para saber si CABE: 55 min no entran en un hueco de 40', () => {
+    const { visible } = suggestionsForGap({
+      suggestions: [suggestion('compra', 30)],
+      gap: gapOf(630, 670),
+      planItems: [],
+      usualDurations: { compra: 55 },
+    })
+
+    expect(visible).toEqual([])
+  })
+
+  it('un ítem sin duración sigue sin ella: la costumbre no le inventa una (criterio 19)', () => {
+    const { visible } = suggestionsForGap({
+      suggestions: [suggestion('sinDuracion', null)],
+      gap,
+      planItems: [],
+      usualDurations: { sinDuracion: 55 },
+    })
+
+    expect(visible[0]?.durationMinutes).toBeNull()
+    expect(visible[0]?.isUsual).toBe(false)
+  })
+})

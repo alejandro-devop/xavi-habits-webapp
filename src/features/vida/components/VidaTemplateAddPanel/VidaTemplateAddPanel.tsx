@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
+import { VidaEndTimeLine } from '@/features/vida/components/VidaEndTimeLine'
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import { useSaveVidaItemForActivity } from '@/features/vida/hooks/useSaveVidaItemForActivity'
@@ -381,9 +382,18 @@ export function VidaTemplateAddPanel({
             <VidaDurationPills
               label="Cuánto dura"
               freeInput="hoursAndMinutes"
+              describedById="vida-add-end-time"
               value={durationMinutes}
               disabled={save.isPending}
               onChange={setDurationMinutes}
+            />
+            {/* **La misma línea, con las mismas palabras que en la hoja**
+                (criterio 120): se ve al añadir, no solo al editar. Es el mismo
+                componente, no uno parecido. */}
+            <VidaEndTimeLine
+              id="vida-add-end-time"
+              startTime={startTime}
+              durationMinutes={durationMinutes}
             />
           </div>
 

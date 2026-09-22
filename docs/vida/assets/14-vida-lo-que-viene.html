@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — lo que viene</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#047857; --violet:#7c3aed; --violet-2:#a78bfa;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:930px;margin:0 0 6px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:38px 0 12px}
+  .note{font-size:13px;color:var(--ink-soft);margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#e2e8f0}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#34d399}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  .phone{width:100%;max-width:375px;border-radius:38px;padding:9px;background:#020617;box-shadow:0 26px 60px -24px rgba(0,0,0,.9)}
+  .screen{position:relative;overflow:hidden;width:100%;border-radius:30px;background:var(--bg);padding:14px 12px 16px}
+
+  .agenda{position:relative;padding-left:46px}
+  .rail{position:absolute;left:38px;top:2px;bottom:2px;width:2px;background:rgba(148,163,184,.14)}
+  .slot{position:relative;margin-bottom:8px}
+  .slot .t{position:absolute;left:-46px;top:11px;width:34px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-13px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2.5px solid rgba(148,163,184,.45)}
+  .card{padding:10px 12px;border-radius:15px;background:var(--card);border:1px solid var(--edge);display:flex;align-items:center;gap:10px;min-width:0}
+  .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:14px;flex:0 0 auto;background:rgba(225,29,72,.16)}
+  .txt{min-width:0;flex:1}
+  .nm{font-weight:600;font-size:13px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:2px}
+  .meta b{color:var(--violet-2);font-weight:700}
+  .tag{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(124,58,237,.18);color:var(--violet-2);white-space:nowrap}
+  .card.run{border-color:rgba(124,58,237,.45);background:linear-gradient(180deg,rgba(124,58,237,.12),var(--card))}
+  .card.done{opacity:.55}
+
+  .nowline{display:flex;align-items:center;gap:8px;margin:2px 0 9px;margin-left:-46px;padding-left:46px}
+  .nowline .l{flex:1;height:1.5px;background:var(--violet)}
+  .nowline .b{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;color:#fff;background:var(--violet);border-radius:999px;padding:3px 9px;font-variant-numeric:tabular-nums}
+  .nowline .h{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums;width:34px;text-align:right;margin-left:-46px}
+
+  /* ── LO QUE VIENE: lo nuevo, y va pegado a la actividad en curso ── */
+  .next{position:relative;margin-bottom:8px}
+  .next .t{position:absolute;left:-46px;top:13px;width:34px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .next .dot{position:absolute;left:-13px;top:16px;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2.5px dashed rgba(52,211,153,.6)}
+  .nextCard{border-radius:16px;padding:12px;border:1.5px solid rgba(16,185,129,.4);background:linear-gradient(180deg,rgba(16,185,129,.1),var(--card-2))}
+  .kicker{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#34d399}
+  .who{display:flex;align-items:center;gap:10px;margin-top:8px}
+  .who .ic{background:rgba(225,29,72,.16)}
+  .who .nm2{font-size:15px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  .who .when{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim);margin-top:2px;font-variant-numeric:tabular-nums}
+  .play{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:11px;padding:13px;border-radius:14px;background:#10b981;color:#04261c;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+  .truth{display:flex;gap:7px;margin-top:9px;padding:9px 10px;border-radius:11px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.14)}
+  .truth .i{color:#34d399;font-size:12px;line-height:1.5;flex:0 0 auto}
+  .truth p{margin:0;font-family:'Inter',sans-serif;font-size:11.5px;line-height:1.55;color:var(--ink-soft)}
+  .truth p b{color:#e2e8f0;font-weight:700}
+  .alt{margin-top:9px;text-align:center;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--ink-soft)}
+  .next.quiet .nextCard{border-color:var(--edge);border-style:dashed;background:var(--card)}
+  .next.quiet .kicker{color:var(--ink-dim)}
+  .next.quiet .dot{border-color:rgba(148,163,184,.4)}
+  .say{font-size:12.5px;line-height:1.6;color:var(--ink-soft);margin:8px 0 0}
+  .say b{color:#e2e8f0}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Lo que viene</h1>
+  <p class="lede">Lo que te gusta ya está: la actividad en curso <b>ocupa su sitio real en la línea</b>, reservando el tiempo mientras pasa. Lo que falta es lo de después. Esto pone, <b>justo debajo de lo que estás haciendo</b>, lo que tu plantilla dice que toca luego, con un botón para arrancarlo. Y responde de frente a lo que te frenaba: <b>un botón que dice «4 h» no registra 4 horas</b> — arranca en el segundo en que lo pulsas y termina cuando tú lo termines.</p>
+
+  <p class="caption">Los cuatro momentos</p>
+  <div class="row">
+
+    <!-- 1 -->
+    <div class="moment">
+      <div class="mtitle">1 · Mientras haces algo<small>Lo que viene, pegado a lo que está pasando.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="agenda"><div class="rail"></div>
+
+          <div class="slot"><span class="t">10:35</span><span class="dot"></span>
+            <div class="card done"><span class="ic" style="background:rgba(148,163,184,.14)">☕</span>
+              <span class="txt"><span class="nm">Libre 10:35 – 10:57 · 22m</span></span></div></div>
+
+          <div class="slot"><span class="t">10:57</span><span class="dot" style="border-color:var(--violet)"></span>
+            <div class="card run"><span class="ic">💼</span>
+              <span class="txt"><span class="nm">Working at lululemon</span><span class="meta">10:57 – 11:05 · 8m · <b>en marcha</b></span></span>
+              <span class="tag">fuera del plan</span></div></div>
+
+          <div class="nowline"><span class="h">11:05</span><span class="b">AHORA</span><span class="l"></span></div>
+
+          <div class="next">
+            <span class="t">11:30</span><span class="dot"></span>
+            <div class="nextCard">
+              <span class="kicker">Lo que viene</span>
+              <div class="who">
+                <span class="ic">💼</span>
+                <span><span class="nm2">Daily meeting</span><span class="when">En tu plantilla, a las 11:30 · suele durarte 30 min</span></span>
+              </div>
+              <div class="play">▶ Empezar ahora</div>
+              <div class="truth"><span class="i">●</span><p>Arranca <b>cuando pulses</b>, no a las 11:30. Y los 30 min son <b>lo que suele durarte</b>: se registra <b>lo que dure de verdad</b>.</p></div>
+              <div class="alt">Ver las otras 3 · Empezar otra cosa</div>
+            </div>
+          </div>
+
+        </div>
+      </div></div>
+      <p class="note">Va <b>dentro de la línea</b>, en el sitio donde tu ojo ya está mirando, no en una tarjeta arriba del todo. Y la hora de la izquierda es la de tu plantilla, en gris: es <b>dónde debería caer</b>, no dónde va a caer.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="moment">
+      <div class="mtitle">2 · Pulsas a las 11:05<small>25 minutos antes de lo previsto. No pasa nada.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="agenda"><div class="rail"></div>
+
+          <div class="slot"><span class="t">10:57</span><span class="dot"></span>
+            <div class="card done"><span class="ic">💼</span>
+              <span class="txt"><span class="nm">Working at lululemon</span><span class="meta">10:57 – 11:05 · 8m</span></span>
+              <span class="tag">fuera del plan</span></div></div>
+
+          <div class="slot"><span class="t">11:05</span><span class="dot" style="border-color:var(--violet)"></span>
+            <div class="card run"><span class="ic">💼</span>
+              <span class="txt"><span class="nm">Daily meeting</span><span class="meta">11:05 – 11:06 · 1m · <b>en marcha</b></span></span>
+              <span class="tag" style="background:rgba(16,185,129,.16);color:#34d399">del plan</span></div></div>
+
+          <div class="nowline"><span class="h">11:06</span><span class="b">AHORA</span><span class="l"></span></div>
+
+          <div class="next">
+            <span class="t">12:00</span><span class="dot"></span>
+            <div class="nextCard">
+              <span class="kicker">Lo que viene</span>
+              <div class="who">
+                <span class="ic" style="background:rgba(124,58,237,.16)">🍽️</span>
+                <span><span class="nm2">Almorzar</span><span class="when">En tu plantilla, a las 12:00 · suele durarte 30 min</span></span>
+              </div>
+              <div class="play">▶ Empezar ahora</div>
+              <div class="truth"><span class="i">●</span><p>Arranca <b>cuando pulses</b>. Al hacerlo, «Daily meeting» se dará por terminada a esa hora.</p></div>
+              <div class="alt">Ver las otras 2 · Empezar otra cosa</div>
+            </div>
+          </div>
+
+        </div>
+      </div></div>
+      <p class="note">El cronómetro nace en <b>11:05</b>, que es cuando pulsaste, no a las 11:30. Lo anterior se cierra solo <b>a esa misma hora</b> —eso ya funciona desde hoy— así que nunca te quedan dos cosas corriendo ni un hueco inventado entre ellas. Y «Lo que viene» pasa a ser lo siguiente de la plantilla, sin que hagas nada.</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="moment">
+      <div class="mtitle">3 · Las 4 horas, que es lo que te frenaba<small>Lo que dura la ficha ≠ lo que se registra.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="agenda"><div class="rail"></div>
+
+          <div class="nowline"><span class="h">13:40</span><span class="b">AHORA</span><span class="l"></span></div>
+
+          <div class="next">
+            <span class="t">13:00</span><span class="dot"></span>
+            <div class="nextCard">
+              <span class="kicker">Lo que viene · se pasó de la hora</span>
+              <div class="who">
+                <span class="ic">💼</span>
+                <span><span class="nm2">Working at lululemon</span><span class="when">En tu plantilla, a las 13:00 · suele durarte 4 h</span></span>
+              </div>
+              <div class="play">▶ Empezar ahora</div>
+              <div class="truth"><span class="i">●</span><p><b>No se registran 4 horas.</b> Empieza a las 13:40 y sigue corriendo hasta que la termines: si la dejas a las 15:00, se guardan <b>1 h 20</b>.</p></div>
+              <div class="alt">Ya la hice · Empezar otra cosa</div>
+            </div>
+          </div>
+
+          <div class="slot" style="margin-top:14px"><span class="t">18:00</span><span class="dot"></span>
+            <div class="card" style="opacity:.6"><span class="ic" style="background:rgba(16,185,129,.16)">🐕</span>
+              <span class="txt"><span class="nm">Salir con Sheyko y Layla</span><span class="meta">En tu plantilla · 45 min</span></span></div></div>
+
+        </div>
+      </div></div>
+      <p class="note">Es <b>la misma frase, siempre</b>, no un aviso que aparece solo cuando el número asusta. La duración de la plantilla se llama «<b>suele durarte</b>» y no «4 h» a secas, precisamente para que se lea como una estimación y no como una reserva. Y si ya la hiciste, esa salida está escrita: «Ya la hice».</p>
+    </div>
+
+    <!-- 4 -->
+    <div class="moment">
+      <div class="mtitle">4 · Cuando no queda nada<small>Ni se inventa una sugerencia, ni se queda mudo.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="agenda"><div class="rail"></div>
+
+          <div class="slot"><span class="t">18:00</span><span class="dot"></span>
+            <div class="card done"><span class="ic" style="background:rgba(16,185,129,.16)">🐕</span>
+              <span class="txt"><span class="nm">Salir con Sheyko y Layla</span><span class="meta">18:00 – 18:52 · 52m</span></span>
+              <span class="tag" style="background:rgba(16,185,129,.16);color:#34d399">del plan</span></div></div>
+
+          <div class="nowline"><span class="h">18:52</span><span class="b">AHORA</span><span class="l"></span></div>
+
+          <div class="next quiet">
+            <span class="t">&nbsp;</span><span class="dot"></span>
+            <div class="nextCard">
+              <span class="kicker">Ya no queda nada en tu plantilla</span>
+              <p class="say">Tu martes se acaba a las <b>22:00</b>. Te quedan <b>3 h 8</b>.</p>
+              <div class="play" style="background:transparent;color:#34d399;border:1.5px solid rgba(16,185,129,.45)">▶ Empezar algo</div>
+            </div>
+          </div>
+
+        </div>
+      </div></div>
+      <p class="note">No se rellena el hueco con una sugerencia inventada. Dice lo que es cierto —cuánto te queda de día— y deja el botón. Es el mismo sitio, la misma forma: <b>siempre sabes dónde mirar para saber qué sigue</b>.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Lo que este render decide</p>
+  <p class="note"><b>Un solo sitio y siempre el mismo:</b> justo debajo de lo que está pasando, dentro de la línea. Con algo en marcha, después; sin nada en marcha, en la línea de AHORA. Nunca hay que buscarlo.</p>
+  <p class="note"><b>La duración es una estimación y se dice con esas palabras.</b> «Suele durarte 4 h», nunca «4 h» a secas, y debajo la frase que dice qué se registra de verdad. Es la respuesta a lo único que te impedía pulsar.</p>
+  <p class="note"><b>Un clic y ya.</b> Empezar lo que toca no puede costar más que no hacerlo: sin hoja, sin elegir, sin confirmar. Las salidas alternativas —otra cosa, ya la hice, ver el resto— van escritas debajo, en pequeño, sin competir con el botón.</p>
+  <p class="note"><b>Lo que esto deja en evidencia:</b> las fichas del hueco («Daily meeting 30m», «Almorzar 30m») y el panel «Tu plantilla de martes» con sus «Ponerla 11:03» sirven para <b>planear</b>, y planear es justo lo que no estabas haciendo. Cuando esto exista, esos dos sitios dejan de ser el camino principal — y probablemente sobren donde están.</p>
+
+</div>
+</body>
+</html>

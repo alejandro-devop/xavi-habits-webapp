@@ -1,0 +1,82 @@
+/* La hora de fin: **texto llano bajo los campos**, no una caja.
+   Copia de `.patternNote` de la hoja del ítem
+   (`VidaActivitySheet.module.scss`) —mismo tamaño, mismo
+   `--color-text-secondary`, mismo `overflow-wrap`—, con la hora subida a
+   `--color-text`. Ni `--aura-ring-to` ni fondo: el violeta es de FEAT-007, que
+   cuenta historia; esto es el dato de lo que se está escribiendo (criterio 124). */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Sin duración no hay línea, y entonces tampoco hay hueco: el contenedor sigue
+   en el DOM para que `aria-describedby` apunte a algo estable, pero no ocupa. */
+.root:empty {
+  display: none;
+}
+
+.line {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.arrow {
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.body {
+  min-width: 0;
+}
+
+.time {
+  color: var(--color-text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* «ya del día siguiente»: debajo y más apagado, como en el render aprobado.
+   Es un matiz de la misma frase, no una segunda frase. */
+.after {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  font-size: 0.6875rem;
+}
+
+/* Sin hora de inicio la línea no se calla: dice qué falta, y lo dice en tono
+   de hueco, no de aviso. */
+.waiting {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Lo que Hoy hará de verdad al cruzar medianoche. Ámbar del sistema, pero el
+   **texto va en `--color-text`**: `--color-warning` sobre su propio tinte no
+   llega a 4,5:1 en oscuro, y el criterio 128 lo exige. Sin una palabra de
+   reproche y sin `role="alert"`. */
+.capped {
+  margin: 0;
+  min-width: 0;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-warning) 35%, transparent);
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+  color: var(--color-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}

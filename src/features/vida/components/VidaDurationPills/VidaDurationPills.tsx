@@ -53,6 +53,13 @@ type VidaDurationPillsProps = {
    * casos de arriba que buscan `spinbutton` fallarían en voz alta.
    */
   freeInput?: 'minutes' | 'hoursAndMinutes'
+  /**
+   * El `id` de lo que describe a estos campos y no está dentro del control: hoy,
+   * la línea de fin (`VidaEndTimeLine`, FEAT-008 tajada 2). Entra en el
+   * `aria-describedby` de los dos campos **junto con** la línea del tope, para
+   * que un lector de pantalla cuente lo mismo que se ve (criterio 128).
+   */
+  describedById?: string
 }
 
 /**
@@ -80,8 +87,10 @@ export function VidaDurationPills({
   label = 'Cuánto',
   maxMinutes,
   freeInput = 'minutes',
+  describedById,
 }: VidaDurationPillsProps) {
   const freeId = useId()
+  const capId = useId()
   // «Libre» empieza abierto si lo que hay puesto no es ninguna de las píldoras
   // (un ítem guardado con 50 min, por ejemplo): si no, la duración se vería en
   // ninguna parte.
@@ -104,6 +113,11 @@ export function VidaDurationPills({
   }
 
   const overMax = rawTotal(draft) > MAX_DURATION_MINUTES
+  // Lo que describe a los dos campos y no vive dentro de ellos: la línea del
+  // tope (cuando está) y la de fin (cuando el llamador la pinta). Sin nada que
+  // describir no se escribe el atributo vacío.
+  const describedBy =
+    [overMax ? capId : null, describedById ?? null].filter(Boolean).join(' ') || undefined
 
   const handleDraftChange = (field: 'hours' | 'minutes', raw: string) => {
     // Lo que no es un número se ignora, en vez de dejar el campo en un estado
@@ -182,6 +196,7 @@ export function VidaDurationPills({
               autoComplete="off"
               // Nombre propio para cada campo, no uno compartido (criterio 114).
               aria-label="horas"
+              aria-describedby={describedBy}
               value={draft.hours}
               disabled={disabled}
               placeholder="1"
@@ -199,6 +214,7 @@ export function VidaDurationPills({
               inputMode="numeric"
               autoComplete="off"
               aria-label="minutos"
+              aria-describedby={describedBy}
               value={draft.minutes}
               disabled={disabled}
               placeholder="30"
@@ -214,7 +230,9 @@ export function VidaDurationPills({
 
       {/* El tope se dice en una línea llana, sin color y sin reproche. */}
       {isFree && freeInput === 'hoursAndMinutes' && overMax ? (
-        <p className={styles.hint}>Como mucho {formatDurationMinutes(MAX_DURATION_MINUTES)}.</p>
+        <p className={styles.hint} id={capId}>
+          Como mucho {formatDurationMinutes(MAX_DURATION_MINUTES)}.
+        </p>
       ) : null}
 
       {isFree && freeInput === 'minutes' ? (

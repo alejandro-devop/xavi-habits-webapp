@@ -20,6 +20,7 @@ import {
   describeExistingHours,
   describeFitAt,
   describeMultipleItemsNote,
+  describeEndTime,
   describeTemplatePreview,
   templateItemsForDay,
   whatIsAt,
@@ -1099,5 +1100,71 @@ describe('buildTemplateDay — las filas y sus huecos (criterios 140-146, 149)',
     ])
     expect(day.rows[3]).toMatchObject({ untilMinutes: 9 * 60 + 30, isDayEnd: false })
     expect(gaps(day)).toEqual(['free-06:30-08:00', 'free-10:00-23:00'])
+  })
+})
+
+/* ── La hora de fin, mientras programas (FEAT-008, tajada 2) ───────────────── */
+
+describe('describeEndTime (criterios 119-123, 127)', () => {
+  it('con hora y duración dice a qué hora acaba (criterio 119)', () => {
+    expect(describeEndTime({ startTime: '19:00', durationMinutes: 80 })).toEqual({
+      waiting: false,
+      lead: 'Acaba a las',
+      time: '20:20',
+      afterText: null,
+      nextDayText: null,
+    })
+  })
+
+  it('sin duración no hay línea, y no se usan los 30 min por defecto (criterio 122)', () => {
+    expect(describeEndTime({ startTime: '19:00', durationMinutes: null })).toBeNull()
+    expect(describeEndTime({ startTime: '19:00', durationMinutes: 0 })).toBeNull()
+  })
+
+  it('sin hora de inicio dice qué falta y no inventa un fin (criterio 122)', () => {
+    const waiting = describeEndTime({ startTime: null, durationMinutes: 80 })
+    expect(waiting).toEqual({
+      waiting: true,
+      lead: 'Ponle hora y te digo a qué hora acaba',
+      time: null,
+      afterText: null,
+      nextDayText: null,
+    })
+    // Nunca «Acaba a la 1:20» contando desde medianoche.
+    expect(describeEndTime({ startTime: '', durationMinutes: 80 })).toEqual(waiting)
+    expect(describeEndTime({ startTime: '25:00', durationMinutes: 80 })).toEqual(waiting)
+  })
+
+  it('cruzando medianoche lo dice entero, incluida la parte incómoda (criterio 123)', () => {
+    expect(describeEndTime({ startTime: '23:30', durationMinutes: 80 })).toEqual({
+      waiting: false,
+      lead: 'Acaba a las',
+      time: '0:50',
+      afterText: 'ya del día siguiente',
+      nextDayText: 'Hoy lo cortará a las 23:59 al armar el día.',
+    })
+  })
+
+  it('jamás enseña 23:59 a secas como si fuera el fin elegido (criterio 123)', () => {
+    const crossing = describeEndTime({ startTime: '23:50', durationMinutes: 30 })
+    expect(crossing?.time).toBe('0:20')
+    expect(crossing?.nextDayText).toContain('23:59')
+  })
+
+  it('la hora lleva el formato del módulo, sin cero a la izquierda (criterio 127)', () => {
+    expect(describeEndTime({ startTime: '08:00', durationMinutes: 45 })?.time).toBe('8:45')
+    expect(describeEndTime({ startTime: '00:10', durationMinutes: 20 })?.time).toBe('0:30')
+  })
+
+  it('no hay dos cuentas: el fin sale de la misma suma que el plan del día (criterio 125)', () => {
+    // Lo que se enseña dentro del día es literalmente lo que `describeTemplatePreview`
+    // pone en su rango, que a su vez es `calculateEndTime`.
+    const preview = describeTemplatePreview({
+      days: ['monday'],
+      startTime: '09:00',
+      durationMinutes: 45,
+    })
+    expect(preview.rangeText).toBe('de 9:00 a 9:45')
+    expect(describeEndTime({ startTime: '09:00', durationMinutes: 45 })?.time).toBe('9:45')
   })
 })

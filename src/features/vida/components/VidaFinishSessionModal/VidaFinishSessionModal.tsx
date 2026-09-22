@@ -155,6 +155,7 @@ export function VidaFinishSessionModal({
             onChange={setDurationMinutes}
             disabled={isSaving}
             label="Cuánto duró"
+            freeInput="hoursAndMinutes"
           />
         </section>
 

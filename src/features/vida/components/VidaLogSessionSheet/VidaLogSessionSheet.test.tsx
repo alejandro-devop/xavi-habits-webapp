@@ -303,6 +303,44 @@ describe('VidaLogSessionSheet — «Registrar tiempo pasado» (criterios 31, 32 
     const sheet = screen.getByRole('dialog')
     expect(within(sheet).queryByRole('button', { name: /cancelar|eliminar/i })).toBeNull()
   })
+  /* ── FEAT-008, tajada 3: los dos campos y la hora de fin ────────────────── */
+
+  it('criterio 130 — «Cuánto duró» se escribe en dos campos, horas y minutos', () => {
+    renderSheet()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    // Los 20 min de la plantilla no son ninguna píldora, así que «libre» ya
+    // está abierto: vienen **repartidos**, no en un campo de minutos.
+    expect(screen.getByLabelText('horas')).toHaveValue('0')
+    expect(screen.getByLabelText('minutos')).toHaveValue('20')
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+  })
+
+  it('criterio 119 — con hora de inicio y duración se ve a qué hora finaliza', () => {
+    // Es lo que el usuario pidió viendo esta modal: aquí hay las dos cosas.
+    renderSheet()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    const line = document.getElementById('vida-log-end-time')
+    expect(line).toHaveAttribute('aria-live', 'polite')
+    expect(line?.textContent).toContain('Acaba a las')
+    // 8:54 + 20 min de la plantilla.
+    expect(screen.getByText('9:14').tagName).toBe('B')
+
+    fireEvent.click(screen.getByRole('button', { name: '15' }))
+    expect(screen.getByText('9:09')).toBeInTheDocument()
+  })
+
+  it('criterio 131 — lo que se registra sigue siendo minutos, y sigue viajando igual', () => {
+    renderSheet()
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('minutos'), { target: { value: '15' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar' }))
+
+    expect(createMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(createMutation.mutate.mock.calls[0][0]).toMatchObject({ durationMinutes: 15 })
+  })
 })
 
 describe('VidaLogSessionSheet — corregir lo registrado (criterio 35)', () => {

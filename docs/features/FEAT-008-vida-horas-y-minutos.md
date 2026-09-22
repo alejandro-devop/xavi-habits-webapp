@@ -1,7 +1,7 @@
 ---
 id: FEAT-008
 title: El tiempo se escribe en horas y minutos, y se ve a qué hora acabas
-status: building
+status: delivered
 architect: yes    # el control de «Cuánto» es compartido por cinco pantallas (dos fuera de lo pedido) y la hora de fin ya se calcula en dos sitios: decidir dónde vive el cambio es una decisión de código compartido, no de tajada
 area: features/vida
 requested: 2026-09-22
@@ -251,8 +251,8 @@ quitan**. Esto cambia lo que hay detrás de «libre», no las píldoras.
 | # | What it does | State |
 |---|---|---|
 | 1 | **Dos campos, horas y minutos, en la plantilla.** «Cuánto» se escribe como se dice, en la hoja del ítem y en el panel de añadir; las píldoras se quedan; lo guardado se abre repartido; 90 se ordena solo al salir del campo; el API recibe lo mismo de siempre. Útil sola: es la mitad del pedido y la que quita la multiplicación de cabeza. | aceptada |
-| 2 | **La hora de fin, mientras programas.** Debajo de «Cuánto», «Acaba a las 20:20», en la hoja **y** en el panel; sin hora dice qué falta; si cruza medianoche lo dice entero, incluido lo que Hoy hará; convive con la línea de FEAT-007 en un orden fijo y **no duplica** la cuenta que ya existe. Útil sola: es el dato que le faltaba a la cara de la agenda. | pending |
-| 3 | **Los otros tres sitios donde se escribe una duración**: «añadir a un hueco» en Hoy y los dos «Cuánto duró» de sesión. Coherencia del módulo entero. **Es la única que se puede no construir** sin que 1 y 2 pierdan nada. | pending |
+| 2 | **La hora de fin, mientras programas.** Debajo de «Cuánto», «Acaba a las 20:20», en la hoja **y** en el panel; sin hora dice qué falta; si cruza medianoche lo dice entero, incluido lo que Hoy hará; convive con la línea de FEAT-007 en un orden fijo y **no duplica** la cuenta que ya existe. Útil sola: es el dato que le faltaba a la cara de la agenda. | aceptada |
+| 3 | **Los otros tres sitios donde se escribe una duración**: «añadir a un hueco» en Hoy y los dos «Cuánto duró» de sesión. Coherencia del módulo entero. **Es la única que se puede no construir** sin que 1 y 2 pierdan nada. | aceptada |
 
 **Por qué este orden:** la 1 es donde está el pedido literal y donde vive el
 riesgo (un control compartido por cinco pantallas); la 2 se apoya en ella —la
@@ -669,8 +669,8 @@ que **la 3 encoge**: ya no es «repetir lo resuelto», son tres props.
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **Dos campos, horas y minutos, en la plantilla.** | **Modificar:** `utils/vida-time.utils.ts` (+`MAX_DURATION_MINUTES`, `splitDurationMinutes`, `joinDurationMinutes`, tras `:104`) · `utils/vida-time.utils.test.ts` (casos al final) · `components/VidaDurationPills/VidaDurationPills.tsx` (props `freeInput`/`describedById`; bifurcar `:93-118`) · `.../VidaDurationPills.module.scss` (`.duo`, `.duoField`, `.duoUnit`) · `.../VidaDurationPills.test.tsx` (**añadir** un `describe` del modo nuevo; **no tocar** los siete de arriba) · `components/VidaActivitySheet/VidaActivitySheet.tsx:595` (rótulo «· opcional») y `:597-602` (prop) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx:309` y `:311-316` | 107-118, y 132/133 en lo suyo | aceptada |
-| 2 | **La hora de fin, mientras programas.** | **Modificar:** `utils/vida-time.utils.ts` (+`resolveEndTime`; `calculateEndTime:79-81` pasa a delegar) · `utils/vida-time.utils.test.ts` · `utils/vida-template.utils.ts` (+`describeEndTime`, tras `:539`) · `utils/vida-template.utils.test.ts` · `components/VidaActivitySheet/VidaActivitySheet.tsx` (insertar entre `:602` y `:603`; `describedById` en `:597`) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (insertar tras `:316`; `describedById` en `:311`). **Crear:** `components/VidaEndTimeLine/{VidaEndTimeLine.tsx, VidaEndTimeLine.module.scss, index.ts, VidaEndTimeLine.test.tsx}` | 119-128, y 132/133 en lo suyo | pending |
-| 3 | **Los otros tres sitios.** Tres props y sus tests. | **Modificar:** `components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx:214` · `components/VidaLogSessionSheet/VidaLogSessionSheet.tsx:282` · `components/VidaFinishSessionModal/VidaFinishSessionModal.tsx:153` (una prop en cada uno) + los tests de esas tres que busquen `spinbutton` (los localiza con `grep -rn "spinbutton" src/features/vida`). **Sin línea de fin**: ahí no se programa nada, se registra lo que pasó. | 129-131, y 132/133 en lo suyo | pending |
+| 2 | **La hora de fin, mientras programas.** | **Modificar:** `utils/vida-time.utils.ts` (+`resolveEndTime`; `calculateEndTime:79-81` pasa a delegar) · `utils/vida-time.utils.test.ts` · `utils/vida-template.utils.ts` (+`describeEndTime`, tras `:539`) · `utils/vida-template.utils.test.ts` · `components/VidaActivitySheet/VidaActivitySheet.tsx` (insertar entre `:602` y `:603`; `describedById` en `:597`) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (insertar tras `:316`; `describedById` en `:311`). **Crear:** `components/VidaEndTimeLine/{VidaEndTimeLine.tsx, VidaEndTimeLine.module.scss, index.ts, VidaEndTimeLine.test.tsx}` | 119-128, y 132/133 en lo suyo | aceptada |
+| 3 | **Los otros tres sitios.** Tres props y sus tests. | **Modificar:** `components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx:214` · `components/VidaLogSessionSheet/VidaLogSessionSheet.tsx:282` · `components/VidaFinishSessionModal/VidaFinishSessionModal.tsx:153` (una prop en cada uno) + los tests de esas tres que busquen `spinbutton` (los localiza con `grep -rn "spinbutton" src/features/vida`). **Sin línea de fin**: ahí no se programa nada, se registra lo que pasó. | 129-131, y 132/133 en lo suyo | aceptada — **con línea de fin en `VidaLogSessionSheet`**, que la pidió el usuario (ver cabecera del dossier) |
 
 El criterio **134 lo cierra el usuario** al final: todo `/app/*` está detrás del
 login y ningún agente entra (`ENVIRONMENT.md`).
@@ -934,6 +934,291 @@ datos sintéticos en `[data-ds='aura']`, tema oscuro, **375 × 812**;
 (474 inserciones, 6 borrados), más `BOARD.md` y este dossier. El arnés temporal
 se borró. `graphify update .` ejecutado (3836 nodos).
 
+### Tajada 2 — La hora de fin, mientras programas
+
+**Resumen para quien revisa:** debajo de «Cuánto» se lee ahora **«→ Acaba a las
+20:20»**, en la hoja del ítem y en el panel «Añadir a mi Vida», con **el mismo
+componente** (`VidaEndTimeLine`) y las mismas palabras; sin hora dice qué falta,
+y cruzando medianoche dice el fin de verdad **y** lo que Hoy hará al armar el
+día. La suma es **una sola en el módulo**: `resolveEndTime` nace en
+`vida-time.utils.ts` y `calculateEndTime` pasa a ser `return
+resolveEndTime(...).cappedEndTime`.
+**Lo que más probablemente he roto:** **`calculateEndTime`**, que ahora delega.
+Su salida alimenta el `endTime` que **viaja al API** (`vida-gap-form.utils.ts`,
+`toDayPlanTimes`), la vista previa de la hoja (`describeTemplatePreview`) y el
+rango de una sesión. La delegación es aritméticamente idéntica —el recorte sigue
+siendo `minutesToTime`, que ya topaba en 1439— y hay un test que compara las dos
+funciones sobre 7 × 9 combinaciones, pero **si algo se ha movido en el plan del
+día, se ha movido por aquí**. El segundo sitio donde miraría: el orden dentro de
+`.field` en `VidaActivitySheet.tsx` —la línea nueva se coló **entre** las
+píldoras y `VidaPatternAdvice`, que son hermanos—, y el tercero, el
+`aria-describedby` de los dos campos, que antes no existía y ahora lleva dos
+`id` (la línea del tope y la de fin).
+
+**Qué se construyó**
+
+- `src/features/vida/utils/vida-time.utils.ts` — `ResolvedEndTime` y
+  `resolveEndTime(startTime, durationMinutes)`: **una suma, cuatro lecturas**
+  (`endMinutes` sin recortar, `endTime` dando la vuelta al día, `crossesMidnight`
+  y `cappedEndTime`). `calculateEndTime` pasa a una línea que devuelve
+  `cappedEndTime`: **misma salida para toda entrada** (criterio 126) y **una sola
+  cuenta** (criterio 125).
+- `src/features/vida/utils/vida-time.utils.test.ts` — un `describe` al final con
+  5 casos, incluido el que compara `calculateEndTime` con `cappedEndTime` sobre
+  **63 combinaciones** de hora y duración. **Los casos viejos de
+  `calculateEndTime` no se tocaron**: son la prueba de que delegar no cambió nada.
+- `src/features/vida/utils/vida-template.utils.ts` — `describeEndTime`, tras
+  `describeTemplatePreview`: devuelve `null` sin duración, la frase de espera sin
+  hora, y `{ lead, time, afterText, nextDayText }` con las dos. Las horas,
+  siempre con `formatTimeForDisplay`.
+- `src/features/vida/utils/vida-template.utils.test.ts` — 6 casos, incluido el
+  que ata la línea nueva al rango que ya enseñaba la vista previa (criterio 125).
+- `src/features/vida/components/VidaEndTimeLine/` (nuevo) — `tsx`,
+  `module.scss`, `index.ts` y `test.tsx` (7 casos). **Un solo componente para
+  todas las pantallas**, que es lo que hace literal el criterio 120.
+- `VidaDurationPills.tsx` — la prop `describedById` que la tajada 1 dejó sin
+  añadir por no tener consumidor, **más el hallazgo 2 del revisor**: la línea
+  «Como mucho 23 h 59 min.» ya tiene `id` y entra en el mismo
+  `aria-describedby`, así que también se anuncia.
+- `VidaActivitySheet.tsx` — `<VidaEndTimeLine id="vida-activity-end-time">`
+  **entre las píldoras y la línea de FEAT-007**, y `describedById` en el control.
+- `VidaTemplateAddPanel.tsx` — lo mismo con `id="vida-add-end-time"`, dentro del
+  mismo `.field` y antes del «Cabe: …».
+- `VidaActivitySheet.test.tsx` — 5 casos nuevos (119, 121, 122, 124, 128). Ni una
+  afirmación existente tocada.
+
+**Por qué así, y qué se descartó**
+
+- **La delegación de `calculateEndTime`, como mandó el arquitecto.** La
+  alternativa —dejarla intacta y repetir la suma dentro de `resolveEndTime`— está
+  descartada en la sección 2 y no la reabro: serían dos cuentas que pueden
+  discrepar, justo lo que prohíbe el criterio 125.
+- **El contenedor de la línea se pinta siempre, vacío incluido**, con
+  `.root:empty { display: none }`. Desvío pequeño del plan (que decía «`null` →
+  no pinta nada»): así el `aria-describedby` de los campos apunta **siempre** a
+  un elemento que existe y la región viva no se inserta de golpe la primera vez
+  que hay algo que decir. Medido: con la línea vacía, el contenedor mide **0 px
+  de alto** y no añade `gap` al `.field`.
+- **El texto del aviso de medianoche va en `--color-text`, no en
+  `--color-warning`.** El render aprobado lo pinta en ámbar oscuro sobre ámbar
+  claro, que es de tema claro; `--color-warning` sobre su propio tinte no llega a
+  4,5:1 en oscuro y el criterio 128 lo exige. El **ámbar se queda en el borde y
+  el fondo**, que es lo que le da la voz; el texto medido da **18,71:1**.
+- **Dos desvíos menores del render**, los dos anotados para el revisor: (a) «ya
+  del día siguiente» va **sin coma**, en su propia línea, tal como lo dibuja el
+  render aprobado —el criterio 123 lo escribe con coma porque es anterior—; y
+  (b) el `23:59` del aviso **no va en negrita**, porque la frase llega escrita
+  entera desde el derivado y partirla para resaltar un trozo metería composición
+  de texto dentro del componente, que es lo que el módulo no hace en ninguna
+  parte.
+- **Ni un cálculo de fin dentro de la hoja o del panel**: los dos montan el mismo
+  componente y el componente llama a `describeEndTime`.
+
+**Verificación**
+
+Línea base entera (`docs/features/ENVIRONMENT.md`), con las tajadas 2 y 3 en el
+árbol:
+
+```
+pnpm typecheck  → limpio (sin salida, exit 0)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)     [base: 14/0]
+pnpm test       → Test Files 1 failed | 110 passed (111)
+                  Tests 2 failed | 1667 passed (1669)        [base: 2 fallos de 1642]
+                  los 2 son los de siempre: SearchSelect.test.tsx
+pnpm build      → ✓ built in 2.74s; index 1.100,19 kB        [base: 1.098,22 kB]
+                  app-icons 620,20 kB · IconPicker 4,64 kB (sin cambio)
+```
+
+El chunk sube **1,97 kB**: el componente nuevo y las dos funciones. Ninguna de
+iconos.
+
+**En el navegador.** No arranqué ningún servidor: el 5173 del usuario estaba
+arriba (sonda: `ARRIBA HTTP 200`). Como `/app/*` está detrás del login, monté un
+**arnés temporal** (`harness-feat008b.html` + `src/harness-feat008b.tsx`) con los
+cuatro estados del render, el control real, la línea real y una
+`VidaPatternAdvice` debajo, en `[data-ds='aura']`, **tema oscuro y 375 px**; **ya
+está borrado** (`git status` no lo lista).
+
+**Aviso sobre la imagen:** la captura salió a media escala (`devicePixelRatio: 2`
+en el panel), así que **no doy por buenos los criterios visuales por la imagen**:
+todo lo de abajo está **medido sobre el DOM**.
+
+- **375 px sin scroll horizontal:** `document.scrollWidth 375 === clientWidth 375`,
+  `innerWidth 375`. La línea de fin mide 319 px de ancho dentro del campo.
+- **Orden bajo «Cuánto»** (posiciones reales, de arriba abajo): rótulo `top 28`
+  → píldoras y campos `top 55` → **línea de fin `top 145`** → caja violeta de
+  FEAT-007 `top 168`. Son **cuatro hermanos**: la de fin **no está dentro** de la
+  caja violeta (`endLine.contains(adviceCard) === false`, y son hijos distintos
+  del mismo `.field`).
+- **Contraste en oscuro:** la frase `rgb(168,179,199)` sobre `rgb(22,30,47)` =
+  **7,88:1**; la hora en negrita **14,89:1**; el aviso de medianoche **18,71:1**.
+  Los tres por encima de 4,5:1.
+- **Sin duración, la línea no ocupa:** `children 0`, `height 0`,
+  `display: none`.
+- **Se recalcula al momento, sobre el total de verdad** (criterio 121): con
+  19:00 puesto, escribiendo `90` en minutos **sin salir del campo** la línea pasa
+  de «Acaba a las 20:20» a «**Acaba a las 20:30**» —el de 1 h 30, no el de 90 h ni
+  el de 30 min—.
+- **El tope y la medianoche, juntos:** escribiendo `99` en horas la línea dice
+  «Acaba a las 18:59 · ya del día siguiente» + «Hoy lo cortará a las 23:59 al
+  armar el día.», y el `aria-describedby` de los dos campos pasa a valer
+  `"_r_1_ end-normal"`, donde el primero es literalmente «Como mucho 23 h 59
+  min.» y el segundo la línea de fin.
+- **`aria-live="polite"`** en el contenedor, y `aria-describedby` en los dos
+  campos apuntando a él.
+- **Lo que el navegador no pudo dar:** los clics y las pulsaciones reales no
+  llegan a la página, así que la interacción se comprobó **disparando eventos del
+  DOM**. Y **la hoja y el panel de verdad están detrás del login**: lo medido es
+  el mismo control y la misma línea, montados fuera.
+
+**Criterios que cierra, uno a uno**
+
+- **119** ✅ Con hora y duración se lee «→ Acaba a las **20:20**» debajo de
+  «Cuánto» (test de pantalla de la hoja + arnés). Es texto: dentro de la línea no
+  hay ningún `textbox`, y no guarda nada.
+- **120** ✅ **La misma línea con las mismas palabras** porque es **el mismo
+  componente**: `VidaEndTimeLine` con `id="vida-add-end-time"` en
+  `VidaTemplateAddPanel.tsx`, dentro del mismo `.field` y antes del «Cabe: …».
+  *(El panel no tiene suite propia en este repo —no existe
+  `VidaTemplateAddPanel.test.tsx`—; lo que garantiza que dice lo mismo es que no
+  hay una segunda implementación.)*
+- **121** ✅ Medido: `90` sin normalizar en minutos → fin de 1 h 30. Se emite en
+  cada tecla desde la tajada 1, así que la línea ve el total de verdad.
+- **122** ✅ Sin hora: «→ Ponle hora y te digo a qué hora acaba», y **nunca**
+  «Acaba a la 1:20» (test explícito). Sin duración: `describeEndTime` devuelve
+  `null` y no se pinta nada; **`DEFAULT_BLOCK_MINUTES` no aparece** en ninguna de
+  las dos funciones nuevas.
+- **123** ✅ 23:30 + 1 h 20 → «→ Acaba a las **0:50** / ya del día siguiente» +
+  «Hoy lo cortará a las **23:59** al armar el día.», las dos juntas. `23:59`
+  aparece **solo** dentro de la segunda frase, nunca como el fin elegido.
+- **124** ✅ Orden medido en el DOM (arriba): campos → fin → historia, cuatro
+  hermanos, sin solape y sin scroll horizontal a 375 px. La de fin no usa
+  `--aura-ring-to` ni caja: su hoja de estilos no menciona el violeta.
+- **125** ✅ Una sola cuenta: `describeTemplatePreview` sigue llamando a
+  `calculateEndTime` **sin cambiar**, y `calculateEndTime` ahora es
+  `resolveEndTime(...).cappedEndTime`. Test que ata las dos salidas
+  («de 9:00 a 9:45» ↔ «9:45»).
+- **126** ✅ `calculateEndTime` **no cambia de comportamiento**: los casos viejos
+  de `vida-time.utils.test.ts` no se tocaron y siguen verdes, más un test nuevo
+  que compara las dos funciones sobre 63 combinaciones. El recorte a `23:59` y el
+  `endTime` que viaja al API siguen igual.
+- **127** ✅ Todas las horas salen de `formatTimeForDisplay`: «20:20», «0:50»,
+  «8:45», «0:30». No hay un segundo formato.
+- **128** ✅ `aria-live="polite"` (no `assertive`) en el contenedor, que existe
+  desde el primer render; `aria-describedby` en los dos campos, con la línea del
+  tope **también enlazada** (hallazgo 2 del revisor de la tajada 1). Contraste en
+  oscuro 7,88:1 / 14,89:1 / 18,71:1.
+- **132** ✅ Ni «inválido», ni «error», ni rojo: el aviso de medianoche es ámbar
+  del sistema y **no lleva `role="alert"`** (test). El test de vocabulario del
+  módulo recorre los archivos nuevos por `glob` y sigue verde.
+- **133** ✅ Ver la línea base: typecheck limpio, lint 14/0, los mismos 2 fallos
+  de `SearchSelect`, build exit 0, +1,97 kB de líneas propias.
+- **134** — lo cierra el usuario.
+
+**Riesgos**
+
+1. **`calculateEndTime` delegando** (lo del resumen). Es el punto que tocaría
+   todo el plan del día si estuviera mal; cubierto por 63 comparaciones y por los
+   tests viejos intactos, pero es donde miraría primero.
+2. **El `aria-describedby` estrena dos `id` a la vez.** Si un lector de pantalla
+   lee el tope y la línea de fin seguidos al entrar al campo, puede resultar
+   largo. No lo puedo oír desde aquí: **queda para prueba manual**.
+3. **El panel «Añadir a mi Vida» no tiene suite propia.** Su línea está puesta
+   pero no hay un test de pantalla que la afirme; lo que la sostiene es que es
+   el mismo componente. Lo anoto en vez de inventarle una suite entera.
+4. **El aviso de medianoche es el primer ámbar del módulo Vida.** Usa
+   `--color-warning`, que en el ámbito `[data-ds='aura']` **no está remapeado** y
+   cae en el token global. Se ve bien en oscuro (medido), pero si alguien remapea
+   ese token, esta caja se entera.
+
+**Estado del árbol:** sin commitear. El arnés temporal se borró.
+
+### Tajada 3 — Los otros sitios donde se escribe una duración
+
+**Resumen para quien revisa:** las tres pantallas que faltaban —«añadir a un
+hueco» en Hoy, «Registrar tiempo pasado» y «Cuánto duró» al cerrar una sesión—
+escriben ya la duración en **dos campos**, y en la modal de registrar se lee
+además **la hora a la que finaliza**, que es lo que el usuario pidió viendo esa
+pantalla. Ninguna cambia lo que guarda: siguen mandando minutos.
+**Lo que más probablemente he roto:** **el tope del hueco**
+(`VidaPlaceInGapSheet`). Los dos campos **no tienen `max`**, que es lo que el
+campo de minutos sí tenía; la regla la sigue imponiendo `validatePlacement` —el
+botón «Poner» se apaga y el aviso lo dice—, pero **el freno de HTML desapareció**
+y su afirmación de test tuvo que reescribirse. Segundo sitio: la modal de
+registrar, donde FEAT-013 acaba de meter el campo de hora del modo `start`; la
+línea de fin solo se pinta en los modos `log` y `edit`, que son los que tienen
+duración, pero comparte `startTime` con el modo nuevo.
+
+**Qué se construyó**
+
+- `VidaPlaceInGapSheet.tsx:214` · `VidaLogSessionSheet.tsx` ·
+  `VidaFinishSessionModal.tsx:153` — **una prop en cada uno**,
+  `freeInput="hoursAndMinutes"`, tal como lo dejó el arquitecto.
+- `VidaLogSessionSheet.tsx` — además, `<VidaEndTimeLine id="vida-log-end-time">`
+  tras el control, con su `describedById`. **Es lo que el usuario pidió
+  explícitamente** viendo esa modal, y está recogido en la cabecera de este
+  dossier; el plan del arquitecto decía «sin línea de fin» para las tres, y ese
+  punto lo manda el usuario, no el plan.
+- `VidaPlaceInGapSheet.test.tsx:199` — la afirmación del `spinbutton` con
+  `max="40"` pasa a ser la de los dos campos. **Lo que se deroga y por qué**: el
+  atributo `max` del `input type="number"`, que ya no existe porque el campo es
+  `type="text"` (criterio 114). Lo que la sustituye afirma lo mismo o más: que
+  están los dos campos, que «Aquí caben 40 min.» se sigue diciendo **igual**, y
+  que escribir 90 en un hueco de 40 **apaga «Poner» y lo dice** —que es la regla
+  de verdad, la de `validatePlacement`—.
+- `VidaLogSessionSheet.test.tsx` — 3 casos nuevos en «Registrar tiempo pasado»:
+  los dos campos con lo de la plantilla repartido, la hora de fin (8:54 + 20 min
+  → **9:14**, y al tocar la píldora «15» → **9:09**), y que lo que viaja sigue
+  siendo `durationMinutes: 15`.
+
+**Por qué así, y qué se descartó**
+
+- **La línea de fin va solo en la modal de registrar, no en las otras dos.** En
+  `VidaFinishSessionModal` no hay nada que programar —se cierra algo que ya pasó
+  y el fin es «ahora»—. En `VidaPlaceInGapSheet` sí hay hora e sí sería
+  calculable, **pero el usuario no la pidió ahí** y el hueco ya dice lo que queda
+  libre con sus propias palabras (`describeLeftovers`): meter una segunda frase
+  de tiempo en esa pantalla es ampliar el alcance. **Queda anotado**, no
+  construido.
+- **`maxMinutes` no cambia de significado.** Sigue apagando píldoras y
+  escribiendo «Aquí caben …»; los campos libres no lo imponían antes y **no
+  empiezan a imponerlo** (criterio 129).
+
+**Verificación**
+
+La misma línea base de la tajada 2 (las dos están en el mismo árbol). Tests de
+las tres pantallas, aislados: `VidaPlaceInGapSheet`, `VidaLogSessionSheet` y
+`VidaFinishSessionModal` → **verdes**, con los 3 casos nuevos.
+
+**Criterios que cierra, uno a uno**
+
+- **129** ✅ Los dos campos en «añadir a un hueco», **con el tope intacto**: las
+  píldoras que no caben se siguen apagando (`45` y `1h` con un hueco de 40 min) y
+  «Aquí caben 40 min.» se sigue diciendo **exactamente igual**; escribir 90
+  apaga «Poner» y lo dice. Lo único que se fue es el `max` de HTML, dicho arriba.
+- **130** ✅ Los dos campos en «Cuánto duró» de las dos pantallas de sesión, con
+  lo ya registrado repartido (20 min de la plantilla abren `0` h y `20` min).
+- **131** ✅ Ninguna cambia lo que guarda: test que comprueba que registrar manda
+  `durationMinutes: 15`; las suites de FEAT-003 y FEAT-004 de las tres pantallas
+  pasan sin perder afirmaciones, salvo la derogación dicha arriba con su motivo.
+- **132** ✅ Sin una palabra nueva de reproche en las tres.
+- **133** ✅ Misma línea base de la tajada 2.
+- **119 (extra, por petición del usuario)** ✅ En «Registrar tiempo pasado» se lee
+  «→ Acaba a las **9:14**» con 8:54 y 20 min, y se recalcula al cambiar la
+  duración.
+- **134** — lo cierra el usuario.
+
+**Riesgos**
+
+1. **El `max` que desapareció en el hueco** (lo del resumen).
+2. **La modal de registrar comparte `startTime` con el modo «Empezar algo»** de
+   FEAT-013, que es de hoy. La línea solo se pinta en `log` y `edit` (el modo
+   `start` no tiene duración), pero los dos modos viven en el mismo componente.
+3. **`VidaPlaceInGapSheet` se queda sin línea de fin** y podría parecer una
+   omisión. Es deliberada y está dicha arriba.
+
+**Estado del árbol:** sin commitear, junto con la tajada 2.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — Dos campos, horas y minutos, en la plantilla
@@ -1063,3 +1348,213 @@ línea a 375 px, en claro y en oscuro— las he mirado una a una.
 verdad**: el `inputMode="numeric"` está puesto y es lo que lo pide, pero qué
 teclado abre Android o iOS no se ve desde aquí. Lo demás del 114 y el 115 sí lo
 he probado con pulsaciones reales.
+
+### Tajada 2 — La hora de fin, mientras programas
+
+**Veredicto: `accepted`** — los criterios 119–128 se cumplen y los he verificado
+yo: la aritmética con un test de propiedad sobre **120 combinaciones**, las
+frases con mis propios casos, y el orden y los contrastes **en el navegador**,
+que esta vez sí se dejó ver.
+
+**Lo que más podía romper: `calculateEndTime` (criterios 125 y 126)**
+
+`calculateEndTime` pasa a `resolveEndTime(...).cappedEndTime`. Lo comprobé como
+había que comprobarlo: **copié la implementación vieja** en un test temporal
+(borrado) y comparé las dos salidas en **8 horas × 15 duraciones**, incluidas
+`-5`, `0`, `1439`, `1440` y `2000`, y `23:59` como hora de inicio. **Idénticas en
+las 120.** El valor que viaja al API por `toDayPlanTimes` no se mueve ni en el
+caso raro: 23:30 + 80 min sigue siendo `23:59`, recortado y sin `% 24`.
+
+Y **no hay dos cuentas**: `resolveEndTime` devuelve las dos lecturas del mismo
+número —`endTime` (reloj de pared, con la vuelta al día) y `cappedEndTime` (lo
+que guarda el plan)— y todo lo demás las consume. Lo comprobé sobre el objeto
+entero: `resolveEndTime('23:30', 80)` es
+`{ endMinutes: 1490, endTime: '00:50', crossesMidnight: true, cappedEndTime: '23:59' }`,
+y `calculateEndTime('23:30', 80)` **es** ese `cappedEndTime`. No pueden
+discrepar porque son el mismo cálculo leído dos veces.
+
+**Criterios, uno por uno** (contra la sección 1)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 119 | **cumplido** | `describeEndTime({ startTime: '19:00', durationMinutes: 80 })` → «Acaba a las» + **20:20**, y en pantalla se lee «→ Acaba a las **20:20**» bajo «Cuánto». Es texto y no guarda nada: el componente no recibe ningún `onChange`. |
+| 120 | **cumplido** | **Un solo componente** (`VidaEndTimeLine`) montado en la hoja del ítem y en el panel de añadir: las mismas palabras porque es el mismo archivo, no dos parecidos. |
+| 121 | **cumplido** | Se recalcula al escribir —el componente deriva de las props del formulario, no de lo guardado— y sobre **el total de verdad**: con `1` h y `90` min sin normalizar, el fin es el de 2 h 30 (lo vi moverse en el arnés al teclear), y `describeEndTime` con 90 min da **20:30**, no el de 90 h ni el de 30 min. |
+| 122 | **cumplido** | Sin hora: `{ waiting: true, lead: 'Ponle hora y te digo a qué hora acaba', time: null }` —**no** cuenta desde medianoche—. Sin duración: **`null`**, ni línea ni hueco, y `DEFAULT_BLOCK_MINUTES` no aparece en el archivo. Con `0` y con `null`, lo mismo. |
+| 123 | **cumplido, y es el que mejor sale** | 23:30 + 1 h 20 → «Acaba a las **0:50**» + «ya del día siguiente» **y**, pegado, «Hoy lo cortará a las 23:59 al armar el día.». Comprobé además los bordes: `23:59 + 1 min` cruza, y `23:00 + 60` da **0:00** con su coletilla. **`23:59` no aparece nunca como el fin elegido** (aserción explícita en mi test). |
+| 124 | **cumplido, medido en el navegador** | Por posición real: campos **y = 336**, línea de fin **386**, caja violeta de FEAT-007 **408**. Y la línea **no está dentro** de la caja (`violeta.contains(finLine) === false`), ni usa su acento: sus estilos solo tocan `--color-text`, `--color-text-secondary` y `--color-text-muted`. A 375 px, `scrollWidth === clientWidth` y **0 nodos desbordados** con las dos presentes. |
+| 125 | **cumplido** | Arriba. `describeTemplatePreview` sigue intacta y ahora las dos frases beben de la misma suma. |
+| 126 | **cumplido** | Arriba: 120 combinaciones idénticas. Sus tests viejos no se tocaron (`vida-time.utils.test.ts`: **52 añadidas, 0 borradas**). |
+| 127 | **cumplido** | `formatTimeForDisplay` en las tres salidas: «8:30», «0:50», «20:20». Ni un segundo formateador. |
+| 128 | **cumplido, y cierra un hallazgo mío** | Los dos campos llevan `aria-describedby` con **la línea de fin** y, cuando aparece, **la del tope** —el hallazgo 2 de mi revisión de la tajada 1, ahora resuelto—. El contenedor se pinta siempre (`:empty` lo apaga) con `aria-live="polite"`, así que la región no se inserta de golpe ni se anuncia por tecla. En oscuro: línea normal **9,94:1**, la de espera **9,94:1**, la de medianoche **9,94:1** y el aviso ámbar **18,77:1**. |
+
+**Las desviaciones de esta tajada, juzgadas**
+
+- **(b) El texto del aviso ámbar en `--color-text`:** la **decisión es correcta**
+  y el resultado es excelente (18,77:1 medido en oscuro). Sobre **la razón** que
+  da tengo una pega honesta: midiendo yo sobre ese mismo tinte, `--color-warning`
+  (#ff9500) daría ≈**9,5:1** en oscuro, es decir, también pasaría. Puede que su
+  medida fuera sobre otro emparejamiento —en claro, naranja sobre un tinte casi
+  blanco, sí es donde eso se cae—. No cambia nada: el color elegido es el que
+  mejor se lee en los dos temas. Queda anotado para que nadie repita la
+  justificación sin medirla.
+- **(c) Los dos desvíos de redacción respecto al render** (la coma de «ya del día
+  siguiente» y el `23:59` sin negrita): **bien**. La coma sobra cuando la frase
+  va en su propia línea, y **no poner el 23:59 en negrita es lo correcto de
+  verdad**: la negrita es del fin que el usuario eligió (0:50), y resaltar el
+  recorte lo acercaría a leerse como «tu fin son las 23:59», que es justo lo que
+  el criterio 123 prohíbe.
+
+**`VidaTemplateAddPanel` no tiene suite propia: ¿basta con que sea el mismo
+componente?**
+
+**Para esta tajada, sí; como deuda, no.** Que la línea diga lo mismo está
+garantizado por construcción —es el mismo `VidaEndTimeLine`, con las mismas
+props y sin una rama por pantalla—, y `VidaEndTimeLine` **sí** tiene su propio
+archivo de test. Lo que **no** cubre nadie es el **cableado** del panel: que
+reciba `startTime` y `durationMinutes` del formulario y no de otra cosa, y que
+el `describedById` case con el `id`. Eso es exactamente el tipo de fallo que un
+refactor rompe en silencio. Va como hallazgo: el panel se quedó sin suite desde
+que nació y esta feature lo hereda; **no lo devuelvo por ello** —la tajada no
+creó el agujero—, pero conviene que la próxima que lo toque lo cubra.
+
+**Línea base, corrida entera por mí** (vale para las dos tajadas)
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1642 | 2 de 1669 | **2 fallidos de 1669**, 110 archivos de 111 en verde |
+| `pnpm build` | 1.098,22 kB | 1.100,19 kB | **exit 0**, `index` **1.100,19 kB** (+1,97), `app-icons` **620,20 kB sin tocar** |
+
+**Sobre la captura a media escala, confirmado y matizado**
+
+Hizo bien en no dar por buenos los criterios visuales con la imagen: yo me topé
+con lo mismo revisando FEAT-013 —contenido pintado en los ~184 px de la
+izquierda con el DOM midiendo 375—. **Pero no es universal**: con el arnés de
+esta tajada, y con el mismo `devicePixelRatio: 2`, la captura salió **a tamaño
+completo** y pude leer los cuatro estados. Así que el artefacto depende del
+arnés (a mí me apareció con una hoja modal), no del panel siempre. Lo mío de
+arriba está medido sobre el DOM **y** visto en la imagen.
+
+**Hallazgos de la tajada 2**
+
+1. **`VidaTemplateAddPanel` sigue sin suite propia** (arriba).
+2. **La razón declarada de (b) no se me reproduce en oscuro**: `--color-warning`
+   habría pasado también. La decisión, correcta igual.
+3. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1669** tests y
+   **1.100,19 kB**). **No lo he tocado.**
+
+### Tajada 3 — Los otros sitios donde se escribe una duración
+
+**Veredicto: `accepted`** — los criterios 129, 130 y 131 se cumplen, incluida la
+línea de fin en «Registrar tiempo pasado», que es lo que el usuario pidió al ver
+esa modal. Las tres pantallas son de FEAT-003 y FEAT-004 y **ninguna pierde una
+afirmación**; la única que se deroga está declarada, es la correcta y la he
+revisado a fondo.
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 129 | **cumplido** | `VidaPlaceInGapSheet` recibe `freeInput="hoursAndMinutes"` **y mantiene `maxMinutes`**: las píldoras que no caben siguen deshabilitadas (`45` y `1h` en un hueco de 40) y «Aquí caben 40 min.» se sigue diciendo con las mismas palabras. La regla no cambió; cambió cómo se escribe el número. |
+| 130 | **cumplido** | Los dos campos en `VidaLogSessionSheet` y en `VidaFinishSessionModal`; 20 min se abren como **«0» y «20»** y ya no hay `spinbutton` (aserción del test). |
+| 131 | **cumplido, con la derogación declarada** | Lo que se guarda sigue siendo minutos: el test afirma `durationMinutes: 15` en el `mutate`. Ver abajo lo del `max`. |
+| 119/120 en «Registrar tiempo pasado» | **cumplido** | La misma línea, el mismo componente, con `aria-live="polite"`, y la hora en `<b>` («9:14» partiendo de 9:09 + 5 min). Es lo que el usuario pidió. |
+
+**La derogación del `max`: aceptable, y la garantía no se pierde**
+
+Es el punto donde más me he parado, porque el criterio 131 dice que si algo se
+deroga **se diga cuál y por qué** — y así está hecho. Mi juicio:
+
+- Lo que se pierde es el **atributo `max` de un `input type="number"`**, que en
+  HTML **no impide teclear** nada: no bloquea, no recorta y solo afecta al
+  spinner y a la validación nativa, que este formulario **no usaba**.
+- Lo que sujeta el tope de verdad es `validatePlacement`, y **sigue ahí**: el
+  test reescrito teclea `90` en un hueco de 40 y comprueba que **«Poner» queda
+  deshabilitado** y que salta la alerta «caben 40 min». Es decir, la afirmación
+  pasó de «el campo tiene un atributo» a **«la pantalla no deja hacerlo»**, que
+  es una garantía **más fuerte**, no más débil.
+- Y las píldoras que no caben siguen apagadas, que es la otra mitad del
+  criterio 26 de FEAT-003.
+
+**Lo doy por bueno.** Lo que sí anoto: con dos campos de texto, un usuario puede
+**escribir** 90 en un hueco de 40 y enterarse al intentar guardar, mientras que
+antes el spinner al menos no subía de 40. Es un paso más para quien se equivoca
+—y la premisa del plan dice que los pasos de más se pagan—, así que si el
+usuario lo ve incómodo, la salida es decirlo **antes**, en la propia línea del
+hueco, no devolver el `max`.
+
+**Que no se hayan roto las tres pantallas entregadas**
+
+- **`VidaLogSessionSheet` es la delicada**: acaba de recibir el campo de hora de
+  FEAT-013 (`7cbf7c2`). Su diff de test es **38 añadidas y 0 borradas**, y los
+  casos de FEAT-013 —«¿A qué hora empezaste?», el modo `start` sin duración, el
+  `onStart(id, undefined)`— siguen enteros. La línea de fin vive **dentro de la
+  sección «Cuánto duró»**, que en modo `start` **no se pinta**: comprobado en el
+  JSX (está en la rama `mode !== 'start'`), así que «Empezar algo» no gana ni una
+  línea nueva.
+- **`VidaPlaceInGapSheet`**: 5 añadidas / 2 borradas, y las dos son las del `max`
+  sustituidas por algo más fuerte.
+- **`VidaFinishSessionModal`**: **una línea** de diff (la prop) y su suite
+  intacta.
+- La suite entera, corrida por mí: **1.667 pasan**, los dos de `SearchSelect` de
+  siempre.
+
+**Hallazgos de la tajada 3**
+
+1. **Escribir un imposible ahora se detecta al guardar, no al teclear** (arriba):
+   no es una regresión de garantía, sí un paso más para quien se equivoca.
+2. **`VidaFinishSessionModal` no estrena ningún test** con los dos campos: el
+   cambio es de una prop y el componente de los campos ya está probado, pero
+   nadie afirma que **esa modal** los pinte. Es el mismo tipo de agujero que el
+   del panel de añadir.
+3. La línea base y `ENVIRONMENT.md`, como en la tajada 2.
+
+**Lo que no he podido revisar en ninguna de las dos:** el criterio **134**, que
+es el recorrido del usuario con sesión —abrir un ítem de 95 min, escribir 90 en
+minutos, poner 19:00 + 1 h 20 y leer «20:20», guardar y ver el bloque en Hoy de
+19:00 a 20:20, y el caso de 23:30 + 1 h 20—. Y el teclado numérico en un móvil
+de verdad, que sigue siendo lo único que ningún agente puede ver.
+
+### Cierre de la feature — nota para el usuario
+
+Con la tajada 3 aceptada, **las tres están aceptadas y FEAT-008 queda
+`delivered`**. Lo que sigue es lo que la persona lee.
+
+---
+
+**Lo que puedes hacer ahora y antes no podías.** El tiempo se escribe **como se
+dice**: «Cuánto» ya no es una casilla de minutos, son **dos campos, horas y
+minutos**, y están en los cinco sitios donde se escribe una duración —la hoja de
+un ítem de tu plantilla, «Añadir a mi Vida», el hueco de Hoy, «Registrar tiempo
+pasado» y la ventana de terminar una sesión—. Un ítem de 95 minutos se abre como
+**1 h 35 min**, no como «95»; si escribes **90** en los minutos nadie te pelea
+mientras tecleas y, al salir del campo, se acomoda solo a **1 h 30** sin cambiar
+lo que se guarda. Las píldoras de 15, 30, 45 y 1h siguen donde estaban, dejar la
+duración vacía sigue siendo dejarla vacía —y nunca cero—, y si te pasas del día
+te lo dice en una línea tranquila: «Como mucho 23 h 59 min.».
+
+**Y ahora ves a qué hora acabas mientras lo decides.** Debajo de «Cuánto» hay
+una línea que dice **«→ Acaba a las 20:20»** y se mueve con lo que escribes: está
+al editar un ítem, al añadir uno nuevo y —porque lo pediste al ver esa
+pantalla— también al **registrar un rato que ya pasó**. Si todavía no has puesto
+hora de inicio, en vez de inventarse un número te dice qué le falta: «Ponle hora
+y te digo a qué hora acaba». Si lo que programas **cruza la medianoche**, te lo
+cuenta entero y sin trampa: «Acaba a las **0:50**, ya del día siguiente» y, justo
+debajo, lo que la app hará de verdad —«Hoy lo cortará a las 23:59 al armar el
+día»—, para que no te lo encuentres después.
+
+---
+
+**Lo que solo puedes comprobar tú** (todo vive detrás de tu sesión):
+
+1. Abre un ítem **de 95 min** en tu plantilla y comprueba que lo ves como
+   **1 h 35**.
+2. Escribe **90** en los minutos y sal del campo: tiene que ordenarse a
+   **1 h 30** y guardar lo mismo.
+3. Pon **19:00** y **1 h 20** y lee la línea de fin: **20:20**. Guarda y mira en
+   Hoy que el bloque va de 19:00 a 20:20.
+4. Prueba **23:30 + 1 h 20** y lee lo que dice de la medianoche.
+5. En «Registrar tiempo pasado», pon una hora y una duración y comprueba que la
+   línea de fin es la que esperas.
+6. Y lo único que ningún agente puede ver: **el teclado del móvil de verdad** al
+   tocar los dos campos, y que tabular entre ellos se sienta natural.

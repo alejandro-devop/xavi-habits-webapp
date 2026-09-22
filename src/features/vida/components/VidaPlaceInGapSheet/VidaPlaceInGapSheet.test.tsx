@@ -196,8 +196,11 @@ describe('VidaPlaceInGapSheet', () => {
     renderSheet({ gapWindow: { startMinutes: 600, endMinutes: 640, nextBlockTitle: null } })
     await user.click(screen.getByRole('button', { name: /Bañarme/ }))
     await user.click(screen.getByRole('button', { name: 'libre' }))
-    const free = screen.getByRole('spinbutton')
-    expect(free).toHaveAttribute('max', '40')
+    // Desde FEAT-008 «libre» son dos campos, horas y minutos: ya no hay un
+    // `spinbutton` con `max`, y el tope lo sigue imponiendo `validatePlacement`
+    // —que es donde vivía la regla de verdad— más la línea que lo dice.
+    const free = screen.getByLabelText('minutos')
+    expect(screen.getByLabelText('horas')).toBeInTheDocument()
     expect(screen.getByText('Aquí caben 40 min.')).toBeInTheDocument()
 
     await user.type(free, '90')

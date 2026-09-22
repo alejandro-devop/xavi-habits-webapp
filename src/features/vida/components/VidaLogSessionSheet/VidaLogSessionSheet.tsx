@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { PickedActivity } from '@/features/vida/components/VidaActivityPicker'
 import { VidaActivityPicker } from '@/features/vida/components/VidaActivityPicker'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
+import { VidaEndTimeLine } from '@/features/vida/components/VidaEndTimeLine'
 import {
   useCreateActivityFollowUpMutation,
   useUpdateActivityFollowUpMutation,
@@ -326,12 +327,22 @@ export function VidaLogSessionSheet({
               </h3>
               <VidaDurationPills
                 label="Cuánto duró"
+                freeInput="hoursAndMinutes"
+                describedById="vida-log-end-time"
                 value={durationMinutes}
                 disabled={isPending}
                 onChange={(minutes) => {
                   setDurationMinutes(minutes)
                   setFormError(null)
                 }}
+              />
+              {/* **La misma línea de la plantilla, aquí** porque el usuario la
+                  pidió viendo esta modal: hay hora de inicio y duración, así
+                  que el fin es calculable y es lo que se está decidiendo. */}
+              <VidaEndTimeLine
+                id="vida-log-end-time"
+                startTime={startTime}
+                durationMinutes={durationMinutes}
               />
             </section>
           </>

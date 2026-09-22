@@ -17,6 +17,7 @@ import {
   normalizeTimeForApi,
   normalizeTimeForDisplay,
   parseTimeToMinutes,
+  resolveEndTime,
   splitDurationMinutes,
 } from '@/features/vida/utils/vida-time.utils'
 
@@ -158,6 +159,57 @@ describe('horas y minutos (FEAT-008, tajada 1)', () => {
     for (const total of [1, 15, 45, 60, 95, 120, 300, 1439]) {
       const { hours, minutes } = splitDurationMinutes(total)
       expect(joinDurationMinutes(hours, minutes)).toBe(total)
+    }
+  })
+})
+
+/* ── La hora de fin, con sus dos lecturas (FEAT-008, tajada 2) ─────────────── */
+
+describe('resolveEndTime (criterios 123, 125, 126)', () => {
+  it('dentro del día, las dos lecturas coinciden', () => {
+    expect(resolveEndTime('19:00', 80)).toEqual({
+      endMinutes: 19 * 60 + 80,
+      endTime: '20:20',
+      crossesMidnight: false,
+      cappedEndTime: '20:20',
+    })
+  })
+
+  it('cruzando medianoche, el reloj da la vuelta y el dato se recorta', () => {
+    expect(resolveEndTime('23:30', 80)).toEqual({
+      endMinutes: 23 * 60 + 30 + 80,
+      endTime: '00:50',
+      crossesMidnight: true,
+      cappedEndTime: '23:59',
+    })
+  })
+
+  it('justo en medianoche ya cuenta como del día siguiente', () => {
+    expect(resolveEndTime('23:00', 60)).toMatchObject({
+      endTime: '00:00',
+      crossesMidnight: true,
+      cappedEndTime: '23:59',
+    })
+    expect(resolveEndTime('23:00', 59)).toMatchObject({
+      endTime: '23:59',
+      crossesMidnight: false,
+      cappedEndTime: '23:59',
+    })
+  })
+
+  it('una duración negativa no resta: cuenta como cero', () => {
+    expect(resolveEndTime('08:00', -30)).toMatchObject({ endTime: '08:00', cappedEndTime: '08:00' })
+  })
+
+  it('`calculateEndTime` es exactamente `cappedEndTime` (criterio 126)', () => {
+    // La prueba de que delegar no cambió nada: la vieja y la nueva dicen lo
+    // mismo para todo, incluido lo que se pasa de medianoche y viaja al API.
+    for (const start of ['00:00', '06:30', '08:00', '19:00', '23:00', '23:30', '23:59']) {
+      for (const duration of [0, 1, 15, 45, 60, 95, 120, 300, 1439]) {
+        expect(calculateEndTime(start, duration)).toBe(
+          resolveEndTime(start, duration).cappedEndTime,
+        )
+      }
     }
   })
 })

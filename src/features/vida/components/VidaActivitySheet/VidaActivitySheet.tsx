@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { CreateVidaCategoryStep } from '@/features/vida/components/CreateVidaCategoryStep'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
+import { VidaEndTimeLine } from '@/features/vida/components/VidaEndTimeLine'
 import { VidaPatternAdvice } from '@/features/vida/components/VidaPatternAdvice'
 import { useCreateActivityMutation, useUpdateActivityMutation } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
@@ -597,9 +598,19 @@ export function VidaActivitySheet({
                   <VidaDurationPills
                     label="Cuánto dura"
                     freeInput="hoursAndMinutes"
+                    describedById="vida-activity-end-time"
                     value={durationMinutes}
                     disabled={isMutating}
                     onChange={(minutes) => patchTemplate({ durationMinutes: minutes })}
+                  />
+                  {/* El orden bajo «Cuánto» es fijo (criterio 124): **(1)** los
+                      campos y las píldoras, **(2)** la hora de fin —dato de lo
+                      que escribes ahora—, **(3)** lo que dicen tus semanas, que
+                      es historia. */}
+                  <VidaEndTimeLine
+                    id="vida-activity-end-time"
+                    startTime={startTime}
+                    durationMinutes={durationMinutes}
                   />
                   {/* Esta línea sale **también cuando va bien** (criterio 95):
                       si solo apareciera al desviarse, el dato se leería como

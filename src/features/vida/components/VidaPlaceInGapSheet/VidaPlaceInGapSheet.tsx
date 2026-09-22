@@ -213,6 +213,7 @@ export function VidaPlaceInGapSheet({
           </h3>
           <VidaDurationPills
             label="Cuánto dura"
+            freeInput="hoursAndMinutes"
             value={durationMinutes}
             maxMinutes={maxMinutes}
             disabled={mutation.isPending}

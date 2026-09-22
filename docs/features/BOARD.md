@@ -16,7 +16,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
-| FEAT-008 | building | 1/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
+| FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | building | 2/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
@@ -141,6 +141,64 @@ Línea base: typecheck limpio, lint **14/0**, **2 fallos de 1611** (los de
 queda pendiente de prueba manual: el alto a 375 px, la envoltura del nombre largo
 y el contraste sobre el fondo real** — no pude abrir el navegador: el panel
 estaba ocupado por una pestaña de otra sesión y esta no tiene `tabs_close`.
+
+**FEAT-008 `delivered` 3/3** (2026-09-22, revisor). **Tajadas 2 y 3 aceptadas,
+revisadas por separado, y con ellas la feature queda entregada.** Lo que más
+podía romper está sujeto con un test de propiedad **mío**: `calculateEndTime`
+pasa a delegar en `resolveEndTime` y comparé su salida contra la implementación
+vieja en **120 combinaciones** (8 horas × 15 duraciones, con −5, 0, 1439, 1440 y
+2000): **idénticas**, así que el `endTime` que viaja al API no se mueve
+(criterio 126), y **no hay dos cuentas** porque las dos lecturas —reloj de pared
+y recorte a 23:59— salen del mismo objeto (125). Verificados por mí: el fin se
+recalcula sobre el **total de verdad** (90 min → 20:30, no 90 h ni 30 min), sin
+hora no se cuenta desde medianoche y sin duración no hay línea ni
+`DEFAULT_BLOCK_MINUTES` (121 y 122), y la medianoche se dice **entera** —«Acaba a
+las 0:50 · ya del día siguiente» + «Hoy lo cortará a las 23:59 al armar el día»,
+y **23:59 nunca** como el fin elegido (123)—. **En el navegador**: el orden del
+124 medido por posición (campos 336 → fin 386 → caja violeta 408), la línea
+**fuera** de la caja de FEAT-007 y sin su acento, 0 nodos desbordados a 375 px, y
+en oscuro 9,94:1 las tres líneas y **18,77:1** el aviso ámbar; `aria-describedby`
++ `aria-live="polite"` y **la línea del tope entró por ahí**, que era hallazgo
+mío de la tajada 1 (128). La **derogación del `max`** de la tajada 3 es
+aceptable y la afirmación quedó **más fuerte**, no más débil: el test ya no mira
+un atributo, mira que «Poner» se deshabilita y salta «caben 40 min». Las tres
+pantallas entregadas siguen enteras —`VidaLogSessionSheet`, que acababa de
+recibir el campo de FEAT-013, suma 38 líneas de test y **borra 0**, y la línea de
+fin vive en la rama que «Empezar algo» no pinta—. Línea base corrida entera:
+typecheck limpio, lint 14/0, **2 fallos de 1669**, build exit 0 con el chunk en
+**1.100,19 kB** (+1,97). Hallazgos: **`VidaTemplateAddPanel` sigue sin suite
+propia** (el cableado de esa línea no lo cubre nadie; el agujero es anterior a
+esta feature), `VidaFinishSessionModal` tampoco afirma que pinte los dos campos,
+escribir un imposible en el hueco ahora se detecta **al guardar** y no al
+teclear, y la razón declarada para no usar `--color-warning` **no se me
+reproduce** en oscuro (habría pasado también; la decisión es correcta igual).
+Sobre la captura a media escala: **confirmado que existe** —me pasó revisando
+FEAT-013— pero **no es universal**: con el arnés de esta tajada, y el mismo
+`devicePixelRatio: 2`, la imagen salió entera. **La nota de cierre para el
+usuario está al final de la sección 4 del dossier.**
+
+**FEAT-008 `in-review` 3/3** (2026-09-22, constructor). **Tajadas 2 y 3
+construidas en el mismo pase y sin commitear.** La **2** pone la hora de fin
+debajo de «Cuánto» —«→ Acaba a las **20:20**»— en la hoja del ítem y en el panel
+«Añadir a mi Vida», con **un solo componente** (`VidaEndTimeLine`), y resuelve
+la medianoche diciendo las dos cosas: el fin de verdad («0:50, ya del día
+siguiente») y lo que Hoy hará («lo cortará a las 23:59»). **La cuenta es una
+sola en el módulo**: nace `resolveEndTime` en `vida-time.utils.ts` y
+`calculateEndTime` pasa a devolver su `cappedEndTime` —misma salida para toda
+entrada, con 63 comparaciones de test y los casos viejos intactos—. La **3** son
+las tres props que faltaban (`VidaPlaceInGapSheet`, `VidaLogSessionSheet`,
+`VidaFinishSessionModal`) **más la línea de fin en «Registrar tiempo pasado»**,
+que la pidió el usuario viendo esa modal. Entra también el hallazgo 2 del
+revisor de la tajada 1: «Como mucho 23 h 59 min.» ya va enlazada por
+`aria-describedby`. Línea base corrida entera: typecheck limpio, **lint 14/0**,
+**2 fallos de 1669** (los de `SearchSelect`), build exit 0 con el chunk en
+**1.100,19 kB** (+1,97). Medido sobre el DOM a **375 px y en oscuro** con arnés
+temporal ya borrado: sin scroll horizontal, orden campos → fin → historia con la
+línea **fuera** de la caja violeta, y contrastes 7,88:1 / 14,89:1 / 18,71:1.
+**La captura salió a media escala** (`devicePixelRatio: 2`), así que **nada
+visual se da por bueno por la imagen**. **Pendiente del usuario**: el criterio
+134 entero —todo `/app/*` está detrás del login— y cómo suena el
+`aria-describedby` con dos `id` en un lector de pantalla real.
 
 **FEAT-008 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** Los
 doce criterios (107–118) y los dos transversales que le tocan, comprobados uno a

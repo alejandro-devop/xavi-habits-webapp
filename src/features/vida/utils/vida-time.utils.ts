@@ -72,12 +72,48 @@ export function isEndAfterStart(startTime: string, endTime: string): boolean {
 }
 
 /**
+ * La suma «hora + duración» **con las dos lecturas a la vez**: la del reloj de
+ * pared (`endTime`, que sí da la vuelta al día) y la que viaja al API
+ * (`cappedEndTime`, recortada a `23:59`).
+ *
+ * Existe porque la pantalla y el dato piden cosas distintas y **no pueden ser
+ * dos cuentas separadas** (FEAT-008, criterio 125): enseñar «acaba a las 0:50»
+ * es honrado, y meter un bloque de madrugada en el plan del día no lo es. Aquí
+ * se calcula una vez y cada quien lee el campo que le toca.
+ */
+export type ResolvedEndTime = {
+  /** Los minutos **sin recortar** desde la medianoche del día de inicio: 23:30 + 1 h 20 = 1490. */
+  endMinutes: number
+  /** La hora de reloj de verdad, dando la vuelta al día: `00:50`. */
+  endTime: string
+  /** `true` cuando la suma se pasa de las 24 h. */
+  crossesMidnight: boolean
+  /** Lo que el plan del día guarda: recortado a `23:59`, sin `% 24`. */
+  cappedEndTime: string
+}
+
+export function resolveEndTime(startTime: string, durationMinutes: number): ResolvedEndTime {
+  const endMinutes = parseTimeToMinutes(startTime) + Math.max(0, durationMinutes)
+  return {
+    endMinutes,
+    endTime: minutesToTime(endMinutes % MINUTES_PER_DAY),
+    crossesMidnight: endMinutes >= MINUTES_PER_DAY,
+    cappedEndTime: minutesToTime(endMinutes),
+  }
+}
+
+/**
  * «Hora + duración» → el `endTime` que pide el plan del día. Sin `% 24`: si algo
  * se pasa de medianoche se queda pegado a `23:59`, que es un dato visiblemente
  * raro en vez de un bloque que aparece de madrugada.
+ *
+ * **No cambia de salida para ninguna entrada** (criterio 126): delega en
+ * `resolveEndTime` para que la cuenta esté escrita una sola vez, y sigue
+ * devolviendo exactamente lo recortado, que es lo que viaja al API
+ * (`vida-gap-form.utils.ts`, `toDayPlanTimes`).
  */
 export function calculateEndTime(startTime: string, durationMinutes: number): string {
-  return minutesToTime(parseTimeToMinutes(startTime) + Math.max(0, durationMinutes))
+  return resolveEndTime(startTime, durationMinutes).cappedEndTime
 }
 
 /** Etiqueta corta, la del render: «2h 30», «45m», «0m». */

@@ -47,6 +47,7 @@ import {
   isValidHhMm,
   minutesToTime,
   parseTimeToMinutes,
+  resolveEndTime,
 } from '@/features/vida/utils/vida-time.utils'
 
 /**
@@ -641,6 +642,81 @@ export function describeTemplatePreview({
     rangeText,
     missingText: null,
     text: `${head} ${rangeText}.`,
+  }
+}
+
+/* ── La hora de fin, mientras programas (FEAT-008, tajada 2) ──────────────── */
+
+export type EndTimeInput = {
+  /** `HH:mm`, `''` o `null`. */
+  startTime: string | null
+  durationMinutes: number | null
+}
+
+/**
+ * Las piezas de la línea de fin, **ya escritas**: quien la pinta no compone
+ * nada ni formatea una hora. La hora va suelta porque se resalta en negrita,
+ * que es lo que dibuja el render aprobado (`docs/vida/assets/09-vida-cuanto.html`).
+ */
+export type EndTimeDescription = {
+  /** `true` cuando hay duración pero no de dónde contar: la línea dice qué falta. */
+  waiting: boolean
+  /** «Acaba a las», o la frase entera cuando falta la hora de inicio. */
+  lead: string
+  /** «20:20», ya con el formato del módulo (criterio 127), o `null` si no hay fin. */
+  time: string | null
+  /** «ya del día siguiente»: solo cuando la suma se pasa de medianoche. */
+  afterText: string | null
+  /** Lo que Hoy hará de verdad con ese bloque. `null` mientras no cruce nada. */
+  nextDayText: string | null
+}
+
+/**
+ * **«Acaba a las 20:20»** (criterios 119–123, 127): lo que se lee debajo de
+ * «Cuánto» mientras se programa, calculado de lo que hay escrito en la
+ * pantalla —no de lo guardado—.
+ *
+ * Las tres reglas que la hacen honrada:
+ *
+ * - **Sin duración no hay línea** (`null`), y **no se usa `DEFAULT_BLOCK_MINUTES`**
+ *   como si fuera lo que el usuario eligió: eso ya lo dice `describeTemplatePreview`
+ *   con sus palabras y en su sitio.
+ * - **Sin hora de inicio no se inventa un fin** contando desde medianoche: se
+ *   dice qué falta.
+ * - **Si cruza medianoche se dice entero**, incluida la parte incómoda: la hora
+ *   de reloj de verdad y, pegado, lo que Hoy hará al armar el día. Jamás
+ *   `23:59` a secas como si fuera el fin elegido.
+ *
+ * Vive aquí y no en `vida-time.utils.ts` porque es **una frase de la plantilla**
+ * —nombra a «Hoy»—, y aquel archivo es aritmética y constantes. La suma, esa
+ * sí, es una sola y está allí (`resolveEndTime`, criterio 125).
+ */
+export function describeEndTime({
+  startTime,
+  durationMinutes,
+}: EndTimeInput): EndTimeDescription | null {
+  const duration = durationMinutes !== null && durationMinutes > 0 ? durationMinutes : null
+  if (duration === null) return null
+
+  if (!isValidHhMm(startTime)) {
+    return {
+      waiting: true,
+      lead: 'Ponle hora y te digo a qué hora acaba',
+      time: null,
+      afterText: null,
+      nextDayText: null,
+    }
+  }
+
+  const resolved = resolveEndTime(startTime!, duration)
+  return {
+    waiting: false,
+    lead: 'Acaba a las',
+    time: formatTimeForDisplay(resolved.endTime),
+    afterText: resolved.crossesMidnight ? 'ya del día siguiente' : null,
+    nextDayText: resolved.crossesMidnight
+      ? `Hoy lo cortará a las ${formatTimeForDisplay(resolved.cappedEndTime)} al armar el día.`
+      : null,
   }
 }
 

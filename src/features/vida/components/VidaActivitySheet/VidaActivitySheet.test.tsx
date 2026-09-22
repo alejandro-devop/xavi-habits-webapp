@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { VidaActivitySheet } from '@/features/vida/components/VidaActivitySheet'
@@ -918,5 +918,79 @@ describe('VidaActivitySheet · lo que dicen tus semanas (criterios 95, 96 y 97)'
       patternAnswerNote: 'Lo dejaste el 21 de septiembre. Vuelve el 19 de octubre si el patrón sigue igual.',
     })
     expect(screen.getByText(/Vuelve el 19 de octubre/)).toBeInTheDocument()
+  })
+  /* ── La hora de fin, mientras programas (FEAT-008, tajada 2) ────────────── */
+
+  it('criterio 119 — con hora y duración se lee a qué hora acaba, debajo de «Cuánto»', () => {
+    renderSheet({
+      activity: buildActivity(),
+      vidaItem: buildVidaItem({ startTime: '19:00', durationMinutes: 80 }),
+    })
+
+    const line = document.getElementById('vida-activity-end-time')
+    expect(line?.textContent).toContain('Acaba a las')
+    expect(screen.getByText('20:20').tagName).toBe('B')
+    // Es texto, no un campo: no guarda nada.
+    expect(within(line as HTMLElement).queryByRole('textbox')).not.toBeInTheDocument()
+  })
+
+  it('criterio 121 — se recalcula al momento, mientras se escribe', () => {
+    renderSheet({
+      activity: buildActivity(),
+      vidaItem: buildVidaItem({ startTime: '19:00', durationMinutes: 80 }),
+    })
+
+    // 90 en minutos, **sin salir del campo**: el fin es el de 1 h 30, no el de
+    // 90 h ni el de 30 min.
+    fireEvent.change(screen.getByLabelText('horas'), { target: { value: '' } })
+    fireEvent.change(screen.getByLabelText('minutos'), { target: { value: '90' } })
+    expect(screen.getByText('20:30')).toBeInTheDocument()
+  })
+
+  it('criterio 122 — sin duración no hay línea de fin, y no se usan los 30 min por defecto', () => {
+    renderSheet({
+      activity: buildActivity(),
+      vidaItem: buildVidaItem({ startTime: '19:00', durationMinutes: null }),
+    })
+
+    expect(document.getElementById('vida-activity-end-time')?.textContent).toBe('')
+    expect(screen.queryByText(/Acaba a las/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 124 — el orden bajo «Cuánto» es campos → fin → lo que dicen tus semanas', () => {
+    // Con patrón: así la línea de FEAT-007 está presente y se ve quién va antes.
+    renderWithPattern(buildPattern())
+
+    const field = document.getElementById('vida-activity-end-time')?.parentElement
+    const order = Array.from(field?.children ?? [])
+    // (1) el rótulo, (2) las píldoras con sus campos, (3) la hora de fin,
+    // (4) lo que dicen tus semanas. La de fin es dato de ahora; la otra, historia.
+    expect(order).toHaveLength(4)
+    expect(order[0]?.textContent).toContain('Cuánto')
+    expect(order[1]?.querySelector('[role="group"][aria-label="Cuánto dura"]')).not.toBeNull()
+    expect(order[2]?.id).toBe('vida-activity-end-time')
+    expect(order[3]?.textContent).toContain('Suele llevarte 30m')
+    // Y la de fin **no se pinta dentro de la caja violeta**: son hermanas.
+    expect(order[2]?.contains(order[3] as Node)).toBe(false)
+  })
+
+  it('criterio 128 — la línea va enlazada a los campos y se anuncia como estado', () => {
+    renderSheet({
+      activity: buildActivity(),
+      vidaItem: buildVidaItem({ startTime: '19:00', durationMinutes: 80 }),
+    })
+
+    expect(document.getElementById('vida-activity-end-time')).toHaveAttribute(
+      'aria-live',
+      'polite',
+    )
+    expect(screen.getByLabelText('horas')).toHaveAttribute(
+      'aria-describedby',
+      'vida-activity-end-time',
+    )
+    expect(screen.getByLabelText('minutos')).toHaveAttribute(
+      'aria-describedby',
+      'vida-activity-end-time',
+    )
   })
 })

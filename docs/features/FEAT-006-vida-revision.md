@@ -1,7 +1,7 @@
 ---
 id: FEAT-006
 title: Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla
-status: in-review
+status: delivered
 architect: yes    # pantalla sin hermana (dos carriles alineados por hora, y la semana con lo real de siete días a la vez: catorce consultas donde hoy hay siete), y hay que decidir una sola vez dónde vive la derivación por categoría y la de la semana sin partir en dos `vida-execution.utils.ts`
 area: features/vida
 requested: 2026-09-20
@@ -1025,7 +1025,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 | 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | **accepted** (2026-09-20) |
 | 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | **accepted** (2026-09-20) |
 | 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | **accepted** (2026-09-20; 375 px y oscuro **sin medir**, van al recorrido manual) |
-| 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | **in-review** (2026-09-21) |
+| 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | **accepted** (2026-09-21; el **53 a medias y dicho**: el puente sube la peor lectura a ~21 consultas, sin clave nueva) |
 
 Los criterios **61, 62 y 63** los cierra **el usuario**: están detrás del login y
 con la API despierta. **Los agentes no entran con credenciales**, y eso queda
@@ -2007,3 +2007,60 @@ los **375 px** y el **tema oscuro** con los botones nuevos. Revisada sobre
 
 **Lo que no revisó nadie, y es lo que hay que mirar primero:** **375 px y tema
 oscuro con las salidas nuevas**. Y, como siempre, ninguna llamada real al API.
+
+### Tajada 4 — la semana y el puente (criterios 45–60)
+
+**Veredicto: `accepted`**, y con ella la feature entera. Revisada sobre
+`git diff 8472e76 3ba8ea0` (ya commiteada). **El criterio 53 queda a medias y lo
+acepto con su nota**; el resto se cumple y no encontré ninguna regresión.
+
+**El criterio 53: lo acepto, y aquí está el porqué.** El criterio pide «catorce
+consultas como mucho **y** las claves que ya existen, sin clave nueva». La
+**segunda mitad se cumple entera**: `useVidaWeekFollowUps` pide con
+**`vidaKeys.followUps.day(date)`** —la **misma** clave que la consulta del día—,
+así que la semana **reutiliza la caché** de Hoy y de la revisión, y
+`query-keys.ts`, `invalidate-vida-queries.ts`, `useVidaWeekPlans.ts`, `routes/`,
+`graphql/` y `VidaSemanaPage.tsx` están **sin tocar** (cero archivos en el diff).
+La primera mitad **no se puede cumplir a la vez que el criterio 55**: el puente
+necesita, por definición del propio 55, el plan de **los últimos 14 días**, así
+que con el puente activo la peor lectura en frío llega a **~21 consultas** —las
+7+7 de la semana más hasta 7 días de la semana anterior, porque los otros siete
+**son la misma clave y salen de caché**—. Es una **tensión entre dos criterios**,
+no un defecto de construcción, y el constructor la dejó escrita en vez de
+disimularla. **No devuelvo**: el coste real está acotado, no hay clave nueva, y
+cambiarlo sería recortar el criterio 55, que es del usuario.
+
+**Lo demás, comprobado en el diff**
+
+| # | Veredicto | Cómo |
+|---|---|---|
+| 45 | cumplido | `view: 'day' \| 'week'` es **estado local** de la página: **ninguna ruta nueva**, `vida-paths.ts` intacto y `/app/vida/semana` **sin tocar**. |
+| 46–51 | cumplidos | Siete filas con sus titulares, la barrita de cuatro tramos y «5h 37 de 4h 30»; **«—» donde no hay dato**; leyenda; la fila abre el día; la frase de semana **sin una palabra de culpa** (barrí cuatro y salen 0); y la tira estrena el punto de tres estados con `dots` **opcional**. |
+| 52 | cumplido | Un día cuya consulta falla se lee **«No pudimos cargar este día»**, una quinta forma propia: **nunca «Sin plan»**. Cierra el hallazgo que venía abierto desde FEAT-003, tajada 5. |
+| 54–56 | cumplidos | Un solo aviso, en forma de pregunta y con su base; la hora sale de la **mediana** de lo real redondeada a 15 min, y **si no hay sesiones `medianStartMinutes` devuelve `null` y no hay aviso** (D6, criterio 56): ninguna hora inventada. |
+| 57 | cumplido | La escritura es **literalmente** `updateItem.mutate({ id: chosen.itemId, startTime: chosen.proposedTime })` — **solo esos dos campos**— y los tests espían que **ni el plan del día ni las sesiones** se tocan. |
+| 58 | cumplido | «Dejarlo como está» llama a `dismissBridge(weekMonday, itemId)`: **el lunes va en la clave**, así que el silencio es de esa semana. Se guarda en `dismissedBridges` **dentro del store que ya existía**, con su `partialize`: **ninguna clave nueva de `localStorage`**. |
+| 59 · 60 | cumplidos | Sin base no se pinta el bloque; la semana trae sus esqueletos y su error con «Reintentar». |
+
+**`VidaDayStrip` sin `dots` es la de antes:** la prop es opcional y se lee con
+`dots?.[day.date]`, así que Hoy y Plantilla no cambian.
+
+**Los umbrales:** siguen mandando los de Hoy (±5, >60) sobre el render, como en
+la tajada 1, y con `matchSessionsToBlocks` «no se siguió» significa «ese día no
+hubo sesión de esa actividad». Es coherente con toda la feature y queda anotado.
+
+**Línea base, corrida entera por mí:** typecheck **exit 0** · lint **14/0** ·
+`pnpm test` **2 fallos de 1439** (los dos de `SearchSelect`; 1 archivo rojo de
+106) · `pnpm build` **exit 0**, chunk inicial **1.054,00 kB**, `app-icons`
+**620,20 kB**, `IconPicker` **4,64 kB**, CSS 241,31 kB.
+
+**Hallazgos, ninguno devuelve:** el **coste de la semana con puente** (~21
+consultas en frío, arriba); **`Button variant="primary"` mide 2,54:1**, que es
+deuda transversal del sistema de diseño y ya venía de antes; el **punto «a
+medias» de la tira se distingue poco** del rayado a 8 px; y el chunk inicial
+sigue creciendo.
+
+**Lo que no revisé, y no lo disimulo:** ninguna llamada real al API, y **los 375
+px y el contraste en oscuro dentro de `/app/*`**, que **ningún agente puede
+mirar**: la pantalla está detrás del login y no entro con credenciales. Todo eso
+va al recorrido del usuario.

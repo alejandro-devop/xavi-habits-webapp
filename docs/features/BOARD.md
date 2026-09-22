@@ -14,10 +14,57 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
-| FEAT-006 | in-review | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-006 `delivered`** (2026-09-21). Cuarta revisión: **`accepted`**, y con
+ella las cuatro tajadas. **El criterio 53 queda a medias y con su nota**: la
+segunda mitad se cumple entera —`useVidaWeekFollowUps` usa **`vidaKeys.followUps.day`**,
+la **misma** clave del día, así que la semana **reutiliza la caché** de Hoy y de
+la revisión, y `query-keys`, `invalidate-vida-queries`, `useVidaWeekPlans`,
+`routes/`, `graphql/` y `VidaSemanaPage` están **sin tocar**—, y la primera **no
+puede cumplirse a la vez que el criterio 55**, que por definición pide el plan de
+los últimos 14 días: con el puente activo la peor lectura en frío llega a **~21
+consultas** (7+7 de la semana y hasta 7 de la semana anterior; los otros siete
+son la misma clave y salen de caché). Es una **tensión entre dos criterios**, no
+un defecto, y está dicha. Lo demás se cumple: **ninguna ruta nueva** (`view` es
+estado local y `/app/vida/semana` no se toca), un día cuya consulta falla dice
+**«No pudimos cargar este día»** y **nunca «Sin plan»** —cierra el hallazgo que
+venía de FEAT-003—, **«—» donde no hay dato**, la hora del puente sale de la
+**mediana de lo real** y **si no hay sesiones no hay aviso**, el puente escribe
+**literalmente `{ id, startTime }`** y los espías confirman que ni el plan ni las
+sesiones se tocan, «Dejarlo como está» guarda con **el lunes en la clave** dentro
+del store que ya existía —**ninguna clave nueva de `localStorage`**— y
+`VidaDayStrip` **sin `dots` es la de antes**. Línea base corrida entera por el
+revisor: typecheck **exit 0**, lint **14/0**, `pnpm test` **2 fallos de 1439**
+(los dos de `SearchSelect`; 1 archivo rojo de 106), `pnpm build` **exit 0** con
+chunk inicial **1.054,00 kB**, `app-icons` **620,20 kB** e `IconPicker`
+**4,64 kB**.
+
+**Lo que queda del usuario, y solo él puede cerrarlo** (con la API despierta;
+Render tarda ~1 min): **ver la revisión con datos de verdad** —la historia, la
+cifra «6 de 8», los carriles, el reparto por categoría, los tramos sin registrar
+y la semana con su puente—, comprobar que **«Lo hice», «Registrar tiempo pasado»
+y «¿Qué pasó?» escriben de verdad** contra el servidor, que **«Moverlo a las
+HH:MM» cambia la plantilla y ningún día armado**, y que **«Dejarlo así» y
+«Dejarlo como está» no vuelven a preguntar** tras recargar. Y lo que **ningún
+agente ha podido mirar nunca**: **los 375 px y el contraste en oscuro dentro de
+`/app/*`** —la pantalla está detrás del login—, en especial **las salidas nuevas
+de la tajada 3**, que nadie ha visto en un navegador.
+
+**La deuda anotada de las cuatro tajadas, en un solo sitio:** **`Button
+variant="primary"` mide 2,54:1** y `variant="danger"` es ilegible en oscuro —las
+dos son del **sistema de diseño**, vienen de FEAT-003/004 y merecen su propia
+tarea— · el **punto «a medias» de la tira** se distingue poco del rayado a 8 px ·
+una **categoría sin color** y «Sin categoría» comparten acento, así que solo las
+separa el nombre · **abrir la semana con puente cuesta ~21 consultas** en frío ·
+el **reparto por categoría no cuadra con el presupuesto** a propósito (minutos de
+sesión frente a minutos de reloj), y está dicho en el código · en un **día sin
+ningún registro** el «¿Qué pasó?» del marco E abre por la primera hora del día ·
+y el **chunk inicial sigue creciendo** (1.054,00 kB, **nada de iconos**): el
+troceado del módulo Vida ya venía anotado desde FEAT-005.
 
 **FEAT-006, tajada 4 `in-review`** (2026-09-21, **sin commitear**; la
 construcción está en la sección 3 del dossier): **la semana y el puente, y con
@@ -299,6 +346,7 @@ día de verdad**, y los 375 px y el oscuro se midieron en un arnés, no dentro d
 | FEAT-003 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
+| FEAT-006 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-21 |
 
 **FEAT-005 `delivered`** (2026-09-20, **sin commitear**). Cuarta revisión:
 **`accepted`**, y con ella las cuatro tajadas. **Nada de lo que el arquitecto

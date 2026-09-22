@@ -19,6 +19,12 @@ updated: 2026-09-22
 > Sigue dependiendo de la tajada 2, que es donde nace `VidaEndTimeLine`, y esa
 > sigue **bloqueada** hasta que apruebe `docs/vida/assets/09-vida-cuanto.html`.
 
+> **Render APROBADO el 2026-09-22**: `docs/vida/assets/09-vida-cuanto.html`, el
+> fragmento del campo «Cuánto» con sus cuatro estados (vacío · 1 h 20 con «Acaba a
+> las 20:20» · sin hora de inicio · cruzando la medianoche) y el orden fijo
+> **campos → hora de fin → lo que dicen tus semanas**. **La tajada 2 queda
+> desbloqueada**, y con ella la 3.
+
 ## 1. The request — feature-analyst
 
 **Summary for whoever's next:** el campo único «en minutos» de **«Cuánto»** pasa

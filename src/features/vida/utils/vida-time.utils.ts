@@ -199,8 +199,37 @@ export const DURATION_PILLS: readonly number[] = [15, 30, 45, 60]
 /** Lo que dura un bloque cuando su ítem de plantilla no lo dice (criterio 44). */
 export const DEFAULT_BLOCK_MINUTES = 30
 
-/** Por debajo de esto un hueco no enseña fichas; se pinta, pero fino (criterio 17). */
-export const MIN_GAP_MINUTES = 15
+/**
+ * **Lo más corto que se puede *poner*: la píldora más pequeña** (criterio 17).
+ *
+ * Por debajo de esto un hueco no enseña fichas de plantilla ni «+ otra cosa»;
+ * se pinta, pero fino (`isSliver`). La razón es la escala de planear: la
+ * píldora más corta de `DURATION_PILLS` es de 15 minutos, así que en un hueco
+ * de 13 **no cabe nada que planear**.
+ *
+ * **Se llamaba `MIN_GAP_MINUTES`** (FEAT-014, criterio 400). El nombre viejo
+ * decía *un hueco*, en general, y por eso acabó haciendo dos trabajos: este y
+ * el de decidir qué era demasiado pequeño para **contarlo**. Ese segundo
+ * trabajo se fue a `MIN_LOG_MINUTES`, que vive aquí al lado y vale otra cosa.
+ * Los criterios ya entregados que lo nombran por el nombre viejo —FEAT-003
+ * criterio 17, FEAT-009 criterio 143, FEAT-011 criterio 221— siguen hablando
+ * de esta constante.
+ */
+export const MIN_PLANNING_MINUTES = 15
+
+/**
+ * **Lo más corto que se ofrece *contar*; lo ya vivido no tiene suelo**
+ * (FEAT-014, criterio 400).
+ *
+ * Un hueco que ya pasó de 5 minutos o más trae «Registrar lo que hice»: lo que
+ * hiciste duró lo que duró y no hay píldora mínima que respetar, porque ahí no
+ * se planea nada —se cuenta—. La comparación es `>=`, así que **los 5 exactos
+ * entran** (D1); entre 1 y 4 el hueco sigue siendo la línea fina de siempre
+ * (criterio 402) y en 0 no hay hueco que pintar.
+ *
+ * **No es el umbral de planear**: ese es `MIN_PLANNING_MINUTES` y vale 15.
+ */
+export const MIN_LOG_MINUTES = 5
 
 /**
  * Lo que usa el cliente mientras `vidaDayStartTime` / `vidaDayEndTime` sean

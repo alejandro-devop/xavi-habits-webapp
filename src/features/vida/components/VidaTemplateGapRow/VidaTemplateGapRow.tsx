@@ -38,7 +38,7 @@ type VidaTemplateGapRowProps = {
  * y su forma fina—:
  *
  * 1. **El hueco**: «Libre 8:40 → 9:00 · 20m», con su trazo discontinuo.
- * 2. **El hueco fino** (menos de `MIN_GAP_MINUTES`): la misma frase en una
+ * 2. **El hueco fino** (menos de `MIN_PLANNING_MINUTES`): la misma frase en una
  *    línea sin caja y **sin nada que pulsar** (criterio 143). No desaparece: si
  *    desapareciera, la barra diría que hay libre donde la lista no enseña nada.
  * 3. **La línea del ítem sin duración**: no es un hueco y no se pinta como uno;

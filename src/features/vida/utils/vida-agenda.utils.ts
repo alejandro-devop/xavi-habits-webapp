@@ -23,7 +23,7 @@
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import {
-  MIN_GAP_MINUTES,
+  MIN_PLANNING_MINUTES,
   formatDurationFromMinutes,
   formatTimeForDisplay,
   minutesToTime,
@@ -59,7 +59,7 @@ export type AgendaGap = {
   /** En un hueco es siempre igual a `durationMinutes`: los huecos no se pisan. */
   trackMinutes: number
   /**
-   * Más corto que `MIN_GAP_MINUTES`. **No desaparece**: se pinta como una línea
+   * Más corto que `MIN_PLANNING_MINUTES`. **No desaparece**: se pinta como una línea
    * fina con sus minutos, porque si no la leyenda (criterio 14) dejaría de
    * cuadrar con lo que se ve. Lo que no hace es ofrecer fichas.
    */
@@ -218,7 +218,7 @@ function makeGap(
     endMinutes: to,
     durationMinutes: to - from,
     trackMinutes: to - from,
-    isSliver: to - from < MIN_GAP_MINUTES,
+    isSliver: to - from < MIN_PLANNING_MINUTES,
     isPast: nowMinutes !== null && to <= nowMinutes,
     nextBlockTitle,
   }
@@ -342,11 +342,11 @@ export function findLargestGap(gaps: AgendaGap[], nowMinutes: number | null): Ag
     if (nowMinutes !== null && gap.endMinutes <= nowMinutes) continue
     const startMinutes = nowMinutes === null ? gap.startMinutes : Math.max(gap.startMinutes, nowMinutes)
     const durationMinutes = gap.endMinutes - startMinutes
-    if (durationMinutes < MIN_GAP_MINUTES) continue
+    if (durationMinutes < MIN_PLANNING_MINUTES) continue
     const clipped: AgendaGap =
       startMinutes === gap.startMinutes
         ? gap
-        : { ...gap, startMinutes, durationMinutes, isSliver: durationMinutes < MIN_GAP_MINUTES }
+        : { ...gap, startMinutes, durationMinutes, isSliver: durationMinutes < MIN_PLANNING_MINUTES }
     if (!best || clipped.durationMinutes > best.durationMinutes) best = clipped
   }
   return best

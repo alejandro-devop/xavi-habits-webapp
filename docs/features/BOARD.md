@@ -22,8 +22,44 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
-| FEAT-014 | specified | 0/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
+| FEAT-014 | building | 1/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
+
+**FEAT-014 `building` 1/2** (2026-09-22, revisor). **Tajada 1 aceptada: el
+hueco de 13 minutos del usuario ya se puede contar.** Comprobé los cuatro bordes
+con un render limpio por caso —**5 entra**, **4 no** (línea fina), **13 sí**, 1
+no, 20 igual— y los vi **los cuatro juntos en pantalla**; el hueco **futuro** de
+13 sigue siendo línea fina y sin «+ otra cosa» (criterio 404), y sin `onLogPast`
+el pasado tampoco ofrece nada (244 de FEAT-011, intacto). **La condición de tres
+negaciones la recorrí entera** —pasado/futuro × corto/largo × con y sin oyente ×
+día de la tira— y **no se cuela ningún caso**; el que más miraba, el futuro corto
+con `onLogPast` puesto, sale como antes de la feature. **El renombrado es
+mecánico de verdad**: `grep` deja **una sola** aparición de `MIN_GAP_MINUTES`, y
+es el comentario que lo explica; los cinco usos reales pasan a
+`MIN_PLANNING_MINUTES` **con el mismo 15**, así que ni la plantilla (FEAT-009) ni
+el camino de planear (FEAT-003) cambian. **Criterios 405 y 406 verificados y sin
+código nuevo**: `proposeLogDuration` ya recortaba desde FEAT-011, y en 13 minutos
+**vi** las cuatro píldoras **apagadas**, «Todo el hueco» encendida con
+`aria-label` «Todo el hueco, 13 min», «Aquí caben 13 min.» y «libre» abriendo los
+dos campos —nadie había visto ese estado hasta ahora—; el test de la página lo
+lleva hasta la mutación con 13. El test que cambió **no se relaja**: la
+afirmación del 221 se muda al tramo donde sigue valiendo (4 min) y el de 10 pasa
+al caso con salida. Los 7 casos nuevos de `VidaAgendaGap` pagan deuda de tres
+features. El **411 parcial es aceptable y menos parcial de lo que él cree**: lo
+que deja a mano es el criterio **231 de FEAT-011**, ya aceptado, y el camino de
+error **no se toca aquí**. Línea base corrida entera: typecheck limpio, lint
+14/0, **2 fallos de 1746**, build exit 0 con el chunk en **1.106,50 kB** (+0,03).
+**Su hallazgo del tercer umbral lo confirmo y debe caer en la tajada 2** junto al
+gemelo: hoy conviven `MIN_PLANNING_MINUTES` (15), `MIN_PLACEMENT_MINUTES` (15, 3
+usos, congelado por el 236 de FEAT-011) y `VIDA_NO_DATA_MIN_MINUTES` (30), más un
+`isSliver` que ya no dice lo que dice —hay un sitio donde sí pinta tarjeta—; con
+dos nombres para lo mismo, el siguiente que cambie un umbral lo cambiará en uno
+solo. Otro hallazgo: **el criterio 406 pide `spinbutton`** y desde FEAT-008 esos
+campos son cajas de texto: la intención se cumple, la palabra hay que
+corregirla. **Cifras del DOM** (`devicePixelRatio: 2`, captura a media escala):
+0 desbordados a 375 px en claro y oscuro, botón de **44 px**, píldora apagada
+7,3:1 / 9,05:1. Siguiente: publicar esto —el usuario está esperando— y la tajada
+2 con la limpieza de umbrales.
 
 **FEAT-011 `delivered` 3/3** (2026-09-22, revisor). **Tajada 3 aceptada y con
 ella la feature entregada.** Lo primero, lo que había que comprobar y no

@@ -62,7 +62,7 @@ import type {
 } from '@/features/vida/utils/vida-gap-window.utils'
 import { buildGapRealWindow } from '@/features/vida/utils/vida-gap-window.utils'
 import {
-  MIN_GAP_MINUTES,
+  MIN_PLANNING_MINUTES,
   formatDurationFromMinutes,
   formatTimeForDisplay,
   minutesToTime,
@@ -714,7 +714,7 @@ function sliceGap(gap: AgendaGap, start: number, end: number, nowMinutes: number
     endMinutes: end,
     durationMinutes: end - start,
     trackMinutes: end - start,
-    isSliver: end - start < MIN_GAP_MINUTES,
+    isSliver: end - start < MIN_PLANNING_MINUTES,
     isPast: nowMinutes !== null && end <= nowMinutes,
   }
 }
@@ -1050,7 +1050,7 @@ export type NoDataSlice = {
  *
  * El tiempo que **aún no ha llegado** no entra nunca (criterio 50): con el día
  * cerrado no queda futuro dentro de la ventana. Y los restos de menos de
- * `MIN_GAP_MINUTES` siguen pintándose como lo que son, un respiro entre dos
+ * `MIN_PLANNING_MINUTES` siguen pintándose como lo que son, un respiro entre dos
  * cosas, no un tramo con nombre.
  */
 export function buildNoDataSlices(params: {

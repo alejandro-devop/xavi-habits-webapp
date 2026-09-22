@@ -2014,14 +2014,74 @@ describe('VidaHoyPage — el hueco que ya pasó se pulsa (criterios 220 a 232)',
     expect(within(hueco).getAllByRole('button')).toHaveLength(1)
   })
 
-  it('criterio 221 — un resto de menos de 15 min sigue siendo una línea sin controles', () => {
-    // 8:45 → 8:55, y «ahora» a las 8:55: un hueco pasado de 10 minutos.
-    planQuery = ready([block('b1', 'Bañarme', '08:00', '08:45'), block('b2', 'Leer', '08:55', '09:30')])
+  // **Este test cambió con FEAT-014** (criterio 410, dicho en voz alta). Medía
+  // el criterio 221 con un hueco de **10 minutos**, y ese tramo es justo el que
+  // el criterio 402 sustituye: de 5 a 14 el hueco pasado sí ofrece contar. Lo
+  // que el 221 sigue diciendo —y aquí se sigue midiendo— es lo de **por debajo
+  // de 5**: ahí no hay nada que pulsar. El hueco de 10 se mide ahora en el test
+  // de al lado, donde ya trae su salida.
+  it('criterio 402 (sustituye al 221 de 5 a 14 min) — por debajo de 5 sigue siendo una línea sin controles', () => {
+    // 8:45 → 8:49, y «ahora» a las 9:40: un hueco pasado de 4 minutos.
+    planQuery = ready([block('b1', 'Bañarme', '08:00', '08:45'), block('b2', 'Leer', '08:49', '09:30')])
     vi.setSystemTime(new Date(2026, 8, 18, 9, 40, 0))
     renderWithProviders(<VidaHoyPage />)
 
-    expect(screen.getByText('Libre 8:45 – 8:55 · 10m')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Libre de 8:45 – 8:55')).toBeNull()
+    expect(screen.getByText('Libre 8:45 – 8:49 · 4m')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Libre de 8:45 – 8:49')).toBeNull()
+  })
+
+  it('criterios 401, 404, 405 y 406 — el hueco pasado de 13 min se cuenta, y la hoja abre con una duración que cabe', () => {
+    // El caso del usuario: 8:45 → 8:58 entre dos bloques que ya pasaron.
+    planQuery = ready([block('b1', 'Bañarme', '08:00', '08:45'), block('b2', 'Leer', '08:58', '09:30')])
+    vi.setSystemTime(new Date(2026, 8, 18, 9, 40, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    // La misma tarjeta y las mismas palabras del criterio 220 (criterio 401).
+    const hueco = screen.getByLabelText('Libre de 8:45 – 8:58')
+    const registrar = within(hueco).getByRole('button', {
+      name: 'Registrar lo que hiciste entre las 8:45 y las 8:58',
+    })
+    expect(registrar).toHaveTextContent('Registrar lo que hice')
+    // Y **solo** esa: ahí no cabe ninguna píldora, así que no se planea
+    // (criterio 404).
+    expect(within(hueco).getAllByRole('button')).toHaveLength(1)
+    expect(within(hueco).queryByText('+ otra cosa')).toBeNull()
+
+    fireEvent.click(registrar)
+    const hoja = screen.getByRole('dialog')
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue('08:45')
+    // Las cuatro fijas apagadas, «Todo el hueco · 13 min» y el campo libre: los
+    // controles que ya existían, sin ninguno nuevo (criterio 406).
+    for (const pill of ['15', '30', '45', '1h']) {
+      expect(within(hoja).getByRole('button', { name: pill })).toBeDisabled()
+    }
+    expect(within(hoja).getByRole('button', { name: 'Todo el hueco, 13 min' })).toBeEnabled()
+    expect(within(hoja).getByText('Aquí caben 13 min.')).toBeInTheDocument()
+
+    // **La duración de partida cabe** (criterio 405, D2): al elegir el qué, la
+    // hoja pone 13 —el hueco entero— y no los 30 de la plantilla, así que
+    // Guardar va encendido y no hay aviso de que no cabe.
+    fireEvent.click(within(hoja).getByRole('button', { name: /Poner lavadora/ }))
+    expect(within(hoja).getByRole('button', { name: 'Todo el hueco, 13 min' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(within(hoja).queryByText(/no cabe/i)).toBeNull()
+
+    const guardar = within(hoja).getByRole('button', { name: 'Registrar' })
+    expect(guardar).toBeEnabled()
+    fireEvent.click(guardar)
+    expect(createFollowUpMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(createFollowUpMutation.mutate.mock.calls[0][0]).toMatchObject({
+      date: '2026-09-18',
+      startTime: '08:45',
+      durationMinutes: 13,
+    })
+    // Una sesión fuera del plan: ni una mutación de `activityDayPlan`
+    // (criterio 407).
+    expect(addMutation.mutate).not.toHaveBeenCalled()
+    expect(editMutation.mutate).not.toHaveBeenCalled()
+    expect(setMutation.mutate).not.toHaveBeenCalled()
   })
 
   it('criterios 222, 223 y 224 — abre la hoja de siempre, anclada al hueco', () => {

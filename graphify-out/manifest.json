@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790106568.4071405,
-    "ast_hash": "779e03c18478d57ba2209b631ce30b53",
+    "mtime": 1790108980.3464105,
+    "ast_hash": "afa0e4307d0cccd45000fade2ba93ef8",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790105750.484737,
-    "ast_hash": "57b1d99d60352fcaea9308ece4308cad",
+    "mtime": 1790109042.4186988,
+    "ast_hash": "b6fd2f913465e57a5deca2772e5eac1e",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2930,13 +2930,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-time.utils.test.ts": {
-    "mtime": 1790093045.0626035,
-    "ast_hash": "dda2d6ecba437b839b64fcf77071505b",
+    "mtime": 1790107839.3566825,
+    "ast_hash": "f592274ace0edece2383cbb1a3f8a185",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-time.utils.ts": {
-    "mtime": 1790092938.6272848,
-    "ast_hash": "5f59ee3159248725ceb9724be86905ad",
+    "mtime": 1790107760.058536,
+    "ast_hash": "d1d9215f3041f34a4a5ee0accdbd8e6d",
     "semantic_hash": ""
   },
   "docs/features/FEAT-003-vida-hoy-planear-el-dia.md": {
@@ -2955,8 +2955,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx": {
-    "mtime": 1790106114.254346,
-    "ast_hash": "232a9f422c2cbe14ae7c8482c8cecf54",
+    "mtime": 1790107787.673587,
+    "ast_hash": "d2a053be66af4d1c574064bb9d388ce8",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaAgendaGap/index.ts": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790106515.7870293,
-    "ast_hash": "56b9da00b2b312dede948dcd79e9a5c0",
+    "mtime": 1790108167.0562832,
+    "ast_hash": "eb5e054da136974092a29b7bfa17cb40",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3010,8 +3010,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.ts": {
-    "mtime": 1790052073.5581493,
-    "ast_hash": "533c5327a831341ea61fdce5558a069c",
+    "mtime": 1790107765.2495456,
+    "ast_hash": "e504643a2f0f3d0c8450bde2f29b2649",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.test.tsx": {
@@ -3230,8 +3230,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-execution.utils.ts": {
-    "mtime": 1790106089.2553039,
-    "ast_hash": "59694647069743e37d4f94a5c644ef20",
+    "mtime": 1790107765.2415457,
+    "ast_hash": "fc5b965f1e798ad20f3784afd5f050d7",
     "semantic_hash": ""
   },
   "docs/vida/assets/06-vida-plantilla.html": {
@@ -3360,8 +3360,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-template.utils.ts": {
-    "mtime": 1790092962.464098,
-    "ast_hash": "c9517527b53ef4c0aa1a6ac27708564b",
+    "mtime": 1790107765.2455456,
+    "ast_hash": "72d6bbd7adea173dd603a67ed1b45b0a",
     "semantic_hash": ""
   },
   "docs/features/FEAT-006-vida-revision.md": {
@@ -3715,8 +3715,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateGapRow/VidaTemplateGapRow.tsx": {
-    "mtime": 1790085882.0719209,
-    "ast_hash": "ee444505316acfc773d59dc97d6cae48",
+    "mtime": 1790107765.2325456,
+    "ast_hash": "df3e49e2d5c0d2d6d6b1cc98e7ad21db",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateGapRow/index.ts": {
@@ -3730,8 +3730,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-011-vida-hoy-registrar-en-hueco.md": {
-    "mtime": 1790105822.7488568,
-    "ast_hash": "c8439c0d9fdec64525fcb6bee8b835df",
+    "mtime": 1790107546.4961379,
+    "ast_hash": "55580271f397cab0b27dd0283d4c8381",
     "semantic_hash": ""
   },
   "docs/features/FEAT-012-vida-la-noche.md": {
@@ -3790,8 +3790,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-014-vida-tolerancia-del-hueco.md": {
-    "mtime": 1790104497.7159688,
-    "ast_hash": "ce1c2e0fdc49a54bc7a39f7641e1ac2c",
+    "mtime": 1790109052.6437447,
+    "ast_hash": "e7f86d7e9d2420945d6ccd7df9792a71",
     "semantic_hash": ""
   },
   "docs/features/FEAT-015-habitos-metricas.md": {
@@ -3802,6 +3802,11 @@
   "graphify-out/memory/query_20260922_193727_d\u00f3nde_se_pinta_la_lista_de_la_agenda_de_hoy_y_qu\u00e9.md": {
     "mtime": 1790105847.1078973,
     "ast_hash": "b9dbce426a89f52d4b10047964635498",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaAgendaGap/VidaAgendaGap.test.tsx": {
+    "mtime": 1790107831.7826686,
+    "ast_hash": "a7e115e7daa1a3cf1d16696f1d469974",
     "semantic_hash": ""
   }
 }

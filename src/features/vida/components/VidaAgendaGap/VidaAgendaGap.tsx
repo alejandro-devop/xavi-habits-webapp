@@ -8,6 +8,7 @@ import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.uti
 import {
   formatDurationFromMinutes,
   formatTimeForDisplay,
+  MIN_LOG_MINUTES,
   minutesToTime,
 } from '@/features/vida/utils/vida-time.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -71,10 +72,19 @@ type VidaAgendaGapProps = {
  * que deja montar este componente en un arnés o en un día pasado (tajada 4, en
  * solo lectura) sin pintar controles que no llevan a ninguna parte.
  *
- * Los tramos más cortos que `MIN_GAP_MINUTES` (`isSliver`) se pintan como una
- * línea con sus minutos y **sin ningún control**: si desaparecieran, la leyenda
- * del presupuesto dejaría de cuadrar con lo que se ve (criterio 14), y un resto
- * de diez minutos no es sitio donde ofrecer nada (criterio 221).
+ * Los tramos más cortos que `MIN_PLANNING_MINUTES` (`isSliver`) **no ofrecen
+ * planear**: ahí no cabe ninguna píldora. Si además no hay nada que contar, se
+ * pintan como una línea con sus minutos y sin ningún control —si desaparecieran,
+ * la leyenda del presupuesto dejaría de cuadrar con lo que se ve (criterio 14)—.
+ *
+ * **Pero contar tiene otro suelo** (FEAT-014, criterio 401). Un hueco de trece
+ * minutos que ya pasó sí es sitio donde ofrecer registrar: lo que hiciste duró
+ * lo que duró. Desde `MIN_LOG_MINUTES` (5) hacia arriba, el hueco pasado trae la
+ * **misma** tarjeta y las **mismas** palabras que el grande, sin variante corta;
+ * por debajo sigue siendo la línea fina de siempre (criterio 402). El criterio
+ * 221 de FEAT-011 —«un resto de diez minutos no es sitio donde ofrecer nada»—
+ * queda sustituido por el 402 en el tramo de 5 a 14, y sigue vigente por debajo
+ * de 5.
  *
  * **El hueco de delante** también cuenta hacia atrás, pero de segundo: las
  * fichas de plantilla mandan y «Registrar» va detrás, con menos peso (criterio
@@ -104,11 +114,17 @@ export function VidaAgendaGap({
   const isPast = gap.isPast || isPastDay
   const fromLabel = formatTimeForDisplay(minutesToTime(gap.startMinutes))
   const toLabel = formatTimeForDisplay(minutesToTime(gap.endMinutes))
+  // **Aquí sí se puede contar** (FEAT-014, criterio 401): el rato ya pasó, hay
+  // quien escuche el registro y dura al menos `MIN_LOG_MINUTES`. Los 5 exactos
+  // entran (`>=`, D1). Es lo único que salva a un `isSliver` de la línea fina, y
+  // **solo hacia atrás**: un hueco corto que aún no ha llegado se ve igual que
+  // antes de esta feature (criterio 404).
+  const canLogHere = isPast && Boolean(onLogPast) && gap.durationMinutes >= MIN_LOG_MINUTES
 
-  // Un resto de menos de 15 min, o un tramo que ya pasó **sin nadie que escuche
-  // el registro**: se pinta con sus minutos —si desapareciera, la leyenda
-  // dejaría de cuadrar (criterio 14)— pero sin ningún control.
-  if (gap.isSliver || (isPast && !onLogPast)) {
+  // Un resto que no da ni para contar, o un tramo que ya pasó **sin nadie que
+  // escuche el registro**: se pinta con sus minutos —si desapareciera, la
+  // leyenda dejaría de cuadrar (criterio 14)— pero sin ningún control.
+  if ((gap.isSliver && !canLogHere) || (isPast && !onLogPast)) {
     return (
       <li className={styles.row} data-sliver={gap.isSliver ? 'true' : undefined}>
         <span className={styles.gutter}>
@@ -125,7 +141,9 @@ export function VidaAgendaGap({
 
   // El rato que ya pasó: sus horas, su tamaño y **una** salida, la de contar
   // qué hiciste (criterio 220). Ni fichas de plantilla ni «+ otra cosa»: en el
-  // pasado no hay nada que colocar.
+  // pasado no hay nada que colocar. Un hueco corto que llega hasta aquí
+  // (`canLogHere`) usa **esta misma** tarjeta: no hay variante corta (criterio
+  // 401).
   if (isPast) {
     return (
       <li className={styles.row}>

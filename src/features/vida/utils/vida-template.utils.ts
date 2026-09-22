@@ -39,7 +39,7 @@ import {
 import { compareVidaNames } from '@/features/vida/utils/vida-text.utils'
 import {
   DEFAULT_BLOCK_MINUTES,
-  MIN_GAP_MINUTES,
+  MIN_PLANNING_MINUTES,
   calculateEndTime,
   formatDurationFromMinutes,
   formatDurationMinutes,
@@ -116,7 +116,7 @@ export type TemplateGapRow = {
   startMinutes: number
   endMinutes: number
   minutes: number
-  /** Menos de `MIN_GAP_MINUTES`: se pinta igual, pero en línea fina (criterio 143). */
+  /** Menos de `MIN_PLANNING_MINUTES`: se pinta igual, pero en línea fina (criterio 143). */
   isSliver: boolean
 }
 
@@ -294,7 +294,7 @@ export function buildTemplateDay({
    * 2. Si el corte no pasa del cursor, **no hay hueco**: es un solape, y la
    *    plantilla los permite en silencio (criterio 144).
    * 3. Si no, el hueco, con su tamaño y su forma fina si no llega a
-   *    `MIN_GAP_MINUTES` (criterio 143).
+   *    `MIN_PLANNING_MINUTES` (criterio 143).
    */
   function pushRowsUntil(cut: number, isDayEnd: boolean) {
     if (pendingUnknown) {
@@ -316,7 +316,7 @@ export function buildTemplateDay({
       startMinutes: cursor,
       endMinutes: cut,
       minutes,
-      isSliver: minutes < MIN_GAP_MINUTES,
+      isSliver: minutes < MIN_PLANNING_MINUTES,
     })
   }
 

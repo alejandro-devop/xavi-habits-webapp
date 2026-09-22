@@ -3,7 +3,8 @@ import {
   DEFAULT_BLOCK_MINUTES,
   DURATION_PILLS,
   MAX_DURATION_MINUTES,
-  MIN_GAP_MINUTES,
+  MIN_LOG_MINUTES,
+  MIN_PLANNING_MINUTES,
   VIDA_DAY_END_FALLBACK,
   VIDA_DAY_START_FALLBACK,
   calculateEndTime,
@@ -114,7 +115,12 @@ describe('vida-time.utils', () => {
   it('las constantes son las que mandan las decisiones del dossier', () => {
     expect(DURATION_PILLS).toEqual([15, 30, 45, 60])
     expect(DEFAULT_BLOCK_MINUTES).toBe(30)
-    expect(MIN_GAP_MINUTES).toBe(15)
+    // **Dos umbrales, dos trabajos** (FEAT-014, criterio 400): planear tiene
+    // suelo —la píldora más pequeña— y contar no lo tiene más allá de lo que
+    // vale la pena ofrecer.
+    expect(MIN_PLANNING_MINUTES).toBe(15)
+    expect(MIN_LOG_MINUTES).toBe(5)
+    expect(MIN_LOG_MINUTES).toBeLessThan(MIN_PLANNING_MINUTES)
     expect(VIDA_DAY_START_FALLBACK).toBe('06:30')
     expect(VIDA_DAY_END_FALLBACK).toBe('23:00')
   })

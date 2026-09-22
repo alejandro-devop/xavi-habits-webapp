@@ -1,7 +1,7 @@
 ---
 id: FEAT-014
 title: La tolerancia del hueco — un rato de 13 minutos también se puede contar
-status: specified
+status: building
 architect: no    # cuelga de MIN_GAP_MINUTES y de la rama del hueco ya construida; razón en la sección 1
 area: vida
 requested: 2026-09-22
@@ -136,7 +136,8 @@ el 400.**)
   píldoras fijas **apagadas** con su línea «Aquí caben 13 min», **«Todo el hueco»
   con 13 min**, y **«libre»** con los dos campos de horas y minutos (FEAT-008).
   Comprobable en el DOM: cuatro botones `disabled`, uno con `aria-label` «Todo el
-  hueco, 13 min», y los dos `spinbutton` al abrir «libre».
+  hueco, 13 min», y las dos cajas de horas y minutos (`textbox` con
+  `inputMode="numeric"` desde FEAT-008, no `spinbutton`) al abrir «libre».
 - [ ] 407. Guardar manda `activityFollowUpAdd` con **los minutos elegidos
   exactos** (13 si se eligió «Todo el hueco»), la sesión aparece en su hora
   marcada **«fuera del plan»**, y **ninguna mutación de `activityDayPlan`**.
@@ -176,7 +177,7 @@ el 400.**)
 
 | # | Qué hace | Estado |
 |---|---|---|
-| 1 | **Los 13 minutos se pueden contar.** Nace `MIN_LOG_MINUTES = 5`, el hueco pasado de 5 minutos o más gana «Registrar lo que hice» con la tarjeta que ya existe, y la hoja abre con una duración que cabe («Todo el hueco» y el campo libre hacen el resto). Criterios 400–411. | pending |
+| 1 | **Los 13 minutos se pueden contar.** Nace `MIN_LOG_MINUTES = 5`, el hueco pasado de 5 minutos o más gana «Registrar lo que hice» con la tarjeta que ya existe, y la hoja abre con una duración que cabe («Todo el hueco» y el campo libre hacen el resto). Criterios 400–411. | aceptada |
 | 2 | **Un solo umbral de planear.** `MIN_PLACEMENT_MINUTES` se funde en `MIN_PLANNING_MINUTES`; nada cambia en pantalla. Criterios 412–414. | pending |
 
 Dos tajadas y no más: la 1 resuelve el caso del usuario entero y se puede probar
@@ -260,6 +261,359 @@ marcadas para que el usuario las contradiga en una línea.
 
 *(una entrada por tajada, añadida debajo)*
 
+### Tajada 1 — Los 13 minutos se pueden contar
+
+**Resumen para el revisor:**
+1. Nace `MIN_LOG_MINUTES = 5` y `MIN_GAP_MINUTES` pasa a llamarse
+   `MIN_PLANNING_MINUTES` (mismo valor, 15): un hueco **pasado** de 5 minutos o
+   más trae «Registrar lo que hice» con la tarjeta que ya existía.
+2. El cambio de comportamiento es **una condición** en `VidaAgendaGap.tsx`; la
+   hoja no se tocó: ya sabía abrir con el hueco entero y apagar las píldoras.
+3. **Lo que más probablemente he roto:** el renombrado toca cinco archivos del
+   módulo (`vida-agenda`, `vida-execution`, `vida-template`, `VidaAgendaGap`,
+   `VidaTemplateGapRow`) — si alguien tenía una rama con `MIN_GAP_MINUTES`, le
+   va a chocar. Y **el hueco corto ya no es solo una línea**: donde antes
+   cabía un renglón de 20 px ahora puede haber una tarjeta con botón, así que
+   la agenda de un día muy picado (varios restos de 5–14 min seguidos) se hace
+   bastante más alta. Eso no lo mide ningún test; se ve en pantalla.
+
+**Qué se construyó:**
+
+- `src/features/vida/utils/vida-time.utils.ts` — `MIN_GAP_MINUTES` renombrada a
+  **`MIN_PLANNING_MINUTES`** (sigue valiendo 15) con su porqué escrito y una
+  línea que dice **cómo se llamaba antes** y qué criterios ya entregados la
+  nombran (FEAT-003 c.17, FEAT-009 c.143, FEAT-011 c.221). Debajo, nueva
+  **`MIN_LOG_MINUTES = 5`** con el suyo: lo ya vivido no tiene suelo, la
+  comparación es `>=` (D1) y **no es** el umbral de planear.
+- Renombrado mecánico en los cinco archivos que la usaban:
+  `vida-agenda.utils.ts`, `vida-execution.utils.ts`, `vida-template.utils.ts`,
+  `VidaAgendaGap.tsx` y `VidaTemplateGapRow.tsx` (comentarios incluidos).
+  `grep -rn MIN_GAP_MINUTES src/` da **cero** resultados de código (queda una
+  mención dentro del comentario que explica el nombre viejo, a propósito).
+- `src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx` — la puerta.
+  Nace `canLogHere = isPast && Boolean(onLogPast) && gap.durationMinutes >=
+  MIN_LOG_MINUTES` y la salida temprana pasa de
+  `if (gap.isSliver || (isPast && !onLogPast))` a
+  `if ((gap.isSliver && !canLogHere) || (isPast && !onLogPast))`. **Nada más**:
+  el hueco corto que se salva cae en la rama del pasado que ya existía, así que
+  usa la **misma** tarjeta, el **mismo** rótulo accesible y las **mismas**
+  palabras (c.401). El comentario del componente deja dicho que el criterio 221
+  queda sustituido por el 402 de 5 a 14 y sigue vigente por debajo de 5.
+- `src/features/vida/components/VidaAgendaGap/VidaAgendaGap.test.tsx` — **nuevo**
+  (no había test de este componente): siete casos sobre la puerta (13 pasado, 5
+  exactos, 4, sin `onLogPast`, corto futuro, día de la tira, día futuro, y el
+  hueco que se encoge a 5 y a 3).
+- `src/features/vida/utils/vida-time.utils.test.ts` — el test de constantes
+  afirma los **dos** valores y que el de contar es menor que el de planear.
+- `src/features/vida/pages/VidaHoyPage.test.tsx` — **el único test existente que
+  hubo que tocar** (c.410, dicho en voz alta): el del criterio 221 medía la
+  línea fina con un hueco de **10 minutos**, que es justo el tramo que el
+  criterio 402 sustituye. Se baja a **4 minutos** —donde el 221 sigue vigente—
+  y se añade al lado el caso del usuario entero: hueco pasado de 13, tarjeta,
+  hoja, píldoras apagadas, «Todo el hueco · 13 min» y la mutación con 13.
+
+**Por qué así:**
+
+- **El renombrado entra en la tajada 1** porque el criterio 400 nombra
+  literalmente `MIN_PLANNING_MINUTES` y pide que «ninguna línea use uno para el
+  trabajo del otro». Se descartó la alternativa de dejar `MIN_GAP_MINUTES` como
+  alias: serían **tres** nombres para dos ideas, que es peor que el defecto que
+  se está arreglando. Lo que **no** se hizo es la tajada 2:
+  `MIN_PLACEMENT_MINUTES` sigue existiendo, intacta.
+- **El umbral se mide sobre `gap.durationMinutes`**, no sobre la ventana real
+  del hueco. Es lo mismo que mira `isSliver`, así que lo que se ve y lo que se
+  ofrece no pueden discrepar. Consecuencia dicha: un hueco de 4 minutos cuya
+  ventana real sea mayor —porque el bloque de antes acabó pronto— sigue sin
+  ofrecer nada.
+- **`canLogHere` exige `isPast`**, así que el hueco corto **futuro** no cambia
+  ni un píxel (c.404), aunque la página le pase `onLogPast` por la salida de
+  FEAT-011 tajada 3.
+- **La hoja no se tocó.** `proposeLogDuration` ya hacía `Math.min(candidato,
+  maxMinutes)` (`vida-session.utils.ts:465`) y la hoja ya pasaba `maxMinutes` y
+  `fillMinutes`: la D2 estaba construida de antes por FEAT-011. Se verificó, no
+  se reimplementó.
+
+**Verificación:**
+
+- `pnpm typecheck` → limpio (sin salida).
+- `pnpm lint` → `✖ 14 problems (14 errors, 0 warnings)` — **la línea base
+  exacta**, ninguno nuevo.
+- `pnpm test` → `Test Files 1 failed | 112 passed (113)`, `Tests 2 failed | 1744
+  passed (1746)`. Los **2 fallos son los de siempre** (`SearchSelect ×2`). El
+  total sube de 1738 a 1746: +8 casos nuevos.
+- `pnpm build` → chunk inicial **1.106,50 kB** (línea base 1.106,47 kB: **+0,03
+  kB**, la constante nueva). `app-icons` 620,20 kB e `IconPicker` 4,64 kB, igual.
+- **En el navegador**, a **375 px y en oscuro**, con un arnés temporal
+  (`src/harness-feat014.tsx` + `harness-feat014.html`, **ya borrados**; el
+  `git status` solo tiene los archivos de arriba). `devicePixelRatio` es 2 y la
+  captura sale a media escala, así que **todo lo numérico está medido sobre el
+  DOM**, no sobre la imagen:
+  - Cuatro huecos seguidos: **13 min pasado → tarjeta con «Registrar lo que
+    hice»**; **4 min pasado → línea «Libre 9:00 – 9:04 · 4m»** sin un solo
+    botón; **5 min pasado → tarjeta**; **13 min futuro → línea**. Es el estado
+    que nadie había visto: se ve como los renders ya aprobados, sin variante
+    corta.
+  - Con la hoja abierta anclada al hueco de 13 (medido en el DOM):
+    `[{"15",disabled},{"30",disabled},{"45",disabled},{"1h",disabled},
+    {"libre",enabled},{"Todo el hueco",enabled,aria-label:"Todo el hueco, 13
+    min"}]` y la línea **«Aquí caben 13 min.»**. Ni un control nuevo (c.406).
+  - Al elegir el «qué» (actividad con 30 min en plantilla): «Todo el hueco»
+    queda `aria-pressed="true"` — es decir, **13** —, **Guardar encendido**,
+    **ningún `role="alert"`** y la línea «Acaba a las 8:58» (c.405, D2).
+  - `document.documentElement.scrollWidth === innerWidth === 375` con la
+    tarjeta y con la hoja abierta: **sin scroll horizontal** (c.411). Un título
+    de actividad de 60+ caracteres se corta con puntos suspensivos dentro de su
+    ficha, como ya se cortaba.
+- `graphify update .` corrido: 3991 nodos, 4757 aristas.
+
+**Criterios que cierra:**
+
+- **400 ✅** — `MIN_PLANNING_MINUTES = 15` y `MIN_LOG_MINUTES = 5`, cada una con
+  su porqué. Test: `vida-time.utils.test.ts` («las constantes son las que mandan
+  las decisiones del dossier») afirma los dos valores y su orden.
+  `grep -rn "MIN_GAP_MINUTES" src/` → solo la línea del comentario que dice cómo
+  se llamaba antes.
+- **401 ✅** — `VidaAgendaGap.test.tsx`: un hueco pasado de 13 min (`isSliver`
+  true) enseña el botón `Registrar lo que hiciste entre las 9:47 y las 10:00`
+  con texto «Registrar lo que hice», dentro de la región `Libre de 9:47 –
+  10:00`. Y en la página entera: `VidaHoyPage.test.tsx`, hueco 8:45–8:58.
+  Visto en el navegador.
+- **402 ✅** — 4 min pasado: `queryByRole('button')` es `null` y se lee
+  `Libre 10:00 – 10:04 · 4m`. En la página, el test que medía el 221 ahora lo
+  mide con 4 min y pasa igual.
+- **403 ✅** — 5 minutos exactos traen botón; 4 no. Los dos en el mismo test.
+- **404 ✅** — hueco de 13 min **que aún no ha llegado** con las tres props
+  puestas: cero botones y la línea de siempre. Y el hueco corto **pasado** tiene
+  exactamente **un** botón, sin «+ otra cosa» ni fichas. En la página, el mismo
+  `getAllByRole('button')).toHaveLength(1)`. El umbral de planear no se movió:
+  sigue en 15 y con otro nombre.
+- **405 ✅** — medido en el navegador y en `VidaHoyPage.test.tsx`: al elegir el
+  qué, «Todo el hueco, 13 min» queda `aria-pressed=true`, Guardar enabled y no
+  hay aviso. En un hueco grande la hoja sigue sin proponer el hueco entero (los
+  tests 222–224 y 238–240 de FEAT-011 pasan sin tocarse).
+- **406 ✅** — cuatro botones `disabled`, `aria-label="Todo el hueco, 13 min"`,
+  «Aquí caben 13 min.» y el campo libre disponible. DOM y test.
+- **407 ✅** — `VidaHoyPage.test.tsx`: `createFollowUpMutation.mutate` llamada
+  una vez con `{date:'2026-09-18', startTime:'08:45', durationMinutes:13}` y
+  `addMutation` / `editMutation` / `setMutation` **sin llamar**. Lo de «fuera
+  del plan» en la agenda es la pintura de FEAT-011, que no se tocó y sigue
+  cubierta por sus tests.
+- **408 ✅** — los tres tamaños que quedan tras registrar (5 → ofrece, 3 → línea
+  fina, 0 → no hay hueco) en `VidaAgendaGap.test.tsx`. El encogerse en sí es la
+  reconstrucción de la agenda de FEAT-011, que no cambia.
+- **409 ✅** — con `isPastDay` y sin `gap.isPast`, el hueco corto ofrece contar;
+  un día futuro (sin `onLogPast`) no ofrece nada.
+- **410 ✅ con una salvedad dicha** — los tests de FEAT-003, FEAT-009 y FEAT-011
+  pasan sin cambiar ninguna expectativa **salvo uno**: el del criterio 221 en
+  `VidaHoyPage.test.tsx`, que medía con 10 minutos el tramo que el 402
+  sustituye; se baja a 4 min y se deja el porqué escrito encima. El hueco fino
+  de la **plantilla** no se tocó (`VidaTemplateGapRow` solo cambió el nombre en
+  un comentario) y sus tests pasan.
+- **411 ⚠️ parcial** — a 375 px no hay scroll horizontal y el botón se ve sin
+  desplazarse (medido); el nombre largo se corta. **Lo que falla:** el caso de
+  «si la mutación falla, la hoja no se cierra ni pierde lo elegido» no lo
+  reverifiqué aquí — es el criterio 231 de FEAT-011, entregado y con su test, y
+  este cambio no toca ese camino. **Pendiente de prueba manual** (ver abajo).
+
+**Pendiente de prueba manual** (todo lo real está detrás del login y los agentes
+no entran, límite estructural del proyecto):
+
+1. Abrir **Vida · Hoy** en un día con un hueco pasado de entre 5 y 14 minutos
+   (o crear dos bloques seguidos que dejen 13 min entre ellos, ya pasados).
+2. Comprobar que el renglón trae «Registrar lo que hice» y que uno de 4 minutos
+   o menos sigue siendo la línea fina.
+3. Pulsar, elegir una actividad y ver que la duración queda en los minutos del
+   hueco y Guardar está encendido sin tocar nada más. Guardar.
+4. Ver la sesión en su hora, marcada «fuera del plan», y el hueco encogido; si
+   quedan 5 minutos o más, el renglón sigue ofreciendo registrar.
+5. Con el móvil en avión (o cortando la red), pulsar Guardar: la hoja debe
+   quedarse abierta con lo elegido y sin sesión fantasma (criterio 231/411).
+
+**Riesgos:**
+
+- **La altura de la agenda.** Un día con varios restos de 5–14 minutos pasados
+  pasa de varias líneas finas a varias tarjetas. Es lo que pidió el usuario,
+  pero cambia la densidad de la pantalla y nadie lo ha visto con un día real.
+- **El renombrado** es amplio aunque mecánico; el compilador lo cubre entero
+  (no hay accesos dinámicos ni strings con ese nombre), pero choca con cualquier
+  rama abierta sobre esos cinco archivos.
+- **`isSliver` sigue significando «no cabe ninguna píldora»** y ahora hay un
+  sitio donde un `isSliver` **sí** pinta tarjeta. Quien lea `isSliver` como «se
+  pinta fino» se equivocará: el nombre no se cambió porque eso sería una tercera
+  tajada y un renombrado mayor. Queda anotado como deuda.
+- **La plantilla no se miró en el navegador** (no cambia nada suyo salvo el
+  nombre en un comentario); su hueco fino está cubierto por los tests de
+  FEAT-009.
+
+**Sobre la tajada 2 (fundir `MIN_PLACEMENT_MINUTES`):** esta tajada la deja
+**más fácil, no más difícil**. El destino del merge ya existe con el nombre
+definitivo y con su documentación escrita —incluida la línea del criterio 414
+sobre los nombres viejos, que ya nombra a `MIN_GAP_MINUTES` y solo habrá que
+añadirle `MIN_PLACEMENT_MINUTES`—, así que la tajada 2 se reduce a: borrar la
+constante de `vida-gap-form.utils.ts:34`, importar `MIN_PLANNING_MINUTES` en su
+único uso (`:176`) y ajustar dos comentarios. No hay nada en la tajada 1 que la
+estorbe: `MIN_LOG_MINUTES` vive aparte y nadie de `vida-gap-form.utils.ts` la
+toca.
+
+**Lo que descubrí y no estaba en el plan** (anotado, **no tocado**):
+
+- **La D2 ya estaba construida.** `proposeLogDuration` recorta a `maxMinutes`
+  desde FEAT-011 tajada 3 (`vida-session.utils.ts:465`), así que el criterio 405
+  no necesitó ni una línea. El dossier lo daba por hacer.
+- **`VidaAgendaGap` no tenía test propio**; los 200+ tests de `VidaHoyPage` lo
+  cubrían de rebote. Ahora tiene uno.
+- **Un tercer umbral que nadie ha nombrado:** `VIDA_NO_DATA_MIN_MINUTES = 30`
+  (`vida-execution.utils.ts:920`), el suelo del «¿Qué pasó?» de los tramos sin
+  dato. No es `isSliver` ni `MIN_PLACEMENT_MINUTES`: es un cuarto número con su
+  propia razón. Fuera de alcance aquí, pero si alguien va a ordenar umbrales,
+  ese está en la lista y no en el dossier.
+
+**Estado del árbol:** sin commitear. 10 archivos modificados y 1 nuevo
+(`VidaAgendaGap.test.tsx`). El arnés temporal se borró; `graphify-out/` cambió
+por el `graphify update .` que manda `CLAUDE.md`.
+
 ## 4. Revisión — feature-reviewer
 
 *(una entrada por tajada)*
+
+### Tajada 1 — Un rato de 13 minutos también se puede contar
+
+**Veredicto: `accepted`** — y con prisa, porque es lo que el usuario está
+esperando para su hueco de hoy. Los criterios 400–410 se cumplen; el **411**
+queda parcial y es aceptable (abajo). **He visto el estado que nadie había
+visto**: las cuatro píldoras apagadas con «Todo el hueco» encendida, y los
+cuatro bordes pintados uno al lado de otro.
+
+**El caso del usuario, comprobado por mí**
+
+Test temporal propio (borrado) sobre el componente, un render limpio por caso
+—es donde se cuela un falso positivo si se reutiliza el documento—:
+
+| Hueco pasado | Qué sale |
+|---|---|
+| **13 min** | Tarjeta entera: «Libre 8:45 – 8:58», «13m» y **«Registrar lo que hice»** |
+| **5 min** | Lo mismo: **los 5 exactos entran** (`>=`, D1) |
+| **4 min** | **Línea fina**, sin un solo control (`data-sliver`) |
+| **1 min** | Línea fina |
+| **20 min** | Como siempre |
+| **13 min, futuro** | **Línea fina**: ni «Registrar», ni fichas, ni «+ otra cosa» |
+| **13 min, sin `onLogPast`** | Línea fina (criterio 244 de FEAT-011, intacto) |
+
+Y en el navegador los vi **los cuatro juntos** a 375 px: el de 13 y el de 5 con
+su tarjeta y su botón de **44 px**, el de 4 y el futuro de 13 como líneas finas.
+
+**La condición, leída con cuidado (donde se cuela un caso)**
+
+```
+canLogHere = isPast && Boolean(onLogPast) && gap.durationMinutes >= MIN_LOG_MINUTES
+if ((gap.isSliver && !canLogHere) || (isPast && !onLogPast)) → línea fina
+```
+
+Recorrí la tabla entera —pasado/futuro × corto/largo × con y sin `onLogPast`, y
+el día de la tira (`isPastDay`)— y **no encontré ningún caso que se cuele**. El
+que más me interesaba: un hueco **futuro corto con `onLogPast` puesto** (que la
+página sí pasa hoy, por el criterio 241 de FEAT-011) sale **línea fina**, igual
+que antes de esta feature — la segunda salida «Registrar» del hueco futuro vive
+en la tarjeta normal, que sigue pidiendo `!isSliver`. El criterio 404 se cumple
+por ahí.
+
+**El renombrado: mecánico de verdad**
+
+`grep -rn "MIN_GAP_MINUTES" src/` devuelve **una sola línea**, y es el comentario
+que explica el renombrado. Los cinco usos reales —`makeGap`, `findLargestGap`
+(×2), `sliceGap`, `buildTemplateDay`— pasan a `MIN_PLANNING_MINUTES` **con el
+mismo valor, 15**, y el resto son cadenas de documentación. **No cambia ni un
+comportamiento**: ni en la plantilla (FEAT-009: `isSliver` de `TemplateGapRow`
+sigue siendo `< 15`), ni en el camino de planear (FEAT-003: el suelo de las
+fichas sigue en 15), ni en `buildNoDataSlices`. Lo confirma también la suite
+entera en verde, incluidos los tests de aquellas dos features.
+
+**La hoja abre con una duración que cabe (criterios 405 y 406)**
+
+Verificado por mí, y es cierto que **no hizo falta código**: `proposeLogDuration`
+recorta a `maxMinutes` desde FEAT-011 —lo revisé entonces— y aquí solo hay que
+pasarle un hueco pequeño. En el DOM, con 13 minutos: **las cuatro píldoras fijas
+`disabled`**, «**Todo el hueco**» encendida con `aria-label` **«Todo el hueco,
+13 min»**, la línea «**Aquí caben 13 min.**» y «libre», que al pulsarla abre los
+**dos campos** de horas y minutos. Y el test de la página lo lleva hasta el
+final: al elegir la actividad, la duración se queda en **13** —no en los 30 de la
+plantilla—, «Registrar» va **encendido desde el primer render** y no hay ningún
+aviso de que no cabe.
+
+**Un matiz del criterio 406, que no es culpa de esta tajada:** pide «los dos
+`spinbutton` al abrir libre», y desde FEAT-008 esos campos **ya no son
+`spinbutton`** —son cajas de texto con `inputMode="numeric"`, precisamente para
+que la rueda del ratón no cambie el valor—. Lo que el criterio quiere decir —dos
+campos, horas y minutos— **se cumple**; la palabra se quedó vieja. Queda como
+hallazgo, no como incumplimiento.
+
+**El test que cambió: no se relaja nada**
+
+El caso del criterio 221 medía la línea fina con un hueco de **10 minutos**, que
+es justo el tramo que el 402 sustituye. Ahora lo mide con **4**, donde el 221
+sigue siendo cierto, y el de 10 se mide en el test de al lado **con su salida**.
+Es decir: la afirmación no se debilita, se **muda al tramo donde sigue valiendo**,
+y queda dicho en voz alta (criterio 410). Bien hecho.
+
+**Los 7 casos nuevos de `VidaAgendaGap`**
+
+El componente llevaba tres features encima sin test propio, así que esto es
+deuda que se paga: cubren la tarjeta del corto pasado, los bordes 5/4, el caso
+sin `onLogPast`, el futuro corto, que el corto pasado **no** ofrece planear, el
+día de la tira y el hueco que se encoge. Me parecen los siete que había que
+escribir.
+
+**El 411 parcial: aceptable, y menos parcial de lo que él cree**
+
+Lo verificado está bien: a 375 px `scrollWidth === clientWidth === 375` y **0
+nodos desbordados** —lo medí yo, en claro y en oscuro—, y el botón mantiene sus
+**44 px**. La mitad que deja a prueba manual —«si la mutación falla, la hoja se
+queda abierta»— es el criterio **231 de FEAT-011**, que **ya revisé y acepté**, y
+el camino de error de la hoja **no se ha tocado en esta tajada**: es el de
+FEAT-004. Así que no es una promesa pendiente, es comportamiento heredado y
+probado en su sitio. Lo doy por bueno.
+
+**El tercer umbral y el nombre de `isSliver`: sí, a la tajada 2**
+
+Su hallazgo es bueno y lo confirmo: hoy conviven **tres** números con el mismo
+trabajo repartido —`MIN_PLANNING_MINUTES = 15`, su gemelo
+`MIN_PLACEMENT_MINUTES = 15` (`vida-gap-form.utils.ts:34`, 3 usos, del camino de
+planear que el criterio 236 de FEAT-011 congela) y `VIDA_NO_DATA_MIN_MINUTES = 30`
+(`vida-execution.utils.ts:920`)—, más un `isSliver` que **ahora miente un poco**:
+significa «no se puede planear aquí», pero hay un sitio donde sí pinta tarjeta.
+**Debe caer en la tajada 2, junto al gemelo**, y por una razón práctica: mientras
+el mismo concepto tenga dos nombres y un booleano que ya no dice lo que dice, el
+siguiente que cambie un umbral lo cambiará en un sitio y no en los otros —que es
+exactamente lo que esta feature vino a arreglar—. No aquí: esta tajada es la que
+desbloquea al usuario y debe ir sola.
+
+**Línea base, corrida entera por mí**
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1738 | 2 de 1746 | **2 fallidos de 1746**, 112 archivos de 113 en verde |
+| `pnpm build` | 1.106,47 kB | 1.106,50 kB | **exit 0**, `index` **1.106,50 kB** (+0,03), `app-icons` **620,20 kB sin tocar** |
+
+**Estados, medidos por mí** — y lo digo como toca: **las cifras son del DOM**,
+porque con `devicePixelRatio: 2` la captura sale a media escala; lo que la
+imagen sí me dejó ver, y es lo que importaba, es **el estado que nadie había
+visto**: las cuatro píldoras apagadas, «Todo el hueco» en mint y «Aquí caben 13
+min.» debajo. A 375 px: 0 nodos desbordados en claro y en oscuro; píldora
+apagada **7,3:1** en claro y **9,05:1** en oscuro; «Todo el hueco» **5,38:1**;
+«Libre 8:45 – 8:58» **19,28:1** en oscuro; el botón, **44 px**.
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **El criterio 406 pide `spinbutton`** y desde FEAT-008 esos campos son cajas
+   de texto. La intención se cumple; la palabra hay que corregirla en el
+   dossier.
+2. **Tres umbrales y un `isSliver` que ya no dice lo que dice**: a la tajada 2,
+   con su razón arriba.
+3. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1746** tests y
+   **1.106,50 kB**). **No lo he tocado.**
+
+**Lo que no he podido revisar:** el hueco de verdad del usuario, con su sesión y
+sus datos —que es justo lo que va a hacer él en cuanto esto se publique—: abrir
+Hoy, pulsar su rato de 13 minutos, contar qué hizo y ver la sesión en su sitio.

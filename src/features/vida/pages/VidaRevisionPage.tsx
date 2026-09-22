@@ -7,16 +7,24 @@ import { VidaReviewCategories } from '@/features/vida/components/VidaReviewCateg
 import { VidaReviewFigures } from '@/features/vida/components/VidaReviewFigures'
 import { VidaReviewLanes } from '@/features/vida/components/VidaReviewLanes'
 import { VidaReviewNoDataList } from '@/features/vida/components/VidaReviewNoDataList'
+import { VidaReviewBridge } from '@/features/vida/components/VidaReviewBridge'
 import { VidaReviewOffPlanRow, VidaReviewRow } from '@/features/vida/components/VidaReviewRow'
 import { VidaReviewStory } from '@/features/vida/components/VidaReviewStory'
-import { useCreateActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
+import { VidaReviewWeek } from '@/features/vida/components/VidaReviewWeek'
+import {
+  useActivityFollowUpsInDatesQuery,
+  useCreateActivityFollowUpMutation,
+} from '@/features/vida/hooks/useActivityFollowUps'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
+import { useVidaItemsQuery, useUpdateVidaItemMutation } from '@/features/vida/hooks/useVidaItems'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
+import { useVidaWeekFollowUps } from '@/features/vida/hooks/useVidaWeekFollowUps'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import {
   getBlockNote,
+  isBridgeDismissed,
   isNoDataDismissed,
   useVidaDeviceNotesStore,
 } from '@/features/vida/store/vida-device-notes.store'
@@ -24,8 +32,11 @@ import type { AgendaBlock } from '@/features/vida/utils/vida-agenda.utils'
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
 import {
   VIDA_DAY_LABELS,
+  formatDateToYmd,
   getCurrentLocalDate,
+  getMondayOfWeek,
   getVidaDayOfWeek,
+  parseYmdToLocalDate,
 } from '@/features/vida/utils/vida-date.utils'
 import type { NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
 import { buildDayExecution, plannedSessionMinutes } from '@/features/vida/utils/vida-execution.utils'
@@ -37,6 +48,12 @@ import {
   topNoDataSlices,
 } from '@/features/vida/utils/vida-review.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
+import {
+  buildTemplateBridge,
+  buildWeekLine,
+  buildWeekReview,
+  weekDotsByDate,
+} from '@/features/vida/utils/vida-week-review.utils'
 import { minutesToTime, parseTimeToMinutes } from '@/features/vida/utils/vida-time.utils'
 import {
   buildDayStrip,
@@ -55,6 +72,46 @@ import styles from './VidaRevisionPage.module.scss'
 
 /** A partir de aquí caben los dos carriles del marco D. */
 const DESKTOP_QUERY = '(min-width: 60rem)'
+
+const DAYS_IN_WEEK = 7
+
+/**
+ * Las tres funciones de calendario de la semana **están copiadas de
+ * `VidaSemanaPage.tsx`, no importadas**, y queda dicho: allí son funciones
+ * locales de aquella página y moverlas a `vida-date.utils.ts` tocaría una
+ * pantalla entregada que esta tajada no toca (el plan lo escribe así en la
+ * implementación de referencia). `formatReviewWeekRange` sí cambia de forma:
+ * el criterio 46 pide «14 – 20 de septiembre», con el mes escrito entero, y
+ * aquella dice «14 – 20 sept».
+ */
+function shiftYmd(date: string, days: number): string {
+  const local = parseYmdToLocalDate(date)
+  local.setDate(local.getDate() + days)
+  return formatDateToYmd(local)
+}
+
+/** El lunes de la semana que contiene esa fecha, en `YYYY-MM-DD`. */
+function mondayOf(date: string): string {
+  return formatDateToYmd(getMondayOfWeek(parseYmdToLocalDate(date)))
+}
+
+/** «Semana del 14 al 20»: la cabecera de la frase, como el render. */
+function formatWeekStoryLabel(monday: string): string {
+  const from = parseYmdToLocalDate(monday)
+  const to = parseYmdToLocalDate(shiftYmd(monday, DAYS_IN_WEEK - 1))
+  return `Semana del ${from.getDate()} al ${to.getDate()}`
+}
+
+/** «14 – 20 de septiembre», y con dos meses, «28 de septiembre – 4 de octubre». */
+function formatReviewWeekRange(monday: string): string {
+  const from = parseYmdToLocalDate(monday)
+  const to = parseYmdToLocalDate(shiftYmd(monday, DAYS_IN_WEEK - 1))
+  const fromMonth = from.toLocaleDateString('es', { month: 'long' })
+  const toMonth = to.toLocaleDateString('es', { month: 'long' })
+  return fromMonth === toMonth
+    ? `${from.getDate()} – ${to.getDate()} de ${toMonth}`
+    : `${from.getDate()} de ${fromMonth} – ${to.getDate()} de ${toMonth}`
+}
 
 /**
  * **Revisión: el día contado** (FEAT-006, tajada 1).
@@ -113,6 +170,19 @@ export function VidaRevisionPage() {
   const isPast = date < today
   const nowMinutes = isToday ? now.minutes : null
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
+  /**
+   * **El día y la semana son dos vistas de la misma pantalla** (criterio 45):
+   * estado local, **sin ruta nueva** y sin tocar el `?d=`, igual que la semana
+   * entera de FEAT-005. La píldora «Revisión» sigue encendida y el día visto
+   * sigue viajando en la URL, así que volver del navegador no pierde el día.
+   */
+  const [view, setView] = useState<'day' | 'week'>('day')
+  const weekMonday = mondayOf(date)
+  const weekDates = useMemo(
+    () => Array.from({ length: DAYS_IN_WEEK }, (_, index) => shiftYmd(weekMonday, index)),
+    [weekMonday],
+  )
+  const isWeek = view === 'week'
 
   const {
     planItems,
@@ -138,7 +208,22 @@ export function VidaRevisionPage() {
     () => buildDayStrip(date, today, getReviewWindow(today)),
     [date, today],
   )
-  const weekPlans = useVidaWeekPlans(useMemo(() => stripDays.map((day) => day.date), [stripDays]))
+  /**
+   * **Una sola llamada para los planes de la tira y los de la semana.** Son la
+   * misma clave (`vidaKeys.dayPlan.byDate`) y la misma `queryFn`, así que los
+   * días que la tira ya pidió son **aciertos de caché**: abrir la semana no
+   * vuelve a pedir ninguno de ellos (criterio 53). Con la vista de día, la
+   * lista es exactamente la de la tajada 1 — ni una consulta más.
+   */
+  const planDates = useMemo(() => {
+    const dates = stripDays.map((day) => day.date)
+    if (!isWeek) return dates
+    return [...new Set([...dates, ...weekDates])]
+  }, [stripDays, isWeek, weekDates])
+  const weekPlans = useVidaWeekPlans(planDates)
+  // Las sesiones de los siete días **solo con la semana abierta**: en la vista
+  // de día esta lista está vacía y `useQueries` no monta nada (A4).
+  const weekFollowUps = useVidaWeekFollowUps(useMemo(() => (isWeek ? weekDates : []), [isWeek, weekDates]))
 
   const agenda = useMemo(
     () =>
@@ -210,6 +295,46 @@ export function VidaRevisionPage() {
     [agenda, execution, review.figures?.noDataMinutes, couldNotById],
   )
   const noDataSlices = useMemo(() => topNoDataSlices(execution, 4), [execution])
+
+  /**
+   * **La semana de lo real** (criterios 46–52). Se deriva con el **mismo**
+   * `buildDayExecution` de cada día: aquí no hay ni una segunda definición de
+   * «seguido», ni una barra recalculada. Con la vista de día la lista está
+   * vacía y no se deriva nada.
+   */
+  const weekRows = useMemo(
+    () =>
+      isWeek
+        ? buildWeekReview({
+            days: weekDates.map((weekDate) => ({
+              date: weekDate,
+              planItems: weekPlans.byDate[weekDate]?.items ?? [],
+              followUps: weekFollowUps.byDate[weekDate]?.followUps ?? [],
+              isPending:
+                (weekPlans.byDate[weekDate]?.isPending ?? false) ||
+                (weekFollowUps.byDate[weekDate]?.isPending ?? false),
+              // Basta con que **una** de las dos consultas del día falle para
+              // que ese día no se sepa: la fila lo dice y no se lee «sin plan»
+              // (criterio 52).
+              isError:
+                (weekPlans.byDate[weekDate]?.isError ?? false) ||
+                (weekFollowUps.byDate[weekDate]?.isError ?? false),
+            })),
+            dayHours,
+            today,
+            nowMinutes: now.minutes,
+            selectedDate: date,
+          })
+        : [],
+    [isWeek, weekDates, weekPlans.byDate, weekFollowUps.byDate, dayHours, today, now.minutes, date],
+  )
+  const weekLine = useMemo(() => buildWeekLine(weekRows), [weekRows])
+  // **El punto de tres estados de la tira** (criterio 51, D8): solo con la
+  // semana cargada, que es cuando se sabe qué pasó cada día. Sin esto la tira
+  // sigue siendo la de Hoy, exactamente.
+  const weekDots = useMemo(() => (isWeek ? weekDotsByDate(weekRows) : undefined), [isWeek, weekRows])
+  const isWeekPending = isWeek && (weekPlans.isPending || weekFollowUps.isPending)
+  const hasWeekError = weekPlans.hasError || weekFollowUps.hasError
   const showsCategories =
     review.status !== 'future' && (breakdown.rows.length > 0 || breakdown.noData.minutes > 0)
 
@@ -304,6 +429,7 @@ export function VidaRevisionPage() {
         plans={weekPlans.byDate}
         edgeNote={describeReviewWindowEdge(today)}
         basePath={vidaPaths.revisionForDate}
+        dots={weekDots}
       />
     )
   }
@@ -329,6 +455,12 @@ export function VidaRevisionPage() {
             Registrar tiempo pasado
           </Button>
         )}
+        {/* **Ver por semana**: la tercera salida del marco A. No es un enlace
+            porque no cambia de sitio — es la misma pantalla mirando siete días
+            (criterio 45). */}
+        <Button variant="ghost" size="sm" onClick={() => setView('week')}>
+          Ver por semana
+        </Button>
       </div>
     )
   }
@@ -365,6 +497,75 @@ export function VidaRevisionPage() {
           ))}
           <Skeleton width="100%" height={120} radius="1.25rem" />
           <span className={styles.srOnly}>Cargando cómo fue tu día…</span>
+        </div>
+      </div>
+    )
+  }
+
+  /**
+   * **La semana** (criterios 45–52 y 60). Es un estado de esta misma pantalla:
+   * la cabecera y la tira siguen siendo las de arriba —y la tira ya estrena su
+   * punto de tres estados—, y «Volver al día» deja el día exactamente donde
+   * estaba, porque nunca salió de la URL.
+   */
+  if (isWeek) {
+    return (
+      <div className={styles.root}>
+        {header()}
+        {strip()}
+
+        <section className={styles.section} aria-labelledby="vida-review-week">
+          <h2 className={styles.sectionTitle} id="vida-review-week">
+            Tu semana
+          </h2>
+          <p className={styles.sectionNote}>{formatReviewWeekRange(weekMonday)}</p>
+        </section>
+
+        {hasWeekError ? (
+          <Alert variant="warning" title="Falta algún día de la semana">
+            <p className={styles.errorText}>
+              De los días que no pudimos cargar no se afirma nada: quedan marcados abajo.
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                weekPlans.refetch()
+                weekFollowUps.refetch()
+              }}
+            >
+              Reintentar
+            </Button>
+          </Alert>
+        ) : null}
+
+        {isWeekPending ? (
+          <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
+            {weekDates.map((weekDate) => (
+              <Skeleton key={weekDate} width="100%" height={48} radius="1rem" />
+            ))}
+            <span className={styles.srOnly}>Cargando tu semana…</span>
+          </div>
+        ) : (
+          <>
+            {weekLine.length > 0 ? (
+              <VidaReviewStory
+                dateLabel={formatWeekStoryLabel(weekMonday)}
+                statusLabel="la semana en una frase"
+                sentences={weekLine}
+              />
+            ) : null}
+            <VidaReviewWeek rows={weekRows} />
+            {/* **El puente**, y solo aquí: sus consultas se montan con la
+                semana abierta, nunca en la vista de día (A5). */}
+            <VidaReviewBridgeSection weekMonday={weekMonday} today={today} dayHours={dayHours} />
+          </>
+        )}
+
+        <div className={styles.exits}>
+          <Button variant="secondary" size="sm" onClick={() => setView('day')}>
+            Volver al día
+          </Button>
         </div>
       </div>
     )
@@ -714,4 +915,100 @@ const WHOLE_DAY_SLICE_ID = 'dia-entero'
 type LogSheetState = {
   /** Hora y duración **ya puestas**: el rato de un tramo, o nada. */
   initial: { startTime?: string; durationMinutes?: number } | null
+}
+
+/** Cuántos días mira la regla del puente (criterio 55). */
+const BRIDGE_LOOKBACK_DAYS = 14
+
+/**
+ * **El puente a la plantilla** (criterios 54–59, A5 y A6).
+ *
+ * Es un componente aparte **por el coste**: sus consultas solo existen mientras
+ * está montado, y solo se monta con **la semana abierta**. Así las tajadas 1, 2
+ * y 3 no pagan nada y la vista de día sigue costando lo mismo que ayer.
+ *
+ * Lo que pide, y por qué son ocho y no catorce (A5):
+ *
+ * - **Los planes de los 14 días**, con el **mismo** `useVidaWeekPlans` y la
+ *   misma clave por fecha: los de la semana vista y los de la tira ya están en
+ *   caché, así que lo nuevo son los **siete** de atrás.
+ * - **Las sesiones de los 14 días en una sola consulta de rango**
+ *   (`vidaKeys.followUps.range`, que existía y no usaba nadie). **Una.**
+ *
+ * Y se piden **solo si hay plantilla**: sin ítems no hay nada que proponer
+ * (criterio 59), así que ni se pregunta.
+ *
+ * **Lo único que escribe es `vidaItemUpdate` con `{ id, startTime }`.** En esta
+ * función no se nombra ninguna mutación del plan del día: mover la hora del
+ * ítem **no toca** ningún día ya armado, ni pasado ni futuro (criterio 57).
+ */
+function VidaReviewBridgeSection({
+  weekMonday,
+  today,
+  dayHours,
+}: {
+  weekMonday: string
+  today: string
+  dayHours: { startTime: string; endTime: string }
+}) {
+  const itemsQuery = useVidaItemsQuery()
+  const items = useMemo(() => itemsQuery.data ?? [], [itemsQuery.data])
+  const hasTemplate = items.length > 0
+  // Los 14 días **que ya pasaron**: hoy no ha terminado y no se cuenta como un
+  // día en el que algo «no llegó a su hora».
+  const dates = useMemo(
+    () =>
+      Array.from({ length: BRIDGE_LOOKBACK_DAYS }, (_, index) =>
+        shiftYmd(today, index - BRIDGE_LOOKBACK_DAYS),
+      ),
+    [today],
+  )
+  const plans = useVidaWeekPlans(useMemo(() => (hasTemplate ? dates : []), [hasTemplate, dates]))
+  const sessionsQuery = useActivityFollowUpsInDatesQuery(
+    hasTemplate ? (dates[0] ?? '') : '',
+    hasTemplate ? (dates[dates.length - 1] ?? '') : '',
+  )
+
+  const dismissedBridges = useVidaDeviceNotesStore((state) => state.dismissedBridges)
+  const dismissBridge = useVidaDeviceNotesStore((state) => state.dismissBridge)
+  const updateItem = useUpdateVidaItemMutation()
+
+  const bridge = useMemo(() => {
+    if (!hasTemplate) return null
+    // El rango viene **agrupado por fecha** (`ActivityFollowUpsDateGroup`), que
+    // es justo la forma que la regla necesita: un día, su plan y sus sesiones.
+    const sessionsByDate = new Map(
+      (sessionsQuery.data ?? []).map((group) => [group.date, group.followUps] as const),
+    )
+    return buildTemplateBridge({
+      items,
+      days: dates.map((date) => ({
+        date,
+        planItems: plans.byDate[date]?.items ?? [],
+        followUps: sessionsByDate.get(date) ?? [],
+      })),
+      dayHours,
+    })
+  }, [hasTemplate, items, dates, plans.byDate, sessionsQuery.data, dayHours])
+
+  // Movido: la tarjeta se va y queda dicho qué pasó. No hace falta esconderlo
+  // a mano —con la hora nueva la regla ya no propone lo mismo—, pero entre la
+  // respuesta del API y la plantilla fresca hay un parpadeo, y en ese hueco no
+  // se vuelve a preguntar lo que se acaba de contestar.
+  if (updateItem.isSuccess) {
+    return <p className={styles.deviceNote}>Movido en tu plantilla. Los días ya armados se quedan como están.</p>
+  }
+  if (!bridge) return null
+  // **«Dejarlo como está» no vuelve esa semana** (criterio 58): la nota es de
+  // este aparato, en el mismo store y la misma clave que los «dejarlo así».
+  if (isBridgeDismissed(dismissedBridges, weekMonday, bridge.itemId)) return null
+
+  return (
+    <VidaReviewBridge
+      bridge={bridge}
+      isSaving={updateItem.isPending}
+      onMove={(chosen) => updateItem.mutate({ id: chosen.itemId, startTime: chosen.proposedTime })}
+      onDismiss={(chosen) => dismissBridge(weekMonday, chosen.itemId)}
+    />
+  )
 }

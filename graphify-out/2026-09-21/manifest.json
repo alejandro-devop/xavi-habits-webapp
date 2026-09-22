@@ -2450,8 +2450,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.tsx": {
-    "mtime": 1790036095.642739,
-    "ast_hash": "ae5d821ad0f81dd7e81ef90ea11ab31f",
+    "mtime": 1789962403.2685983,
+    "ast_hash": "b95c4587a07665aa30359de1283309a7",
     "semantic_hash": ""
   },
   "src/features/vida/routes/vida-paths.ts": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1789963213.8956556,
-    "ast_hash": "979fa3ea9b5e0b3e9fe6d439e7fbc737",
+    "mtime": 1789962031.5824642,
+    "ast_hash": "dce6f1e5a183793af68da2d9fba7ed26",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1789962997.7801323,
-    "ast_hash": "8e3ef318786f6fad331969f98366041d",
+    "mtime": 1789961676.661348,
+    "ast_hash": "c7c3492ef4883da0b5fe81dd1b12c1e6",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3050,8 +3050,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaDayStrip/VidaDayStrip.tsx": {
-    "mtime": 1789963708.3199544,
-    "ast_hash": "eadc6a38cf263b8df9fa31357ee36256",
+    "mtime": 1789959015.3288393,
+    "ast_hash": "c387081081062d9e4be9191ce881e751",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaDayStrip/index.ts": {
@@ -3290,13 +3290,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/store/vida-device-notes.store.test.ts": {
-    "mtime": 1790035968.2199392,
-    "ast_hash": "f008a757f3f0a9ab73abeb5fb5b835fb",
+    "mtime": 1789949448.790138,
+    "ast_hash": "d4b5b64c825c4dd06164f03ea779b09a",
     "semantic_hash": ""
   },
   "src/features/vida/store/vida-device-notes.store.ts": {
-    "mtime": 1789963694.9929183,
-    "ast_hash": "f1d58a9f98041660bd8b4ca0cdc45160",
+    "mtime": 1789948981.3192158,
+    "ast_hash": "d163d68b72497d5c353ac7ff5f8a49cd",
     "semantic_hash": ""
   },
   "docs/features/FEAT-005-vida-plantilla.md": {
@@ -3365,8 +3365,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-006-vida-revision.md": {
-    "mtime": 1789963314.3159103,
-    "ast_hash": "0540777ebb0e6345948bed977f170af4",
+    "mtime": 1789962114.275719,
+    "ast_hash": "cb338fe5adcacc665ee5cda914452d0d",
     "semantic_hash": ""
   },
   "docs/vida/assets/07-vida-revision.html": {
@@ -3485,8 +3485,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.test.tsx": {
-    "mtime": 1790036095.642739,
-    "ast_hash": "b356204f89a0b74782e473a55a7ae04b",
+    "mtime": 1789962598.768187,
+    "ast_hash": "ea8502b1e4462f562fca94919947c8f4",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-review.utils.test.ts": {
@@ -3517,46 +3517,6 @@
   "src/features/vida/components/VidaReviewNoDataList/index.ts": {
     "mtime": 1789961001.5479903,
     "ast_hash": "536c037466f855bd5d6127eee71e7fa5",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/VidaReviewBridge/VidaReviewBridge.tsx": {
-    "mtime": 1789963667.8398447,
-    "ast_hash": "c935bf8c66ab45eca512ab8e5e53e93f",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/VidaReviewBridge/index.ts": {
-    "mtime": 1789963595.4376495,
-    "ast_hash": "c4db3a990da462dd99bffaf6e4d1b7fa",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/VidaReviewWeek/VidaReviewWeek.tsx": {
-    "mtime": 1790036190.8966312,
-    "ast_hash": "e70c714188ca6b2f2ca6656cf870eaa6",
-    "semantic_hash": ""
-  },
-  "src/features/vida/components/VidaReviewWeek/index.ts": {
-    "mtime": 1789963595.4366496,
-    "ast_hash": "10597b27b13691a21f88a7f615e50e92",
-    "semantic_hash": ""
-  },
-  "src/features/vida/hooks/useVidaWeekFollowUps.test.tsx": {
-    "mtime": 1790035939.9137614,
-    "ast_hash": "9cb8915d33cbeca4ae798e9730542451",
-    "semantic_hash": ""
-  },
-  "src/features/vida/hooks/useVidaWeekFollowUps.ts": {
-    "mtime": 1789963481.4133458,
-    "ast_hash": "4fb7eb45568b97b955f84a612778dd74",
-    "semantic_hash": ""
-  },
-  "src/features/vida/utils/vida-week-review.utils.test.ts": {
-    "mtime": 1790035912.89797,
-    "ast_hash": "34c6aba1938d6c941ee30358b82b2096",
-    "semantic_hash": ""
-  },
-  "src/features/vida/utils/vida-week-review.utils.ts": {
-    "mtime": 1789963651.1387994,
-    "ast_hash": "7d72bf74afdb33036d045e71d7e86bfd",
     "semantic_hash": ""
   }
 }

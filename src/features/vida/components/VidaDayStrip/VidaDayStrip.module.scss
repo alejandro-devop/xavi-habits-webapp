@@ -107,6 +107,31 @@
   );
 }
 
+/* Los tres estados de la revisión (FEAT-006, criterio 51). Solo aparecen con
+   la semana cargada; sin ella el punto sigue siendo el de Hoy.
+   - **seguido**: lleno, el mint de «hecho».
+   - **a medias**: medio lleno, con el mismo mint a media fuerza.
+   - **solo planeado**: el rayado de «tiene plan», que es el de siempre. */
+.dot[data-state='followed'] {
+  background: var(--color-primary);
+}
+
+.dot[data-state='partial'] {
+  background: linear-gradient(
+    90deg,
+    var(--color-primary) 0 50%,
+    color-mix(in srgb, var(--color-primary) 20%, transparent) 50% 100%
+  );
+}
+
+.dot[data-state='planned'] {
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary) 70%, transparent) 0 3px,
+    color-mix(in srgb, var(--color-primary) 25%, transparent) 3px 6px
+  );
+}
+
 .dot[data-state='pending'] {
   background: color-mix(in srgb, var(--color-text) 8%, transparent);
 }

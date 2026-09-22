@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { VidaDayPlanDot } from '@/features/vida/hooks/useVidaWeekPlans'
+import type { WeekDot } from '@/features/vida/utils/vida-week-review.utils'
 import type { DayStripDay } from '@/features/vida/utils/vida-window.utils'
 import styles from './VidaDayStrip.module.scss'
 
@@ -19,6 +20,16 @@ type VidaDayStripProps = {
    * desincronizarían.
    */
   basePath?: (date: string) => string
+  /**
+   * **El punto de tres estados** —seguido · a medias · solo planeado— por
+   * fecha (FEAT-006, D8 y criterio 51). Lo estrena la revisión **cuando la
+   * semana está cargada**, que es cuando se sabe qué pasó de verdad cada día.
+   *
+   * **Sin esta prop la tira es exactamente la de Hoy**: el punto sigue
+   * diciendo «tiene plan / no tiene». Y un día sin entrada aquí —o con
+   * `none`— cae a ese mismo punto, así que la tira nunca queda a medias.
+   */
+  dots?: Record<string, WeekDot>
 }
 
 /**
@@ -43,6 +54,7 @@ export function VidaDayStrip({
   plans,
   edgeNote,
   basePath = vidaPaths.hoyForDate,
+  dots,
 }: VidaDayStripProps) {
   return (
     <nav className={styles.root} aria-label="Elige el día">
@@ -54,20 +66,32 @@ export function VidaDayStrip({
           // marca aparte y lo que se oye lo dice con palabras. Era el hallazgo
           // 1 de la revisión de la tajada 4; en la semana llegó a poder
           // machacar un plan, aquí solo mentía.
+          // El punto de la semana manda **solo si se sabe algo de ese día**:
+          // un fallo o una consulta en vuelo siguen ganando, porque decir
+          // «seguido» de un día que no se pudo leer sería inventarlo.
+          const weekDot = dots?.[day.date]
           const state = plan?.isError
             ? 'error'
             : plan?.isPending
               ? 'pending'
-              : hasPlan
-                ? 'plan'
-                : 'empty'
+              : weekDot && weekDot !== 'none'
+                ? weekDot
+                : hasPlan
+                  ? 'plan'
+                  : 'empty'
           const planLabel = plan?.isError
             ? 'no pudimos cargar su plan'
             : plan?.isPending
               ? 'cargando su plan'
-              : hasPlan
-                ? `con plan, ${plan?.blockCount ?? 0} ${plan?.blockCount === 1 ? 'bloque' : 'bloques'}`
-                : 'sin plan todavía'
+              : weekDot === 'followed'
+                ? 'seguido entero'
+                : weekDot === 'partial'
+                  ? 'seguido a medias'
+                  : weekDot === 'planned'
+                    ? 'solo planeado'
+                    : hasPlan
+                      ? `con plan, ${plan?.blockCount ?? 0} ${plan?.blockCount === 1 ? 'bloque' : 'bloques'}`
+                      : 'sin plan todavía'
 
           return (
             <li className={styles.day} key={day.date}>

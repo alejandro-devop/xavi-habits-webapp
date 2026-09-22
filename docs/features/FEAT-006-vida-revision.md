@@ -5,7 +5,7 @@ status: in-review
 architect: yes    # pantalla sin hermana (dos carriles alineados por hora, y la semana con lo real de siete días a la vez: catorce consultas donde hoy hay siete), y hay que decidir una sola vez dónde vive la derivación por categoría y la de la semana sin partir en dos `vida-execution.utils.ts`
 area: features/vida
 requested: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-21
 ---
 
 # FEAT-006 — Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla
@@ -357,7 +357,7 @@ tal cual** y están repartidos por los criterios de abajo.
 | 1 | **El día se lee.** `/app/vida/revision` deja de ser un cascarón: tira de días con `?d=`, **la historia en prosa**, la cifra grande (N de M) con planeado · registrado · fuera del plan y **sin registrar**, **plan frente a real** bloque a bloque con el vocabulario de Hoy, la sección «Fuera del plan», el escritorio en **dos carriles**, los días raros (futuro, en curso, sin registros, sin plan) y los estados. **Solo lectura**, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí al cerrarse el día. Ya es útil sola: es la primera vez que el usuario ve su día contado. | in-review |
 | 2 | **En qué se repartió el día.** Por categoría, con la paleta del catálogo y dos barras (planeado rayado · registrado sólido), **«Sin registrar» como fila propia** con su frase, y **los cuatro tramos más largos sin registrar** listados con su franja y su tamaño. Sigue siendo lectura: responde «¿en qué se me fue el día?», que es la pregunta que trajo el módulo. | in-review |
 | 3 | **La revisión rellena el día.** Las salidas, todas prestadas de Hoy: **«Lo hice»** por bloque no hecho y en la lista fantasma, **«Registrar tiempo pasado»** y **«¿Qué pasó?»** con la hoja de FEAT-004 dentro de la revisión, y **«Dejarlo así»** con el store del aparato. Nada de esto toca el plan. Convierte una pantalla que se mira en una que se usa. | in-review |
-| 4 | **La semana y el puente.** Siete filas con «seguidos de total», la barrita del día y «registrado de planeado», la frase de la semana, el punto de tres estados en la tira, y **un solo aviso** hacia la plantilla en forma de pregunta, que al aceptarse **mueve la hora del ítem** (`vidaItemUpdate`) y nunca el plan. Es lo que cierra el círculo plantilla → día → revisión → plantilla. | pending |
+| 4 | **La semana y el puente.** Siete filas con «seguidos de total», la barrita del día y «registrado de planeado», la frase de la semana, el punto de tres estados en la tira, y **un solo aviso** hacia la plantilla en forma de pregunta, que al aceptarse **mueve la hora del ítem** (`vidaItemUpdate`) y nunca el plan. Es lo que cierra el círculo plantilla → día → revisión → plantilla. | in-review |
 
 **Por qué este orden:** la 1 es lectura pura sobre **datos y aritmética que ya
 existen** (`useVidaDayData` + `vida-execution.utils.ts`), así que se prueba con
@@ -1025,7 +1025,7 @@ otra entidad. **Dos recortes, escritos, no silenciados:**
 | 1 | **El día se lee.** Tira con `?d=`, historia en prosa, cifra grande con planeado · registrado · fuera del plan · sin registrar, plan frente a real con el vocabulario de Hoy, «Fuera del plan», los dos carriles en escritorio, los días raros y los estados. Solo lectura, con las dos salidas como enlaces a Hoy. Y Hoy enlaza aquí. | **Crea:** `utils/vida-review.utils.ts` (+test) · `components/VidaReviewStory/` · `components/VidaReviewFigures/` · `components/VidaReviewRow/` · `components/VidaReviewLanes/` · `pages/VidaRevisionPage.module.scss` · `pages/VidaRevisionPage.test.tsx`. **Modifica:** `pages/VidaRevisionPage.tsx` · `utils/vida-window.utils.ts` (+test) · `routes/vida-paths.ts` · `components/VidaDayStrip/` · `components/VidaDayBudget/` (+test) · `pages/VidaHoyPage.tsx` | 1–7, 9–25; **8 a medias** (sin categoría) | **accepted** (2026-09-20) |
 | 2 | **En qué se repartió el día.** Por categoría con la paleta del catálogo y dos barras, «Sin categoría», «Sin registrar» como fila propia, y los cuatro tramos más largos. | **Crea:** `components/VidaReviewCategories/` · `components/VidaReviewNoDataList/`. **Modifica:** `utils/vida-review.utils.ts` (+test) · `pages/VidaRevisionPage.tsx` (+test, `.module.scss`) | 26–34, **la otra mitad del 8** | **accepted** (2026-09-20) |
 | 3 | **La revisión rellena el día.** «Lo hice» por bloque y en la lista fantasma, «Registrar tiempo pasado» y «¿Qué pasó?» con la hoja de FEAT-004 dentro de la revisión, «Dejarlo así» con el store del aparato. | **Modifica:** `components/VidaReviewRow/` · `components/VidaReviewNoDataList/` · `components/VidaReviewFigures/` · `pages/VidaRevisionPage.tsx` (+test). **Crea:** nada. | 35–44 | **accepted** (2026-09-20; 375 px y oscuro **sin medir**, van al recorrido manual) |
-| 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | pending (**bloqueada hasta que FEAT-005 esté `delivered`**) |
+| 4 | **La semana y el puente.** Siete filas con «seguidos de total», barrita y minutos, la frase de la semana, el punto de tres estados y **un solo aviso** hacia la plantilla. | **Crea:** `hooks/useVidaWeekFollowUps.ts` (+test) · `utils/vida-week-review.utils.ts` (+test) · `components/VidaReviewWeek/` · `components/VidaReviewBridge/`. **Modifica:** `pages/VidaRevisionPage.tsx` (+test) · `components/VidaDayStrip/` · `store/vida-device-notes.store.ts` (+test) · `hooks/useVidaWeekPlans.ts` (solo si hace falta `enabled`) | 45–60 | **in-review** (2026-09-21) |
 
 Los criterios **61, 62 y 63** los cierra **el usuario**: están detrás del login y
 con la API despierta. **Los agentes no entran con credenciales**, y eso queda
@@ -1650,6 +1650,217 @@ pelo, cero documentos GraphQL, cero rutas.
   «¿Qué pasó?» en un tramo y registrar algo, y ver el tramo encogerse; (4)
   «Dejarlo así» en otro y comprobar que **en Hoy tampoco pregunta**; (5) en un
   día sin nada apuntado, «Dejarlo así» del día entero y volver a entrar.
+
+### Tajada 4 — la semana y el puente (criterios 45–60)
+
+**Resumen para quien revise, en tres líneas.** (1) La revisión estrena **la
+semana**: siete filas con «seguidos de total», su barrita de cuatro tramos y
+«registrado de planeado», la frase de la semana, el punto de tres estados en la
+tira, y **un solo puente** que, si se acepta, **mueve la hora del ítem de la
+plantilla** (`vidaItemUpdate`) y **nada más**. (2) Es un **estado de la misma
+pantalla**: ninguna ruta, ningún documento GraphQL, ninguna clave de caché,
+ninguna invalidación y ninguna clave de `localStorage` nuevas. (3) **Lo que más
+probablemente rompí:** `VidaDayStrip` **cambió de lógica de punto** —la tira la
+usa **Hoy**, y aunque sin la prop `dots` se comporta igual, el `aria-label` y el
+`data-state` ahora pasan por una rama más—; y en segundo lugar, `VidaRevisionPage`
+**monta tres hooks nuevos** (`useVidaWeekFollowUps`, `useVidaItemsQuery`,
+`useActivityFollowUpsInDatesQuery`) que en la vista de día entran apagados: si
+alguno se encendiera por error, la pantalla del día pagaría consultas que no
+necesita.
+
+**Lo que se construyó, contra los criterios:**
+
+- **45.** «Ver por semana» al pie del día y «Volver al día» al pie de la semana:
+  `view: 'day' | 'week'` en estado local. **`vida-paths.ts` sin tocar**, el `?d=`
+  no se mueve y la píldora «Revisión» sigue encendida. `VidaSemanaPage.tsx` **no
+  aparece en el diff**. Probado: tras abrir y volver se lee otra vez «Viernes 18
+  de septiembre · día cerrado».
+- **46.** «Tu semana» + «14 – 20 de septiembre», **siete filas** —comprobado
+  sobre la lista `Día a día`, no sobre la tira—, la del día visto marcada.
+- **47.** Cada fila: día y número, titular en sus cuatro formas («3 de 5», «Hoy ·
+  aún abierto», «Planeado · 2 bloques», «Sin plan»), barrita y **«5h 37 de
+  4h 30»**. Un día sin dato dice **«—»** y el test afirma además que la línea
+  **no contiene «0m»**.
+- **48.** Leyenda de los cuatro colores con **los mismos tonos** de
+  `VidaDayBudget` (mint · mint a media fuerza · violeta · gris), copiados tramo a
+  tramo para que signifiquen lo mismo en las dos pantallas.
+- **49.** Cada fila es un **enlace** a `/app/vida/revision?d=…` (comprobado por
+  `href`), no un botón: el «atrás» y abrir en otra pestaña salen gratis.
+- **50.** `buildWeekLine`: «Seguiste 3 de 5 bloques esta semana.» y, **solo si un
+  día destaca** (≥60 % de sus bloques y 15 puntos sobre el segundo), «Lunes fue
+  el día más parecido a tu plan.». Con la semana pareja **no nombra a nadie**;
+  sin días cerrados con plan **no dice nada**. Barrido de palabras de culpa en el
+  test.
+- **51.** Con la semana cargada la tira estrena **seguido · a medias · solo
+  planeado**, y se oye con palabras («seguido entero», «seguido a medias», «solo
+  planeado»). **Antes de abrir la semana el punto es el de Hoy**, y eso también
+  está afirmado en el test.
+- **52.** Un día cuya consulta —de plan **o** de sesiones— falló dice **«No
+  pudimos cargar este día»**, sin barra y con el punto en `none`; el test afirma
+  que esa fila **no contiene «Sin plan»**, y que la de al lado, vacía de verdad,
+  **sí** lo dice. Arriba, «Falta algún día de la semana» con **«Reintentar»**.
+- **53 (con la salvedad de abajo).** Ni una clave nueva: los planes salen de
+  `vidaKeys.dayPlan.byDate` —**una sola llamada** a `useVidaWeekPlans` con la
+  unión de las fechas de la tira y de la semana, así que los días que la tira ya
+  pidió son aciertos de caché— y las sesiones, de `vidaKeys.followUps.day`, la
+  **misma** entrada que `useVidaDayData`: el día visto no se vuelve a pedir
+  (probado en `useVidaWeekFollowUps.test.tsx` con un `QueryClient` de verdad) y
+  un día futuro **no pide nada**.
+- **54.** Un aviso, al pie de la semana, **en forma de pregunta** y con su base:
+  «Leer un rato · 21:30» / «3 de las últimas 4 noches no llegó a esa hora» /
+  «¿Lo movemos a las **20:30** en tu plantilla?».
+- **55.** La regla mínima y única, pura, en `buildTemplateBridge`: ≥4 días en el
+  plan y ≥3 sin seguir, con `matchSessionsToBlocks` —**la misma** regla de
+  emparejamiento— y desempate por más veces, luego más minutos planeados, luego
+  el id. Probado el caso que dispara, el que no llega al umbral, el empate y el
+  ítem **desactivado** (no propone: no sale en Hoy).
+- **56.** La hora sale de **la mediana de las horas reales**, redondeada a 15
+  min. **Sin sesiones no hay aviso** (test), y **si la mediana es la hora que ya
+  tiene, tampoco**: preguntar «¿lo movemos a las 21:30?» por algo que ya está a
+  las 21:30 no es una pregunta.
+- **57.** «Moverlo a las 20:30» llama a `vidaItemUpdate` **una vez** con
+  exactamente `{ id: 'i1', startTime: '20:30' }`, y los **cuatro espías de las
+  mutaciones de `activityDayPlan` quedan en cero**, igual que
+  `activityFollowUpAdd`. La consecuencia —«En tu plantilla está 5 días (L M X J
+  V): se mueve en todos»— **está en la tarjeta, antes de tocar el botón**.
+- **58.** «Dejarlo como está» escribe en `dismissedBridges` del **mismo** store y
+  la **misma** clave `xavi.vida.deviceNotes` (`window.localStorage.length` sigue
+  siendo 1 en el test del store); el aviso **desaparece y no vuelve tras
+  desmontar y volver a montar**. La clave lleva **el lunes de la semana**: la
+  semana siguiente la pregunta puede volver, que es lo que dice el criterio.
+- **59.** Sin plantilla —o con el ítem sin hora— **no se pinta nada** y **ni
+  siquiera se piden** los 14 días: el test afirma que el rango pedido es vacío.
+- **60.** Cargando, **siete esqueletos**; error con «Reintentar»; **375 px** y
+  **oscuro**, medidos abajo.
+
+**Medido en el navegador, con arnés temporal borrado** (`src/vida-week-harness.{html,tsx}`,
+la semana completa con un día caído y el puente con un nombre de 60 caracteres):
+a **375 px** `scrollWidth` **375 = clientWidth** y **cero elementos** saliéndose
+del ancho; **contraste compuesto** (52 textos, sobre el vidrio y contando el
+degradado de los botones): en **claro** de **6,29:1** a **17,69:1** y en
+**oscuro** de **4,79:1** a **12,3:1** — con **una excepción que no es mía**:
+`Button variant="primary"` («Moverlo a las 20:30») da **2,54:1** en los dos
+temas, porque es **blanco sobre el degradado mint de `shared/ui/Button`**, el
+mismo botón que usa toda la app. Queda anotado en la sección 4 junto al `danger`
+de FEAT-005. Un fallo mío sí apareció y **está corregido**: la línea «Esto solo
+cambia tu plantilla…» iba en `--color-text-muted` y medía **2,52:1** en claro;
+ahora va en `--color-text-secondary`.
+
+**Línea base, corrida entera al cerrar:** `pnpm typecheck` **exit 0**;
+`pnpm lint` **14 errores / 0 warnings** (los de siempre); `pnpm test` **2 fallos
+de 1439** (los dos de `SearchSelect`; 1 archivo rojo de 106; **+38 tests** sobre
+los 1401 de la línea base); `pnpm build` **exit 0** con chunk inicial
+**1.054,00 kB** (**+13,14**; **ninguno de iconos**: `app-icons` **620,20** e
+`IconPicker` **4,64** clavados; CSS 241,31). `graphify update .`: **3601 nodos,
+4260 aristas**. `graphql/contracts.test.ts` **sin tocar**, y en el diff no hay
+ningún documento GraphQL, ninguna clave de `query-keys.ts`, ninguna
+invalidación, ninguna ruta y ningún Font Awesome a pelo.
+
+**Decisiones y desviaciones, dichas:**
+
+1. **Se construyó la opción (a) del conflicto 53/55**, como dejó escrito el
+   arquitecto: el puente pide **los planes de 14 días** con el **mismo**
+   `useVidaWeekPlans` (de los cuales ~7 son nuevos, el resto caché de la semana y
+   la tira) más **una** consulta de rango para las sesiones —`followUps.range`,
+   que existía y no usaba nadie—: **8 consultas más como mucho**, y **solo con la
+   semana abierta y con plantilla**. Total en la peor lectura ≈ **21**. El
+   criterio 53 dice «catorce como mucho»: **no lo reescribo**, queda la
+   alternativa (b) escrita en A5 por si el usuario prefiere recortar la regla a 7
+   días.
+2. **`mondayOf`, `shiftYmd` y el formato del rango están copiados de
+   `VidaSemanaPage`, no importados**, como avisa la implementación de
+   referencia: allí son funciones locales y moverlas a `vida-date.utils.ts`
+   tocaría una pantalla entregada. El del rango además **cambia de forma**
+   («14 – 20 de septiembre», con el mes entero, que es lo que pide el criterio 46).
+3. **El puente no abre un segundo diálogo de confirmación.** La consecuencia del
+   criterio 57 se lee **en la tarjeta**, encima de los botones, y las dos salidas
+   son afirmativas y **ninguna es `danger`**. Un diálogo sobre una pregunta que
+   ya es una pregunta sería preguntar dos veces.
+4. **La sección del puente es un componente local de la página**
+   (`VidaReviewBridgeSection`), y no está en la página entera, **para que sus
+   consultas no existan en la vista de día**: es la forma de cumplir el «con
+   `enabled`» de A5 sin añadirle props a `useVidaWeekPlans` —que queda **sin
+   tocar**, como pedía el plan—.
+5. **La barra de la fila no se pinta en el día de hoy abierto** (ni en el render:
+   la fila del sábado no la lleva): una barra a media jornada se lee como un
+   resultado. El día futuro sí enseña su plan, rayado.
+
+**Hallazgos fuera del plan, por orden de riesgo:**
+
+1. **El caso exacto del render no lo puede producir la regla de emparejamiento
+   de este repo.** El segundo pase de `matchSessionsToBlocks` **no tiene tope de
+   distancia**: cualquier sesión de esa actividad ese día acaba emparejada con su
+   bloque (como «movido»). Es decir, **«no se siguió» significa «ese día no hubo
+   ninguna sesión de esa actividad»**, y la hora que se propone sale por fuerza
+   de los días en que **sí** la hubo. Leer a las 20:30 cuatro noches con el
+   bloque a las 21:30 **no dispara nada**: son cuatro noches seguidas (movidas).
+   La regla sigue siendo la del criterio 55 y el ejemplo del render sigue
+   saliendo —3 noches sin ninguna sesión y 1 con ella a las 20:30—, pero **la
+   lectura de la frase cambia de matiz** y conviene saberlo antes de tocar nada.
+2. **`Button variant="primary"` mide 2,54:1** (blanco sobre el degradado mint) en
+   claro y en oscuro. Es de `shared/ui/Button` y lo usa toda la app, así que **no
+   lo arreglo aquí**; es hermano del `danger` de 1,7:1 anotado en FEAT-005.
+3. **El punto «a medias» de la tira es un medio círculo mint** y, a 8 px, se
+   distingue poco del «solo planeado» rayado. Lo que se **oye** sí es distinto
+   («seguido a medias» / «solo planeado»), que es la mitad que manda; queda
+   dicho por si se prefiere otra forma.
+4. **La invalidación no alcanza al puente**, como avisó A5: registrar algo desde
+   la revisión **no recalcula el aviso al instante** (el rango de 14 días no está
+   en `invalidateFollowUpQueries`). Tras «Moverlo», en cambio, la tarjeta se
+   sustituye por una línea —«Movido en tu plantilla. Los días ya armados se
+   quedan como están.»— para que no se vuelva a preguntar lo que se acaba de
+   contestar mientras la plantilla se refresca.
+5. **`VidaReviewWeek` estrena un nombre de lista accesible («Día a día»)** porque
+   sus siete filas y los siete enlaces de la tira dicen cosas casi iguales en voz
+   alta; sin él, ni un test ni un lector de pantalla los distinguen.
+
+**Lo que no pude comprobar, y no doy por cumplido:**
+
+- **Todo lo que pasa por el API.** Ni un `vidaItemUpdate` del puente ha viajado
+  nunca: el espía prueba **qué se manda**, no que el servidor lo acepte. Tampoco
+  se han visto las 13 consultas de la semana ni la de rango contra Render
+  dormido (el coste sigue sin medir, como en FEAT-003).
+- **La tira con sus tres puntos dentro de `/app/*`**: lo medido a 375 px y en
+  oscuro es la semana y el puente en un arnés; el punto nuevo se vio solo en
+  tests.
+- **Los criterios 61, 62 y 63 son del usuario.**
+
+**El recorrido manual completo de FEAT-006** (criterios 61, 62 y 63), con la API
+despierta —Render tarda ~1 min en levantarse— y en `http://localhost:5173`:
+
+1. **Vivir un día a medias en Hoy** (`/app/vida/hoy`): armar desde la plantilla,
+   dejar algún bloque sin hacer, registrar algo que no estaba, y marcar un «No se
+   pudo» con su razón.
+2. Al cerrarse el día, tocar **«Ver cómo fue el día»** y **cronometrar la
+   lectura**: la historia, la cifra grande y plan frente a real tienen que
+   entenderse **en diez segundos** y **sin una palabra de reproche** (criterio 61).
+3. Comprobar que **las etiquetas son las mismas** que se vieron durante el día
+   («✓ calcado», «+11 min», «empezó +5», «movido», «no hecho», «no se pudo»).
+4. Mirar **«Minutos por categoría»** y los **tramos sin registrar**: que los
+   colores sean los del catálogo y que «Sin registrar» tenga su fila y su frase.
+5. **«Lo hice»** en un bloque que se quedó sin hacer → la cifra y la historia
+   tienen que cambiar **sin recargar** (criterio 40), y en Hoy ese bloque **no se
+   movió** de su hora.
+6. **«¿Qué pasó?»** en un tramo → la hoja abre con **la hora del tramo**;
+   registrar algo y ver el tramo encogerse.
+7. **«Dejarlo así»** en otro tramo → deja de preguntar, y **sigue sin preguntar**
+   al volver a entrar.
+8. **«Ver por semana»** → siete filas, tocar un día, volver con el «atrás» del
+   navegador y comprobar que **la píldora sigue en «Revisión»**.
+9. En la semana, mirar la **tira de arriba**: los puntos tienen que distinguirse
+   entre seguido, a medias y solo planeado.
+10. Si aparece **el puente**: leer la pregunta, tocar **«Moverlo a las HH:mm»** y
+    comprobar en **`/app/vida/plantilla`** que **la hora del ítem cambió**, y en
+    **Hoy** que **ningún día ya armado se movió**.
+11. Volver a la semana y comprobar que **el aviso no vuelve**; y con otro ítem,
+    probar **«Dejarlo como está»** y que tampoco vuelve esa semana.
+12. **En un segundo navegador** (o ventana privada), abrir la misma revisión:
+    las **razones de «No se pudo»**, los **«dejarlo así»** y el **«dejarlo como
+    está»** del puente **no estarán**, y la pantalla lo dice antes de que
+    sorprenda (criterio 63).
+13. Mirar la revisión y la semana **a 375 px y en tema oscuro** dentro de
+    `/app/*`: es lo único de las tajadas 3 y 4 que ningún agente ha visto dentro
+    de la app.
 
 ## 4. Review — feature-reviewer
 

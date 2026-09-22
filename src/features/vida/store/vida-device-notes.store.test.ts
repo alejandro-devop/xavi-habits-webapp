@@ -2,9 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   VIDA_DEVICE_NOTES_STORAGE_KEY,
   getBlockNote,
+  isBridgeDismissed,
   isNoDataDismissed,
   useVidaDeviceNotesStore,
   vidaBlockNoteKey,
+  vidaBridgeKey,
   vidaNoDataKey,
 } from '@/features/vida/store/vida-device-notes.store'
 
@@ -18,7 +20,11 @@ import {
 const DATE = '2026-09-18'
 
 function reset() {
-  useVidaDeviceNotesStore.setState({ blockNotes: {}, dismissedNoData: [] })
+  useVidaDeviceNotesStore.setState({
+    blockNotes: {},
+    dismissedNoData: [],
+    dismissedBridges: [],
+  })
   window.localStorage.clear()
 }
 
@@ -120,5 +126,46 @@ describe('el aparato', () => {
     expect(getBlockNote(useVidaDeviceNotesStore.getState().blockNotes, DATE, 'b1')?.reason).toBe(
       'me quedé dormido',
     )
+  })
+})
+
+describe('«Dejarlo como está» del puente (FEAT-006, criterio 58)', () => {
+  const MONDAY = '2026-09-14'
+
+  it('el aviso no vuelve esa semana, y **no estrena clave**', () => {
+    const store = useVidaDeviceNotesStore.getState()
+    expect(isBridgeDismissed(store.dismissedBridges, MONDAY, 'i1')).toBe(false)
+
+    store.dismissBridge(MONDAY, 'i1')
+
+    expect(isBridgeDismissed(useVidaDeviceNotesStore.getState().dismissedBridges, MONDAY, 'i1')).toBe(
+      true,
+    )
+    // La misma clave de siempre: un campo más dentro de ella (A7).
+    const raw = window.localStorage.getItem(VIDA_DEVICE_NOTES_STORAGE_KEY)
+    expect(raw).toContain(vidaBridgeKey(MONDAY, 'i1'))
+    expect(window.localStorage.length).toBe(1)
+  })
+
+  it('**la semana siguiente vuelve a poder preguntar**, y otro ítem no se calla', () => {
+    useVidaDeviceNotesStore.getState().dismissBridge(MONDAY, 'i1')
+    const { dismissedBridges } = useVidaDeviceNotesStore.getState()
+
+    expect(isBridgeDismissed(dismissedBridges, '2026-09-21', 'i1')).toBe(false)
+    expect(isBridgeDismissed(dismissedBridges, MONDAY, 'i2')).toBe(false)
+  })
+
+  it('dos veces el mismo no lo apunta dos veces', () => {
+    const store = useVidaDeviceNotesStore.getState()
+    store.dismissBridge(MONDAY, 'i1')
+    store.dismissBridge(MONDAY, 'i1')
+    expect(useVidaDeviceNotesStore.getState().dismissedBridges).toHaveLength(1)
+  })
+
+  it('un estado guardado **sin el campo** arranca vacío, sin migración (A7)', () => {
+    // Lo que había en el aparato antes de esta tajada: sin `dismissedBridges`.
+    useVidaDeviceNotesStore.setState({ blockNotes: {}, dismissedNoData: ['x'] })
+    expect(useVidaDeviceNotesStore.getState().dismissedBridges ?? []).toEqual([])
+    expect(() => useVidaDeviceNotesStore.getState().dismissBridge(MONDAY, 'i1')).not.toThrow()
   })
 })

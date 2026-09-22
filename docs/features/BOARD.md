@@ -14,10 +14,64 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-003 | delivered | 5/5 | features/vida | Hoy — planear el día: la plantilla con hora, el presupuesto y los huecos | 2026-09-20 |
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
-| FEAT-006 | building | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-006 | in-review | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-006, tajada 4 `in-review`** (2026-09-21, **sin commitear**; la
+construcción está en la sección 3 del dossier): **la semana y el puente, y con
+ellos el círculo se cierra.** «Ver por semana» es **un estado de la misma
+pantalla** —ni ruta nueva, ni píldora, ni un `?d=` movido, y `VidaSemanaPage.tsx`
+no aparece en el diff—: **siete filas** con su titular en cuatro formas («3 de
+5» · «Hoy · aún abierto» · «Planeado · 2 bloques» · «Sin plan»), la **barrita de
+los cuatro tramos con los colores de `VidaDayBudget`**, «**5h 37 de 4h 30**» y
+**«—» donde no hay dato, nunca «0»**; cada fila es **un enlace** a la revisión de
+ese día, con su leyenda y la **frase de la semana**, que nombra el día que
+destaca **solo si destaca** (≥60 % y 15 puntos sobre el segundo) y calla si la
+semana está pareja. Un día cuya consulta —de plan **o** de sesiones— falló dice
+**«No pudimos cargar este día»** y el test afirma que esa fila **no dice «Sin
+plan»**. Con la semana cargada **la tira estrena el punto de tres estados**
+(seguido · a medias · solo planeado), y **antes de abrirla sigue siendo el de
+Hoy**, también afirmado. **El puente es uno solo, en forma de pregunta**: «Leer
+un rato · 21:30 · 3 de las últimas 4 noches no llegó a esa hora · ¿lo movemos a
+las **20:30**?», con **la consecuencia escrita antes de tocar nada** («está 5
+días (L M X J V): se mueve en todos»); «Moverlo» manda **exactamente**
+`{ id, startTime }` a `vidaItemUpdate` con **los cuatro espías del plan en cero**,
+y «Dejarlo como está» va al **mismo** store del aparato (`dismissedBridges`,
+clave `xavi.vida.deviceNotes`, `localStorage.length` sigue en **1**) con **el
+lunes en la clave**, así que la semana siguiente puede volver a preguntar. **La
+hora se deriva de lo real** (mediana redondeada a 15 min) y **sin sesiones —o si
+la mediana es la hora que ya tiene— no hay aviso**. **Ni un documento GraphQL, ni
+una clave de caché, ni una invalidación, ni una ruta, ni una clave nueva de
+`localStorage`**, y `useVidaWeekPlans` **sin tocar**. Medido **en el navegador**
+con arnés borrado: a 375 px `scrollWidth` **375 = clientWidth**, **cero**
+elementos fuera, y contraste compuesto (52 textos) **6,29:1 → 17,69:1 en claro**
+y **4,79:1 → 12,3:1 en oscuro**. Línea base: typecheck **exit 0**, lint
+**14/0**, `pnpm test` **2 fallos de 1439** (los dos de `SearchSelect`; **+38
+tests**; 1 archivo rojo de 106), `pnpm build` **exit 0** con chunk inicial
+**1.054,00 kB** (**+13,14**, **ninguno de iconos**: `app-icons` 620,20 e
+`IconPicker` 4,64 clavados; CSS 241,31). `graphify update .`: 3601 nodos, 4260
+aristas. **Avisos, por orden de riesgo:** **(1)** `VidaDayStrip` **cambió la
+lógica del punto** y **esa tira la usa Hoy**: sin la prop `dots` se comporta
+igual (con test), pero el `data-state` y el `aria-label` pasan ahora por una rama
+más. **(2)** el **caso exacto del render no lo puede producir
+`matchSessionsToBlocks`**: su segundo pase **no tiene tope de distancia**, así
+que cualquier sesión de esa actividad ese día empareja, y «no se siguió» acaba
+significando **«ese día no hubo ninguna sesión de esa actividad»**; la hora
+propuesta sale por fuerza de los días en que sí la hubo. **(3)** se construyó la
+opción **(a)** del conflicto 53/55 que dejó abierto el arquitecto: el puente
+cuesta **8 consultas más** (7 planes, que en su mayoría son caché, + **1** de
+rango), **solo con la semana abierta y con plantilla**, y la lectura peor queda
+en **≈21**, no en 14 — **el criterio 53 no lo reescribo**. **(4)**
+`Button variant="primary"` mide **2,54:1** (blanco sobre el degradado mint de
+`shared/ui/Button`, medido aquí, usado por toda la app): hermano del `danger` de
+1,7:1. **(5)** el punto «a medias» **se distingue poco** del rayado a 8 px; lo
+que se oye sí es distinto. **Del usuario:** el **recorrido completo de FEAT-006
+en trece pasos** al final de la sección 3 —incluidos los criterios 61, 62 y 63— y
+con él **todo lo que pasa por el API**: **ningún `vidaItemUpdate` del puente ha
+viajado nunca**, y la revisión y la semana **no se han visto a 375 px ni en
+oscuro dentro de `/app/*`**, que es la deuda que ya venía de la tajada 3.
 
 **FEAT-006, tajada 3 — revisión: `accepted`** (2026-09-20, revisada ya
 **commiteada**, sobre `0f4ffe7..8238d16`), **con una cosa que nadie ha medido y

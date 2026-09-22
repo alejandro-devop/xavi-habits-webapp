@@ -6,7 +6,7 @@ import { VidaRevisionPage } from '@/features/vida/pages/VidaRevisionPage'
 import { useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
-import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
+import type { VidaItem, VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import { renderWithProviders } from '@/test/render'
 
 /**
@@ -68,15 +68,48 @@ vi.mock('@/features/vida/hooks/useActivityDayPlan', () => ({
   useEditDayPlanItemMutation: () => ({ mutate: planSpies.edit, isPending: false }),
   useRemoveDayPlanItemMutation: () => ({ mutate: planSpies.remove, isPending: false }),
 }))
+/** La plantilla y su única escritura: **el puente** (tajada 4, criterio 57). */
+let templateItems: VidaItem[]
+const updateVidaItem = vi.fn()
+
 vi.mock('@/features/vida/hooks/useVidaItems', () => ({
   useVidaSuggestionsForDateQuery: () => suggestionsQuery,
+  useVidaItemsQuery: () => ({
+    data: templateItems,
+    isPending: false,
+    isError: false,
+    fetchStatus: 'idle',
+    refetch: vi.fn(),
+  }),
+  useUpdateVidaItemMutation: () => ({
+    mutate: updateVidaItem,
+    mutateAsync: updateVidaItem,
+    isPending: false,
+    isError: false,
+    isSuccess: false,
+  }),
 }))
 /** Lo **único** que la revisión escribe: una sesión (`activityFollowUpAdd`). */
 const createFollowUp = vi.fn()
 let createFollowUpState = { isPending: false, isError: false }
 
+/** Las sesiones de los 14 días del puente: **una** consulta de rango (A5). */
+let bridgeSessions: { date: string; followUps: ActivityFollowUp[] }[]
+/** Con qué rango se pidió, para comprobar que en la vista de día **no** se pide. */
+let askedRanges: string[]
+
 vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
   useActivityDayFollowUpsQuery: () => dayFollowUpsQuery,
+  useActivityFollowUpsInDatesQuery: (from: string, to: string) => {
+    askedRanges.push(`${from}|${to}`)
+    return {
+      data: from ? bridgeSessions : undefined,
+      isPending: false,
+      isError: false,
+      fetchStatus: from ? 'idle' : 'idle',
+      refetch: vi.fn(),
+    }
+  },
   useCreateActivityFollowUpMutation: () => ({
     mutate: createFollowUp,
     mutateAsync: createFollowUp,
@@ -90,20 +123,64 @@ vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
     isError: false,
   }),
 }))
-// Los puntos de la tira: el hook tiene su propio test con `useQueries` de
-// verdad; aquí importa a dónde llevan los siete enlaces.
+// Los puntos de la tira y los planes de la semana: el hook tiene su propio
+// test con `useQueries` de verdad; aquí importa a dónde llevan los enlaces y
+// qué plan ve cada día.
+let weekPlanItems: Record<string, ActivityDayPlanItem[]>
+let failingWeekDates: string[]
+/** Con qué fechas se pidieron planes: es la cuenta de consultas del criterio 53. */
+let askedPlanDates: string[][]
+
 vi.mock('@/features/vida/hooks/useVidaWeekPlans', () => ({
-  useVidaWeekPlans: (dates: string[]) => ({
-    byDate: Object.fromEntries(
-      dates.map((date) => [
-        date,
-        { date, hasPlan: false, blockCount: 0, items: [], isPending: false, isError: false },
-      ]),
-    ),
-    isPending: false,
-    hasError: false,
-    refetch: vi.fn(),
-  }),
+  useVidaWeekPlans: (dates: string[]) => {
+    askedPlanDates.push(dates)
+    return {
+      byDate: Object.fromEntries(
+        dates.map((date) => {
+          const items = weekPlanItems[date] ?? []
+          return [
+            date,
+            {
+              date,
+              hasPlan: items.length > 0,
+              blockCount: items.length,
+              items,
+              isPending: false,
+              isError: failingWeekDates.includes(date),
+            },
+          ]
+        }),
+      ),
+      isPending: false,
+      hasError: dates.some((date) => failingWeekDates.includes(date)),
+      refetch: vi.fn(),
+    }
+  },
+}))
+/** Las sesiones de los siete días de la semana vista (A4). */
+let weekSessions: Record<string, ActivityFollowUp[]>
+let askedWeekFollowUpDates: string[][]
+
+vi.mock('@/features/vida/hooks/useVidaWeekFollowUps', () => ({
+  useVidaWeekFollowUps: (dates: string[]) => {
+    askedWeekFollowUpDates.push(dates)
+    return {
+      byDate: Object.fromEntries(
+        dates.map((date) => [
+          date,
+          {
+            date,
+            followUps: weekSessions[date] ?? [],
+            isPending: false,
+            isError: false,
+          },
+        ]),
+      ),
+      isPending: false,
+      hasError: false,
+      refetch: vi.fn(),
+    }
+  },
 }))
 // El «qué» de la hoja: el catálogo tiene su propio test y aquí solo estorba
 // (monta `useVidaQueryGuard`, que pide el proveedor de arranque de sesión).
@@ -195,6 +272,64 @@ function renderPage(search = '') {
   })
 }
 
+/** Un bloque de cualquier día (los de arriba son del viernes del render). */
+function blockOn(
+  date: string,
+  id: string,
+  activityId: string,
+  title: string,
+  startTime: string,
+  endTime: string,
+): ActivityDayPlanItem {
+  return { ...block(id, activityId, title, startTime, endTime), date, id: `${id}-${date}` }
+}
+
+function sessionOn(
+  date: string,
+  id: string,
+  activityId: string,
+  title: string,
+  startTime: string,
+  durationMinutes: number,
+): ActivityFollowUp {
+  return { ...session(id, activityId, title, startTime, durationMinutes), date, id: `${id}-${date}` }
+}
+
+/** «Leer un rato» a las 21:30 en la plantilla, de lunes a viernes. */
+const LEER_ITEM: VidaItem = {
+  id: 'i1',
+  userId: 1,
+  activityId: 'a5',
+  days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+  startTime: '21:30',
+  durationMinutes: 30,
+  notes: null,
+  isActive: true,
+  orderIndex: 0,
+  createdAt: '2026-09-01T00:00:00.000Z',
+  updatedAt: '2026-09-01T00:00:00.000Z',
+  activity: { id: 'a5', title: 'Leer un rato', category: null },
+}
+
+/** Los cuatro días en que «Leer» estuvo puesto a las 21:30. */
+const LEER_DATES = ['2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18']
+
+function bridgeData() {
+  weekPlanItems = Object.fromEntries(
+    LEER_DATES.map((date) => [
+      date,
+      [blockOn(date, 'bl', 'a5', 'Leer un rato', '21:30', '22:00')],
+    ]),
+  )
+  // Solo una de las cuatro noches tuvo sesión, y fue a las 20:30: de ahí
+  // sale la hora que se propone (criterio 56).
+  bridgeSessions = LEER_DATES.map((date) => ({
+    date,
+    followUps:
+      date === '2026-09-15' ? [sessionOn(date, 'sl', 'a5', 'Leer un rato', '20:30', 30)] : [],
+  }))
+}
+
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true })
   // Sábado 19 a las 9:24: el viernes 18 ya está cerrado.
@@ -207,7 +342,20 @@ beforeEach(() => {
   createFollowUp.mockReset()
   createFollowUpState = { isPending: false, isError: false }
   for (const spy of Object.values(planSpies)) spy.mockReset()
-  useVidaDeviceNotesStore.setState({ blockNotes: {}, dismissedNoData: [] })
+  useVidaDeviceNotesStore.setState({
+    blockNotes: {},
+    dismissedNoData: [],
+    dismissedBridges: [],
+  })
+  templateItems = []
+  bridgeSessions = []
+  askedRanges = []
+  weekPlanItems = {}
+  weekSessions = {}
+  failingWeekDates = []
+  askedPlanDates = []
+  askedWeekFollowUpDates = []
+  updateVidaItem.mockReset()
 })
 
 afterEach(() => {
@@ -762,5 +910,189 @@ describe('la revisión rellena el día (criterios 35–44)', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument())
 
     expect(planMutationsCalled()).toBe(0)
+  })
+})
+
+/* ── Tajada 4: la semana y el puente (criterios 45–60) ──────────────────── */
+
+async function openWeek(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Ver por semana' }))
+}
+
+/** Las siete filas de la semana, **no** los siete enlaces de la tira. */
+function weekList(): HTMLElement {
+  return screen.getByRole('list', { name: 'Día a día' })
+}
+
+describe('la semana (criterios 45, 46, 47, 48, 49, 51 y 53)', () => {
+  it('**no se pide nada de la semana en la vista de día**: es un estado, no otra pantalla', () => {
+    renderPage()
+
+    // La lista de sesiones de la semana entra **vacía**: `useQueries` no monta
+    // ninguna consulta hasta que la semana se abre (A4, criterio 53).
+    expect(askedWeekFollowUpDates.at(-1)).toEqual([])
+    // Y el rango del puente tampoco se pide: no hay sección montada.
+    expect(askedRanges).toEqual([])
+  })
+
+  it('«Ver por semana» enseña **siete filas** y se vuelve sin salir de la pantalla (45, 46)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    weekPlanItems = { [FRIDAY]: PLAN }
+    weekSessions = { [FRIDAY]: SESSIONS }
+    renderPage()
+
+    await openWeek(user)
+
+    expect(screen.getByRole('heading', { name: 'Tu semana' })).toBeInTheDocument()
+    expect(screen.getByText('14 – 20 de septiembre')).toBeInTheDocument()
+    expect(within(weekList()).getAllByRole('link')).toHaveLength(7)
+    // La cabecera sigue siendo «Revisión»: ni ruta nueva ni píldora nueva.
+    expect(screen.getByRole('heading', { level: 1, name: 'Revisión' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Volver al día' }))
+    expect(screen.getByText('Viernes 18 de septiembre · día cerrado')).toBeInTheDocument()
+  })
+
+  it('cada fila lleva su titular, su barrita y «registrado de planeado», y **enlaza a ese día** (47, 49)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    weekPlanItems = { [FRIDAY]: PLAN }
+    weekSessions = { [FRIDAY]: SESSIONS }
+    renderPage()
+    await openWeek(user)
+
+    const friday = within(weekList()).getByRole('link', { name: /^viernes 18 ·/ })
+    expect(within(friday).getByText('3 de 5')).toBeInTheDocument()
+    expect(friday).toHaveAttribute('href', `/app/vida/revision?d=${FRIDAY}`)
+    // Un día sin dato dice «—», nunca «0».
+    const monday = within(weekList()).getByRole('link', { name: /^lunes 14 ·/ })
+    expect(within(monday).getByText('—')).toBeInTheDocument()
+    expect(within(monday).getByText('Sin plan')).toBeInTheDocument()
+  })
+
+  it('la **leyenda de los cuatro colores** y la frase de la semana (48, 50)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    weekPlanItems = { [FRIDAY]: PLAN }
+    weekSessions = { [FRIDAY]: SESSIONS }
+    renderPage()
+    await openWeek(user)
+
+    for (const label of ['seguido', 'de más', 'fuera del plan', 'sin registrar']) {
+      expect(screen.getByText(label)).toBeInTheDocument()
+    }
+    expect(screen.getByText(/^Seguiste 3 de 5 bloques esta semana\.$/)).toBeInTheDocument()
+  })
+
+  it('**un día que no cargó lo dice** y la semana ofrece «Reintentar» (52, 60)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    failingWeekDates = ['2026-09-16']
+    renderPage()
+    await openWeek(user)
+
+    const broken = within(weekList()).getByRole('link', { name: /^miércoles 16 ·/ })
+    expect(within(broken).getByText('No pudimos cargar este día')).toBeInTheDocument()
+    expect(within(broken).queryByText('Sin plan')).not.toBeInTheDocument()
+    expect(screen.getByText('Falta algún día de la semana')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Reintentar' }).length).toBeGreaterThan(0)
+  })
+
+  it('con la semana cargada **la tira estrena el punto de tres estados** (51)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    weekPlanItems = {
+      [FRIDAY]: PLAN,
+      '2026-09-17': [blockOn('2026-09-17', 'b9', 'a1', 'Bañarme', '07:00', '07:15')],
+    }
+    weekSessions = {
+      [FRIDAY]: SESSIONS,
+      '2026-09-17': [sessionOn('2026-09-17', 's9', 'a1', 'Bañarme', '07:02', 15)],
+    }
+    renderPage()
+
+    // Antes de abrir la semana, el punto es el de Hoy.
+    expect(screen.getByRole('link', { name: /viernes 18.*con plan/ })).toBeInTheDocument()
+
+    await openWeek(user)
+
+    expect(screen.getByRole('link', { name: /jueves 17.*seguido entero/ })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /viernes 18.*seguido a medias/ })).toBeInTheDocument()
+  })
+})
+
+describe('el puente a la plantilla (criterios 54, 57, 58 y 59)', () => {
+  it('**sin plantilla no se pinta nada** (59)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderPage()
+    await openWeek(user)
+
+    expect(screen.queryByText('Lo que esto sugiere para tu plantilla')).not.toBeInTheDocument()
+    // Y ni siquiera se pregunta al API por los 14 días.
+    expect(askedRanges.every((range) => range === '|')).toBe(true)
+  })
+
+  it('con base, **pregunta** con su porqué y su consecuencia antes de confirmar (54, 57)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [LEER_ITEM]
+    bridgeData()
+    renderPage()
+    await openWeek(user)
+
+    expect(screen.getByText('Lo que esto sugiere para tu plantilla')).toBeInTheDocument()
+    expect(screen.getByText('Leer un rato · 21:30')).toBeInTheDocument()
+    expect(
+      screen.getByText('3 de las últimas 4 noches no llegó a esa hora'),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/¿Lo movemos a las/)).toHaveTextContent(
+      '¿Lo movemos a las 20:30 en tu plantilla?',
+    )
+    expect(screen.getByText(/se mueve en todos/)).toBeInTheDocument()
+    // Los 14 días se piden **en una sola consulta de rango** (A5).
+    expect(askedRanges.at(-1)).toBe('2026-09-05|2026-09-18')
+  })
+
+  it('«Moverlo» escribe **solo en la plantilla**: `{ id, startTime }` y **cero** mutaciones del plan (57)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [LEER_ITEM]
+    bridgeData()
+    renderPage()
+    await openWeek(user)
+
+    await user.click(screen.getByRole('button', { name: 'Moverlo a las 20:30' }))
+
+    expect(updateVidaItem).toHaveBeenCalledTimes(1)
+    expect(updateVidaItem.mock.calls[0]![0]).toEqual({ id: 'i1', startTime: '20:30' })
+    expect(planMutationsCalled()).toBe(0)
+    expect(createFollowUp).not.toHaveBeenCalled()
+  })
+
+  it('«Dejarlo como está» cierra el aviso y **no vuelve esa semana** (58)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [LEER_ITEM]
+    bridgeData()
+    const first = renderPage()
+    await openWeek(user)
+
+    await user.click(screen.getByRole('button', { name: 'Dejarlo como está' }))
+
+    expect(screen.queryByText('Lo que esto sugiere para tu plantilla')).not.toBeInTheDocument()
+    expect(updateVidaItem).not.toHaveBeenCalled()
+    expect(planMutationsCalled()).toBe(0)
+
+    // Y sigue dejado así tras desmontar y volver a montar: es el aparato.
+    first.unmount()
+    renderPage()
+    await openWeek(user)
+    expect(screen.queryByText('Lo que esto sugiere para tu plantilla')).not.toBeInTheDocument()
+  })
+
+  it('ni el puente ni la semana traen un botón con palabra de culpa', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [LEER_ITEM]
+    bridgeData()
+    const { container } = renderPage()
+    await openWeek(user)
+
+    const text = (container.textContent ?? '').toLowerCase()
+    for (const word of ['desperdici', 'fallaste', 'perdiste', 'deberías', 'cumplimiento', '%']) {
+      expect(text).not.toContain(word)
+    }
   })
 })

@@ -1,0 +1,95 @@
+/* El puente del marco C: una tarjeta con acento mint, porque es lo único de la
+   pantalla que propone algo. A 375 px las dos salidas caen a dos líneas antes
+   que recortarse (`flex-wrap`), y los textos no llevan `nowrap`. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-glass-border));
+}
+
+.title {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* La base del aviso: por qué se pregunta esto. Sin ella el aviso sería una
+   orden (criterio 54). */
+.basis {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.ask {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+/* Lo que pasa **si se dice que sí**, a la vista antes de tocar nada
+   (criterio 57). */
+.consequence {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* `--color-text-secondary` y no `--color-text-muted`: el apagado se quedaba en
+   **2,52:1** sobre el vidrio de esta tarjeta (medido en el arnés, tema claro),
+   y esta línea es la que dice que los días armados no se mueven. */
+.deviceNote {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}

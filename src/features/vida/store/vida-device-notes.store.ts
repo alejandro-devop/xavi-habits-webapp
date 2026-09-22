@@ -39,6 +39,12 @@ export interface VidaDeviceNotesState {
   blockNotes: Record<string, VidaBlockNote>
   /** `fecha|HH:mm-HH:mm` de los tramos sin dato que se dejaron así. */
   dismissedNoData: string[]
+  /**
+   * `lunes|itemId` de los avisos del puente que se dejaron como estaban
+   * (FEAT-006, criterio 58). Va **en este mismo store y en esta misma clave**:
+   * es un campo más, no un segundo `localStorage`.
+   */
+  dismissedBridges: string[]
 
   /** «No se pudo», con razón o sin ella. Vuelve a llamarse para cambiarla. */
   markBlockCouldNot: (date: string, itemId: string, reason: string | null) => void
@@ -46,6 +52,8 @@ export interface VidaDeviceNotesState {
   clearBlockNote: (date: string, itemId: string) => void
   /** «Dejarlo así»: ese tramo no vuelve a preguntar ese día en este aparato. */
   dismissNoData: (date: string, sliceId: string) => void
+  /** «Dejarlo como está»: ese aviso no vuelve **esa semana** (criterio 58). */
+  dismissBridge: (weekMonday: string, itemId: string) => void
 }
 
 /** `2026-09-20|a1b2`: la fecha delante para que se lea de un vistazo. */
@@ -67,6 +75,27 @@ export function getBlockNote(
   return notes[vidaBlockNoteKey(date, itemId)] ?? null
 }
 
+/**
+ * `2026-09-14|a1b2`: **el lunes de la semana** delante del ítem.
+ *
+ * La semana entra en la clave a propósito: «Dejarlo como está» cierra el aviso
+ * de **esa** semana (criterio 58), no para siempre. Si la semana siguiente el
+ * dato lo vuelve a sostener, la pregunta se puede volver a hacer — que es lo
+ * contrario de callar un aviso definitivamente por haberlo visto una vez.
+ */
+export function vidaBridgeKey(weekMonday: string, itemId: string): string {
+  return `${weekMonday}|${itemId}`
+}
+
+/** Si este aviso ya recibió un «dejarlo como está» en este aparato (58). */
+export function isBridgeDismissed(
+  dismissed: string[],
+  weekMonday: string,
+  itemId: string,
+): boolean {
+  return dismissed.includes(vidaBridgeKey(weekMonday, itemId))
+}
+
 /** Si este tramo ya recibió un «dejarlo así» en este aparato (criterio 49). */
 export function isNoDataDismissed(dismissed: string[], date: string, sliceId: string): boolean {
   return dismissed.includes(vidaNoDataKey(date, sliceId))
@@ -77,6 +106,10 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
     (set) => ({
       blockNotes: {},
       dismissedNoData: [],
+      // Un estado guardado **antes** de FEAT-006 no trae este campo: el merge
+      // por defecto de `persist` es superficial y arranca con `[]`, así que no
+      // hace falta ni `version` ni migración (A7).
+      dismissedBridges: [],
 
       markBlockCouldNot: (date, itemId, reason) =>
         set((state) => {
@@ -103,6 +136,13 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
           if (state.dismissedNoData.includes(key)) return state
           return { dismissedNoData: [...state.dismissedNoData, key] }
         }),
+
+      dismissBridge: (weekMonday, itemId) =>
+        set((state) => {
+          const key = vidaBridgeKey(weekMonday, itemId)
+          if (state.dismissedBridges.includes(key)) return state
+          return { dismissedBridges: [...state.dismissedBridges, key] }
+        }),
     }),
     {
       name: VIDA_DEVICE_NOTES_STORAGE_KEY,
@@ -114,6 +154,7 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
       partialize: (state) => ({
         blockNotes: state.blockNotes,
         dismissedNoData: state.dismissedNoData,
+        dismissedBridges: state.dismissedBridges,
       }),
     },
   ),

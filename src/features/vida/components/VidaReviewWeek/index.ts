@@ -1,0 +1,1 @@
+export { VidaReviewWeek } from './VidaReviewWeek'

@@ -211,6 +211,92 @@
 
   </div>
 
+  <p class="caption">A · <em>y lo que pasó de verdad</em> — la condición</p>
+  <div class="row">
+
+    <div class="moment">
+      <div class="mtitle alt">A4 · La mañana siguiente<small>Un toque si fue como dijiste. Dos si no.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Miércoles · 7:05</p>
+          <div class="night dawn"><span class="stars">🌅</span>
+            <span class="lab">¿Dormiste 23:00 → 5:00?</span>
+            <span class="sub">Es tu noche de siempre. Si fue así, un toque y listo.</span>
+            <div class="days" style="margin-top:9px">
+              <span class="d on" style="flex:2;background:var(--ink);color:#fff">Sí, así fue</span>
+              <span class="d" style="flex:2;background:#fff;border:1px solid rgba(15,23,42,.14);color:var(--ink-soft)">Fue distinto</span>
+            </div>
+          </div>
+          <div class="agenda" style="margin-top:12px"><div class="rail"></div>
+            <div class="slot"><span class="t">6:30</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(16,185,129,.12)">🚿</span>
+                <span class="txt"><span class="nm2">Bañarme</span><span class="meta">30 min · X</span></span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Aparece <b>una vez al día</b>, por la mañana, y no vuelve a preguntar. Si la ignoras, se queda lo planeado y se marca como <b>sin confirmar</b> — que no es lo mismo que confirmado, y el sistema no lo contará como si lo fuera.</p>
+    </div>
+
+    <div class="moment">
+      <div class="mtitle alt">A5 · La noche que no cruzó<small>Te acostaste a la 1:00: esa noche es toda de hoy.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <div class="sheet">
+            <div class="grab"></div>
+            <p class="stitle">¿Cómo dormiste?</p>
+            <p class="ssub">Noche del martes al miércoles · tu noche dice 23:00 → 5:00</p>
+            <div class="field">
+              <div class="lbl">Te acostaste / te levantaste</div>
+              <div class="inputs">
+                <div class="box" style="border-color:rgba(79,70,229,.5)"><span class="v">1:00</span><span class="u">acostarse</span></div>
+                <div class="box" style="border-color:rgba(79,70,229,.5)"><span class="v">6:40</span><span class="u">levantarse</span></div>
+              </div>
+              <div class="cap">Dormiste <b>5 h 40</b>. <b>20 min menos</b> que tu noche.</div>
+              <div class="cap" style="color:var(--indigo-text)">Esta noche <b>no cruzó la medianoche</b>: empezó y acabó el miércoles.</div>
+            </div>
+            <div class="field">
+              <div class="lbl">Si no lo tienes claro</div>
+              <div class="days" style="margin-top:7px">
+                <span class="d" style="flex:1;background:#fff;border:1px solid rgba(15,23,42,.14);color:var(--ink-soft)">No sé a qué hora</span>
+              </div>
+              <div class="cap">Se guarda lo que sí sabes y lo otro queda <b>sin dato</b>. No se inventa una hora para cuadrar.</div>
+            </div>
+            <div class="save">Guardar</div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Esto es lo que el render anterior daba por hecho y <b>era mentira</b>: que la noche siempre parte el día en dos. Acostarse a la 1:00 es una noche entera dentro del miércoles, y el sistema tiene que saber decirlo sin que tú hagas la cuenta.</p>
+    </div>
+
+    <div class="moment">
+      <div class="mtitle alt">A6 · Cómo queda el día<small>Lo real encima de lo planeado, igual que un bloque.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Miércoles</p>
+          <div class="tsum">
+            <div class="top"><span class="d2">Miércoles</span><span class="left"><b>3h</b> puestas de 17h</span></div>
+            <div class="win">Tu día · 6:40 → 23:00 · dormiste 5 h 40</div>
+          </div>
+          <div class="agenda"><div class="rail"></div>
+            <div class="night dawn"><span class="stars">🌅</span>
+              <span class="lab">Dormiste 1:00 → 6:40</span>
+              <span class="sub">5 h 40 · 20 min menos que tu noche · confirmado</span></div>
+            <div class="slot"><span class="t">7:00</span><span class="dot"></span>
+              <div class="card"><span class="ic2" style="background:rgba(16,185,129,.12)">🚿</span>
+                <span class="txt"><span class="nm2">Bañarme</span><span class="meta">30 min · X</span></span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Tu día <b>empieza cuando te levantaste de verdad</b>, no a las 5:00: por eso «Tu día · 6:40 → 23:00». Los huecos de la mañana se recalculan solos y ninguno te ofrece un rato en el que estabas durmiendo. Eso es lo que hace que la app sea honesta contigo.</p>
+    </div>
+
+  </div>
+
+  <p class="note"><b>Esta es la condición que pusiste, y cambia la propuesta A para bien:</b> la noche de Ajustes deja de ser un dato fijo y pasa a ser <b>lo planeado</b>, exactamente como la plantilla. Lo que dormiste de verdad va encima, se confirma en un toque cuando coincide y se corrige cuando no. Es el mismo trato que ya reciben tus bloques — y por eso encaja sin inventar un concepto nuevo.</p>
+
   <p class="caption">Propuesta B · <em>dormir es una actividad como las demás, y la app aprende a cruzar la medianoche</em></p>
   <div class="row">
 

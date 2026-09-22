@@ -192,3 +192,17 @@ habíamos previsto. Cada una con su render aprobado antes de construirse.
   hiciste, con la duración real y validado contra el hueco y contra lo **real**
   de los vecinos. Render `12-vida-hoy-registrar-en-hueco.html`, **aprobado el
   2026-09-22**.
+- **La noche (Ajustes, plantilla y día).** Dormir **no es una actividad entre
+  otras: es el borde del día**. Se pone una vez —a qué hora te acuestas y te
+  levantas, y qué noches— y se pinta como una franja arriba y abajo de cada día,
+  **fuera de la lista y fuera del presupuesto**. Render `13-vida-dormir.html`,
+  **aprobado el 2026-09-22 con una condición del usuario**: tiene que ser
+  flexible. Esa condición convierte la noche de Ajustes en **lo planeado** y
+  obliga a confirmar o corregir **lo real** cada mañana, igual que un bloque; y
+  destapa que **una noche puede no cruzar la medianoche** (acostarse a la 1:00 y
+  levantarse a las 6:40 es una noche entera dentro del mismo día), así que nada
+  puede asumir que la noche parte el día en dos. Descartada la propuesta B
+  (dormir como actividad y el módulo entero aprendiendo a cruzar la medianoche):
+  más cara y menos verdad, pero **sigue siendo la respuesta correcta el día que
+  haga falta poner un vuelo o un turno de noche**.
+  **Es la primera cosa del módulo que toca el API.**

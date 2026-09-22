@@ -19,10 +19,45 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-22 |
-| FEAT-011 | building | 1/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
+| FEAT-011 | building | 2/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | specified | 0/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
+
+**FEAT-011 `building` 2/3** (2026-09-22, revisor). **Tajada 2 aceptada**, y con
+ella se cierra el 225 que quedó parcial en la tajada 1. **Reproduje el hallazgo
+(a) yo mismo**, que es el que valía la revisión: con el hueco partido por
+«ahora» y un bloque detrás que acabó horas antes, la ventana **no** se abre
+hacia atrás —`startMinutes` se queda en 10:00 y no en 7:50, `previousTouchesStart`
+es `false` y el aviso no nombra a quien no toca el borde—; el guardián de
+adyacencia vive en **la función pura**, que es donde tenía que estar. Probé
+también, por fuera: vecino que acabó antes (9:28) y después (9:40), vecino de la
+derecha que nombra la hora, vecino **sin** sesión (manda el plan y no se dice
+nada), **sesión abierta como vecino** (en presente, «lleva ocupado hasta las…»),
+la ventana que nunca se da la vuelta, y una ventana del plan que no rompe nada.
+**El hallazgo (b) —callarse cuando el vecino no toca el borde— es lo correcto**:
+decir «a las 11:00 entra Daily meeting» cuando entra a las 13:00 sería falso, y
+lo que decide (cuánto cabe y desde cuándo) se sigue diciendo. **Criterio 236
+verificado con `git diff --stat`**: `vida-gap-form.utils.ts`, `VidaPlaceInGapSheet/`
+y `VidaTemplateGapRow/` **no aparecen en el diff**, y es cierto por construcción
+—`RealGapWindow` extiende el `GapWindow` estructural y la cláusula nueva
+**envuelve** a `validatePlacement`—. **Criterio 234 por la rama correcta**: el
+mapa `realWindowByGapId` es **aditivo** y los huecos que se pintan son los
+mismos, así que **la barra y la leyenda no se mueven**; la hoja explica la
+diferencia —leí en el navegador «Bañarme acabó a las 8:50, así que aquí empieza
+más tarde», con el subtítulo «en el hueco de **8:50** a 9:24» y el inicio en
+08:50—. La sesión abierta **no se toca** (cero `edit`, cero `remove`, espiados) y
+lo que se pisa **no se puede guardar** por los dos lados. La hoja, cruce de
+FEAT-004/008/013, sigue entera: lo anclado cuelga de `mode === 'log' &&
+gapWindow` y las funciones nuevas devuelven `null` con una ventana del plan. A
+375 px, 0 desbordados en claro y oscuro; la línea nueva a **7,88:1** en oscuro
+—**cifras del DOM**—. Línea base corrida entera: typecheck limpio, lint 14/0,
+**2 fallos de 1718**, build exit 0 con el chunk en **1.105,14 kB** (+2,71).
+Hallazgo: con la ventana **vacía** el aviso dice «entre las 11:40 y las 11:40»;
+bloquea bien, pero la frase pide otra redacción. **Intendencia: el dev server que
+arrancó el constructor desde `.claude/launch.json` sigue vivo en el 5173** —lo he
+usado, no arranqué otro, y yo tampoco tengo `preview_stop`—. Siguiente: el
+`feature-builder`, tajada 3.
 
 **FEAT-011 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** El
 hueco pasado deja de ser texto muerto: trae **una** salida de **44,0 × 147,9 px**

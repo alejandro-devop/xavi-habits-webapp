@@ -56,6 +56,11 @@ import type {
   AgendaGap,
   DayAgenda,
 } from '@/features/vida/utils/vida-agenda.utils'
+import type {
+  GapNeighbour,
+  RealGapWindow,
+} from '@/features/vida/utils/vida-gap-window.utils'
+import { buildGapRealWindow } from '@/features/vida/utils/vida-gap-window.utils'
 import {
   MIN_GAP_MINUTES,
   formatDurationFromMinutes,
@@ -669,6 +674,20 @@ export type DayExecution = {
   insteadByBlockId: Record<string, BlockInstead>
   /** Los tramos «sin dato», por el `id` del hueco que los produce (criterio 47). */
   noDataByGapId: Record<string, NoDataSlice>
+
+  /**
+   * La ventana **real** de cada hueco, por el `id` del hueco **ya partido**
+   * (FEAT-011, criterio 233): los bordes de lo vivido, no los del plan.
+   *
+   * **Ojo con la clave:** `sliceGap` reescribe el `id` (`gap-HH:mm-HH:mm`), así
+   * que la entrada se pone junto a cada `push` del hueco; buscada en
+   * `agenda.gaps` no casaría en un día con registros.
+   *
+   * El hueco de la agenda **no se mueve**: esto lo acompaña. Quien quiera
+   * registrar algo ahí valida contra esta ventana; quien pinte la barra sigue
+   * leyendo `startMinutes` / `endMinutes` del hueco (criterio 14 de FEAT-003).
+   */
+  realWindowByGapId: Record<string, RealGapWindow>
 }
 
 export type BuildDayExecutionInput = {
@@ -742,8 +761,67 @@ export function buildDayExecution({
   }
   sessions.sort((a, b) => a.startMinutes - b.startMinutes || a.id.localeCompare(b.id))
 
+  // Los bloques del plan a cada lado de cada hueco, **antes** de partirlo: el
+  // de la izquierda es el que puede haber acabado antes o después de su hora, y
+  // el de la derecha, el que puede haber empezado antes (criterio 233).
+  const planNeighbours: Record<string, { before: AgendaBlock | null; after: AgendaBlock | null }> = {}
+  {
+    let lastBlock: AgendaBlock | null = null
+    const waiting: string[] = []
+    for (const entry of agenda.entries) {
+      if (entry.kind === 'gap') {
+        planNeighbours[entry.id] = { before: lastBlock, after: null }
+        waiting.push(entry.id)
+        continue
+      }
+      if (entry.kind !== 'block') continue
+      for (const id of waiting) planNeighbours[id]!.after = entry
+      waiting.length = 0
+      lastBlock = entry
+    }
+  }
+
+  /**
+   * Un bloque del plan visto como vecino de un hueco. Su borde real es el de
+   * **su** sesión, y solo cuando la sesión está **en su sitio**: la de un
+   * bloque `moved` se pinta donde ocurrió —y ahí ya parte el hueco que le
+   * toque—, así que aquí manda el plan.
+   */
+  function blockNeighbour(block: AgendaBlock, side: 'before' | 'after'): GapNeighbour {
+    const span = spanByBlockId[block.id]
+    const inPlace = span && byBlockId[block.id]?.status !== 'moved' ? span : null
+    return {
+      title: block.item.activity?.title ?? null,
+      plannedMinutes: side === 'before' ? block.endMinutes : block.startMinutes,
+      realMinutes: inPlace ? (side === 'before' ? inPlace.endMinutes : inPlace.startMinutes) : null,
+      isRunning: inPlace?.isRunning ?? false,
+    }
+  }
+
+  /**
+   * Una sesión ya registrada vista como vecina: su borde es exacto —pasó— y por
+   * eso `plannedMinutes` y `realMinutes` coinciden. **La sesión abierta entra
+   * por aquí igual que las demás: se lee, no se toca** (criterio 235).
+   */
+  function sessionNeighbour(session: ExecutionSessionEntry, atMinutes: number): GapNeighbour {
+    return {
+      title: session.span.title,
+      plannedMinutes: atMinutes,
+      realMinutes: atMinutes,
+      isRunning: session.span.isRunning,
+    }
+  }
+
   const entries: ExecutionEntry[] = []
+  const realWindowByGapId: Record<string, RealGapWindow> = {}
   const pending = [...sessions]
+
+  /** Empujar un hueco **y anotar su ventana real con la clave que acaba de estrenar**. */
+  function pushGap(gap: AgendaGap, before: GapNeighbour | null, after: GapNeighbour | null) {
+    entries.push(gap)
+    realWindowByGapId[gap.id] = buildGapRealWindow({ gap, before, after, nowMinutes })
+  }
+
   for (const entry of agenda.entries) {
     if (entry.kind !== 'gap') {
       while (pending.length > 0 && pending[0]!.startMinutes < entry.startMinutes) {
@@ -755,16 +833,29 @@ export function buildDayExecution({
     // Un hueco puede contener varias sesiones: se parte en trozos y cada
     // sesión va en su sitio. Lo que sobresale del hueco no recorta nada: la
     // barra ya lo cuenta una sola vez.
+    const neighbours = planNeighbours[entry.id] ?? { before: null, after: null }
+    const planAfter = neighbours.after ? blockNeighbour(neighbours.after, 'after') : null
+    let before: GapNeighbour | null = neighbours.before
+      ? blockNeighbour(neighbours.before, 'before')
+      : null
     let cursor = entry.startMinutes
     while (pending.length > 0 && pending[0]!.startMinutes < entry.endMinutes) {
       const session = pending.shift()!
       const start = Math.max(cursor, Math.min(session.startMinutes, entry.endMinutes))
-      if (start > cursor) entries.push(sliceGap(entry, cursor, start, nowMinutes))
+      // El trozo que queda a la izquierda de la sesión: por la derecha lo cierra
+      // **la sesión**, no el bloque del plan.
+      if (start > cursor) pushGap(sliceGap(entry, cursor, start, nowMinutes), before, sessionNeighbour(session, start))
       entries.push(session)
       cursor = Math.max(cursor, Math.min(session.endMinutes, entry.endMinutes))
+      // …y el siguiente trozo tiene a esa misma sesión pegada por la izquierda.
+      before = sessionNeighbour(session, cursor)
     }
     if (cursor < entry.endMinutes) {
-      entries.push(cursor === entry.startMinutes ? entry : sliceGap(entry, cursor, entry.endMinutes, nowMinutes))
+      pushGap(
+        cursor === entry.startMinutes ? entry : sliceGap(entry, cursor, entry.endMinutes, nowMinutes),
+        before,
+        planAfter,
+      )
     }
   }
   entries.push(...pending)
@@ -799,6 +890,7 @@ export function buildDayExecution({
     missingByBlockId,
     insteadByBlockId,
     noDataByGapId: buildNoDataSlices({ entries, isClosedForm: budget.form === 'closed' }),
+    realWindowByGapId,
   }
 }
 

@@ -61,6 +61,16 @@
   line-height: 1.35;
 }
 
+/* Por qué el rato de la hoja no es exactamente el del renglón (FEAT-011,
+   criterio 234). Es una explicación, no un aviso: tono secundario, nunca el
+   rojo del error. */
+.shift {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
 .notes {
   width: 100%;
   min-width: 0;

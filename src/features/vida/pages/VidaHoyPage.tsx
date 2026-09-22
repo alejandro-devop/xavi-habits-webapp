@@ -60,6 +60,7 @@ import {
   useVidaDeviceNotesStore,
 } from '@/features/vida/store/vida-device-notes.store'
 import type { GapWindow } from '@/features/vida/utils/vida-gap-form.utils'
+import type { RealGapWindow } from '@/features/vida/utils/vida-gap-window.utils'
 import {
   gapToWindow,
   getBlockEditWindow,
@@ -505,12 +506,17 @@ export function VidaHoyPage() {
    * puesto en el principio del hueco (criterio 223) y la duración **no**: la
    * pone la actividad que se elija, nunca el hueco entero (criterio 224).
    *
-   * En esta tajada la ventana son los bordes **del plan** (`gapToWindow`, lo
-   * mismo que usa el camino de planear). La tajada 2 cambia la fuente de esta
-   * misma prop por la ventana real; nada más de aquí se mueve.
+   * La ventana son los bordes **reales** (FEAT-011, tajada 2): los de lo
+   * vivido, que `buildDayExecution` calcula junto a cada hueco ya partido
+   * (`realWindowByGapId`, con la clave que estrena el trozo). Si «Desayunar»
+   * acabó a las 9:28, el límite son las 9:28 y no las 9:30.
+   *
+   * El `?? gapToWindow(gap)` es la red de un hueco que no venga del mapa —la
+   * puerta de arriba es `executionKnown`, así que en la pantalla no ocurre—:
+   * antes que quedarse sin ventana, se valida contra el plan.
    */
   function logInGap(gap: AgendaGap) {
-    const gapWindow = gapToWindow(gap)
+    const gapWindow = execution.realWindowByGapId[gap.id] ?? gapToWindow(gap)
     openLogSheet({
       mode: 'log',
       gapWindow,
@@ -1038,7 +1044,10 @@ type LogSheetState =
       mode: Extract<VidaLogSessionMode, 'start' | 'log'>
       /** Hora y duración **ya puestas**: el rato de un bloque o de un tramo sin dato. */
       initial?: { startTime?: string; durationMinutes?: number }
-      /** El hueco desde el que se abrió, si se abrió desde uno (FEAT-011). */
-      gapWindow?: GapWindow
+      /**
+       * El hueco desde el que se abrió, si se abrió desde uno (FEAT-011): la
+       * ventana **real** cuando viene de `execution.realWindowByGapId`.
+       */
+      gapWindow?: GapWindow | RealGapWindow
     }
   | { mode: Extract<VidaLogSessionMode, 'edit'>; session: ActivityFollowUp }

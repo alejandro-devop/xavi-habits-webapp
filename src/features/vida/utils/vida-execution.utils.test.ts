@@ -433,6 +433,164 @@ describe('buildDayExecution: la agenda con lo real dentro', () => {
     expect(libre).toBe(120 - 15 - 20)
   })
 
+  it('criterio 233 de FEAT-011 — el vecino que acabó ANTES abre la ventana real antes', () => {
+    // «Desayunar» estaba planeado hasta las 9:30 y su sesión acabó a las 9:28:
+    // el hueco se sigue pintando de 9:30 a 11:30 (la barra no se mueve) pero la
+    // ventana contra la que se registra empieza a las 9:28.
+    const agenda = agendaOf([
+      block('b1', 'des', '09:00', '09:30'),
+      block('b2', 'daily', '11:30', '12:00'),
+    ])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'des', '09:00', 28)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    const gap = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('09:30'),
+    )!
+    const space = execution.realWindowByGapId[gap.id]!
+
+    expect([gap.startMinutes, gap.endMinutes]).toEqual([at('09:30'), at('11:30')])
+    expect(space.startMinutes).toBe(at('09:28'))
+    expect(space.endMinutes).toBe(at('11:30'))
+    expect(space.previousBlockTitle).toBe('Actividad des')
+    expect(space.nextBlockTitle).toBe('Actividad daily')
+  })
+
+  it('criterio 233 — el vecino que se alargó cierra la ventana por la izquierda', () => {
+    const agenda = agendaOf([
+      block('b1', 'des', '09:00', '09:30'),
+      block('b2', 'daily', '11:30', '12:00'),
+    ])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'des', '09:00', 40)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    const gap = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('09:30'),
+    )!
+
+    expect(execution.realWindowByGapId[gap.id]!.startMinutes).toBe(at('09:40'))
+    expect(execution.realWindowByGapId[gap.id]!.startShiftMinutes).toBe(10)
+  })
+
+  it('criterio 235 — la sesión abierta es un vecino más: cierra el borde y no se toca', () => {
+    // Un cronómetro corriendo desde las 10:00 dentro de un hueco de 9:30 a
+    // 11:30: parte el hueco en dos y **es el vecino** de los dos trozos.
+    const agenda = agendaOf(
+      [block('b1', 'des', '09:00', '09:30'), block('b2', 'daily', '11:30', '12:00')],
+      at('11:00'),
+    )
+    const open = session('s1', 'correr', '10:00', null)
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [open],
+      date: DATE,
+      nowMinutes: at('11:00'),
+      dayEnd: DAY_END,
+      isPastDay: false,
+    })
+    const head = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('09:30'),
+    )!
+    const space = execution.realWindowByGapId[head.id]!
+
+    // La clave es la del trozo **ya partido**: `sliceGap` reescribe el id.
+    expect(head.id).toBe('gap-09:30-10:00')
+    expect([space.startMinutes, space.endMinutes]).toEqual([at('09:30'), at('10:00')])
+    expect(space.nextBlockTitle).toBe('Actividad correr')
+    expect(space.nextIsRunning).toBe(true)
+    // Y la sesión abierta sale del cálculo **como entró**: aquí no se cierra ni
+    // se acorta nada.
+    expect(open.durationMinutes).toBeNull()
+    expect(open.isOpen).toBe(true)
+  })
+
+  it('criterio 235 — el trozo de cola tiene a la sesión ya registrada como vecina', () => {
+    const agenda = agendaOf([
+      block('b1', 'des', '09:00', '09:30'),
+      block('b2', 'daily', '11:30', '12:00'),
+    ])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'banco', '10:00', 20)],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    const tail = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('10:20'),
+    )!
+    const space = execution.realWindowByGapId[tail.id]!
+
+    expect(tail.id).toBe('gap-10:20-11:30')
+    expect([space.startMinutes, space.endMinutes]).toEqual([at('10:20'), at('11:30')])
+    expect(space.previousBlockTitle).toBe('Actividad banco')
+    expect(space.startShiftMinutes).toBe(0)
+  })
+
+  it('un hueco partido por «ahora» no hereda la hora real de un bloque que no toca', () => {
+    // `buildDayAgenda` parte el hueco en «ahora»: el trozo de delante tiene
+    // detrás un bloque que acabó dos horas antes. Su borde real **no** manda
+    // ahí, o la ventana se abriría por encima de lo que hay en medio.
+    const agenda = agendaOf(
+      [block('b1', 'des', '09:00', '09:30'), block('b2', 'daily', '11:30', '12:00')],
+      at('10:30'),
+    )
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [session('s1', 'des', '09:00', 28)],
+      date: DATE,
+      nowMinutes: at('10:30'),
+      dayEnd: DAY_END,
+      isPastDay: false,
+    })
+    const future = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('10:30'),
+    )!
+    const space = execution.realWindowByGapId[future.id]!
+
+    expect(space.startMinutes).toBe(at('10:30'))
+    expect(space.previousBlockTitle).toBeNull()
+    // Y el trozo pasado, que sí toca al bloque, sigue abriéndose a las 9:28.
+    const past = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('09:30'),
+    )!
+    expect(execution.realWindowByGapId[past.id]!.startMinutes).toBe(at('09:28'))
+  })
+
+  it('un bloque sin sesión deja mandar al plan (criterio 237)', () => {
+    const agenda = agendaOf([
+      block('b1', 'des', '09:00', '09:30'),
+      block('b2', 'daily', '11:30', '12:00'),
+    ])
+    const execution = buildDayExecution({
+      agenda,
+      followUps: [],
+      date: DATE,
+      nowMinutes: null,
+      dayEnd: DAY_END,
+      isPastDay: true,
+    })
+    const gap = execution.entries.find(
+      (entry): entry is AgendaGap => entry.kind === 'gap' && entry.startMinutes === at('09:30'),
+    )!
+    const space = execution.realWindowByGapId[gap.id]!
+
+    expect([space.startMinutes, space.endMinutes]).toEqual([at('09:30'), at('11:30')])
+    expect(space.startShiftMinutes).toBe(0)
+    expect(space.endShiftMinutes).toBe(0)
+  })
+
   it('el movido: sombra en la hora planeada y lo real donde ocurrió, contado una vez', () => {
     const agenda = agendaOf([block('b1', 'perro', '19:00', '19:30')])
     const execution = buildDayExecution({

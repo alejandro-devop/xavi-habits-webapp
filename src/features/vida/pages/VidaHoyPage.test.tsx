@@ -2137,3 +2137,114 @@ describe('VidaHoyPage — el hueco que ya pasó se pulsa (criterios 220 a 232)',
     expect(screen.getAllByText(/^Libre /).length).toBeGreaterThan(0)
   })
 })
+
+/* ── FEAT-011, tajada 2: la ventana REAL ────────────────────────────────── */
+
+describe('VidaHoyPage — el hueco se valida contra lo vivido (criterios 233 a 236)', () => {
+  const HUECO_PASADO = 'Registrar lo que hiciste entre las 8:45 y las 9:24'
+
+  function sesion(
+    id: string,
+    activityId: string,
+    startTime: string,
+    durationMinutes: number | null,
+    title: string,
+  ): ActivityFollowUp {
+    return {
+      id,
+      activityId,
+      date: '2026-09-18',
+      startTime,
+      durationMinutes,
+      isOpen: durationMinutes === null,
+      endTime: null,
+      endDate: null,
+      endDateTime: null,
+      notes: null,
+      activity: { id: activityId, title, category: null },
+    }
+  }
+
+  /** «Bañarme» estaba planeado hasta las 8:45 y su sesión acabó a las 8:50. */
+  function bañarseHastaLasOchoCincuenta() {
+    dayFollowUpsQuery = ready([sesion('f1', 'a-b1', '08:00', 50, 'Bañarme')])
+  }
+
+  it('criterio 233 — el hueco se valida contra el borde real, no contra el del plan', () => {
+    bañarseHastaLasOchoCincuenta()
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: HUECO_PASADO }))
+
+    const hoja = screen.getByRole('dialog')
+    // La ventana empieza donde acabó el baño de verdad, no donde decía el plan.
+    expect(within(hoja).getByText('Viernes · en el hueco de 8:50 a 9:24')).toBeInTheDocument()
+    expect(within(hoja).getByLabelText('Hora a la que empezó')).toHaveValue('08:50')
+  })
+
+  it('criterio 234 — el renglón sigue diciendo las horas del plan y la hoja explica por qué se mueve', () => {
+    bañarseHastaLasOchoCincuenta()
+    renderWithProviders(<VidaHoyPage />)
+
+    // El renglón, intacto: la barra y su leyenda reparten el día desde ahí.
+    expect(screen.getByLabelText('Libre de 8:45 – 9:24')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: HUECO_PASADO }))
+    expect(
+      within(screen.getByRole('dialog')).getByText(
+        'Bañarme acabó a las 8:50, así que aquí empieza más tarde.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('criterio 225 — lo que se pisa con el vecino no cabe, y el aviso lo nombra', () => {
+    bañarseHastaLasOchoCincuenta()
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: HUECO_PASADO }))
+
+    const hoja = screen.getByRole('dialog')
+    fireEvent.click(within(hoja).getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.click(within(hoja).getByRole('button', { name: '15' }))
+    // Las 8:45 son del plan, pero el baño llegó hasta las 8:50.
+    fireEvent.change(within(hoja).getByLabelText('Hora a la que empezó'), {
+      target: { value: '08:45' },
+    })
+
+    const aviso = within(hoja).getByRole('alert')
+    expect(aviso).toHaveTextContent('Aquí cabe algo entre las 8:50 y las 9:24.')
+    expect(aviso).toHaveTextContent('Bañarme acabó a las 8:50.')
+    expect(within(hoja).getByRole('button', { name: 'Registrar' })).toBeDisabled()
+    expect(createFollowUpMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 235 — con un cronómetro corriendo, registrar en el hueco no lo toca', () => {
+    // «Llamada» empezó a las 9:00 y sigue abierta: parte el hueco pasado en
+    // dos y es el vecino del trozo de delante (8:45 → 9:00).
+    dayFollowUpsQuery = ready([sesion('f1', 'otra', '09:00', null, 'Llamada con el banco')])
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Registrar lo que hiciste entre las 8:45 y las 9:00' }),
+    )
+    const hoja = screen.getByRole('dialog')
+    fireEvent.click(within(hoja).getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.click(within(hoja).getByRole('button', { name: '15' }))
+    // Un cuarto de hora desde las 8:50 se pisaría con la llamada: no cabe, y
+    // se dice con su nombre.
+    fireEvent.change(within(hoja).getByLabelText('Hora a la que empezó'), {
+      target: { value: '08:50' },
+    })
+
+    const aviso = within(hoja).getByRole('alert')
+    expect(aviso).toHaveTextContent('A las 9:00 entra Llamada con el banco.')
+    expect(within(hoja).getByRole('button', { name: 'Registrar' })).toBeDisabled()
+
+    // Y lo que sí cabe se guarda **sin tocar la sesión abierta**.
+    fireEvent.change(within(hoja).getByLabelText('Hora a la que empezó'), {
+      target: { value: '08:45' },
+    })
+    fireEvent.click(within(hoja).getByRole('button', { name: 'Registrar' }))
+    expect(createFollowUpMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(updateFollowUpMutation.mutate).not.toHaveBeenCalled()
+    expect(deleteFollowUpMutation.mutate).not.toHaveBeenCalled()
+  })
+})

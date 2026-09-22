@@ -17,6 +17,11 @@ import {
   getMaxDurationForStartTime,
   validatePlacement,
 } from '@/features/vida/utils/vida-gap-form.utils'
+import type { RealGapWindow } from '@/features/vida/utils/vida-gap-window.utils'
+import {
+  describeGapWindowShift,
+  describePlacementBlocker,
+} from '@/features/vida/utils/vida-gap-window.utils'
 import {
   editSessionInput,
   logSessionInput,
@@ -65,8 +70,13 @@ type VidaLogSessionSheetProps = {
    * Sin ella, la hoja es exactamente la de siempre: «Registrar tiempo pasado»
    * de la cabecera no cambia ni una palabra (criterio 56 de FEAT-004). Es un
    * **dato**, no un cuarto modo.
+   *
+   * Desde la tajada 2 lo que llega de Hoy es la ventana **real**
+   * (`RealGapWindow`): los bordes de lo vivido. Cuando esos bordes no son los
+   * del plan, la hoja lo dice arriba con `describeGapWindowShift` (criterio
+   * 234) y el aviso de que no cabe **nombra al vecino** (criterio 225).
    */
-  gapWindow?: GapWindow | null
+  gapWindow?: GapWindow | RealGapWindow | null
   /** La sesión que se corrige, en el modo `edit` (criterio 35). */
   session?: ActivityFollowUp | null
   /**
@@ -160,6 +170,15 @@ export function VidaLogSessionSheet({
   const anchored = anchor !== null
   const maxMinutes = anchor ? getMaxDurationForStartTime(startTime, anchor) : 0
   const placement = anchor ? validatePlacement({ startTime, durationMinutes }, anchor) : null
+  // El **mismo** aviso de siempre, con la cláusula que nombra al vecino del
+  // otro lado detrás (criterios 225 y 235). `validatePlacement` no se toca: el
+  // camino de planear tiene que seguir diciendo lo que decía (criterio 236).
+  const placementMessage = anchor
+    ? describePlacementBlocker({ startTime, durationMinutes }, anchor)
+    : null
+  // **Por qué este rato no es el del renglón** (criterio 234). Con la ventana
+  // del plan sale `null` y no se pinta nada.
+  const windowShift = anchor ? describeGapWindowShift(anchor) : null
 
   function chooseActivity(activity: PickedActivity, templateMinutes: number | null) {
     setChosen(activity)
@@ -209,9 +228,9 @@ export function VidaLogSessionSheet({
     // cuánto cabe. Lo de siempre (nada del futuro, nada de otro día) sigue
     // detrás, intacto.
     if (anchor) {
-      const placed = validatePlacement({ startTime, durationMinutes }, anchor)
-      if (!placed.valid) {
-        setFormError(placed.message)
+      const blocked = describePlacementBlocker({ startTime, durationMinutes }, anchor)
+      if (blocked !== null) {
+        setFormError(blocked)
         return
       }
     }
@@ -321,6 +340,10 @@ export function VidaLogSessionSheet({
       footer={footer}
     >
       <div className={styles.form}>
+        {/* **El renglón dice las horas del plan y aquí se explica la
+            diferencia** (criterio 234): «Desayunar acabó a las 9:28, así que
+            aquí empieza antes». Sin diferencia no se pinta nada. */}
+        {windowShift ? <p className={styles.shift}>{windowShift}</p> : null}
         {mode === 'edit' ? (
           // Corrigiendo, el «qué» no se pregunta: se recuerda.
           <p className={styles.editing}>
@@ -454,10 +477,10 @@ export function VidaLogSessionSheet({
             campos de los que habla, y con las palabras que ya existen. */}
         {(formError ??
         (placement && !placement.valid && durationMinutes !== null
-          ? placement.message
+          ? placementMessage
           : null)) ? (
           <p className={styles.error} role="alert">
-            {formError ?? placement?.message}
+            {formError ?? placementMessage}
           </p>
         ) : null}
 

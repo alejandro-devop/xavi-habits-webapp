@@ -301,7 +301,7 @@ FEAT-009 140–171, FEAT-010 arranca en 180. **Esta feature empieza en el 220.**
 | # | What it does | State |
 |---|---|---|
 | 1 | **El hueco pasado se pulsa y cuentas qué hiciste, validado contra el hueco.** La rama `isPast` de `VidaAgendaGap` estrena «Registrar lo que hice»; abre `VidaLogSessionSheet` en `mode: 'log'` anclada al hueco (título «¿Qué hiciste?», inicio en el principio del hueco, duración editable), con `validatePlacement` + `durationPillsForWindow` + `getPlacementLeftovers` **tal como están**, Guardar apagado cuando no cabe, y el hueco encogiéndose al guardar (ya lo hace `buildDayExecution`). Criterios 220–232. **Ya es útil sola:** una mañana entera se reconstruye a trozos desde donde se ve. | pending |
-| 2 | **La ventana real.** Los bordes dejan de ser los del plan y pasan a ser los de lo vivido: «Desayunar acabó a las 9:28» mueve el límite a las 9:28, y un vecino que se alargó lo mueve al revés; la sesión abierta cuenta como vecino y **no se toca**. Función pura con su test, y el camino de **planear** sin cambiar de comportamiento. Criterios 233–237. | pending |
+| 2 | **La ventana real.** Los bordes dejan de ser los del plan y pasan a ser los de lo vivido: «Desayunar acabó a las 9:28» mueve el límite a las 9:28, y un vecino que se alargó lo mueve al revés; la sesión abierta cuenta como vecino y **no se toca**. Función pura con su test, y el camino de **planear** sin cambiar de comportamiento. Criterios 233–237. | aceptada |
 | 3 | **La otra cara del hueco y la duración de siempre.** El hueco de delante gana «Registrar» como segunda salida (con «Poner algo» mandando), y la duración por defecto pasa a ser la que sueles tardar, con su caída ordenada cuando no hay dato. Criterios 238–242. | pending |
 
 **Por qué este orden:** la 1 es la mitad del render y **no necesita aritmética
@@ -701,7 +701,7 @@ prueba sola.
 | # | Qué hace | Archivos | Criterios | Estado |
 |---|---|---|---|---|
 | 1 | **El hueco pasado se pulsa y cuentas qué hiciste**, validado contra los bordes del **plan**. | `VidaAgendaGap.tsx:79-92` + `.module.scss` (44 px) · `VidaLogSessionSheet.tsx:50,128,133,222,246,327,371,171` · `VidaDurationPills.tsx` («Todo el hueco») · `VidaHoyPage.tsx:1005,504,736,931` · tests en `VidaHoyPage.test.tsx` y `VidaLogSessionSheet.test.tsx` · **verificar** `vida-execution.utils.test.ts` (230) | 220–232, y de paso 243, 244, 246–249 (la puerta es `canLogPast && executionKnown`) | aceptada |
-| 2 | **La ventana real.** | **crea** `utils/vida-gap-window.utils.ts` + `.test.ts` · `vida-execution.utils.ts:648-672, 757-769, 790` · `VidaHoyPage.tsx` (pasar `realWindowByGapId[...] ?? gapToWindow(gap)`) · `VidaLogSessionSheet.tsx:222-234` (la frase de por qué se mueve) y `handleLog` (`describePlacementBlocker`) | 233–237 | pending |
+| 2 | **La ventana real.** | **crea** `utils/vida-gap-window.utils.ts` + `.test.ts` · `vida-execution.utils.ts:648-672, 757-769, 790` · `VidaHoyPage.tsx` (pasar `realWindowByGapId[...] ?? gapToWindow(gap)`) · `VidaLogSessionSheet.tsx:222-234` (la frase de por qué se mueve) y `handleLog` (`describePlacementBlocker`) | 233–237 | aceptada |
 | 3 | **La otra cara del hueco y la duración de siempre.** | `vida-patterns.utils.ts:981` + su test · `VidaHoyPage.tsx:319-321` y `logInGap` · `VidaAgendaGap.tsx:108-232` (el «Registrar» secundario) · `buildGapRealWindow({ clampToNow: true })` para el criterio 242 | 238–242 | pending |
 
 250 y 251 se cierran **en cada tajada**, no al final: `pnpm typecheck` + `pnpm
@@ -890,6 +890,186 @@ pantalla, y el 251 solo lo cierra el usuario con la API despierta.
 **Estado del árbol:** sin commitear. Arnés borrado (`harness-feat011.html` y
 `src/harness-feat011.tsx` no existen). `graphify update .` ejecutado.
 
+### Tajada 2 — La ventana real
+
+**Resumen para quien revise:**
+1. La hoja del hueco ya no valida contra el plan: valida contra **lo vivido**.
+   Si «Bañarme» acabó a las 8:50 aunque estuviera planeado hasta las 8:45, el
+   hueco de 8:45 a 9:24 se registra **desde las 8:50**, la hoja dice por qué se
+   mueve y el aviso de que no cabe **nombra al vecino**.
+2. Está en un archivo nuevo (`utils/vida-gap-window.utils.ts`, puro, con su
+   test), en el mapa `realWindowByGapId` que `buildDayExecution` rellena **dentro
+   del bucle que ya parte los huecos**, y en tres líneas de `VidaHoyPage` y
+   `VidaLogSessionSheet`. **`vida-gap-form.utils.ts` no se tocó** (criterio 236,
+   `git diff` de ese archivo vacío).
+3. **Lo que es más probable que haya roto:** `buildDayExecution` ahora recorre
+   `agenda.entries` **dos veces** (una para saber qué bloque hay a cada lado de
+   cada hueco) y empuja los huecos por una función nueva. El orden de
+   `entries` no cambió —lo fijan los tests de FEAT-004— pero cualquier consumidor
+   de `execution.entries` se entera aquí primero. Segundo sospechoso: el aviso
+   de la hoja ahora sale de `describePlacementBlocker`, así que **cualquier test
+   que compare el texto del aviso palabra por palabra** en el camino de
+   registrar ve una frase **más larga** (la de siempre + la cláusula del
+   vecino).
+
+**Qué se construyó, archivo por archivo:**
+
+- **`src/features/vida/utils/vida-gap-window.utils.ts`** (nuevo) — `GapNeighbour`,
+  `RealGapWindow`, `buildGapRealWindow`, `describeGapWindowShift` y
+  `describePlacementBlocker`. Puro, sin importar nada de `vida-execution.utils.ts`
+  (los vecinos entran en forma plana: no hay ciclo). `RealGapWindow` **extiende**
+  `GapWindow`, así que `validatePlacement`, `describeLeftovers`, `describeWindow`
+  y `getMaxDurationForStartTime` lo tragan sin tocarlos: es el **tercer
+  constructor** de ventana que dejó dicho el arquitecto.
+- **`…/vida-gap-window.utils.test.ts`** (nuevo) — 17 casos: los cinco del
+  criterio 237 (vecino que acabó antes · que acabó después · sin sesión · sin
+  vecino, fin del día · sesión abierta), los bordes que se cruzan, `clampToNow`,
+  las dos frases y la comprobación de que el aviso **empieza por las palabras
+  exactas** de `validatePlacement`.
+- **`utils/vida-execution.utils.ts`** — campo `realWindowByGapId` en
+  `DayExecution` y su relleno **dentro del bucle**, junto a cada `push` de hueco
+  (la clave es la del trozo, que `sliceGap` reescribe). Dos ayudantes locales:
+  `blockNeighbour` (un bloque del plan, con el borde de **su** sesión) y
+  `sessionNeighbour` (una sesión ya registrada, incluida la abierta). Y un pase
+  previo que apunta qué bloque hay a cada lado de cada hueco del plan.
+- **`utils/vida-execution.utils.test.ts`** — 5 casos nuevos: el vecino que acabó
+  antes, el que se alargó, la sesión abierta como vecina del trozo de delante, el
+  trozo de cola con la sesión registrada a la izquierda, y el hueco partido por
+  «ahora» que **no** hereda la hora de un bloque que no toca.
+- **`components/VidaLogSessionSheet/VidaLogSessionSheet.tsx`** — el aviso sale
+  ahora de `describePlacementBlocker` (en pantalla y en `handleLog`), y debajo
+  del subtítulo se pinta `describeGapWindowShift` cuando los bordes no son los
+  del plan. `validatePlacement` sigue ahí **solo** para el `valid` que apaga
+  Guardar: mismo camino, misma decisión.
+- **`…/VidaLogSessionSheet.module.scss`** — `.shift`, tono secundario (es una
+  explicación, no un aviso: nunca el rojo del error).
+- **`pages/VidaHoyPage.tsx`** — `logInGap` lee
+  `execution.realWindowByGapId[gap.id] ?? gapToWindow(gap)`. **Una línea**, como
+  decía el plan; el `??` es red para un hueco que no venga del mapa (la puerta
+  `executionKnown` hace que en pantalla no ocurra).
+- **`pages/VidaHoyPage.test.tsx`** — 4 casos de pantalla: 233 (la hoja abre en
+  8:50, no en 8:45), 234 (el renglón sigue diciendo 8:45 – 9:24 **y** la hoja
+  explica por qué), 225 (el aviso nombra a «Bañarme» y Guardar se apaga) y 235
+  (con un cronómetro corriendo, el trozo de delante se registra y **no** se
+  llaman `updateFollowUp` ni `deleteFollowUp`).
+
+**Por qué así, y qué se descartó:**
+
+- **Dos añadidos al diseño del arquitecto, los dos por bugs que salieron al
+  probar, y los dos conviene mirarlos:**
+  1. **Solo manda el borde real del vecino que está PEGADO al hueco**
+     (`plannedMinutes === el borde del hueco`). `buildDayAgenda` parte el hueco
+     en «ahora», y el trozo de después tiene detrás un bloque que acabó **dos
+     horas antes**: sin esta comprobación, la ventana de ese trozo se abría hacia
+     atrás por encima de todo lo que había en medio. Lo cazó un test.
+     `plannedMinutes` de `GapNeighbour` está justo para esto.
+  2. **`nextTouchesEnd` / `previousTouchesStart`.** El hueco de 8:45 a 9:24
+     (cerrado por «ahora») lleva `nextBlockTitle: 'Leer un rato'`, que **empieza
+     a las 10:00**. La cláusula «A las 9:24 entra Leer un rato» habría sido un
+     dato falso; con el vecino despegado, el aviso **se calla** en vez de
+     inventarse un reloj. `describeLeftovers` sigue usando `nextBlockTitle`
+     porque su frase («antes de Leer un rato») no afirma ninguna hora.
+- **El borde real de un bloque `moved` no cuenta.** Su sesión se pinta donde
+  ocurrió y **ya parte** el hueco que le toque; tomarla además como borde del
+  hueco de su hora la contaría dos veces.
+- **La ventana vacía no se da la vuelta.** Si un vecino se comió el hueco
+  entero, `endMinutes` se queda en `startMinutes`: `getMaxDurationForStartTime`
+  devuelve 0 y la validación de siempre dice que ahí no cabe nada. Negativos,
+  ninguno.
+- **El criterio 234, por la rama que eligió el arquitecto:** el renglón **no se
+  toca** (la barra y la leyenda reparten el día desde `gap.startMinutes`) y la
+  hoja lo explica. Está escrito en el comentario de `realWindowByGapId` para que
+  nadie lo deshaga sin leer por qué.
+- **`clampToNow` se implementó y se probó, pero nadie lo usa todavía**: es del
+  criterio 242 (tajada 3). Son tres líneas y un test; dejarlo para luego obligaba
+  a volver a abrir el archivo.
+- **No se cablearon `durationPillsForWindow` ni `getPlacementLeftovers`**, como
+  manda el plan. Siguen sin uso en producción.
+
+**Verificación** (línea base de `docs/features/ENVIRONMENT.md`, 2026-09-22):
+
+| Qué | Base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos |
+| `pnpm test` | 2 fallos de 1692 | **2 fallos de 1718** (los mismos `SearchSelect` ×2; +26 son los casos nuevos) |
+| `pnpm build` | chunk inicial 1.102,43 kB | **1.105,14 kB** (+2,71 kB: el archivo nuevo y las dos frases; sin dependencias nuevas) |
+
+**En el navegador** (arnés temporal `harness-feat011-t2.html` +
+`src/harness-feat011-t2.tsx`, **ya borrados**; `/app/*` está detrás del login y
+los agentes no entran):
+
+- **Intendencia:** el 5173 **no respondía** (probe: «APAGADO, nadie escucha»,
+  `curl` rc 7 en 5173 y 5174), así que arranqué el de `.claude/launch.json`, que
+  cogió el 5173 libre. **No tengo `preview_stop` entre mis herramientas: queda
+  arriba y lo digo aquí.** Lo que se vio es un arnés con datos sintéticos, no la
+  app con sesión.
+- A **375 px** y en **oscuro**: `scrollWidth === clientWidth === 375` con la hoja
+  abierta y el aviso puesto, con nombres de vecino de **47 y 47 caracteres**.
+  *(La captura sale a media escala —`devicePixelRatio` 2—; las medidas son sobre
+  el DOM.)*
+- Subtítulo: «Viernes · en el hueco de **9:40 a 11:25**» (la ventana real) y
+  debajo «Desayunar con calma y ordenar la cocina entera acabó a las 9:40, así
+  que aquí empieza más tarde. Daily meeting con el equipo de plataforma y diseño
+  empezó a las 11:25, así que aquí acaba antes.»
+- Con la hora puesta a las 9:35: el aviso dice «Esa hora se sale de este rato
+  libre. Aquí cabe algo entre las 9:40 y las 11:25. Desayunar con calma y ordenar
+  la cocina entera acabó a las 9:40.», `Registrar` sale `disabled`, el aviso
+  acaba en `bottom: 709` y el botón empieza en `top: 756`: **se ven los dos a la
+  vez** en 812 px, sin scroll (criterio 248).
+- **Contraste en oscuro** (criterio 249): la frase de por qué se mueve,
+  `rgb(168,179,199)` sobre `rgb(22,30,47)` → **7,9:1**; el aviso,
+  `rgb(255,180,171)` sobre el mismo fondo → **9,8:1**.
+
+**Criterios, uno a uno:**
+
+- **233 ✅** — «Bañarme» acaba a las 8:50 y la hoja abre en 8:50 con la ventana
+  8:50 → 9:24 (test de pantalla + dos tests de `buildDayExecution`: acabó antes
+  → 9:28, se alargó → 9:40). Y por el otro lado, el vecino de la derecha que
+  empezó antes cierra la ventana (test de unidad, ventana 9:40 → 11:25 visto en
+  el navegador).
+- **234 ✅** — el renglón sigue diciendo «Libre de 8:45 – 9:24» (aserción en el
+  mismo test) y la hoja dice «Bañarme acabó a las 8:50, así que aquí empieza más
+  tarde». Una sola verdad: **las dos caras leen el mismo `realWindowByGapId`**.
+  La barra y su leyenda no se movieron ni un minuto.
+- **225 ✅ (lo que quedó parcial en la tajada 1)** — el aviso nombra al bloque
+  del otro lado por arriba («A las 9:00 entra Llamada con el banco.») y por abajo
+  («Bañarme acabó a las 8:50.»), y sigue diciendo **primero** lo de siempre.
+  Cuando el vecino no está pegado al borde, se calla (ver «por qué así»).
+- **235 ✅** — la sesión abierta entra como un vecino más: parte el hueco, cierra
+  el borde del trozo de delante y **no se toca**. Test de pantalla con espías:
+  un `createFollowUp` y **cero** `updateFollowUp` / `deleteFollowUp`. En el test
+  de unidad, la sesión abierta sale del cálculo con `durationMinutes: null` e
+  `isOpen: true`, como entró.
+- **236 ✅** — `git diff --stat src/features/vida/utils/vida-gap-form.utils.ts`
+  **vacío**, y su test pasa sin tocar una línea. `VidaPlaceInGapSheet` y las
+  fichas del hueco futuro no aparecen en el diff. El camino de planear sigue
+  diciendo exactamente lo que decía.
+- **237 ✅** — `vida-gap-window.utils.test.ts`, 17 casos, con los cinco que pide
+  el criterio nombrados uno a uno.
+- **250 ✅** — tabla de arriba. Chunk +2,71 kB, sin dependencias nuevas.
+- **251 ⏳ solo el usuario** — con la API despierta, en `/app/vida/hoy`: dejar
+  que un bloque acabe fuera de su hora (registrar «Bañarme» de 8:00 a 8:50
+  cuando el plan decía hasta 8:45), pulsar «Registrar lo que hice» en el hueco
+  siguiente y comprobar que **la hoja abre en 8:50**, que explica por qué, y que
+  intentar las 8:45 apaga Guardar nombrando «Bañarme».
+
+**Lo que encontré y no toqué (fuera de alcance):**
+
+- **`gap.nextBlockTitle` no siempre nombra a quien empieza en `endMinutes`.** En
+  un hueco partido por «ahora» nombra al bloque de más allá. Aquí se resolvió con
+  `nextTouchesEnd`, pero el dato sigue siendo ambiguo para cualquier consumidor
+  nuevo; quien toque `buildDayAgenda` algún día haría bien en separarlo.
+- El hallazgo de la tajada 1 sobre `gap.isPast` en un día de la tira **sigue
+  igual**: esta tajada no lo necesitó (el mapa se rellena mire quien mire el día).
+- El `Button` en `disabled` dentro de la hoja sigue bajando solo a `opacity: .55`
+  y en oscuro se distingue poco: ya estaba apuntado en la tajada 1.
+
+**Estado del árbol:** sin commitear. Arnés borrado
+(`harness-feat011-t2.html` y `src/harness-feat011-t2.tsx` no existen).
+`graphify update .` ejecutado. **El dev server del 5173 lo arranqué yo y sigue
+arriba** (no tengo con qué pararlo).
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — El hueco pasado se pulsa y cuentas qué hiciste
@@ -1052,3 +1232,122 @@ premisa del plan: **esto convierte un renglón muerto en un gesto de dos toques*
 que es exactamente la dirección correcta; lo que queda por ver con datos reales
 es si la duración que propone acierta lo suficiente como para no tener que
 tocarla casi nunca (eso lo trae la tajada 3).
+
+### Tajada 2 — La ventana real: contra lo vivido, no contra lo planeado
+
+**Veredicto: `accepted`** — los criterios 233–237 se cumplen y el 225 queda
+cerrado (era el parcial que dejé anotado en la tajada 1). **Reproduje el
+hallazgo (a) yo mismo** y confirmo que el arreglo lo tapa; el (b) me parece la
+decisión correcta y explico por qué. Lo entregado no se toca: los tres archivos
+que el criterio 236 protege **no aparecen en el diff**, y la barra y su leyenda
+no se mueven ni un minuto.
+
+**El hallazgo (a), reproducido: la ventana se abría hacia atrás**
+
+Es el que valía la revisión, así que lo monté con mis propios casos (test
+temporal sobre el `utils`, borrado). El escenario: `buildDayAgenda` parte el
+hueco en «ahora», y **el trozo de después tiene detrás un bloque que acabó
+horas antes**. Con los vecinos crudos, la ventana habría empezado en el borde
+real de ese bloque —las **7:50**— y se habría comido lo que hay en medio.
+
+Con el código de esta tajada:
+
+```
+buildGapRealWindow({ gap: 10:00 → 11:00, before: {plan 8:00, real 7:50} })
+  → startMinutes 10:00 · previousTouchesStart false · previousBlockTitle null
+```
+
+El guardián es la comprobación de adyacencia —`before.plannedMinutes ===
+plannedStartMinutes`—, y está en **la función pura**, no en la pantalla, que es
+donde tenía que estar. Comprobé además que el aviso de «no cabe» en ese caso
+**no nombra a nadie**: dice solo «Esa hora se sale de este rato libre. Aquí cabe
+algo entre las 10:00 y las 11:00.». Sin la adyacencia, esto habría dejado
+escribir una sesión encima de otra: es exactamente el tipo de fallo que un test
+de pantalla no ve y uno de aritmética sí.
+
+Y comprobé lo demás de la función con mis casos: vecino pegado que acabó antes
+(9:28 → empieza antes, con su frase), vecino que acabó después (9:40 → «desde
+las 9:35 no cabe», nombrando a Desayunar), vecino de la derecha que nombra la
+hora a la que entra, **vecino sin sesión** (manda el plan y no se dice nada),
+**sesión abierta como vecino** («lleva ocupado hasta las 10:00», en presente),
+la ventana que **nunca se da la vuelta**, y una ventana del plan sin los campos
+de más, que no rompe nada.
+
+**El hallazgo (b): callarse es lo correcto**
+
+`gap.nextBlockTitle` no siempre nombra a quien empieza en `endMinutes` —en el
+hueco cerrado por «ahora» nombra al bloque de más allá—, así que la cláusula
+«a las 11:00 entra Daily meeting» sería **falsa**: Daily meeting empieza a las
+13:00. Entre decir una hora inventada y no decir nada, **no decir nada es lo
+correcto**, y es además lo que manda la regla del módulo (nada que no se sepa).
+
+¿Se pierde información que el usuario necesite? **Poca, y no la que decide**: el
+aviso sigue diciendo **cuánto cabe y desde cuándo**, que es lo que permite
+corregir; y quién cierra el hueco se sigue leyendo en la línea de lo que queda
+(«queda libre 1 h antes de Daily meeting»), que es cierta aunque el vecino no
+esté pegado. Lo apruebo tal cual. Si algún día se quiere la frase también ahí,
+el dato que falta es **a qué hora empieza de verdad el siguiente**, no el
+nombre.
+
+**Criterios, uno por uno**
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 233 | **cumplido** | La ventana sale de `realWindowByGapId`, calculada junto a cada hueco **ya partido** (la clave que estrena `sliceGap`, que era la trampa). **Visto en el navegador**: con «Bañarme» planeado hasta las 8:45 y su sesión acabada a las 8:50, la hoja abre en **8:50** y el subtítulo dice «en el hueco de **8:50** a 9:24». |
+| 234 | **cumplido, y por la rama correcta** | El renglón sigue diciendo las horas **del plan** —`entries` empuja los mismos huecos de siempre; `realWindowByGapId` es un mapa **al lado**, aditivo— así que `getDayBudget`/`getExecutedBudget` reparten la barra igual y la leyenda del criterio 14 no se mueve. Y la hoja explica la diferencia: leí en pantalla «**Bañarme acabó a las 8:50, así que aquí empieza más tarde.**». Una sola verdad, dicha donde se puede decir. |
+| 225 | **cumplido** (era parcial en la tajada 1) | `describePlacementBlocker` **envuelve** a `validatePlacement` y añade la cláusula: «Desde las 10:45 caben 45 min. Elige menos tiempo o empieza antes. **A las 11:30 entra Daily meeting.**» Verificado con mi caso, palabra por palabra. Por abajo nombra al de la izquierda («Bañarme acabó a las 8:50.»). |
+| 235 | **cumplido** | La sesión abierta entra como un vecino más (`sessionNeighbour`, `isRunning`), cierra el borde y **no se toca**: el test de la página afirma **cero** `activityFollowUpEdit` y **cero** `activityFollowUpRemove` al registrar, con un cronómetro corriendo. En mi caso puro, su frase va en presente («lleva ocupado hasta las…»), que es lo honrado. |
+| 236 | **cumplido, comprobado con `git diff --stat`** | `vida-gap-form.utils.ts`, `VidaPlaceInGapSheet/` y `VidaTemplateGapRow/` **no aparecen en el diff**. Y es cierto **por construcción**: `RealGapWindow` extiende el `GapWindow` estructural, así que `validatePlacement` y compañía se la tragan sin cambiar; la cláusula nueva vive en una función que las envuelve. |
+| 237 | **cumplido** | `vida-gap-window.utils.ts` es pura, no importa nada de `vida-execution.utils.ts` (ni tipos: los vecinos entran en forma plana, sin ciclo) y trae su propio archivo de test. Los casos que el criterio pide están, y los he vuelto a escribir yo por fuera. |
+
+**Que la hoja siga entera para los otros dos caminos**
+
+`VidaLogSessionSheet` es cruce de FEAT-004, FEAT-008 y FEAT-013. Lo nuevo entra
+por el mismo sitio que la tajada 1 —`anchor = mode === 'log' ? gapWindow : null`—
+y las dos funciones nuevas devuelven `null` con una ventana del plan, que
+comprobé explícitamente. Así: **«Empezar algo» no se entera** (su `anchor` es
+`null` por construcción) y **«Registrar tiempo pasado» de la cabecera tampoco**
+(se abre sin ventana). Su archivo de test no pierde ni una afirmación.
+
+**Lo que no se puede guardar, no se guarda**
+
+Por arriba y por abajo, con las mutaciones espiadas: los tests de la página
+afirman `Registrar` **deshabilitado** y `createFollowUp` **sin llamadas** cuando
+lo elegido se pisa con el vecino real —el de la izquierda y el de la derecha— y,
+además, el aviso se lee **sin pulsar nada**. Lo mío por el lado puro:
+`describePlacementBlocker` devuelve mensaje —y por tanto la hoja apaga Guardar—
+en todos los casos de solape que probé.
+
+**Estados, medidos por mí** (y lo digo igual de claro que él: **las cifras son
+del DOM**, aunque esta vez la hoja se dejó ver): a 375 px, `scrollWidth ===
+clientWidth === 375` y **0 nodos desbordados** en claro y en oscuro; la línea
+que explica el desplazamiento llega a **7,88:1** en oscuro.
+
+**Línea base, corrida entera por mí**
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1692 | 2 de 1718 | **2 fallidos de 1718**, 111 archivos de 112 en verde |
+| `pnpm build` | 1.102,43 kB | 1.105,14 kB | **exit 0**, `index` **1.105,14 kB** (+2,71), `app-icons` **620,20 kB sin tocar** |
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **La ventana degenerada dice la misma hora dos veces.** Cuando un vecino se
+   come el hueco entero, la ventana queda vacía y el aviso sale «Aquí cabe algo
+   entre las 11:40 y las 11:40.» Bloquea bien —que es lo que importa— pero la
+   frase es rara; con ventana vacía cabría decir algo del tipo «aquí ya no queda
+   rato libre».
+2. **El «pasado» sigue decidiéndose en dos sitios** (hallazgo de la tajada 1, no
+   resuelto aquí ni le tocaba).
+3. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1718** tests y
+   **1.105,14 kB**). **No lo he tocado.**
+
+**Intendencia:** el dev server que el constructor arrancó desde
+`.claude/launch.json` **sigue vivo en el 5173** y es el que he usado; yo tampoco
+tengo `preview_stop`, así que **queda vivo** para quien venga. No he arrancado
+ninguno.
+
+**Lo que no he podido revisar:** el recorrido con sesión —registrar en el hueco
+de ayer con el dedo y ver que el borde real es el que manda—, y el criterio 251.

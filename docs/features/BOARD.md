@@ -16,10 +16,43 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
-| FEAT-008 | in-review | 1/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
+| FEAT-008 | building | 1/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | specified | 0/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
+
+**FEAT-008 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** Los
+doce criterios (107–118) y los dos transversales que le tocan, comprobados uno a
+uno **con el navegador y con el teclado de verdad**: arnés propio con el
+componente real, servido desde el **5173 del usuario** (no arranqué nada) y
+borrado. Un ítem de 95 min abre **1 h 35 min**; escribir `90` sobre los minutos
+deja `1`/`90` **sin pelearse** y emite 150, y al salir con `Tab` se acomoda a
+`2`/`30` **sin cambiar el dato** —la normalización es de presentación, medido, no
+deducido—. **El criterio 115 ya no es prueba manual pendiente**: `Tab` va horas →
+minutos → control siguiente y `Shift+Tab` vuelve, probado con pulsaciones reales;
+la rueda del ratón no cambia el valor (`type="text"` + `inputMode="numeric"`);
+44 px de alto por campo, los dos en una línea a 375 px sin scroll, y en oscuro
+16,7:1 y 19,3:1. **Las otras tres pantallas no se han enterado**: `grep` de
+`freeInput` → solo la hoja y el panel; los tres archivos de Hoy y sesiones **no
+aparecen en `git status`**. La regla de sincronización del borrador —la puerta de
+FEAT-009— está en los dos sentidos y probada con un `Host` que precarga. **El
+`useState` en vez del `useRef` es correcto y algo mejor**: es el patrón de
+«ajustar estado cuando cambia una prop», sigue siendo sincronización en render
+(sin `useEffect`, sin tick de más) y evita escribir una `ref` durante el render;
+lint vuelve a 14/0, comprobado. El único test existente tocado **afirma más, no
+menos**. Línea base corrida entera: typecheck limpio, lint 14/0, **2 fallos de
+1589**, build exit 0 con el chunk en **1.093,96 kB** (+1,94). Cuatro hallazgos en
+la sección 4; el que más pesa, **reproducido por mí**: una duración ya guardada
+por encima del tope (1500 min) se **enseña** `23`/`59` con solo entrar y salir
+del campo mientras **se guardaría 1500**, y la línea del tope desaparece — no
+devuelve la tajada porque hace falta un dato que la interfaz nueva ya no puede
+crear y porque la alternativa cambiaría el dato del usuario al tabular; el
+arreglo es una condición en el blur. También: la línea del tope **no está
+enlazada** a los campos (`aria-describedby`), y los campos dejan de ser
+`spinbutton`. **La tajada 2 sigue bloqueada** esperando el render del usuario y
+no la he revisado: no hay ni un criterio del 119 al 128 en el diff. Siguiente: el
+usuario con el criterio 134 (el teclado numérico en un móvil de verdad es lo
+único que nadie puede ver desde aquí), y la tajada 2 cuando apruebe el render.
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.

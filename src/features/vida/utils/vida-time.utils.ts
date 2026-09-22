@@ -104,6 +104,51 @@ export function formatDurationMinutes(minutes: number): string {
 }
 
 /**
+ * El tope de una duración escrita a mano: **23 h 59 min**. No es una regla del
+ * API —ahí `durationMinutes` es un entero positivo y punto—, es lo que cabe en
+ * un día, y por eso se dice con el mismo número que `minutesToTime` ya usa para
+ * no cruzar medianoche.
+ */
+export const MAX_DURATION_MINUTES = MINUTES_PER_DAY - 1
+
+/**
+ * Minutos → `(horas, minutos)`, para escribir «Cuánto» en dos campos: `95` es
+ * `{ 1, 35 }` y `45` es `{ 0, 45 }`. **Sin duración devuelve los dos nulos**, no
+ * `{ 0, 0 }`: un ítem sin duración abre con los dos campos vacíos y ninguna
+ * píldora encendida (criterio 109).
+ *
+ * No formatea nada: para texto siguen estando `formatDurationMinutes` («1 h 35
+ * min») y `formatDurationFromMinutes` («1h 35»), que no se tocan.
+ */
+export function splitDurationMinutes(total: number | null): {
+  hours: number | null
+  minutes: number | null
+} {
+  if (total === null || !Number.isFinite(total)) return { hours: null, minutes: null }
+  const safe = Math.max(0, Math.round(total))
+  if (safe === 0) return { hours: null, minutes: null }
+  return { hours: Math.floor(safe / 60), minutes: safe % 60 }
+}
+
+/**
+ * La vuelta: `(horas, minutos)` → los minutos que viajan al API. Lo que hace
+ * que escribir solo minutos funcione sin trabajo extra —`(null, 90)` **es** 90,
+ * no 90 h—, que cero no exista —`(0, 0)` es `null`, nunca `0` (criterio 111)—
+ * y que nada imposible se guarde a escondidas: por encima de
+ * `MAX_DURATION_MINUTES` se queda ahí (criterio 113).
+ */
+export function joinDurationMinutes(
+  hours: number | null,
+  minutes: number | null,
+): number | null {
+  const h = hours === null || !Number.isFinite(hours) ? 0 : Math.max(0, Math.trunc(hours))
+  const m = minutes === null || !Number.isFinite(minutes) ? 0 : Math.max(0, Math.trunc(minutes))
+  const total = h * 60 + m
+  if (total <= 0) return null
+  return Math.min(total, MAX_DURATION_MINUTES)
+}
+
+/**
  * La hora como se lee en el módulo: sin cero a la izquierda («8:00», no
  * «08:00»), que es lo que dibujan los renders de Vida.
  */

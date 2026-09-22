@@ -972,7 +972,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "loginform_loginform",
-      "community": 231,
+      "community": 22,
       "norm_label": "loginform.tsx"
     },
     {
@@ -982,7 +982,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "loginform_loginform_loginlocationstate",
-      "community": 231,
+      "community": 22,
       "norm_label": "loginlocationstate"
     },
     {
@@ -992,7 +992,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "loginform_loginform_icon_props",
-      "community": 231,
+      "community": 22,
       "norm_label": "icon_props"
     },
     {
@@ -1002,7 +1002,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "loginform_loginform_mailicon",
-      "community": 231,
+      "community": 22,
       "norm_label": "mailicon()"
     },
     {
@@ -1012,7 +1012,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "loginform_loginform_lockicon",
-      "community": 231,
+      "community": 22,
       "norm_label": "lockicon()"
     },
     {
@@ -1022,7 +1022,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "loginform_loginform_loginform",
-      "community": 231,
+      "community": 22,
       "norm_label": "loginform()"
     },
     {
@@ -1082,7 +1082,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "resetpasswordform_resetpasswordform",
-      "community": 22,
+      "community": 232,
       "norm_label": "resetpasswordform.tsx"
     },
     {
@@ -1092,7 +1092,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "resetpasswordform_resetpasswordform_resetlocationstate",
-      "community": 22,
+      "community": 232,
       "norm_label": "resetlocationstate"
     },
     {
@@ -1102,7 +1102,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "resetpasswordform_resetpasswordform_resetpasswordform",
-      "community": 22,
+      "community": 232,
       "norm_label": "resetpasswordform()"
     },
     {
@@ -1232,7 +1232,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useloginmutation",
-      "community": 231,
+      "community": 22,
       "norm_label": "useloginmutation.ts"
     },
     {
@@ -1242,7 +1242,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "hooks_useloginmutation_useloginmutation",
-      "community": 231,
+      "community": 22,
       "norm_label": "useloginmutation()"
     },
     {
@@ -1332,7 +1332,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useresetpasswordmutation",
-      "community": 22,
+      "community": 232,
       "norm_label": "useresetpasswordmutation.ts"
     },
     {
@@ -1342,7 +1342,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "hooks_useresetpasswordmutation_useresetpasswordmutation",
-      "community": 22,
+      "community": 232,
       "norm_label": "useresetpasswordmutation()"
     },
     {
@@ -1542,7 +1542,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "router_verifyemailroute",
-      "community": 9,
+      "community": 109,
       "norm_label": "verifyemailroute.tsx"
     },
     {
@@ -1552,7 +1552,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "router_verifyemailroute_verifylocationstate",
-      "community": 9,
+      "community": 109,
       "norm_label": "verifylocationstate"
     },
     {
@@ -1562,7 +1562,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "router_verifyemailroute_verifyemailroute",
-      "community": 9,
+      "community": 109,
       "norm_label": "verifyemailroute()"
     },
     {
@@ -1692,7 +1692,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "store_auth_store",
-      "community": 23,
+      "community": 374,
       "norm_label": "auth.store.ts"
     },
     {
@@ -1702,7 +1702,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "store_auth_store_authstate",
-      "community": 23,
+      "community": 374,
       "norm_label": "authstate"
     },
     {
@@ -1712,7 +1712,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "store_auth_store_initialsession",
-      "community": 23,
+      "community": 374,
       "norm_label": "initialsession"
     },
     {
@@ -1952,7 +1952,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_pending_email",
-      "community": 9,
+      "community": 109,
       "norm_label": "pending-email.ts"
     },
     {
@@ -1962,7 +1962,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "utils_pending_email_setpendingemail",
-      "community": 9,
+      "community": 109,
       "norm_label": "setpendingemail()"
     },
     {
@@ -1972,7 +1972,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utils_pending_email_getpendingemail",
-      "community": 9,
+      "community": 109,
       "norm_label": "getpendingemail()"
     },
     {
@@ -1982,7 +1982,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "utils_pending_email_clearpendingemail",
-      "community": 9,
+      "community": 109,
       "norm_label": "clearpendingemail()"
     },
     {
@@ -2502,7 +2502,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitmeasurestep_createhabitmeasurestep",
-      "community": 59,
+      "community": 243,
       "norm_label": "createhabitmeasurestep.tsx"
     },
     {
@@ -2512,7 +2512,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "createhabitmeasurestep_createhabitmeasurestep_props",
-      "community": 59,
+      "community": 243,
       "norm_label": "props"
     },
     {
@@ -2522,7 +2522,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "createhabitmeasurestep_createhabitmeasurestep_createhabitmeasurestep",
-      "community": 59,
+      "community": 243,
       "norm_label": "createhabitmeasurestep()"
     },
     {
@@ -2532,7 +2532,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "createhabitmeasurestep_index",
-      "community": 59,
+      "community": 243,
       "norm_label": "index.ts"
     },
     {
@@ -2762,7 +2762,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid",
-      "community": 370,
+      "community": 32,
       "norm_label": "habitcontributiongrid.tsx"
     },
     {
@@ -2772,7 +2772,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid_props",
-      "community": 370,
+      "community": 32,
       "norm_label": "props"
     },
     {
@@ -2782,7 +2782,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid_day_labels",
-      "community": 370,
+      "community": 32,
       "norm_label": "day_labels"
     },
     {
@@ -2802,7 +2802,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "habitcontributiongrid_habitcontributiongrid_habitcontributiongrid",
-      "community": 370,
+      "community": 32,
       "norm_label": "habitcontributiongrid()"
     },
     {
@@ -2812,7 +2812,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitcontributiongrid_index",
-      "community": 370,
+      "community": 32,
       "norm_label": "index.ts"
     },
     {
@@ -2962,7 +2962,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test",
-      "community": 223,
+      "community": 159,
       "norm_label": "habitdayrow.test.tsx"
     },
     {
@@ -2972,7 +2972,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_addmutate",
-      "community": 223,
+      "community": 159,
       "norm_label": "addmutate"
     },
     {
@@ -2982,7 +2982,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_removemutate",
-      "community": 223,
+      "community": 159,
       "norm_label": "removemutate"
     },
     {
@@ -2992,7 +2992,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_days",
-      "community": 223,
+      "community": 159,
       "norm_label": "days"
     },
     {
@@ -3002,7 +3002,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_buildentry",
-      "community": 223,
+      "community": 159,
       "norm_label": "buildentry()"
     },
     {
@@ -3012,7 +3012,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_test_renderrow",
-      "community": 223,
+      "community": 159,
       "norm_label": "renderrow()"
     },
     {
@@ -3042,7 +3042,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "habitdayrow_habitdayrow_getmicrocopy",
-      "community": 7,
+      "community": 54,
       "norm_label": "getmicrocopy()"
     },
     {
@@ -5062,7 +5062,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitweekselector_habitweekselector",
-      "community": 32,
+      "community": 391,
       "norm_label": "habitweekselector.tsx"
     },
     {
@@ -5072,7 +5072,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "habitweekselector_habitweekselector_habitweekselectorprops",
-      "community": 32,
+      "community": 391,
       "norm_label": "habitweekselectorprops"
     },
     {
@@ -5082,7 +5082,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "habitweekselector_habitweekselector_habitweekselector",
-      "community": 32,
+      "community": 391,
       "norm_label": "habitweekselector()"
     },
     {
@@ -5092,7 +5092,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "habitweekselector_index",
-      "community": 32,
+      "community": 391,
       "norm_label": "index.ts"
     },
     {
@@ -5742,7 +5742,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_usehabitpurposequeryguard",
-      "community": 96,
+      "community": 23,
       "norm_label": "usehabitpurposequeryguard()"
     },
     {
@@ -5762,7 +5762,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "hooks_usehabitpurposes_usehabitpurposesquery",
-      "community": 96,
+      "community": 13,
       "norm_label": "usehabitpurposesquery()"
     },
     {
@@ -6122,7 +6122,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "pages_habitmydaypage_habitmydaypage",
-      "community": 13,
+      "community": 391,
       "norm_label": "habitmydaypage()"
     },
     {
@@ -6152,7 +6152,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_habitweekviewpage",
-      "community": 13,
+      "community": 391,
       "norm_label": "habitweekviewpage.tsx"
     },
     {
@@ -6162,7 +6162,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "pages_habitweekviewpage_habitweekviewpage",
-      "community": 13,
+      "community": 391,
       "norm_label": "habitweekviewpage()"
     },
     {
@@ -6692,7 +6692,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utils_habit_category_form_utils_defaultcategoryformvalues",
-      "community": 292,
+      "community": 60,
       "norm_label": "defaultcategoryformvalues()"
     },
     {
@@ -7232,7 +7232,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "utils_habit_identity_utils_getsnoozeuntil",
-      "community": 41,
+      "community": 32,
       "norm_label": "getsnoozeuntil()"
     },
     {
@@ -7852,7 +7852,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_habit_measure_form_utils",
-      "community": 39,
+      "community": 226,
       "norm_label": "habit-measure-form.utils.ts"
     },
     {
@@ -7872,7 +7872,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "utils_habit_measure_form_utils_measuretoformvalues",
-      "community": 39,
+      "community": 226,
       "norm_label": "measuretoformvalues()"
     },
     {
@@ -7882,7 +7882,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utils_habit_measure_form_utils_validatemeasureform",
-      "community": 39,
+      "community": 226,
       "norm_label": "validatemeasureform()"
     },
     {
@@ -7892,7 +7892,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "utils_habit_measure_form_utils_buildmeasurecreatepayload",
-      "community": 39,
+      "community": 226,
       "norm_label": "buildmeasurecreatepayload()"
     },
     {
@@ -7902,7 +7902,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "utils_habit_measure_form_utils_buildmeasureeditpayload",
-      "community": 39,
+      "community": 226,
       "norm_label": "buildmeasureeditpayload()"
     },
     {
@@ -7912,7 +7912,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "utils_habit_measure_form_utils_formatmeasurelabel",
-      "community": 39,
+      "community": 226,
       "norm_label": "formatmeasurelabel()"
     },
     {
@@ -8162,7 +8162,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_resolvepreviouswindow",
-      "community": 41,
+      "community": 32,
       "norm_label": "resolvepreviouswindow()"
     },
     {
@@ -8172,7 +8172,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_builddayentries",
-      "community": 41,
+      "community": 32,
       "norm_label": "builddayentries()"
     },
     {
@@ -8232,7 +8232,7 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_buildweeklycompliance",
-      "community": 32,
+      "community": 391,
       "norm_label": "buildweeklycompliance()"
     },
     {
@@ -8342,7 +8342,7 @@
       "source_location": "L441",
       "_origin": "ast",
       "id": "utils_habit_panel_utils_builddifficultyseries",
-      "community": 32,
+      "community": 391,
       "norm_label": "builddifficultyseries()"
     },
     {
@@ -8712,7 +8712,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_habit_type_utils",
-      "community": 239,
+      "community": 391,
       "norm_label": "habit-type.utils.ts"
     },
     {
@@ -8722,7 +8722,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "utils_habit_type_utils_habit_type_labels",
-      "community": 239,
+      "community": 391,
       "norm_label": "habit_type_labels"
     },
     {
@@ -8732,7 +8732,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "utils_habit_type_utils_habit_type_icons",
-      "community": 239,
+      "community": 391,
       "norm_label": "habit_type_icons"
     },
     {
@@ -8742,7 +8742,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "utils_habit_type_utils_gethabittypelabel",
-      "community": 239,
+      "community": 391,
       "norm_label": "gethabittypelabel()"
     },
     {
@@ -8752,7 +8752,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "utils_habit_type_utils_pad2",
-      "community": 239,
+      "community": 391,
       "norm_label": "pad2()"
     },
     {
@@ -8762,7 +8762,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "utils_habit_type_utils_formatlocaldatetoymd",
-      "community": 239,
+      "community": 391,
       "norm_label": "formatlocaldatetoymd()"
     },
     {
@@ -8772,7 +8772,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "utils_habit_type_utils_gettodaystring",
-      "community": 13,
+      "community": 391,
       "norm_label": "gettodaystring()"
     },
     {
@@ -8782,7 +8782,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "utils_habit_type_utils_getyesterdaystring",
-      "community": 239,
+      "community": 391,
       "norm_label": "getyesterdaystring()"
     },
     {
@@ -8792,7 +8792,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "utils_habit_type_utils_adddaystostring",
-      "community": 41,
+      "community": 32,
       "norm_label": "adddaystostring()"
     },
     {
@@ -8802,7 +8802,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "utils_habit_type_utils_getmondayofweek",
-      "community": 32,
+      "community": 391,
       "norm_label": "getmondayofweek()"
     },
     {
@@ -8872,7 +8872,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getisoweeknumber",
-      "community": 32,
+      "community": 24,
       "norm_label": "getisoweeknumber()"
     },
     {
@@ -8882,7 +8882,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "utils_habit_week_utils_isfutureweek",
-      "community": 32,
+      "community": 391,
       "norm_label": "isfutureweek()"
     },
     {
@@ -8892,7 +8892,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "utils_habit_week_utils_getmydayfocusdate",
-      "community": 32,
+      "community": 391,
       "norm_label": "getmydayfocusdate()"
     },
     {
@@ -9132,7 +9132,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usetheme",
-      "community": 38,
+      "community": 44,
       "norm_label": "usetheme.ts"
     },
     {
@@ -9142,7 +9142,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "hooks_usetheme_usetheme",
-      "community": 38,
+      "community": 44,
       "norm_label": "usetheme()"
     },
     {
@@ -10122,7 +10122,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard",
-      "community": 43,
+      "community": 360,
       "norm_label": "vidaactivitycard.tsx"
     },
     {
@@ -10132,7 +10132,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_vidaactivitycardprops",
-      "community": 43,
+      "community": 360,
       "norm_label": "vidaactivitycardprops"
     },
     {
@@ -10142,7 +10142,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_formatdayslabel",
-      "community": 43,
+      "community": 360,
       "norm_label": "formatdayslabel()"
     },
     {
@@ -10152,7 +10152,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "vidaactivitycard_vidaactivitycard_vidaactivitycard",
-      "community": 43,
+      "community": 360,
       "norm_label": "vidaactivitycard()"
     },
     {
@@ -10162,7 +10162,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaactivitycard_index",
-      "community": 43,
+      "community": 360,
       "norm_label": "index.ts"
     },
     {
@@ -10172,7 +10172,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaactivitypicker_vidaactivitypicker_test",
-      "community": 385,
+      "community": 223,
       "norm_label": "vidaactivitypicker.test.tsx"
     },
     {
@@ -10182,7 +10182,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "vidaactivitypicker_vidaactivitypicker_test_activity",
-      "community": 385,
+      "community": 223,
       "norm_label": "activity()"
     },
     {
@@ -10192,7 +10192,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "vidaactivitypicker_vidaactivitypicker_test_suggestion",
-      "community": 385,
+      "community": 223,
       "norm_label": "suggestion()"
     },
     {
@@ -10202,7 +10202,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "vidaactivitypicker_vidaactivitypicker_test_suggestions",
-      "community": 385,
+      "community": 223,
       "norm_label": "suggestions"
     },
     {
@@ -10212,7 +10212,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "vidaactivitypicker_vidaactivitypicker_test_renderpicker",
-      "community": 385,
+      "community": 223,
       "norm_label": "renderpicker()"
     },
     {
@@ -10252,7 +10252,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "vidaactivitypicker_vidaactivitypicker_vidaactivitypicker",
-      "community": 364,
+      "community": 63,
       "norm_label": "vidaactivitypicker()"
     },
     {
@@ -10359,7 +10359,7 @@
       "label": "renderLocked()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
-      "source_location": "L633",
+      "source_location": "L635",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_renderlocked",
       "community": 222,
@@ -10369,7 +10369,7 @@
       "label": "SETTLED_LINE",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
-      "source_location": "L767",
+      "source_location": "L769",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_settled_line",
       "community": 222,
@@ -10379,7 +10379,7 @@
       "label": "buildPattern()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
-      "source_location": "L769",
+      "source_location": "L771",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_buildpattern",
       "community": 222,
@@ -10389,7 +10389,7 @@
       "label": "DROP_TUESDAY",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
-      "source_location": "L796",
+      "source_location": "L798",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_drop_tuesday",
       "community": 222,
@@ -10399,7 +10399,7 @@
       "label": "renderWithPattern()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
-      "source_location": "L823",
+      "source_location": "L825",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_test_renderwithpattern",
       "community": 222,
@@ -10449,7 +10449,7 @@
       "label": "CategoriesHintProps",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx",
-      "source_location": "L685",
+      "source_location": "L686",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_categorieshintprops",
       "community": 43,
@@ -10459,7 +10459,7 @@
       "label": "CategoriesHint()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx",
-      "source_location": "L696",
+      "source_location": "L697",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_categorieshint",
       "community": 43,
@@ -10469,7 +10469,7 @@
       "label": "NewVidaCategoryButtonProps",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx",
-      "source_location": "L719",
+      "source_location": "L720",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_newvidacategorybuttonprops",
       "community": 43,
@@ -10479,7 +10479,7 @@
       "label": "NewVidaCategoryButton()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx",
-      "source_location": "L729",
+      "source_location": "L730",
       "_origin": "ast",
       "id": "vidaactivitysheet_vidaactivitysheet_newvidacategorybutton",
       "community": 43,
@@ -10622,7 +10622,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendablock_vidaagendablock",
-      "community": 65,
+      "community": 25,
       "norm_label": "vidaagendablock.tsx"
     },
     {
@@ -10632,7 +10632,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "vidaagendablock_vidaagendablock_vidaagendablockprops",
-      "community": 65,
+      "community": 25,
       "norm_label": "vidaagendablockprops"
     },
     {
@@ -10642,7 +10642,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "vidaagendablock_vidaagendablock_vidaagendablock",
-      "community": 65,
+      "community": 25,
       "norm_label": "vidaagendablock()"
     },
     {
@@ -10652,7 +10652,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendablock_index",
-      "community": 65,
+      "community": 25,
       "norm_label": "index.ts"
     },
     {
@@ -10662,7 +10662,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendagap_vidaagendagap",
-      "community": 25,
+      "community": 426,
       "norm_label": "vidaagendagap.tsx"
     },
     {
@@ -10672,7 +10672,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "vidaagendagap_vidaagendagap_vidaagendagapprops",
-      "community": 25,
+      "community": 426,
       "norm_label": "vidaagendagapprops"
     },
     {
@@ -10682,7 +10682,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "vidaagendagap_vidaagendagap_vidaagendagap",
-      "community": 25,
+      "community": 426,
       "norm_label": "vidaagendagap()"
     },
     {
@@ -10692,7 +10692,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendagap_index",
-      "community": 25,
+      "community": 426,
       "norm_label": "index.ts"
     },
     {
@@ -10702,7 +10702,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendanodata_vidaagendanodata",
-      "community": 406,
+      "community": 25,
       "norm_label": "vidaagendanodata.tsx"
     },
     {
@@ -10712,7 +10712,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "vidaagendanodata_vidaagendanodata_vidaagendanodataprops",
-      "community": 406,
+      "community": 25,
       "norm_label": "vidaagendanodataprops"
     },
     {
@@ -10722,7 +10722,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "vidaagendanodata_vidaagendanodata_vidaagendanodata",
-      "community": 406,
+      "community": 25,
       "norm_label": "vidaagendanodata()"
     },
     {
@@ -10732,7 +10732,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaagendanodata_index",
-      "community": 406,
+      "community": 25,
       "norm_label": "index.ts"
     },
     {
@@ -11086,6 +11086,16 @@
       "norm_label": "vidadurationpills.test.tsx"
     },
     {
+      "label": "Host()",
+      "file_type": "code",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.test.tsx",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "vidadurationpills_vidadurationpills_test_host",
+      "community": 195,
+      "norm_label": "host()"
+    },
+    {
       "label": "VidaDurationPills.tsx",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
@@ -11096,10 +11106,50 @@
       "norm_label": "vidadurationpills.tsx"
     },
     {
+      "label": "DurationDraft",
+      "file_type": "code",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "vidadurationpills_vidadurationpills_durationdraft",
+      "community": 195,
+      "norm_label": "durationdraft"
+    },
+    {
+      "label": "toDraft()",
+      "file_type": "code",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "vidadurationpills_vidadurationpills_todraft",
+      "community": 195,
+      "norm_label": "todraft()"
+    },
+    {
+      "label": "readField()",
+      "file_type": "code",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "vidadurationpills_vidadurationpills_readfield",
+      "community": 195,
+      "norm_label": "readfield()"
+    },
+    {
+      "label": "rawTotal()",
+      "file_type": "code",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "vidadurationpills_vidadurationpills_rawtotal",
+      "community": 195,
+      "norm_label": "rawtotal()"
+    },
+    {
       "label": "VidaDurationPillsProps",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
-      "source_location": "L8",
+      "source_location": "L35",
       "_origin": "ast",
       "id": "vidadurationpills_vidadurationpills_vidadurationpillsprops",
       "community": 195,
@@ -11109,7 +11159,7 @@
       "label": "VidaDurationPills()",
       "file_type": "code",
       "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
-      "source_location": "L36",
+      "source_location": "L76",
       "_origin": "ast",
       "id": "vidadurationpills_vidadurationpills_vidadurationpills",
       "community": 195,
@@ -11132,7 +11182,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidafinishsessionmodal_vidafinishsessionmodal",
-      "community": 335,
+      "community": 7,
       "norm_label": "vidafinishsessionmodal.tsx"
     },
     {
@@ -11142,7 +11192,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "vidafinishsessionmodal_vidafinishsessionmodal_vidafinishsessionmodalprops",
-      "community": 335,
+      "community": 7,
       "norm_label": "vidafinishsessionmodalprops"
     },
     {
@@ -11152,7 +11202,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "vidafinishsessionmodal_vidafinishsessionmodal_vidafinishsessionmodal",
-      "community": 335,
+      "community": 7,
       "norm_label": "vidafinishsessionmodal()"
     },
     {
@@ -11162,7 +11212,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidafinishsessionmodal_index",
-      "community": 335,
+      "community": 7,
       "norm_label": "index.ts"
     },
     {
@@ -11232,7 +11282,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidalogsessionsheet_vidalogsessionsheet",
-      "community": 190,
+      "community": 386,
       "norm_label": "vidalogsessionsheet.tsx"
     },
     {
@@ -11242,7 +11292,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "vidalogsessionsheet_vidalogsessionsheet_vidalogsessionmode",
-      "community": 190,
+      "community": 386,
       "norm_label": "vidalogsessionmode"
     },
     {
@@ -11252,7 +11302,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "vidalogsessionsheet_vidalogsessionsheet_vidalogsessionsheetprops",
-      "community": 190,
+      "community": 386,
       "norm_label": "vidalogsessionsheetprops"
     },
     {
@@ -11262,7 +11312,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "vidalogsessionsheet_vidalogsessionsheet_vidalogsessionsheet",
-      "community": 190,
+      "community": 386,
       "norm_label": "vidalogsessionsheet()"
     },
     {
@@ -11272,7 +11322,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidalogsessionsheet_index",
-      "community": 190,
+      "community": 386,
       "norm_label": "index.ts"
     },
     {
@@ -11522,7 +11572,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaplaceingapsheet_vidaplaceingapsheet",
-      "community": 364,
+      "community": 63,
       "norm_label": "vidaplaceingapsheet.tsx"
     },
     {
@@ -11532,7 +11582,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "vidaplaceingapsheet_vidaplaceingapsheet_chosenactivity",
-      "community": 364,
+      "community": 63,
       "norm_label": "chosenactivity"
     },
     {
@@ -11542,7 +11592,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "vidaplaceingapsheet_vidaplaceingapsheet_vidaplaceingapsheetprops",
-      "community": 364,
+      "community": 63,
       "norm_label": "vidaplaceingapsheetprops"
     },
     {
@@ -11552,7 +11602,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "vidaplaceingapsheet_vidaplaceingapsheet_vidaplaceingapsheet",
-      "community": 364,
+      "community": 63,
       "norm_label": "vidaplaceingapsheet()"
     },
     {
@@ -11562,7 +11612,7 @@
       "source_location": "L318",
       "_origin": "ast",
       "id": "vidaplaceingapsheet_vidaplaceingapsheet_preselectedduration",
-      "community": 364,
+      "community": 63,
       "norm_label": "preselectedduration()"
     },
     {
@@ -11572,7 +11622,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidaplaceingapsheet_index",
-      "community": 364,
+      "community": 63,
       "norm_label": "index.ts"
     },
     {
@@ -12292,7 +12342,7 @@
       "source_location": "L165",
       "_origin": "ast",
       "id": "vidatemplateaside_vidatemplateaside_placeinfirstgapbutton",
-      "community": 25,
+      "community": 426,
       "norm_label": "placeinfirstgapbutton()"
     },
     {
@@ -12362,7 +12412,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidatemplatedaysummary_vidatemplatedaysummary",
-      "community": 373,
+      "community": 25,
       "norm_label": "vidatemplatedaysummary.tsx"
     },
     {
@@ -12372,7 +12422,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "vidatemplatedaysummary_vidatemplatedaysummary_vidatemplatedaysummaryprops",
-      "community": 373,
+      "community": 25,
       "norm_label": "vidatemplatedaysummaryprops"
     },
     {
@@ -12382,7 +12432,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "vidatemplatedaysummary_vidatemplatedaysummary_vidatemplatedaysummary",
-      "community": 373,
+      "community": 25,
       "norm_label": "vidatemplatedaysummary()"
     },
     {
@@ -12392,7 +12442,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "vidatemplatedaysummary_index",
-      "community": 373,
+      "community": 25,
       "norm_label": "index.ts"
     },
     {
@@ -12862,7 +12912,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useactivities",
-      "community": 43,
+      "community": 200,
       "norm_label": "useactivities.ts"
     },
     {
@@ -12872,7 +12922,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivitiesquery",
-      "community": 364,
+      "community": 63,
       "norm_label": "useactivitiesquery()"
     },
     {
@@ -12882,7 +12932,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "hooks_useactivities_useactivityquery",
-      "community": 43,
+      "community": 200,
       "norm_label": "useactivityquery()"
     },
     {
@@ -12892,7 +12942,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "hooks_useactivities_usecreateactivitymutation",
-      "community": 43,
+      "community": 200,
       "norm_label": "usecreateactivitymutation()"
     },
     {
@@ -12902,7 +12952,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "hooks_useactivities_useupdateactivitymutation",
-      "community": 43,
+      "community": 200,
       "norm_label": "useupdateactivitymutation()"
     },
     {
@@ -12912,7 +12962,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "hooks_useactivities_usedeleteactivitymutation",
-      "community": 43,
+      "community": 200,
       "norm_label": "usedeleteactivitymutation()"
     },
     {
@@ -12922,7 +12972,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "hooks_useactivities_usecompleteactivitymutation",
-      "community": 43,
+      "community": 200,
       "norm_label": "usecompleteactivitymutation()"
     },
     {
@@ -12962,7 +13012,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useactivitycategories",
-      "community": 89,
+      "community": 93,
       "norm_label": "useactivitycategories.ts"
     },
     {
@@ -12972,7 +13022,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_useactivitycategoriesquery",
-      "community": 89,
+      "community": 93,
       "norm_label": "useactivitycategoriesquery()"
     },
     {
@@ -12982,7 +13032,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_useactivitycategoryquery",
-      "community": 89,
+      "community": 93,
       "norm_label": "useactivitycategoryquery()"
     },
     {
@@ -13002,7 +13052,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_useupdateactivitycategorymutation",
-      "community": 89,
+      "community": 93,
       "norm_label": "useupdateactivitycategorymutation()"
     },
     {
@@ -13012,7 +13062,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "hooks_useactivitycategories_usedeleteactivitycategorymutation",
-      "community": 89,
+      "community": 93,
       "norm_label": "usedeleteactivitycategorymutation()"
     },
     {
@@ -13062,7 +13112,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_useactivitydayplan",
-      "community": 200,
+      "community": 63,
       "norm_label": "useactivitydayplan.ts"
     },
     {
@@ -13072,7 +13122,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "hooks_useactivitydayplan_useactivitydayplanquery",
-      "community": 93,
+      "community": 386,
       "norm_label": "useactivitydayplanquery()"
     },
     {
@@ -13082,7 +13132,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "hooks_useactivitydayplan_usesetactivitydayplanmutation",
-      "community": 200,
+      "community": 294,
       "norm_label": "usesetactivitydayplanmutation()"
     },
     {
@@ -13092,7 +13142,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "hooks_useactivitydayplan_useadddayplanitemmutation",
-      "community": 200,
+      "community": 63,
       "norm_label": "useadddayplanitemmutation()"
     },
     {
@@ -13102,7 +13152,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "hooks_useactivitydayplan_useeditdayplanitemmutation",
-      "community": 200,
+      "community": 63,
       "norm_label": "useeditdayplanitemmutation()"
     },
     {
@@ -13112,7 +13162,7 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "hooks_useactivitydayplan_useremovedayplanitemmutation",
-      "community": 200,
+      "community": 63,
       "norm_label": "useremovedayplanitemmutation()"
     },
     {
@@ -13202,7 +13252,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_useactivitydayfollowupsquery",
-      "community": 93,
+      "community": 216,
       "norm_label": "useactivitydayfollowupsquery()"
     },
     {
@@ -13212,7 +13262,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_useactivityfollowupsindatesquery",
-      "community": 386,
+      "community": 93,
       "norm_label": "useactivityfollowupsindatesquery()"
     },
     {
@@ -13242,7 +13292,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_usecreateactivityfollowupmutation",
-      "community": 190,
+      "community": 386,
       "norm_label": "usecreateactivityfollowupmutation()"
     },
     {
@@ -13272,7 +13322,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "hooks_useactivityfollowups_useeditfollowupsubtaskmutation",
-      "community": 335,
+      "community": 7,
       "norm_label": "useeditfollowupsubtaskmutation()"
     },
     {
@@ -13282,7 +13332,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usearchiveactivity",
-      "community": 43,
+      "community": 200,
       "norm_label": "usearchiveactivity.ts"
     },
     {
@@ -13292,7 +13342,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "hooks_usearchiveactivity_usearchiveactivity",
-      "community": 43,
+      "community": 200,
       "norm_label": "usearchiveactivity()"
     },
     {
@@ -13302,7 +13352,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usebuilddayfromtemplate",
-      "community": 426,
+      "community": 294,
       "norm_label": "usebuilddayfromtemplate.ts"
     },
     {
@@ -13312,7 +13362,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "hooks_usebuilddayfromtemplate_builddayrequest",
-      "community": 426,
+      "community": 294,
       "norm_label": "builddayrequest"
     },
     {
@@ -13322,7 +13372,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "hooks_usebuilddayfromtemplate_builddayoutcome",
-      "community": 426,
+      "community": 294,
       "norm_label": "builddayoutcome"
     },
     {
@@ -13332,7 +13382,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "hooks_usebuilddayfromtemplate_usebuilddayfromtemplate",
-      "community": 426,
+      "community": 294,
       "norm_label": "usebuilddayfromtemplate()"
     },
     {
@@ -13892,7 +13942,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usevidadaydata",
-      "community": 93,
+      "community": 216,
       "norm_label": "usevidadaydata.ts"
     },
     {
@@ -13902,7 +13952,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "hooks_usevidadaydata_vidadaydata",
-      "community": 93,
+      "community": 216,
       "norm_label": "vidadaydata"
     },
     {
@@ -13912,7 +13962,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "hooks_usevidadaydata_usevidadaydata",
-      "community": 93,
+      "community": 216,
       "norm_label": "usevidadaydata()"
     },
     {
@@ -14212,7 +14262,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "hooks_usevidaitems_usevidasuggestionsfordatequery",
-      "community": 93,
+      "community": 216,
       "norm_label": "usevidasuggestionsfordatequery()"
     },
     {
@@ -14222,7 +14272,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "hooks_usevidaitems_usevidatakentodayquery",
-      "community": 200,
+      "community": 93,
       "norm_label": "usevidatakentodayquery()"
     },
     {
@@ -14292,7 +14342,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usevidanowminute",
-      "community": 358,
+      "community": 101,
       "norm_label": "usevidanowminute.ts"
     },
     {
@@ -14302,7 +14352,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "hooks_usevidanowminute_vidanowminute",
-      "community": 358,
+      "community": 101,
       "norm_label": "vidanowminute"
     },
     {
@@ -14312,7 +14362,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "hooks_usevidanowminute_readnowminutes",
-      "community": 358,
+      "community": 101,
       "norm_label": "readnowminutes()"
     },
     {
@@ -14322,7 +14372,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "hooks_usevidanowminute_formatnowlabel",
-      "community": 358,
+      "community": 101,
       "norm_label": "formatnowlabel()"
     },
     {
@@ -14332,7 +14382,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "hooks_usevidanowminute_usevidanowminute",
-      "community": 358,
+      "community": 101,
       "norm_label": "usevidanowminute()"
     },
     {
@@ -14482,7 +14532,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usevidapatterns",
-      "community": 360,
+      "community": 93,
       "norm_label": "usevidapatterns.ts"
     },
     {
@@ -14492,7 +14542,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "hooks_usevidapatterns_usevidapatternsinput",
-      "community": 360,
+      "community": 93,
       "norm_label": "usevidapatternsinput"
     },
     {
@@ -14502,7 +14552,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "hooks_usevidapatterns_vidapatternview",
-      "community": 360,
+      "community": 93,
       "norm_label": "vidapatternview"
     },
     {
@@ -14512,7 +14562,7 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "hooks_usevidapatterns_vidaansweredsuggestion",
-      "community": 360,
+      "community": 93,
       "norm_label": "vidaansweredsuggestion"
     },
     {
@@ -14522,7 +14572,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "hooks_usevidapatterns_vidapatternsresult",
-      "community": 360,
+      "community": 93,
       "norm_label": "vidapatternsresult"
     },
     {
@@ -14672,7 +14722,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usevidasessionui",
-      "community": 140,
+      "community": 370,
       "norm_label": "usevidasessionui.ts"
     },
     {
@@ -14682,7 +14732,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "hooks_usevidasessionui_vidasessionuivalue",
-      "community": 140,
+      "community": 370,
       "norm_label": "vidasessionuivalue"
     },
     {
@@ -14692,7 +14742,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "hooks_usevidasessionui_vidasessionuicontext",
-      "community": 140,
+      "community": 370,
       "norm_label": "vidasessionuicontext"
     },
     {
@@ -14702,7 +14752,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "hooks_usevidasessionui_usevidasessionui",
-      "community": 140,
+      "community": 370,
       "norm_label": "usevidasessionui()"
     },
     {
@@ -14852,7 +14902,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "hooks_usevidaweekplans",
-      "community": 226,
+      "community": 93,
       "norm_label": "usevidaweekplans.ts"
     },
     {
@@ -14862,7 +14912,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "hooks_usevidaweekplans_vidadayplandot",
-      "community": 226,
+      "community": 93,
       "norm_label": "vidadayplandot"
     },
     {
@@ -14872,7 +14922,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "hooks_usevidaweekplans_vidaweekplans",
-      "community": 226,
+      "community": 93,
       "norm_label": "vidaweekplans"
     },
     {
@@ -14882,7 +14932,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "hooks_usevidaweekplans_usevidaweekplans",
-      "community": 226,
+      "community": 93,
       "norm_label": "usevidaweekplans()"
     },
     {
@@ -15172,7 +15222,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidaarchivadaspage",
-      "community": 89,
+      "community": 93,
       "norm_label": "vidaarchivadaspage.tsx"
     },
     {
@@ -15182,7 +15232,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "pages_vidaarchivadaspage_vidaarchivadaspage",
-      "community": 89,
+      "community": 93,
       "norm_label": "vidaarchivadaspage()"
     },
     {
@@ -15272,7 +15322,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidacategoriaspage",
-      "community": 89,
+      "community": 93,
       "norm_label": "vidacategoriaspage.tsx"
     },
     {
@@ -15282,7 +15332,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "pages_vidacategoriaspage_vidacategoriaspage",
-      "community": 89,
+      "community": 93,
       "norm_label": "vidacategoriaspage()"
     },
     {
@@ -15482,7 +15532,7 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "pages_vidahoypage_vidahoypage",
-      "community": 140,
+      "community": 101,
       "norm_label": "vidahoypage()"
     },
     {
@@ -15612,7 +15662,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidaplantillapage",
-      "community": 364,
+      "community": 25,
       "norm_label": "vidaplantillapage.tsx"
     },
     {
@@ -15622,7 +15672,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "pages_vidaplantillapage_vidaplantillapage",
-      "community": 364,
+      "community": 25,
       "norm_label": "vidaplantillapage()"
     },
     {
@@ -15942,7 +15992,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidarevisionpage",
-      "community": 106,
+      "community": 216,
       "norm_label": "vidarevisionpage.tsx"
     },
     {
@@ -15952,7 +16002,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_reviewview",
-      "community": 106,
+      "community": 216,
       "norm_label": "reviewview"
     },
     {
@@ -15962,7 +16012,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_mondayof",
-      "community": 106,
+      "community": 216,
       "norm_label": "mondayof()"
     },
     {
@@ -15972,7 +16022,7 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_formatweekstorylabel",
-      "community": 106,
+      "community": 216,
       "norm_label": "formatweekstorylabel()"
     },
     {
@@ -15982,7 +16032,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_formatreviewweekrange",
-      "community": 106,
+      "community": 216,
       "norm_label": "formatreviewweekrange()"
     },
     {
@@ -15992,7 +16042,7 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_vidarevisionpage",
-      "community": 106,
+      "community": 216,
       "norm_label": "vidarevisionpage()"
     },
     {
@@ -16002,7 +16052,7 @@
       "source_location": "L990",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_defaultlogstarttime",
-      "community": 106,
+      "community": 216,
       "norm_label": "defaultlogstarttime()"
     },
     {
@@ -16012,7 +16062,7 @@
       "source_location": "L1006",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_logsheetstate",
-      "community": 106,
+      "community": 216,
       "norm_label": "logsheetstate"
     },
     {
@@ -16022,7 +16072,7 @@
       "source_location": "L1036",
       "_origin": "ast",
       "id": "pages_vidarevisionpage_vidareviewbridgesection",
-      "community": 206,
+      "community": 93,
       "norm_label": "vidareviewbridgesection()"
     },
     {
@@ -16102,7 +16152,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "pages_vidasemanapage",
-      "community": 226,
+      "community": 216,
       "norm_label": "vidasemanapage.tsx"
     },
     {
@@ -16112,7 +16162,7 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "pages_vidasemanapage_shiftymd",
-      "community": 226,
+      "community": 216,
       "norm_label": "shiftymd()"
     },
     {
@@ -16122,7 +16172,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "pages_vidasemanapage_mondayof",
-      "community": 226,
+      "community": 216,
       "norm_label": "mondayof()"
     },
     {
@@ -16132,7 +16182,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "pages_vidasemanapage_formatweekrange",
-      "community": 226,
+      "community": 216,
       "norm_label": "formatweekrange()"
     },
     {
@@ -16142,7 +16192,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "pages_vidasemanapage_vidasemanapage",
-      "community": 226,
+      "community": 216,
       "norm_label": "vidasemanapage()"
     },
     {
@@ -16362,7 +16412,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "store_vida_device_notes_store_getstarttimeanswerfor",
-      "community": 206,
+      "community": 25,
       "norm_label": "getstarttimeanswerfor()"
     },
     {
@@ -16382,7 +16432,7 @@
       "source_location": "L154",
       "_origin": "ast",
       "id": "store_vida_device_notes_store_usevidadevicenotesstore",
-      "community": 206,
+      "community": 93,
       "norm_label": "usevidadevicenotesstore"
     },
     {
@@ -16812,7 +16862,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_activity_filters",
-      "community": 364,
+      "community": 11,
       "norm_label": "activity-filters.ts"
     },
     {
@@ -16822,7 +16872,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "utils_activity_filters_default_activity_filters",
-      "community": 364,
+      "community": 11,
       "norm_label": "default_activity_filters"
     },
     {
@@ -16832,7 +16882,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "utils_activity_filters_serializeactivityfilters",
-      "community": 364,
+      "community": 11,
       "norm_label": "serializeactivityfilters()"
     },
     {
@@ -16852,7 +16902,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "utils_activity_filters_filteractivitiesbysearch",
-      "community": 364,
+      "community": 63,
       "norm_label": "filteractivitiesbysearch()"
     },
     {
@@ -17382,7 +17432,7 @@
       "source_location": "L304",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_getdaybudget",
-      "community": 140,
+      "community": 101,
       "norm_label": "getdaybudget()"
     },
     {
@@ -17392,7 +17442,7 @@
       "source_location": "L330",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_formatgaprange",
-      "community": 25,
+      "community": 101,
       "norm_label": "formatgaprange()"
     },
     {
@@ -17422,7 +17472,7 @@
       "source_location": "L371",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_buildguidanceline",
-      "community": 25,
+      "community": 101,
       "norm_label": "buildguidanceline()"
     },
     {
@@ -17472,7 +17522,7 @@
       "source_location": "L472",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_findfirstfittinggap",
-      "community": 101,
+      "community": 426,
       "norm_label": "findfirstfittinggap()"
     },
     {
@@ -17492,7 +17542,7 @@
       "source_location": "L565",
       "_origin": "ast",
       "id": "utils_vida_agenda_utils_findnextblockid",
-      "community": 140,
+      "community": 101,
       "norm_label": "findnextblockid()"
     },
     {
@@ -17762,7 +17812,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "utils_vida_catalog_utils_excludearchivedactivities",
-      "community": 364,
+      "community": 63,
       "norm_label": "excludearchivedactivities()"
     },
     {
@@ -17862,7 +17912,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_vida_date_utils",
-      "community": 109,
+      "community": 216,
       "norm_label": "vida-date.utils.ts"
     },
     {
@@ -17872,7 +17922,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "utils_vida_date_utils_pad2",
-      "community": 109,
+      "community": 216,
       "norm_label": "pad2()"
     },
     {
@@ -17882,7 +17932,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "utils_vida_date_utils_formatdatetoymd",
-      "community": 109,
+      "community": 216,
       "norm_label": "formatdatetoymd()"
     },
     {
@@ -17892,7 +17942,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "utils_vida_date_utils_getcurrentlocaldate",
-      "community": 109,
+      "community": 216,
       "norm_label": "getcurrentlocaldate()"
     },
     {
@@ -17902,7 +17952,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "utils_vida_date_utils_getmondayofweek",
-      "community": 109,
+      "community": 233,
       "norm_label": "getmondayofweek()"
     },
     {
@@ -17912,7 +17962,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "utils_vida_date_utils_getcurrentweekrange",
-      "community": 109,
+      "community": 233,
       "norm_label": "getcurrentweekrange()"
     },
     {
@@ -17922,7 +17972,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "utils_vida_date_utils_isfuturedate",
-      "community": 109,
+      "community": 216,
       "norm_label": "isfuturedate()"
     },
     {
@@ -17932,7 +17982,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "utils_vida_date_utils_istoday",
-      "community": 109,
+      "community": 216,
       "norm_label": "istoday()"
     },
     {
@@ -17942,7 +17992,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "utils_vida_date_utils_vida_day_order",
-      "community": 109,
+      "community": 216,
       "norm_label": "vida_day_order"
     },
     {
@@ -17952,7 +18002,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "utils_vida_date_utils_vida_day_short_labels",
-      "community": 109,
+      "community": 216,
       "norm_label": "vida_day_short_labels"
     },
     {
@@ -17962,7 +18012,7 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "utils_vida_date_utils_vida_day_labels",
-      "community": 109,
+      "community": 216,
       "norm_label": "vida_day_labels"
     },
     {
@@ -17972,7 +18022,7 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "utils_vida_date_utils_parseymdtolocaldate",
-      "community": 106,
+      "community": 216,
       "norm_label": "parseymdtolocaldate()"
     },
     {
@@ -17992,7 +18042,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "utils_vida_date_utils_pluraldaylabel",
-      "community": 44,
+      "community": 426,
       "norm_label": "pluraldaylabel()"
     },
     {
@@ -18012,7 +18062,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "utils_vida_date_utils_shiftymd",
-      "community": 109,
+      "community": 216,
       "norm_label": "shiftymd()"
     },
     {
@@ -18232,7 +18282,7 @@
       "source_location": "L283",
       "_origin": "ast",
       "id": "utils_vida_execution_utils_formatspanrange",
-      "community": 25,
+      "community": 95,
       "norm_label": "formatspanrange()"
     },
     {
@@ -18262,7 +18312,7 @@
       "source_location": "L359",
       "_origin": "ast",
       "id": "utils_vida_execution_utils_sessionentry",
-      "community": 25,
+      "community": 95,
       "norm_label": "sessionentry()"
     },
     {
@@ -18512,7 +18562,7 @@
       "source_location": "L949",
       "_origin": "ast",
       "id": "utils_vida_execution_utils_buildnodataslices",
-      "community": 25,
+      "community": 95,
       "norm_label": "buildnodataslices()"
     },
     {
@@ -18952,7 +19002,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_vidapatternsuggestionid",
-      "community": 206,
+      "community": 25,
       "norm_label": "vidapatternsuggestionid()"
     },
     {
@@ -18962,7 +19012,7 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_suggestionreturndate",
-      "community": 206,
+      "community": 35,
       "norm_label": "suggestionreturndate()"
     },
     {
@@ -18972,7 +19022,7 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_issuggestionsilenced",
-      "community": 206,
+      "community": 35,
       "norm_label": "issuggestionsilenced()"
     },
     {
@@ -19012,7 +19062,7 @@
       "source_location": "L236",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_isbridgesilencedbyanswer",
-      "community": 206,
+      "community": 35,
       "norm_label": "isbridgesilencedbyanswer()"
     },
     {
@@ -19092,7 +19142,7 @@
       "source_location": "L369",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_median",
-      "community": 44,
+      "community": 35,
       "norm_label": "median()"
     },
     {
@@ -19102,7 +19152,7 @@
       "source_location": "L380",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_roundto",
-      "community": 44,
+      "community": 35,
       "norm_label": "roundto()"
     },
     {
@@ -19112,7 +19162,7 @@
       "source_location": "L385",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_offsetlabel",
-      "community": 44,
+      "community": 35,
       "norm_label": "offsetlabel()"
     },
     {
@@ -19132,7 +19182,7 @@
       "source_location": "L398",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_laterorearlier",
-      "community": 374,
+      "community": 35,
       "norm_label": "laterorearlier()"
     },
     {
@@ -19192,7 +19242,7 @@
       "source_location": "L530",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_buildweekdaystats",
-      "community": 44,
+      "community": 35,
       "norm_label": "buildweekdaystats()"
     },
     {
@@ -19202,7 +19252,7 @@
       "source_location": "L558",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_findoutlierday",
-      "community": 44,
+      "community": 35,
       "norm_label": "findoutlierday()"
     },
     {
@@ -19212,7 +19262,7 @@
       "source_location": "L576",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_buildpattern",
-      "community": 44,
+      "community": 35,
       "norm_label": "buildpattern()"
     },
     {
@@ -19222,7 +19272,7 @@
       "source_location": "L767",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_closinglabelfor",
-      "community": 44,
+      "community": 35,
       "norm_label": "closinglabelfor()"
     },
     {
@@ -19232,7 +19282,7 @@
       "source_location": "L800",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_mutedreasonfor",
-      "community": 44,
+      "community": 35,
       "norm_label": "mutedreasonfor()"
     },
     {
@@ -19252,7 +19302,7 @@
       "source_location": "L837",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_buildsuggestion",
-      "community": 44,
+      "community": 25,
       "norm_label": "buildsuggestion()"
     },
     {
@@ -19262,7 +19312,7 @@
       "source_location": "L951",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_consequencefor",
-      "community": 44,
+      "community": 35,
       "norm_label": "consequencefor()"
     },
     {
@@ -19312,7 +19362,7 @@
       "source_location": "L1063",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_pickblockhints",
-      "community": 374,
+      "community": 35,
       "norm_label": "pickblockhints()"
     },
     {
@@ -19332,7 +19382,7 @@
       "source_location": "L1138",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_hintbasis",
-      "community": 374,
+      "community": 35,
       "norm_label": "hintbasis()"
     },
     {
@@ -19342,7 +19392,7 @@
       "source_location": "L1150",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_hintask",
-      "community": 374,
+      "community": 35,
       "norm_label": "hintask()"
     },
     {
@@ -19352,7 +19402,7 @@
       "source_location": "L1156",
       "_origin": "ast",
       "id": "utils_vida_patterns_utils_patchvaluelabel",
-      "community": 374,
+      "community": 35,
       "norm_label": "patchvaluelabel()"
     },
     {
@@ -19492,7 +19542,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "utils_vida_review_utils_resolvereviewdate",
-      "community": 106,
+      "community": 216,
       "norm_label": "resolvereviewdate()"
     },
     {
@@ -19502,7 +19552,7 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "utils_vida_review_utils_formatreviewdatelabel",
-      "community": 190,
+      "community": 65,
       "norm_label": "formatreviewdatelabel()"
     },
     {
@@ -20102,7 +20152,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_vida_template_utils_test",
-      "community": 102,
+      "community": 25,
       "norm_label": "vida-template.utils.test.ts"
     },
     {
@@ -20112,7 +20162,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "utils_vida_template_utils_test_item",
-      "community": 102,
+      "community": 25,
       "norm_label": "item()"
     },
     {
@@ -20122,7 +20172,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "utils_vida_template_utils_test_build",
-      "community": 102,
+      "community": 25,
       "norm_label": "build()"
     },
     {
@@ -20132,7 +20182,7 @@
       "source_location": "L532",
       "_origin": "ast",
       "id": "utils_vida_template_utils_test_griditem",
-      "community": 102,
+      "community": 25,
       "norm_label": "griditem()"
     },
     {
@@ -20142,7 +20192,7 @@
       "source_location": "L561",
       "_origin": "ast",
       "id": "utils_vida_template_utils_test_grid",
-      "community": 102,
+      "community": 25,
       "norm_label": "grid()"
     },
     {
@@ -20212,7 +20262,7 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "utils_vida_template_utils_templateitemsforday",
-      "community": 102,
+      "community": 231,
       "norm_label": "templateitemsforday()"
     },
     {
@@ -20232,7 +20282,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "utils_vida_template_utils_durationof",
-      "community": 102,
+      "community": 231,
       "norm_label": "durationof()"
     },
     {
@@ -20242,7 +20292,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "utils_vida_template_utils_hastime",
-      "community": 102,
+      "community": 231,
       "norm_label": "hastime()"
     },
     {
@@ -20252,7 +20302,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "utils_vida_template_utils_buildtemplateday",
-      "community": 102,
+      "community": 25,
       "norm_label": "buildtemplateday()"
     },
     {
@@ -20262,7 +20312,7 @@
       "source_location": "L266",
       "_origin": "ast",
       "id": "utils_vida_template_utils_counttemplatebyday",
-      "community": 102,
+      "community": 231,
       "norm_label": "counttemplatebyday()"
     },
     {
@@ -20282,7 +20332,7 @@
       "source_location": "L298",
       "_origin": "ast",
       "id": "utils_vida_template_utils_describeitemdays",
-      "community": 44,
+      "community": 25,
       "norm_label": "describeitemdays()"
     },
     {
@@ -20292,7 +20342,7 @@
       "source_location": "L306",
       "_origin": "ast",
       "id": "utils_vida_template_utils_describeitemmeta",
-      "community": 44,
+      "community": 25,
       "norm_label": "describeitemmeta()"
     },
     {
@@ -20342,7 +20392,7 @@
       "source_location": "L418",
       "_origin": "ast",
       "id": "utils_vida_template_utils_describetemplatedaytotals",
-      "community": 373,
+      "community": 25,
       "norm_label": "describetemplatedaytotals()"
     },
     {
@@ -20402,7 +20452,7 @@
       "source_location": "L484",
       "_origin": "ast",
       "id": "utils_vida_template_utils_describetemplatepreview",
-      "community": 102,
+      "community": 25,
       "norm_label": "describetemplatepreview()"
     },
     {
@@ -20432,7 +20482,7 @@
       "source_location": "L577",
       "_origin": "ast",
       "id": "utils_vida_template_utils_whatisat",
-      "community": 102,
+      "community": 231,
       "norm_label": "whatisat()"
     },
     {
@@ -20652,7 +20702,7 @@
       "source_location": "L1083",
       "_origin": "ast",
       "id": "utils_vida_template_utils_plancopyday",
-      "community": 102,
+      "community": 231,
       "norm_label": "plancopyday()"
     },
     {
@@ -20822,14 +20872,34 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "utils_vida_time_utils_formatdurationminutes",
-      "community": 65,
+      "community": 25,
       "norm_label": "formatdurationminutes()"
+    },
+    {
+      "label": "splitDurationMinutes()",
+      "file_type": "code",
+      "source_file": "src/features/vida/utils/vida-time.utils.ts",
+      "source_location": "L123",
+      "_origin": "ast",
+      "id": "utils_vida_time_utils_splitdurationminutes",
+      "community": 195,
+      "norm_label": "splitdurationminutes()"
+    },
+    {
+      "label": "joinDurationMinutes()",
+      "file_type": "code",
+      "source_file": "src/features/vida/utils/vida-time.utils.ts",
+      "source_location": "L140",
+      "_origin": "ast",
+      "id": "utils_vida_time_utils_joindurationminutes",
+      "community": 25,
+      "norm_label": "joindurationminutes()"
     },
     {
       "label": "formatTimeForDisplay()",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-time.utils.ts",
-      "source_location": "L110",
+      "source_location": "L155",
       "_origin": "ast",
       "id": "utils_vida_time_utils_formattimefordisplay",
       "community": 25,
@@ -20839,7 +20909,7 @@
       "label": "DURATION_PILLS",
       "file_type": "code",
       "source_file": "src/features/vida/utils/vida-time.utils.ts",
-      "source_location": "L116",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "utils_vida_time_utils_duration_pills",
       "community": 25,
@@ -20922,7 +20992,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils",
-      "community": 140,
+      "community": 78,
       "norm_label": "vida-week-review.utils.ts"
     },
     {
@@ -20932,7 +21002,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_weekrowstatus",
-      "community": 140,
+      "community": 78,
       "norm_label": "weekrowstatus"
     },
     {
@@ -20942,7 +21012,7 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_weekrowsegment",
-      "community": 140,
+      "community": 78,
       "norm_label": "weekrowsegment"
     },
     {
@@ -20952,7 +21022,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_weekdot",
-      "community": 140,
+      "community": 78,
       "norm_label": "weekdot"
     },
     {
@@ -20962,7 +21032,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_weekrow",
-      "community": 140,
+      "community": 78,
       "norm_label": "weekrow"
     },
     {
@@ -20972,7 +21042,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_weekdayinput",
-      "community": 140,
+      "community": 78,
       "norm_label": "weekdayinput"
     },
     {
@@ -20982,7 +21052,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_buildweekreviewinput",
-      "community": 140,
+      "community": 78,
       "norm_label": "buildweekreviewinput"
     },
     {
@@ -21012,7 +21082,7 @@
       "source_location": "L255",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_weekdotfor",
-      "community": 140,
+      "community": 78,
       "norm_label": "weekdotfor()"
     },
     {
@@ -21032,7 +21102,7 @@
       "source_location": "L291",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_buildweekline",
-      "community": 140,
+      "community": 78,
       "norm_label": "buildweekline()"
     },
     {
@@ -21042,7 +21112,7 @@
       "source_location": "L324",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_templatebridge",
-      "community": 140,
+      "community": 78,
       "norm_label": "templatebridge"
     },
     {
@@ -21052,7 +21122,7 @@
       "source_location": "L348",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_bridgedayinput",
-      "community": 140,
+      "community": 78,
       "norm_label": "bridgedayinput"
     },
     {
@@ -21062,7 +21132,7 @@
       "source_location": "L354",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_buildtemplatebridgeinput",
-      "community": 140,
+      "community": 78,
       "norm_label": "buildtemplatebridgeinput"
     },
     {
@@ -21082,7 +21152,7 @@
       "source_location": "L371",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_medianstartminutes",
-      "community": 140,
+      "community": 78,
       "norm_label": "medianstartminutes()"
     },
     {
@@ -21092,7 +21162,7 @@
       "source_location": "L382",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_bridgecandidate",
-      "community": 140,
+      "community": 78,
       "norm_label": "bridgecandidate"
     },
     {
@@ -21112,7 +21182,7 @@
       "source_location": "L504",
       "_origin": "ast",
       "id": "utils_vida_week_review_utils_weekdotsbydate",
-      "community": 140,
+      "community": 78,
       "norm_label": "weekdotsbydate()"
     },
     {
@@ -21432,7 +21502,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "applayout_applayout",
-      "community": 2,
+      "community": 44,
       "norm_label": "applayout.tsx"
     },
     {
@@ -21442,7 +21512,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "applayout_applayout_pillclassname",
-      "community": 2,
+      "community": 44,
       "norm_label": "pillclassname()"
     },
     {
@@ -21452,7 +21522,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "applayout_applayout_modclassname",
-      "community": 2,
+      "community": 44,
       "norm_label": "modclassname()"
     },
     {
@@ -21472,7 +21542,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "applayout_applayout_applayoutshell",
-      "community": 2,
+      "community": 44,
       "norm_label": "applayoutshell()"
     },
     {
@@ -21482,7 +21552,7 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "applayout_applayout_applayout",
-      "community": 2,
+      "community": 44,
       "norm_label": "applayout()"
     },
     {
@@ -21582,7 +21652,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "authlayout_authlayout",
-      "community": 255,
+      "community": 42,
       "norm_label": "authlayout.tsx"
     },
     {
@@ -21592,7 +21662,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "authlayout_authlayout_highlights",
-      "community": 255,
+      "community": 42,
       "norm_label": "highlights"
     },
     {
@@ -21602,7 +21672,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "authlayout_authlayout_authlayout",
-      "community": 255,
+      "community": 42,
       "norm_label": "authlayout()"
     },
     {
@@ -23132,7 +23202,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "icons_categories",
-      "community": 20,
+      "community": 496,
       "norm_label": "categories.ts"
     },
     {
@@ -23142,7 +23212,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "icons_categories_app_icon_category_labels",
-      "community": 20,
+      "community": 496,
       "norm_label": "app_icon_category_labels"
     },
     {
@@ -23152,7 +23222,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "icons_categories_app_icon_category_order",
-      "community": 20,
+      "community": 496,
       "norm_label": "app_icon_category_order"
     },
     {
@@ -23162,7 +23232,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "icons_categories_getcategorylabel",
-      "community": 20,
+      "community": 496,
       "norm_label": "getcategorylabel()"
     },
     {
@@ -23282,7 +23352,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "icons_icon_registry_isiconcatalogloaded",
-      "community": 159,
+      "community": 496,
       "norm_label": "isiconcatalogloaded()"
     },
     {
@@ -23322,7 +23392,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "icons_icon_search",
-      "community": 186,
+      "community": 496,
       "norm_label": "icon-search.ts"
     },
     {
@@ -23332,7 +23402,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "icons_icon_search_stripdiacritics",
-      "community": 186,
+      "community": 496,
       "norm_label": "stripdiacritics()"
     },
     {
@@ -23342,7 +23412,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "icons_icon_search_normalizesearchtext",
-      "community": 186,
+      "community": 496,
       "norm_label": "normalizesearchtext()"
     },
     {
@@ -23352,7 +23422,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "icons_icon_search_haystackcache",
-      "community": 186,
+      "community": 496,
       "norm_label": "haystackcache"
     },
     {
@@ -23362,7 +23432,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "icons_icon_search_buildhaystack",
-      "community": 20,
+      "community": 496,
       "norm_label": "buildhaystack()"
     },
     {
@@ -23372,7 +23442,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "icons_icon_search_ispickericon",
-      "community": 186,
+      "community": 496,
       "norm_label": "ispickericon()"
     },
     {
@@ -23382,7 +23452,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "icons_icon_search_filterappicons",
-      "community": 186,
+      "community": 496,
       "norm_label": "filterappicons()"
     },
     {
@@ -23392,7 +23462,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "icons_icon_search_groupiconsbycategory",
-      "community": 186,
+      "community": 496,
       "norm_label": "groupiconsbycategory()"
     },
     {
@@ -23412,7 +23482,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "icons_icon_utils",
-      "community": 232,
+      "community": 496,
       "norm_label": "icon-utils.ts"
     },
     {
@@ -23422,7 +23492,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "icons_icon_utils_tostorediconname",
-      "community": 232,
+      "community": 496,
       "norm_label": "tostorediconname()"
     },
     {
@@ -23432,7 +23502,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "icons_icon_utils_cameltokebab",
-      "community": 232,
+      "community": 496,
       "norm_label": "cameltokebab()"
     },
     {
@@ -23442,7 +23512,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "icons_icon_utils_normalizeiconname",
-      "community": 232,
+      "community": 496,
       "norm_label": "normalizeiconname()"
     },
     {
@@ -23452,7 +23522,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "icons_icon_utils_geticonbyname",
-      "community": 232,
+      "community": 496,
       "norm_label": "geticonbyname()"
     },
     {
@@ -23462,7 +23532,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "icons_icon_utils_isappiconname",
-      "community": 232,
+      "community": 496,
       "norm_label": "isappiconname()"
     },
     {
@@ -23512,7 +23582,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "icons_useappicon",
-      "community": 159,
+      "community": 496,
       "norm_label": "useappicon.ts"
     },
     {
@@ -23522,7 +23592,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "icons_useappicon_useappicon",
-      "community": 159,
+      "community": 496,
       "norm_label": "useappicon()"
     },
     {
@@ -23892,7 +23962,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "motion_usereducedmotionpreference",
-      "community": 255,
+      "community": 42,
       "norm_label": "usereducedmotionpreference.ts"
     },
     {
@@ -23902,7 +23972,7 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "motion_usereducedmotionpreference_getreducedmotionpreference",
-      "community": 255,
+      "community": 42,
       "norm_label": "getreducedmotionpreference()"
     },
     {
@@ -23912,7 +23982,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "motion_usereducedmotionpreference_usereducedmotionpreference",
-      "community": 255,
+      "community": 42,
       "norm_label": "usereducedmotionpreference()"
     },
     {
@@ -24072,7 +24142,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "appicon_appicon",
-      "community": 159,
+      "community": 496,
       "norm_label": "appicon.tsx"
     },
     {
@@ -24082,7 +24152,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "appicon_appicon_appiconsize",
-      "community": 159,
+      "community": 496,
       "norm_label": "appiconsize"
     },
     {
@@ -24092,7 +24162,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "appicon_appicon_size_class",
-      "community": 159,
+      "community": 496,
       "norm_label": "size_class"
     },
     {
@@ -24102,7 +24172,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "appicon_appicon_appiconprops",
-      "community": 159,
+      "community": 496,
       "norm_label": "appiconprops"
     },
     {
@@ -24112,7 +24182,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "appicon_appicon_appicon",
-      "community": 159,
+      "community": 496,
       "norm_label": "appicon()"
     },
     {
@@ -25372,7 +25442,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "iconpicker_iconpicker",
-      "community": 20,
+      "community": 496,
       "norm_label": "iconpicker.tsx"
     },
     {
@@ -25382,7 +25452,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "iconpicker_iconpicker_iconpickerprops",
-      "community": 20,
+      "community": 496,
       "norm_label": "iconpickerprops"
     },
     {
@@ -25392,7 +25462,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "iconpicker_iconpicker_icongridcells",
-      "community": 20,
+      "community": 496,
       "norm_label": "icongridcells()"
     },
     {
@@ -25402,7 +25472,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "iconpicker_iconpicker_iconpicker",
-      "community": 20,
+      "community": 496,
       "norm_label": "iconpicker()"
     },
     {
@@ -26062,7 +26132,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_usemodalstep",
-      "community": 59,
+      "community": 243,
       "norm_label": "usemodalstep()"
     },
     {
@@ -26092,7 +26162,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "steppedmodal_steppedmodal_steppedmodal",
-      "community": 243,
+      "community": 42,
       "norm_label": "steppedmodal()"
     },
     {
@@ -26532,7 +26602,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "themetoggle_themetoggle",
-      "community": 38,
+      "community": 44,
       "norm_label": "themetoggle.tsx"
     },
     {
@@ -26542,7 +26612,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "themetoggle_themetoggle_labels",
-      "community": 38,
+      "community": 44,
       "norm_label": "labels"
     },
     {
@@ -26552,7 +26622,7 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "themetoggle_themetoggle_icons",
-      "community": 38,
+      "community": 44,
       "norm_label": "icons"
     },
     {
@@ -26562,7 +26632,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "themetoggle_themetoggle_themetoggle",
-      "community": 38,
+      "community": 44,
       "norm_label": "themetoggle()"
     },
     {
@@ -26802,7 +26872,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tooltip_tooltip",
-      "community": 255,
+      "community": 373,
       "norm_label": "tooltip.tsx"
     },
     {
@@ -26812,7 +26882,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "tooltip_tooltip_tooltipplacement",
-      "community": 255,
+      "community": 373,
       "norm_label": "tooltipplacement"
     },
     {
@@ -26822,7 +26892,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "tooltip_tooltip_tooltipprops",
-      "community": 255,
+      "community": 373,
       "norm_label": "tooltipprops"
     },
     {
@@ -26832,7 +26902,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "tooltip_tooltip_tooltip",
-      "community": 255,
+      "community": 373,
       "norm_label": "tooltip()"
     },
     {
@@ -29669,7 +29739,7 @@
       "label": "Delivered",
       "file_type": "document",
       "source_file": "docs/features/BOARD.md",
-      "source_location": "L550",
+      "source_location": "L612",
       "_origin": "ast",
       "id": "features_board_delivered",
       "community": 15,
@@ -31616,10 +31686,20 @@
       "norm_label": "tajada 3 \u2014 el aviso llega al planear"
     },
     {
-      "label": "4. Revisi\u00f3n \u2014 feature-reviewer",
+      "label": "Tajada 4 \u2014 El dato donde se edita, y el escritorio",
       "file_type": "document",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
       "source_location": "L1682",
+      "_origin": "ast",
+      "id": "features_feat_007_vida_sistema_entiende_tajada_4_el_dato_donde_se_edita_y_el_escritorio",
+      "community": 6,
+      "norm_label": "tajada 4 \u2014 el dato donde se edita, y el escritorio"
+    },
+    {
+      "label": "4. Revisi\u00f3n \u2014 feature-reviewer",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
+      "source_location": "L2006",
       "_origin": "ast",
       "id": "features_feat_007_vida_sistema_entiende_4_revisi\u00f3n_feature_reviewer",
       "community": 6,
@@ -31629,9 +31709,9 @@
       "label": "Tajada 1 \u2014 La secci\u00f3n existe y cuenta tu adherencia",
       "file_type": "document",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L1684",
+      "source_location": "L2008",
       "_origin": "ast",
-      "id": "features_feat_007_vida_sistema_entiende_tajada_1_la_secci\u00f3n_existe_y_cuenta_tu_adherencia_1684",
+      "id": "features_feat_007_vida_sistema_entiende_tajada_1_la_secci\u00f3n_existe_y_cuenta_tu_adherencia_2008",
       "community": 6,
       "norm_label": "tajada 1 \u2014 la seccion existe y cuenta tu adherencia"
     },
@@ -31639,9 +31719,9 @@
       "label": "Tajada 2 \u2014 Los patrones por actividad, con sus dos salidas",
       "file_type": "document",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L1894",
+      "source_location": "L2218",
       "_origin": "ast",
-      "id": "features_feat_007_vida_sistema_entiende_tajada_2_los_patrones_por_actividad_con_sus_dos_salidas_1894",
+      "id": "features_feat_007_vida_sistema_entiende_tajada_2_los_patrones_por_actividad_con_sus_dos_salidas_2218",
       "community": 6,
       "norm_label": "tajada 2 \u2014 los patrones por actividad, con sus dos salidas"
     },
@@ -31649,7 +31729,7 @@
       "label": "Tajada 2 \u00b7 re-revisi\u00f3n tras la correcci\u00f3n",
       "file_type": "document",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L2132",
+      "source_location": "L2456",
       "_origin": "ast",
       "id": "features_feat_007_vida_sistema_entiende_tajada_2_re_revisi\u00f3n_tras_la_correcci\u00f3n",
       "community": 6,
@@ -31659,11 +31739,281 @@
       "label": "Tajada 3 \u2014 El aviso llega al planear",
       "file_type": "document",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L2312",
+      "source_location": "L2636",
       "_origin": "ast",
-      "id": "features_feat_007_vida_sistema_entiende_tajada_3_el_aviso_llega_al_planear_2312",
+      "id": "features_feat_007_vida_sistema_entiende_tajada_3_el_aviso_llega_al_planear_2636",
       "community": 6,
       "norm_label": "tajada 3 \u2014 el aviso llega al planear"
+    },
+    {
+      "label": "Tajada 4 \u2014 El dato donde se edita, y el escritorio",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
+      "source_location": "L2819",
+      "_origin": "ast",
+      "id": "features_feat_007_vida_sistema_entiende_tajada_4_el_dato_donde_se_edita_y_el_escritorio_2819",
+      "community": 6,
+      "norm_label": "tajada 4 \u2014 el dato donde se edita, y el escritorio"
+    },
+    {
+      "label": "Cierre de la feature \u2014 nota para el usuario",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
+      "source_location": "L2992",
+      "_origin": "ast",
+      "id": "features_feat_007_vida_sistema_entiende_cierre_de_la_feature_nota_para_el_usuario",
+      "community": 6,
+      "norm_label": "cierre de la feature \u2014 nota para el usuario"
+    },
+    {
+      "label": "FEAT-008-vida-horas-y-minutos.md",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos",
+      "community": 20,
+      "norm_label": "feat-008-vida-horas-y-minutos.md"
+    },
+    {
+      "label": "FEAT-008 \u2014 El tiempo se escribe en horas y minutos, y se ve a qu\u00e9 hora acabas",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_feat_008_el_tiempo_se_escribe_en_horas_y_minutos_y_se_ve_a_qu\u00e9_hora_acabas",
+      "community": 20,
+      "norm_label": "feat-008 \u2014 el tiempo se escribe en horas y minutos, y se ve a que hora acabas"
+    },
+    {
+      "label": "1. The request \u2014 feature-analyst",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_1_the_request_feature_analyst",
+      "community": 20,
+      "norm_label": "1. the request \u2014 feature-analyst"
+    },
+    {
+      "label": "2. The plan \u2014 feature-architect",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L395",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "community": 20,
+      "norm_label": "2. the plan \u2014 feature-architect"
+    },
+    {
+      "label": "Lo que ya existe (verificado archivo por archivo)",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L408",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_lo_que_ya_existe_verificado_archivo_por_archivo",
+      "community": 20,
+      "norm_label": "lo que ya existe (verificado archivo por archivo)"
+    },
+    {
+      "label": "Implementaci\u00f3n de referencia",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L473",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_implementaci\u00f3n_de_referencia",
+      "community": 20,
+      "norm_label": "implementacion de referencia"
+    },
+    {
+      "label": "D\u00f3nde va el c\u00f3digo nuevo",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L497",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_d\u00f3nde_va_el_c\u00f3digo_nuevo",
+      "community": 20,
+      "norm_label": "donde va el codigo nuevo"
+    },
+    {
+      "label": "A. `src/features/vida/utils/vida-time.utils.ts` (modificar) \u2014 criterios 117, 125, 126",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L499",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_a_src_features_vida_utils_vida_time_utils_ts_modificar_criterios_117_125_126",
+      "community": 20,
+      "norm_label": "a. `src/features/vida/utils/vida-time.utils.ts` (modificar) \u2014 criterios 117, 125, 126"
+    },
+    {
+      "label": "B. `VidaDurationPills.tsx` (modificar) \u2014 criterios 107, 108, 111-116",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L529",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_b_vidadurationpills_tsx_modificar_criterios_107_108_111_116",
+      "community": 20,
+      "norm_label": "b. `vidadurationpills.tsx` (modificar) \u2014 criterios 107, 108, 111-116"
+    },
+    {
+      "label": "C. La hora de fin (tajada 2)",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L579",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_c_la_hora_de_fin_tajada_2",
+      "community": 20,
+      "norm_label": "c. la hora de fin (tajada 2)"
+    },
+    {
+      "label": "Lo que NO se crea",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L606",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_lo_que_no_se_crea",
+      "community": 20,
+      "norm_label": "lo que no se crea"
+    },
+    {
+      "label": "D\u00f3nde NO va (descartado, con el motivo)",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L621",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_d\u00f3nde_no_va_descartado_con_el_motivo",
+      "community": 20,
+      "norm_label": "donde no va (descartado, con el motivo)"
+    },
+    {
+      "label": "Las tajadas, con sus archivos",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L648",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_las_tajadas_con_sus_archivos",
+      "community": 20,
+      "norm_label": "las tajadas, con sus archivos"
+    },
+    {
+      "label": "Por d\u00f3nde entra un valor precargado (FEAT-009)",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L663",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_por_d\u00f3nde_entra_un_valor_precargado_feat_009",
+      "community": 20,
+      "norm_label": "por donde entra un valor precargado (feat-009)"
+    },
+    {
+      "label": "Dos cosas encontradas que no son de esta feature",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L673",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_dos_cosas_encontradas_que_no_son_de_esta_feature",
+      "community": 20,
+      "norm_label": "dos cosas encontradas que no son de esta feature"
+    },
+    {
+      "label": "Lo que no pude averiguar",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L704",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_lo_que_no_pude_averiguar",
+      "community": 20,
+      "norm_label": "lo que no pude averiguar"
+    },
+    {
+      "label": "3. Construction \u2014 feature-builder",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L724",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_3_construction_feature_builder",
+      "community": 20,
+      "norm_label": "3. construction \u2014 feature-builder"
+    },
+    {
+      "label": "4. Review \u2014 feature-reviewer",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L728",
+      "_origin": "ast",
+      "id": "features_feat_008_vida_horas_y_minutos_4_review_feature_reviewer",
+      "community": 20,
+      "norm_label": "4. review \u2014 feature-reviewer"
+    },
+    {
+      "label": "FEAT-009-vida-huecos-en-la-plantilla.md",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "features_feat_009_vida_huecos_en_la_plantilla",
+      "community": 106,
+      "norm_label": "feat-009-vida-huecos-en-la-plantilla.md"
+    },
+    {
+      "label": "FEAT-009 \u2014 Los huecos llegan a la plantilla",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L11",
+      "_origin": "ast",
+      "id": "features_feat_009_vida_huecos_en_la_plantilla_feat_009_los_huecos_llegan_a_la_plantilla",
+      "community": 106,
+      "norm_label": "feat-009 \u2014 los huecos llegan a la plantilla"
+    },
+    {
+      "label": "1. La petici\u00f3n \u2014 feature-analyst",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "features_feat_009_vida_huecos_en_la_plantilla_1_la_petici\u00f3n_feature_analyst",
+      "community": 106,
+      "norm_label": "1. la peticion \u2014 feature-analyst"
+    },
+    {
+      "label": "Cu\u00e1nto de Hoy sirve aqu\u00ed, y cu\u00e1nto no",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "features_feat_009_vida_huecos_en_la_plantilla_cu\u00e1nto_de_hoy_sirve_aqu\u00ed_y_cu\u00e1nto_no",
+      "community": 106,
+      "norm_label": "cuanto de hoy sirve aqui, y cuanto no"
+    },
+    {
+      "label": "2. El plan \u2014 feature-architect",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L348",
+      "_origin": "ast",
+      "id": "features_feat_009_vida_huecos_en_la_plantilla_2_el_plan_feature_architect",
+      "community": 106,
+      "norm_label": "2. el plan \u2014 feature-architect"
+    },
+    {
+      "label": "3. Construcci\u00f3n \u2014 feature-builder",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L352",
+      "_origin": "ast",
+      "id": "features_feat_009_vida_huecos_en_la_plantilla_3_construcci\u00f3n_feature_builder",
+      "community": 106,
+      "norm_label": "3. construccion \u2014 feature-builder"
+    },
+    {
+      "label": "4. Revisi\u00f3n \u2014 feature-reviewer",
+      "file_type": "document",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L356",
+      "_origin": "ast",
+      "id": "features_feat_009_vida_huecos_en_la_plantilla_4_revisi\u00f3n_feature_reviewer",
+      "community": 106,
+      "norm_label": "4. revision \u2014 feature-reviewer"
     },
     {
       "label": "PROTOCOL.md",
@@ -35676,6 +36026,16 @@
       "norm_label": "tamano, en honesto"
     },
     {
+      "label": "Despu\u00e9s del m\u00f3dulo: lo que pidi\u00f3 el usuario us\u00e1ndolo",
+      "file_type": "document",
+      "source_file": "docs/vida/PLAN.md",
+      "source_location": "L176",
+      "_origin": "ast",
+      "id": "vida_plan_despu\u00e9s_del_m\u00f3dulo_lo_que_pidi\u00f3_el_usuario_us\u00e1ndolo",
+      "community": 5,
+      "norm_label": "despues del modulo: lo que pidio el usuario usandolo"
+    },
+    {
       "label": "query_20260919_061600_vida_f0__does_the_graph_know_the_vida_module_or_th.md",
       "file_type": "document",
       "source_file": "graphify-out/memory/query_20260919_061600_vida_f0__does_the_graph_know_the_vida_module_or_th.md",
@@ -36096,6 +36456,56 @@
       "norm_label": "source nodes"
     },
     {
+      "label": "query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "file_type": "document",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme",
+      "community": 246,
+      "norm_label": "query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md"
+    },
+    {
+      "label": "Q: FEAT-008: quien usa VidaDurationPills y que aritmetica de duracion existe ya",
+      "file_type": "document",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_q_feat_008_quien_usa_vidadurationpills_y_que_aritmetica_de_duracion_existe_ya",
+      "community": 246,
+      "norm_label": "q: feat-008: quien usa vidadurationpills y que aritmetica de duracion existe ya"
+    },
+    {
+      "label": "Answer",
+      "file_type": "document",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_answer",
+      "community": 246,
+      "norm_label": "answer"
+    },
+    {
+      "label": "Outcome",
+      "file_type": "document",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_outcome",
+      "community": 246,
+      "norm_label": "outcome"
+    },
+    {
+      "label": "Source Nodes",
+      "file_type": "document",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_source_nodes",
+      "community": 246,
+      "norm_label": "source nodes"
+    },
+    {
       "label": "MEMORY.md",
       "file_type": "document",
       "source_file": "memory/MEMORY.md",
@@ -36132,7 +36542,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_status",
-      "community": 12,
+      "community": 335,
       "norm_label": "status.md"
     },
     {
@@ -36162,7 +36572,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "up_comming_work_status_layout_improvements_md",
-      "community": 396,
+      "community": 394,
       "norm_label": "layout-improvements.md"
     },
     {
@@ -36172,7 +36582,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "up_comming_work_status_desv\u00edos_respecto_al_spec",
-      "community": 396,
+      "community": 394,
       "norm_label": "desvios respecto al spec"
     },
     {
@@ -36182,7 +36592,7 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "up_comming_work_status_archivos_tocados_2026_06_23",
-      "community": 396,
+      "community": 394,
       "norm_label": "archivos tocados (2026-06-23)"
     },
     {
@@ -36192,7 +36602,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "up_comming_work_status_verificaci\u00f3n_pendiente_manual",
-      "community": 396,
+      "community": 394,
       "norm_label": "verificacion pendiente (manual)"
     },
     {
@@ -36352,7 +36762,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements",
-      "community": 12,
+      "community": 335,
       "norm_label": "activities-module-improvements.md"
     },
     {
@@ -36492,7 +36902,7 @@
       "source_location": "L609",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_mejora_4_activitycategoriespanel_grid_responsive_tarjeta",
-      "community": 425,
+      "community": 173,
       "norm_label": "mejora 4 \u2014 `activitycategoriespanel`: grid responsive + tarjeta \"+\""
     },
     {
@@ -36502,7 +36912,7 @@
       "source_location": "L611",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_4_1_activitycategoriespanel_module_scss",
-      "community": 425,
+      "community": 173,
       "norm_label": "4.1 \u2014 `activitycategoriespanel.module.scss`"
     },
     {
@@ -36512,7 +36922,7 @@
       "source_location": "L634",
       "_origin": "ast",
       "id": "up_comming_work_activities_module_improvements_4_2_tarjeta_integrada_en_el_grid",
-      "community": 425,
+      "community": 173,
       "norm_label": "4.2 \u2014 tarjeta \"+\" integrada en el grid"
     },
     {
@@ -36922,7 +37332,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_habits_module_improvements",
-      "community": 56,
+      "community": 335,
       "norm_label": "habits-module-improvements.md"
     },
     {
@@ -37352,7 +37762,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements",
-      "community": 12,
+      "community": 335,
       "norm_label": "layout-improvements.md"
     },
     {
@@ -37402,7 +37812,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_problemas_identificados",
-      "community": 246,
+      "community": 12,
       "norm_label": "problemas identificados"
     },
     {
@@ -37412,7 +37822,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p1_sidebar_demasiado_ancha_240px_fija",
-      "community": 246,
+      "community": 12,
       "norm_label": "p1 \u2014 sidebar demasiado ancha (240px fija)"
     },
     {
@@ -37422,7 +37832,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p2_max_width_1400px_con_margin_0_auto_en_main",
-      "community": 246,
+      "community": 12,
       "norm_label": "p2 \u2014 `max-width: 1400px` con `margin: 0 auto` en `.main`"
     },
     {
@@ -37432,7 +37842,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p3_topbar_ocupa_demasiada_altura_vertical",
-      "community": 246,
+      "community": 12,
       "norm_label": "p3 \u2014 topbar ocupa demasiada altura vertical"
     },
     {
@@ -37442,7 +37852,7 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p4_doble_sistema_de_navegaci\u00f3n_redundante_en_desktop",
-      "community": 246,
+      "community": 12,
       "norm_label": "p4 \u2014 doble sistema de navegacion redundante en desktop"
     },
     {
@@ -37452,7 +37862,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "up_comming_work_layout_improvements_p5_padding_acumulado_entre_main_y_p\u00e1ginas_internas",
-      "community": 246,
+      "community": 12,
       "norm_label": "p5 \u2014 padding acumulado entre `.main` y paginas internas"
     },
     {
@@ -37672,7 +38082,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements",
-      "community": 12,
+      "community": 335,
       "norm_label": "todos-module-improvements.md"
     },
     {
@@ -37762,7 +38172,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2_tododrawer_panel_lateral_en_desktop_drawer_en_mobile",
-      "community": 376,
+      "community": 358,
       "norm_label": "mejora 2 \u2014 `tododrawer`: panel lateral en desktop, drawer en mobile"
     },
     {
@@ -37772,7 +38182,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_1_notebooklist_tsx_detectar_viewport_layout_con_panel",
-      "community": 376,
+      "community": 358,
       "norm_label": "2.1 \u2014 `notebooklist.tsx`: detectar viewport + layout con panel"
     },
     {
@@ -37782,7 +38192,7 @@
       "source_location": "L201",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_2_notebooklist_module_scss_layout_2_columnas",
-      "community": 376,
+      "community": 358,
       "norm_label": "2.2 \u2014 `notebooklist.module.scss`: layout 2 columnas"
     },
     {
@@ -37792,7 +38202,7 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_3_tododrawer_tsx_a\u00f1adir_prop_aspanel_modo_panel",
-      "community": 376,
+      "community": 358,
       "norm_label": "2.3 \u2014 `tododrawer.tsx`: anadir prop `aspanel` + modo panel"
     },
     {
@@ -37802,7 +38212,7 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_2_4_tododrawer_module_scss_estilos_del_panel_lateral",
-      "community": 376,
+      "community": 358,
       "norm_label": "2.4 \u2014 `tododrawer.module.scss`: estilos del panel lateral"
     },
     {
@@ -37902,7 +38312,7 @@
       "source_location": "L734",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_criterios_de_aceptaci\u00f3n",
-      "community": 376,
+      "community": 186,
       "norm_label": "criterios de aceptacion"
     },
     {
@@ -37912,7 +38322,7 @@
       "source_location": "L736",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_1",
-      "community": 376,
+      "community": 186,
       "norm_label": "mejora 1"
     },
     {
@@ -37922,7 +38332,7 @@
       "source_location": "L742",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_2",
-      "community": 376,
+      "community": 186,
       "norm_label": "mejora 2"
     },
     {
@@ -37932,7 +38342,7 @@
       "source_location": "L752",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_3",
-      "community": 376,
+      "community": 186,
       "norm_label": "mejora 3"
     },
     {
@@ -37942,7 +38352,7 @@
       "source_location": "L761",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_mejora_4",
-      "community": 376,
+      "community": 186,
       "norm_label": "mejora 4"
     },
     {
@@ -37952,7 +38362,7 @@
       "source_location": "L769",
       "_origin": "ast",
       "id": "up_comming_work_todos_module_improvements_general",
-      "community": 376,
+      "community": 186,
       "norm_label": "general"
     },
     {
@@ -52188,9 +52598,9 @@
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
       "source_location": "L769",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaactivitysheet_vidaactivitysheet_test",
-      "target": "vidaactivitysheet_vidaactivitysheet_test_buildpattern",
-      "confidence_score": 1.0
+      "target": "vidaactivitysheet_vidaactivitysheet_test_buildpattern"
     },
     {
       "relation": "contains",
@@ -52208,9 +52618,9 @@
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
       "source_location": "L796",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaactivitysheet_vidaactivitysheet_test",
-      "target": "vidaactivitysheet_vidaactivitysheet_test_drop_tuesday",
-      "confidence_score": 1.0
+      "target": "vidaactivitysheet_vidaactivitysheet_test_drop_tuesday"
     },
     {
       "relation": "contains",
@@ -52248,9 +52658,9 @@
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
       "source_location": "L823",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaactivitysheet_vidaactivitysheet_test",
-      "target": "vidaactivitysheet_vidaactivitysheet_test_renderwithpattern",
-      "confidence_score": 1.0
+      "target": "vidaactivitysheet_vidaactivitysheet_test_renderwithpattern"
     },
     {
       "relation": "contains",
@@ -52258,9 +52668,9 @@
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
       "source_location": "L767",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaactivitysheet_vidaactivitysheet_test",
-      "target": "vidaactivitysheet_vidaactivitysheet_test_settled_line",
-      "confidence_score": 1.0
+      "target": "vidaactivitysheet_vidaactivitysheet_test_settled_line"
     },
     {
       "relation": "calls",
@@ -52280,9 +52690,9 @@
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
       "source_location": "L825",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaactivitysheet_vidaactivitysheet_test_renderwithpattern",
-      "target": "vidaactivitysheet_vidaactivitysheet_test_buildvidaitem",
-      "confidence_score": 1.0
+      "target": "vidaactivitysheet_vidaactivitysheet_test_buildvidaitem"
     },
     {
       "relation": "calls",
@@ -52313,9 +52723,9 @@
       "source_file": "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx",
       "source_location": "L824",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidaactivitysheet_vidaactivitysheet_test_renderwithpattern",
-      "target": "vidaactivitysheet_vidaactivitysheet_test_rendersheet",
-      "confidence_score": 1.0
+      "target": "vidaactivitysheet_vidaactivitysheet_test_rendersheet"
     },
     {
       "relation": "re_exports",
@@ -53491,6 +53901,16 @@
       "target": "vidadurationpills_vidadurationpills"
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.test.tsx",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills_test",
+      "target": "vidadurationpills_vidadurationpills_test_host",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -53516,6 +53936,46 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills",
+      "target": "vidadurationpills_vidadurationpills_durationdraft",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills",
+      "target": "vidadurationpills_vidadurationpills_rawtotal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills",
+      "target": "vidadurationpills_vidadurationpills_readfield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills",
+      "target": "vidadurationpills_vidadurationpills_todraft",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
       "source_location": "L36",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -53531,6 +53991,50 @@
       "confidence_score": 1.0,
       "source": "vidadurationpills_vidadurationpills",
       "target": "vidadurationpills_vidadurationpills_vidadurationpillsprops"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills_todraft",
+      "target": "utils_vida_time_utils_splitdurationminutes"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills_vidadurationpills",
+      "target": "vidadurationpills_vidadurationpills_todraft",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills_rawtotal",
+      "target": "vidadurationpills_vidadurationpills_readfield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx",
+      "source_location": "L106",
+      "weight": 1.0,
+      "source": "vidadurationpills_vidadurationpills_vidadurationpills",
+      "target": "vidadurationpills_vidadurationpills_rawtotal",
+      "confidence_score": 1.0
     },
     {
       "relation": "re_exports",
@@ -53826,9 +54330,9 @@
       "source_file": "src/features/vida/components/VidaPatternAdvice/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternadvice_index",
-      "target": "vidapatternadvice_vidapatternadvice",
-      "confidence_score": 1.0
+      "target": "vidapatternadvice_vidapatternadvice"
     },
     {
       "relation": "contains",
@@ -53836,9 +54340,9 @@
       "source_file": "src/features/vida/components/VidaPatternAdvice/VidaPatternAdvice.tsx",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternadvice_vidapatternadvice",
-      "target": "vidapatternadvice_vidapatternadvice_colorstyleof",
-      "confidence_score": 1.0
+      "target": "vidapatternadvice_vidapatternadvice_colorstyleof"
     },
     {
       "relation": "contains",
@@ -53846,9 +54350,9 @@
       "source_file": "src/features/vida/components/VidaPatternAdvice/VidaPatternAdvice.tsx",
       "source_location": "L52",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternadvice_vidapatternadvice",
-      "target": "vidapatternadvice_vidapatternadvice_vidapatternadvice",
-      "confidence_score": 1.0
+      "target": "vidapatternadvice_vidapatternadvice_vidapatternadvice"
     },
     {
       "relation": "contains",
@@ -53856,9 +54360,9 @@
       "source_file": "src/features/vida/components/VidaPatternAdvice/VidaPatternAdvice.tsx",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternadvice_vidapatternadvice",
-      "target": "vidapatternadvice_vidapatternadvice_vidapatternadviceprops",
-      "confidence_score": 1.0
+      "target": "vidapatternadvice_vidapatternadvice_vidapatternadviceprops"
     },
     {
       "relation": "calls",
@@ -53867,9 +54371,9 @@
       "source_file": "src/features/vida/components/VidaPatternAdvice/VidaPatternAdvice.tsx",
       "source_location": "L65",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternadvice_vidapatternadvice_vidapatternadvice",
-      "target": "vidapatternadvice_vidapatternadvice_colorstyleof",
-      "confidence_score": 1.0
+      "target": "vidapatternadvice_vidapatternadvice_colorstyleof"
     },
     {
       "relation": "re_exports",
@@ -53878,9 +54382,9 @@
       "source_file": "src/features/vida/components/VidaPatternAdvice/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternadvice_index",
-      "target": "vidapatternadvice_vidapatternadvice_vidapatternadvice",
-      "confidence_score": 1.0
+      "target": "vidapatternadvice_vidapatternadvice_vidapatternadvice"
     },
     {
       "relation": "re_exports",
@@ -53952,9 +54456,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_index",
-      "target": "vidapatternsaside_vidapatternsaside",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside"
     },
     {
       "relation": "contains",
@@ -53962,9 +54466,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/VidaPatternsAside.tsx",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_vidapatternsaside",
-      "target": "vidapatternsaside_vidapatternsaside_vidaappliedsuggestion",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside_vidaappliedsuggestion"
     },
     {
       "relation": "contains",
@@ -53972,9 +54476,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/VidaPatternsAside.tsx",
       "source_location": "L73",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_vidapatternsaside",
-      "target": "vidapatternsaside_vidapatternsaside_vidapatternsaside",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside_vidapatternsaside"
     },
     {
       "relation": "contains",
@@ -53982,9 +54486,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/VidaPatternsAside.tsx",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_vidapatternsaside",
-      "target": "vidapatternsaside_vidapatternsaside_vidapatternsasideprops",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside_vidapatternsasideprops"
     },
     {
       "relation": "contains",
@@ -53992,9 +54496,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/VidaPatternsAside.tsx",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_vidapatternsaside",
-      "target": "vidapatternsaside_vidapatternsaside_vidapatternssource",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside_vidapatternssource"
     },
     {
       "relation": "re_exports",
@@ -54003,9 +54507,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/index.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_index",
-      "target": "vidapatternsaside_vidapatternsaside_vidaappliedsuggestion",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside_vidaappliedsuggestion"
     },
     {
       "relation": "re_exports",
@@ -54014,9 +54518,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_index",
-      "target": "vidapatternsaside_vidapatternsaside_vidapatternssource",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside_vidapatternssource"
     },
     {
       "relation": "re_exports",
@@ -54025,9 +54529,9 @@
       "source_file": "src/features/vida/components/VidaPatternsAside/index.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "vidapatternsaside_index",
-      "target": "vidapatternsaside_vidapatternsaside_vidapatternsaside",
-      "confidence_score": 1.0
+      "target": "vidapatternsaside_vidapatternsaside_vidapatternsaside"
     },
     {
       "relation": "contains",
@@ -60690,9 +61194,9 @@
       "source_file": "src/features/vida/pages/VidaRevisionPage.test.tsx",
       "source_location": "L1604",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "pages_vidarevisionpage_test",
-      "target": "pages_vidarevisionpage_test_withdesktop",
-      "confidence_score": 1.0
+      "target": "pages_vidarevisionpage_test_withdesktop"
     },
     {
       "relation": "calls",
@@ -65621,9 +66125,9 @@
       "source_file": "src/features/vida/utils/vida-patterns.utils.ts",
       "source_location": "L1197",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_patterns_utils",
-      "target": "utils_vida_patterns_utils_buildtemplatesheetadvice",
-      "confidence_score": 1.0
+      "target": "utils_vida_patterns_utils_buildtemplatesheetadvice"
     },
     {
       "relation": "contains",
@@ -65991,9 +66495,9 @@
       "source_file": "src/features/vida/utils/vida-patterns.utils.ts",
       "source_location": "L1183",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "utils_vida_patterns_utils",
-      "target": "utils_vida_patterns_utils_vidasheetadvice",
-      "confidence_score": 1.0
+      "target": "utils_vida_patterns_utils_vidasheetadvice"
     },
     {
       "relation": "contains",
@@ -68693,6 +69197,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/features/vida/utils/vida-time.utils.ts",
+      "source_location": "L140",
+      "weight": 1.0,
+      "source": "utils_vida_time_utils",
+      "target": "utils_vida_time_utils_joindurationminutes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-time.utils.ts",
       "source_location": "L49",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -68738,6 +69252,16 @@
       "confidence_score": 1.0,
       "source": "utils_vida_time_utils",
       "target": "utils_vida_time_utils_parsetimetominutes"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/features/vida/utils/vida-time.utils.ts",
+      "source_location": "L123",
+      "weight": 1.0,
+      "source": "utils_vida_time_utils",
+      "target": "utils_vida_time_utils_splitdurationminutes",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -78623,8 +79147,18 @@
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
       "source_location": "L1377",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "features_feat_007_vida_sistema_entiende_3_construcci\u00f3n_feature_builder",
-      "target": "features_feat_007_vida_sistema_entiende_tajada_3_el_aviso_llega_al_planear",
+      "target": "features_feat_007_vida_sistema_entiende_tajada_3_el_aviso_llega_al_planear"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
+      "source_location": "L1682",
+      "weight": 1.0,
+      "source": "features_feat_007_vida_sistema_entiende_3_construcci\u00f3n_feature_builder",
+      "target": "features_feat_007_vida_sistema_entiende_tajada_4_el_dato_donde_se_edita_y_el_escritorio",
       "confidence_score": 1.0
     },
     {
@@ -78641,40 +79175,290 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L1684",
+      "source_location": "L2992",
       "weight": 1.0,
       "source": "features_feat_007_vida_sistema_entiende_4_revisi\u00f3n_feature_reviewer",
-      "target": "features_feat_007_vida_sistema_entiende_tajada_1_la_secci\u00f3n_existe_y_cuenta_tu_adherencia_1684",
+      "target": "features_feat_007_vida_sistema_entiende_cierre_de_la_feature_nota_para_el_usuario",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L1894",
+      "source_location": "L2008",
       "weight": 1.0,
       "source": "features_feat_007_vida_sistema_entiende_4_revisi\u00f3n_feature_reviewer",
-      "target": "features_feat_007_vida_sistema_entiende_tajada_2_los_patrones_por_actividad_con_sus_dos_salidas_1894",
+      "target": "features_feat_007_vida_sistema_entiende_tajada_1_la_secci\u00f3n_existe_y_cuenta_tu_adherencia_2008",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L2312",
+      "source_location": "L2218",
       "weight": 1.0,
       "source": "features_feat_007_vida_sistema_entiende_4_revisi\u00f3n_feature_reviewer",
-      "target": "features_feat_007_vida_sistema_entiende_tajada_3_el_aviso_llega_al_planear_2312",
+      "target": "features_feat_007_vida_sistema_entiende_tajada_2_los_patrones_por_actividad_con_sus_dos_salidas_2218",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
-      "source_location": "L2132",
+      "source_location": "L2636",
       "weight": 1.0,
-      "source": "features_feat_007_vida_sistema_entiende_tajada_2_los_patrones_por_actividad_con_sus_dos_salidas_1894",
+      "source": "features_feat_007_vida_sistema_entiende_4_revisi\u00f3n_feature_reviewer",
+      "target": "features_feat_007_vida_sistema_entiende_tajada_3_el_aviso_llega_al_planear_2636",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
+      "source_location": "L2819",
+      "weight": 1.0,
+      "source": "features_feat_007_vida_sistema_entiende_4_revisi\u00f3n_feature_reviewer",
+      "target": "features_feat_007_vida_sistema_entiende_tajada_4_el_dato_donde_se_edita_y_el_escritorio_2819",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-007-vida-sistema-entiende.md",
+      "source_location": "L2456",
+      "weight": 1.0,
+      "source": "features_feat_007_vida_sistema_entiende_tajada_2_los_patrones_por_actividad_con_sus_dos_salidas_2218",
       "target": "features_feat_007_vida_sistema_entiende_tajada_2_re_revisi\u00f3n_tras_la_correcci\u00f3n",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos",
+      "target": "features_feat_008_vida_horas_y_minutos_feat_008_el_tiempo_se_escribe_en_horas_y_minutos_y_se_ve_a_qu\u00e9_hora_acabas",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_feat_008_el_tiempo_se_escribe_en_horas_y_minutos_y_se_ve_a_qu\u00e9_hora_acabas",
+      "target": "features_feat_008_vida_horas_y_minutos_1_the_request_feature_analyst",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L395",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_feat_008_el_tiempo_se_escribe_en_horas_y_minutos_y_se_ve_a_qu\u00e9_hora_acabas",
+      "target": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L724",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_feat_008_el_tiempo_se_escribe_en_horas_y_minutos_y_se_ve_a_qu\u00e9_hora_acabas",
+      "target": "features_feat_008_vida_horas_y_minutos_3_construction_feature_builder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L728",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_feat_008_el_tiempo_se_escribe_en_horas_y_minutos_y_se_ve_a_qu\u00e9_hora_acabas",
+      "target": "features_feat_008_vida_horas_y_minutos_4_review_feature_reviewer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L673",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_dos_cosas_encontradas_que_no_son_de_esta_feature",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L621",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_d\u00f3nde_no_va_descartado_con_el_motivo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L497",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_d\u00f3nde_va_el_c\u00f3digo_nuevo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L473",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_implementaci\u00f3n_de_referencia",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L648",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_las_tajadas_con_sus_archivos",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L704",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_lo_que_no_pude_averiguar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L606",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_lo_que_no_se_crea",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L408",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_lo_que_ya_existe_verificado_archivo_por_archivo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L663",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_2_the_plan_feature_architect",
+      "target": "features_feat_008_vida_horas_y_minutos_por_d\u00f3nde_entra_un_valor_precargado_feat_009",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L499",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_d\u00f3nde_va_el_c\u00f3digo_nuevo",
+      "target": "features_feat_008_vida_horas_y_minutos_a_src_features_vida_utils_vida_time_utils_ts_modificar_criterios_117_125_126",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L529",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_d\u00f3nde_va_el_c\u00f3digo_nuevo",
+      "target": "features_feat_008_vida_horas_y_minutos_b_vidadurationpills_tsx_modificar_criterios_107_108_111_116",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-008-vida-horas-y-minutos.md",
+      "source_location": "L579",
+      "weight": 1.0,
+      "source": "features_feat_008_vida_horas_y_minutos_d\u00f3nde_va_el_c\u00f3digo_nuevo",
+      "target": "features_feat_008_vida_horas_y_minutos_c_la_hora_de_fin_tajada_2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "features_feat_009_vida_huecos_en_la_plantilla",
+      "target": "features_feat_009_vida_huecos_en_la_plantilla_feat_009_los_huecos_llegan_a_la_plantilla",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "features_feat_009_vida_huecos_en_la_plantilla_feat_009_los_huecos_llegan_a_la_plantilla",
+      "target": "features_feat_009_vida_huecos_en_la_plantilla_1_la_petici\u00f3n_feature_analyst",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L348",
+      "weight": 1.0,
+      "source": "features_feat_009_vida_huecos_en_la_plantilla_feat_009_los_huecos_llegan_a_la_plantilla",
+      "target": "features_feat_009_vida_huecos_en_la_plantilla_2_el_plan_feature_architect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L352",
+      "weight": 1.0,
+      "source": "features_feat_009_vida_huecos_en_la_plantilla_feat_009_los_huecos_llegan_a_la_plantilla",
+      "target": "features_feat_009_vida_huecos_en_la_plantilla_3_construcci\u00f3n_feature_builder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L356",
+      "weight": 1.0,
+      "source": "features_feat_009_vida_huecos_en_la_plantilla_feat_009_los_huecos_llegan_a_la_plantilla",
+      "target": "features_feat_009_vida_huecos_en_la_plantilla_4_revisi\u00f3n_feature_reviewer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/features/FEAT-009-vida-huecos-en-la-plantilla.md",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "features_feat_009_vida_huecos_en_la_plantilla_1_la_petici\u00f3n_feature_analyst",
+      "target": "features_feat_009_vida_huecos_en_la_plantilla_cu\u00e1nto_de_hoy_sirve_aqu\u00ed_y_cu\u00e1nto_no",
       "confidence_score": 1.0
     },
     {
@@ -82341,6 +83125,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "docs/vida/PLAN.md",
+      "source_location": "L176",
+      "weight": 1.0,
+      "source": "vida_plan_vida_el_plan",
+      "target": "vida_plan_despu\u00e9s_del_m\u00f3dulo_lo_que_pidi\u00f3_el_usuario_us\u00e1ndolo",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/vida/PLAN.md",
       "source_location": "L7",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -82806,6 +83600,46 @@
       "confidence_score": 1.0,
       "source": "memory_query_20260922_030753_feat_007_ventana_de_42_dias_derivado_de_patrones_q_feat_007_ventana_de_42_dias_derivado_de_patrones_y_sugerencia_con_respuesta_guardada_en_vida",
       "target": "memory_query_20260922_030753_feat_007_ventana_de_42_dias_derivado_de_patrones_source_nodes"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme",
+      "target": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_q_feat_008_quien_usa_vidadurationpills_y_que_aritmetica_de_duracion_existe_ya",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_q_feat_008_quien_usa_vidadurationpills_y_que_aritmetica_de_duracion_existe_ya",
+      "target": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_answer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_q_feat_008_quien_usa_vidadurationpills_y_que_aritmetica_de_duracion_existe_ya",
+      "target": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_outcome",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "graphify-out/memory/query_20260922_054548_feat_008__quien_usa_vidadurationpills_y_que_aritme.md",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_q_feat_008_quien_usa_vidadurationpills_y_que_aritmetica_de_duracion_existe_ya",
+      "target": "memory_query_20260922_054548_feat_008_quien_usa_vidadurationpills_y_que_aritme_source_nodes",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -84649,5 +85483,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e492e501a4c99e1c15c0af2fb4ff89a0ad351f58"
+  "built_at_commit": "392bca49444af7aec4e53bf712333fd84309fe69"
 }

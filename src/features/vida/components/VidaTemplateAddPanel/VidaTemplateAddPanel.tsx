@@ -306,10 +306,11 @@ export function VidaTemplateAddPanel({
 
           <div className={styles.field}>
             <span className={styles.label} id="vida-add-duration-label">
-              Cuánto <span className={styles.labelHint}>· opcional, en minutos</span>
+              Cuánto <span className={styles.labelHint}>· opcional</span>
             </span>
             <VidaDurationPills
               label="Cuánto dura"
+              freeInput="hoursAndMinutes"
               value={durationMinutes}
               disabled={save.isPending}
               onChange={setDurationMinutes}

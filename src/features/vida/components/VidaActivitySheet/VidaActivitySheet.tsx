@@ -592,10 +592,11 @@ export function VidaActivitySheet({
 
                 <div className={styles.field}>
                   <span className={styles.label} id="vida-activity-duration-label">
-                    Cuánto <span className={styles.labelHint}>· opcional, en minutos</span>
+                    Cuánto <span className={styles.labelHint}>· opcional</span>
                   </span>
                   <VidaDurationPills
                     label="Cuánto dura"
+                    freeInput="hoursAndMinutes"
                     value={durationMinutes}
                     disabled={isMutating}
                     onChange={(minutes) => patchTemplate({ durationMinutes: minutes })}

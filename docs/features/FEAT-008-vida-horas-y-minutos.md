@@ -1,7 +1,7 @@
 ---
 id: FEAT-008
 title: El tiempo se escribe en horas y minutos, y se ve a qué hora acabas
-status: planned
+status: building
 architect: yes    # el control de «Cuánto» es compartido por cinco pantallas (dos fuera de lo pedido) y la hora de fin ya se calcula en dos sitios: decidir dónde vive el cambio es una decisión de código compartido, no de tajada
 area: features/vida
 requested: 2026-09-22
@@ -235,7 +235,7 @@ quitan**. Esto cambia lo que hay detrás de «libre», no las píldoras.
 
 | # | What it does | State |
 |---|---|---|
-| 1 | **Dos campos, horas y minutos, en la plantilla.** «Cuánto» se escribe como se dice, en la hoja del ítem y en el panel de añadir; las píldoras se quedan; lo guardado se abre repartido; 90 se ordena solo al salir del campo; el API recibe lo mismo de siempre. Útil sola: es la mitad del pedido y la que quita la multiplicación de cabeza. | pending |
+| 1 | **Dos campos, horas y minutos, en la plantilla.** «Cuánto» se escribe como se dice, en la hoja del ítem y en el panel de añadir; las píldoras se quedan; lo guardado se abre repartido; 90 se ordena solo al salir del campo; el API recibe lo mismo de siempre. Útil sola: es la mitad del pedido y la que quita la multiplicación de cabeza. | aceptada |
 | 2 | **La hora de fin, mientras programas.** Debajo de «Cuánto», «Acaba a las 20:20», en la hoja **y** en el panel; sin hora dice qué falta; si cruza medianoche lo dice entero, incluido lo que Hoy hará; convive con la línea de FEAT-007 en un orden fijo y **no duplica** la cuenta que ya existe. Útil sola: es el dato que le faltaba a la cara de la agenda. | pending |
 | 3 | **Los otros tres sitios donde se escribe una duración**: «añadir a un hueco» en Hoy y los dos «Cuánto duró» de sesión. Coherencia del módulo entero. **Es la única que se puede no construir** sin que 1 y 2 pierdan nada. | pending |
 
@@ -653,7 +653,7 @@ que **la 3 encoge**: ya no es «repetir lo resuelto», son tres props.
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **Dos campos, horas y minutos, en la plantilla.** | **Modificar:** `utils/vida-time.utils.ts` (+`MAX_DURATION_MINUTES`, `splitDurationMinutes`, `joinDurationMinutes`, tras `:104`) · `utils/vida-time.utils.test.ts` (casos al final) · `components/VidaDurationPills/VidaDurationPills.tsx` (props `freeInput`/`describedById`; bifurcar `:93-118`) · `.../VidaDurationPills.module.scss` (`.duo`, `.duoField`, `.duoUnit`) · `.../VidaDurationPills.test.tsx` (**añadir** un `describe` del modo nuevo; **no tocar** los siete de arriba) · `components/VidaActivitySheet/VidaActivitySheet.tsx:595` (rótulo «· opcional») y `:597-602` (prop) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx:309` y `:311-316` | 107-118, y 132/133 en lo suyo | pending |
+| 1 | **Dos campos, horas y minutos, en la plantilla.** | **Modificar:** `utils/vida-time.utils.ts` (+`MAX_DURATION_MINUTES`, `splitDurationMinutes`, `joinDurationMinutes`, tras `:104`) · `utils/vida-time.utils.test.ts` (casos al final) · `components/VidaDurationPills/VidaDurationPills.tsx` (props `freeInput`/`describedById`; bifurcar `:93-118`) · `.../VidaDurationPills.module.scss` (`.duo`, `.duoField`, `.duoUnit`) · `.../VidaDurationPills.test.tsx` (**añadir** un `describe` del modo nuevo; **no tocar** los siete de arriba) · `components/VidaActivitySheet/VidaActivitySheet.tsx:595` (rótulo «· opcional») y `:597-602` (prop) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx:309` y `:311-316` | 107-118, y 132/133 en lo suyo | aceptada |
 | 2 | **La hora de fin, mientras programas.** | **Modificar:** `utils/vida-time.utils.ts` (+`resolveEndTime`; `calculateEndTime:79-81` pasa a delegar) · `utils/vida-time.utils.test.ts` · `utils/vida-template.utils.ts` (+`describeEndTime`, tras `:539`) · `utils/vida-template.utils.test.ts` · `components/VidaActivitySheet/VidaActivitySheet.tsx` (insertar entre `:602` y `:603`; `describedById` en `:597`) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (insertar tras `:316`; `describedById` en `:311`). **Crear:** `components/VidaEndTimeLine/{VidaEndTimeLine.tsx, VidaEndTimeLine.module.scss, index.ts, VidaEndTimeLine.test.tsx}` | 119-128, y 132/133 en lo suyo | pending |
 | 3 | **Los otros tres sitios.** Tres props y sus tests. | **Modificar:** `components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx:214` · `components/VidaLogSessionSheet/VidaLogSessionSheet.tsx:282` · `components/VidaFinishSessionModal/VidaFinishSessionModal.tsx:153` (una prop en cada uno) + los tests de esas tres que busquen `spinbutton` (los localiza con `grep -rn "spinbutton" src/features/vida`). **Sin línea de fin**: ahí no se programa nada, se registra lo que pasó. | 129-131, y 132/133 en lo suyo | pending |
 
@@ -723,8 +723,328 @@ query` confirmó el vecindario del control (17 nodos, un solo consumidor de
 
 ## 3. Construction — feature-builder
 
-*(pendiente)*
+### Tajada 1 — Dos campos, horas y minutos, en la plantilla
+
+**Resumen para quien revisa:** «Cuánto» ya se escribe en **dos campos, horas y
+minutos**, en la hoja del ítem y en el panel «Añadir a mi Vida»; el reparto vive
+en dos funciones puras nuevas de `vida-time.utils.ts` y en una prop aditiva
+`freeInput` de `VidaDurationPills` cuyo defecto (`'minutes'`) deja intactas las
+otras tres pantallas. Hacia fuera no cambia nada: sigue entrando y saliendo
+`durationMinutes` en minutos.
+**Lo que más probablemente he roto:** el **estado interno de `VidaDurationPills`**.
+Antes el componente solo recordaba si «libre» estaba abierto; ahora además guarda
+un borrador `{hours, minutes}` y el último valor emitido, y **los sincroniza en
+render** (`if (value !== emitted) { setEmitted(value); setDraft(...) }`). Ese
+patrón corre para **los cinco consumidores**, también los tres que no cambian de
+modo: si algún padre emite un `value` que luego no aplica, el borrador se
+re-reparte y podría verse un salto. En modo `'minutes'` el borrador no se pinta
+en ninguna parte, así que el daño sería invisible ahí, pero el render extra
+existe. El segundo sitio donde miraría: el test de la hoja
+(`VidaActivitySheet.test.tsx:416`) **ha perdido su `getByRole('spinbutton')`**
+porque ya no hay ninguno en esa pantalla; lo he sustituido por los dos campos,
+no lo he borrado.
+
+**Qué se construyó**
+
+- `src/features/vida/utils/vida-time.utils.ts` — tres cosas puras, entre
+  `formatDurationMinutes` y `formatTimeForDisplay`, donde dijo el arquitecto:
+  `MAX_DURATION_MINUTES` (1439), `splitDurationMinutes(total)` (95 → `{1, 35}`;
+  `null` y `0` → `{null, null}`) y `joinDurationMinutes(h, m)` (`0` → `null`; por
+  encima del tope, el tope). **Ningún formateador nuevo** (criterio 117).
+- `src/features/vida/utils/vida-time.utils.test.ts` — un `describe` al final, seis
+  casos, incluido el de ida y vuelta. Nada de arriba se tocó.
+- `src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx` — prop
+  aditiva `freeInput?: 'minutes' | 'hoursAndMinutes'` con defecto `'minutes'`. Con
+  el defecto, el JSX del campo único **no cambió ni un carácter**. Con el modo
+  nuevo, dos `input type="text" inputMode="numeric"` con `aria-label="horas"` y
+  `aria-label="minutos"`, sus unidades «h» y «min» como rótulo (`aria-hidden`,
+  porque el nombre accesible ya lo dice), y la línea llana del tope.
+- `.../VidaDurationPills.module.scss` — `.duo` (fila sin `wrap`), `.duoField`,
+  `.duoInput` (4.5rem × 44 px) y `.duoUnit` (mismo color que `.freeUnit`).
+- `.../VidaDurationPills.test.tsx` — un `describe` nuevo de 13 casos con un padre
+  de verdad (`Host`) para poder probar la sincronización. **Los siete de arriba
+  siguen intactos**, con su `getByRole('spinbutton')` en singular.
+- `VidaActivitySheet.tsx:595` y `VidaTemplateAddPanel.tsx:309` — el rótulo pasa a
+  «· opcional»; `:597` y `:311` reciben `freeInput="hoursAndMinutes"`.
+- `VidaActivitySheet.test.tsx:416` — la afirmación del campo único pasa a ser la
+  de los dos campos (40 → `0` h y `40` min). Es la única afirmación existente que
+  esta tajada tuvo que reescribir; no se pierde nada, se dice lo mismo.
+
+**Por qué así, y qué se descartó**
+
+- **El borrador es estado del control, no dato.** Se emite `onChange` en cada
+  tecla (topado) y el reparto solo se rehace cuando `value` llega distinto de lo
+  último emitido. Así, teclear `9` no salta a «0 h 9» y guardar sin salir del
+  campo guarda lo mismo que se ve. Es también la puerta de FEAT-009: un `value`
+  que entra de fuera **sí** vuelve a repartirse (probado en el navegador y en
+  test).
+- **`emitted` es `useState`, no `useRef`: desvío consciente del plan.** El
+  arquitecto pedía «un `useRef` con lo último que emitió» y sincronizar en
+  render. Con `useRef` el linter de este repo da **dos errores nuevos**
+  (`Cannot access refs during render`, regla del compilador de React) y la línea
+  base pasaba de 14 a 16. Con `useState` es el patrón documentado de «ajustar
+  estado cuando cambia una prop», sigue siendo sincronización **en render** (no
+  `useEffect`) y el lint vuelve a 14. Medido: con `useRef`, `pnpm lint` → 16
+  errores; con `useState` → 14.
+- **`onBlur` es un estreno en `src/features`** (el arquitecto lo avisó: no había
+  ninguno). El criterio 112 pide explícitamente que se ordene **al salir del
+  campo**, y sin `blur` no hay forma de distinguir «está a medio escribir» de «ha
+  terminado». Solo re-reparte el borrador: **no emite nada**, no avisa y no
+  colorea.
+- **`describedById` no se añadió.** Está en la lista de archivos de la tajada 1
+  del arquitecto, pero su único consumidor es la línea de fin de la **tajada 2**,
+  que está bloqueada esperando el render del usuario. Una prop sin consumidor no
+  se puede probar; entra con la tajada 2, en una línea.
+- **`type="text"` y no `type="number"`**: el `number` cambia de valor con la
+  rueda del ratón (criterio 114) y no deja teclear un borrador. El efecto es que
+  en esas dos pantallas ya no hay rol `spinbutton`.
+- **`maxMinutes` no se toca**: sigue apagando píldoras y diciendo «Aquí caben …»,
+  y los campos libres siguen sin imponerlo, como hoy.
+
+**Verificación**
+
+Línea base entera, antes y después (`docs/features/ENVIRONMENT.md`):
+
+```
+pnpm typecheck  → limpio (sin salida)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   [base: 14/0]
+pnpm test       → Test Files 1 failed | 109 passed (110)
+                  Tests 2 failed | 1587 passed (1589)      [base: 2 fallos de 1570]
+                  los 2 fallos son los de siempre: SearchSelect.test.tsx:40 ×2
+pnpm build      → ✓ built in 3.89s; index 1.093,96 kB      [base: 1.092,02 kB]
+                  app-icons 620,20 kB · IconPicker 4,64 kB (sin cambio)
+```
+
+El chunk sube **1,94 kB**: son las líneas propias (dos funciones puras y el
+segundo bloque de JSX). Ninguna de iconos.
+
+Tests del área, aislados: `pnpm vitest run` sobre `VidaDurationPills`,
+`vida-time.utils.test.ts`, `VidaActivitySheet` y `VidaTemplateAddPanel` →
+**79 passed**.
+
+**En el navegador.** No arranqué ningún servidor: la web del usuario ya estaba
+arriba en **`http://localhost:5173`** (sonda: `ARRIBA HTTP 200`). Como `/app/*`
+está detrás del login, monté un **arnés temporal**
+(`harness-feat008.html` + `src/harness-feat008.tsx`) que pinta el control con
+datos sintéticos en `[data-ds='aura']`, tema oscuro, **375 × 812**;
+**ya está borrado** (`git status` no lo lista). Medido ahí:
+
+- Los dos campos, **en una línea**: fila `scrollWidth 309 === clientWidth 309`, y
+  el documento `scrollWidth 375 === clientWidth 375` (sin scroll horizontal).
+- Cada campo **72 × 44 px** → el área tocable de 44 px del criterio 116.
+- `type="text"`, `inputMode="numeric"` en los dos; un `wheel` sobre el campo no
+  cambia el valor (`antes 90 → después 90`).
+- Contraste en oscuro: unidades «h»/«min» `rgb(168,179,199)` sobre `rgb(11,18,32)`
+  = **8,86:1**; el texto tecleado, **16,74:1**.
+- Comportamiento, con eventos reales de DOM sobre React en StrictMode:
+  `95` abre `1` / `35`; teclear `9` deja `9` (no salta); `90` vale 150 con 1 h ya
+  puesta y **al salir** se acomoda a `2` / `30` **sin cambiar el dato** (150);
+  `99` en horas conserva el `99` mientras se escribe, emite `1439`, enseña
+  «Como mucho 23 h 59 min.» y al salir deja `23` / `59`; un `value` que llega de
+  fuera (40 → 95) **se vuelve a repartir** a `1` / `35`.
+- Consola del navegador: ni un aviso de React.
+- **Lo que el navegador no pudo dar:** los clics y las pulsaciones reales no
+  llegaban a la página (la ventana no está en primer plano), así que la
+  interacción se comprobó **disparando los eventos del DOM**, no tecleando. La
+  tabulación de verdad y el teclado numérico del teléfono quedan **pendientes de
+  prueba manual**.
+
+**Criterios que cierra, uno a uno**
+
+- **107** ✅ Dos campos seguidos con «h» y «min» en las dos pantallas; el rótulo
+  dice «· opcional» (`VidaActivitySheet.tsx:595`, `VidaTemplateAddPanel.tsx:309`).
+  Visto en el arnés y en los tests.
+- **108** ✅ Las cinco píldoras siguen; «1h» deja `1` y `0` y volver a tocarla
+  vacía (test «las píldoras se quedan y reparten lo que eligen»).
+- **109** ✅ 95 → `1`/`35`; 45 → píldora «45» encendida y sin campos; 60 → «1h»
+  encendida, «libre» apagada; sin duración → los dos vacíos y ninguna encendida
+  (cuatro afirmaciones, un test cada caso).
+- **110** ✅ `joinDurationMinutes` es `h*60+m` entero y el ida-y-vuelta está
+  probado para 1, 15, 45, 60, 95, 120, 300 y 1439. Abrir 95 y **no tocar nada** no
+  emite: el `onChange` solo sale del teclado o de una píldora. *(El espía sobre
+  `vidaItemUpdate` al estilo del criterio 96 no lo monté: el guardado de la hoja
+  no cambió ni una línea y sus tests de FEAT-003 siguen verdes.)*
+- **111** ✅ `joinDurationMinutes(0,0)` y `(null,null)` → `null`; test de pantalla
+  con los dos campos a `0`: el padre recibe `null`.
+- **112** ✅ Medido en navegador y en test: `9` no salta, `90` vale 90 mientras se
+  escribe, al salir se ve `1`/`30` y el dato sigue siendo 90.
+- **113** ✅ 300 → `5`/`0`; 99 h → 1439 con «Como mucho 23 h 59 min.» y `23`/`59`
+  al salir; `4a-5` entra como `45`.
+- **114** ✅ `inputMode="numeric"` en los dos, `type="text"` (no cambia con la
+  rueda: medido), y **nombres accesibles propios** «horas» y «minutos». El grupo
+  sigue siendo `role="group"` con nombre «Cuánto dura» en las dos pantallas.
+- **115** ⚠️ **Pendiente de prueba manual.** Los dos campos son `input` nativos
+  contiguos, sin `tabIndex` y **sin una sola línea de salto de foco** (nada llama
+  a `focus()`), así que el orden es `horas → minutos → siguiente`; pero la
+  tabulación real no se pudo ejercitar desde aquí (los eventos de teclado no
+  llegan a la ventana). **Pasos:** abrir un ítem con duración, pinchar en
+  «horas», `Tab` (debe ir a «minutos»), `Tab` otra vez, y `Shift+Tab` de vuelta.
+- **116** ✅ Una línea a 375 px (`scrollWidth === clientWidth`, 309/309), 44 px de
+  alto cada campo, 8,86:1 las unidades en oscuro. *(Medido en el arnés, que
+  reproduce el ancho del campo de la hoja; dentro de la hoja real, detrás del
+  login, lo confirma el usuario en el criterio 134.)*
+- **117** ✅ El reparto vive en `splitDurationMinutes` / `joinDurationMinutes`, en
+  `vida-time.utils.ts`, con tests. `formatDurationMinutes` y
+  `formatDurationFromMinutes` no se tocaron y no hay un tercer formateador: las
+  unidades de los campos son rótulos, no texto formateado.
+- **118** ✅ `VidaPlaceInGapSheet`, `VidaLogSessionSheet` y `VidaFinishSessionModal`
+  no se tocaron (no aparecen en `git status`), y sus tests pasan sin cambios,
+  incluido el `getByRole('spinbutton')` de `VidaPlaceInGapSheet.test.tsx:199`.
+- **132** ✅ Ni «inválido», ni «error», ni rojo: el tope se dice con `.hint`, el
+  mismo estilo apagado de «Aquí caben …», y el test comprueba que **no hay ningún
+  `role="alert"`**.
+- **133** ✅ Ver la línea base de arriba: typecheck limpio, lint 14/0, los mismos
+  2 fallos de `SearchSelect`, build exit 0, +1,94 kB de líneas propias.
+- **134** — lo cierra el usuario.
+
+**Riesgos**
+
+1. **El render extra en los cinco consumidores** (lo del resumen). Mitigado
+   porque el borrador no se pinta en modo `'minutes'`, pero es el sitio donde
+   miraría primero si algo raro pasa en Hoy o en las sesiones.
+2. **Un `durationMinutes` guardado por encima de 23 h 59 min** (el API acepta
+   cualquier entero positivo) se abriría repartido tal cual —por ejemplo 2000 →
+   `33`/`20`—, pero si el usuario sale del campo **sin tocar nada**, el blur lo
+   deja en `23`/`59` mientras el dato sigue siendo 2000 hasta que teclee. No lo
+   forcé a emitir en el blur para no escribir nada a espaldas de nadie. Teórico:
+   el módulo no produce duraciones así.
+3. **El rótulo «· opcional, en minutos» desapareció** de las dos pantallas. Si
+   algún test de otra rama lo afirmaba, fallará; en este árbol no queda ninguno
+   (`grep -rn "en minutos" src/features/vida` ya no lo encuentra en `.tsx`).
+4. **La tajada 2 no está empezada ni preparada a medias**: no hay `describedById`,
+   no hay `resolveEndTime`, no hay `VidaEndTimeLine` y `calculateEndTime` sigue
+   exactamente como estaba.
+
+**Estado del árbol:** sin commitear. 8 archivos de `src/` modificados
+(474 inserciones, 6 borrados), más `BOARD.md` y este dossier. El arnés temporal
+se borró. `graphify update .` ejecutado (3836 nodos).
 
 ## 4. Review — feature-reviewer
 
-*(pendiente)*
+### Tajada 1 — Dos campos, horas y minutos, en la plantilla
+
+**Veredicto: `accepted`** — los doce criterios de la tajada (107–118) y los dos
+transversales que le tocan (132, 133) se cumplen, verificados por mí **con el
+navegador abierto y con el teclado de verdad**: el criterio **115, que quedaba
+pendiente de prueba manual porque al constructor no le llegaban las pulsaciones,
+lo he podido probar y lo doy por cumplido**. El desvío del `useRef` al `useState`
+me parece correcto —y algo mejor que lo que pedía el plan—. Queda un hallazgo
+real, el que el propio constructor anotó como riesgo, **reproducido y medido**:
+una duración ya guardada por encima del tope se **enseña** recortada tras salir
+del campo mientras el dato sigue siendo el viejo. No devuelve la tajada, y abajo
+explico por qué y cuál es el arreglo.
+
+**Criterios, uno por uno** (contra la sección 1)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 107 | **cumplido** | Dos campos seguidos con «h» y «min» a la vista, en la hoja del ítem y en «Añadir a mi Vida»; el rótulo dice «· opcional» en los dos (diff de ambos archivos). |
+| 108 | **cumplido** | Las cinco píldoras siguen; «1h» deja `1`/`0`, volver a tocarla vacía, y una píldora reemplaza lo escrito a mano. Test propio del componente, y lo vi en pantalla. |
+| 109 | **cumplido** | **En el navegador**: un ítem de **95 min abre `1` h `35` min** con «libre» encendida; 45 abre con su píldora y **sin** campos; 60 con «1h»; sin duración, los dos campos vacíos y ninguna píldora. |
+| 110 | **cumplido** | `joinDurationMinutes` es `h × 60 + m` entero, y el borrador **emite en cada tecla**, así que guardar sin salir del campo manda lo que se ve. Con 95 sin tocar, el valor emitido sigue siendo 95 (medido en el arnés: `onChange → 95`). |
+| 111 | **cumplido** | `joinDurationMinutes` devuelve `null` con total ≤ 0 y `splitDurationMinutes(0)` da los dos nulos: **cero no existe** ni al leer ni al escribir. Test puro. |
+| 112 | **cumplido, probado a mano** | Con el teclado real: escribí `90` sobre los minutos de un ítem de 95 → los campos quedaron en `1`/`90` **sin pelearse** y el valor emitido en **150**; al **salir con `Tab`**, los campos se acomodaron a `2`/`30` y **el valor siguió siendo 150**. Es exactamente lo que pide el criterio: la normalización es de presentación, no de dato. |
+| 113 | **cumplido** | `300` en minutos se reparte; por encima del tope el valor emitido se queda en **1439** y aparece «**Como mucho 23 h 59 min.**», sin color y sin `role="alert"` (comprobado en el DOM). Letras y signos se ignoran (`4a-5` → `45`). Ver el hallazgo 1 para el caso del dato viejo. |
+| 114 | **cumplido** | Los dos campos son `type="text"` + `inputMode="numeric"`: **la rueda del ratón no les cambia el valor** —lo probé disparando un `wheel` sobre el campo: `30` antes, `30` después—, cosa que el `type="number"` de antes sí hacía. Cada uno tiene **su nombre propio** («horas», «minutos») y el grupo se sigue llamando «Cuánto dura». |
+| 115 | **cumplido, y ya no es prueba manual pendiente** | Con pulsaciones de verdad: desde «horas», `Tab` → «minutos», `Tab` → el **control siguiente**; `Shift+Tab` dos veces → de vuelta a «horas». **No hay salto automático de foco** al llenar las horas (escribí `90` y el foco no se movió). |
+| 116 | **cumplido** | A **375 px**: `scrollWidth === clientWidth === 375`, los dos campos **en la misma línea** (misma `top`, medido) y **44 px** de alto exactos cada uno. En oscuro medí los contrastes sobre el fondo real: el texto del campo **16,7:1** y la unidad **19,3:1**, muy por encima de 4,5:1. |
+| 117 | **cumplido** | El reparto vive en **una sola función pura** por sentido (`splitDurationMinutes` / `joinDurationMinutes`) en `vida-time.utils.ts`, con sus tests; `formatDurationMinutes` y `formatDurationFromMinutes` **no se tocan** y no hay un tercer formateador. |
+| 118 | **cumplido, comprobado a mano y no por el texto** | `grep` de `freeInput` en todo `src`: **solo** la hoja y el panel la pasan. `VidaPlaceInGapSheet`, `VidaLogSessionSheet` y `VidaFinishSessionModal` **no aparecen en `git status`** —ni ellos ni sus tests— y su rama del componente (`freeInput === 'minutes'`) está intacta, con el mismo `id`, el mismo `type="number"` y el mismo `onChange`. Sus suites pasan sin tocar una línea. |
+| 132 | **cumplido** | Ni «inválido», ni «error», ni rojo: el tope se dice con «Como mucho 23 h 59 min.». El test de vocabulario del módulo recorre los archivos nuevos por `glob`, y sigue verde. |
+| 133 | **cumplido, línea base corrida entera por mí** | Ver abajo. |
+| 134 | **pendiente del usuario** | Lo de siempre, más el móvil de verdad. |
+
+**La tajada 2 no está, y es correcto:** está bloqueada a la espera del render, y
+ni un criterio del 119 al 128 aparece en el diff. No la he revisado.
+
+**La regla de sincronización del borrador (la puerta de FEAT-009)**
+
+Implementada donde tenía que estar y **probada de verdad**: el test monta un
+`Host` con un botón «precargar 95» y comprueba que, cuando `value` llega **de
+fuera** distinto de lo último emitido, el borrador se vuelve a repartir (`0`/`40`
+→ `1`/`35`). Y la otra mitad —que **no** se re-reparta cuando el valor lo
+acabamos de emitir nosotros— es lo que hace cierto el criterio 112, y lo
+comprobé tecleando: `90` se queda `90` mientras se escribe. Es exactamente el
+punto que el arquitecto marcó como el único sitio donde FEAT-009 podía romperse,
+y queda cubierto por los dos lados.
+
+**El `useState` en vez del `useRef`: juzgado**
+
+**Es el mismo comportamiento, y el desvío está bien hecho.** Lo que hay es el
+patrón documentado de React de «ajustar estado cuando cambia una prop»: la
+comparación se hace **en render** —no en un `useEffect`—, así que React descarta
+la salida y vuelve a ejecutar el componente **antes de pintar**: no hay un
+render de más que el usuario vea, ni un tick de desfase. Se ve en los tests, que
+afirman los valores nuevos **inmediatamente** después del `fireEvent`, sin
+`waitFor`: con un `useEffect` eso no pasaría. Y es **más correcto** que lo que
+pedía el plan: escribir una `ref` durante el render es justo lo que el
+compilador de React señala, y de ahí los dos errores de lint que él midió. El
+resultado es el que manda: **lint 14/0**, comprobado por mí.
+
+**El test que reescribió: no relaja nada**
+
+`VidaActivitySheet.test.tsx:416` afirmaba `getByRole('spinbutton')` con valor
+`40`. Ahora afirma `getByLabelText('horas') === '0'` y
+`getByLabelText('minutos') === '40'`. **Afirma más, no menos**: comprueba el
+reparto además del valor, y el resto del caso —la hora, la píldora «libre»
+encendida, y lo que se manda al guardar— está intacto. Es el **único** test
+existente tocado en todo el diff.
+
+**El `onBlur`, que es un estreno en `src/features`**
+
+Está justificado y lo he comprobado en las dos direcciones: **(a)** mientras se
+escribe no puede re-repartirse o teclear `9` saltaría a «0 h 9», que es lo que
+el criterio 112 prohíbe; **(b)** guardar **sin** salir del campo guarda **lo
+normalizado en dato, no en pantalla**: con `1`/`90` a la vista, el valor emitido
+ya era **150**, el mismo que después de salir. Es decir, el blur **no cambia lo
+que se guarda**: solo acomoda lo que se ve. Medido con el teclado, no deducido.
+
+**En el navegador, por mí**
+
+El 5173 del usuario estaba arriba, así que **no arranqué ningún servidor**:
+monté un arnés propio con el componente real y dos casos —95 min y uno de 1500
+min—, lo serví desde ese 5173 y **lo borré**; `git status` no lo lista. Todo lo
+medido está en la tabla; las capturas que me importaban —los dos campos en una
+línea a 375 px, en claro y en oscuro— las he mirado una a una.
+
+**Línea base, corrida entera por mí**
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1570 | 2 de 1589 | **2 fallidos de 1589**, 109 archivos de 110 en verde; los dos de `SearchSelect` |
+| `pnpm build` | 1.092,02 kB | 1.093,96 kB | **exit 0**, `index` **1.093,96 kB** (+1,94), `app-icons` **620,20 kB sin tocar** |
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **Una duración guardada por encima del tope se enseña recortada y se guarda
+   entera.** Lo reproduje: con un valor de **1500 min**, los campos abren
+   `25`/`0` —bien— y **con solo entrar y salir del campo** (sin teclear nada)
+   pasan a `23`/`59`, mientras el valor que se guardaría **sigue siendo 1500**, y
+   además **desaparece** la línea «Como mucho 23 h 59 min.». Lo que se ve y lo
+   que se guardaría dejan de coincidir, en silencio.
+   **Por qué no devuelvo la tajada:** hace falta un dato que la interfaz nueva
+   **ya no puede crear** (el campo viejo de minutos no topaba, así que existir
+   puede), y de las dos salidas posibles el constructor eligió la que **no toca
+   el dato del usuario** —emitir 1439 en el blur cambiaría lo guardado por el
+   mero hecho de tabular, que sería peor y rompería el criterio 110—.
+   **El arreglo, para quien lo coja:** en el blur, **no re-repartir cuando el
+   total pasa del tope**; dejar `25`/`0` como está y que la línea del tope siga
+   a la vista. Es una condición en `handleDraftBlur`.
+2. **La línea del tope no está enlazada a los campos.** No hay
+   `aria-describedby`, así que un lector de pantalla no la anuncia al escribir
+   `99` en horas: es información solo visual. El plan ya preveía un
+   `describedById` para la tajada 2; conviene que esa línea entre por ahí.
+3. **Los campos dejan de ser `spinbutton` y pasan a ser cajas de texto.** Es
+   consecuencia correcta del criterio 114 —el `type="number"` era justo lo que
+   cambiaba de valor con la rueda—, pero quien busque `spinbutton` en los tests
+   del módulo ya no lo encontrará en estas dos pantallas. Queda dicho.
+4. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1589** tests y **1.093,96
+   kB**). **No lo he tocado** — es la regla.
+
+**Lo que no he podido revisar:** el recorrido dentro de `/app/*` con sesión
+—criterio **134**—, y en particular **el teclado numérico en un teléfono de
+verdad**: el `inputMode="numeric"` está puesto y es lo que lo pide, pero qué
+teclado abre Android o iOS no se ve desde aquí. Lo demás del 114 y el 115 sí lo
+he probado con pulsaciones reales.

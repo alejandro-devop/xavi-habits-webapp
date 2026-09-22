@@ -91,3 +91,51 @@
   color: var(--color-text-secondary);
   font-size: 0.75rem;
 }
+
+/* Los dos campos de `freeInput="hoursAndMinutes"`: **una sola línea**, sin
+   `wrap`, porque «1 h» y «35 min» leídos en dos renglones dejan de ser una
+   duración. A 375 px la fila mide ~200 px, así que cabe de sobra. */
+.duo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.duoField {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.duoInput {
+  /* 4 dígitos con holgura; el alto son los 44 px del dedo (criterio 116). */
+  width: 4.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.6rem;
+  background: var(--aura-glass-1);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.875rem;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Mismo color que `.freeUnit` y por el mismo motivo: `--color-text-muted` se
+   queda corto de contraste y esto es un rótulo que hay que poder leer. */
+.duoUnit {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}

@@ -413,7 +413,9 @@ describe('VidaActivitySheet', () => {
     // Vienen puestas: ni el campo vacío ni una píldora inventada.
     expect(screen.getByLabelText(/A qué hora/)).toHaveValue('08:00')
     expect(screen.getByRole('button', { name: 'libre' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('spinbutton')).toHaveValue(40)
+    // FEAT-008: «Cuánto» se escribe en dos campos, y 40 se abre repartido.
+    expect(screen.getByLabelText('horas')).toHaveValue('0')
+    expect(screen.getByLabelText('minutos')).toHaveValue('40')
 
     fireEvent.change(screen.getByLabelText(/A qué hora/), { target: { value: '09:15' } })
     await user.click(screen.getByRole('button', { name: '30' }))

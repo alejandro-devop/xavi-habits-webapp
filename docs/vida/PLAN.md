@@ -204,11 +204,18 @@ habíamos previsto. Cada una con su render aprobado antes de construirse.
   campos y se ve a qué hora acabas. Render `09-vida-cuanto.html`.
 - **FEAT-009 — los huecos llegan a la plantilla.** El tiempo libre entre ítems,
   y un toque lo llena. Render `10-vida-huecos-plantilla.html`, **aprobado**.
-- **Qué toca ahora (Hoy).** Una tarjeta arriba que cambia de cara —toca algo, se
-  pasó la hora, en marcha, no toca nada— con el play delante y «Otra cosa»
-  siempre al lado. Render `11-vida-hoy-empezar.html`, **aprobado el 2026-09-22**.
-  *El usuario cambió de opinión sobre un diseño que ya había aprobado, después de
-  usarlo: eso manda sobre el render viejo.*
+- **Lo que viene (Hoy).** Debajo de lo que estás haciendo, **dentro de la línea**,
+  lo que tu plantilla dice que toca luego, y un clic lo arranca. Render
+  `14-vida-lo-que-viene.html`, **aprobado el 2026-09-22**; `11-vida-hoy-empezar.html`
+  —la tarjeta arriba con sus cuatro caras— **queda superado**.
+  *El encuadre cambió porque el usuario usó la app: no era que costara encontrar el
+  botón, es que **no lo pulsaba por miedo a que le registrara horas que no iba a
+  pasar**. Por eso la duración se escribe «suele durarte 4 h», nunca «4 h» a secas, y
+  la promesa va en pantalla **siempre**: arranca cuando pulses, se registra lo que
+  dure de verdad.* Con ella **se retiran las fichas del hueco y el panel «Tu plantilla
+  de \<día\>»**, que el usuario encontró confusos —hacen cosas distintas sin decir
+  cuál es cuál— y que esto sustituye; se retiran **en la última tajada**, nunca antes
+  de que el sustituto esté en pantalla.
 - **Registrar en el hueco (Hoy).** El hueco que ya pasó se pulsa para contar qué
   hiciste, con la duración real y validado contra el hueco y contra lo **real**
   de los vecinos. Render `12-vida-hoy-registrar-en-hueco.html`, **aprobado el

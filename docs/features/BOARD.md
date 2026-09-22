@@ -24,8 +24,75 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
-| FEAT-016 | building | 1/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
+| FEAT-016 | building | 2/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
+| FEAT-018 | planned | 0/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+
+**FEAT-016 `building` 2/3** (2026-09-22, revisor). **Tajada 2 aceptada: el arco
+está en Hoy.** Reproducidas las cuatro líneas base clavadas (typecheck limpio,
+lint 14/0, 2 fallos de 1812 —solo `SearchSelect`, el flaky de `IconPicker` no
+salió—, build exit 0 con el inicial en 1.119,84 kB y `app-icons` sin moverse).
+Comprobado de primera mano lo que sostiene la feature: **en el componente no
+existe la cadena `role="alert"`** (el único `role` es el `role="img"` del SVG),
+el CSS no usa ámbar ni rojo ni `--color-warning`, y **leídas una a una las seis
+frases y el `aria-label`** no hay ni un adjetivo ni una palabra de juicio. Sin
+`slice(0, 1)` en ningún sitio, con el test de **dos metas** que prueba la forma
+de verdad (dos jornadas distintas, dos horas distintas, orden por `orderIndex`),
+`toSessionSpans` y `useVidaNowMinute` reusados sin reimplementar la sesión
+abierta, el catálogo **fuera** de `useVidaDayData`, y el `vi.mock` del módulo de
+categorías **completo** (las seis exportaciones; ninguno de los otros cinco
+quedó a medias). Sin regresiones: buscadas por grafo (`useVidaDayData` →
+Revisión intacta; `toSessionSpans` con sus cinco llamantes intactos) y por los
+anclajes posicionales del test de Hoy, los cuatro dentro de la lista del plan.
+**Dos cosas que quedan en manos del usuario:** el **criterio 498** (quitar el
+puntero y ver bajar un día pasado) y los 375 px, ambos tras el login. Veredicto
+sobre el 497: **la construcción es correcta y el criterio está mal redactado** —
+«Trabajaste Xh Ym.» obligaría a la función a saber que la meta es trabajo, que
+es justo lo que el plan prohíbe; «Registraste 5 h de Trabajo.» dice el mismo
+dato. Enmienda propuesta al analista, **no aplicada**. Hallazgos anotados, sin
+devolución: la frase se ve **dos veces** (dentro del arco y en el `<p>` de
+debajo, que el render 18 panel 1 no tiene) y por eso un lector de pantalla la
+oye dos veces; no hay estado de carga (el arco aparece de golpe y empuja la
+agenda); y el nombre de la meta no lleva `overflow-wrap`. Falta la **tajada 3**
+(la pregunta con botones).
+
+**FEAT-018 `planned` 0/4** (2026-09-22, arquitecto). **Sección 2 escrita, las
+cuatro tajadas con sus rutas.** Referencia: `VidaFinishSessionModal` + cómo lo
+monta `VidaModuleLayout` (una vez, por contexto). Lo nuevo son `VidaNoteLine`
+(la línea que se lee, donde viven el recorte y el «＋ añadir qué hiciste») y
+`VidaNoteSheet` (el editor único de los cuatro momentos); lo demás es props
+aditivas. Tres cosas resueltas que no lo estaban: **las píldoras** salen de un
+documento nuevo sobre `activityFollowUps(activityId:, limit:)`, que **ya existe
+en el esquema** —+1 consulta **solo al abrir el editor**, cero en el primer
+pintado de Hoy; la ventana de seis semanas se descarta y se dice por qué—; la
+**nota de la plantilla** sale de `suggestions[].item.notes`, que `useVidaDayData`
+ya trae sin condiciones (coste cero), cruzada por `activityId` porque el plan
+del día no guarda de qué ítem salió; y la **garantía del «▶ Empezar»** se fija
+con la firma `start(activityId, startTime?, { notes })`, la rama sin nota
+llamando con **un solo argumento**, y el test que ya compara el array entero
+—que **no se edita**— más dos nuevos con la misma comparación. Dos avisos para
+quien construya: el tope de ~140 del criterio 533 **no existe hoy** (las dos
+cajas actuales son `maxLength={2000}`), y «solo en el día que se está mirando»
+(536/537) se implementa como `canLogPast` —hoy y pasados, nunca futuro—.
+
+**FEAT-016 `in-review` 1/3** (2026-09-22, constructor). **Tajada 2 construida:
+el arco está en Hoy.** Bajo `VidaDayBudget` y encima de la agenda, con la suma
+viva de las categorías que apuntan a una meta —la sesión abierta incluida, cada
+60 s—, la línea «Llevas 2 h 50 min. A este ritmo paras a las 16:15.», la
+confesión «2 h 40 min sin dato hoy.» y, pasada la jornada, el dato sin un
+adjetivo ni un `role="alert"`. Solo front: `vida-goals.utils.ts` con su test (13
+casos, uno **con dos metas** para probar que la forma aguanta), el componente
+`VidaGoalArc` + su fila, y el cableado en `VidaHoyPage` con
+`useActivityCategoriesQuery` **en la página**. `typecheck` limpio, `lint` 14/0,
+`test` 2 fallos de 1812 (los de `SearchSelect`), `build` exit 0 con el chunk
+inicial en 1.119,84 kB (+4,78) y `app-icons` sin moverse. Se miró a 375 px con
+un arnés temporal, ya borrado: sin scroll horizontal y cero alertas. **Queda a
+mano** el criterio 498 (quitar el puntero y ver bajar un día pasado) y el
+recorrido real, los dos detrás del login — y nada de esto se ve vivo hasta que
+el usuario suba la tajada 1 del API, porque el catálogo desplegado aún no trae
+`goal`. Detalle que el revisor tiene que juzgar: el texto del criterio 497 dice
+«Trabajaste Xh Ym.» y se construyó «Registraste 5 h de Trabajo.», porque el
+componente **no sabe** que la meta es trabajo. Sin commitear.
 
 **FEAT-016 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada en la
 segunda vuelta.** Lo devuelto está arreglado: el encadenado crear → apuntar se

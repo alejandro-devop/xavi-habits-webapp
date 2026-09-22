@@ -1,0 +1,182 @@
+/* El arco de una meta: la tarjeta que va justo debajo del presupuesto del día.
+   Mismo vidrio que `VidaDayBudget`, con un tinte del color de la meta —que
+   llega por `--vida-goal-color`, como el de las categorías en Revisión—. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/* Con una meta, el arco ocupa el ancho; con varias, la fila del panel 2 del
+   render. `flex-wrap` evita el scroll horizontal a 375 px (criterio 499). */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.card {
+  --vida-goal-color: var(--color-primary);
+
+  display: flex;
+  flex: 1 1 14rem;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.85rem 1rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--vida-goal-color) 28%, var(--color-glass-border));
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--vida-goal-color) 9%, transparent),
+      transparent 60%
+    ),
+    var(--aura-glass-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+
+  /* Un día que ya pasó no se tiñe: es un dato cerrado, no algo en marcha. */
+  &[data-past] {
+    border-color: var(--color-glass-border);
+    background: var(--aura-glass-1);
+  }
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--vida-goal-color) 18%, transparent);
+  color: var(--vida-goal-color);
+}
+
+.count {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.countValue {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* ── El arco ─────────────────────────────────────────────────────────────── */
+
+/* El SVG es `aria-hidden` para un lector de pantalla no: lleva `role="img"` y
+   su etiqueta. Lo que no puede hacer es ser la **única** forma de leerlo, y por
+   eso la frase se repite debajo en texto real. */
+.arc {
+  display: flex;
+  justify-content: center;
+  margin: 0.15rem 0 -0.9rem;
+  min-width: 0;
+
+  svg {
+    display: block;
+    width: 100%;
+    max-width: 13.5rem;
+    height: auto;
+  }
+}
+
+.trackPath {
+  stroke: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.valuePath {
+  stroke: var(--vida-goal-color);
+}
+
+.caption {
+  fill: var(--color-text-secondary);
+  font-size: 0.59375rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.value {
+  fill: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.edge {
+  fill: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+/* ── Las líneas de texto ─────────────────────────────────────────────────── */
+
+/* La frase del arco, también pasada la meta. **Ni ámbar ni rojo ni negrita de
+   titular**: los avisos del módulo tienen su tono y este no es uno (criterio
+   493). Se lee como la guía de `VidaDayBudget`, porque es lo mismo: un dato. */
+/* El SVG se solapa a propósito con su caja (`margin-bottom` negativo, como en
+   el render): la frase tiene que despegarse de los topes «0h» y «8h» del arco o
+   se pisan. */
+.line {
+  margin: 0.9rem 0 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.sub {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+.subValue {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+/* «Sin dato» es lo que el arco **no puede saber**, no una alarma: el mismo gris
+   neutro que el tramo `no-data` de la barra del día. */
+.noData {
+  margin: 0;
+  padding: 0 0.25rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}

@@ -10,11 +10,13 @@ import { VidaBlockHint } from '@/features/vida/components/VidaBlockHint'
 import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
+import { VidaGoalArcRow } from '@/features/vida/components/VidaGoalArc'
 import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaUpNextCard } from '@/features/vida/components/VidaUpNextCard'
 import type { VidaLogSessionMode } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
+import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import {
   useAddDayPlanItemMutation,
   useEditDayPlanItemMutation,
@@ -50,6 +52,7 @@ import {
   plannedSessionMinutes,
 } from '@/features/vida/utils/vida-execution.utils'
 import type { ExecutionEntry, NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
+import { buildGoalArcs } from '@/features/vida/utils/vida-goals.utils'
 import type { VidaBlockHint as BlockHint } from '@/features/vida/utils/vida-patterns.utils'
 import {
   pickBlockHints,
@@ -235,6 +238,17 @@ export function VidaHoyPage() {
     if (!open || open.date !== date) return followUps
     return followUps.some((followUp) => followUp.id === open.id) ? followUps : [...followUps, open]
   }, [followUps, openSession.session, date])
+  /**
+   * **El catálogo de categorías** (FEAT-016, tajada 2), de donde salen las
+   * metas: cada categoría trae dentro la suya, o `null`.
+   *
+   * Va **en la página y no en `useVidaDayData`**: el contrato de ese hook son
+   * las cuatro consultas **del día**, y su `failed` habla de ellas. Esta ya
+   * está cacheada por Categorías y Actividades (`staleTime` de 5 min), así que
+   * no es tráfico nuevo — pero sí es la primera vez que Hoy la usa.
+   */
+  const { data: categories = [], isError: categoriesFailed } = useActivityCategoriesQuery()
+
   const execution = useMemo(
     () =>
       buildDayExecution({
@@ -246,6 +260,17 @@ export function VidaHoyPage() {
         isPastDay: isPast,
       }),
     [agenda, dayFollowUps, date, nowMinutes, dayHours.endTime, isPast],
+  )
+  /**
+   * **Los arcos de las metas** (FEAT-016, criterios 489–497). Las mismas
+   * sesiones del día cruzadas con el catálogo: ni un documento GraphQL nuevo.
+   * La que está en marcha entra sola, porque `toSessionSpans` ya la cuenta
+   * hasta `nowMinutes` — el mismo reloj de 60 s que el resto de la pantalla
+   * (criterio 491).
+   */
+  const goalArcs = useMemo(
+    () => buildGoalArcs({ followUps: dayFollowUps, date, nowMinutes, categories, isPastDay: isPast }),
+    [dayFollowUps, date, nowMinutes, categories, isPast],
   )
   const guidance = buildGuidanceLine({
     agenda,
@@ -997,6 +1022,28 @@ export function VidaHoyPage() {
             reviewTo={closingLine ? vidaPaths.revisionForDate(date) : null}
             nowLabel={nowLabel}
           />
+
+          {/* **El arco de la meta** (FEAT-016, criterio 489): debajo del
+              presupuesto del día y encima de la agenda.
+
+              Tres guardas, con lo que ya había en el ámbito:
+
+              - Si falló **alguna** consulta del día o la del catálogo, no se
+                pinta: media suma es peor que ninguna, y quien lo dice es el
+                aviso «Falta una parte de tu día» que ya está arriba — que **no
+                nombra** el arco, porque el contrato de `failed` es el de las
+                cuatro consultas del día (criterio 499).
+              - En un día **futuro** no hay nada vivido que sumar (criterio 496).
+              - Sin ninguna categoría apuntando a una meta, `arcs` viene vacío y
+                el componente devuelve `null`: ahí va **la pregunta de la tajada
+                3**, que todavía no existe. */}
+          {failed.length === 0 && !categoriesFailed && (isToday || isPast) ? (
+            <VidaGoalArcRow
+              arcs={goalArcs.arcs}
+              noDataLabel={goalArcs.noDataLabel}
+              isPastDay={isPast}
+            />
+          ) : null}
 
           {/* Un día pasado se dice **sin reproche** (D3, criterio 56): se
               cuenta lo que es, no lo que faltó. Lo que no se registró se

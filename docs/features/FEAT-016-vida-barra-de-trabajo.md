@@ -330,7 +330,7 @@ aquí con el 492 nuevo. Todo lo demás se renumera dentro del mismo rango
 | # | Qué hace | Estado |
 |---|---|---|
 | 1 | **La meta nace.** Tabla de metas y su migración, el puntero en `activity_categories`, la creación automática de «Trabajo, 8h» al primer uso, y la casilla en los dos formularios de categoría. El usuario ya puede marcar sus categorías mientras se construye el resto. Criterios 481–488. | aceptada |
-| 2 | **El arco.** Aparece en Hoy cuando al menos una categoría apunta a la meta, suma en vivo (incluida la sesión en marcha), la línea de hora, sin reproche pasadas las 8h, la confesión de «sin dato», y su comportamiento en días futuros/pasados. Criterios 489–499. | pendiente |
+| 2 | **El arco.** Aparece en Hoy cuando al menos una categoría apunta a la meta, suma en vivo (incluida la sesión en marcha), la línea de hora, sin reproche pasadas las 8h, la confesión de «sin dato», y su comportamiento en días futuros/pasados. Criterios 489–499. | aceptada (498 pendiente de prueba a mano) |
 | 3 | **La pregunta cuando nada apunta a una meta.** El segundo camino al mismo puntero, desde Hoy. Criterios 500–503. | pendiente |
 
 Tres tajadas, mismo corte que antes: la 1 es la única que toca el backend y
@@ -1090,7 +1090,7 @@ se copian del tono de `VidaBlockOutcomes`.
 | # | Qué hace | Archivos | Criterios | Estado |
 |---|---|---|---|---|
 | 1 | **La meta nace.** Tabla `vida_goals`, el `goal_id` en `activity_categories`, la creación automática sin carrera, y la casilla en los dos formularios. | **API:** `migrations/069_vida_goals.sql` (nuevo) · `src/types/services/vida.types.ts` · `src/types/services/activity-category.types.ts` · `src/services/vida-goal.service.ts` (nuevo) · `src/services/activity-category.service.ts` (`CategoryRow` L9-19 y `mapCategory` L21-32) · `src/graphql/modules/vida/vida.schema.ts` · `src/graphql/modules/vida/vida.resolvers.ts` · `src/validators/schemas/vida.schemas.ts` · `tests/unit/services/vida-goal.service.test.ts` (nuevo) · `tests/unit/services/activity-category.service.test.ts` · `tests/unit/validators/vida.schemas.test.ts`. **Front:** `src/features/vida/graphql/schema/vida.schema.graphql` (recopiar) · `src/features/vida/graphql/activity-categories.graphql.ts` · `src/features/vida/graphql/contracts.test.ts` (un nombre en la lista L77-81) · `src/features/vida/types/vida-goal.types.ts` (nuevo) · `src/features/vida/types/activity-category.types.ts` · `src/features/vida/api/activity-categories.api.ts` · `src/features/vida/hooks/useActivityCategories.ts` · `src/features/vida/components/VidaCategoryForm/VidaCategoryForm.tsx` (+ `.module.scss`) · `src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx` (+ `.module.scss`) · `src/features/vida/pages/VidaCategoriasPage.tsx` (~L55-58, ~L74-76, ~L84-91) · `src/features/vida/pages/VidaCategoriasPage.test.tsx`. | 481–488 | aceptada |
-| 2 | **El arco.** La suma viva por meta, la hora en grande, la frase sin reproche, «sin dato», y los días pasados y futuros. | `src/features/vida/utils/vida-goals.utils.ts` (nuevo) · `src/features/vida/utils/vida-goals.utils.test.ts` (nuevo) · `src/features/vida/components/VidaGoalArc/{VidaGoalArc.tsx,VidaGoalArcRow.tsx,VidaGoalArc.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (import, `useActivityCategoriesQuery`, el `useMemo`, el render bajo `<VidaDayBudget/>`) · `src/features/vida/pages/VidaHoyPage.module.scss` (si hace falta hueco) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API.** | 489–499 | pendiente |
+| 2 | **El arco.** La suma viva por meta, la hora en grande, la frase sin reproche, «sin dato», y los días pasados y futuros. | `src/features/vida/utils/vida-goals.utils.ts` (nuevo) · `src/features/vida/utils/vida-goals.utils.test.ts` (nuevo) · `src/features/vida/components/VidaGoalArc/{VidaGoalArc.tsx,VidaGoalArcRow.tsx,VidaGoalArc.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (import, `useActivityCategoriesQuery`, el `useMemo`, el render bajo `<VidaDayBudget/>`) · `src/features/vida/pages/VidaHoyPage.module.scss` (si hace falta hueco) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API.** | 489–499 | aceptada (498 pendiente de prueba a mano) |
 | 3 | **La pregunta cuando nada apunta a una meta.** | `src/features/vida/components/VidaGoalPrompt/{VidaGoalPrompt.tsx,VidaGoalPrompt.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (la rama `arcs.length === 0` y `useSetActivityCategoryGoalMutation`) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API, ningún documento nuevo, ninguna invalidación nueva.** | 500–503 | pendiente |
 
 ### Cómo se verifica cada tajada
@@ -1434,6 +1434,171 @@ comentario para que no parezca un accidente.
 **Estado del árbol:** sin commitear en los dos repositorios, sin push, sin
 ninguna migración corrida. `graphify update .` corrido tras el cambio.
 
+### Tajada 2 — El arco
+
+**Resumen para quien revise:**
+1. En Hoy aparece **el arco** del render 18 panel 1 —semicírculo, la hora en
+   grande dentro— debajo de `VidaDayBudget` y encima de la agenda, con la suma
+   viva de las categorías que apuntan a una meta (la abierta incluida, cada 60 s),
+   la línea «Llevas 2 h 50 min. A este ritmo paras a las 16:15.», la confesión
+   «2 h 40 min sin dato hoy.» y, pasada la jornada, el dato sin un adjetivo.
+2. Solo front y **nada del API**: un `utils` nuevo con su test, un componente
+   nuevo con su fila, y el cableado en `VidaHoyPage`. Ni un documento GraphQL
+   nuevo.
+3. **Lo que más probablemente rompí:** `VidaHoyPage` estrena una consulta —el
+   catálogo de categorías— y por eso su test estrena el `vi.mock` de
+   `@/features/vida/hooks/useActivityCategories`. Cualquier otra suite que monte
+   la página **sin** ese mock intentará la consulta de verdad (queda salvada por
+   `useVidaQueryGuard`, que la deja `enabled: false` sin sesión, pero es el sitio
+   a mirar si algo se cae). Segundo sospechoso: el arco mete un elemento más en
+   `styles.main`, entre el presupuesto y la agenda — cualquier test que anclara
+   por `previousElementSibling` o por posición de nodo ahí se descoloca. Tercero:
+   el `pnpm build` subió el chunk inicial de 1.115,06 a **1.119,84 kB** (+4,8 kB),
+   que es lo que pesa el código nuevo, y `app-icons` **no se movió** (620,20 kB).
+
+**Qué se construyó:**
+
+- `src/features/vida/utils/vida-goals.utils.ts` (**nuevo**) — `buildGoalArcs`,
+  con la firma que dejó el arquitecto y tres añadidos que se explican abajo.
+  Importa `toSessionSpans` (la sesión abierta **ya** viene contada hasta el
+  minuto vivo: no se reimplementó) y los formateadores de `vida-time.utils.ts`.
+  Las metas salen del catálogo agrupando por `goal.id`; la hora de parada es
+  `minutesToTime(ahora + (jornada − trabajado))`; `passedAtTime` recorre los
+  tramos ordenados acumulando, **no** resta de «ahora».
+- `src/features/vida/utils/vida-goals.utils.test.ts` (**nuevo**, 13 casos) —
+  uno por criterio y **uno con dos metas** que comprueba que devuelve dos arcos
+  ordenados por `orderIndex`, cada uno con su hora. Es el que el arquitecto pidió
+  y el revisor anunció.
+- `src/features/vida/components/VidaGoalArc/{VidaGoalArc.tsx,VidaGoalArcRow.tsx,VidaGoalArc.module.scss,index.ts}`
+  (**nuevos**) — los dos tontos. La geometría es la del render, copiada:
+  `viewBox="0 0 220 124"`, dos `path d="M22 106 A 88 88 0 0 1 198 106"`,
+  `pathLength="100"` y `stroke-dasharray`. El nombre, el icono, el color y los
+  minutos salen de `arc.goal`: **ni una constante «Trabajo» ni un 480** dentro
+  del componente, y **ningún `slice(0, 1)`**.
+- `src/features/vida/pages/VidaHoyPage.tsx` — `useActivityCategoriesQuery()` **en
+  la página** (no en `useVidaDayData`), el `useMemo` de `buildGoalArcs` al lado
+  del de `execution`, y el `<VidaGoalArcRow/>` **anclado al elemento
+  `<VidaDayBudget … />`**, no a un número de línea (acabó sobre la 1035).
+- `src/features/vida/pages/VidaHoyPage.test.tsx` — el `vi.mock` del módulo de
+  categorías **entero** (las seis exportaciones, no solo la consulta: es
+  exactamente la trampa que `ENVIRONMENT.md` documentó en la tajada 1) y 12
+  casos nuevos, uno por criterio del 489 al 499.
+
+**Por qué así, y qué se descartó:**
+
+- **La posición se comprueba por el DOM, no por confianza**: el caso del criterio
+  489 afirma con `compareDocumentPosition` que el arco va **después** del
+  presupuesto y **antes** de la primera fila del plan. Un `toBeInTheDocument()`
+  habría pasado con el arco en cualquier sitio.
+- **Tres campos más en `VidaGoalArc` de los que enumeraba el plan**, y es la única
+  desviación de forma: `targetLabel`, `runningSince`, y el par
+  `arcValue`/`arcCaption` (lo grande de dentro del arco y su rótulo) más `line`
+  (la misma frase, entera, para el `<p>` de fuera del SVG). Razón: el render pone
+  dentro del arco una hora con rótulo y debajo una frase, y **la frase tiene que
+  existir como texto de verdad** para que el criterio 493 sea comprobable en el
+  DOM. Dejarlo en el componente habría metido ahí la lógica de «qué frase toca»,
+  que es justo lo que el reparto «tally → formato» evita. `runningSince` sale del
+  render («en marcha desde las 10:15»), que el plan no había traducido a campo.
+- **«Trabajaste Xh Ym.» del criterio 497 se dice «Registraste 5 h de Trabajo.»**
+  — el único texto que se aparta de la letra de un criterio, y a propósito: el
+  componente y la función **no saben** que la meta es trabajo, así que el verbo
+  no puede ser «trabajar». Con una meta «Estudiar» la misma frase sigue siendo
+  cierta. **No he reescrito el criterio**; lo dejo aquí para que el revisor o el
+  usuario decidan si la palabra vale.
+- **Dos formateadores, no uno**: el corto (`formatDurationFromMinutes`, «2h 50»)
+  en la cabecera y en los topes del arco, el largo (`formatDurationMinutes`,
+  «2 h 50 min») dentro de las frases — la misma costumbre que `CategoryRow` y
+  `describeCategoryNote`. Ninguno nuevo. Efecto secundario visible: la frase dice
+  «9 h 10 min» y no «9h 10m» como el ejemplo del criterio 493.
+- **La guarda del catálogo caído no ensancha nada**: `failed.length === 0 &&
+  !categoriesFailed` en la página, y el aviso «Falta una parte de tu día» sigue
+  hablando solo de las cuatro consultas del día. Hay un caso que lo afirma.
+
+**Verificación** (todo con la web del usuario en el 5173, que respondía):
+
+| Qué | Resultado | Línea base |
+|---|---|---|
+| `pnpm typecheck` | limpio | limpio ✔ |
+| `pnpm lint` | **14 errores / 0 warnings** | 14/0 ✔ |
+| `pnpm test` | **2 fallos de 1812** (`SearchSelect` ×2) | 2 de 1788 ✔ (+25 casos nuevos; en la primera corrida salió el tercero de `IconPicker`, el flaky documentado, y en la segunda no) |
+| `pnpm build` | exit 0 · chunk inicial **1.119,84 kB** · `app-icons` **620,20 kB** · `IconPicker` 4,64 kB | 1.115,06 kB · 620,20 kB — **el inicial sube 4,78 kB**, `app-icons` **no se mueve** |
+| `pnpm vitest run src/features/vida/utils/vida-goals.utils.test.ts` | 13 de 13 | — |
+| `pnpm vitest run src/features/vida/pages/VidaHoyPage.test.tsx` | 152 de 152 (eran 140) | — |
+
+**Lo que se vio de verdad, y cómo**: `/app/vida/hoy` está detrás del login, así
+que el arco se miró con un **arnés temporal** (`harness-goal-arc.html` +
+`src/harness-goal-arc.tsx`) servido por Vite, a **375 px**, con los cuatro
+estados: en marcha con «sin dato», pasada la jornada, cero minutos y día pasado.
+Medido en el DOM: `scrollWidth === clientWidth === 375` (**sin scroll
+horizontal**) y **cero** `[role="alert"]` en la página. Se miró en **oscuro y en
+claro**. El arnés **está borrado** (`git status` lo confirma).
+
+**Criterios, uno por uno:**
+
+- **489** ✔ El arco se pinta y va **entre** el presupuesto y la agenda, afirmado
+  con `compareDocumentPosition` en `VidaHoyPage.test.tsx`. La forma es la del
+  render: semicírculo con la hora dentro, visto en el arnés.
+- **490** ✔ Suma solo las sesiones cuya categoría apunta a la meta; una categoría
+  sin meta no suma (caso propio). **Ningún documento GraphQL nuevo**: el único
+  hook nuevo en la pantalla es `useActivityCategoriesQuery`, que ya existía.
+- **491** ✔ La sesión abierta suma su minuto vivo: «1h 24» a las 9:24 y «1h 25»
+  tras `advanceTimersByTime(60_000)`, sin volver a montar nada.
+- **492** ✔ «Llevas 1 h. A este ritmo paras a las 16:24.» — una hora, no una
+  resta. En el `utils`, `stopAtTime === '16:05'` con 220 min a las 11:45.
+- **493** ✔ «Llevas 9 h 10 min. Pasaste las 8 h a las 17:00.» Sin `role="alert"`
+  dentro del arco (afirmado), sin clase de `Alert`, y sin ninguna de las palabras
+  de reproche de la lista del módulo. El color del trazo es el de la meta, el
+  mismo antes y después de pasar la jornada: no hay ámbar ni rojo en el componente.
+- **494** ✔ «2 h 40 min sin dato hoy.» en su línea bajo el arco; con una sesión
+  de «Casa» —categoría sin meta— **no** aparece esa línea.
+- **495** ✔ Con cero minutos, el arco se pinta vacío y dice «Si arrancas ahora,
+  acabarías a las 17:24.» (D-C, en condicional).
+- **496** ✔ En `?d=2026-09-19` no hay arco.
+- **497** ✔ En `?d=2026-09-17`: «Registraste 5 h de Trabajo.», sin «A este ritmo»
+  —`stopAtTime` es `null`— y con «40 min sin dato ese día.». **Ver la desviación
+  del verbo, arriba.**
+- **498** ⚠ **No comprobado de punta a punta desde aquí.** Lo que sí está
+  comprobado: el cálculo sale **solo** del catálogo y de las sesiones, no hay
+  ningún total guardado por día, y la mutación de la tajada 1 ya invalida
+  `vidaKeys.categories.list()`. Quitarle el puntero a una categoría y ver bajar
+  el arco **de un día pasado** pide sesión: queda como prueba a mano (pasos
+  abajo).
+- **499** ✔ A 375 px, `scrollWidth === clientWidth` con la frase más larga (la de
+  «Pasaste las 8 h a las 17:00.») y con la de «sin dato». Con el catálogo caído,
+  el arco no aparece **y** el aviso del día no se inventa una línea; con una
+  consulta del día caída, sale el aviso de siempre y tampoco hay arco. Dos casos.
+
+**Lo que queda a mano (detrás del login, con la tajada 1 del API desplegada):**
+
+1. Entrar en `/app/vida/hoy` con al menos una categoría marcada como trabajo y
+   comprobar que el arco aparece bajo el presupuesto, con la hora correcta.
+2. Empezar una sesión de esa categoría y esperar un minuto: la cifra sube sola.
+3. Abrir un día pasado en la tira (`?d=`) y comprobar «Registraste …», sin la
+   línea de «a este ritmo».
+4. **Criterio 498:** con el arco de ayer a la vista, quitarle en Ajustes →
+   Categorías la casilla «Esto es trabajo» a esa categoría y volver: el arco de
+   **ese día pasado** tiene que bajar sin recargar la página.
+5. En el móvil de verdad, a 375 px, mirar que nada se sale de ancho.
+
+**Lo que descubrí y no estaba en el plan** (anotado, **no tocado**):
+
+- **El backend desplegado todavía no trae `goal`.** La tajada 1 del API está
+  escrita y sin subir, así que hoy el catálogo llega sin ese campo y `goal` es
+  `undefined` → `buildGoalArcs` no produce ningún arco y Hoy queda exactamente
+  como estaba. Es el comportamiento correcto mientras tanto, pero **significa que
+  nada de esta tajada se ve vivo hasta que el usuario haga el push del API**.
+- **`VidaHoyPage.tsx` pasa de 1.050 líneas.** No es de esta tajada arreglarlo,
+  pero el siguiente que añada un bloque ahí se va a encontrar con que el `return`
+  de la página ya no cabe en una pantalla.
+- **El render 18 dibuja el trazo en `#38bdf8` y la meta nace con `#0284c7`** (el
+  azul núcleo de la paleta, decisión de la tajada 1). El componente usa **el
+  color de la meta**, así que en oscuro el arco se ve un punto más apagado que el
+  render. Si molesta, es un cambio de una línea **en el dato**, no en el código.
+
+**Estado del árbol:** sin commitear, sin push. El arnés temporal, borrado.
+`graphify update .` corrido tras el cambio. **El repositorio del API no se tocó
+en esta tajada.**
+
 ## 4. Revisión — feature-reviewer
 
 *(una entrada por tajada)*
@@ -1710,3 +1875,212 @@ quién lo cambió y que el cambio es correcto.
 
 Todavía **no hay arco**: eso es la tajada 2. Lo que esta tajada te deja hacer
 es marcar tus categorías de trabajo para que, cuando llegue, ya tengan historia.
+
+### Tajada 2 — aceptada
+
+**Cómo se revisó.** Grafo primero (`graphify explain "VidaHoyPage"`,
+`"useVidaDayData"`, `"buildCategoryBreakdown"`, `"toSessionSpans"`) para saber
+**quién dependía de lo tocado antes del cambio**, y después el árbol: `git
+status --porcelain` (solo los cinco archivos de la tajada), `git diff` de
+`VidaHoyPage.tsx` y de su test, y lectura entera de `vida-goals.utils.ts`, de
+los dos componentes y del `.module.scss`. Las cuatro comprobaciones se
+reprodujeron enteras.
+
+**Líneas base, reproducidas aquí:**
+
+| Qué | Resultado | Línea base |
+|---|---|---|
+| `pnpm typecheck` | exit 0, limpio | limpio ✔ |
+| `pnpm lint` | **14 errores / 0 warnings** | 14/0 ✔ |
+| `pnpm test` | **2 fallos de 1812** (`SearchSelect` ×2) | 2 de 1812 ✔ — el tercero de `IconPicker` **no salió** en esta corrida |
+| `pnpm build` | exit 0 · inicial **1.119,84 kB** · `app-icons` **620,20 kB** · `IconPicker` 4,64 kB | idénticas a las del constructor ✔ |
+
+**Criterios, uno por uno (contra la sección 1, no contra el resumen):**
+
+- **489 ✔** El arco es el del render 18 panel 1: mismo `viewBox="0 0 220 124"`,
+  mismo `path d="M22 106 A 88 88 0 0 1 198 106"` doblado (pista y trazo),
+  `pathLength="100"`, la hora a 32 px dentro y los topes `0h`/`8h`. Su sitio se
+  afirma con `compareDocumentPosition` contra el `<section>` del presupuesto y
+  contra la primera fila del plan, no con un `toBeInTheDocument`.
+- **490 ✔** `buildGoalArcs` cruza las sesiones del día con el catálogo por
+  `category.id`; una categoría sin meta no suma (caso propio). **Ningún
+  documento GraphQL nuevo**: `git status` no toca `graphql/` y el único hook
+  nuevo en la página es `useActivityCategoriesQuery`, que ya existía.
+- **491 ✔** La sesión abierta la cuenta `toSessionSpans` —**no se
+  reimplementó**: se importa de `vida-execution.utils.ts`, que el grafo confirma
+  intacto y con sus otros cinco llamantes—; el reloj es el `nowMinutes` de
+  `useVidaNowMinute` que la página ya tenía. El caso «1h 24 → 1h 25» tras
+  `advanceTimersByTime(60_000)` lo prueba sin volver a montar.
+- **492 ✔** La línea principal es una hora: «Llevas 1 h. A este ritmo paras a
+  las 16:24.» Ninguna de las cuatro frases posibles (`line` en
+  `vida-goals.utils.ts`) contiene un número de minutos que restar: se leyeron
+  las cuatro ramas.
+- **493 ✔** Verificado por mi parte, no por el resumen: en
+  `src/features/vida/components/VidaGoalArc/` **no aparece la cadena
+  `role="alert"` en ningún sitio** (el único `role` es el `role="img"` del SVG),
+  y el `.module.scss` no usa ni `--color-warning`, ni `--color-error`, ni ámbar
+  ni rojo: el trazo es `var(--vida-goal-color)`, el mismo antes y después de
+  pasar la meta, y «sin dato» va en `--color-text-secondary`. **Leídos los
+  textos, uno a uno**, incluido el `aria-label` (`${goal.name}. ${line}`): «Llevas
+  9 h 10 min. Pasaste las 8 h a las 17:00.», «Registraste 5 h de Trabajo.», «No
+  hay nada registrado de Trabajo ese día.», «Si arrancas ahora, acabarías a las
+  17:24.», «2 h 40 min sin dato hoy.», «Cuenta Working at lululemon, en marcha
+  desde las 10:15.» — ni un adjetivo, ni un signo de exclamación, ni una palabra
+  de juicio en ninguna, tampoco en el rótulo de dentro del arco («PASASTE LAS 8H
+  A LAS»).
+- **494 ✔** Solo `category === null` entra en la línea «sin dato»; una categoría
+  que existe pero no apunta a la meta no aparece (caso propio, y la rama del
+  `continue` en el bucle lo dice).
+- **495 ✔** Cero minutos: arco vacío (no se pinta el trazo con `share === 0`) y
+  la fórmula en condicional, que es **lo que la D-C autorizó por escrito**.
+- **496 ✔** Guarda `(isToday || isPast)` en la página: en día futuro no se
+  pinta.
+- **497 ✔ con reparo de redacción — ver abajo.** El cálculo es el que pide el
+  criterio (pasado, sin proyección: `stopAtTime === null`, sin «a este ritmo», y
+  «40 min sin dato ese día»). Lo que no coincide es el **verbo**.
+- **498 — sigue pendiente de prueba a mano** (está detrás del login). Lo que sí
+  queda comprobado desde aquí: no hay ningún total por día en ninguna parte —el
+  `useMemo` depende de `categories` y de `dayFollowUps` y nada más— y la
+  mutación de la tajada 1 invalida `vidaKeys.categories.list()`. **No se aprueba
+  por simpatía: queda escrito como paso 4 del usuario.**
+- **499 ✔ en su mitad comprobable.** La guarda del fallo es
+  `failed.length === 0 && !categoriesFailed`, con dos casos que la afirman, y el
+  aviso «Falta una parte de tu día» **no nombra el arco ni el catálogo**: su
+  contrato sigue siendo el de las cuatro consultas del día. Lo de los 375 px
+  **no se puede reproducir aquí** —el arnés del constructor está borrado, y
+  `git status` lo confirma: en `src/` no queda ningún archivo de arnés—; leído
+  el CSS, no hay ni un ancho fijo (`flex: 1 1 14rem`, `min-width: 0` en las
+  cinco cajas, `flex-wrap` en la fila, `svg { width: 100%; max-width: 13.5rem }`)
+  y el único `white-space: nowrap` está en «1h 24 de 8h», que no crece. Queda
+  como paso 5 a mano.
+
+**Las tres cosas que el constructor puso a juicio:**
+
+1. **El texto del 497.** Veredicto: **la construcción es correcta y el criterio
+   está mal redactado.** El componente recibe una meta genérica —nombre, icono,
+   color y minutos salen del dato—, y esa genericidad **la exigió el plan y la
+   sección 1** («la primera de una familia de metas»). Un verbo conjugado
+   («Trabajaste») obligaría a la función a saber que la meta es trabajo, que es
+   exactamente lo que el criterio 484 y la nota de la sección 1 prohíben; el día
+   de «Estudiar» habría que escribir un `switch` de verbos por meta. «Registraste
+   5 h de Trabajo.» dice el mismo dato, en pasado y sin reproche, con la palabra
+   que ya usa el módulo para lo vivido. **El criterio 497 no se reescribe aquí**
+   (no es mío): queda como enmienda propuesta al analista, «Trabajaste Xh Ym.» →
+   «el dato del día en pasado, con el nombre de la meta y sin proyección».
+2. **Los campos de más en `VidaGoalArc`.** Fiel al plan, no exceso. El propio
+   plan escribió el reparto «tally → formato» —«devuelve minutos **y** etiquetas
+   ya compuestas… el componente solo pinta»—; `targetLabel`, `arcValue`,
+   `arcCaption` y `line` son etiquetas compuestas, no lógica nueva, y elegir la
+   frase en el componente habría roto el reparto y dejado el criterio 493 sin
+   nada que comprobar en el DOM. `runningSince` sale del propio render («en
+   marcha desde las 10:15»). Ninguno añade una consulta, una dependencia ni una
+   rama de negocio.
+3. **El `vi.mock` de `useActivityCategories`.** **Completo**: las seis
+   exportaciones del módulo (`useActivityCategoriesQuery`,
+   `useActivityCategoryQuery`, `useCreateActivityCategoryMutation`,
+   `useUpdateActivityCategoryMutation`, `useDeleteActivityCategoryMutation`,
+   `useSetActivityCategoryGoalMutation`), verificadas contra los seis `export
+   function` del hook. Y **ningún otro quedó a medias por este cambio**: buscados
+   los seis `vi.mock` de ese módulo en el repositorio (`VidaActivitySheet`,
+   `VidaArchivadasPage`, `VidaPlantillaPage`, `VidaCategoriasPage`,
+   `VidaActividadesPage`, `VidaHoyPage`); ninguna de esas pantallas estrena en
+   esta tajada un camino que use una exportación que su mock no tenga, y la
+   única que monta Hoy en un comentario (`VidaPlantillaPage.test.tsx:103`) no lo
+   renderiza.
+
+**Qué rompió al lado, y cómo se buscó:**
+
+- **Por el grafo (estado previo al cambio, que es justo lo que aquí sirve):**
+  `useVidaDayData` tenía dos llamantes, `VidaHoyPage` y `VidaRevisionPage`; el
+  hook **no se tocó** (`git diff` vacío), así que Revisión no puede haberse
+  movido. `toSessionSpans` tenía cinco llamantes (`buildDayExecution`,
+  `buildWeekRow`, `buildTemplateBridge`, `buildActivityPatterns`, `describe1`) y
+  tampoco se tocó: `buildGoalArcs` entra como sexto llamante, no como copia.
+  `buildCategoryBreakdown` sigue con sus cinco aristas y su `spansOf` propio.
+- **Quién más usa el hook que Hoy estrena:** cinco pantallas más
+  (`VidaTemplateAddPanel`, `VidaActivitySheet`, `VidaArchivadasPage`,
+  `VidaActividadesPage`, `VidaCategoriasPage`). El hook no cambió; Hoy solo se
+  suma a una caché con `staleTime` de 5 min y `enabled` por `useVidaQueryGuard`.
+- **Lo que vive al lado en la pantalla:** el presupuesto del día y la agenda. El
+  arco mete un elemento entre los dos; buscados los anclajes por posición del
+  test de Hoy (`previousElementSibling`, cuatro sitios) y los cuatro están
+  **dentro de la lista del plan**, no alrededor del presupuesto. La corrida
+  completa lo confirma: 1.810 pasan, los 2 fallos son los de `SearchSelect`.
+- **Lo que el constructor señaló como más probable:** los tres sospechosos
+  (mock del catálogo, posición en `styles.main`, peso del paquete) comprobados
+  arriba; ninguno se materializó.
+
+**Duplicación (contra la sección 2):** nada de la lista «lo que NO hay que
+crear» se saltó. Ni consulta nueva, ni formateador nuevo (los cuatro que importa
+son de `vida-time.utils.ts`), ni reescritura de `toSessionSpans`, ni `slice(0,
+1)` —buscado en los tres archivos nuevos y en la página: no existe—, ni nada en
+`useVidaDayData`, `VidaDayBudget`, `VidaRevisionPage` o `buildCategoryBreakdown`.
+La aritmética por categoría de Revisión **no se copió**: `buildGoalArcs` agrupa
+por meta y proyecta una hora, que es lo que allí no hay.
+
+**Estados:** *vacío* ✔ (495) y *sin meta* ✔ (no se pinta nada, que es la puerta
+de la tajada 3). *Error* ✔ (499). *Permisos* no aplica (app de un solo usuario
+tras el login). *Móvil*: razonado sobre el CSS, medido por el constructor, y
+paso a mano del usuario. **Faltan dos, como hallazgo, no como devolución:**
+
+- **Carga.** Mientras el catálogo viaja, `categories` es `[]` y el arco
+  simplemente **no existe**; cuando llega, aparece y empuja la agenda hacia
+  abajo. Ningún criterio pide un esqueleto, pero el salto se va a ver la primera
+  vez del día (después la caché de 5 min lo tapa).
+- **Texto largo.** El nombre de la meta va en un `flex` con `min-width: 0` pero
+  **sin `overflow-wrap`**: hoy la única meta se llama «Trabajo» y nace sola, así
+  que no hay manera de provocarlo; el día que el nombre se pueda editar, ese es
+  el sitio.
+
+**Dos hallazgos más, anotados y no tocados:**
+
+- **La frase va dos veces a la vista.** El render 18 panel 1 pone el dato
+  **dentro** del arco (rótulo + hora) y debajo solo la línea de la sesión en
+  marcha; la construcción añade además un `<p>` visible con la frase entera, que
+  repite la hora y los minutos. Es lo que hace comprobable el 493 y es la
+  costumbre del módulo (`ChartPanel` y su tabla oculta) —solo que allí la
+  alternativa textual va **oculta**—. No incumple ningún criterio y por eso no se
+  devuelve: queda para el ojo del usuario en el recorrido a mano, y si molesta es
+  una clase de «solo para lectores de pantalla», no un rediseño.
+- **El SVG y el `<p>` dicen lo mismo a un lector de pantalla** (el `aria-label`
+  del `role="img"` contiene la misma frase que el párrafo de debajo): se oye dos
+  veces. Mismo sitio, misma línea de arreglo que el punto anterior.
+
+**Veredicto: aceptada.** Los once criterios comprobables desde aquí se cumplen,
+el 498 queda **explícitamente pendiente de la prueba a mano** del usuario (no se
+da por bueno), las cuatro líneas base se reproducen clavadas y no apareció
+ninguna regresión en los tres sitios donde se buscó. El único desvío de letra
+—el verbo del 497— es, a mi juicio, un error de redacción del criterio y no de
+la construcción.
+
+**Para el usuario (tajada 2, con el API ya desplegado):**
+
+El arco ya está en Hoy. Como la migración 069 corrió contra Neon con el
+despliegue de `e6c0b7c`, el catálogo **ya llega con su meta dentro**: en cuanto
+marques una categoría como trabajo, Hoy te pinta debajo del presupuesto un
+semicírculo con **la hora a la que paras** en grande —no unos minutos que restar—
+y arriba «3h 40 de 8h». La sesión que tengas en marcha cuenta sola y la cifra
+sube cada minuto sin tocar nada. Si te pasas de las ocho horas, la pantalla lo
+dice y se calla: «Llevas 9 h 10 min. Pasaste las 8 h a las 17:00.» Ni un color
+de alarma, ni un adjetivo, ni un aviso.
+
+Y si hay ratos que no sabías de dónde salían, el arco te los confiesa en vez de
+tragárselos: «2 h 40 min sin dato hoy» debajo, en voz baja. En un día pasado de
+la tira el arco se pinta igual, en pasado y sin proyectar nada; en un día futuro
+no aparece, porque no hay nada vivido que sumar.
+
+Para probarlo a mano (ya no hace falta ningún push):
+
+1. En **Ajustes → Categorías**, marca «Esto es trabajo» en la categoría con la
+   que sueles trabajar.
+2. Entra en **Vida → Hoy**: el arco tiene que aparecer justo debajo del
+   presupuesto del día y encima de la agenda, con la hora dentro.
+3. Empieza una sesión de esa categoría y espera un minuto: la cifra sube sola,
+   sin recargar.
+4. Abre un día pasado en la tira de arriba: tiene que decir «Registraste …» y
+   **no** «a este ritmo paras a las…».
+5. **El que falta por comprobar:** con el arco de un día pasado a la vista,
+   quítale a esa categoría la casilla «Esto es trabajo» y vuelve a Hoy — el arco
+   de **ese día pasado** tiene que bajar, porque nada se guarda congelado.
+6. En el móvil, a 375 px, mira que ni el arco ni sus frases saquen barra
+   horizontal.

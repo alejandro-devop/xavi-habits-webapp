@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790114730.0387626,
-    "ast_hash": "eb2767aa2975c8a43da1b1ad63f28ccd",
+    "mtime": 1790116454.069304,
+    "ast_hash": "6a95006d02e0b2080c3c9313c30d5b50",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790114612.6064851,
-    "ast_hash": "e9f741f20d6f15de2e450cbfdd35b612",
+    "mtime": 1790116518.2194216,
+    "ast_hash": "1ec39d16816da7e05df90fd7ddec8e76",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2760,8 +2760,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaActividadesPage.test.tsx": {
-    "mtime": 1790115083.3005104,
-    "ast_hash": "856863ed67ae5320ced6472982720945",
+    "mtime": 1790116567.1155117,
+    "ast_hash": "91fc5521d127175fb20e78855c82916d",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-catalog.utils.test.ts": {
@@ -2810,8 +2810,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx": {
-    "mtime": 1790115800.276196,
-    "ast_hash": "c8f28c46bc700060888c4c0d5204d276",
+    "mtime": 1790116531.9204466,
+    "ast_hash": "0120c35afe6581552bb6caa1ca3a09d8",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.test.tsx": {
-    "mtime": 1790094630.4064958,
-    "ast_hash": "316177fb9fb8810f8e73334e014d48ff",
+    "mtime": 1790116567.1165118,
+    "ast_hash": "0aa669be0b47571f8a7c78c7036b1111",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-template.utils.test.ts": {
@@ -3830,8 +3830,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-016-vida-barra-de-trabajo.md": {
-    "mtime": 1790114726.1437578,
-    "ast_hash": "ead69e4681278c2fd25d132ac7b4e706",
+    "mtime": 1790116441.0622802,
+    "ast_hash": "5869c9a47803f870a8700517d1e9af46",
     "semantic_hash": ""
   },
   "docs/vida/assets/15-vida-barra-de-trabajo.html": {
@@ -3867,6 +3867,11 @@
   "src/features/vida/types/vida-goal.types.ts": {
     "mtime": 1790115019.1775117,
     "ast_hash": "9e3b1e93deb3761b957961f39ac233ed",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-017-vida-mas-iconos-y-colores.md": {
+    "mtime": 1790116241.1119218,
+    "ast_hash": "fe36acf34d87d84f8b95ef8eecb3a7a4",
     "semantic_hash": ""
   }
 }

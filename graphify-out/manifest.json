@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790110420.5430462,
-    "ast_hash": "af681c1ed189560e5eb10c800a748bf5",
+    "mtime": 1790117986.5360246,
+    "ast_hash": "53f6aec98e9a64731acc1523276250cd",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790116454.069304,
-    "ast_hash": "6a95006d02e0b2080c3c9313c30d5b50",
+    "mtime": 1790118332.8517833,
+    "ast_hash": "50095ea13714bbddf6aaa482edeb3136",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790116518.2194216,
-    "ast_hash": "1ec39d16816da7e05df90fd7ddec8e76",
+    "mtime": 1790116997.3705895,
+    "ast_hash": "70f54a61ba6bf5388f2ebd9877f063fb",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790114445.1470838,
-    "ast_hash": "6e008903017e46ab677849cd7ec4a95a",
+    "mtime": 1790118302.9707186,
+    "ast_hash": "eec426a3fa4b81bad4921041e655bbc0",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3830,8 +3830,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-016-vida-barra-de-trabajo.md": {
-    "mtime": 1790116441.0622802,
-    "ast_hash": "5869c9a47803f870a8700517d1e9af46",
+    "mtime": 1790117727.8354406,
+    "ast_hash": "5a4cf2a2e573f0b5b7ca41242a90bf34",
     "semantic_hash": ""
   },
   "docs/vida/assets/15-vida-barra-de-trabajo.html": {
@@ -3872,6 +3872,41 @@
   "docs/features/FEAT-017-vida-mas-iconos-y-colores.md": {
     "mtime": 1790116241.1119218,
     "ast_hash": "fe36acf34d87d84f8b95ef8eecb3a7a4",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx": {
+    "mtime": 1790117915.2908657,
+    "ast_hash": "c0658253ce577177929e5ea09c5d438b",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaGoalArc/VidaGoalArcRow.tsx": {
+    "mtime": 1790117924.7498868,
+    "ast_hash": "50c86730d8026a057ea02c76d82ff7bd",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaGoalArc/index.ts": {
+    "mtime": 1790117947.6399379,
+    "ast_hash": "ab02acaee044aee37141c0b7d50537b5",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-goals.utils.test.ts": {
+    "mtime": 1790118302.9677186,
+    "ast_hash": "e4f8d1fea4976bd4b3cd50a2ed40e985",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-goals.utils.ts": {
+    "mtime": 1790118302.9667184,
+    "ast_hash": "98eddcc79bad8438822d18e7b2485a7e",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-018-vida-que-hice.md": {
+    "mtime": 1790118327.9907727,
+    "ast_hash": "77e4620838514c525d4ad911b09eab1c",
+    "semantic_hash": ""
+  },
+  "docs/vida/assets/19-vida-que-hice.html": {
+    "mtime": 1790117162.1630497,
+    "ast_hash": "6b333f7a4a2a2c9ebffc20010f7352f8",
     "semantic_hash": ""
   }
 }

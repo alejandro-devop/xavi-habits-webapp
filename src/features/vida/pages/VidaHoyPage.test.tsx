@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
 import { useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
+import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
+import type { VidaGoal } from '@/features/vida/types/vida-goal.types'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { VidaItem, VidaSuggestion } from '@/features/vida/types/vida-item.types'
@@ -35,6 +37,8 @@ let itemsQuery: Query<VidaItem[]>
 let settingsQuery: Query<UserSettings>
 /** Lo que se vivió ese día (FEAT-004, tajada 2). */
 let dayFollowUpsQuery: Query<ActivityFollowUp[]>
+/** El catálogo, de donde salen las metas del arco (FEAT-016, tajada 2). */
+let categoriesQuery: Query<ActivityCategory[]>
 let addMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let editMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
 let removeMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
@@ -111,6 +115,30 @@ vi.mock('@/features/vida/hooks/useActivityFollowUps', () => ({
   useUpdateActivityFollowUpMutation: () => updateFollowUpMutation,
   useDeleteActivityFollowUpMutation: () => deleteFollowUpMutation,
 }))
+/**
+ * **El catálogo de categorías** (FEAT-016, tajada 2): de ahí salen las metas
+ * del arco. Se mockea **el módulo entero y no solo la consulta** aunque hoy la
+ * página use una sola cosa de él: un mock a medias es la trampa que
+ * `ENVIRONMENT.md` ya documentó en esta misma feature —la suite sigue verde por
+ * casualidad hasta que alguien recorre el camino que falta—.
+ */
+vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
+  useActivityCategoriesQuery: () => {
+    countCall('categories')
+    return categoriesQuery
+  },
+  useActivityCategoryQuery: () => ready(undefined),
+  useCreateActivityCategoryMutation: () => categoryMutation,
+  useUpdateActivityCategoryMutation: () => categoryMutation,
+  useDeleteActivityCategoryMutation: () => categoryMutation,
+  useSetActivityCategoryGoalMutation: () => categoryMutation,
+}))
+let categoryMutation: {
+  mutate: ReturnType<typeof vi.fn>
+  mutateAsync: ReturnType<typeof vi.fn>
+  isPending: boolean
+  isError: boolean
+}
 /**
  * **Los patrones de las últimas seis semanas** (FEAT-007, tajada 3). Se mockea
  * **el hook**, que es el único punto de entrada de las tres pantallas y tiene
@@ -319,6 +347,13 @@ beforeEach(() => {
   ])
   settingsQuery = ready(SETTINGS)
   dayFollowUpsQuery = ready([])
+  categoriesQuery = ready([])
+  categoryMutation = {
+    mutate: vi.fn(),
+    mutateAsync: vi.fn().mockResolvedValue(undefined),
+    isPending: false,
+    isError: false,
+  }
   // La plantilla entera, para «Mañana»: vacía por defecto, así el bloque del
   // lateral no mete ruido en las comprobaciones del día que se mira.
   itemsQuery = ready([])
@@ -2734,5 +2769,211 @@ describe('VidaHoyPage — «Lo que viene»', () => {
 
     expect(card).not.toHaveTextContent('Libre')
     expect(within(card).queryByRole('button', { name: /Registrar lo que hice/ })).not.toBeInTheDocument()
+  })
+})
+
+/* ── El arco de la meta (FEAT-016, tajada 2) ─────────────────────────────── */
+
+const WORK_GOAL: VidaGoal = {
+  id: 'goal-work',
+  slug: 'work',
+  name: 'Trabajo',
+  icon: 'briefcase',
+  color: '#0284c7',
+  targetMinutes: 480,
+  orderIndex: 0,
+}
+
+function categoryOf(id: string, name: string, goal: VidaGoal | null): ActivityCategory {
+  return {
+    id,
+    userId: 1,
+    orderIndex: 0,
+    name,
+    description: null,
+    icon: 'briefcase',
+    color: '#0284c7',
+    goalId: goal?.id ?? null,
+    goal,
+  }
+}
+
+/** Una sesión suelta del día visto, con (o sin) categoría. */
+function workSession(input: {
+  id: string
+  startTime: string
+  durationMinutes: number | null
+  categoryId?: string | null
+  date?: string
+  title?: string
+}): ActivityFollowUp {
+  const categoryId = input.categoryId === undefined ? 'cat-trabajo' : input.categoryId
+  return {
+    id: input.id,
+    activityId: `a-${input.id}`,
+    date: input.date ?? '2026-09-18',
+    startTime: input.startTime,
+    durationMinutes: input.durationMinutes,
+    isOpen: input.durationMinutes === null,
+    endTime: null,
+    endDate: null,
+    endDateTime: null,
+    notes: null,
+    activity: {
+      id: `a-${input.id}`,
+      title: input.title ?? 'Working at lululemon',
+      category: categoryId
+        ? { id: categoryId, name: 'Trabajo', color: '#0284c7', icon: 'briefcase' }
+        : null,
+    },
+  }
+}
+
+/** El arco, buscado por su etiqueta: el `<svg>` va con `role="img"`. */
+function goalArc(): HTMLElement | null {
+  const svg = screen.queryByRole('img', { name: /Trabajo/ })
+  return svg ? svg.closest('article') : null
+}
+
+describe('VidaHoyPage — el arco de la meta (FEAT-016)', () => {
+  beforeEach(() => {
+    categoriesQuery = ready([categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL)])
+  })
+
+  it('criterios 489, 490 y 492 — el arco va bajo el presupuesto y dice una hora', () => {
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()
+    expect(arco).not.toBeNull()
+    // 9:24 + (8h − 1h) = 16:24. La línea principal **es una hora**, no una
+    // resta: en ningún sitio se pide restar para saber cuánto queda.
+    expect(within(arco!).getByText('Llevas 1 h. A este ritmo paras a las 16:24.')).toBeInTheDocument()
+    expect(within(arco!).getByText('1h')).toBeInTheDocument()
+
+    // Debajo del presupuesto del día y **encima** de la agenda.
+    const presupuesto = document.getElementById('vida-budget-heading')!.closest('section')!
+    const fila = planRow('Bañarme')
+    expect(presupuesto.compareDocumentPosition(arco!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(arco!.compareDocumentPosition(fila) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('criterio 490 — una categoría sin meta no suma en el arco', () => {
+    categoriesQuery = ready([
+      categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL),
+      categoryOf('cat-casa', 'Casa', null),
+    ])
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 }),
+      workSession({ id: 'w2', startTime: '09:00', durationMinutes: 120, categoryId: 'cat-casa' }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(within(goalArc()!).getByText('Llevas 1 h. A este ritmo paras a las 16:24.')).toBeInTheDocument()
+    // Y tampoco se confiesa: de «Casa» ya se sabe que no cuenta (criterio 494).
+    expect(screen.queryByText(/sin dato hoy/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 491 — la sesión en marcha suma su minuto vivo sin recargar', async () => {
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: null })])
+    renderWithProviders(<VidaHoyPage />)
+
+    // 8:00 → 9:24 son 84 minutos, contados por `toSessionSpans`.
+    expect(within(goalArc()!).getByText('1h 24')).toBeInTheDocument()
+    expect(within(goalArc()!).getByText(/en marcha desde las 8:00/)).toBeInTheDocument()
+
+    await act(async () => {
+      vi.advanceTimersByTime(60_000)
+    })
+
+    expect(within(goalArc()!).getByText('1h 25')).toBeInTheDocument()
+  })
+
+  it('criterio 493 — pasada la jornada, el dato y ni un adjetivo ni un aviso', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 18, 10, 0))
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '09:00', durationMinutes: 300 }),
+      workSession({ id: 'w2', startTime: '14:00', durationMinutes: null }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()!
+    expect(within(arco).getByText('Llevas 9 h 10 min. Pasaste las 8 h a las 17:00.')).toBeInTheDocument()
+    // Ni `role="alert"`, ni el tono de aviso que el módulo reserva para los
+    // avisos de verdad, ni una palabra de reproche.
+    expect(arco.querySelector('[role="alert"]')).toBeNull()
+    expect(arco.querySelector('[class*="Alert"]')).toBeNull()
+    const texto = (arco.textContent ?? '').toLowerCase()
+    for (const palabra of ['demasiado', 'exceso', 'cuidado', 'deberías', 'fallaste', 'vicio', '!']) {
+      expect(texto).not.toContain(palabra)
+    }
+  })
+
+  it('criterio 494 — las sesiones sin categoría se confiesan en su línea', () => {
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 }),
+      workSession({ id: 'w2', startTime: '09:30', durationMinutes: 160, categoryId: null }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.getByText('2 h 40 min sin dato hoy.')).toBeInTheDocument()
+  })
+
+  it('criterio 495 — con cero minutos el arco aparece vacío y la frase va en condicional', () => {
+    dayFollowUpsQuery = ready([])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()!
+    expect(within(arco).getByText('Si arrancas ahora, acabarías a las 17:24.')).toBeInTheDocument()
+    expect(within(arco).getByText('0m')).toBeInTheDocument()
+  })
+
+  it('criterio 496 — en un día futuro no se pinta', () => {
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(goalArc()).toBeNull()
+  })
+
+  it('criterio 497 — en un día pasado se cuenta en pasado y sin proyección', () => {
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '09:00', durationMinutes: 300, date: '2026-09-17' }),
+    ])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    const arco = goalArc()!
+    expect(within(arco).getByText('Registraste 5 h de Trabajo.')).toBeInTheDocument()
+    expect(arco).not.toHaveTextContent('A este ritmo')
+  })
+
+  it('criterio 499 — con el catálogo caído el arco no aparece, y el aviso del día no lo nombra', () => {
+    categoriesQuery = { data: undefined, isPending: false, isError: true, fetchStatus: 'idle', refetch: vi.fn() }
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalArc()).toBeNull()
+    // El contrato de «Falta una parte de tu día» son las cuatro consultas del
+    // día: el catálogo no entra ahí y el aviso no se ensancha.
+    expect(screen.queryByText('Falta una parte de tu día')).not.toBeInTheDocument()
+  })
+
+  it('criterio 499 — con una consulta del día caída tampoco se pinta media suma', () => {
+    dayFollowUpsQuery = { data: [], isPending: false, isError: true, fetchStatus: 'idle', refetch: vi.fn() }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalArc()).toBeNull()
+    expect(screen.getByText('Falta una parte de tu día')).toBeInTheDocument()
+  })
+
+  it('sin ninguna categoría apuntando a una meta no se pinta nada (la tajada 3 aún no existe)', () => {
+    categoriesQuery = ready([categoryOf('cat-casa', 'Casa', null)])
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalArc()).toBeNull()
+    expect(screen.queryByText(/sin dato hoy/)).not.toBeInTheDocument()
   })
 })

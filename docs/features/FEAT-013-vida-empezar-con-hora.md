@@ -1,7 +1,7 @@
 ---
 id: FEAT-013
 title: Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha
-status: specified
+status: building
 architect: no    # un campo más en una hoja que ya existe y una condición que se levanta; el API ya lo admite tal cual (ver sección 1)
 area: features/vida
 requested: 2026-09-22
@@ -291,7 +291,7 @@ la hoja sigue siendo **una** con sus modos.
 
 | # | What it does | State |
 |---|---|---|
-| 1 | **«Empezar algo» pregunta a qué hora empezó.** Un campo más en la hoja que ya existe (modo `start`), con «ahora» por defecto, y `start()` aceptando esa hora. Criterios 330–341 (incluido el **331b**). **Es lo más corto que resuelve el problema de hoy del usuario**, y es una sola acción: lo que lleva desde las 8:07 queda **en marcha** y contando desde las 8:07. | pending |
+| 1 | **«Empezar algo» pregunta a qué hora empezó.** Un campo más en la hoja que ya existe (modo `start`), con «ahora» por defecto, y `start()` aceptando esa hora. Criterios 330–341 (incluido el **331b**). **Es lo más corto que resuelve el problema de hoy del usuario**, y es una sola acción: lo que lleva desde las 8:07 queda **en marcha** y contando desde las 8:07. | aceptada |
 | 2 | **Corregir la hora de una sesión en marcha.** *Secundaria: el pedido no la necesita.* Se levanta la condición de `VidaAgendaBlock.tsx:203`, y desde el «···» del bloque en marcha y la barra de sesión se manda `activityFollowUpEdit` con solo `startTime`. Cubre a **quien pulsó Empezar tarde y se da cuenta después**, que es otro caso. Criterios 342–349. | pending |
 | 3 | **Empezar desde la hora planeada, en un toque.** El atajo «empecé a las 8:00, lo que tenías planeado» junto al play, sin encarecer el gesto de empezar ahora. Criterios 350–354. | pending |
 
@@ -403,3 +403,360 @@ además se cruza con FEAT-010, que está dibujando justo esa zona.
 **Lo que no se preguntó:** el usuario dio el problema y la solución en la misma
 frase, y las dos coinciden. No hay problema escondido detrás que valga la pena
 perseguir.
+
+## 3. Construction — feature-builder
+
+### Tajada 1 — «Empezar algo» pregunta a qué hora empezaste
+
+**Summary for the reviewer:**
+1. «Empezar algo» ahora pregunta **«¿A qué hora empezaste?»** con el reloj ya
+   puesto, y `start()` admite esa hora: decir 8:07 deja **una sola sesión
+   abierta** contando desde las 8:07 con **una sola llamada** a
+   `activityFollowUpStart` (`activityFollowUpAdd`, cero).
+2. Todo cuelga de lo que ya había: el campo de hora de la hoja, `startSessionInput`
+   con un tercer parámetro opcional, y las frases de `validateLogPast`
+   compartidas con un `validateStartTime` que no habla de duración.
+3. **Lo que más probablemente rompí:** el camino de «empezar con otra cosa en
+   marcha» (criterio 15 de FEAT-004). Antes lo anterior se cerraba **a este
+   momento** y ahora se cierra **a la hora de inicio de lo nuevo** (D1): cuando
+   no se toca la hora las dos cosas coinciden y el test de siempre sigue en
+   verde, pero es aritmética que cambió de fuente. Segundo sospechoso: el campo
+   de hora en modo `start` **sigue al reloj mientras no se toca**, así que una
+   hoja abierta un rato repinta cada minuto; si algún test futuro deja la hoja
+   abierta con temporizadores falsos, verá el valor moverse.
+
+**What was built:**
+
+- `src/features/vida/utils/vida-session.utils.ts`
+  - `startSessionInput(activityId, now, startTime?)` — tercer parámetro
+    **opcional**. Sin él, el cuerpo es **idéntico** al de siempre (criterio 332,
+    con test `toEqual`). La `date` sale **siempre del reloj**, así que desde
+    aquí no se puede crear una sesión abierta de otro día (criterio 335). Una
+    hora que no se entiende cae al reloj en vez de viajar rota al API.
+  - `validateStartTime({date, startTime, now})` — **nuevo, y sin una sola frase
+    nueva**: las tres cadenas (`Dinos a qué hora empezó…`, `Esa hora todavía no
+    ha llegado.`, `Ese día todavía no ha llegado.`) pasaron a constantes que
+    **usan las dos funciones**, y hay un test que compara mensaje a mensaje que
+    `validateStartTime` y `validateLogPast` dicen lo mismo (criterio 333).
+    Las dos ramas de duración no aparecen: una sesión abierta no la tiene.
+  - `readHhMm()` — el parseo del campo (regex + `normalizeTimeForDisplay` +
+    `isValidHhMm`) extraído de dentro de `validateLogPast`, que ahora lo llama.
+    Mismo comportamiento, un solo sitio.
+- `src/features/vida/hooks/useVidaSessionActions.ts`
+  - `start(activityId, startTime?)`. Se construye el `input` **una vez** y de él
+    sale `startedAt` (`sessionStartInstant(input.date, input.startTime)`), que es
+    el instante que manda en todo lo demás.
+  - **D1 (criterio 339):** con algo en marcha, lo anterior se cierra **a
+    `startedAt`**, no a `now` —`closeSessionInput(session, startedAt)`—, así que
+    las dos no se pisan; y si `startedAt <= ` el inicio de lo que ya corre, **no
+    se empieza nada**, no se toca la primera y se explica sin reproche.
+  - El toast añade `· contamos desde las 8:07` solo cuando la hora elegida no es
+    la del reloj. Descripción, no aviso (criterio 359).
+- `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx`
+  - La sección «A qué hora empezó» sale del `mode !== 'start'` y se pinta
+    **siempre**; el rótulo es «¿A qué hora empezaste?» en `start` (criterio 330)
+    y el de siempre en `log`/`edit`. **La duración sigue siendo solo de
+    `log`/`edit`** (criterio 30 intacto).
+  - `startTimeTouched`: mientras nadie toque la hora, el campo **muestra
+    `defaultStartTime`** —que la página recalcula cada minuto— y `onStart` va
+    **sin hora**. Es lo que hace cierto el criterio 332 sin trampa: lo que se ve
+    es lo que se guarda, y quien no mira el campo hace el gesto de siempre.
+  - Validación con `validateStartTime` **solo si se tocó** la hora.
+  - Un pie bajo el campo (`.hint`) dice qué va a pasar: «Ahora mismo. Cámbialo si
+    llevas un rato con ello.» → «Empieza contando desde esa hora y sigue en
+    marcha.»
+- `src/features/vida/pages/VidaHoyPage.tsx`
+  - `defaultStartNowTime()` para el modo `start` (el reloj) frente al
+    `defaultLogStartTime()` de siempre (media hora atrás) para `log`.
+  - `onStart={(activityId, startTime) => sessionActions.start(activityId, startTime)}`.
+    **El ▶ del bloque no cambia**: sigue llamando `start(activityId)` a secas.
+- Tests: `vida-session.utils.test.ts` (+9), `useVidaSessionActions.test.tsx`
+  (+4), `VidaLogSessionSheet.test.tsx` (+6), `VidaHoyPage.test.tsx` (+1, y uno
+  reescrito). **Ni un documento GraphQL nuevo**: `contracts.test.ts` no se tocó.
+
+**Why this way:**
+
+- **Un parámetro opcional, no un cuarto modo de la hoja.** La sección 1 pedía
+  avisar si hacía falta un `VidaLogSessionMode` nuevo: no hace falta. `start`
+  sigue siendo «qué» + ahora «desde cuándo»; la hoja no se parte.
+- **`startTimeTouched` en vez de mandar siempre la hora del campo.** Mandarla
+  siempre habría sido más simple, pero rompe el criterio 332 de una forma
+  invisible: la hoja abierta a las 9:00 y pulsada a las 9:10 habría guardado
+  9:00 sin que nadie lo pidiera. Con el «tocado», quien no mira el campo guarda
+  el reloj **del momento de pulsar**, exactamente como hoy.
+- **Cerrar lo anterior a la hora de lo nuevo (D1/a) y no a `now` (D1/b).** Es lo
+  que dice el criterio 339 y lo que evita contar dos veces el mismo rato.
+- **Descartado:** cualquier camino que registrara el trozo pasado y arrancara
+  otra sesión. No existe en el código: el test del criterio 331b lo fija con un
+  espía sobre `activityFollowUpAdd`/`createActivityFollowUp`.
+
+**Verification:**
+
+Línea base entera (`docs/features/ENVIRONMENT.md`), corrida al terminar:
+
+```
+pnpm typecheck  → limpio (sin salida)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   [igual que la línea base]
+pnpm test       → Test Files 1 failed | 109 passed (110)
+                  Tests 2 failed | 1640 passed (1642)      [los 2 de SearchSelect, preexistentes]
+pnpm build      → dist/assets/index-DpgZM3Bq.js  1,098.22 kB │ gzip: 329.77 kB
+```
+
+El paquete inicial pasa de **1.097,09 kB** a **1.098,22 kB**: **+1,13 kB**, que
+es el código nuevo (ni un import nuevo de barril, ni un icono suelto). Los tests
+suben de 1622 a 1642 por los 20 nuevos; los 2 fallos son los mismos de siempre.
+
+Tests nuevos que sujetan los criterios:
+
+```
+✓ startSessionInput — criterio 332: sin hora, el cuerpo es **idéntico** (toEqual)
+✓ startSessionInput — criterio 331: con hora, `{date: hoy, startTime: '08:07'}`
+✓ startSessionInput — criterio 335: la fecha sigue siendo la del reloj
+✓ validateStartTime — criterios 333 y 334 (las frases, comparadas con validateLogPast)
+✓ useVidaSessionActions — criterios 331/331b: **1** startActivityFollowUp, **0** createActivityFollowUp
+✓ useVidaSessionActions — criterio 339 (D1): cierra la anterior a las 10:00 → 30 min
+✓ useVidaSessionActions — criterio 339: hora anterior a lo que corre → no empieza, no toca la primera
+✓ useVidaSessionActions — criterio 340: dos toques con hora → una sesión
+✓ VidaLogSessionSheet — criterios 330, 332, 331b, 333, 334 (×2), 338
+✓ VidaHoyPage — criterios 330 y 331b de punta a punta en la página
+```
+
+**En el navegador** (arnés temporal `arnes-013.html` + `src/arnes-013.tsx`, con
+`MemoryRouter` y datos sintéticos; **borrados antes de escribir esto**, `git
+status` solo lista archivos de `src/features/vida` y este dossier). Se usó el
+dev server del usuario en el 5173, no se arrancó ninguno:
+
+- **375 px** — medido en el DOM, que es lo que vale: `documentElement.scrollWidth
+  375 === clientWidth 375` (**sin scroll horizontal**), la hoja ocupa los 375 y
+  el campo de hora 309 px; «Volver» y «Empezar» visibles en el pie (criterio 355).
+- **Tema oscuro** — el campo se lee (es el mismo `Input type="time"` del modo
+  `log`, ni un estilo nuevo) y el pie de ayuda sale en `rgb(168,179,199)` sobre
+  el fondo oscuro del modal (criterio 357).
+- **Recorrido real en la hoja:** elegir «Poner lavadora», escribir **23:50** con
+  el reloj a las 9:47 y pulsar «Empezar» → `role="alert"` con **«Esa hora todavía
+  no ha llegado.»**, la hoja abierta, la actividad y la hora escritas intactas
+  (criterios 334 y 338 vistos, no deducidos).
+- **Texto largo:** el título de 47 caracteres «Trabajar en el proyecto de la
+  plataforma interna» trunca en la píldora y no estira la hoja (criterio 356).
+
+**Criteria it closes:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 330 | ✅ | Rótulo «¿A qué hora empezaste?» + valor del reloj (`toHaveValue('09:24')` en la página, `'08:54'` en la hoja) y visto en el navegador. |
+| 331 | ✅ parcial | El input que viaja es `{activityId, date: hoy, startTime: '08:07'}` (test puro y test del hook). **Que el cronómetro lea 1 h 3 min a las 9:10 no se volvió a probar aquí**: sale de `followUpStartInstant`/`useVidaElapsed`, que cuentan desde `startTime` desde FEAT-004 y tienen sus tests. Se cierra del todo con el criterio 361. |
+| 331b | ✅ | Dos espías, en dos niveles: en el hook, `createActivityFollowUp` **0** llamadas y `startActivityFollowUp` **1**; en la página, `createFollowUpMutation.mutate` **0** y `start` **1** con `('a-s1', '08:07')`. |
+| 332 | ✅ | `toEqual` entre `startSessionInput(id, reloj)` y con `undefined`/`null`; y en la hoja, sin tocar el campo `onStart` recibe `undefined`. |
+| 333 | ✅ | Las cadenas son constantes compartidas; test que compara los tres mensajes de `validateStartTime` con los de `validateLogPast`. Ninguna frase nueva de validación. |
+| 334 | ✅ | 16:00 con el reloj a las 15:30 → «Esa hora todavía no ha llegado.»; 15:30 exacto → válido. Visto además en el navegador. |
+| 335 | ✅ | La `date` sale siempre de `formatDateToYmd(now)`: a las 00:20 con `'23:40'` sigue siendo hoy. El modo `start` sigue sin existir en días pasados (nada de eso se tocó). |
+| 336 | ⚠️ **parcial, para el revisor** | La sesión **no puede quedar invisible**: `VidaSessionBar` se monta en `VidaModuleLayout.tsx:99` con `hasBar && session`, **sin mirar las horas del día**, así que una sesión empezada a las 5:40 con el día empezando a las 6:30 se ve y cuenta en la barra. **Lo que no comprobé** es si además aparece en la agenda de Hoy o si hace falta una línea que lo diga: no monté ese caso. Es lo primero que miraría el revisor. |
+| 337 | ✅ por construcción | No se añadió ni una constante ni un estado de bloque: el cruce lo sigue haciendo `matchSessionsToBlocks` con los umbrales de FEAT-004, que no se tocaron. Sin test nuevo: no hay código nuevo que probar. |
+| 338 | ✅ | Test: con `onStart` devolviendo `{ok:false}`, la hoja no se cierra, conserva `08:07` y la actividad marcada, y sin escritura optimista no hay sesión fantasma. Visto también en el navegador. |
+| 339 | ✅ **con un matiz** | Se cierra lo anterior a la hora de lo nuevo (30 min de 9:30 a 10:00) y se dice; con una hora anterior o igual, no se empieza nada y no se toca la primera. **El matiz:** el mensaje **explica** («"Organizar la casa" está en marcha desde las 9:30. Para empezar algo a las 8:07, antes hay que cambiar la hora de "Organizar la casa".») pero **no ofrece un botón** para corregirla, porque ese control es la tajada 2 y todavía no existe. Ofrecer un camino que no lleva a ningún sitio habría sido peor. |
+| 340 | ✅ | Dos `start` en paralelo con hora → **una** llamada: el cerrojo de `useVidaSessionActions` no se tocó. |
+| 341 | ✅ | La hora pasa por `normalizeTimeForApi`, el mismo de siempre. Cero formateadores nuevos. |
+| 355 | ✅ | Medido en el DOM a 375 px: sin scroll horizontal, pie alcanzable. |
+| 356 | ✅ | Título de 47 caracteres: trunca, no estira. |
+| 357 | ✅ | Oscuro mirado en el navegador; el control es el que ya existía. |
+| 358 | ✅ heredado | La hoja no afirma nada hasta que el `onStart` resuelve `ok` (mismo camino del 338); no hay escritura optimista y se puede reintentar. |
+| 359 | ✅ | Los tres textos nuevos son descripciones: «Si ya llevas un rato, dinos desde qué hora», «Ahora mismo. Cámbialo si llevas un rato con ello.», «contamos desde las 8:07». Ni «se te olvidó», ni «tarde», ni «deberías». |
+| 360 | ✅ | Tabla de arriba. Con la salvedad del paquete: **+1,13 kB**. |
+| 361 | ⏳ **solo el usuario** | Detrás del login. Pasos: abrir **Vida · Hoy** en medio de algo que llevas rato haciendo → «Empezar algo» → elegir la actividad → cambiar la hora a la de verdad (p. ej. 8:07) → «Empezar». Comprobar que el toast dice «contamos desde las 8:07», que **la barra de sesión cuenta el tiempo real** (no 0), que **solo hay una sesión** en el día, recargar y ver que sigue contando bien, y al final «Terminar» y comprobar que los minutos guardados son los que llevabas. |
+
+**Risks:**
+
+- **El cierre de lo anterior cambió de hora de referencia** (D1). Sin tocar el
+  campo no cambia nada —`startedAt === now`— y el test del criterio 15 sigue en
+  verde con sus 38 minutos, pero quien revise debería probar a mano «empezar algo
+  con otra cosa en marcha» por el ▶ del bloque.
+- **El campo sigue al reloj mientras no se toca.** Eso hace repintar la hoja cada
+  minuto (ya pasaba: la página entera repinta con `nowMinutes`). Si alguien abre
+  la hoja y espera, el valor sube solo; es lo correcto, pero es movimiento en
+  pantalla que antes no había en ese modo.
+- **La hoja en modo `start` es ahora más alta.** A 375 px sigue entrando y el pie
+  se alcanza, pero FEAT-010 y FEAT-011 van a meter mano en esta misma zona: el
+  campo es de esta feature y no deberían reescribirlo.
+- **El mensaje de D1 nombra dos veces la actividad en marcha.** Con un título de
+  60 caracteres es un mensaje largo en el toast. No rompe nada (el toast ajusta),
+  pero es el texto más largo que se escribió aquí.
+- **`VidaLogSessionSheet.test.tsx` y `VidaHoyPage.test.tsx` traían tests que
+  afirmaban que en `start` **no** había campo de hora.** Los actualicé: la parte
+  de «no pide duración» (criterio 30 de FEAT-004) se conserva intacta; lo que se
+  cambió es solo la afirmación que esta feature invalida a propósito.
+
+**Tree state:** sin commitear. Diez archivos tocados, nueve de `src/features/vida`
+y este dossier. El arnés del navegador está borrado.
+
+## 4. Revisión — feature-reviewer
+
+### Tajada 1 — «Empezar algo» pregunta a qué hora empezó
+
+**Veredicto: `accepted`** — y con prisa, porque lo que desbloquea es lo que el
+usuario lleva sin poder hacer desde las 8:07. Los criterios 330–335 y 337–341 se
+cumplen; el **336 queda a medias y no de forma peligrosa**: lo monté yo y la
+sesión **no se pierde de vista**, aunque la agenda de Hoy no la enseñe. Lo
+esencial —**una intención, una acción, una sola sesión**— lo he espiado yo mismo
+y es cierto.
+
+**Lo primero: ¿es de verdad UNA acción y UNA sesión?** (criterios 331 y 331b)
+
+Sí, y no lo leo del texto: escribí mis propios espías sobre la API (test
+temporal, borrado) y comprobé los cinco casos que importan:
+
+| Lo que hago | Lo que sale |
+|---|---|
+| `start('a-leer', '08:07')` sin nada en marcha | **1** `startActivityFollowUp` con `{ activityId, date: '2026-09-18', startTime: '08:07' }` · **0** `createActivityFollowUp` (el «add») · **0** `updateActivityFollowUp` |
+| `start('a-leer')` sin tocar la hora | **1** llamada con `startTime: '09:10'`, la del reloj: el gesto de siempre (criterio 332) |
+| Con «Organizar la casa» en marcha desde las **8:00**, empezar a las **8:07** | **1** cierre `{ id: 'f1', durationMinutes: 7 }` —a las 8:07 exactas, no a las 9:10— y **1** `start`; **0** «add». Nunca dos abiertas, nunca una duración negativa |
+| Con eso mismo en marcha, empezar a las **7:30** | **0** llamadas de cualquier tipo; devuelve `ok: false` y un mensaje que nombra lo que está en marcha |
+| Empezar a la **misma** hora (8:00) | **0** llamadas: «igual» también se rechaza, como pide D1 |
+
+Y el mensaje del rechazo no reprocha: *«Organizar la casa» está en marcha desde
+las 8:00. Para empezar algo a las 7:30, antes hay que cambiar la hora de
+«Organizar la casa».* Comprobé que no contiene «fallaste», «error», «inválido»,
+«no puedes» ni `\bmal\b`.
+
+**El criterio 336, montado por mí: la sesión no queda invisible, pero la agenda
+se calla**
+
+Monté el caso que faltaba —una sesión abierta a las **5:40** con el día
+empezando a las **6:30**— renderizando `VidaHoyPage` con mis propios datos.
+Resultado, literal:
+
+- **En la página de Hoy no aparece por ninguna parte**: ni en la agenda, ni como
+  bloque, ni con una línea. El nombre de la actividad sale **cero** veces en
+  todo el `textContent`, y no hay ninguna frase del tipo «queda fuera de tu
+  día».
+- **Pero las cifras de la cabecera sí la cuentan**: se lee «**en marcha 2h 54**»
+  mientras ningún bloque la enseña. El día suma un rato que la lista no
+  contiene.
+- **Y se ve fuera de la página**: `VidaSessionBar` la pinta, y lo verifiqué en
+  el código, no de oídas — vive en `VidaModuleLayout` y su condición es
+  `hasBar = !isDisabled && session !== null && !isFromAnotherDay`: **no mira las
+  horas del día**. Una sesión de hoy a las 5:40 la pinta con su cronómetro en
+  todas las pantallas de Vida, incluida Hoy.
+
+**Por eso no la devuelvo.** Lo que el criterio prohíbe con todas las letras —«que
+la sesión exista, ocupe la única ranura abierta y **no se vea en ninguna
+parte**»— **no pasa**: hay una barra persistente con su nombre y su tiempo
+corriendo. Lo que no se cumple son las dos salidas que el criterio nombra: ni se
+ve en la agenda, ni hay línea. Va como hallazgo 1, con el añadido de la
+incoherencia de las cifras, que es lo que de verdad puede desconcertar: **el
+número cuenta lo que la lista no enseña**.
+
+**D1 sin el botón de la tajada 2: ¿se explica o se queda cojo?** (criterio 339)
+
+Se explica **a medias, y lo digo sin adornos**: el mensaje dice qué pasa y qué
+haría falta —cambiar la hora de lo que está en marcha—, pero **ese control no
+existe todavía** (es el criterio 342, tajada 2), así que la frase pide algo que
+hoy no se puede hacer desde ningún sitio. No deja al usuario **sin salida** —
+puede terminar lo que corre y volver a empezar—, pero esa salida **no está
+escrita en el mensaje**. Es el único punto donde esta tajada roza la premisa
+nueva: una frase que señala una puerta cerrada cuesta un paso más. **Lo que
+recomiendo, y es una línea:** añadir al mensaje la salida que sí existe hoy
+(«…o termínala y empieza de nuevo»), hasta que la tajada 2 traiga el botón.
+Como el caso llega solo cuando se pide una hora **anterior** a algo ya en
+marcha, no bloquea el uso normal y por eso no devuelve la tajada.
+
+**Criterios, uno por uno** (contra la sección 1)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 330 | **cumplido** | Visto en el navegador: la hoja de «Empezar algo» trae «**¿A qué hora empezaste?**» con **08:54** puesto —el reloj— y el pie «Ahora mismo. Cámbialo si llevas un rato con ello.». Y **no hay píldoras de duración**: `[aria-label="Cuánto dura"]` no existe en esa hoja. |
+| 331 | **cumplido** | Mi espía: `startTime: '08:07'` y `date` local de hoy. El cronómetro cuenta desde ahí porque nace de `startTime` (FEAT-004, sin cambios). |
+| 331b | **cumplido, y es el corazón** | Tabla de arriba: **una** mutación, **una** sesión, **cero** «add». |
+| 332 | **cumplido** | Sin tocar el campo no viaja `startTime` (`onStart(id, undefined)`) y el input queda igual al de hoy. Además el campo **sigue al reloj** mientras nadie lo toque (`displayedStartTime` con `defaultStartTime`), así que abrir a las 9:00 y pulsar a las 9:10 guarda **9:10**. |
+| 333 | **cumplido** | Las frases son **constantes compartidas** (`START_TIME_MISSING`, `START_TIME_FUTURE`, `START_DAY_FUTURE`) que usan `validateStartTime` **y** `validateLogPast`: leí las dos funciones, y no hay ni una cadena nueva. |
+| 334 | **cumplido** | `isFutureDateTime` para el futuro, y la hora **igual** a este minuto pasa. Las ramas de duración no se evalúan en este modo. |
+| 335 | **cumplido** | `date` sale siempre de `formatDateToYmd(now)` en `startSessionInput`: desde aquí no se puede crear una sesión abierta de ayer. |
+| 336 | **parcial, no peligroso** | Ver arriba: montado por mí. |
+| 337 | **cumplido** | No hay constante ni estado nuevo del bloque en el diff: el cruce sigue siendo `matchSessionsToBlocks`. |
+| 338 | **cumplido** | En el fallo del `start` la hoja no se cierra —`if (!result.ok)` lo sujeta— y con el cierre de la anterior fallando **no se empieza la nueva** (rama ya existente, intacta). |
+| 339 | **cumplido con un matiz de redacción** | Las dos ramas espiadas por mí (tabla de arriba). El matiz, arriba. |
+| 340 | **cumplido** | El cerrojo `lock()` de `useVidaSessionActions` no se ha tocado. |
+| 341 | **cumplido** | `normalizeTimeForApi` es la única puerta; `readHhMm` solo **lee** lo tecleado y no formatea nada nuevo. |
+| 361 (línea base) | **cumplido, corrida entera por mí** | Ver abajo. |
+
+**Los dos descubrimientos que hizo: verificados, y valen lo que dice**
+
+1. **`defaultStartTime` era media hora atrás para los tres modos.** Confirmado en
+   el diff: ahora `start` parte de `defaultStartNowTime` (el reloj) y `log` sigue
+   con `defaultLogStartTime` (30 min atrás). Sin eso, el criterio 330 habría
+   puesto «hace 30 min» donde pide «ahora» — y el usuario habría registrado media
+   hora que no era.
+2. **Prefijar el campo con la hora de apertura rompía el 332 en silencio.**
+   También confirmado: el campo pintado es `defaultStartTime` **mientras no se
+   toca**, y lo que se manda sin tocarlo es el reloj **del momento de pulsar**
+   (mi segundo espía: 09:10, no la hora de apertura). Las dos cosas las resuelve
+   el mismo `startTimeTouched`.
+
+**Lo que no se ha tocado, comprobado**
+
+`VidaAgendaBlock` y `VidaSessionBar` **no aparecen en el diff**: el ▶ del bloque
+sigue igual y las puertas de las tajadas 2 y 3 (corregir lo que corre, «desde la
+hora planeada») no se han abierto por adelantado.
+
+**Los tres tests reescritos: no relajan nada**
+
+Los tres afirmaban que el modo `start` **no tenía campo de hora** —que es justo
+lo que esta feature invierte—. Lo que conservan es lo que sigue siendo cierto:
+**no pide duración** (`Cuánto duró` ausente) y arranca ahora mismo cuando no se
+toca la hora; las llamadas pasan de `('a-s1')` a `('a-s1', undefined)`, que es la
+misma afirmación con la firma nueva. Ninguna aserción de FEAT-004 se ha borrado:
+`--numstat` da 106/5, 24/2 y 75/0, y las líneas que se van son las de la
+afirmación invertida.
+
+**En el navegador, por mí**
+
+El 5173 estaba vivo y lo usé —**no arranqué ni paré nada**—; arnés propio con la
+hoja real, borrado después. **Aviso honesto sobre lo que se ve**: la imagen que
+devuelve el panel para este arnés sale **dibujada a media escala** (el contenido
+se pinta en los ~184 px de la izquierda) aunque el DOM mida 375 — lo comprobé:
+`innerWidth`, `clientWidth` y el propio diálogo miden **375**, `devicePixelRatio`
+es 2 y `visualViewport.scale` es 1. Es un artefacto del panel con este arnés, no
+de la hoja; **por eso las medidas de abajo salen del DOM y lo dejo dicho igual
+que él**. Lo leído en la imagen (título, «Qué», los tres atajos, el buscador, la
+pregunta con su hora y el pie, «Volver»/«Empezar») es correcto y legible.
+
+- **375 px:** `scrollWidth === clientWidth === 375`, **0 nodos desbordados**.
+- **El campo de hora:** **45,6 px** de alto —por encima de los 44 que este
+  repositorio ya usa— y 324 de ancho, `type="time"`, con nombre accesible propio
+  («Hora a la que empezaste») distinto del rótulo de la sección.
+- **Oscuro:** pregunta **7,88:1**, pie **7,88:1**, texto del campo **14,89:1**,
+  todos muy por encima de 4,5:1, y sin scroll horizontal.
+- **No hay píldoras de duración** en este modo, que es el criterio 30 de
+  FEAT-004 intacto.
+
+**Línea base, corrida entera por mí**
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1622 | 2 de 1642 | **2 fallidos de 1642**, 109 archivos de 110 en verde |
+| `pnpm build` | 1.097,09 kB | 1.098,22 kB | **exit 0**, `index` **1.098,22 kB** (+1,13), `app-icons` **620,20 kB sin tocar** |
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **La sesión que empieza antes del día no sale en la agenda de Hoy y la
+   pantalla no lo dice** (criterio 336): se ve **solo** en la barra de sesión del
+   módulo. Y, peor que la ausencia, **las cifras del día sí la cuentan** («en
+   marcha 2h 54») mientras la lista no la enseña. El arreglo barato es la
+   segunda salida que el propio criterio ofrece: **una línea** bajo la agenda
+   —«Tienes algo en marcha desde las 5:40, antes de que empiece tu día»—, del
+   estilo de las de FEAT-009. FEAT-012 va a mover estos bordes, pero hasta
+   entonces esto queda así.
+2. **El mensaje de D1 nombra un control que todavía no existe** (tajada 2) y no
+   nombra la salida que sí existe hoy. Una línea.
+3. **La hora en el campo se pinta con el formato del navegador** (`08:54 AM` en
+   un navegador en inglés). Es propio de `type="time"` y del idioma del sistema,
+   no de este código —al API viaja `HH:mm`, verificado—, pero conviene saberlo
+   antes de que parezca un fallo.
+4. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1642** tests y
+   **1.098,22 kB**). **No lo he tocado** — es la regla.
+
+**Lo que no he podido revisar:** el recorrido con sesión —lo que el usuario cierra
+a mano—: elegir «Empezar algo», escribir **8:07** y ver el cronómetro contando
+desde ahí, y que al terminar se guarden los minutos correctos. Es el límite de
+siempre, y esta vez es justo lo que él estaba esperando poder hacer.

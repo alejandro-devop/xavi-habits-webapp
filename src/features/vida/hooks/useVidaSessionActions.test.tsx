@@ -143,6 +143,81 @@ describe('useVidaSessionActions — empezar (criterios 2, 13, 15 y 17)', () => {
     expect(toastCalls.some((call) => call.kind === 'error')).toBe(true)
   })
 
+  it('criterios 331 y 331b — «empecé a las 8:07 y sigo»: **una** llamada y una sesión abierta', async () => {
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).toBeNull())
+
+    await act(async () => {
+      await result.current.start('a-leer', '08:07')
+    })
+
+    expect(followUpsApi.startActivityFollowUp).toHaveBeenCalledTimes(1)
+    expect(followUpsApi.startActivityFollowUp).toHaveBeenCalledWith({
+      activityId: 'a-leer',
+      date: '2026-09-18',
+      startTime: '08:07',
+    })
+    // Ni un `activityFollowUpAdd`: el trozo pasado **no** se registra aparte.
+    expect(followUpsApi.createActivityFollowUp).not.toHaveBeenCalled()
+    expect(toastCalls).toHaveLength(1)
+    expect(toastCalls[0]?.message).toBe('En marcha: Leer un rato · contamos desde las 8:07')
+  })
+
+  it('criterio 339 (D1) — con otra en marcha, la anterior se cierra **a la hora de lo nuevo**', async () => {
+    seedOpen(openFollowUp())
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).not.toBeNull())
+
+    await act(async () => {
+      await result.current.start('a-leer', '10:00')
+    })
+
+    // 09:30 → 10:00 son 30 minutos: las dos **no se pisan**.
+    expect(followUpsApi.updateActivityFollowUp).toHaveBeenCalledWith({
+      id: 'f1',
+      durationMinutes: 30,
+    })
+    expect(followUpsApi.startActivityFollowUp).toHaveBeenCalledTimes(1)
+    expect(toastCalls).toHaveLength(1)
+    expect(toastCalls[0]?.message).toBe(
+      'Terminamos «Organizar la casa» a las 10:00. En marcha: Leer un rato · contamos desde las 10:00',
+    )
+  })
+
+  it('criterio 339 — una hora anterior a lo que ya corre **no empieza nada**, y no se pierde la primera', async () => {
+    seedOpen(openFollowUp())
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).not.toBeNull())
+
+    let outcome: { ok: boolean; message?: string } | undefined
+    await act(async () => {
+      outcome = await result.current.start('a-leer', '08:07')
+    })
+
+    expect(outcome?.ok).toBe(false)
+    // Ni duración negativa, ni sesión nueva, ni la primera tocada.
+    expect(followUpsApi.updateActivityFollowUp).not.toHaveBeenCalled()
+    expect(followUpsApi.startActivityFollowUp).not.toHaveBeenCalled()
+    expect(queryClient.getQueryData(vidaKeys.followUps.open())).not.toBeNull()
+    expect(outcome?.message).toBe(
+      '«Organizar la casa» está en marcha desde las 9:30, después de las 8:07. Termina «Organizar la casa» y empieza de nuevo con la hora que quieras.',
+    )
+  })
+
+  it('criterio 340 — dos toques seguidos con hora tampoco crean dos sesiones', async () => {
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).toBeNull())
+
+    await act(async () => {
+      await Promise.all([
+        result.current.start('a-leer', '08:07'),
+        result.current.start('a-leer', '08:07'),
+      ])
+    })
+
+    expect(followUpsApi.startActivityFollowUp).toHaveBeenCalledTimes(1)
+  })
+
   it('criterio 13 — dos toques seguidos no crean dos sesiones', async () => {
     const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
     await waitFor(() => expect(result.current.session).toBeNull())

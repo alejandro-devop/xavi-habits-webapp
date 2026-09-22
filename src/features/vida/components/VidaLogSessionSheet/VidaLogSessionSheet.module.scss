@@ -52,6 +52,15 @@
   min-width: 0;
 }
 
+/* Qué se va a guardar si no se toca la hora. Dato, no aviso: mismo tono que el
+   resto de lo secundario de la hoja. */
+.hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
 .notes {
   width: 100%;
   min-width: 0;

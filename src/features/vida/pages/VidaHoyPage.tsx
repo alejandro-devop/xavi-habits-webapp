@@ -937,14 +937,29 @@ export function VidaHoyPage() {
           date={date}
           dayLabel={dayLabel}
           suggestions={suggestions}
-          defaultStartTime={defaultLogStartTime(dayHours.startTime, nowMinutes)}
+          // «Empezar algo» parte de **ahora** (criterio 330); «Registrar tiempo
+          // pasado», de media hora atrás. La misma hoja, dos puntos de partida.
+          defaultStartTime={
+            logSheet.mode === 'start'
+              ? defaultStartNowTime(dayHours.startTime, nowMinutes)
+              : defaultLogStartTime(dayHours.startTime, nowMinutes)
+          }
           session={logSheet.mode === 'edit' ? logSheet.session : null}
           initial={logSheet.mode === 'edit' ? null : (logSheet.initial ?? null)}
-          onStart={(activityId) => sessionActions.start(activityId)}
+          onStart={(activityId, startTime) => sessionActions.start(activityId, startTime)}
         />
       ) : null}
     </div>
   )
+}
+
+/**
+ * De qué hora parte «Empezar algo»: **ahora**, y como `nowMinutes` cambia con
+ * el minuto, el campo sigue al reloj mientras nadie lo toque. Sin reloj (un día
+ * que no es hoy, donde este modo no se abre) queda el principio del día.
+ */
+function defaultStartNowTime(dayStart: string, nowMinutes: number | null): string {
+  return nowMinutes === null ? dayStart : minutesToTime(nowMinutes)
 }
 
 /** Cuántos minutos atrás arranca «Registrar tiempo pasado» por defecto. */

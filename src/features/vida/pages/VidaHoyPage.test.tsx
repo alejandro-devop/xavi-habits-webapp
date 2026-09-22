@@ -1313,7 +1313,7 @@ describe('VidaHoyPage — registrar lo que se sale (criterios 30 a 37 y 56)', ()
     expect(screen.queryByRole('button', { name: 'Registrar tiempo pasado' })).not.toBeInTheDocument()
   })
 
-  it('criterio 30 — «Empezar algo» pregunta solo qué y arranca ahora mismo', async () => {
+  it('criterio 30 — «Empezar algo» no pide duración y arranca ahora mismo', async () => {
     renderWithProviders(<VidaHoyPage />)
     fireEvent.click(screen.getByRole('button', { name: 'Empezar algo' }))
 
@@ -1327,7 +1327,29 @@ describe('VidaHoyPage — registrar lo que se sale (criterios 30 a 37 y 56)', ()
     fireEvent.click(within(sheet).getByRole('button', { name: 'Empezar' }))
     await act(async () => {})
 
-    expect(startSession).toHaveBeenCalledWith('a-s1')
+    // Sin tocar la hora, el gesto es el de siempre: la pone el reloj.
+    expect(startSession).toHaveBeenCalledWith('a-s1', undefined)
+  })
+
+  it('criterios 330 y 331b — «empecé a las 8:07 y sigo» es **una** acción y **una** sesión', async () => {
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar algo' }))
+
+    const sheet = screen.getByRole('dialog')
+    // La hoja parte de **ahora** (el reloj del test son las 9:24).
+    expect(within(sheet).getByLabelText('Hora a la que empezaste')).toHaveValue('09:24')
+
+    fireEvent.click(within(sheet).getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(within(sheet).getByLabelText('Hora a la que empezaste'), {
+      target: { value: '08:07' },
+    })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Empezar' }))
+    await act(async () => {})
+
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession).toHaveBeenCalledWith('a-s1', '08:07')
+    // **Cero** `activityFollowUpAdd`: el trozo pasado no se registra aparte.
+    expect(createFollowUpMutation.mutate).not.toHaveBeenCalled()
   })
 
   it('criterios 31, 33 y 37 — registrar un rato pasado escribe la sesión y no toca el plan', async () => {

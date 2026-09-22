@@ -14,6 +14,7 @@ import {
   editSessionInput,
   logSessionInput,
   validateLogPast,
+  validateStartTime,
 } from '@/features/vida/utils/vida-session.utils'
 import {
   formatDurationFromMinutes,
@@ -50,20 +51,28 @@ type VidaLogSessionSheetProps = {
   /** La sesión que se corrige, en el modo `edit` (criterio 35). */
   session?: ActivityFollowUp | null
   /**
-   * «Empezar algo» arranca **ahora mismo** y eso lo orquesta
-   * `useVidaSessionActions` —que además cierra lo que hubiera en marcha (D4)—,
-   * así que la hoja no llama a ninguna mutación en ese modo: pide el «qué» y
-   * delega. Resuelve, no lanza.
+   * «Empezar algo» lo orquesta `useVidaSessionActions` —que además cierra lo que
+   * hubiera en marcha (D4)—, así que la hoja no llama a ninguna mutación en ese
+   * modo: pide el «qué», pregunta **desde cuándo** y delega. Resuelve, no lanza.
+   *
+   * `startTime` solo viaja **si la persona tocó la hora** (criterio 332): sin
+   * tocarla, quien manda sigue siendo el reloj del momento de pulsar.
    */
-  onStart?: (activityId: string) => Promise<{ ok: boolean; message?: string }>
+  onStart?: (
+    activityId: string,
+    startTime?: string,
+  ) => Promise<{ ok: boolean; message?: string }>
 }
 
 /**
  * **Registrar lo que se sale del plan** (criterios 30, 31 y 35): una hoja, tres
  * modos.
  *
- * - **`start` — «Empezar algo»**: solo **qué**. Arranca la sesión ahora mismo y
- *   **no pide duración**, porque una sesión abierta no la tiene (criterio 30).
+ * - **`start` — «Empezar algo»**: **qué · desde qué hora**, con «ahora» ya
+ *   puesto (criterio 330). **No pide duración**, porque una sesión abierta no la
+ *   tiene (criterio 30). Decir «empecé a las 8:07» deja **una sola sesión
+ *   abierta** contando desde las 8:07, en **una sola acción** (criterio 331b):
+ *   aquí no se registra ningún trozo pasado aparte.
  * - **`log` — «Registrar tiempo pasado»**: **qué · a qué hora empezó · cuánto
  *   duró**, con las píldoras 15 · 30 · 45 · 1h · libre, vía `activityFollowUpAdd`
  *   (criterio 31).
@@ -109,6 +118,11 @@ export function VidaLogSessionSheet({
   const [durationMinutes, setDurationMinutes] = useState<number | null>(
     session?.durationMinutes ?? initial?.durationMinutes ?? null,
   )
+  // Mientras nadie toque la hora en «Empezar algo», el campo **sigue al reloj**
+  // (`defaultStartTime` cambia cada minuto) y no se manda: así, quien no la mira
+  // hace exactamente el gesto de siempre y guarda la hora del momento de pulsar
+  // (criterios 330 y 332).
+  const [startTimeTouched, setStartTimeTouched] = useState(false)
   const [notes, setNotes] = useState(session?.notes ?? '')
   const [formError, setFormError] = useState<string | null>(null)
   const [isStarting, setIsStarting] = useState(false)
@@ -132,9 +146,18 @@ export function VidaLogSessionSheet({
       return
     }
     if (!onStart) return
+    // Solo hay hora que validar si la tocaron: si no, la pone el reloj al
+    // llegar al API y no puede ser del futuro (criterios 332, 333 y 334).
+    if (startTimeTouched) {
+      const result = validateStartTime({ date, startTime, now: new Date() })
+      if (!result.valid) {
+        setFormError(result.message)
+        return
+      }
+    }
     setFormError(null)
     setIsStarting(true)
-    const result = await onStart(chosen.id)
+    const result = await onStart(chosen.id, startTimeTouched ? startTime : undefined)
     setIsStarting(false)
     // Si no se pudo, la hoja **no se cierra** y lo elegido sigue aquí.
     if (!result.ok) {
@@ -185,6 +208,17 @@ export function VidaLogSessionSheet({
     )
   }
 
+  /**
+   * Lo que se ve en el campo. En «Empezar algo» y **sin tocarlo**, el reloj:
+   * `defaultStartTime` llega ya puesto en «ahora» y cambia con el minuto, así
+   * que lo que se lee es lo que se va a guardar. En cuanto se toca, manda lo
+   * escrito.
+   */
+  const displayedStartTime =
+    mode === 'start' && !startTimeTouched
+      ? normalizeTimeForDisplay(defaultStartTime)
+      : startTime
+
   const title =
     mode === 'start'
       ? 'Empezar algo'
@@ -194,7 +228,7 @@ export function VidaLogSessionSheet({
 
   const description =
     mode === 'start'
-      ? 'Arranca ahora mismo. Cuando termines nos dices cuánto duró.'
+      ? 'Si ya llevas un rato, dinos desde qué hora. Cuando termines nos dices cuánto duró.'
       : mode === 'edit'
         ? 'Cambia la hora, cuánto duró o lo que quieras recordar de ese rato.'
         : `Algo que ya hiciste el ${formatDayHeading(date).toLowerCase()}, esté o no en tu plan.`
@@ -251,30 +285,41 @@ export function VidaLogSessionSheet({
           />
         )}
 
+        {/* **Desde cuándo.** En «Empezar algo» es la pregunta nueva (criterio
+            330) y en los otros dos modos es la de siempre: el mismo campo, el
+            mismo estilo, ni un control nuevo (criterio 357). */}
+        <section className={styles.block} aria-labelledby="vida-log-when">
+          <h3 className={styles.legend} id="vida-log-when">
+            {mode === 'start' ? '¿A qué hora empezaste?' : 'A qué hora empezó'}
+          </h3>
+          <label className={styles.custom} htmlFor="vida-log-start">
+            <Input
+              id="vida-log-start"
+              type="time"
+              value={displayedStartTime}
+              // El rótulo de la sección ya lo dice; esto es lo que lee un
+              // lector de pantalla al llegar al campo, y no puede repetir
+              // la misma cadena o habría dos cosas con el mismo nombre.
+              aria-label={mode === 'start' ? 'Hora a la que empezaste' : 'Hora a la que empezó'}
+              disabled={isPending}
+              onChange={(event) => {
+                setStartTime(event.target.value)
+                setStartTimeTouched(true)
+                setFormError(null)
+              }}
+            />
+          </label>
+          {mode === 'start' ? (
+            <p className={styles.hint}>
+              {startTimeTouched
+                ? 'Empieza contando desde esa hora y sigue en marcha.'
+                : 'Ahora mismo. Cámbialo si llevas un rato con ello.'}
+            </p>
+          ) : null}
+        </section>
+
         {mode !== 'start' ? (
           <>
-            <section className={styles.block} aria-labelledby="vida-log-when">
-              <h3 className={styles.legend} id="vida-log-when">
-                A qué hora empezó
-              </h3>
-              <label className={styles.custom} htmlFor="vida-log-start">
-                <Input
-                  id="vida-log-start"
-                  type="time"
-                  value={startTime}
-                  // El rótulo de la sección ya lo dice; esto es lo que lee un
-                  // lector de pantalla al llegar al campo, y no puede repetir
-                  // la misma cadena o habría dos cosas con el mismo nombre.
-                  aria-label="Hora a la que empezó"
-                  disabled={isPending}
-                  onChange={(event) => {
-                    setStartTime(event.target.value)
-                    setFormError(null)
-                  }}
-                />
-              </label>
-            </section>
-
             <section className={styles.block} aria-labelledby="vida-log-how-long">
               <h3 className={styles.legend} id="vida-log-how-long">
                 Cuánto duró

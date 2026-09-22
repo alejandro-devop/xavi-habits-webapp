@@ -18,6 +18,7 @@ import {
   startSessionInput,
   translateSessionError,
   validateLogPast,
+  validateStartTime,
 } from '@/features/vida/utils/vida-session.utils'
 
 function session(overrides: Partial<ActivityFollowUp> = {}): ActivityFollowUp {
@@ -113,6 +114,31 @@ describe('startSessionInput — la hora es la del reloj (criterio 17)', () => {
 
   it('la fecha es la **local**: a las 23:50 sigue siendo ese día', () => {
     expect(startSessionInput('a1', new Date(2026, 8, 18, 23, 50, 0)).date).toBe('2026-09-18')
+  })
+
+  it('criterio 332 — sin hora, el cuerpo es **idéntico** al de siempre', () => {
+    const reloj = new Date(2026, 8, 18, 9, 5, 0)
+    expect(startSessionInput('a1', reloj, undefined)).toEqual(startSessionInput('a1', reloj))
+    expect(startSessionInput('a1', reloj, null)).toEqual(startSessionInput('a1', reloj))
+  })
+
+  it('criterio 331 — con hora, la sesión nace contando desde esa hora, **hoy**', () => {
+    expect(startSessionInput('a1', new Date(2026, 8, 18, 9, 5, 0), '08:07')).toEqual({
+      activityId: 'a1',
+      date: '2026-09-18',
+      startTime: '08:07',
+    })
+  })
+
+  it('criterio 335 — la fecha sigue siendo la del reloj: desde aquí no se empieza en otro día', () => {
+    expect(startSessionInput('a1', new Date(2026, 8, 18, 0, 20, 0), '23:40').date).toBe(
+      '2026-09-18',
+    )
+  })
+
+  it('una hora que no se entiende cae al reloj en vez de viajar rota al API', () => {
+    expect(startSessionInput('a1', new Date(2026, 8, 18, 9, 5, 0), '').startTime).toBe('09:05')
+    expect(startSessionInput('a1', new Date(2026, 8, 18, 9, 5, 0), 'no').startTime).toBe('09:05')
   })
 })
 
@@ -408,5 +434,41 @@ describe('logSessionInput y editSessionInput — lo que se le manda al API', () 
       durationMinutes: 42,
       notes: 'me alargué',
     })
+  })
+})
+
+describe('validateStartTime — la hora de «Empezar algo» (criterios 333 y 334)', () => {
+  it('una hora de hoy que ya pasó vale', () => {
+    expect(validateStartTime({ date: HOY, startTime: '08:07', now: AHORA })).toEqual({
+      valid: true,
+      message: null,
+    })
+  })
+
+  it('criterio 334 — este mismo minuto **sí**: es «ahora»', () => {
+    expect(validateStartTime({ date: HOY, startTime: '15:30', now: AHORA }).valid).toBe(true)
+  })
+
+  it('criterio 334 — una hora que no ha llegado, no', () => {
+    expect(validateStartTime({ date: HOY, startTime: '16:00', now: AHORA }).message).toBe(
+      'Esa hora todavía no ha llegado.',
+    )
+  })
+
+  it('criterio 333 — las frases son **las mismas** que las de «Registrar tiempo pasado»', () => {
+    expect(validateStartTime({ date: HOY, startTime: '', now: AHORA }).message).toBe(
+      validateLogPast({ date: HOY, startTime: '', durationMinutes: 30, now: AHORA }).message,
+    )
+    expect(validateStartTime({ date: HOY, startTime: '16:00', now: AHORA }).message).toBe(
+      validateLogPast({ date: HOY, startTime: '16:00', durationMinutes: 30, now: AHORA }).message,
+    )
+    expect(validateStartTime({ date: MANANA, startTime: '09:00', now: AHORA }).message).toBe(
+      validateLogPast({ date: MANANA, startTime: '09:00', durationMinutes: 30, now: AHORA })
+        .message,
+    )
+  })
+
+  it('no habla de duración: una sesión abierta no la tiene (criterio 30)', () => {
+    expect(validateStartTime({ date: HOY, startTime: '15:29', now: AHORA }).message).toBeNull()
   })
 })

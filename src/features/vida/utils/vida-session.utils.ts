@@ -137,14 +137,28 @@ export function describeOverPlan(
 /* ── Lo que se le manda al API ──────────────────────────────────────────── */
 
 /**
- * Empezar **ahora**: la fecha y la hora salen del reloj, no del bloque
- * (criterio 17: empezar a las 9:05 un bloque de las 9:00 registra 9:05).
+ * Empezar: la fecha sale **siempre** del reloj —solo se empieza hoy (criterio
+ * 335)— y la hora, del reloj también salvo que se diga otra (criterio 331).
+ *
+ * - `startSessionInput(id, now)` es **exactamente** lo de antes: la hora del
+ *   reloj, que es lo que hace el ▶ de un bloque (criterios 2, 17 y 332).
+ * - `startSessionInput(id, now, '08:07')` deja la sesión **abierta y contando
+ *   desde las 8:07**: una sola escritura, una sola sesión (criterio 331b).
+ *
+ * `startTime` que no se entienda cae al reloj en vez de mandar basura al API;
+ * quien pregunta por pantalla valida antes con `validateStartTime`.
  */
-export function startSessionInput(activityId: string, now: Date): ActivityFollowUpStartInput {
+export function startSessionInput(
+  activityId: string,
+  now: Date,
+  startTime?: string | null,
+): ActivityFollowUpStartInput {
+  const clock = `${pad2(now.getHours())}:${pad2(now.getMinutes())}`
+  const chosen = startTime ? readHhMm(startTime) : null
   return {
     activityId,
     date: formatDateToYmd(now),
-    startTime: normalizeTimeForApi(`${pad2(now.getHours())}:${pad2(now.getMinutes())}`),
+    startTime: normalizeTimeForApi(chosen ?? clock),
   }
 }
 
@@ -247,6 +261,50 @@ export function isFutureDateTime(date: string, time: string, now: Date): boolean
 
 export type LogPastValidation = { valid: boolean; message: string | null }
 
+/**
+ * Las frases de la hora de inicio, **escritas una sola vez** (criterio 333):
+ * las dicen igual «Registrar tiempo pasado» y «Empezar algo». Si alguna vez se
+ * cambian, cambian en los dos sitios porque son el mismo texto, no dos copias.
+ */
+const START_TIME_MISSING = 'Dinos a qué hora empezó, con horas y minutos.'
+const START_TIME_FUTURE = 'Esa hora todavía no ha llegado.'
+const START_DAY_FUTURE = 'Ese día todavía no ha llegado.'
+
+/**
+ * La hora tal como se escribe en un campo → `HH:mm`, o `null` si eso no es una
+ * hora. Sobre el crudo, no sobre lo normalizado: `normalizeTimeForDisplay('')`
+ * devuelve `00:00`, y una hora vacía se colaría como medianoche.
+ */
+function readHhMm(startTime: string): string | null {
+  const looksLikeTime = /^\d{1,2}:\d{2}(:\d{2})?$/.test(startTime.trim())
+  const time = looksLikeTime ? normalizeTimeForDisplay(startTime) : ''
+  return isValidHhMm(time) ? time : null
+}
+
+/**
+ * **La hora a la que empezó, sin duración** (criterios 333 y 334): la hoja
+ * tiene que ser `HH:mm`, del día que se mira, y **no del futuro** —igual a este
+ * minuto **sí** vale, que eso es «ahora»—.
+ *
+ * Es la mitad de `validateLogPast` que no habla de duración, porque una sesión
+ * abierta no la tiene (criterio 30). **Comparten las frases**, no las copian.
+ */
+export function validateStartTime(params: {
+  date: string
+  startTime: string
+  now: Date
+}): LogPastValidation {
+  const { date, startTime, now } = params
+  const time = readHhMm(startTime)
+  if (!time) return { valid: false, message: START_TIME_MISSING }
+  const today = formatDateToYmd(now)
+  if (date > today) return { valid: false, message: START_DAY_FUTURE }
+  if (date === today && isFutureDateTime(date, time, now)) {
+    return { valid: false, message: START_TIME_FUTURE }
+  }
+  return { valid: true, message: null }
+}
+
 export type ValidateLogPastInput = {
   /** `YYYY-MM-DD` del día en el que se registra. */
   date: string
@@ -283,12 +341,9 @@ export function validateLogPast({
   durationMinutes,
   now,
 }: ValidateLogPastInput): LogPastValidation {
-  // Sobre el crudo, no sobre lo normalizado: `normalizeTimeForDisplay('')`
-  // devuelve `00:00`, y una hora vacía se colaría como medianoche.
-  const looksLikeTime = /^\d{1,2}:\d{2}(:\d{2})?$/.test(startTime.trim())
-  const time = looksLikeTime ? normalizeTimeForDisplay(startTime) : ''
-  if (!isValidHhMm(time)) {
-    return { valid: false, message: 'Dinos a qué hora empezó, con horas y minutos.' }
+  const time = readHhMm(startTime)
+  if (!time) {
+    return { valid: false, message: START_TIME_MISSING }
   }
   if (durationMinutes === null) {
     return { valid: false, message: 'Elige cuánto duró.' }
@@ -298,11 +353,11 @@ export function validateLogPast({
   }
   const today = formatDateToYmd(now)
   if (date > today) {
-    return { valid: false, message: 'Ese día todavía no ha llegado.' }
+    return { valid: false, message: START_DAY_FUTURE }
   }
   if (date === today) {
     if (isFutureDateTime(date, time, now)) {
-      return { valid: false, message: 'Esa hora todavía no ha llegado.' }
+      return { valid: false, message: START_TIME_FUTURE }
     }
     const start = sessionStartInstant(date, time)
     if (start && start.getTime() + durationMinutes * MS_PER_MINUTE > now.getTime()) {

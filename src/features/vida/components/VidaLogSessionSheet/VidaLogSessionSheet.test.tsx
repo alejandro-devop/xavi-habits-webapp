@@ -101,15 +101,116 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-describe('VidaLogSessionSheet — «Empezar algo» (criterio 30)', () => {
-  it('pregunta solo qué y no pide duración', () => {
+describe('VidaLogSessionSheet — «Empezar algo» (criterios 30, 330 a 334)', () => {
+  it('criterio 330 — pregunta qué y desde cuándo, con «ahora» puesto, y no pide duración', () => {
     renderSheet({ mode: 'start', onStart: vi.fn().mockResolvedValue({ ok: true }) })
 
     expect(screen.getByRole('heading', { name: 'Qué' })).toBeInTheDocument()
+    // La duración **no** se pregunta: una sesión abierta no la tiene.
     expect(screen.queryByText('Cuánto duró')).not.toBeInTheDocument()
-    expect(screen.queryByText('A qué hora empezó')).not.toBeInTheDocument()
-    expect(screen.getByText('Arranca ahora mismo. Cuando termines nos dices cuánto duró.'))
+    expect(screen.getByRole('heading', { name: '¿A qué hora empezaste?' })).toBeInTheDocument()
+    // «Ahora» ya puesto: `defaultStartTime` es el reloj en este modo.
+    expect(screen.getByLabelText('Hora a la que empezaste')).toHaveValue('08:54')
+    expect(screen.getByText('Ahora mismo. Cámbialo si llevas un rato con ello.'))
       .toBeInTheDocument()
+  })
+
+  it('criterio 332 — sin tocar la hora, se empieza como siempre: sin hora que mandar', async () => {
+    const onStart = vi.fn().mockResolvedValue({ ok: true })
+    renderSheet({ mode: 'start', onStart })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+    })
+
+    expect(onStart).toHaveBeenCalledWith('a-s1', undefined)
+  })
+
+  it('criterio 331b — decir «08:07» es **una** acción: una sola llamada, sin registrar nada aparte', async () => {
+    const onStart = vi.fn().mockResolvedValue({ ok: true })
+    renderSheet({ mode: 'start', onStart })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('Hora a la que empezaste'), {
+      target: { value: '08:07' },
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+    })
+
+    expect(onStart).toHaveBeenCalledTimes(1)
+    expect(onStart).toHaveBeenCalledWith('a-s1', '08:07')
+    // `activityFollowUpAdd` —el «registrar tiempo pasado»— **no se roza**.
+    expect(createMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('criterio 334 — una hora que no ha llegado no empieza nada, con la frase de siempre', async () => {
+    const onStart = vi.fn().mockResolvedValue({ ok: true })
+    renderSheet({ mode: 'start', onStart })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('Hora a la que empezaste'), {
+      target: { value: '16:00' },
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+    })
+
+    expect(onStart).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert')).toHaveTextContent('Esa hora todavía no ha llegado.')
+  })
+
+  it('criterio 334 — este mismo minuto **sí** vale: es «ahora»', async () => {
+    const onStart = vi.fn().mockResolvedValue({ ok: true })
+    renderSheet({ mode: 'start', onStart })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('Hora a la que empezaste'), {
+      target: { value: '09:24' },
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+    })
+
+    expect(onStart).toHaveBeenCalledWith('a-s1', '09:24')
+  })
+
+  it('criterio 333 — una hora vacía se dice con la frase que ya existía', async () => {
+    const onStart = vi.fn().mockResolvedValue({ ok: true })
+    renderSheet({ mode: 'start', onStart })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('Hora a la que empezaste'), { target: { value: '' } })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+    })
+
+    expect(onStart).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Dinos a qué hora empezó, con horas y minutos.',
+    )
+  })
+
+  it('criterio 338 — si falla, la hoja se queda con la actividad **y con la hora escrita**', async () => {
+    const onStart = vi.fn().mockResolvedValue({ ok: false, message: 'Ya tenías algo en marcha.' })
+    const onClose = renderSheet({ mode: 'start', onStart })
+
+    fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
+    fireEvent.change(screen.getByLabelText('Hora a la que empezaste'), {
+      target: { value: '08:07' },
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
+    })
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.getByLabelText('Hora a la que empezaste')).toHaveValue('08:07')
+    expect(screen.getByRole('button', { name: /Poner lavadora/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent('Ya tenías algo en marcha.')
   })
 
   it('si no se puede empezar, la hoja se queda abierta con lo elegido y lo dice', async () => {
@@ -121,7 +222,7 @@ describe('VidaLogSessionSheet — «Empezar algo» (criterio 30)', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Empezar' }))
     })
 
-    expect(onStart).toHaveBeenCalledWith('a-s1')
+    expect(onStart).toHaveBeenCalledWith('a-s1', undefined)
     expect(onClose).not.toHaveBeenCalled()
     expect(screen.getByRole('alert')).toHaveTextContent('Ya tenías algo en marcha.')
     expect(screen.getByRole('button', { name: /Poner lavadora/ })).toHaveAttribute(

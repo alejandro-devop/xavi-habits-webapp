@@ -11,6 +11,7 @@ import {
   closeSessionInput,
   elapsedMinutes,
   followUpStartInstant,
+  sessionStartInstant,
   startSessionInput,
   translateSessionError,
   type UnknownEndReason,
@@ -100,11 +101,23 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
   }, [])
 
   /**
-   * Empezar un bloque **ahora** (criterios 2, 15 y 17). La hora es la del reloj
-   * en este momento, no la planeada del bloque.
+   * Empezar un bloque **ahora** (criterios 2, 15 y 17) o **desde la hora que se
+   * diga** (criterios 331 y 331b): «llevo trabajando desde las 8:07 y sigo» es
+   * **un solo gesto** y queda como **una sola sesión abierta** —una única
+   * llamada a `activityFollowUpStart`, nunca un registro del trozo pasado más
+   * otra sesión—.
+   *
+   * `startTime` es `HH:mm` de **hoy**; sin él, el reloj, que es lo que sigue
+   * haciendo el ▶ de un bloque.
+   *
+   * **D1 (criterio 339):** si hay algo en marcha, se cierra **a la hora de
+   * inicio de lo nuevo**, no a este momento: así las dos no se pisan y el día
+   * cuadra. Y si la hora elegida es **anterior o igual** al inicio de lo que ya
+   * corre, lo nuevo **no se empieza** —no hay duración negativa que guardar— y
+   * se dice sin reproche.
    */
   const start = useCallback(
-    async (activityId: string): Promise<VidaSessionActionResult> => {
+    async (activityId: string, startTime?: string | null): Promise<VidaSessionActionResult> => {
       // Con una sesión de otro día sin responder, el API no dejaría empezar
       // nada. Se dice aquí en vez de dejar que vuelva el 400 en inglés.
       if (session && isFromAnotherDay) {
@@ -117,13 +130,32 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
       if (!lock()) return { ok: false, message: 'Espera a que termine lo anterior.' }
       try {
         const now = new Date()
+        const input = startSessionInput(activityId, now, startTime)
+        // El instante en que arranca lo nuevo: la hora elegida si la hay, y el
+        // reloj si no. De aquí sale **todo** lo demás, para que el cierre de lo
+        // anterior y el inicio de lo nuevo sean el mismo minuto exacto.
+        const startedAt = sessionStartInstant(input.date, input.startTime) ?? now
         let closedNote = ''
 
         if (session) {
+          const runningStart = followUpStartInstant(session)
+          const title = session.activity?.title ?? 'lo anterior'
+          // D1: empezar lo nuevo **antes** de que empezara lo que ya corre no
+          // deja ninguna verdad que guardar —serían minutos negativos—, así que
+          // no se empieza y se cuenta lo que pasa.
+          if (runningStart && startedAt.getTime() <= runningStart.getTime()) {
+            // La segunda salida va **escrita**, que es la regla del módulo: el
+            // control para corregir la hora de lo que corre es la tajada 2
+            // (criterio 342) y todavía no existe, así que nombrarlo dejaría al
+            // usuario delante de un camino que no puede recorrer. Lo que sí
+            // puede hacer hoy es terminar lo que corre y empezar de nuevo.
+            const message = `«${title}» está en marcha desde las ${formatClock(runningStart)}, después de las ${formatClock(startedAt)}. Termina «${title}» y empieza de nuevo con la hora que quieras.`
+            toast.error(message)
+            return { ok: false, message }
+          }
           try {
-            await closeMutation.mutateAsync(closeSessionInput(session, now))
-            const title = session.activity?.title ?? 'lo anterior'
-            closedNote = `Terminamos «${title}» a las ${formatClock(now)}. `
+            await closeMutation.mutateAsync(closeSessionInput(session, startedAt))
+            closedNote = `Terminamos «${title}» a las ${formatClock(startedAt)}. `
           } catch (error) {
             // El cierre falló: **no se empieza la nueva**. Dos abiertas no puede
             // haberlas, y perder la primera sería peor que no empezar la segunda.
@@ -137,9 +169,17 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
         }
 
         try {
-          const started = await startMutation.mutateAsync(startSessionInput(activityId, now))
+          const started = await startMutation.mutateAsync(input)
           const title = started.activity?.title
-          toast.success(`${closedNote}${title ? `En marcha: ${title}` : 'En marcha'}`)
+          // Empezar «desde antes» se dice: es lo que se acaba de guardar, y
+          // llegar tarde al botón no es un fallo (criterio 359).
+          const fromEarlier =
+            formatClock(startedAt) !== formatClock(now)
+              ? ` · contamos desde las ${formatClock(startedAt)}`
+              : ''
+          toast.success(
+            `${closedNote}${title ? `En marcha: ${title}` : 'En marcha'}${fromEarlier}`,
+          )
           return OK
         } catch (error) {
           const message = translateSessionError(error, 'No pudimos empezarla. Inténtalo otra vez.')

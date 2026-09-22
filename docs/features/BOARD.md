@@ -21,7 +21,37 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
-| FEAT-013 | specified | 0/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
+| FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
+
+**FEAT-013 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada, y
+desbloquea lo que el usuario no podía hacer desde las 8:07.** Lo esencial lo
+espié yo, no lo leí: `start('a-leer','08:07')` manda **una** `activityFollowUpStart`
+con `{date, startTime:'08:07'}`, **cero** «add» y **cero** update; sin tocar la
+hora manda la del reloj **del momento de pulsar** (09:10, no la de apertura); con
+algo en marcha desde las 8:00, lo cierra **a las 8:07 exactas**
+(`{id, durationMinutes: 7}`) y abre **una** sola; y pedir una hora **anterior o
+igual** a lo que corre **no llama a nadie** y lo dice sin reproche. **Criterio
+336, montado por mí** —el que él dejó a medias—: una sesión abierta a las **5:40**
+con el día empezando a las 6:30 **no sale en la página de Hoy** (ni bloque ni
+línea; el nombre aparece cero veces) **pero sí en `VidaSessionBar`**, cuya
+condición no mira las horas del día: **no queda invisible**, que es lo que el
+criterio prohíbe, aunque ninguna de sus dos salidas se cumpla dentro de Hoy. Lo
+que más chirría y va como hallazgo: **las cifras del día sí la cuentan** («en
+marcha 2h 54») mientras la lista no la enseña; el arreglo es **una línea** bajo
+la agenda. **D1 sin el botón de la tajada 2 se queda a medias**: el mensaje pide
+cambiar la hora de lo que corre y ese control aún no existe; no deja sin salida
+—terminar y volver a empezar— pero **esa salida no está escrita**: una línea
+hasta que llegue el 342. Verificados los dos descubrimientos (el `defaultStartTime`
+de media hora atrás y el prefijado que rompía el 332 en silencio), las frases
+**compartidas** en constantes con `validateLogPast`, los tres tests reescritos
+**sin relajar** («no pide duración» sigue afirmado) y que `VidaAgendaBlock` y
+`VidaSessionBar` **no están en el diff**. En el navegador (5173 del constructor,
+no arranqué nada): campo de **45,6 px**, nombre accesible propio, sin scroll a
+375, oscuro 7,88:1 y 14,89:1 — **con el aviso honesto de que la imagen del panel
+sale a media escala con este arnés** (DOM y `innerWidth` dicen 375), así que las
+medidas salen del DOM. Línea base corrida entera: typecheck limpio, lint 14/0,
+**2 fallos de 1642**, build exit 0 con el chunk en **1.098,22 kB** (+1,13).
+Siguiente: el usuario probándolo de verdad, y el `feature-builder` con la tajada 2.
 
 **FEAT-009 `building` 2/3** (2026-09-22, revisor). **Tajada 2 aceptada, con una
 recomendación que va primero: el criterio 150 hay que reescribirlo y el hueco

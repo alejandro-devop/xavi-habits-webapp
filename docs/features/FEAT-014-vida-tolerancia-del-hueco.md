@@ -1,7 +1,7 @@
 ---
 id: FEAT-014
 title: La tolerancia del hueco — un rato de 13 minutos también se puede contar
-status: building
+status: delivered
 architect: no    # cuelga de MIN_GAP_MINUTES y de la rama del hueco ya construida; razón en la sección 1
 area: vida
 requested: 2026-09-22
@@ -178,7 +178,7 @@ el 400.**)
 | # | Qué hace | Estado |
 |---|---|---|
 | 1 | **Los 13 minutos se pueden contar.** Nace `MIN_LOG_MINUTES = 5`, el hueco pasado de 5 minutos o más gana «Registrar lo que hice» con la tarjeta que ya existe, y la hoja abre con una duración que cabe («Todo el hueco» y el campo libre hacen el resto). Criterios 400–411. | aceptada |
-| 2 | **Un solo umbral de planear.** `MIN_PLACEMENT_MINUTES` se funde en `MIN_PLANNING_MINUTES`; nada cambia en pantalla. Criterios 412–414. | pending |
+| 2 | **Un solo umbral de planear.** `MIN_PLACEMENT_MINUTES` se funde en `MIN_PLANNING_MINUTES`; nada cambia en pantalla. Criterios 412–414. | aceptada |
 
 Dos tajadas y no más: la 1 resuelve el caso del usuario entero y se puede probar
 sola; la 2 es la deuda, que sin la 1 no le sirve a nadie.
@@ -472,6 +472,202 @@ toca.
 (`VidaAgendaGap.test.tsx`). El arnés temporal se borró; `graphify-out/` cambió
 por el `graphify update .` que manda `CLAUDE.md`.
 
+### Tajada 2 — Un solo umbral de planear
+
+**Resumen para el revisor:**
+
+1. `MIN_PLACEMENT_MINUTES` ya no existe: su único uso real apunta a
+   `MIN_PLANNING_MINUTES`, que es la misma idea con el mismo valor. **Cuatro
+   archivos tocados, todos de `utils/`, y tres de los cuatro cambios son
+   comentarios.**
+2. **No cambia ni un pixel ni un comportamiento**, y el listón que me puse es
+   el que pedía la tajada: **no he tocado ni un test**. Los 1746 siguen
+   exactamente donde estaban y el `index` del build pesa lo mismo al kilobyte
+   (1.106,50 kB).
+3. **Lo que más probablemente rompí:** nada de comportamiento —la sustitución
+   es literal `15 → 15`—, así que si algo falla aquí es **de importación**:
+   `vida-gap-form.utils.ts` ahora depende de `MIN_PLANNING_MINUTES` de
+   `vida-time.utils.ts`. Ya importaba seis cosas de ese mismo módulo, así que no
+   estrena arista ni puede cerrar un ciclo, pero es el único sitio donde mirar.
+   Lo segundo más probable: que un comentario mío diga una línea que ya no es
+   verdad —los tres que escribí citan `file:line`, y esas líneas se mueven—.
+
+**Qué se construyó:**
+
+- **`src/features/vida/utils/vida-gap-form.utils.ts`** — se borra la constante
+  `MIN_PLACEMENT_MINUTES = 15` (estaba en `:34` con su línea de documentación),
+  se añade `MIN_PLANNING_MINUTES` al bloque de importación que ya traía otras
+  seis cosas de `vida-time.utils.ts`, y se apuntan a ella el único uso (el bucle
+  de `buildStartTimeOptions`, antes `:176`) y el comentario de esa función que
+  la nombraba (antes `:149`).
+- **`src/features/vida/utils/vida-time.utils.ts`** — la documentación de
+  `MIN_PLANNING_MINUTES` gana un párrafo: **tenía un gemelo y cómo se llamaba**,
+  dónde vivía, en qué tajada se fundió y el recordatorio de que **el umbral de
+  contar es otro y vive aparte** (criterio 414). El párrafo de los nombres
+  viejos ya estaba escrito por la tajada 1 para `MIN_GAP_MINUTES`; esto lo
+  completa.
+- **`src/features/vida/utils/vida-agenda.utils.ts`** — el campo `isSliver` de
+  `AgendaGap` gana el comentario que dice **qué significa hoy**: «aquí no cabe
+  nada que planear», y **no** «aquí solo se pinta una línea». Con el sitio exacto
+  de la deuda del renombrado. Sin renombrar nada (ver «Por qué así»).
+- **`src/features/vida/utils/vida-execution.utils.ts`** — `VIDA_NO_DATA_MIN_MINUTES`
+  **se queda como está**, con el porqué escrito al lado: es la tercera pregunta,
+  no una repetición de las otras dos (ver «Por qué así»).
+
+**Por qué así:**
+
+*El recuento del gemelo, hecho de nuevo y no heredado.* El constructor de la
+tajada 1 dijo «un uso» y el revisor dijo «3 usos»: **los dos tienen razón y
+dicen cosas distintas**. `grep -rn MIN_PLACEMENT_MINUTES src/` daba tres líneas
+— la definición (`:34`), una mención dentro de un comentario (`:149`) y **un
+solo uso real** (`:176`)—. Lo comprobé antes de tocar nada; no hay ningún
+importador fuera del archivo (`vida-gap-form.utils.ts` no se reexporta por
+ningún barril: los once archivos que lo consumen lo importan por ruta y ninguno
+traía la constante).
+
+*Que el criterio 236 de FEAT-011 no esconda una sutileza.* Lo leí entero antes
+de fundir. Pide que el camino de planear no cambie de comportamiento y que los
+tests de FEAT-003 sobre `vida-gap-form.utils` **no cambien de resultado**. El
+único uso hacía exactamente el trabajo que el nombre de destino describe —«solo
+se ofrece una hora de inicio si después de ella todavía cabe lo más corto que se
+puede poner»—, con el mismo valor y sobre el mismo camino (planear). **No hay
+sutileza que el nombre no diga**, así que la fusión procede. Si la hubiera
+habido, esto diría que paro.
+
+*El tercer umbral se queda, y esta es la razón.* `VIDA_NO_DATA_MIN_MINUTES = 30`
+tiene un solo uso (`vida-execution.utils.ts:1074`, el `canAsk` de los tramos sin
+dato) y responde a **otra pregunta**: no «¿cabe aquí la píldora más corta?»
+(planear) ni «¿merece la pena ofrecer registrar esto?» (contar), sino «¿cuánto
+hueco sin dato merece que se le pregunte *qué pasó*?», que es de la pantalla de
+revisión. Su valor **no sale de `DURATION_PILLS`** ni de lo que dura algo
+vivido, sino de cuánto ruido soporta esa lista; si mañana cambia el suelo de
+planear, este número no tiene por qué moverse. Fundirlo sería crear el defecto
+que esta feature vino a arreglar, pero al revés: **un número con dos trabajos**.
+Lo que sí le faltaba era esa frase escrita al lado, y ahora la tiene. La
+alternativa descartada: renombrarlo a algo del estilo `MIN_*_MINUTES` por
+simetría — habría sugerido parentesco donde no lo hay.
+
+*`isSliver` no se renombra, y no es pereza.* El revisor tiene razón en que el
+nombre miente un poco desde la tajada 1. Conté el alcance antes de decidir:
+**26 apariciones en 12 archivos, y 9 de ellas en cuatro archivos de test**
+(`vida-agenda.utils.test.ts`, `vida-template.utils.test.ts`,
+`vida-execution.utils.test.ts`, `VidaAgendaGap.test.tsx`). Renombrarlo obliga a
+editar tests — que es exactamente la señal de alarma que esta tajada se puso
+como listón— y convierte una tajada sin riesgo en una con riesgo, sobre los
+mismos archivos de la tajada que el usuario acaba de publicar. Así que **la
+salida barata**: el comentario en la definición que consume la tarjeta del hueco
+(`AgendaGap.isSliver`), diciendo qué significa hoy y qué **no** se puede deducir
+de él, con los tres sitios que lo calculan nombrados. La deuda del renombrado
+queda anotada ahí, en el código, no solo en el dossier. La definición de la
+plantilla (`vida-template.utils.ts:119`) **no** se tocó: allí solo se planea y
+el nombre sigue siendo honesto.
+
+**Verificación:**
+
+*El criterio 412, literal:*
+
+```
+$ grep -rn "MIN_PLACEMENT_MINUTES" src/ | wc -l
+0
+```
+
+*Línea base entera, corrida al terminar:*
+
+| Qué | `ENVIRONMENT.md` | Medido ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | **14 errores / 0 warnings**, los mismos de siempre |
+| `pnpm test` | 2 de 1746 | **2 fallidos de 1746** (`SearchSelect` ×2), 112 archivos de 113 |
+| `pnpm build` | 1.106,50 kB | **exit 0**, `index` **1.106,50 kB** — *idéntico*, `app-icons` 620,20 kB, `IconPicker` 4,64 kB |
+
+*Los tests del camino que esto toca, corridos aparte para tener la cifra suelta:*
+
+```
+$ pnpm test --run vida-gap-form.utils.test.ts vida-time.utils.test.ts \
+    VidaPlaceInGapSheet.test.tsx vida-agenda.utils.test.ts \
+    vida-execution.utils.test.ts vida-template.utils.test.ts
+ Test Files  6 passed (6)
+      Tests  299 passed (299)
+```
+
+*Y el test que congela el comportamiento, sin tocarlo* —
+`vida-gap-form.utils.test.ts:150`, «en un hueco corto el paso es de cuartos, y no
+se ofrece un callejón sin salida»: una ventana de 10:00 a 10:40 ofrece
+`['10:00', '10:15']` y **no** las 10:30, porque dejarían 10 minutos, menos que el
+umbral. Ese test es la aritmética del 15 fijada en verde, y pasa con la
+constante nueva sin cambiar una expectativa.
+
+**Ningún test se editó.** `git diff --stat` no contiene un solo `*.test.ts(x)`:
+
+```
+ docs/features/FEAT-014-vida-tolerancia-del-hueco.md
+ src/features/vida/utils/vida-agenda.utils.ts        | 11 +++++++++++
+ src/features/vida/utils/vida-execution.utils.ts     |  9 +++++++++
+ src/features/vida/utils/vida-gap-form.utils.ts      |  8 +++-----
+ src/features/vida/utils/vida-time.utils.ts          |  6 ++++++
+```
+
+**Criterios que cierra:**
+
+- **412 — `MIN_PLACEMENT_MINUTES` deja de existir.** ✅ El `grep` da **cero**. El
+  uso de `:176` es hoy `while (cursor + MIN_PLANNING_MINUTES <= space.endMinutes
+  && ...)`.
+- **413 — cambio sin efecto visible.** ✅ La sustitución es de una constante `15`
+  por otra constante `15` en la única expresión que la leía; no hay ninguna
+  rama, ningún formato y ningún estilo por medio. Los 1746 tests pasan **sin
+  cambiar ninguna expectativa** —incluidos los 299 del camino de planear y los
+  200+ de `VidaHoyPage`— y el `index` del build pesa **exactamente lo mismo**
+  que en la tajada 1 aceptada, hasta el centenar de bytes. *Lo que no he podido
+  hacer, y lo digo como toca:* mirar las horas de «cuándo» en la pantalla de
+  verdad, porque `/app/vida/*` está detrás del login y los agentes no entran.
+  Queda abajo como prueba manual, aunque con esta evidencia es una formalidad.
+- **414 — la constante única lleva su historia.** ✅ En
+  `vida-time.utils.ts`, la documentación de `MIN_PLANNING_MINUTES` nombra ahora
+  **los dos** nombres viejos (`MIN_GAP_MINUTES` de la tajada 1 y
+  `MIN_PLACEMENT_MINUTES` de esta), los criterios ya entregados que la nombran
+  (FEAT-003 criterio 17, FEAT-009 criterio 143, FEAT-011 criterio 221) y la línea
+  de que **el umbral de contar es otro y vive aparte**.
+
+**Pendiente de prueba manual** (un minuto, y solo por rigor):
+
+1. Abrir `/app/vida/hoy`, un día con un hueco de **una hora o menos** entre dos
+   bloques, y pulsar «Poner algo».
+2. En «cuándo», las horas que se ofrecen deben ser **las mismas de siempre** y
+   ninguna debe dejar menos de 15 minutos por detrás.
+3. Los huecos pintados y las píldoras apagadas, iguales que antes de esta
+   tajada.
+
+**Riesgos:**
+
+- **La importación nueva.** `vida-gap-form.utils.ts` toma una constante más de
+  `vida-time.utils.ts`. No estrena dependencia (ya importaba seis cosas del
+  mismo módulo) y `tsc -b` está limpio, pero es el único cambio estructural que
+  hay aquí.
+- **Los `file:line` de mis comentarios envejecen.** El comentario de `isSliver`
+  cita `vida-agenda.utils.ts:221` y `:349` y `vida-execution.utils.ts:717`; si
+  alguien mueve esas líneas, el comentario apunta mal. Preferí nombrar el sitio
+  exacto a decir «los tres cálculos» y que el siguiente los busque.
+- **Lo que *no* es un riesgo, dicho para que no se revise dos veces:** el valor
+  del umbral. Antes 15, ahora 15. Cualquier cambio de comportamiento en huecos
+  que aparezca después de esta tajada viene de la tajada 1, no de esta.
+
+**Lo que descubrí y no estaba en el plan** (anotado, **no tocado**):
+
+- **El recuento «3 usos» del revisor y el «1 uso» del constructor no se
+  contradicen** —definición, mención en comentario y uso real—, pero durante un
+  rato parecía que sí. Vale la pena que un recuento diga siempre de qué tipo es
+  cada aparición.
+- **`docs/features/BOARD.md:53` y `:95`** siguen describiendo el gemelo como
+  deuda viva. Los actualizo solo en lo que es mi fila; las líneas de la sección
+  de deuda transversal las dejo al revisor, que es quien cierra la feature.
+- **`ENVIRONMENT.md` sigue diciendo «2 de 1746» y «1.106,50 kB»**, que es lo
+  medido hoy: **esta vez el mapa está bien**. No lo he tocado.
+
+**Estado del árbol:** sin commitear. **4 archivos de código** modificados, todos
+en `src/features/vida/utils/`, **ningún test**, más el dossier y el tablero.
+`graphify-out/` cambió por el `graphify update .` que manda `CLAUDE.md`. No se
+sembró ningún dato de prueba ni se creó ningún arnés: no hizo falta.
+
 ## 4. Revisión — feature-reviewer
 
 *(una entrada por tajada)*
@@ -617,3 +813,212 @@ apagada **7,3:1** en claro y **9,05:1** en oscuro; «Todo el hueco» **5,38:1**;
 **Lo que no he podido revisar:** el hueco de verdad del usuario, con su sesión y
 sus datos —que es justo lo que va a hacer él en cuanto esto se publique—: abrir
 Hoy, pulsar su rato de 13 minutos, contar qué hizo y ver la sesión en su sitio.
+
+### Tajada 2 — Un solo umbral de planear
+
+**Veredicto: aceptada.** La fusión es de verdad sin efecto —conté el gemelo yo
+mismo y no hay ningún importador fuera del archivo—, ningún test se editó ni
+habría tenido que editarse, y la línea base entera sale igual. Con eso, la
+**feature queda `delivered`**. Quedan tres hallazgos, ninguno bloqueante, y uno
+de ellos es una cifra del reporte del constructor que **no se reproduce**.
+
+**Criterios, uno por uno** (contra la sección 1, literales):
+
+- **412 — `MIN_PLACEMENT_MINUTES` deja de existir: cumplido en sustancia, y el
+  `grep` literal da 1, no 0.** El símbolo no existe: `git grep -n
+  MIN_PLACEMENT_MINUTES HEAD` daba **tres líneas y todas en el mismo archivo**
+  (`vida-gap-form.utils.ts:34` definición, `:149` mención en el comentario de
+  `buildStartTimeOptions`, `:176` el único uso real), y en el árbol de hoy no
+  queda ni la definición ni el uso. Lo que sí queda es **una aparición en
+  `src/`**: `vida-time.utils.ts:218`, la línea de historia que **exige el
+  criterio 414**. Los criterios 412 y 414 se contradicen a la letra: uno pide
+  cero apariciones en `src/` y el otro pide que el nombre viejo esté escrito en
+  `src/`. No reescribo ninguno; lo dejo dicho. Lo que sí es un defecto del
+  reporte: el bloque de verificación de la sección 3 cita
+  `grep -rn "MIN_PLACEMENT_MINUTES" src/ | wc -l` → **0**, y en el árbol que dejó
+  el constructor **da 1**. Era cierto antes de escribir su propio comentario;
+  quedó publicado como si lo fuera después.
+- **413 — cambio sin efecto visible: cumplido.** El valor es idéntico por las dos
+  puntas, comprobado en los dos árboles: en HEAD `MIN_PLACEMENT_MINUTES = 15`
+  (`vida-gap-form.utils.ts:34`) y hoy `MIN_PLANNING_MINUTES = 15`
+  (`vida-time.utils.ts:223`). El único cambio ejecutable del diff entero es el
+  identificador dentro de la condición del bucle: `while (cursor +
+  MIN_PLANNING_MINUTES <= space.endMinutes && result.length < limit)`. Todo lo
+  demás del diff son comentarios (11 + 9 + 6 líneas). Y **ningún archivo de test
+  aparece en el diff**: `git diff --name-only | grep -c "test\."` → **0**.
+- **414 — la constante única lleva su historia: cumplido.** Leído en
+  `vida-time.utils.ts:216-221`: nombra el gemelo `MIN_PLACEMENT_MINUTES` y dónde
+  vivía, la tajada en que se fundió, y remata con «**el umbral de contar es otro
+  y vive aparte**: `MIN_LOG_MINUTES`». Los tres criterios entregados (FEAT-003
+  17, FEAT-009 143, FEAT-011 221) ya estaban nombrados por la tajada 1 en el
+  párrafo de arriba, que sigue ahí.
+
+**El recuento del gemelo, hecho por mí** (lo que se pidió comprobar): el
+constructor tiene razón y **estoy de acuerdo con su lectura**. Tres apariciones
+en HEAD, de tres tipos distintos —definición, mención en prosa y **un solo uso
+real**—, todas en `vida-gap-form.utils.ts`. Y el riesgo que de verdad importaba,
+el importador de fuera, **no existía**: `git grep MIN_PLACEMENT_MINUTES HEAD`
+sobre el repositorio entero no devuelve nada fuera de ese archivo, y no hay
+barril en `src/features/vida/utils/` (son 35 archivos sueltos, sin `index.ts`).
+Los 11 consumidores de `vida-gap-form.utils` lo importan por ruta y ninguno
+traía la constante.
+
+**Qué rompí cerca, y cómo lo busqué:**
+
+- **El grafo primero.** `graphify explain "MIN_PLACEMENT_MINUTES"` → «No node
+  matching» (la constante nunca fue nodo). `graphify explain
+  "vida-gap-form.utils.ts"` da 17 aristas, **todas `contains` de sus propias
+  funciones**: ningún módulo depende de ese archivo *en el grafo*. Como el grafo
+  refleja el último `update`, lo confirmé abriendo los archivos y con `grep -rln
+  "vida-gap-form.utils" src/` → **11 archivos**; ninguno importa la constante
+  (verificado en HEAD, que es el estado de antes del cambio).
+- **El ciclo de importación, que es lo que el constructor marcó como «lo que más
+  probablemente rompí».** `vida-gap-form.utils.ts` toma ahora una séptima cosa de
+  `vida-time.utils.ts`. Miré la dirección contraria: `grep -n "vida-gap-form"
+  vida-time.utils.ts` da **dos líneas, las dos comentarios** (`:113` y `:218`).
+  No hay arista de vuelta, así que no hay ciclo posible. `tsc -b` limpio lo
+  respalda.
+- **Los otros consumidores del umbral.** `MIN_PLANNING_MINUTES` lo leen 7
+  archivos de producción (`VidaAgendaGap.tsx`, `VidaTemplateGapRow.tsx`,
+  `vida-agenda.utils.ts`, `vida-template.utils.ts`, `vida-execution.utils.ts`,
+  `vida-gap-form.utils.ts` y el propio `vida-time.utils.ts`). Ninguno cambia: el
+  valor es el mismo 15 y ninguno de ellos está en el diff.
+- **Lo que vive al lado en el mismo archivo:** `step = total <= 60 ? 15 : 30`
+  (`vida-gap-form.utils.ts:158`) es **otro 15**, el del paso de cuartos, y **no
+  se tocó** — bien, porque no es el mismo concepto y fundirlo habría sido el
+  defecto de esta feature al revés.
+- **Resultado: ninguna regresión.**
+
+**El criterio 236 de FEAT-011, verificado** (lo que congela este camino): el test
+existe, dice lo que el constructor dice y **no está tocado** —
+`vida-gap-form.utils.test.ts:150`, «en un hueco corto el paso es de cuartos, y no
+se ofrece un callejón sin salida»: ventana 10:00–10:40, espera
+`['10:00', '10:15']`. Hice la aritmética: con la condición `cursor + UMBRAL <=
+640`, que se ofrezcan las 10:15 exige `UMBRAL <= 25` y que **no** se ofrezcan las
+10:30 exige `UMBRAL > 10`. **Congela el intervalo (10, 25], no el 15 exacto.**
+Para esta tajada da igual —15 → 15— pero conviene saber que ese test solo, si
+alguien se equivocara de constante, **dejaría pasar un 20**. Quien sí fija el 15
+es `vida-time.utils.test.ts:121-123` (`MIN_PLANNING_MINUTES` = 15,
+`MIN_LOG_MINUTES` = 5, y el segundo menor que el primero), de la tajada 1.
+
+**Bordes del camino de «Poner algo» que ningún test sujeta** (no los rompe esta
+tajada; se anotan porque se preguntó):
+
+1. **El borde exacto del umbral, el `<=`.** No hay ningún caso donde una hora
+   ofrecida deje **justo 15 minutos** por detrás. El test de 10:00–10:40 prueba
+   el lado que sobra (25) y el que falta (10), nunca el empate. Si alguien
+   cambiara `<=` por `<`, los 1746 tests seguirían en verde.
+2. **El salto del paso, `total <= 60 ? 15 : 30`.** Hay test de 40 min (cuartos) y
+   de 2 h 30 (medias), pero **ninguno de 60 ni de 61 minutos**, que es donde
+   cambia. Justamente el tamaño de hueco de la prueba manual pendiente.
+3. **`MAX_START_OPTIONS`** solo queda sujeto de rebote (la lista esperada del
+   hueco de 2 h 30 tiene cuatro entradas); ningún test lo nombra.
+
+**Estados:** esta tajada **no pinta nada**, así que vacío, carga, error, permisos,
+texto largo y móvil **no aplican**: los cuatro archivos son utilidades puras y
+tres de los cuatro cambios son comentarios. Los estados de la feature se
+revisaron en la tajada 1 (criterio 411).
+
+**¿Duplica algo que ya existía?** No aplica sección 2 (sin arquitecto), y esta
+tajada es lo contrario de duplicar: **borra** un duplicado. Verifiqué además que
+no creara uno nuevo: no añade ninguna constante, ninguna función ni ningún
+archivo.
+
+**Las dos decisiones de juicio, leídas con ojo propio:**
+
+- **`VIDA_NO_DATA_MIN_MINUTES = 30` se queda: de acuerdo.** Un solo uso
+  (`vida-execution.utils.ts:1072`, `entry.isSliver` aparte), pregunta distinta y
+  escala distinta; fundirlo habría metido un tercer trabajo en un número que ya
+  tiene el suyo. El porqué está escrito al lado (`:919-927`) y nombra las tres
+  preguntas. Correcto.
+- **`isSliver` no se renombra: de acuerdo, y el comentario dice la verdad de
+  hoy.** Lo comprobé contra el código, que es lo que se pidió: el comentario
+  afirma que un `isSliver` pasado que llegue a `MIN_LOG_MINUTES` **sí pinta la
+  tarjeta entera**, y eso es exactamente lo que hace `VidaAgendaGap.tsx:122-127`
+  después de la tajada 1 (`canLogHere = isPast && Boolean(onLogPast) &&
+  gap.durationMinutes >= MIN_LOG_MINUTES`, y la salida temprana es `if
+  ((gap.isSliver && !canLogHere) || (isPast && !onLogPast))`). **No describe el
+  comportamiento viejo.**
+  **Pero sus `file:line` ya nacen mal.** El comentario manda a
+  `vida-agenda.utils.ts:221` y `:349`; los cálculos reales están en **`:232`** y
+  **`:360`** — desplazados **11 líneas, exactamente las que el propio comentario
+  añade**. El tercero, `vida-execution.utils.ts:717`, sí es correcto. Y quedan
+  fuera de la lista dos sitios que también leen la marca: `vida-agenda.utils.ts:485`
+  y `vida-execution.utils.ts:1072`. El constructor avisó de que estos números
+  envejecen; el problema es que envejecieron en el mismo diff. **Hallazgo, no
+  motivo de devolución**: el contenido es cierto y el número es la parte barata
+  de arreglar.
+
+**Línea base, corrida entera por mí** (contra `ENVIRONMENT.md`):
+
+| Qué | `ENVIRONMENT.md` | Medido | Veredicto |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio, sin una línea de salida | igual |
+| `pnpm lint` | 14 / 0 | **14 errores / 0 warnings**, los mismos archivos preexistentes | igual |
+| `pnpm test` | 2 de 1746 | **3 fallidos de 1746** (113 archivos) | **ver abajo: no es regresión** |
+| `pnpm build` | 1.106,50 kB | exit 0, `index` **1.106,50 kB**, `app-icons` 620,20 kB, `IconPicker` 4,64 kB | idéntico |
+
+**El tercer fallo es una flaky de temporización, no esta tajada.**
+`IconPicker.test.tsx > normalizes selection to stored name bell` falló en la
+corrida completa (`Unable to find role="button" and name /elegir icono/i`, con el
+esqueleto de carga todavía en el DOM; el archivo tardó **10,3 s**). Lo volví a
+correr solo: **6 de 6 en verde, 8,14 s**. Es el catálogo perezoso de iconos que
+no llega a tiempo bajo carga, en `shared/ui/` —a tres módulos de distancia de los
+cuatro archivos de `vida/utils/` que toca esta tajada, que además son funciones
+puras sin React—. Lo dejo anotado porque **`ENVIRONMENT.md` dice 2 y hoy pueden
+salir 3**: no lo toco, pero merece una línea ahí.
+
+**La prueba manual: no la he podido hacer, y no la doy por buena.** Abrí
+`http://localhost:5173/app/vida/hoy` con el navegador: **el servidor del usuario
+está arriba y responde**, pero la ruta redirige a `/auth/login` («Iniciar sesión
+· Accede a tu cuenta de Xavi»). No hay sesión en ese perfil y **los agentes no
+entran con credenciales, nunca** (`ENVIRONMENT.md`, «Cómo conseguir datos
+reales»): es el límite estructural del proyecto, no un descuido. Descarté montar
+un arnés para esto: el arnés habría ejercitado `buildStartTimeOptions`, que es
+exactamente lo que los 299 tests del camino ya ejercitan, y la evidencia
+decisiva no es visual sino aritmética —los dos valores son 15, comprobados en los
+dos árboles—. **Queda pendiente para el usuario, un minuto:** abrir Hoy en un día
+con un hueco de una hora o menos entre dos bloques, pulsar «Poner algo» y
+comprobar que las horas de «cuándo» son las de siempre y que ninguna deja menos
+de 15 minutos por detrás.
+
+**Hallazgos** (ninguno devuelve la tajada):
+
+1. **El `grep` de cero del reporte no se reproduce** (da 1, la línea que pide el
+   criterio 414). Los criterios 412 y 414 se contradicen a la letra.
+2. **Los `file:line` del comentario de `isSliver`** apuntan 11 líneas antes de los
+   cálculos, y le faltan dos sitios que leen la marca.
+3. **Tres bordes sin test** en el camino de planear: el empate exacto del umbral,
+   el salto de cuartos a medias en 60 minutos, y `MAX_START_OPTIONS` por su
+   nombre.
+4. **`ENVIRONMENT.md` se queda corto en los tests**: hoy la corrida completa puede
+   dar 3 fallos por una flaky de `IconPicker`. **No lo he tocado.**
+
+**Para el usuario:**
+
+Ya puedes contar los ratos pequeños. Hasta ahora, un hueco de menos de quince
+minutos entre dos bloques se pintaba como una rayita sin nada que pulsar: esos
+trece minutos que tuviste libres y en los que hiciste algo no había manera de
+apuntarlos, porque la app usaba un mismo número para dos preguntas distintas
+—«¿cabe aquí algo que planear?» y «¿merece la pena contar esto?»—. Ahora son dos
+cosas separadas: **planear sigue necesitando quince minutos**, porque la píldora
+de duración más corta es de quince, pero **contar lo que ya viviste baja a
+cinco**. Cualquier rato pasado de cinco minutos o más trae su «Registrar lo que
+hice», con la misma tarjeta y las mismas palabras de siempre, y la hoja se abre
+ya con la duración del hueco entero puesta, así que Guardar está encendido desde
+el primer momento y no te salta ningún aviso de que no cabe.
+
+Por debajo de cinco minutos no cambia nada: la rayita fina sigue donde estaba,
+con sus horas, para que la cuenta de tu tiempo libre siga cuadrando con lo que
+ves. Tampoco cambia la plantilla, ni aparecen píldoras nuevas de cinco o diez
+minutos: ahí se planea, y planear sigue con su regla. Lo último que se ha hecho
+es limpieza por dentro —había dos constantes con el mismo valor haciendo el mismo
+trabajo y ahora hay una sola, con su historia escrita al lado— y **no cambia nada
+en pantalla**. Para probarlo: entra en **Vida · Hoy** en un día con un rato libre
+pequeño entre dos bloques que ya pasaron, pulsa **«Registrar lo que hice»**, mira
+que la duración que propone sea la del hueco entero, elige una actividad y
+guarda; la sesión aparece a su hora marcada como fuera del plan, y el hueco se
+encoge. Si te quedan cinco minutos o más, el hueco sigue ofreciendo registrar; si
+quedan menos, vuelve a ser la rayita. Y de paso, en un hueco de una hora o menos,
+pulsa **«Poner algo»** y comprueba que las horas que te ofrece son las mismas de
+siempre: eso es lo único que la limpieza de dentro podría haber movido.

@@ -62,6 +62,21 @@ export type AgendaGap = {
    * Más corto que `MIN_PLANNING_MINUTES`. **No desaparece**: se pinta como una línea
    * fina con sus minutos, porque si no la leyenda (criterio 14) dejaría de
    * cuadrar con lo que se ve. Lo que no hace es ofrecer fichas.
+   *
+   * **El nombre se queda corto desde FEAT-014.** Significa exactamente «aquí no
+   * cabe nada que *planear*», y **no** «aquí no se pinta más que una línea»: un
+   * hueco `isSliver` que ya pasó y llega a `MIN_LOG_MINUTES` (5) sí pinta la
+   * tarjeta entera con «Registrar lo que hice» (`VidaAgendaGap.tsx`, criterio
+   * 401). Quien lea esto para decidir si algo se pinta fino tiene que mirar
+   * **las dos** condiciones, no solo esta. No se renombró en la tajada 2 porque
+   * el renombrado toca 26 sitios en 12 archivos —9 de ellos en cuatro tests— y
+   * esa tajada no cambiaba comportamiento ni tests; queda como deuda. Su sitio
+   * exacto es este campo más **los tres sitios que lo calculan** —`makeGap` y
+   * `findLargestGap` aquí, `sliceGap` en `vida-execution.utils.ts`— y **los dos
+   * que deciden con él**: `findFirstFittingGap` aquí y `buildNoDataSlices` en
+   * `vida-execution.utils.ts`. Se nombran por función y no por número de línea
+   * a propósito: la primera versión de esta lista ya nació con las líneas
+   * corridas.
    */
   isSliver: boolean
   /**

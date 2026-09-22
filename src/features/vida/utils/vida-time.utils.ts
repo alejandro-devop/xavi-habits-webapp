@@ -214,6 +214,12 @@ export const DEFAULT_BLOCK_MINUTES = 30
  * Los criterios ya entregados que lo nombran por el nombre viejo —FEAT-003
  * criterio 17, FEAT-009 criterio 143, FEAT-011 criterio 221— siguen hablando
  * de esta constante.
+ *
+ * **Y tenía un gemelo, `MIN_PLACEMENT_MINUTES`** (`vida-gap-form.utils.ts`,
+ * mismo valor y misma frase), que hacía este mismo trabajo en las horas que se
+ * ofrecen en «cuándo». Se fundió aquí en FEAT-014, tajada 2 (criterio 412): un
+ * solo umbral de planear, un solo sitio donde cambiarlo. **El umbral de contar
+ * es otro y vive aparte**: `MIN_LOG_MINUTES`, justo debajo.
  */
 export const MIN_PLANNING_MINUTES = 15
 

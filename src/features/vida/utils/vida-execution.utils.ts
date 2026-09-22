@@ -916,6 +916,15 @@ export function buildDayExecution({
  * pasó?» (criterio 48). Por debajo de esto es un resto entre dos cosas, no un
  * rato del que haya nada que contar — y preguntar por cada hueco de diez
  * minutos sería el ruido que esta feature quiere evitar.
+ *
+ * **No es el umbral de planear ni el de contar, y por eso no se fundió con
+ * ellos** (FEAT-014, tajada 2). `MIN_PLANNING_MINUTES` (15) responde a «¿cabe
+ * aquí la píldora más corta?» y `MIN_LOG_MINUTES` (5) a «¿merece la pena
+ * ofrecer registrar esto?»; este responde a una tercera, que es de la revisión
+ * del día: «¿cuánto hueco sin dato merece que se le pregunte?». Su valor no
+ * sale de `DURATION_PILLS` ni de lo que dura algo vivido, sino de cuánto ruido
+ * soporta la lista de «¿Qué pasó?». Si mañana cambia el suelo de planear, este
+ * número **no** tiene por qué moverse: son tres preguntas, no una repetida.
  */
 export const VIDA_NO_DATA_MIN_MINUTES = 30
 

@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790108980.3464105,
-    "ast_hash": "afa0e4307d0cccd45000fade2ba93ef8",
+    "mtime": 1790109937.0687559,
+    "ast_hash": "8e0dcc0a1f7bf31963ec8d1a0917a88b",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790109042.4186988,
-    "ast_hash": "b6fd2f913465e57a5deca2772e5eac1e",
+    "mtime": 1790110001.623935,
+    "ast_hash": "58cbb7da29c5c9f959f6b20da6749b94",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2935,8 +2935,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-time.utils.ts": {
-    "mtime": 1790107760.058536,
-    "ast_hash": "d1d9215f3041f34a4a5ee0accdbd8e6d",
+    "mtime": 1790109192.7823358,
+    "ast_hash": "a629491d7080b0e746c84bd361ca83d9",
     "semantic_hash": ""
   },
   "docs/features/FEAT-003-vida-hoy-planear-el-dia.md": {
@@ -3010,8 +3010,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.ts": {
-    "mtime": 1790107765.2495456,
-    "ast_hash": "e504643a2f0f3d0c8450bde2f29b2649",
+    "mtime": 1790109990.5249043,
+    "ast_hash": "abb7788100debfa9b240853a6fff464a",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.test.tsx": {
@@ -3035,8 +3035,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-gap-form.utils.ts": {
-    "mtime": 1789924571.8050253,
-    "ast_hash": "ec7fc74d7afe712fa79c3fc6744a7681",
+    "mtime": 1790109180.104285,
+    "ast_hash": "99fe8bbf7ff0d6f2be771ca1a813de8b",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaDayActions/VidaDayActions.tsx": {
@@ -3230,8 +3230,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-execution.utils.ts": {
-    "mtime": 1790107765.2415457,
-    "ast_hash": "fc5b965f1e798ad20f3784afd5f050d7",
+    "mtime": 1790109219.0954397,
+    "ast_hash": "e504664c200fd06eb605f9286956f7ec",
     "semantic_hash": ""
   },
   "docs/vida/assets/06-vida-plantilla.html": {
@@ -3790,8 +3790,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-014-vida-tolerancia-del-hueco.md": {
-    "mtime": 1790109052.6437447,
-    "ast_hash": "e7f86d7e9d2420945d6ccd7df9792a71",
+    "mtime": 1790109912.231686,
+    "ast_hash": "3309a761781155e46be7748f11432626",
     "semantic_hash": ""
   },
   "docs/features/FEAT-015-habitos-metricas.md": {

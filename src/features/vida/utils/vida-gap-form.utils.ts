@@ -26,12 +26,10 @@ import {
   formatDurationFromMinutes,
   formatDurationMinutes,
   formatTimeForDisplay,
+  MIN_PLANNING_MINUTES,
   minutesToTime,
   parseTimeToMinutes,
 } from '@/features/vida/utils/vida-time.utils'
-
-/** Lo más corto que se deja poner: la píldora más pequeña (D1). */
-export const MIN_PLACEMENT_MINUTES = 15
 
 /** Cuántas horas se ofrecen en «cuándo» antes de «otra hora» (criterio 27). */
 export const MAX_START_OPTIONS = 4
@@ -146,7 +144,7 @@ export type StartTimeOption = {
  *
  * El paso se adapta al tamaño: en un hueco de una hora, cuartos; en uno largo,
  * medias horas. Solo se ofrece una hora si después de ella todavía cabe lo más
- * corto que se puede poner (`MIN_PLACEMENT_MINUTES`): ofrecer las 12:55 en un
+ * corto que se puede poner (`MIN_PLANNING_MINUTES`): ofrecer las 12:55 en un
  * hueco que acaba a las 13:00 sería ofrecer un callejón sin salida.
  */
 export function buildStartTimeOptions(
@@ -173,7 +171,7 @@ export function buildStartTimeOptions(
   // Desde el siguiente múltiplo del paso, para que las horas ofrecidas sean
   // redondas («11:00», no «10:47») aunque el hueco empiece a deshora.
   let cursor = Math.ceil((space.startMinutes + 1) / step) * step
-  while (cursor + MIN_PLACEMENT_MINUTES <= space.endMinutes && result.length < limit) {
+  while (cursor + MIN_PLANNING_MINUTES <= space.endMinutes && result.length < limit) {
     result.push({
       value: minutesToTime(cursor),
       label: formatTimeForDisplay(minutesToTime(cursor)),

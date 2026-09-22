@@ -22,8 +22,55 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
-| FEAT-014 | building | 1/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
+| FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
+
+**FEAT-014 `delivered` 2/2** (2026-09-22, revisor). **Tajada 2 aceptada y con
+ella la feature entregada: la fusión es de verdad sin efecto.** Conté el gemelo
+yo mismo en `HEAD` y **confirmo la lectura del constructor**: tres apariciones de
+tres tipos —definición, mención en prosa y **un solo uso real**—, todas en
+`vida-gap-form.utils.ts`, y **ningún importador fuera del archivo** (`git grep`
+sobre el repo entero; no hay barril en `vida/utils/`, son 35 archivos sueltos).
+El único cambio ejecutable del diff es el identificador dentro de la condición
+del bucle; todo lo demás son comentarios, y **ningún archivo de test aparece en
+el diff** (`git diff --name-only | grep -c "test\."` → 0). **El ciclo que él
+marcó como su riesgo no existe**: `vida-time.utils.ts` solo nombra
+`vida-gap-form` en dos comentarios, no lo importa. **El 236 de FEAT-011 está
+sujeto, pero menos de lo que parece**: el test de `vida-gap-form.utils.test.ts:150`
+(10:00–10:40 → `['10:00','10:15']`) congela el intervalo **(10, 25]**, no el 15
+exacto; quien fija el 15 es `vida-time.utils.test.ts:121`. **Tres bordes de
+«Poner algo» sin test**: el empate exacto del umbral (`<=`), el salto de cuartos
+a medias en 60 min, y `MAX_START_OPTIONS` por su nombre. **Las dos decisiones de
+juicio, confirmadas**: `VIDA_NO_DATA_MIN_MINUTES` es una tercera pregunta y se
+queda con su porqué escrito; el comentario de `isSliver` **describe el código de
+hoy** (lo verifiqué contra `VidaAgendaGap.tsx:122-127`, no el de antes de la
+tajada 1). **Dos hallazgos, ninguno devuelve**: el `grep ... | wc -l` → **0** del
+reporte **da 1** en el árbol que dejó —esa línea la exige el criterio 414, que
+contradice al 412 a la letra—, y los `file:line` del comentario de `isSliver`
+apuntan **11 líneas antes** de los cálculos (los desplazó el propio comentario).
+Línea base corrida entera: typecheck limpio, lint 14/0, build **1.106,50 kB
+idéntico**, y **3 fallos de 1746**: el tercero es una **flaky de `IconPicker`**
+bajo carga (sola pasa 6/6), a tres módulos de lo tocado — **`ENVIRONMENT.md` dice
+2 y hoy pueden salir 3; no lo he tocado**. **La prueba manual de «cuándo» no la
+he hecho**: `/app/vida/hoy` redirige a login y los agentes no entran; queda en
+los pasos del usuario. La nota de cierre está al final de la sección 4 del
+dossier.
+
+**FEAT-014 `in-review` 2/2** (2026-09-22, constructor). **Tajada 2 lista para
+revisar: `MIN_PLACEMENT_MINUTES` ya no existe** — su único uso real (el bucle de
+horas de `buildStartTimeOptions`) apunta a `MIN_PLANNING_MINUTES`, mismo valor y
+mismo trabajo, y `grep -r MIN_PLACEMENT_MINUTES src/` da **cero**. Comprobé el
+recuento yo mismo: las «3 apariciones» eran definición + mención en comentario +
+**un** uso. **Ningún test se editó** —el listón de la tajada— y **ningún archivo
+de test aparece en el diff**: 4 archivos de `vida/utils/`, tres de ellos solo
+comentarios. Línea base idéntica: typecheck limpio, lint 14/0, **2 de 1746**,
+build **1.106,50 kB al kilobyte**. **El tercer umbral se queda**:
+`VIDA_NO_DATA_MIN_MINUTES = 30` responde a otra pregunta —«¿cuánto hueco sin dato
+merece mencionarse?»— y ahora lo dice por escrito al lado. **`isSliver` no se
+renombra**: son 26 apariciones en 12 archivos con 9 en cuatro tests, y eso
+convertía una tajada sin riesgo en una con riesgo; queda un comentario en
+`AgendaGap.isSliver` diciendo qué significa hoy, y la deuda anotada ahí mismo.
+Sin commitear.
 
 **FEAT-014 `building` 1/2** (2026-09-22, revisor). **Tajada 1 aceptada: el
 hueco de 13 minutos del usuario ya se puede contar.** Comprobé los cuatro bordes

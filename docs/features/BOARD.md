@@ -19,7 +19,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | building | 2/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
-| FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
+| FEAT-011 | planned | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 

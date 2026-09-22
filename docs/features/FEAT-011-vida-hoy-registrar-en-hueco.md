@@ -1,7 +1,7 @@
 ---
 id: FEAT-011
 title: Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste
-status: specified
+status: planned
 architect: yes    # concepto nuevo: la ventana **real** del hueco (bordes de lo vivido, no de lo planeado), que hoy no existe en ningún sitio
 area: features/vida
 requested: 2026-09-22
@@ -429,7 +429,290 @@ contrario)*
 
 ## 2. The plan — feature-architect
 
-*(pendiente)*
+**Summary for the builder:** el molde es **`VidaPlaceInGapSheet.tsx`** (ya recibe
+un `gapWindow: GapWindow` y hace exactamente validar → apagar Guardar → decir lo
+que queda); la hoja de registro **gana la misma prop** y el renglón del hueco
+gana **una salida** copiada de `VidaTemplateGapRow` (FEAT-009). La **ventana
+real** es un archivo nuevo y pequeño, `utils/vida-gap-window.utils.ts`, que
+`buildDayExecution` rellena **dentro del bucle que ya parte los huecos**:
+`vida-gap-form.utils.ts` **no se toca ni una línea**, y por eso el criterio 236
+es verdadero por construcción. **No escribas**: validación, píldoras, encogido
+del hueco, buscador de actividad ni mutación — las cinco están hechas.
+
+### Lo que ya existe (y no se vuelve a escribir)
+
+| Lo que hace falta | Dónde está ya | Estado |
+|---|---|---|
+| Validar hora+duración contra una ventana | `utils/vida-gap-form.utils.ts:201` `validatePlacement` | **Vivo**, lo usa `VidaPlaceInGapSheet.tsx:122` y `:141` |
+| Apagar Guardar de verdad | `VidaPlaceInGapSheet.tsx:123` (`canSubmit`) y `:165` (`disabled`) | **Vivo** |
+| «Quedan 1 h 45 libres…» | `vida-gap-form.utils.ts:251` `describeLeftovers` (usa `getPlacementLeftovers`, :234) | **Vivo**, `VidaPlaceInGapSheet.tsx:292` |
+| Apagar las píldoras que no caben | prop `maxMinutes` de `VidaDurationPills.tsx:47`, alimentada por `getMaxDurationForStartTime` (`vida-gap-form.utils.ts:116`) | **Vivo**, `VidaPlaceInGapSheet.tsx:116` |
+| El subtítulo «…hasta las 11:30 «Daily meeting»» | `vida-gap-form.utils.ts:275` `describeWindow` | **Vivo**, `VidaPlaceInGapSheet.tsx:181` |
+| La hoja con «qué · desde cuándo · cuánto» y su `activityFollowUpAdd` | `components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` (`mode: 'log'`), `initial` en `:50`, `logSessionInput` en `:177` | **Vivo**, y ya la abren tres sitios (`VidaHoyPage.tsx:493`, `:504`, `:893`) |
+| Que el hueco se encoja al guardar | `utils/vida-execution.utils.ts:686` `sliceGap` + bucle `:758-768` | **Vivo. Solo hay que verificarlo** (criterio 230) |
+| El renglón del hueco | `components/VidaAgendaGap/VidaAgendaGap.tsx`, rama muerta en **`:79`** | **Vivo**; la rama `isPast` no pinta ni un control |
+| Un renglón de hueco **pulsable** de 44 px | `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx:106-125` + `.module.scss:41-58` | **Vivo** (FEAT-009). **Es el molde del renglón** |
+| La duración habitual | `utils/vida-patterns.utils.ts:970` `usualDurationsByItemId`, ya cableada en `VidaHoyPage.tsx:319-321` | **Viva, pero por `itemId`** (ver «el salto») |
+
+**Dos avisos de lo que encontré por el camino:**
+
+1. **`durationPillsForWindow` (`vida-gap-form.utils.ts:189`) no la usa nadie en
+   producción** — solo su test (`vida-gap-form.utils.test.ts:94-105`). El camino
+   vivo para «solo lo que cabe» es la prop `maxMinutes` de `VidaDurationPills`.
+   Son **dos formas de decir lo mismo** y ya están las dos escritas: el criterio
+   228 la nombra, pero **usa `maxMinutes`**, que es lo que hace el molde, y deja
+   `durationPillsForWindow` donde está. No cablees las dos.
+2. **El nombre `vida-window.utils.ts` YA ESTÁ COGIDO** y no tiene nada que ver:
+   es la ventana de **calendario** (qué días se pueden mirar y planear,
+   `getPlanningWindow`, `buildDayStrip`). Por eso el archivo nuevo se llama
+   **`vida-gap-window.utils.ts`**. Confundirlos es el error barato de esta
+   feature.
+
+### Reference implementation
+
+**`src/features/vida/components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx`.**
+No porque esté mejor escrita, sino porque es **la misma figura**: una hoja
+`SteppedModal ds="aura" mobileSheet` que recibe una ventana, preselecciona la
+duración recortada a lo que cabe, valida en cada render, apaga el botón y pinta
+la frase de lo que queda. Las seis líneas que hay que copiar, en orden:
+
+- `:104-109` — el `startTime` arranca en `minutesToTime(gapWindow.startMinutes)`.
+- `:116` — `const maxMinutes = getMaxDurationForStartTime(startTime, gapWindow)`.
+- `:122-123` — `validation` + `canSubmit`.
+- `:124-133` — `chooseActivity`: la duración de la plantilla **solo** se
+  preselecciona si `templateMinutes <= maxMinutes` («sería una píldora encendida
+  y apagada a la vez»). Es el molde literal del criterio 239.
+- `:158-168` — el footer con `disabled={!canSubmit}`.
+- `:286-300` — la frase de lo que queda y el `role="alert"` del aviso.
+- `:322` — `preselectedDuration(...)`: el helper que recorta la duración
+  propuesta a la ventana. **Es el que hay que imitar en la tajada 3.**
+
+Para **el renglón**, el molde es `VidaTemplateGapRow.tsx:106-125`: la fila es un
+`<button>` de verdad solo cuando llega la prop de acción, con `aria-label` que
+dice **qué** se hace y **a qué hora**, y sin prop se queda en `<p>`. Y su
+`.module.scss:41-58` fija **`min-height: 2.75rem` (44 px)** con la razón
+escrita: **aplica el mismo número aquí**, no el `2rem` del `.chip` de
+`VidaAgendaGap.module.scss:95`.
+
+### La ventana real: dónde vive y por qué ahí
+
+**La decisión que desbloquea todo:** `GapWindow`
+(`vida-gap-form.utils.ts:43-48`) **es un tipo estructural suelto** — ninguna de
+las funciones de validación conoce `AgendaGap`, todas reciben un `GapWindow`.
+`gapToWindow` (:50) es **un constructor entre varios**, no el único camino:
+`getBlockEditWindow` (:74) ya construye una ventana distinta para editar un
+bloque. Entonces **la ventana real es un tercer constructor**, no una
+modificación de los dos que hay.
+
+Consecuencia directa: **`vida-gap-form.utils.ts` no se modifica**, y con él no
+se mueven `VidaPlaceInGapSheet`, las fichas del hueco futuro ni los tests de
+FEAT-003. **El criterio 236 se cumple porque no hay nada que pueda romperlo**,
+no porque se compruebe después.
+
+**Archivo nuevo:** `src/features/vida/utils/vida-gap-window.utils.ts`
+(+ `vida-gap-window.utils.test.ts`, criterio 237). Contenido, exacto:
+
+```
+export type RealGapWindow = GapWindow & {
+  previousBlockTitle: string | null   // GapWindow solo nombra al de después
+  startedEarly / endedLate …          // qué borde se movió y cuánto
+}
+export type GapNeighbour = {
+  title: string | null
+  plannedMinutes: number        // fin del de antes / inicio del de después
+  realMinutes: number | null    // fin/inicio de SU sesión; null si no tuvo
+  isRunning: boolean
+}
+buildGapRealWindow({ gap, before, after, nowMinutes, clampToNow })  → RealGapWindow
+describeGapWindowShift(space)            → string | null   // criterio 234
+describePlacementBlocker(input, space)   → string | null   // criterios 225 y 233
+```
+
+Tres cosas que no son negociables en ese archivo:
+
+1. **No importa nada de `vida-execution.utils.ts`, ni siquiera tipos.**
+   Los vecinos entran como `GapNeighbour`, que es forma plana. Así no hay ciclo
+   (execution → gap-window → execution) y el test son cinco objetos literales.
+2. **`RealGapWindow` extiende `GapWindow`**, así que es asignable a todo lo que
+   ya existe: `validatePlacement`, `describeLeftovers`, `describeWindow` y
+   `maxMinutes` lo tragan **sin tocarlos**.
+3. **`describePlacementBlocker` envuelve, no sustituye.** Llama a
+   `validatePlacement(...)` y **añade** la cláusula que nombra al vecino («…a las
+   11:30 entra Daily meeting», «…Desayunar acabó a las 9:40»). Meter esa cláusula
+   *dentro* de `validatePlacement` cambiaría el texto del camino de planear y
+   rompería el criterio 236: **no se hace**.
+
+**Quién lo llama:** `buildDayExecution` (`vida-execution.utils.ts:713`), **dentro
+del bucle que ya parte los huecos** (`:757-769`), reutilizando el `cursor` y
+`spanByBlockId` que ya tiene ahí. Es literalmente lo que hizo FEAT-009 al emitir
+sus filas dentro del bucle que ya existía. Sale un campo nuevo en `DayExecution`
+(`:648-672`, y el `return` de `:790`):
+
+```
+/** La ventana **real** de cada hueco, por el id del hueco ya partido. */
+realWindowByGapId: Record<string, RealGapWindow>
+```
+
+**Ojo con la clave:** `sliceGap` reescribe el `id` (`gap-HH:mm-HH:mm`, `:688`).
+La entrada del mapa se pone **junto a cada `entries.push()` de hueco**, con el id
+del trozo que se acaba de empujar; si no, los trozos de un hueco con sesiones
+dentro se quedan sin ventana. Y el vecino de la izquierda de un trozo de cola
+**es una sesión ya registrada**, cuyo borde real es exacto: eso sale gratis y es
+justo lo que pide el criterio 235 (la sesión abierta es un vecino más; se lee,
+no se toca).
+
+**Qué NO se hace, y por qué se midió:**
+
+- **No se mueven `gap.startMinutes` / `gap.endMinutes`.** Tentador y caro: el
+  presupuesto y la leyenda (`getExecutedBudget`, `:505`; `getDayBudget`,
+  `vida-agenda.utils.ts:304`) reparten el día y los anchos de la barra desde la
+  agenda, y dos minutos movidos en un hueco descuadran el criterio 14 de
+  FEAT-003. La ventana **acompaña** al hueco; no lo redefine.
+- **No se toca `buildDayAgenda` ni su firma.** Recibe solo `planItems` **a
+  propósito**: es el mismo constructor que usa la plantilla, donde no hay nada
+  real que medir (criterio 135). Meterle sesiones lo convertiría en dos
+  funciones con un `if`.
+- **No se añade un campo a `AgendaGap`.** Tendría que viajar `null` por toda la
+  plantilla y por el camino de planear, y el `?? plan` acabaría escrito en cinco
+  sitios.
+- **Criterio 234, resuelto así:** el renglón **sigue diciendo las horas del
+  plan** (para que la leyenda cuadre) y **la hoja dice por qué se mueve**, con
+  `describeGapWindowShift` debajo del subtítulo: «Desayunar acabó a las 9:28, así
+  que aquí empieza antes». El criterio ofrece las dos salidas y ésta es la que no
+  toca la barra. Si el usuario prefiere lo contrario, es **un sitio**: las dos
+  caras leen el mismo `realWindowByGapId`.
+
+### El salto de la duración habitual (criterio 238)
+
+**No hace falta buscar en la plantilla.** `VidaActivityPattern` ya lleva
+`itemId` **y `activityId`** juntos (`vida-patterns.utils.ts:274-275`, rellenos en
+`:726-727`), y `VidaHoyPage.tsx:306-321` ya tiene `patterns.patterns` a mano. El
+salto es **un hermano** de `usualDurationsByItemId`, en el mismo archivo y justo
+debajo (`vida-patterns.utils.ts:970-981`):
+
+```
+/** La misma costumbre, pero por **actividad** (FEAT-011, criterio 238). */
+export function usualDurationsByActivityId(
+  patterns: Pick<VidaActivityPattern, 'activityId' | 'usualDurationMinutes' | 'usualDurationSamples'>[],
+): Record<string, number>
+```
+
+Con la actividad en dos ítems de plantilla, gana **la de más
+`usualDurationSamples`** (el campo ya existe, `:302`), y con empate, la primera:
+la alternativa —mezclar dos medianas— inventaría un número que no midió nadie.
+`usualDurationsByItemId` **no se toca**: las fichas del hueco futuro siguen
+exactamente igual y el criterio 92 de FEAT-007 sigue siendo verdadero por el
+mismo `= {}` de siempre. El criterio 240 sale solo: si la clave no está, no hay
+etiqueta.
+
+### Convivencia con lo que está en vuelo
+
+- **FEAT-008 (tajadas 2 y 3, sin commitear).** Todo lo que mete en la hoja es
+  **aditivo y ortogonal** a esto: dos props en `<VidaDurationPills>`
+  (`freeInput`, `describedById`) y un `<VidaEndTimeLine>` debajo, en la misma
+  `<section>` de «Cuánto duró». Tu precarga **no choca**: entra por
+  `initial.durationMinutes` (estado inicial, `VidaLogSessionSheet.tsx:118-120`) y
+  tu única añadidura ahí es `maxMinutes={…}` en ese mismo `<VidaDurationPills>`.
+  **Las tres props conviven en el mismo tag.** El `<VidaEndTimeLine>` ya dice la
+  hora de fin, así que la frase del criterio 227 **no la repite**: di solo lo que
+  queda («Quedan 1 h 45 libres en este hueco»), que es `describeLeftovers`.
+  **Números de línea:** los de este plan son los de `main`; con FEAT-008 dentro,
+  todo lo posterior a la línea 5 de la hoja se corre **+1**, y lo posterior a
+  `:327`, **+11**.
+- **FEAT-013 tajada 1 (`7cbf7c2`, ya en `main`).** Metió `startTimeTouched` y
+  `displayedStartTime` (`:214-221`) **solo para `mode === 'start'`**: en `'log'`
+  el campo es el de siempre y `displayedStartTime === startTime`. Tu revalidación
+  cuelga del `onChange` que ya está en `:302-306`; no añadas un segundo estado de
+  «tocado».
+- **FEAT-014 / «lo que viene» (render a medias, `14-vida-lo-que-viene.html`).**
+  La salida del hueco es **una prop del renglón** (`onLogPast`), no un ítem de la
+  lista de fichas: se pinta en su propio nodo, hermano de `<ul className={styles.chips}>`.
+  Si mañana las fichas de sugerencia del hueco futuro desaparecen, **esta feature
+  no se entera**. No cuelgues nada de `suggestions.visible`.
+
+### Dónde va el código nuevo, archivo por archivo
+
+**Se crean (2 archivos + 1 test):**
+
+- `src/features/vida/utils/vida-gap-window.utils.ts` — la ventana real (tajada 2).
+- `src/features/vida/utils/vida-gap-window.utils.test.ts` — los cinco casos del
+  criterio 237.
+- *(nada más. No hay componente nuevo, ni hoja nueva, ni ruta, ni hook.)*
+
+**Se modifican, con su línea (numeración de `main`):**
+
+| Archivo | Línea | Qué |
+|---|---|---|
+| `components/VidaAgendaGap/VidaAgendaGap.tsx` | `:17-42` | dos props: `onLogPast?: (gap: AgendaGap) => void` y, en la tajada 3, nada más (la misma prop sirve en las dos caras) |
+| ” | **`:79-92`** | la rama muerta se parte en dos: `isSliver` → **exactamente como hoy** (criterio 221); `isPast && onLogPast` → caja con «Libre 9:30 → 11:30 · 2 h» y **un** `<button>` «Registrar lo que hice». Sin `onLogPast`, igual que hoy |
+| ” | `:108-232` (tajada 3) | el mismo botón, **después** de las fichas y con menos peso (criterio 241) |
+| `components/VidaAgendaGap/VidaAgendaGap.module.scss` | tras `:95` | `.logButton`, copiado de `VidaTemplateGapRow.module.scss:41-58`, **`min-height: 2.75rem`** |
+| `components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` | `:50` | prop nueva `gapWindow?: GapWindow \| null` |
+| ” | `:133-141` | `chooseActivity`: recortar `templateMinutes` a `maxMinutes` (molde `VidaPlaceInGapSheet.tsx:124-133`) |
+| ” | tras `:128` | `const maxMinutes`, `const validation`, `const canSubmit` (molde `:116-123`) |
+| ” | `:222-234` | con `gapWindow` y `mode === 'log'`: título **«¿Qué hiciste?»** y descripción **«Martes · en el hueco de 9:30 a 11:30»** (+ `describeGapWindowShift` en la tajada 2). Sin `gapWindow`, **las de hoy sin tocar** (criterio 222 y FEAT-004/56) |
+| ” | `:246` | `disabled={… \|\| (gapWindow ? !validation.valid : false)}` (criterio 226) |
+| ” | `:327` | `maxMinutes={gapWindow ? maxMinutes : undefined}` en `<VidaDurationPills>` (criterio 228) |
+| ” | `:371-381` | la línea de lo que queda: `describeLeftovers(...)` cuando hay `gapWindow` (criterio 227) |
+| ” | `:171-186` | `handleLog`: antes de `validateLogPast`, si hay `gapWindow`, `describePlacementBlocker` → `setFormError` y salir. **La mutación no cambia** (criterio 229) |
+| `components/VidaDurationPills/VidaDurationPills.tsx` | `:35-56` + la fila | prop aditiva `fillMinutes?: number \| null` → la píldora **«Todo el hueco»** (criterio 228), apagada por defecto, con la misma disciplina que `freeInput` (`:48-55`). **Cuidado: FEAT-008 tiene este archivo abierto** |
+| `pages/VidaHoyPage.tsx` | `:1005-1011` | `LogSheetState`: campo opcional `gapWindow?: GapWindow` en la variante `'start' \| 'log'` |
+| ” | tras `:504` | `logInGap(gap)`: `openLogSheet({ mode: 'log', gapWindow: …, initial: { startTime: minutesToTime(window.startMinutes), durationMinutes: … } })` — gemelo de `askAboutNoData` |
+| ” | `:736-763` | `onLogPast={canLogPast && executionKnown ? logInGap : undefined}` en `<VidaAgendaGap>` (cierra 232, 243 y 244 de una vez) |
+| ” | `:931-950` | pasar `gapWindow={logSheet.mode !== 'edit' ? (logSheet.gapWindow ?? null) : null}` |
+| ” | `:319-321` (tajada 3) | `usualDurationsByActivityId(patterns.patterns)` en un `useMemo` hermano |
+| `utils/vida-execution.utils.ts` | `:648-672` y el `return` de `:790` | campo `realWindowByGapId` en `DayExecution` |
+| ” | **`:757-769`** | rellenar el mapa **dentro del bucle**, junto a cada `entries.push()` de hueco |
+| `utils/vida-patterns.utils.ts` | tras `:981` | `usualDurationsByActivityId` (tajada 3) |
+| `utils/vida-patterns.utils.test.ts` | — | sus casos (tajada 3) |
+| `pages/VidaHoyPage.test.tsx` | — | el recorrido de pantalla, como hizo FEAT-009 en `VidaPlantillaPage.test.tsx` |
+| `components/VidaLogSessionSheet/VidaLogSessionSheet.test.tsx` | — | anclada al hueco: Guardar apagado, píldoras recortadas, título |
+| `utils/vida-execution.utils.test.ts` | — | criterio 230 (dos registros seguidos en el mismo hueco) y el mapa |
+
+**Ni una línea en:** `utils/vida-gap-form.utils.ts`, `utils/vida-agenda.utils.ts`
+(`buildDayAgenda`, `suggestionsForGap`), `components/VidaPlaceInGapSheet/`,
+`components/VidaTemplateGapRow/`, `utils/vida-window.utils.ts`, y **nada de
+GraphQL**. Si algo de esa lista se abre, es señal de que el plan se torció.
+
+### Dónde NO va (descartado, para que nadie lo reconsidere)
+
+- **Una hoja nueva «registrar en el hueco»** — lo prohíbe el criterio 38 de
+  FEAT-004 y lo decidió D1. Además duplicaría `VidaActivityPicker`.
+- **Un `mode: 'log-gap'` en la hoja** — serían cuatro modos para una prop
+  opcional. El anclaje es **un dato**, no una puerta.
+- **La ventana real dentro de `vida-gap-form.utils.ts`** (aunque sea el archivo
+  «natural»): es el archivo que comparte con el camino de planear, y cualquier
+  toque pone el criterio 236 en manos de la revisión en vez de en la estructura.
+- **La ventana real dentro de `vida-window.utils.ts`** — ese archivo es el
+  calendario de días; no tiene nada que ver y el nombre engaña.
+- **Calcularla en el componente o en la página** — se necesita en dos sitios (el
+  renglón y la hoja) y el criterio 234 exige que sean el mismo número.
+- **Tocar `activityFollowUpEdit` / `Remove` sobre la sesión abierta** — criterio
+  235 y D4: se lee como vecino, no se cierra.
+- **Bajar la ventana real a la plantilla** (FEAT-009) — allí no hay nada real.
+
+### Las tajadas, con sus archivos
+
+Las tres **se quedan como las cortó el analista**: la 1 usa `gapToWindow(gap)` y
+la 2 **solo cambia la fuente de la misma prop** por
+`execution.realWindowByGapId[gap.id]`. No hay retrabajo entre ellas y cada una se
+prueba sola.
+
+| # | Qué hace | Archivos | Criterios | Estado |
+|---|---|---|---|---|
+| 1 | **El hueco pasado se pulsa y cuentas qué hiciste**, validado contra los bordes del **plan**. | `VidaAgendaGap.tsx:79-92` + `.module.scss` (44 px) · `VidaLogSessionSheet.tsx:50,128,133,222,246,327,371,171` · `VidaDurationPills.tsx` («Todo el hueco») · `VidaHoyPage.tsx:1005,504,736,931` · tests en `VidaHoyPage.test.tsx` y `VidaLogSessionSheet.test.tsx` · **verificar** `vida-execution.utils.test.ts` (230) | 220–232, y de paso 243, 244, 246–249 (la puerta es `canLogPast && executionKnown`) | pending |
+| 2 | **La ventana real.** | **crea** `utils/vida-gap-window.utils.ts` + `.test.ts` · `vida-execution.utils.ts:648-672, 757-769, 790` · `VidaHoyPage.tsx` (pasar `realWindowByGapId[...] ?? gapToWindow(gap)`) · `VidaLogSessionSheet.tsx:222-234` (la frase de por qué se mueve) y `handleLog` (`describePlacementBlocker`) | 233–237 | pending |
+| 3 | **La otra cara del hueco y la duración de siempre.** | `vida-patterns.utils.ts:981` + su test · `VidaHoyPage.tsx:319-321` y `logInGap` · `VidaAgendaGap.tsx:108-232` (el «Registrar» secundario) · `buildGapRealWindow({ clampToNow: true })` para el criterio 242 | 238–242 | pending |
+
+250 y 251 se cierran **en cada tajada**, no al final: `pnpm typecheck` + `pnpm
+lint` + `pnpm test` + `pnpm build` contra la línea base de
+`docs/features/ENVIRONMENT.md`, y el recorrido a mano lo hace el usuario (todo
+`/app/*` está detrás del login y **los agentes no entran**).
+
+**Lo que no pude comprobar:** nada de `/app/vida/hoy` con datos reales —el login
+es un límite estructural del proyecto—, así que los criterios 247–249 (texto
+largo, 375 px, oscuro) se comprueban con un arnés temporal o en los tests de
+pantalla, y el 251 solo lo cierra el usuario con la API despierta.
 
 ## 3. Construction — feature-builder
 

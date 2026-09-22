@@ -7,6 +7,11 @@ import { VidaAdherenceWeeks } from '@/features/vida/components/VidaAdherenceWeek
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
 import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaPatternCard } from '@/features/vida/components/VidaPatternCard'
+import {
+  VidaPatternsAside,
+  VidaPatternsSource,
+  type VidaAppliedSuggestion,
+} from '@/features/vida/components/VidaPatternsAside'
 import { VidaReviewCategories } from '@/features/vida/components/VidaReviewCategories'
 import { VidaReviewFigures } from '@/features/vida/components/VidaReviewFigures'
 import { VidaReviewLanes } from '@/features/vida/components/VidaReviewLanes'
@@ -57,6 +62,7 @@ import {
 import type { VidaPatternSuggestion } from '@/features/vida/utils/vida-patterns.utils'
 import {
   PATTERN_MIN_OCCURRENCES,
+  formatPatternDate,
   isBridgeSilencedByAnswer,
 } from '@/features/vida/utils/vida-patterns.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
@@ -1150,20 +1156,35 @@ function VidaPatternsSection({
   nowMinutes: number | null
   dayHours: { startTime: string; endTime: string }
 }) {
+  const isDesktop = useMediaQuery(DESKTOP_QUERY)
   const patterns = useVidaPatterns({ enabled: true, today, nowMinutes, dayHours })
   const updateItem = useUpdateVidaItemMutation()
   // Lo aplicado se recuerda **en la pantalla, no en el aparato**: con la
   // plantilla fresca la regla ya no propone lo mismo, pero entre la respuesta
   // del API y la lista nueva hay un parpadeo, y en ese hueco no se vuelve a
   // preguntar lo que se acaba de contestar. Es lo que hace el puente.
-  const [appliedIds, setAppliedIds] = useState<string[]>([])
+  //
+  // Se guarda **lo que cambió**, no solo el id: es lo que «Contestadas» tiene
+  // que decir de una sugerencia aplicada (criterio 99).
+  const [applied, setApplied] = useState<VidaAppliedSuggestion[]>([])
+  const appliedIds = applied.map((entry) => entry.id)
   const adherence = patterns.adherence
 
   function applySuggestion(suggestion: VidaPatternSuggestion) {
     updateItem.mutate(
       // **Un solo `vidaItemUpdate`, con el id y solo el campo que cambia.**
       { id: suggestion.itemId, ...suggestion.templatePatch },
-      { onSuccess: () => setAppliedIds((current) => [...current, suggestion.id]) },
+      {
+        onSuccess: () =>
+          setApplied((current) => [
+            ...current,
+            {
+              id: suggestion.id,
+              title: suggestion.title,
+              note: `«${suggestion.affirmativeLabel}», hecho el ${formatPatternDate(today)}. Los días que ya tenías armados se quedan como estaban.`,
+            },
+          ]),
+      },
     )
   }
 
@@ -1247,23 +1268,45 @@ function VidaPatternsSection({
           <span className={styles.srOnly}>Mirando tus últimas semanas…</span>
         </div>
       ) : (
-        <div className={styles.patterns}>
-          {/* Con pocas semanas, el marco F: **lo que ya se sabe primero** —la
-              actividad que sí llegó a sus cuatro apariciones, entera y con sus
-              dos salidas— y debajo lo que llega después (criterio 84). */}
-          <VidaAdherenceSummary adherence={adherence}>
-            {adherence.hasAdherence ? null : activityPatterns()}
-          </VidaAdherenceSummary>
-          {adherence.hasAdherence ? (
-            <>
-              <VidaAdherenceWeeks weeks={adherence.weeks} />
-              <VidaAdherenceWeekdays
-                weekdays={adherence.weekdays}
-                weeksLabel={adherence.weeksLabel}
-                note={adherence.weekdayNote}
-              />
-              {activityPatterns()}
-            </>
+        /* El marco E: **adherencia arriba, patrones en rejilla debajo, y el
+           lateral al lado** (criterio 98). En móvil es una columna y el
+           lateral no existe —sus sugerencias serían las mismas tarjetas dos
+           veces—, pero «De dónde sale todo esto» sí baja: un sistema que
+           explica de dónde saca los números solo en pantallas grandes no
+           explica nada. */
+        <div className={styles.patternsLayout}>
+          <div className={styles.patternsMain}>
+            <div className={styles.patterns}>
+              {/* Con pocas semanas, el marco F: **lo que ya se sabe primero** —la
+                  actividad que sí llegó a sus cuatro apariciones, entera y con sus
+                  dos salidas— y debajo lo que llega después (criterio 84). */}
+              <VidaAdherenceSummary adherence={adherence}>
+                {adherence.hasAdherence ? null : activityPatterns()}
+              </VidaAdherenceSummary>
+              {adherence.hasAdherence ? (
+                <>
+                  <VidaAdherenceWeeks weeks={adherence.weeks} />
+                  <VidaAdherenceWeekdays
+                    weekdays={adherence.weekdays}
+                    weeksLabel={adherence.weeksLabel}
+                    note={adherence.weekdayNote}
+                  />
+                  {activityPatterns()}
+                </>
+              ) : null}
+            </div>
+            {isDesktop ? null : <VidaPatternsSource />}
+          </div>
+
+          {isDesktop ? (
+            <VidaPatternsAside
+              suggestions={patterns.liveSuggestions}
+              answered={patterns.answered}
+              applied={applied}
+              onApply={applySuggestion}
+              onDismiss={patterns.answerSuggestion}
+              isSaving={updateItem.isPending}
+            />
           ) : null}
         </div>
       )}

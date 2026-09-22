@@ -15,6 +15,7 @@ import { VidaTemplateRemoveDialog } from '@/features/vida/components/VidaTemplat
 import { VidaWeekGrid } from '@/features/vida/components/VidaWeekGrid'
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
+import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
 import {
   useDeleteVidaItemMutation,
   useUpdateVidaItemMutation,
@@ -114,6 +115,30 @@ export function VidaPlantillaPage() {
    */
   const [weekOpen, setWeekOpen] = useState(false)
   const [copyOpen, setCopyOpen] = useState(false)
+
+  /**
+   * **La ventana de seis semanas, diferida y solo cuando puede servir**
+   * (FEAT-007, tajada 4, y la medida del criterio 103).
+   *
+   * Lo único que la consume en esta pantalla es la hoja del ítem, así que no
+   * se monta hasta que se abre una: **entrar en Plantilla cuesta exactamente
+   * lo de ayer** —cero consultas nuevas— y la ventana se paga la primera vez
+   * que se abre una hoja, no al pintar la lista. Después, con los días
+   * cerrados ya en caché, es gratis.
+   *
+   * `enabled` apaga también la plantilla que pide el hook (el segundo
+   * argumento de `useVidaItemsQuery` que nació en la tajada 2), así que antes
+   * de la primera hoja no se pide nada. Sin sesión tampoco: el interruptor de
+   * sesión vive dentro (`useVidaQueryGuard`), como en el resto del módulo.
+   */
+  const patterns = useVidaPatterns({
+    enabled: sheetSession > 0,
+    today: getCurrentLocalDate(),
+    nowMinutes: null,
+    dayHours: { startTime: dayHours.startTime, endTime: dayHours.endTime },
+  })
+  const editingPattern =
+    editing === null ? null : (patterns.patterns.find((entry) => entry.itemId === editing.id) ?? null)
 
   function openSheet(item: VidaItem) {
     setEditing(item)
@@ -464,6 +489,9 @@ export function VidaPlantillaPage() {
           setSheetOpen(false)
           setRemoving(item)
         }}
+        pattern={editingPattern}
+        patternAnswerNote={editingPattern?.answerNote ?? null}
+        onPatternDismiss={patterns.answerSuggestion}
       />
       ) : null}
 

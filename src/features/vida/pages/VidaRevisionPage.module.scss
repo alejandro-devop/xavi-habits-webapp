@@ -202,13 +202,45 @@
   background: color-mix(in srgb, var(--color-text) 2%, transparent);
 }
 
-/* Las tarjetas de patrones por actividad (FEAT-007, tajada 2). Una columna a
-   375 px; la rejilla de escritorio es de la tajada 4. */
-.patternList {
+/* El reparto del marco E (criterio 98): una columna a 375 px, y en escritorio
+   los patrones a la izquierda con el lateral de sugerencias a la derecha. */
+.patternsLayout {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   min-width: 0;
+}
+
+.patternsMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+@media (min-width: 60rem) {
+  .patternsLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
+    align-items: start;
+  }
+}
+
+/* Las tarjetas de patrones por actividad (FEAT-007, tajada 2). Una columna a
+   375 px; en escritorio, **rejilla** —el marco E la pide para que se vea de
+   golpe que la mayoría de tarjetas no proponen nada—. */
+.patternList {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+@media (min-width: 75rem) {
+  .patternList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
 }
 
 /* Las actividades que todavía no llegan a cuatro apariciones: dicen cuántas

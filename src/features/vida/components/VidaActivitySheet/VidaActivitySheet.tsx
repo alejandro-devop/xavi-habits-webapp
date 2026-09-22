@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { CreateVidaCategoryStep } from '@/features/vida/components/CreateVidaCategoryStep'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
+import { VidaPatternAdvice } from '@/features/vida/components/VidaPatternAdvice'
 import { useCreateActivityMutation, useUpdateActivityMutation } from '@/features/vida/hooks/useActivities'
 import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
 import { useSaveVidaItemForActivity } from '@/features/vida/hooks/useSaveVidaItemForActivity'
@@ -15,6 +16,11 @@ import {
   VIDA_DAY_ORDER,
   VIDA_DAY_SHORT_LABELS,
 } from '@/features/vida/utils/vida-date.utils'
+import {
+  buildTemplateSheetAdvice,
+  type VidaActivityPattern,
+  type VidaPatternSuggestion,
+} from '@/features/vida/utils/vida-patterns.utils'
 import { describeTemplatePreview } from '@/features/vida/utils/vida-template.utils'
 import { normalizeTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
 import { Alert } from '@/shared/ui/Alert'
@@ -87,6 +93,21 @@ type VidaActivitySheetProps = {
    * La cablea el catálogo en la tajada 3; aquí solo se pinta si llega.
    */
   multipleItemsNote?: string | null
+
+  /* ── El dato de tus semanas (FEAT-007, tajada 4) ─────────────────────────
+   *
+   * También **aditivo**: sin `pattern` la hoja es **la de FEAT-005, sin una
+   * línea de más ni un hueco reservado** (criterio 97). La hoja **no monta la
+   * ventana de seis semanas**: la trae `VidaPlantillaPage`, que es quien la
+   * tiene; si la montara aquí, abrir una hoja costaría 43 consultas.
+   */
+
+  /** El patrón de esta actividad, ya derivado. `null` si no hay datos. */
+  pattern?: VidaActivityPattern | null
+  /** Lo que ya se contestó, con la fecha en la que la pregunta vuelve (D1). */
+  patternAnswerNote?: string | null
+  /** «Dejarlo»: no llama a nadie, se guarda en el aparato (criterio 82). */
+  onPatternDismiss?: (suggestion: VidaPatternSuggestion) => void
 }
 
 /**
@@ -130,6 +151,9 @@ export function VidaActivitySheet({
   lockActivity = false,
   onRemoveFromTemplate,
   multipleItemsNote = null,
+  pattern = null,
+  patternAnswerNote = null,
+  onPatternDismiss,
 }: VidaActivitySheetProps) {
   const isEditing = Boolean(activity) || lockActivity
   const categoriesQuery = useActivityCategoriesQuery()
@@ -183,6 +207,33 @@ export function VidaActivitySheet({
   /** Un solo sitio donde nace el borrador: los cuatro campos, siempre juntos. */
   function patchTemplate(patch: Partial<TemplateDraft>) {
     setTemplateDraft({ inTemplate, days, startTime, durationMinutes, notes, ...patch })
+  }
+
+  /**
+   * **El dato de tus semanas, ya escrito** (criterios 95–97). Puro y
+   * derivado de la prop: sin patrón es `null` y no se pinta ni un hueco.
+   */
+  const advice = pattern ? buildTemplateSheetAdvice(pattern) : null
+  /**
+   * Lo que se acaba de mover **en la hoja**, no en el API: aquí la salida
+   * afirmativa **no manda ninguna mutación**, escribe en el borrador y se
+   * guarda con «Guardar», como cualquier otro campo. Es lo que sostiene el
+   * criterio 96 por construcción —mientras no se pulse, el cuerpo es el
+   * mismo— y evita que la hoja y un `vidaItemUpdate` suelto escriban a la vez
+   * sobre el mismo ítem con dos versiones de los días.
+   */
+  const [advicePatched, setAdvicePatched] = useState<string | null>(null)
+
+  function applyAdvice(suggestion: VidaPatternSuggestion) {
+    setDaysError(null)
+    patchTemplate(
+      'days' in suggestion.templatePatch
+        ? { days: suggestion.templatePatch.days }
+        : 'startTime' in suggestion.templatePatch
+          ? { startTime: normalizeTimeForDisplay(suggestion.templatePatch.startTime) }
+          : { durationMinutes: suggestion.templatePatch.durationMinutes },
+    )
+    setAdvicePatched(suggestion.affirmativeLabel)
   }
 
   function toggleDay(day: VidaDayOfWeek) {
@@ -475,13 +526,27 @@ export function VidaActivitySheet({
               >
                 {VIDA_DAY_ORDER.map((day) => {
                   const isOn = days.includes(day)
+                  // **Marcado no es tocado** (criterio 96): el día del que
+                  // habla el aviso se señala y nada más; la plantilla se queda
+                  // exactamente como está hasta que se pulse la salida.
+                  const isFlagged = advice?.flaggedDay === day && isOn
                   return (
                     <button
                       key={day}
                       type="button"
-                      className={[styles.day, isOn ? styles.dayOn : ''].filter(Boolean).join(' ')}
+                      className={[
+                        styles.day,
+                        isOn ? styles.dayOn : '',
+                        isFlagged ? styles.dayFlagged : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                       aria-pressed={isOn}
-                      aria-label={VIDA_DAY_LABELS[day]}
+                      aria-label={
+                        isFlagged
+                          ? `${VIDA_DAY_LABELS[day]} · el día del que habla el aviso`
+                          : VIDA_DAY_LABELS[day]
+                      }
                       disabled={isMutating}
                       onClick={() => toggleDay(day)}
                     >
@@ -510,6 +575,19 @@ export function VidaActivitySheet({
                     disabled={isMutating}
                     onChange={(event) => patchTemplate({ startTime: event.target.value })}
                   />
+                  {/* Lo que dicen tus semanas, **debajo del campo del que
+                      habla** (criterio 95). Sin patrón no hay línea. */}
+                  {advice?.timeText ? (
+                    <VidaPatternAdvice
+                      eyebrow={advice.header}
+                      text={advice.timeText}
+                      suggestion={advice.timeSuggestion}
+                      note={patternAnswerNote}
+                      isSaving={isMutating}
+                      onApply={applyAdvice}
+                      onDismiss={(suggestion) => onPatternDismiss?.(suggestion)}
+                    />
+                  ) : null}
                 </div>
 
                 <div className={styles.field}>
@@ -522,8 +600,33 @@ export function VidaActivitySheet({
                     disabled={isMutating}
                     onChange={(minutes) => patchTemplate({ durationMinutes: minutes })}
                   />
+                  {/* Esta línea sale **también cuando va bien** (criterio 95):
+                      si solo apareciera al desviarse, el dato se leería como
+                      una señal de alarma. */}
+                  {advice?.durationText ? (
+                    advice.durationSuggestion ? (
+                      <VidaPatternAdvice
+                        eyebrow={advice.header}
+                        text={advice.durationText}
+                        suggestion={advice.durationSuggestion}
+                        isSaving={isMutating}
+                        onApply={applyAdvice}
+                        onDismiss={(suggestion) => onPatternDismiss?.(suggestion)}
+                      />
+                    ) : (
+                      <p className={styles.patternNote}>{advice.durationText}</p>
+                    )
+                  ) : null}
                 </div>
               </div>
+
+              {/* Lo que se movió aquí **todavía no está guardado**, y se dice:
+                  la hoja no escribe nada sola. */}
+              {advicePatched ? (
+                <p className={styles.patternDone} role="status">
+                  «{advicePatched}», hecho aquí. Se guarda cuando pulses <b>Guardar</b>.
+                </p>
+              ) : null}
 
               {/* La nota del ítem, **texto plano** (criterio 18 y decisión (e)
                   del analista). Vive en `VidaItem.notes` desde F0 y hasta ahora

@@ -15,10 +15,70 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
-| FEAT-007 | building | 3/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
+| FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-007 `delivered` 4/4** (2026-09-22, revisor). **Tajada 4 aceptada: la
+feature queda entregada y con ella se cierra el módulo Vida (F0–F6).** Los seis
+criterios de la tajada (95–100) y los tres transversales (101, 103, 104),
+comprobados uno a uno y **con el navegador abierto**: arnés propio con los
+componentes y las hojas de estilo reales, servido desde el **5173 del usuario**
+(no arranqué nada) y borrado. Medido a 375 px: `scrollWidth === clientWidth ===
+375`, **0 nodos desbordados**, ni un «%», el día señalado en **violeta punteado**
+con `aria-pressed="true"` intacto, la línea de «Cuánto» **sin caja** y sin un
+solo botón; en oscuro el violeta pasa a `#a78bfa` y todo se lee; a 1280 px la
+rejilla es **893 + 336** con las tarjetas en **dos columnas de 440,5**. El
+criterio 96 está probado como el analista lo pidió —**el cuerpo de la mutación
+con patrón y sin patrón es idéntico** (`toEqual`)— y **juzgo correcto** que la
+salida afirmativa escriba en el borrador y no en el API: un `vidaItemUpdate`
+suelto con la hoja abierta dejaría dos versiones compitiendo. La arista queda
+dicha: **aceptar y cerrar sin guardar pierde el cambio**, exactamente igual que
+cualquier campo de esa hoja desde FEAT-005 —que **no tiene guarda de cambios sin
+guardar**, deuda de aquella—, y se avisa al pulsar («se guarda cuando pulses
+Guardar»), no al cerrar. Las dos desviaciones, **bien resueltas**: un
+`VidaPatternAdvice` para los dos sitios (el render los dibuja iguales y
+`VidaBlockHint` no servía: es un `<li>` con la canaleta de la agenda) y «De
+dónde sale todo esto» **también en móvil**, que suscribo. **Los cuatro arreglos
+de las tajadas anteriores están hechos**: el violeta desde `--aura-ring-to` —la
+premisa falsa que yo di por buena en la tajada 2—, «Contestadas» mirando
+`source` antes que `answer`, una sola línea de cierre en la tarjeta desactivada
+y el aviso de Hoy fuera del selector que le comía el fondo. Sin regresiones: la
+hoja es la pantalla más compartida del módulo y las tres props son opcionales
+—solo Plantilla las pasa—, los cuatro archivos de test suman **367 líneas y
+borran 1**, que es un `import`. Línea base corrida entera: typecheck limpio,
+lint 14/0, **2 fallos de 1570**, build exit 0 con el chunk en **1.092,02 kB**
+(+6,85, ninguno de iconos). **La nota de cierre para el usuario, la deuda de
+FEAT-007 entera y la lista de lo que solo puede comprobar él —incluido el
+cronómetro real contra la API dormida, que es lo único que nadie ha medido en
+segundos— están al final de la sección 4 del dossier.**
+
+**FEAT-007 `in-review` 4/4** (2026-09-22, constructor). **Tajada 4 construida y
+verificada — la última de la fase F6 y del módulo Vida.** La hoja del ítem de
+la plantilla dice lo que dicen tus semanas **debajo del campo del que hablan**
+(bajo «A qué hora», con su salida y el día marcado en violeta; bajo «Cuánto»,
+una línea que **confirma también cuando va bien**), y en escritorio «Lo que se
+repite» se reparte como el marco E: patrones en **rejilla** y un lateral con
+«Sin contestar», «Contestadas» y «De dónde sale todo esto» —este último también
+en móvil, que es donde se usa—. Criterios 95–100, 101, 103 y 104 cerrados con
+evidencia; 105 y 106 son del usuario. **En la hoja la salida afirmativa escribe
+en el borrador, no en el API**: es la lectura literal del criterio 96 y evita
+que dos escrituras se pisen. Se crean `VidaPatternAdvice/` (la caja violeta que
+comparten la hoja y el lateral: el render la dibuja igual en los dos sitios) y
+`VidaPatternsAside/`. **Cerrados de lo anterior:** el violeta ahora sale de
+`--aura-ring-to` en la tarjeta de patrones (la desviación de la tajada 2 se
+apoyaba en una premisa falsa), «Contestadas» mira `source` porque `answer` puede
+ser `null`, la tarjeta desactivada ya no imprime dos líneas de cierre, y el
+fondo del aviso de Hoy ya no lo pisa `.agenda[data-tone='plan']`. **Queda
+escrito, no arreglado:** el silencio de Hoy cuando la ventana falla y el nombre
+repetido en el aviso, los dos con su arreglo propuesto. **Coste:** entrar en
+Plantilla cuesta **0 consultas nuevas** —la ventana se monta al abrir la
+primera hoja— y el lateral de escritorio, 0. **Línea base:** typecheck limpio,
+lint 14/0, **2 fallos de 1570** (los mismos de `SearchSelect`, +16 tests),
+build exit 0 con chunk **1.092,02 kB** (+6,85). Visto en el navegador a 375 px,
+en claro y en oscuro, y a 1280 px, con un arnés temporal servido desde el 5173
+del usuario y **borrado**. **Sin commitear.**
 
 **FEAT-007 `building` 3/4** (2026-09-22, revisor). **Tajada 3 aceptada.** Los
 ocho criterios (87–94) y los tres transversales (101, 103, 104) comprobados uno

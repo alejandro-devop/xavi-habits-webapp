@@ -43,7 +43,13 @@ export function VidaBlockHint({ hint, onApply, onDismiss, isSaving = false }: Vi
     <li className={styles.row}>
       <span className={styles.gutter} aria-hidden />
 
-      <section className={styles.card} aria-label={`Aviso ${hint.counterLabel}: ${hint.basis}`}>
+      <section
+        className={styles.card}
+        // Lo que deja fuera a este aviso del «trazo suave» de la agenda en
+        // modo plan: su fondo violeta es lo que lo hace una nota al margen.
+        data-kind="hint"
+        aria-label={`Aviso ${hint.counterLabel}: ${hint.basis}`}
+      >
         <p className={styles.head}>
           <span className={styles.title}>{hint.header}</span>
           <span className={styles.count}>{hint.counterLabel}</span>

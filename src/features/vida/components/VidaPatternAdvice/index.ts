@@ -1,0 +1,1 @@
+export { VidaPatternAdvice } from './VidaPatternAdvice'

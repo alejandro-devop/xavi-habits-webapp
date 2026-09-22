@@ -88,14 +88,19 @@
   font-size: 0.875rem;
 }
 
-/* El desfase: una nota al margen, no una alarma. **Sin color literal** —el
-   violeta del render no tiene token semántico y en oscuro no se lee—: se usa
-   `--color-primary`, que es lo que hizo la tajada 1 con la barra. */
+/* El desfase: una nota al margen, no una alarma. **En violeta, como el
+   render** (`.tag.late` y las casillas `.c.late/.c.big` del marco B), y el
+   violeta sale del token `--aura-ring-to` —#7c3aed en claro, #a78bfa en
+   oscuro—, con `--color-primary` de respaldo. Ni un color literal.
+   La tajada 2 escribió aquí que no había token semántico de violeta: **lo
+   hay**, y ya lo usaban `VidaDayBudget` y medio módulo de hábitos. Corregido
+   en la tajada 4. (La barra de adherencia se queda en mint: en el render es
+   mint, no violeta.) */
 .tag {
   border-radius: 999px;
   padding: 0.05rem 0.4rem;
-  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-  color: color-mix(in srgb, var(--color-primary) 70%, var(--color-text));
+  background: color-mix(in srgb, var(--aura-ring-to, var(--color-primary)) 14%, transparent);
+  color: color-mix(in srgb, var(--aura-ring-to, var(--color-primary)) 70%, var(--color-text));
   font-size: 0.6875rem;
   font-weight: 700;
 }
@@ -133,10 +138,11 @@
 }
 
 .cell {
-  /* Cuanto más se aparta, más tono. El peso llega del derivado (0–1). */
+  /* Cuanto más se aparta, más tono. El peso llega del derivado (0–1). El
+     violeta del render, desde el token. */
   background: color-mix(
     in srgb,
-    var(--color-primary) calc(8% + var(--vida-cell-weight, 0) * 18%),
+    var(--aura-ring-to, var(--color-primary)) calc(8% + var(--vida-cell-weight, 0) * 18%),
     transparent
   );
   color: var(--color-text);

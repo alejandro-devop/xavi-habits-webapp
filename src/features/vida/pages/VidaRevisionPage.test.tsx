@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
@@ -1597,5 +1597,106 @@ describe('Revisión · los patrones por actividad (FEAT-007, tajada 2)', () => {
 
     expect(screen.getByText('llevas 2 de 4')).toBeInTheDocument()
     expect(screen.queryByText('1h 10')).not.toBeInTheDocument()
+  })
+
+  /* ── El escritorio (FEAT-007, tajada 4): criterios 98, 99 y 100 ───────── */
+
+  async function withDesktop(run: () => Promise<void>): Promise<void> {
+    const desktop = vi.fn().mockImplementation((query: string) => ({
+      matches: query.includes('min-width'),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }))
+    const original = window.matchMedia
+    window.matchMedia = desktop as unknown as typeof window.matchMedia
+    try {
+      // **Con `await`**: sin él, el `finally` devuelve el `matchMedia` de
+      // móvil antes de que el primer `await` de dentro se resuelva, y lo que
+      // se acaba probando es el móvil creyendo que es el escritorio.
+      await run()
+    } finally {
+      window.matchMedia = original
+    }
+  }
+
+  it('en escritorio hay lateral con las tres cosas, y en móvil no (98, 100)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+
+    await withDesktop(async () => {
+      renderPage()
+      await openPatterns(user)
+
+      expect(screen.getByRole('heading', { name: 'Sin contestar' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Contestadas' })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'De dónde sale todo esto' })).toBeInTheDocument()
+      // «Sin contestar» lleva **las mismas dos salidas** que su tarjeta: con
+      // la tarjeta y el lateral, la pregunta sale dos veces y cada una con su
+      // par de botones.
+      expect(screen.getAllByRole('button', { name: 'Ponerlo en 1h 10' })).toHaveLength(2)
+      expect(screen.getAllByRole('button', { name: 'Dejarlo' })).toHaveLength(2)
+      expect(screen.getByText(/no caduca ninguna y no cambian nada solas/)).toBeInTheDocument()
+    })
+  })
+
+  it('en móvil no hay lateral, pero **sí** de dónde sale todo esto (98, 100)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+    renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.queryByRole('heading', { name: 'Sin contestar' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'De dónde sale todo esto' })).toBeInTheDocument()
+    // La pregunta, **una sola vez**: el lateral duplicaría la tarjeta.
+    expect(screen.getAllByRole('button', { name: 'Ponerlo en 1h 10' })).toHaveLength(1)
+  })
+
+  it('«Contestadas» dice qué se contestó y **cuándo vuelve** (99)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+
+    await withDesktop(async () => {
+      renderPage()
+      await openPatterns(user)
+
+      expect(screen.getByText('Todavía no has contestado ninguna.')).toBeInTheDocument()
+      await user.click(screen.getAllByRole('button', { name: 'Dejarlo' })[0]!)
+
+      // La fecha de vuelta, **a la vista desde el momento en que se contesta**.
+      expect(screen.getAllByText(/Vuelve el 17 de octubre si el patrón sigue igual/).length)
+        .toBeGreaterThan(0)
+      expect(screen.queryByText('Todavía no has contestado ninguna.')).not.toBeInTheDocument()
+      // Y la pregunta deja de estar en «Sin contestar».
+      expect(screen.queryByRole('button', { name: 'Ponerlo en 1h 10' })).not.toBeInTheDocument()
+    })
+  })
+
+  it('lo aplicado se cuenta en «Contestadas»: qué cambió y cuándo (99)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+
+    await withDesktop(async () => {
+      renderPage()
+      await openPatterns(user)
+      await user.click(screen.getAllByRole('button', { name: 'Ponerlo en 1h 10' })[0]!)
+      // El `mutate` del módulo está espiado y no ejecuta su `onSuccess`: se
+      // dispara a mano, que es el momento en que el API confirma el cambio.
+      const options = updateVidaItem.mock.calls[0]![1] as { onSuccess?: () => void }
+      act(() => options.onSuccess?.())
+
+      expect(
+        screen.getByText(/«Ponerlo en 1h 10», hecho el 19 de septiembre/),
+      ).toBeInTheDocument()
+    })
   })
 })

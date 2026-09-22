@@ -1158,3 +1158,82 @@ function patchValueLabel(patch: VidaPatternDayPatch): string {
     ? formatDurationFromMinutes(patch.durationMinutes)
     : formatTimeForDisplay(patch.startTime)
 }
+
+/* ── El dato donde se edita: la hoja de la plantilla (tajada 4) ──────────── */
+
+/**
+ * **Lo que la hoja del ítem enseña debajo de cada campo** (criterios 95–97, y
+ * el marco D del render aprobado).
+ *
+ * Un derivado más, y **puro**: la hoja no monta consultas, no compone frases y
+ * no decide nada. Recibe esto ya escrito desde `VidaPlantillaPage`, que es
+ * quien tiene la ventana montada.
+ *
+ * Tres cosas que se deciden aquí y no en la vista:
+ *
+ * 1. **La línea de «Cuánto» aparece también cuando va bien.** Si solo saliera
+ *    al desviarse, el aviso se convertiría en una señal de alarma — que es
+ *    exactamente lo que el render prohíbe en su nota del marco D.
+ * 2. **Sin una sola sesión no hay línea.** `null` y la hoja queda **la de
+ *    FEAT-005, sin una línea de más ni un hueco reservado** (criterio 97).
+ * 3. **El día del que habla el aviso viaja aparte** (`flaggedDay`) para que la
+ *    fila de días lo marque. **Marcado no es tocado**: mientras no se pulse la
+ *    salida, la hoja guarda exactamente el mismo cuerpo (criterio 96).
+ */
+export type VidaSheetAdvice = {
+  /** «De tus últimas semanas»: de dónde sale, antes que el dato. */
+  header: string
+  /** Lo que dicen las semanas del campo «A qué hora». `null` si no hay dato. */
+  timeText: string | null
+  /** Solo `start-time` o `drop-day`: lo que se puede hacer con la hora. */
+  timeSuggestion: VidaPatternSuggestion | null
+  /** El día que va marcado en la fila de días (criterio 96). */
+  flaggedDay: VidaDayOfWeek | null
+  /** Bajo «Cuánto»: confirma cuando va bien, propone cuando no (criterio 95). */
+  durationText: string | null
+  durationSuggestion: VidaPatternSuggestion | null
+}
+
+export function buildTemplateSheetAdvice(pattern: VidaActivityPattern): VidaSheetAdvice | null {
+  const hasStart = pattern.startLine.valueLabel !== '—'
+  const hasDuration = pattern.durationLine.valueLabel !== '—'
+  // Sin una sola sesión no hay nada que contar: la hoja se queda como estaba.
+  if (!hasStart && !hasDuration) return null
+
+  const suggestion = pattern.suggestion
+  const timeSuggestion =
+    suggestion && (suggestion.kind === 'start-time' || suggestion.kind === 'drop-day')
+      ? suggestion
+      : null
+  const durationSuggestion = suggestion && suggestion.kind === 'duration' ? suggestion : null
+
+  let timeText: string | null = null
+  if (hasStart) {
+    const base = `Sueles empezar a las ${pattern.startLine.valueLabel}`
+    if (pattern.dayLine) {
+      // El día que se sale se nombra **con su número**, que es lo que sostiene
+      // la única salida posible: quitar ese día (frontera aceptada de F4).
+      timeText = `${base}. ${pattern.dayLine.label}, a las ${pattern.dayLine.valueLabel} (${pattern.dayLine.offsetLabel}).`
+    } else if (pattern.startLine.isSettled) {
+      timeText = `${base}. Esta hora va bien.`
+    } else {
+      timeText = `${base} (${pattern.startLine.offsetLabel}).`
+    }
+  }
+
+  let durationText: string | null = null
+  if (hasDuration) {
+    durationText = pattern.durationLine.isSettled
+      ? `Suele llevarte ${pattern.durationLine.valueLabel}. Esta duración va bien.`
+      : `Suele llevarte ${pattern.durationLine.valueLabel} (${pattern.durationLine.offsetLabel}).`
+  }
+
+  return {
+    header: 'De tus últimas semanas',
+    timeText,
+    timeSuggestion,
+    flaggedDay: timeSuggestion?.dayOfWeek ?? null,
+    durationText,
+    durationSuggestion,
+  }
+}

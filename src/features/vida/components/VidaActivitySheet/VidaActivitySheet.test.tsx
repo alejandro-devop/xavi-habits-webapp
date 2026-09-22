@@ -5,6 +5,10 @@ import { VidaActivitySheet } from '@/features/vida/components/VidaActivitySheet'
 import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
 import type { Activity } from '@/features/vida/types/activity.types'
 import type { VidaItem } from '@/features/vida/types/vida-item.types'
+import type {
+  VidaActivityPattern,
+  VidaPatternSuggestion,
+} from '@/features/vida/utils/vida-patterns.utils'
 import { renderWithProviders } from '@/test/render'
 
 /**
@@ -749,5 +753,168 @@ describe('VidaActivitySheet desde la plantilla (lockActivity)', () => {
     await user.click(screen.getByRole('button', { name: 'Guardar' }))
 
     expect(updateVidaItem.mutate.mock.calls[0][0]).toEqual({ id: 'v-casa', isActive: false })
+  })
+})
+
+/* ── El dato de tus semanas en la hoja (FEAT-007, tajada 4) ────────────────
+ *
+ * La hoja **recibe el patrón ya derivado** y no monta ninguna consulta: si la
+ * montara, abrir una hoja costaría las 43 consultas de la ventana. Por eso el
+ * patrón entra aquí como un objeto literal, igual que `VidaPatternCard` lo
+ * recibe en Revisión: lo que se prueba es lo que la hoja **hace con él**.
+ */
+
+const SETTLED_LINE = { valueLabel: '30m', offsetLabel: 'como lo diste', isSettled: true }
+
+function buildPattern(overrides: Partial<VidaActivityPattern> = {}): VidaActivityPattern {
+  return {
+    itemId: 'v1',
+    activityId: 'a1',
+    title: 'Desayunar con calma',
+    icon: 'mug-saucer',
+    color: null,
+    templateLabel: 'En tu plantilla: L a V · 8:30 · 30m',
+    occurrences: 10,
+    followedCount: 9,
+    followedLabel: 'se siguió 9 de 10 veces',
+    startLine: { label: 'Sueles empezar', valueLabel: '8:35', offsetLabel: 'a su hora', isSettled: true },
+    durationLine: { label: 'Suele llevarte', ...SETTLED_LINE },
+    dayLine: null,
+    usualDurationMinutes: 30,
+    usualDurationSamples: 9,
+    weekdayCells: [],
+    miniRowNote: 'Minutos frente a las 8:30 planeadas',
+    footnote: 'Minutos frente a las 8:30 planeadas · se siguió 9 de 10 veces',
+    suggestion: null,
+    settledLabel: 'Esto pasa como lo planeaste. Aquí no hay nada que proponer.',
+    closingLabel: null,
+    mutedReason: null,
+    ...overrides,
+  }
+}
+
+const DROP_TUESDAY: VidaPatternSuggestion = {
+  id: 'drop-day|v1|tuesday',
+  kind: 'drop-day',
+  itemId: 'v1',
+  activityId: 'a1',
+  title: 'Desayunar con calma',
+  icon: 'mug-saucer',
+  color: null,
+  offsetMinutes: 70,
+  dayOfWeek: 'tuesday',
+  basis: '8:30 planeado · 9:40 real los martes',
+  ask: 'Tu día empieza más tarde ese día. ¿Lo quitamos de los martes?',
+  consequence: 'En tu plantilla está 3 días (L M X): se quita solo el martes.',
+  affirmativeLabel: 'Quitar el martes',
+  dismissLabel: 'Dejarlo',
+  templatePatch: { days: ['monday', 'wednesday'] },
+  dayPatch: null,
+}
+
+describe('VidaActivitySheet · lo que dicen tus semanas (criterios 95, 96 y 97)', () => {
+  const activityRef = {
+    id: 'a1',
+    title: 'Desayunar con calma',
+    status: 'pending' as const,
+    category: null,
+  }
+
+  function renderWithPattern(pattern: VidaActivityPattern | null, extra = {}) {
+    return renderSheet({
+      vidaItem: buildVidaItem({
+        id: 'v1',
+        days: ['monday', 'tuesday', 'wednesday'],
+        startTime: '08:30',
+        durationMinutes: 30,
+      }),
+      activityRef,
+      lockActivity: true,
+      pattern,
+      ...extra,
+    })
+  }
+
+  it('sin patrón, la hoja es **la de FEAT-005 sin una línea de más** (97)', () => {
+    renderWithPattern(null)
+    expect(screen.queryByText(/De tus últimas semanas/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Suele llevarte/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Sueles empezar/)).not.toBeInTheDocument()
+  })
+
+  it('la línea de «Cuánto» aparece **también cuando no hay nada que proponer** (95)', () => {
+    renderWithPattern(buildPattern())
+    expect(screen.getByText('Suele llevarte 30m. Esta duración va bien.')).toBeInTheDocument()
+    expect(screen.getByText('Sueles empezar a las 8:35. Esta hora va bien.')).toBeInTheDocument()
+    // Confirmar no es preguntar: sin sugerencia no hay ni una salida nueva.
+    expect(screen.queryByRole('button', { name: 'Dejarlo' })).not.toBeInTheDocument()
+  })
+
+  it('la salida va bajo «A qué hora», con sus dos botones (95)', () => {
+    renderWithPattern(buildPattern({ suggestion: DROP_TUESDAY, settledLabel: null }))
+    expect(screen.getByRole('button', { name: 'Quitar el martes' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dejarlo' })).toBeInTheDocument()
+    // La consecuencia, **antes** de tocar nada.
+    expect(screen.getByText(/se quita solo el martes/)).toBeInTheDocument()
+  })
+
+  it('**marcado no es tocado**: guardar manda el mismo cuerpo que antes de F6 (96)', async () => {
+    const user = userEvent.setup()
+
+    // Primero **sin patrón**: el cuerpo que esta hoja mandaba antes de F6.
+    const plain = renderWithPattern(null)
+    fireEvent.change(screen.getByLabelText(/Nota/), { target: { value: 'Sin pantalla' } })
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    const before = updateVidaItem.mutate.mock.calls[0][0]
+    plain.unmount()
+    updateVidaItem.mutate.mockClear()
+
+    // Y ahora **con el aviso pintado y el martes marcado**, sin pulsar la salida.
+    renderWithPattern(buildPattern({ suggestion: DROP_TUESDAY, settledLabel: null }))
+    expect(
+      screen.getByRole('button', { name: 'martes · el día del que habla el aviso' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.change(screen.getByLabelText(/Nota/), { target: { value: 'Sin pantalla' } })
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(updateVidaItem.mutate.mock.calls[0][0]).toEqual(before)
+    expect(before).toMatchObject({ id: 'v1', days: ['monday', 'tuesday', 'wednesday'] })
+  })
+
+  it('la salida afirmativa escribe **en la hoja**, no en el API, y lo dice', async () => {
+    const user = userEvent.setup()
+    renderWithPattern(buildPattern({ suggestion: DROP_TUESDAY, settledLabel: null }))
+
+    await user.click(screen.getByRole('button', { name: 'Quitar el martes' }))
+    // Ni una mutación: la hoja no escribe sola.
+    expect(updateVidaItem.mutate).not.toHaveBeenCalled()
+    expect(createVidaItem.mutate).not.toHaveBeenCalled()
+    expect(screen.getByText(/Se guarda cuando pulses/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(updateVidaItem.mutate.mock.calls[0][0]).toMatchObject({
+      id: 'v1',
+      days: ['monday', 'wednesday'],
+    })
+  })
+
+  it('«Dejarlo» no llama a ninguna mutación: solo guarda la respuesta', async () => {
+    const user = userEvent.setup()
+    const onPatternDismiss = vi.fn()
+    renderWithPattern(buildPattern({ suggestion: DROP_TUESDAY, settledLabel: null }), {
+      onPatternDismiss,
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Dejarlo' }))
+    expect(onPatternDismiss).toHaveBeenCalledWith(DROP_TUESDAY)
+    expect(updateVidaItem.mutate).not.toHaveBeenCalled()
+    expect(updateActivity.mutate).not.toHaveBeenCalled()
+  })
+
+  it('lo contestado se dice, con la fecha en la que vuelve (99 en la hoja)', () => {
+    renderWithPattern(buildPattern({ settledLabel: null }), {
+      patternAnswerNote: 'Lo dejaste el 21 de septiembre. Vuelve el 19 de octubre si el patrón sigue igual.',
+    })
+    expect(screen.getByText(/Vuelve el 19 de octubre/)).toBeInTheDocument()
   })
 })

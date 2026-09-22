@@ -11,6 +11,7 @@ import {
   isSuggestionSilenced,
   pickBlockHints,
   suggestionReturnDate,
+  buildTemplateSheetAdvice,
   usualDurationsByItemId,
   vidaPatternSuggestionId,
   type BlockHintCandidate,
@@ -816,5 +817,70 @@ describe('la duración que sueles tardar, en los chips del hueco (criterio 91)',
     expect(patterns[0]?.usualDurationSamples).toBe(2)
     expect(patterns[0]?.usualDurationMinutes).toBeNull()
     expect(usualDurationsByItemId(patterns)).toEqual({})
+  })
+})
+
+describe('el dato bajo los campos de la hoja de la plantilla (criterios 95, 96 y 97)', () => {
+  it('la línea de «Cuánto» **también cuando va bien**: confirma, no avisa (95)', () => {
+    // Cinco veces calcadas: nada que proponer en ninguna de las dos.
+    const card = build(fiveDays({ startTime: '09:02', durationMinutes: 45 }), [
+      item({ id: 'i1', activityId: 'a1' }),
+    ]).patterns[0]!
+    const advice = buildTemplateSheetAdvice(card)!
+
+    expect(card.suggestion).toBeNull()
+    expect(advice.durationText).toBe('Suele llevarte 45m. Esta duración va bien.')
+    expect(advice.durationSuggestion).toBeNull()
+    expect(advice.timeText).toBe('Sueles empezar a las 9:02. Esta hora va bien.')
+    expect(advice.timeSuggestion).toBeNull()
+    expect(advice.flaggedDay).toBeNull()
+    // Ni reproche ni porcentaje en ninguna de las dos líneas.
+    expect(`${advice.timeText} ${advice.durationText}`).not.toMatch(/%|deberías|mal\b/i)
+  })
+
+  it('la propuesta de duración va debajo de «Cuánto», y la hora se queda en su campo', () => {
+    const card = build(fiveDays({ startTime: '09:02', durationMinutes: 70 }), [
+      item({ id: 'i1', activityId: 'a1' }),
+    ]).patterns[0]!
+    const advice = buildTemplateSheetAdvice(card)!
+
+    expect(advice.durationSuggestion?.kind).toBe('duration')
+    expect(advice.durationSuggestion?.affirmativeLabel).toBe('Ponerlo en 1h 10')
+    expect(advice.durationText).toContain('Suele llevarte 1h 10')
+    // La hora va bien: se dice, y no lleva salida.
+    expect(advice.timeSuggestion).toBeNull()
+  })
+
+  it('el día del que habla el aviso viaja aparte, para marcarlo en la fila (96)', () => {
+    const template = item({
+      id: 'i1',
+      activityId: 'a1',
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      startTime: '08:30',
+      durationMinutes: 30,
+    })
+    const plan = { activityId: 'a1', startTime: '08:30', durationMinutes: 30 }
+    const days = [
+      day('2026-09-07', plan, { startTime: '08:34', durationMinutes: 30 }),
+      day('2026-09-08', plan, { startTime: '09:40', durationMinutes: 30 }),
+      day('2026-09-09', plan, { startTime: '08:35', durationMinutes: 30 }),
+      day('2026-09-10', plan, { startTime: '08:33', durationMinutes: 30 }),
+      day('2026-09-14', plan, { startTime: '08:36', durationMinutes: 30 }),
+      day('2026-09-15', plan, { startTime: '09:40', durationMinutes: 30 }),
+    ]
+    const advice = buildTemplateSheetAdvice(build(days, [template]).patterns[0]!)!
+
+    expect(advice.flaggedDay).toBe('tuesday')
+    expect(advice.timeSuggestion?.affirmativeLabel).toBe('Quitar el martes')
+    expect(advice.timeText).toContain('Los martes, a las 9:40')
+    // La única salida afirmativa es quitar el día: **nunca un borrado**.
+    expect(advice.timeSuggestion?.templatePatch).toEqual({
+      days: ['monday', 'wednesday', 'thursday', 'friday'],
+    })
+  })
+
+  it('sin una sola sesión registrada **no hay línea** (97)', () => {
+    const card = build(fiveDays(null), [item({ id: 'i1', activityId: 'a1' })]).patterns[0]!
+    expect(buildTemplateSheetAdvice(card)).toBeNull()
   })
 })

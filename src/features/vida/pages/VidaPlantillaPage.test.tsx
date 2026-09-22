@@ -72,6 +72,21 @@ vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUserSettingsQuery: () => settingsQuery,
   useUpdateUserSettingsMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
 }))
+/* La ventana de seis semanas (FEAT-007, tajada 4). Se mockea el hook —como en
+ * `VidaHoyPage.test.tsx`— porque lo que esta página tiene que hacer bien es
+ * **cablearlo diferido**: se anota cada `enabled` que pide para afirmar que
+ * **antes de abrir una hoja no se monta nada** (criterio 103). */
+let patternsEnabled: boolean[]
+let patternsResult: {
+  patterns: unknown[]
+  answerSuggestion: ReturnType<typeof vi.fn>
+}
+vi.mock('@/features/vida/hooks/useVidaPatterns', () => ({
+  useVidaPatterns: (input: { enabled: boolean }) => {
+    patternsEnabled.push(input.enabled)
+    return patternsResult
+  },
+}))
 vi.mock('@/features/vida/hooks/useActivities', () => ({
   useActivitiesQuery: () => activitiesQuery,
   useCreateActivityMutation: () => ({ mutate: vi.fn(), isPending: false, isError: false }),
@@ -128,6 +143,8 @@ beforeEach(() => {
   deleteItem = { mutate: vi.fn(), isPending: false, isError: false }
   createItem = { mutate: vi.fn(), isPending: false, isError: false }
   itemsQuery = ready<VidaItem[]>([])
+  patternsEnabled = []
+  patternsResult = { patterns: [], answerSuggestion: vi.fn() }
   settingsQuery = ready(SETTINGS)
   activitiesQuery = ready<ActivitiesResponse>({ activities: [], page: 1, limit: 100, total: 0 })
 })
@@ -436,6 +453,21 @@ describe('la hoja del ítem y lo que escribe (criterios 16-27)', () => {
       item('off', { startTime: '06:45', durationMinutes: 30, title: 'Salir a correr', isActive: false }),
       item('lavadora', { title: 'Poner una lavadora' }),
     ])
+  })
+
+  /**
+   * **La ventana de seis semanas, diferida** (FEAT-007, tajada 4, criterio
+   * 103). Entrar en Plantilla no puede costar 43 consultas: la ventana solo
+   * sirve dentro de la hoja, así que no se monta hasta que se abre una.
+   */
+  it('la ventana de patrones **no se monta** hasta abrir una hoja (103)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(patternsEnabled.length).toBeGreaterThan(0)
+    expect(patternsEnabled.every((enabled) => enabled === false)).toBe(true)
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Abrir Pasear a las mascotas' })[0]!)
+    expect(patternsEnabled.at(-1)).toBe(true)
   })
 
   it('tocar una tarjeta abre la hoja **de ese ítem, por su id** (criterios 16 y 17)', () => {

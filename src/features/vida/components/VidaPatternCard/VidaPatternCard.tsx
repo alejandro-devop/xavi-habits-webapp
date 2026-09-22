@@ -105,7 +105,11 @@ export function VidaPatternCard({
 
       {appliedLabel ? <p className={styles.done}>{appliedLabel}</p> : null}
 
-      {!appliedLabel && pattern.settledLabel ? (
+      {/* **Una sola línea de cierre.** Una tarjeta desactivada y a la vez
+          dentro de tolerancia decía dos veces que no hay nada que proponer
+          (hallazgo 3 de la revisión de la tajada 2): manda `mutedReason`, que
+          es la que explica **por qué** no se pregunta. */}
+      {!appliedLabel && !pattern.mutedReason && pattern.settledLabel ? (
         <p className={styles.settled}>{pattern.settledLabel}</p>
       ) : null}
 

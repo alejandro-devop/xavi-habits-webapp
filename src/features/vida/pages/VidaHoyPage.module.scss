@@ -64,8 +64,12 @@
 }
 
 /* Un día que no es hoy va en **trazo suave** (criterio 33): se apaga el borde
-   y el relleno de las tarjetas, nunca el texto. */
-.agenda[data-tone='plan'] > li > :is(article, section) {
+   y el relleno de las tarjetas, nunca el texto.
+   El aviso de patrones queda fuera (`data-kind='hint'`): su fondo violeta es
+   lo que lo distingue de la agenda, y esta regla se lo comía por especificidad
+   justo en el estado —«al planear»— para el que está hecho (hallazgo 1 de la
+   revisión de la tajada 3). */
+.agenda[data-tone='plan'] > li > :is(article, section):not([data-kind='hint']) {
   border-style: dashed;
   background: color-mix(in srgb, var(--aura-glass-1) 70%, transparent);
 }

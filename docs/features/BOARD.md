@@ -23,6 +23,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | specified | 0/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
+| FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
 
 **FEAT-011 `building` 2/3** (2026-09-22, revisor). **Tajada 2 aceptada**, y con
 ella se cierra el 225 que quedó parcial en la tajada 1. **Reproduje el hallazgo

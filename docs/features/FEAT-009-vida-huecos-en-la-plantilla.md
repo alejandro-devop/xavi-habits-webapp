@@ -1,7 +1,7 @@
 ---
 id: FEAT-009
 title: Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena
-status: planned
+status: building
 architect: yes    # la geometría del hueco ya existe dos veces (Hoy y la plantilla) y el final de un ítem de plantilla es derivado y puede no existir: decidir de dónde sale el hueco y cómo se precarga el alta es código compartido, no una tajada
 area: features/vida
 requested: 2026-09-22
@@ -278,7 +278,7 @@ entera.
 
 | # | Qué hace | Estado |
 |---|---|---|
-| 1 | **Los huecos se ven.** Entre ítems, antes del primero y después del último, con su rango y su tamaño; los de menos de 15 min en línea fina; los solapes sin hueco; y el ítem sin duración con su línea que no miente. Nada se pulsa todavía. Ya sirve: la plantilla se lee como agenda y se ve dónde queda sitio. | pendiente |
+| 1 | **Los huecos se ven.** Entre ítems, antes del primero y después del último, con su rango y su tamaño; los de menos de 15 min en línea fina; los solapes sin hueco; y el ítem sin duración con su línea que no miente. Nada se pulsa todavía. Ya sirve: la plantilla se lee como agenda y se ve dónde queda sitio. | aceptada |
 | 2 | **El toque precarga.** Pulsar un hueco abre «Añadir a mi Vida» con la hora y la duración del hueco puestas, se elige actividad y se guarda. Es lo que pidió el usuario, entero. | pendiente |
 | 3 | **El ítem sin duración deja de tapar el hueco.** Su línea ofrece «Ponerle duración», que abre la hoja del ítem; al guardarla aparece el hueco que faltaba. Cierra el caso de la captura. | pendiente |
 
@@ -670,7 +670,7 @@ aquí.
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **Los huecos se ven.** Las tres formas pintadas, nada pulsable todavía. | **M** `utils/vida-template.utils.ts` (`:83-87` tipo, tipos nuevos tras `:87`, `:89-105` campo `rows`, bucle `:216-249`) · **M** `utils/vida-template.utils.test.ts` (describe al final) · **C** `components/VidaTemplateGapRow/{VidaTemplateGapRow.tsx,.module.scss,index.ts}` · **M** `pages/VidaPlantillaPage.tsx:410-421` (+ import) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:207`) | 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 166, 167, 168, 169 | pendiente |
+| 1 | **Los huecos se ven.** Las tres formas pintadas, nada pulsable todavía. | **M** `utils/vida-template.utils.ts` (`:83-87` tipo, tipos nuevos tras `:87`, `:89-105` campo `rows`, bucle `:216-249`) · **M** `utils/vida-template.utils.test.ts` (describe al final) · **C** `components/VidaTemplateGapRow/{VidaTemplateGapRow.tsx,.module.scss,index.ts}` · **M** `pages/VidaPlantillaPage.tsx:410-421` (+ import) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:207`) | 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 166, 167, 168, 169 | aceptada |
 | 2 | **El toque precarga.** Pulsar un hueco abre «Añadir a mi Vida» con hora y duración puestas y sobrevive a elegir actividad. | **M** `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (props `:35-44`, sync en render, `pick()` `:107-113`, `onSuccess` `:142-146`, línea del hueco tras `:253`, `ref` del buscador `:341-347`) · **M** `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx` (rama `<button>`) · **M** `pages/VidaPlantillaPage.tsx` (estado + `:446` y `:462`) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:634`) | 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 166, 167, 168, 169, **170** | pendiente |
 | 3 | **El ítem sin duración deja de tapar el hueco.** Su línea ofrece «Ponerle duración» y abre la hoja del ítem con «Cuánto» enfocado. | **M** `components/VidaActivitySheet/VidaActivitySheet.tsx` (prop `focusDuration` junto a `:80-90`, foco en `:595-605`) · **M** `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx` (salida de la línea `unknown`) · **M** `pages/VidaPlantillaPage.tsx:143-147` y `:481-494` · **M** `pages/VidaPlantillaPage.test.tsx` | 163, 164, 165, 166, 167, 168, 169 | pendiente |
 | — | El recorrido real a 375 px, en claro y en oscuro, contra el API de verdad. | — | **171** (lo cierra el usuario) | pendiente |
@@ -705,8 +705,305 @@ reparto de criterios, que sí cambian respecto a cómo estaban escritos:
 
 ## 3. Construcción — feature-builder
 
-*(pendiente)*
+### Tajada 1 — los huecos se ven
+
+**Resumen para el revisor:** entre ítem e ítem —y en los bordes del día— la
+plantilla pinta ahora una fila «Libre 8:40 → 9:00 · 20m», los restos de menos
+de 15 min en línea fina y, donde un ítem no dice cuánto dura, una línea que lo
+dice en vez de un hueco que miente; todo sale de **una fila más en el bucle que
+ya existía** (`buildTemplateDay`), y **nada se pulsa todavía**. Los archivos
+tocados son cuatro y uno nuevo. **Lo que más probablemente he roto: la lista de
+la agenda ya no es «una tarjeta por ítem»** —ahora hay `<li>` que no son ítems—,
+y eso ya reventó dos tests que contaban `listitem` (los acoté, no los debilité:
+`VidaPlantillaPage.test.tsx`); cualquier otro sitio que cuente filas de esa `ol`
+—o que mida su alto a 375 px— es donde hay que mirar. El segundo sitio es
+`TemplateSegment`, que ha ganado `startMinutes`/`endMinutes`: es aditivo, pero
+lo lee la barra de `VidaTemplateDaySummary`.
+
+**Qué se construyó:**
+
+- **`src/features/vida/utils/vida-template.utils.ts`** — la geometría, en el
+  mismo bucle y de una sola pasada:
+  - `TemplateSegment` (`:84-92`) gana `startMinutes` y `endMinutes` (aditivo;
+    nadie construye un `TemplateSegment` a mano).
+  - Tipos nuevos exportados (`:94-132`): `TemplateRow = TemplateItemRow |
+    TemplateGapRow | TemplateUnknownRow`. El hueco lleva sus dos horas, sus
+    minutos y `isSliver` (`minutes < MIN_GAP_MINUTES`, **importado** de
+    `vida-time.utils.ts:167`); la línea de «no sabemos» lleva `item`,
+    `untilMinutes` e `isDayEnd`. Cada fila lleva además un `id` —añadido mío,
+    no del plan— para que la página no tenga que fabricar `key`s.
+  - `TemplateDay.rows` (`:149-154`), documentado: misma geometría que
+    `segments`, **que no cambia**, y por eso el criterio 142 es una propiedad.
+  - El bucle (`:271-346`): `pushGap` sigue igual y ahora hay un `pushRowsUntil`
+    que decide en cada corte —la hora del ítem siguiente o `windowEnd`— entre
+    línea de «no sabemos», nada (solape) o hueco. `placed.length === 0` deja
+    `rows` vacío (criterio 149).
+- **`src/features/vida/components/VidaTemplateGapRow/`** (nuevo: `.tsx`,
+  `.module.scss`, `index.ts`) — las tres formas en un componente, molde de
+  `VidaTemplateItemCard/`: misma `.row`, misma canaleta de `2.75rem`, mismo
+  barril. `onPlace` y `onSetDuration` **existen ya en el contrato y nadie las
+  pasa**: por eso en esta tajada no hay ni un `button` nuevo en la lista.
+- **`src/features/vida/pages/VidaPlantillaPage.tsx`** — la `ol` mapea
+  `templateDay.rows` en vez de `templateDay.timed`; la condición
+  `templateDay.timed.length > 0` se queda (criterio 149) y las props de la
+  tarjeta no cambian. Un `import` más, ninguna consulta ni hook nuevos.
+- **Tests:** `utils/vida-template.utils.test.ts`, un `describe` nuevo al final
+  (13 casos, criterios 140-146 y 149 + los dos bordes sin criterio);
+  `pages/VidaPlantillaPage.test.tsx`, un `describe` nuevo tras el de la agenda
+  (9 casos) y **dos tests de arriba acotados**, no borrados (ver riesgos).
+
+**Por qué así, y lo que descarté:**
+
+- **Tres desvíos del plan, los tres dichos aquí:**
+  1. **La canaleta del hueco va vacía.** El plan decía «canaleta con la hora»;
+     el render aprobado (`10-vida-huecos-plantilla.html:117,152`) **no** repite
+     la hora ahí —ya va dentro de la frase, «Libre 5:00 → 8:00»— y pintarla
+     sería decir «8:40» dos veces en la misma línea. La canaleta existe igual,
+     con la misma medida, para que la columna de horas de los ítems no se mueva.
+  2. **Un hueco normal sin `onPlace` no se degrada a línea fina.** El plan lo
+     sugería entre paréntesis; con eso, en esta tajada **todos** los huecos se
+     verían finos y el render aprobado no se vería hasta la tajada 2. Lo que
+     separa fino de normal es el umbral (criterio 143); lo que separa pulsable
+     de no pulsable es `onPlace` (el «+» solo se pinta con ella).
+  3. **`TemplateRow` lleva `id`.** Un campo más, para las `key`s de React.
+- **El borde que el arquitecto dejó abierto (dos ítems a la misma hora, el
+  primero sin duración):** se emite **la línea igual**, con
+  `untilMinutes = Math.max(corte, su propia hora)`, y **nunca** un hueco. Es
+  la recomendación del plan, y el `Math.max` es cinturón: con el orden por hora
+  el corte nunca cae antes, pero si algún día cayera, la frase no retrocedería.
+  Test: «borde: dos ítems a la misma hora y el primero sin duración».
+- **El cruce 144 × 145 (solape con un ítem sin duración dentro):** la línea se
+  emite igual en el primer corte que viene detrás, **aunque el cursor ya vaya
+  por delante de ese corte**. Descarté callarla cuando el solape ya cubre el
+  tramo: sería una segunda regla («cállate si además hay solape») para ahorrar
+  una línea, y seguiría siendo verdad que no se sabe dónde acaba ese ítem. Lo
+  que **no** pasa en ningún caso es que se pinte un hueco por él. Test: «borde:
+  solape con un ítem sin duración dentro».
+- **No creé** ni función de huecos, ni umbral, ni formateador: el rango se
+  compone con dos `formatTimeForDisplay` y el tamaño con
+  `formatDurationFromMinutes`, como manda el criterio 140. `formatGapRange` no
+  se importa (pide un `AgendaGap` y escribe raya). `VidaAgendaGap` no se
+  importa: se imitó el JSX de su línea fina y su `.module.scss:163-171`.
+
+**Verificación** (la línea base entera, antes y después):
+
+```
+pnpm typecheck  → limpio (sin salida)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   ← igual que la base
+pnpm test       → Tests 2 failed | 1609 passed (1611)      ← los 2 de SearchSelect
+                  Test Files 1 failed | 109 passed (110)      de siempre; +22 tests
+pnpm build      → ✓ built in 5.86s — index 1.096,35 kB (base 1.093,96) + app-icons
+                  620,20 kB + IconPicker 4,64 kB
+```
+
+El paquete sube **2,39 kB**: es el componente nuevo y sus estilos. No hay ningún
+import nuevo de terceros.
+
+**Criterios que cierra, uno a uno:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 140 | cumplido | `VidaPlantillaPage.test.tsx` «entre ítem e ítem…»: la lista contiene literalmente `Libre 8:40 → 9:00 · 20m`, compuesto con `formatTimeForDisplay` ×2 y `formatDurationFromMinutes`. Ningún formateador nuevo en el diff. |
+| 141 | cumplido | Test «los bordes del día también llevan hueco»: con un único ítem 8:00–9:00 salen **exactamente dos**, `Libre 6:30 → 8:00 · 1h 30` y `Libre 9:00 → 23:00 · 14h` (el día del test es 06:30–23:00). Y en utils, «con un ítem fuera del horario la ventana manda»: un ítem a las 5:00 estira `windowStart` y el hueco lo sigue. |
+| 142 | cumplido | Test de utils «la suma de los huecos pintados es exactamente `freeMinutes`»: `painted === day.freeMinutes` y `plannedMinutes + painted === 990`. Es una propiedad: las filas `gap` y los tramos `free` salen del mismo corte. |
+| 143 | cumplido | Tests «un resto de menos de 15 min…» (utils, `isSliver: true`) y «el de menos de 15 min se ve, y no hay nada que pulsar»: `Libre 8:55 → 9:00 · 5m` está en la lista y los únicos botones de la `ol` siguen siendo `Abrir Bañarme` y `Abrir Desayunar`. `MIN_GAP_MINUTES` importado, no redefinido. |
+| 144 | cumplido | Tests «en un solape no hay hueco…» (utils y página): con 8:00–10:00 y 9:00–9:30 las filas son `gap, item, item, gap` y el siguiente hueco empieza **a las 10:00**. Ni una palabra del solape en pantalla. |
+| 145 | cumplido | Test «un ítem sin duración pone una línea que dice la verdad»: el texto literal es «No sabemos cuánto dura Working at lululemon, así que no podemos decir qué queda libre hasta las 14:00.» y **no** existe `Libre 10:00 …`. La línea no es `button` ni tiene `role`. |
+| 146 | cumplido | Tests «si es el último…» (habla del **final del día**) y, en utils, «dos seguidos sin duración»: `gap, item, unknown, item, unknown`, una línea por cada uno y ningún hueco entre ellos. |
+| 147 | cumplido | Por construcción y por diff: `VidaPlantillaPage.tsx` no gana ningún hook ni documento GraphQL —el único import nuevo es el componente—, y `rows` se deriva de los `VidaItem` que la pantalla ya tenía. El `describe` de la página monta la pantalla entera con los mismos mocks de consulta de antes. |
+| 148 | cumplido | Test «solo en la vista de día»: dentro de la región «Tu semana entera» y dentro del cajón «Sin hora» no hay ni un `Libre …` ni una línea de «No sabemos». `VidaWeekGrid` y `VidaTemplateNoTimeDrawer` tienen **diff vacío**. |
+| 149 | cumplido | Test de página «un día sin ítems con hora…»: no existe la `ol` de la agenda y no hay ningún `Libre `. En utils, `build([]).rows` y el día solo-sin-hora dan `[]`. |
+| 150 | **pendiente de prueba manual** | El alto real a 375 px **no lo pude medir**: ver «lo que no pude comprobar». Lo que sí está: la fila de hueco es **una sola línea** por construcción (`white-space: nowrap` + `text-overflow: ellipsis` en `.label`, `padding .4rem`), y la `ol` no cambia de contenedor. |
+| 151 | cumplido a medias | La fila de hueco **no imprime ningún nombre de actividad** (se ve en el JSX: solo horas y tamaño), así que un nombre de 60 caracteres no la toca. **La línea de «no sabemos» sí lo imprime**, y su envoltura a 375 px (`overflow-wrap: anywhere`, sin `nowrap`) queda **pendiente de mirarla renderizada**. |
+| 152 | cumplido a medias | Sin depender del color: el texto **empieza por «Libre»** y el trazo es discontinuo. Contraste calculado sobre los tokens de Aura (`_theme-variables.scss:155-169,235-249`), texto sobre el fondo de la página: claro **7,88:1** (hueco), **7,35:1** (fino), **6,73:1** (la línea gris); oscuro **11,14:1**, **8,86:1**, **8,08:1**. Todos ≥ 4,5:1. **Medido sobre `--color-bg` plano**: el fondo real lleva el degradado de la aurora, así que la confirmación con el ojo es del usuario. |
+| 166 | cumplido | Test «ni una palabra de reproche»: el texto de la agenda contiene «Libre» y no contiene «vacío», «desperdicio», «perdido», «sin aprovechar» ni «deberías». Además `vida-vocabulary.test.ts` recorre por glob los archivos nuevos, que viven bajo `src/features/vida/`. |
+| 167 | cumplido | El diff no copia `vida-agenda.utils.ts` ni `VidaAgendaGap`, y **no añade ninguna función** que convierta minutos en texto ni en `HH:mm`: `grep` sobre el diff, cero `function format*`. La geometría sale de un solo sitio, `buildTemplateDay`. |
+| 168 | cumplido | Diff sin `graphql`, sin `localStorage`, sin claves de caché, sin rutas. |
+| 169 | cumplido | Ver «Verificación»: typecheck limpio, lint 14/0, los mismos 2 fallos de `SearchSelect`, build exit 0. |
+
+**Lo que no pude comprobar, y por qué:** **no conseguí abrir el navegador.** El
+panel estaba ocupado por una pestaña de otra sesión (`tab-8`, un documento
+`data:` de «Vida — registrar en el hueco») y **esta sesión no tiene la
+herramienta `tabs_close`**: `preview_start` y `navigate` respondieron «Tab cap
+reached» las tres veces que lo intenté, con la web del usuario **arriba** en el
+5173. No arranqué ningún servidor. Dejé escrito y **borrado** el arnés que tenía
+preparado (`harness-gap.html` + `src/harness-gap.tsx`, fuera del árbol ya:
+`git status` no los enseña). Queda pendiente de mirar con el ojo, a 375 px y en
+los dos temas:
+
+1. `/app/vida/plantilla`, un día con 6 ítems, uno de ellos sin duración y otro
+   que deje un resto de 5 min. Medir con `getBoundingClientRect` que la fila de
+   hueco mide **menos de la mitad** que una tarjeta (criterio 150) y que
+   `document.documentElement.scrollWidth === 375` (sin scroll horizontal).
+2. Un ítem con un nombre de 60 caracteres sin duración: que su línea **envuelva**
+   y no desborde (criterio 151).
+3. Los dos temas, para el contraste del criterio 152 sobre el fondo de verdad.
+
+**Riesgos:**
+
+1. **La agenda ya no es «una tarjeta por ítem».** Dos tests contaban
+   `getAllByRole('listitem')` y fallaron: «una tarjeta por ítem, ordenada por
+   hora ascendente» y «la pantalla se dibuja de la consulta» (criterio 24). Los
+   **acoté, no los debilité**: un ayudante `itemRowsOf()` quita las filas que
+   empiezan por «Libre » o «No sabemos », y las afirmaciones de orden y de
+   cuenta siguen siendo las mismas. Está comentado en el propio test, con el
+   mismo formato que usó la tajada 4 de FEAT-005 para un caso igual.
+2. **`TemplateSegment` gana dos campos.** Aditivo, pero lo consume la barra
+   (`VidaTemplateDaySummary.tsx:72`) y `buildTemplateWeekGrid`. Ningún test hace
+   `toEqual` del objeto entero (los que suman `trackMinutes` siguen verdes).
+3. **El alto de la lista a 375 px.** Es el riesgo real de esta tajada: una
+   agenda de seis ítems pasa a tener hasta once filas. Está sin medir (arriba).
+4. **FEAT-012 (la noche)** no queda cerrada: las filas nacen entre `windowStart`
+   y `windowEnd` y no inventan borde propio, así que mover el borde del día
+   sigue siendo suficiente. No toqué nada de eso.
+5. **La hora de fin del render («→ Acaba a las 11:30») no está**, a propósito:
+   es de FEAT-008 tajada 2, que no está construida.
+
+**Lo que vi de paso y no toqué** (fuera de alcance, anotado para quien pase):
+`MIN_PLACEMENT_MINUTES` (`vida-gap-form.utils.ts:34`) sigue siendo el gemelo de
+`MIN_GAP_MINUTES`, y el tercer `isSliver` sigue en `vida-execution.utils.ts:694`.
+Los dos son de Hoy.
+
+**Estado del árbol:** **sin commitear**. Modificados
+`src/features/vida/utils/vida-template.utils.ts`,
+`src/features/vida/utils/vida-template.utils.test.ts`,
+`src/features/vida/pages/VidaPlantillaPage.tsx`,
+`src/features/vida/pages/VidaPlantillaPage.test.tsx`; nuevo
+`src/features/vida/components/VidaTemplateGapRow/` (tres archivos). Más este
+dossier y `BOARD.md`. El grafo se actualizó con `graphify update .`.
 
 ## 4. Revisión — feature-reviewer
 
-*(pendiente)*
+### Tajada 1 — Los huecos se ven
+
+**Veredicto: `accepted`** — los trece criterios de la tajada (140–152) y el
+transversal 169 se cumplen. **He abierto el navegador y cerrado la deuda visual
+que el constructor no pudo cubrir**: el criterio **150 está medido** —una fila
+de hueco mide **32,8 px** frente a los **66,7 px** de una tarjeta de ítem, menos
+de la mitad—, y el **151** y el **152** los he visto y medido a 375 px en claro y
+en oscuro. El criterio 142 lo he comprobado como se me pidió, sumando filas
+contra `freeMinutes` en **ocho días distintos**, y es una propiedad, no una
+coincidencia. Queda un hallazgo de redacción sobre el criterio 146 y un margen
+de medio píxel en el 150 que conviene saber.
+
+**Criterios, uno por uno** (contra la sección 1)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 140 | **cumplido** | La fila se compone con `formatTimeForDisplay` ×2 y `formatDurationFromMinutes`; **en el diff no hay ningún formateador nuevo**. Visto en pantalla: «Libre 8:40 → 9:00 · 20m», entre las dos tarjetas y dentro de la misma `ol`. |
+| 141 | **cumplido** | Con seis ítems vi los dos bordes: «Libre 6:30 → 8:00 · 1h 30» y «Libre 18:30 → 23:00 · 4h 30». En mi propio test, un ítem a las 5:00 estira la ventana y el hueco la sigue, sin borde inventado. |
+| 142 | **cumplido, y verificado en ocho días** | Test temporal mío (borrado): en ocho configuraciones —un ítem, dos, casi pegados, con solape, pegados a los bordes, con un resto de 5 min, con un ítem fuera del horario, con tres ítems— **la suma de los minutos de las filas de hueco es exactamente `freeMinutes`**, y además los `segments` siguen sumando `dayMinutes`. Es propiedad del único cursor que recorre el día: `pushGap` y `pushRowsUntil` reciben **el mismo par** `(cursor, corte)`. |
+| 143 | **cumplido** | El umbral es `MIN_GAP_MINUTES` importado de `vida-time.utils.ts:167`; **no hay una segunda constante en el diff**. Visto: «Libre 11:25 → 11:30 · 5m» en línea fina (24,5 px), sin caja y **sin nada que pulsar** (`onPlace` no llega en esta tajada). |
+| 144 | **cumplido** | Mi test: con 8:00–10:00 y 9:00–9:30, **cero** filas de hueco entre ellos y el siguiente hueco arranca en **10:00** —el fin más tardío—, con los rangos exactos `[[390,480],[600,660],[690,1380]]`. Ni una palabra del solape. |
+| 145 | **cumplido** | Mi test: con un ítem sin duración las filas son `gap, item, unknown, item, gap` y **la diferencia con `freeMinutes` es exactamente los 60 min del tramo del que no se afirma nada**. La barra **no se mueve**. Nada de esa línea es pulsable. |
+| 146 | **cumplido en lo que pide, con un hallazgo de redacción** | Con el ítem sin duración como último con hora, la línea habla del fin del día y **no hay hueco tras él** (mi test del cruce con solape: `isDayEnd: true`, `untilMinutes` = 23:00). Con dos seguidos, una línea por cada uno y ningún hueco entre ellos. **Pero la frase dice «hasta el final del día», no «hasta las 23:00»** — ver hallazgo 1. |
+| 147 | **cumplido** | El diff de la página es **un `import` y el `map`**: ni un hook, ni una consulta, ni un `useQuery` nuevos. No hay test de espías para esto —el criterio dice «comprobable», y lo he comprobado sobre el diff, que es más directo—. |
+| 148 | **cumplido** | `VidaWeekGrid` y `VidaTemplateNoTimeDrawer` **no aparecen en `git status`**: diff vacío. Y hay test de que ni la semana entera ni el cajón pintan filas. |
+| 149 | **cumplido** | `rows` es `[]` sin ítems con hora —lo comprobé con dos casos: sin ítems y con uno sin hora—, y la condición `timed.length > 0` de la página no se ha tocado. |
+| 150 | **cumplido, medido por mí** | A 375 px, con seis ítems y sus huecos: fila de hueco **32,8 px** (fina, 24,5) frente a tarjeta de ítem **66,7 px** → **menos de la mitad**, y **una sola línea de texto**. `scrollWidth === clientWidth === 375` y **0 nodos** desbordados. Ver el hallazgo 2 sobre el margen. |
+| 151 | **cumplido, visto** | La fila de hueco **no imprime ningún nombre**: solo horas y tamaño. La línea del criterio 145, con un nombre de **60 caracteres**, **envuelve** en tres líneas dentro de su caja, sin desbordar (altura 67 px, 0 nodos fuera). |
+| 152 | **cumplido, medido sobre el fondo real** | El texto **empieza por «Libre»** —se distingue sin color— y el trazo es discontinuo. Contrastes compuestos capa a capa sobre el fondo de verdad (no sobre `--color-bg` plano): **claro** 15,63 (hueco) · 6,96 (fino) · 6,10 (la línea de «no sabemos»); **oscuro** 19,29 · 9,94 · 9,94. Todos muy por encima de 4,5:1. |
+| 169 | **cumplido, línea base corrida entera por mí** | Ver abajo. |
+| 170, 171 | **pendientes** | El 170 es de la tajada 2 (nada que precargar todavía); el 171, del usuario. |
+
+**La barra no se ha movido**
+
+`segments` sigue saliendo de `pushGap` y de la misma aritmética de
+`trackMinutes`: lo único que cambia es que cada tramo **añade** `startMinutes` y
+`endMinutes`. Comprobé que ningún test existente comparaba `segments` de forma
+exhaustiva —si lo hiciera con `toEqual`, las claves nuevas lo habrían roto— y
+que `freeMinutes` y la suma de tramos siguen cuadrando con `dayMinutes` en los
+ocho días que probé. **Ni un valor cambia para ningún día.**
+
+**Los dos bordes sin criterio: ¿dice algo falso?**
+
+- **Dos ítems a la misma hora, el primero sin duración.** `untilMinutes =
+  max(corte, su propia hora)` deja la frase en su propia hora: «…no podemos
+  decir qué queda libre hasta las 9:00» para un ítem que empieza a las 9:00.
+  **No es falso** —de un tramo de cero minutos no se afirma nada—, pero es una
+  frase vacía. Como el `Math.max` es cinturón contra un orden que hoy no puede
+  darse, lo doy por bueno; queda anotado.
+- **Solape × sin duración.** Con 8:00–10:00 y un ítem a las 9:00 sin duración,
+  las filas son `gap, item, item, unknown` y **no aparece ningún hueco** entre
+  el solape y el fin del día, aunque la barra sí lo siga enseñando. Lo verifiqué
+  con mi propio test. **Tampoco dice nada falso**: es cierto que no se sabe
+  dónde acaba ese ítem y, por tanto, que no se puede afirmar qué queda libre
+  después. Es la lectura conservadora, y es la coherente con el criterio 145.
+
+**Las tres desviaciones, juzgadas**
+
+1. **La canaleta vacía en la fila de hueco: correcta.** Abrí el render
+   (`10-vida-huecos-plantilla.html`) y, en efecto, la hora no se repite ahí: ya
+   va dentro de «Libre 8:40 → 9:00». La canaleta se mantiene con su medida, y en
+   pantalla **la columna de horas de los ítems no se mueve** —lo vi—.
+2. **Un hueco normal sin `onPlace` no degrada a línea fina: correcta, y era la
+   única salida sensata.** Con la degradación, en esta tajada **todos** los
+   huecos se verían finos y el visual aprobado no existiría hasta la tajada 2,
+   que es justo lo que una tajada vertical no puede permitirse. Lo que separa
+   fino de normal sigue siendo el umbral (143); lo que separa pulsable de no
+   pulsable es `onPlace`, y en esta tajada no llega de nadie.
+3. **`TemplateRow` con `id`: correcta y trivial.** Es la `key` de React; el id
+   del hueco se compone con las mismas horas que el `segment` hermano.
+
+**Los dos tests acotados: no relajan nada**
+
+Los dos contaban `listitem` para afirmar **los nombres y su orden**. Ahora
+filtran las filas que empiezan por «Libre » o «No sabemos » y hacen **la misma
+afirmación** sobre las tarjetas: misma lista, mismo orden, mismo `toEqual`. No
+se ha borrado ni una aserción —`--numstat` da 142 añadidas y **6** borradas, y
+las seis son las dos expresiones sustituidas—.
+
+**Ni una constante ni un formateador de más**
+
+`MIN_GAP_MINUTES` se importa de `vida-time.utils.ts:167`; en el diff no hay otro
+umbral. `MIN_PLACEMENT_MINUTES` y el tercer `isSliver` de
+`vida-execution.utils.ts` **no se han tocado** —siguen siendo deuda de Hoy, y
+fuera de esta tajada—. Y **no está escrito el «→ Acaba a las 11:30»** del
+render: `grep -rn "Acaba a las" src/` no devuelve nada, así que la tajada 2 de
+FEAT-008 sigue sin invadirse.
+
+**En el navegador, por mí** (la deuda que venía de la tajada)
+
+El 5173 del usuario estaba arriba y **el panel tenía sitio**: monté un arnés con
+los **componentes reales** y las filas que devuelve `buildTemplateDay` de verdad
+—seis ítems, un resto de 5 minutos y un ítem sin duración con un nombre de 60
+caracteres—, dentro de la `ol` real de la plantilla; lo serví desde ese 5173
+—**no arranqué ningún servidor**— y lo **borré**: `git status` no lo lista.
+Todo lo medido está en la tabla de arriba.
+
+**Línea base, corrida entera por mí**
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1589 | 2 de 1611 | **2 fallidos de 1611**, 109 archivos de 110 en verde |
+| `pnpm build` | 1.093,96 kB | 1.096,35 kB | **exit 0**, `index` **1.096,35 kB** (+2,39), `app-icons` **620,20 kB sin tocar** |
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **El criterio 146 pide la hora y la línea dice «el final del día».** El
+   criterio escribe el ejemplo con el número —«…hasta las 22:00»— y lo que se
+   pinta es «…hasta el final del día». Lo que el criterio **exige** —que la
+   línea hable del fin del día— se cumple, y por eso no devuelvo; pero el módulo
+   dice los números en todas partes y el render usa la hora en el caso de en
+   medio («hasta las 14:00»). **Es una palabra**: que lo decida el usuario.
+2. **El criterio 150 se cumple por medio píxel.** 32,8 px frente a 33,35 (la
+   mitad de 66,7). Es cierto hoy; cualquier retoque de `padding` en la fila lo
+   rompe sin que nadie se entere, porque no hay test de alto —no puede haberlo
+   fuera del navegador—. Queda dicho para quien toque esos estilos.
+3. **Los dos tests acotados filtran por el texto** («Libre », «No sabemos »).
+   Si esas frases cambian, el filtro deja de filtrar; el fallo saldría en voz
+   alta, pero el acoplamiento entre un test de FEAT-005 y una frase de FEAT-009
+   conviene saberlo.
+4. **El criterio 147 no tiene test de espías.** Lo he verificado sobre el diff
+   —la página no gana ni un hook— y me vale, pero si la tajada 2 monta algo,
+   ese test sí hará falta.
+5. **`ENVIRONMENT.md` vuelve a quedarse corto** (hoy **1611** tests y
+   **1.096,35 kB**). **No lo he tocado** — es la regla.
+
+**Lo que no he podido revisar:** `/app/vida/plantilla` con sesión —criterio
+**171**—: la vista real con sus datos, el tacto en un teléfono de verdad y el
+fondo con el degradado de la aurora. Lo de arriba está medido sobre los
+componentes y las hojas de estilo reales, pero fuera de la aplicación con
+sesión.

@@ -135,6 +135,19 @@ const SETTINGS = {
   vidaDayEndTime: '23:00',
 } as unknown as UserSettings
 
+/**
+ * El texto de **las tarjetas** de la agenda, sin las filas que FEAT-009
+ * intercala entre ellas (el hueco y la línea del ítem sin duración). Lo que
+ * separa a unas de otras es lo mismo que las separa en pantalla: el hueco
+ * empieza por «Libre» y la línea por «No sabemos».
+ */
+function itemRowsOf(agenda: HTMLElement): string[] {
+  return within(agenda)
+    .getAllByRole('listitem')
+    .map((row) => row.textContent ?? '')
+    .filter((text) => !text.startsWith('Libre ') && !text.startsWith('No sabemos '))
+}
+
 beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(new Date(2026, 8, 18, 9, 24, 0))
@@ -228,9 +241,11 @@ describe('la agenda del día (criterios 6, 7, 8, 9 y 13)', () => {
   it('una tarjeta por ítem, **ordenada por hora ascendente**', () => {
     renderWithProviders(<VidaPlantillaPage />)
     const agenda = screen.getByRole('list', { name: /viernes, ordenado por hora/i })
-    const names = within(agenda)
-      .getAllByRole('listitem')
-      .map((row) => row.textContent ?? '')
+    // **Acotado en FEAT-009, no debilitado**: desde que la lista lleva huecos,
+    // entre las tarjetas hay filas que no son ítems. La afirmación sigue
+    // siendo la misma —una tarjeta por ítem y el orden de la hora— hecha sobre
+    // las tarjetas.
+    const names = itemRowsOf(agenda)
     expect(names[0]).toContain('Salir a correr')
     expect(names[1]).toContain('Bañarme')
     expect(names[2]).toContain('Cocinar y almorzar')
@@ -309,6 +324,128 @@ describe('la agenda del día (criterios 6, 7, 8, 9 y 13)', () => {
     expect(within(agenda).getByText(largo)).toBeInTheDocument()
   })
 })
+
+// ─── FEAT-009 · tajada 1: los huecos se ven ──────────────────────────────────
+
+/**
+ * Lo que hay **entre** las cosas (criterios 140-152). En esta tajada nada de
+ * esto se pulsa: la lista gana filas, no salidas.
+ */
+describe('los huecos de la plantilla (criterios 140-149)', () => {
+  const agenda = () => screen.getByRole('list', { name: /viernes, ordenado por hora/i })
+
+  it('entre ítem e ítem, una fila con su rango y su tamaño (criterio 140)', () => {
+    itemsQuery = ready([
+      item('uno', { startTime: '08:00', durationMinutes: 40, title: 'Bañarme' }),
+      item('dos', { startTime: '09:00', durationMinutes: 30, title: 'Desayunar' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    // El rango va dentro de un `<b>`, así que la frase se lee entera del
+    // elemento, no del nodo de texto suelto.
+    const libres = within(agenda())
+      .getAllByText(/^Libre /)
+      .map((row) => row.textContent)
+    expect(libres).toContain('Libre 8:40 → 9:00 · 20m')
+  })
+
+  it('los bordes del día también llevan hueco: dos, y solo dos (criterio 141)', () => {
+    itemsQuery = ready([item('uno', { startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const libres = within(agenda())
+      .getAllByText(/^Libre /)
+      .map((row) => row.textContent)
+    expect(libres).toEqual(['Libre 6:30 → 8:00 · 1h 30', 'Libre 9:00 → 23:00 · 14h'])
+  })
+
+  it('el de menos de 15 min se ve, y **no hay nada que pulsar** (criterios 143 y 161)', () => {
+    itemsQuery = ready([
+      item('uno', { startTime: '08:00', durationMinutes: 55, title: 'Bañarme' }),
+      item('dos', { startTime: '09:00', durationMinutes: 30, title: 'Desayunar' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(within(agenda()).getByText('Libre 8:55 → 9:00 · 5m')).toBeInTheDocument()
+    // Los únicos botones de la lista siguen siendo las tarjetas: en esta
+    // tajada ni el hueco ni la línea de «no sabemos» son pulsables.
+    const rotulos = within(agenda())
+      .getAllByRole('button')
+      .map((button) => button.getAttribute('aria-label') ?? button.textContent)
+    expect(rotulos).toEqual(['Abrir Bañarme', 'Abrir Desayunar'])
+  })
+
+  it('en un solape no aparece ningún hueco entre los dos (criterio 144)', () => {
+    itemsQuery = ready([
+      item('largo', { startTime: '08:00', durationMinutes: 120, title: 'Trabajar' }),
+      item('dentro', { startTime: '09:00', durationMinutes: 30, title: 'Daily' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const libres = within(agenda())
+      .getAllByText(/^Libre /)
+      .map((row) => row.textContent)
+    expect(libres).toEqual(['Libre 6:30 → 8:00 · 1h 30', 'Libre 10:00 → 23:00 · 13h'])
+  })
+
+  it('un ítem sin duración pone una línea que dice la verdad, no un hueco (criterio 145)', () => {
+    itemsQuery = ready([
+      item('sin', { startTime: '10:00', title: 'Working at lululemon' }),
+      item('luego', { startTime: '14:00', durationMinutes: 45, title: 'Pasear' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const linea = within(agenda()).getByText(/^No sabemos cuánto dura/)
+    expect(linea.textContent).toBe(
+      'No sabemos cuánto dura Working at lululemon, así que no podemos decir qué queda libre hasta las 14:00.',
+    )
+    expect(within(agenda()).queryByText(/^Libre 10:00/)).not.toBeInTheDocument()
+  })
+
+  it('si es el último, la línea habla del final del día (criterio 146)', () => {
+    itemsQuery = ready([item('sin', { startTime: '10:00', title: 'Working at lululemon' })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(within(agenda()).getByText(/^No sabemos cuánto dura/).textContent).toBe(
+      'No sabemos cuánto dura Working at lululemon, así que no podemos decir qué queda libre hasta el final del día.',
+    )
+  })
+
+  it('un día sin ítems con hora no pinta ningún hueco (criterio 149)', () => {
+    itemsQuery = ready([item('lavadora', { title: 'Poner una lavadora', durationMinutes: 20 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(screen.queryByRole('list', { name: /viernes, ordenado por hora/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Libre /)).not.toBeInTheDocument()
+  })
+
+  it('solo en la vista de día: ni la semana entera ni el cajón pintan huecos (criterio 148)', () => {
+    itemsQuery = ready([...WEEK, item('lavadora', { title: 'Poner una lavadora' })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const week = screen.getByRole('region', { name: 'Tu semana entera' })
+    expect(within(week).queryByText(/^Libre /)).not.toBeInTheDocument()
+    expect(within(week).queryByText(/^No sabemos cuánto dura/)).not.toBeInTheDocument()
+
+    const drawer = screen.getByRole('region', { name: /sin hora/i })
+    expect(within(drawer).queryByText(/^Libre /)).not.toBeInTheDocument()
+  })
+
+  it('ni una palabra de reproche en lo nuevo: un rato sin nada es **libre** (criterio 166)', () => {
+    itemsQuery = ready([
+      item('uno', { startTime: '08:00', durationMinutes: 40, title: 'Bañarme' }),
+      item('sin', { startTime: '10:00', title: 'Working at lululemon' }),
+    ])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const texto = agenda().textContent ?? ''
+    expect(texto).toContain('Libre')
+    for (const palabra of ['vacío', 'desperdicio', 'perdido', 'sin aprovechar', 'deberías']) {
+      expect(texto).not.toContain(palabra)
+    }
+  })
+})
+
 
 describe('el resumen del día (criterios 4 y 5)', () => {
   beforeEach(() => {
@@ -580,10 +717,9 @@ describe('la hoja del ítem y lo que escribe (criterios 16-27)', () => {
 
   it('la pantalla se dibuja **de la consulta**: cambiar la hora reordena y vaciarla manda al cajón (criterio 24)', () => {
     const { rerender } = renderWithProviders(<VidaPlantillaPage />)
+    // Las tarjetas, sin las filas de hueco que FEAT-009 intercala entre ellas.
     const names = () =>
-      within(screen.getByRole('list', { name: /viernes, ordenado por hora/i }))
-        .getAllByRole('listitem')
-        .map((row) => row.textContent ?? '')
+      itemRowsOf(screen.getByRole('list', { name: /viernes, ordenado por hora/i }))
 
     expect(names()[0]).toContain('Salir a correr')
     expect(names()[2]).toContain('Organizar la casa')

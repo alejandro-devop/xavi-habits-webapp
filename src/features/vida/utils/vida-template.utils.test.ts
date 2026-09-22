@@ -931,3 +931,173 @@ describe('planCopyDay — copiar añade días al ítem que ya existe (A7, criter
     ])
   })
 })
+
+/**
+ * Las filas de la agenda (FEAT-009, tajada 1). Salen del **mismo bucle** que
+ * los tramos de la barra, así que lo que se comprueba aquí no es una cuenta
+ * nueva: es que la lista y la barra digan lo mismo, y que donde no se sabe, se
+ * diga en vez de inventar un hueco.
+ */
+describe('buildTemplateDay — las filas y sus huecos (criterios 140-146, 149)', () => {
+  const gaps = (day: ReturnType<typeof build>) =>
+    day.rows.filter((row) => row.kind === 'gap').map((row) => row.id)
+
+  it('los bordes del día llevan hueco: un ítem de 8:00 a 9:00 deja dos (criterio 141)', () => {
+    const day = build([item('1', { startTime: '08:00', durationMinutes: 60 })])
+
+    expect(day.rows.map((row) => row.kind)).toEqual(['gap', 'item', 'gap'])
+    expect(gaps(day)).toEqual(['free-06:30-08:00', 'free-09:00-23:00'])
+  })
+
+  it('el hueco trae sus dos horas y su tamaño, y no es fino (criterios 140 y 143)', () => {
+    const day = build([
+      item('1', { startTime: '08:00', durationMinutes: 40 }),
+      item('2', { startTime: '09:00', durationMinutes: 30 }),
+    ])
+    const between = day.rows.find((row) => row.kind === 'gap' && row.startMinutes === 8 * 60 + 40)
+
+    expect(between).toMatchObject({
+      kind: 'gap',
+      startMinutes: 520,
+      endMinutes: 540,
+      minutes: 20,
+      isSliver: false,
+    })
+  })
+
+  it('un resto de menos de 15 min se pinta igual, marcado como fino (criterio 143)', () => {
+    const day = build([
+      item('1', { startTime: '08:00', durationMinutes: 55 }),
+      item('2', { startTime: '09:00', durationMinutes: 30 }),
+    ])
+    const sliver = day.rows.find((row) => row.kind === 'gap' && row.minutes === 5)
+
+    expect(sliver).toMatchObject({ isSliver: true, startMinutes: 535, endMinutes: 540 })
+  })
+
+  it('la suma de los huecos pintados es exactamente `freeMinutes` (criterio 142)', () => {
+    const day = build([
+      item('1', { startTime: '08:00', durationMinutes: 60 }),
+      item('2', { startTime: '09:00', durationMinutes: 30 }),
+      item('3', { startTime: '21:00', durationMinutes: 45 }),
+      item('sinHora', {}),
+    ])
+    const painted = day.rows.reduce(
+      (total, row) => (row.kind === 'gap' ? total + row.minutes : total),
+      0,
+    )
+
+    expect(painted).toBe(day.freeMinutes)
+    expect(day.plannedMinutes + painted).toBe(DAY_MINUTES)
+  })
+
+  it('con un ítem fuera del horario la ventana manda, y los huecos la siguen (criterios 141 y 142)', () => {
+    const day = build([item('1', { startTime: '05:00', durationMinutes: 30 })])
+    const painted = day.rows.reduce(
+      (total, row) => (row.kind === 'gap' ? total + row.minutes : total),
+      0,
+    )
+
+    expect(day.windowStart).toBe(5 * 60)
+    expect(gaps(day)).toEqual(['free-05:30-23:00'])
+    expect(painted).toBe(day.freeMinutes)
+  })
+
+  it('en un solape no hay hueco, y el siguiente arranca en el final más tardío (criterio 144)', () => {
+    const day = build([
+      item('largo', { startTime: '08:00', durationMinutes: 120 }),
+      item('dentro', { startTime: '09:00', durationMinutes: 30 }),
+    ])
+
+    expect(day.rows.map((row) => row.kind)).toEqual(['gap', 'item', 'item', 'gap'])
+    expect(gaps(day)).toEqual(['free-06:30-08:00', 'free-10:00-23:00'])
+  })
+
+  it('un ítem sin duración no produce hueco: produce una línea que lo dice (criterio 145)', () => {
+    const day = build([
+      item('sinDuracion', { startTime: '10:00', title: 'Working at lululemon' }),
+      item('despues', { startTime: '14:00', durationMinutes: 45 }),
+    ])
+
+    expect(day.rows.map((row) => row.kind)).toEqual(['gap', 'item', 'unknown', 'item', 'gap'])
+    expect(day.rows[2]).toMatchObject({
+      kind: 'unknown',
+      untilMinutes: 14 * 60,
+      isDayEnd: false,
+    })
+  })
+
+  it('la barra no se entera: el tramo libre sigue en `segments` aunque la fila no lo pinte', () => {
+    const day = build([
+      item('sinDuracion', { startTime: '10:00' }),
+      item('despues', { startTime: '14:00', durationMinutes: 45 }),
+    ])
+
+    expect(day.segments.map((segment) => segment.id)).toContain('free-10:00-14:00')
+    expect(day.rows.some((row) => row.kind === 'gap' && row.startMinutes === 10 * 60)).toBe(false)
+    expect(day.freeMinutes).toBe(DAY_MINUTES - 45)
+  })
+
+  it('si el ítem sin duración es el último, la línea habla del fin del día (criterio 146)', () => {
+    const day = build([item('sinDuracion', { startTime: '10:00' })])
+
+    expect(day.rows.map((row) => row.kind)).toEqual(['gap', 'item', 'unknown'])
+    expect(day.rows[2]).toMatchObject({ kind: 'unknown', untilMinutes: 23 * 60, isDayEnd: true })
+  })
+
+  it('dos seguidos sin duración: una línea por cada uno y ningún hueco entre ellos (criterio 146)', () => {
+    const day = build([
+      item('uno', { startTime: '10:00' }),
+      item('dos', { startTime: '12:00' }),
+    ])
+
+    expect(day.rows.map((row) => row.kind)).toEqual(['gap', 'item', 'unknown', 'item', 'unknown'])
+    expect(day.rows[2]).toMatchObject({ untilMinutes: 12 * 60, isDayEnd: false })
+    expect(day.rows[4]).toMatchObject({ untilMinutes: 23 * 60, isDayEnd: true })
+  })
+
+  it('un día sin ítems con hora no pinta ninguna fila (criterio 149)', () => {
+    expect(build([item('sinHora', {})]).rows).toEqual([])
+    expect(build([]).rows).toEqual([])
+  })
+
+  /*
+   * Los dos bordes que ningún criterio cubre, decididos aquí: en los dos casos
+   * la línea se emite igual y **nunca** se emite un hueco por un ítem del que
+   * no se sabe dónde acaba.
+   */
+
+  it('borde: dos ítems a la misma hora y el primero sin duración — línea, nunca hueco', () => {
+    const day = build([
+      item('sinDuracion', { startTime: '09:00', title: 'Arreglar la cama' }),
+      item('mismaHora', { startTime: '09:00', durationMinutes: 30, title: 'Bañarme' }),
+    ])
+
+    expect(day.rows.map((row) => row.kind)).toEqual(['gap', 'item', 'unknown', 'item', 'gap'])
+    // El corte cae **en su propia hora**: la línea no retrocede por debajo de
+    // ella, y no se cuela ningún hueco de cero ni negativo.
+    expect(day.rows[2]).toMatchObject({ untilMinutes: 9 * 60, isDayEnd: false })
+    expect(gaps(day)).toEqual(['free-06:30-09:00', 'free-09:30-23:00'])
+  })
+
+  it('borde: solape con un ítem sin duración dentro (criterios 144 × 145)', () => {
+    const day = build([
+      item('largo', { startTime: '08:00', durationMinutes: 120, title: 'Trabajar' }),
+      item('sinDuracion', { startTime: '09:00', title: 'Café' }),
+      item('luego', { startTime: '09:30', durationMinutes: 30, title: 'Daily' }),
+    ])
+
+    // Ni un hueco entre los tres —el largo los cubre— y la línea del que no
+    // dice cuánto dura se emite igual en el primer corte que viene detrás.
+    expect(day.rows.map((row) => row.kind)).toEqual([
+      'gap',
+      'item',
+      'item',
+      'unknown',
+      'item',
+      'gap',
+    ])
+    expect(day.rows[3]).toMatchObject({ untilMinutes: 9 * 60 + 30, isDayEnd: false })
+    expect(gaps(day)).toEqual(['free-06:30-08:00', 'free-10:00-23:00'])
+  })
+})

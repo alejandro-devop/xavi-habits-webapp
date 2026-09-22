@@ -17,10 +17,53 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
 | FEAT-008 | building | 1/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
-| FEAT-009 | planned | 0/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
+| FEAT-009 | building | 1/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
+
+**FEAT-009 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** Los
+trece criterios (140–152) y el 169, comprobados uno a uno, y **la deuda visual
+del constructor cerrada: abrí el navegador** (arnés con los componentes reales y
+las filas que devuelve `buildTemplateDay`, servido desde el **5173 del usuario**,
+borrado). **Criterio 150 medido**: fila de hueco **32,8 px** frente a tarjeta de
+**66,7 px** —menos de la mitad—, una sola línea, `scrollWidth === clientWidth ===
+375` y **0 nodos desbordados** con seis ítems y sus huecos; el hueco fino, 24,5
+px. **151**: la fila de hueco no imprime ningún nombre y la línea de «no sabemos»
+envuelve con 60 caracteres sin desbordar. **152**, medido componiendo capa a capa
+sobre el fondo real (no sobre `--color-bg` plano): claro **15,63 / 6,96 / 6,10**,
+oscuro **19,29 / 9,94 / 9,94**, todos ≥ 4,5:1, y el texto empieza por «Libre», así
+que no depende del color. **El criterio 142 es propiedad, no coincidencia**: lo
+verifiqué con un test propio en **ocho días distintos** —la suma de las filas de
+hueco es exactamente `freeMinutes`— y, con un ítem sin duración, la diferencia es
+**justo** el tramo que el criterio 145 no afirma (60 min) sin que la barra se
+mueva. Los dos bordes sin criterio —dos ítems a la misma hora y solape × sin
+duración— **no dicen nada falso**, comprobado con mis propios casos. Las tres
+desviaciones (canaleta vacía, el hueco normal que no degrada a línea fina, el
+`id` en `TemplateRow`) son correctas; los dos tests acotados **no relajan nada**
+(6 líneas borradas, las dos expresiones sustituidas); ni segunda constante
+(`MIN_GAP_MINUTES` importado), ni formateador nuevo, ni consulta nueva, ni una
+fila en la semana o el cajón, y **el «Acaba a las» de FEAT-008 no está escrito**.
+Línea base corrida entera: typecheck limpio, lint 14/0, **2 fallos de 1611**,
+build exit 0 con el chunk en **1.096,35 kB** (+2,39). Cinco hallazgos en la
+sección 4; los dos que más pesan: **la línea del criterio 146 dice «hasta el
+final del día» y el criterio pedía la hora** («…hasta las 22:00») —lo exigido se
+cumple, la palabra la decide el usuario—, y **el criterio 150 se cumple por medio
+píxel** (32,8 frente a 33,35), sin test que lo sujete fuera del navegador.
+Siguiente: el `feature-builder`, tajada 2.
+
+**FEAT-009 `in-review` 0/3** (2026-09-22, constructor). **Tajada 1 en revisión,
+sin commitear.** Los huecos se ven en `/app/vida/plantilla`: una fila «Libre 8:40
+→ 9:00 · 20m» entre ítem e ítem y en los bordes del día, los restos de menos de
+15 min en línea fina, los solapes sin hueco, y el ítem sin duración con una línea
+que dice que no se sabe dónde acaba **en vez de** un hueco que miente. **Nada se
+pulsa todavía** (eso es la tajada 2). Todo sale de una fila más en el bucle que
+ya existía (`buildTemplateDay`); `segments` y `freeMinutes` no se movieron.
+Línea base: typecheck limpio, lint **14/0**, **2 fallos de 1611** (los de
+`SearchSelect`), build exit 0 con el chunk en **1.096,35 kB** (+2,39). **Lo que
+queda pendiente de prueba manual: el alto a 375 px, la envoltura del nombre largo
+y el contraste sobre el fondo real** — no pude abrir el navegador: el panel
+estaba ocupado por una pestaña de otra sesión y esta no tiene `tabs_close`.
 
 **FEAT-008 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada.** Los
 doce criterios (107–118) y los dos transversales que le tocan, comprobados uno a

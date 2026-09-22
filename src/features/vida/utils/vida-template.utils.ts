@@ -39,6 +39,7 @@ import {
 import { compareVidaNames } from '@/features/vida/utils/vida-text.utils'
 import {
   DEFAULT_BLOCK_MINUTES,
+  MIN_GAP_MINUTES,
   calculateEndTime,
   formatDurationFromMinutes,
   formatDurationMinutes,
@@ -84,7 +85,51 @@ export type TemplateSegment = {
   id: string
   kind: 'planned' | 'free'
   trackMinutes: number
+  /** Dónde empieza el tramo en el día, en minutos desde medianoche. */
+  startMinutes: number
+  /** Dónde acaba. En los tramos `free` es **el fin del hueco** (criterio 140). */
+  endMinutes: number
 }
+
+/**
+ * Las filas de la agenda del día: **la misma geometría que `segments`**, con
+ * las horas puestas y con la regla del criterio 145 (un ítem sin duración no
+ * produce un hueco que mienta). `segments` y `freeMinutes` **no cambian**: la
+ * barra de «Tu día» sigue saliendo de ahí, y por eso el criterio 142 —que la
+ * suma de los huecos pintados sea `freeMinutes`— es una propiedad de la única
+ * pasada que recorre el día y no una coincidencia entre dos cuentas.
+ *
+ * Divergen a propósito en un solo caso: donde hay un ítem sin duración,
+ * `segments` sigue enseñando su tramo libre (la barra no se mueve) y `rows`
+ * pinta en su lugar una línea que dice que no se sabe dónde acaba.
+ */
+export type TemplateItemRow = {
+  kind: 'item'
+  id: string
+  entry: TemplateEntry
+}
+
+export type TemplateGapRow = {
+  kind: 'gap'
+  id: string
+  startMinutes: number
+  endMinutes: number
+  minutes: number
+  /** Menos de `MIN_GAP_MINUTES`: se pinta igual, pero en línea fina (criterio 143). */
+  isSliver: boolean
+}
+
+export type TemplateUnknownRow = {
+  kind: 'unknown'
+  id: string
+  item: VidaItem
+  /** El corte hasta el que no se puede afirmar nada: el ítem siguiente o el fin del día. */
+  untilMinutes: number
+  /** `true` cuando ese corte es el final del día (criterio 146). */
+  isDayEnd: boolean
+}
+
+export type TemplateRow = TemplateItemRow | TemplateGapRow | TemplateUnknownRow
 
 export type TemplateDay = {
   day: VidaDayOfWeek
@@ -101,6 +146,12 @@ export type TemplateDay = {
   windowEnd: number
   /** Los tramos de la barra, en orden y sumando `dayMinutes` (criterio 4). */
   segments: TemplateSegment[]
+  /**
+   * Lo que se lee en la lista, en orden: los ítems con hora y, entre ellos y en
+   * los bordes del día, los huecos (FEAT-009, criterios 140-146). Vacío cuando
+   * el día no tiene ningún ítem con hora (criterio 149).
+   */
+  rows: TemplateRow[]
 }
 
 export type TemplateDayCount = {
@@ -213,7 +264,12 @@ export function buildTemplateDay({
 
   const segments: TemplateSegment[] = []
   const timed: TemplateEntry[] = []
+  const rows: TemplateRow[] = []
   let cursor = windowStart
+  // Un ítem sin duración **retiene** el hueco que vendría detrás: hasta el
+  // corte siguiente no se sabe si queda algo libre, así que en vez del hueco se
+  // emite una línea que lo dice (criterio 145).
+  let pendingUnknown: { item: VidaItem; startMinutes: number } | null = null
 
   function pushGap(from: number, to: number) {
     if (to <= from) return
@@ -221,25 +277,74 @@ export function buildTemplateDay({
       id: `free-${minutesToTime(from)}-${minutesToTime(to)}`,
       kind: 'free',
       trackMinutes: to - from,
+      startMinutes: from,
+      endMinutes: to,
+    })
+  }
+
+  /**
+   * El corte donde se decide qué va entre lo anterior y lo que viene: la hora
+   * del ítem siguiente o el fin del día. Las tres reglas, en este orden:
+   *
+   * 1. Si el ítem anterior no tenía duración, aquí va **su línea**, nunca un
+   *    hueco (criterio 145); `untilMinutes` nunca cae antes de su propia hora
+   *    —dos ítems a la misma hora, borde sin criterio— y jamás se emite hueco
+   *    por él.
+   * 2. Si el corte no pasa del cursor, **no hay hueco**: es un solape, y la
+   *    plantilla los permite en silencio (criterio 144).
+   * 3. Si no, el hueco, con su tamaño y su forma fina si no llega a
+   *    `MIN_GAP_MINUTES` (criterio 143).
+   */
+  function pushRowsUntil(cut: number, isDayEnd: boolean) {
+    if (pendingUnknown) {
+      rows.push({
+        kind: 'unknown',
+        id: `unknown-${pendingUnknown.item.id}`,
+        item: pendingUnknown.item,
+        untilMinutes: Math.max(cut, pendingUnknown.startMinutes),
+        isDayEnd,
+      })
+      pendingUnknown = null
+      return
+    }
+    if (cut <= cursor) return
+    const minutes = cut - cursor
+    rows.push({
+      kind: 'gap',
+      id: `free-${minutesToTime(cursor)}-${minutesToTime(cut)}`,
+      startMinutes: cursor,
+      endMinutes: cut,
+      minutes,
+      isSliver: minutes < MIN_GAP_MINUTES,
     })
   }
 
   for (const entry of placed) {
     pushGap(cursor, entry.startMinutes)
+    pushRowsUntil(entry.startMinutes, false)
     // `trackMinutes`, como en la agenda de Hoy: con dos ítems pisados —que aquí
     // se permiten a propósito— sumar duraciones rebasaría el 100 %.
     const trackMinutes = Math.max(0, entry.endMinutes - Math.max(entry.startMinutes, cursor))
     timed.push({ ...entry, trackMinutes })
+    rows.push({ kind: 'item', id: `item-${entry.item.id}`, entry: { ...entry, trackMinutes } })
     if (trackMinutes > 0) {
       segments.push({
         id: `planned-${entry.item.id}`,
         kind: 'planned',
         trackMinutes,
+        startMinutes: Math.max(entry.startMinutes, cursor),
+        endMinutes: entry.endMinutes,
       })
+    }
+    if (entry.durationMinutes === null || entry.durationMinutes <= 0) {
+      pendingUnknown = { item: entry.item, startMinutes: entry.startMinutes }
     }
     cursor = Math.max(cursor, entry.endMinutes)
   }
   pushGap(cursor, windowEnd)
+  // Un día sin ningún ítem con hora no pinta huecos: sigue siendo el estado
+  // vacío de siempre (criterio 149).
+  if (placed.length > 0) pushRowsUntil(windowEnd, true)
 
   const plannedMinutes = timed.reduce((total, entry) => total + entry.trackMinutes, 0)
   const dayMinutes = Math.max(0, windowEnd - windowStart)
@@ -254,6 +359,7 @@ export function buildTemplateDay({
     windowStart,
     windowEnd,
     segments,
+    rows,
   }
 }
 

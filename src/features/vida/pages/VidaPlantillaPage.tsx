@@ -8,6 +8,7 @@ import {
 } from '@/features/vida/components/VidaTemplateAddPanel'
 import { VidaTemplateDaySummary } from '@/features/vida/components/VidaTemplateDaySummary'
 import { VidaTemplateDayTabs } from '@/features/vida/components/VidaTemplateDayTabs'
+import { VidaTemplateGapRow } from '@/features/vida/components/VidaTemplateGapRow'
 import { VidaTemplateItemCard } from '@/features/vida/components/VidaTemplateItemCard'
 import { VidaTemplateNoTimeDrawer } from '@/features/vida/components/VidaTemplateNoTimeDrawer'
 import { VidaTemplateCopyDay } from '@/features/vida/components/VidaTemplateCopyDay'
@@ -408,16 +409,26 @@ export function VidaPlantillaPage() {
             <>
               {templateDay.timed.length > 0 ? (
                 <ol className={styles.agenda} aria-label={`Tu ${dayLabel}, ordenado por hora`}>
-                  {templateDay.timed.map((entry) => (
-                    <VidaTemplateItemCard
-                      key={entry.item.id}
-                      item={entry.item}
-                      startMinutes={entry.startMinutes}
-                      onOpen={openSheet}
-                      onActivate={activate}
-                      isActivating={activatingId === entry.item.id}
-                    />
-                  ))}
+                  {/* La lista se pinta desde `rows`, que es el mismo recorrido
+                      que ya hacía la barra: entre ítem e ítem —y en los bordes
+                      del día— van los huecos (FEAT-009). En esta tajada
+                      **nada de eso se pulsa**: la fila del hueco no recibe
+                      `onPlace` y la línea del ítem sin duración no recibe
+                      `onSetDuration`, así que son texto. */}
+                  {templateDay.rows.map((row) =>
+                    row.kind === 'item' ? (
+                      <VidaTemplateItemCard
+                        key={row.id}
+                        item={row.entry.item}
+                        startMinutes={row.entry.startMinutes}
+                        onOpen={openSheet}
+                        onActivate={activate}
+                        isActivating={activatingId === row.entry.item.id}
+                      />
+                    ) : (
+                      <VidaTemplateGapRow key={row.id} row={row} />
+                    ),
+                  )}
                 </ol>
               ) : null}
 

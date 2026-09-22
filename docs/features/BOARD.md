@@ -18,8 +18,8 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
 | FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
-| FEAT-010 | specified | 0/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-22 |
-| FEAT-011 | building | 2/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
+| FEAT-010 | planned | 0/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-22 |
+| FEAT-011 | building | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | specified | 0/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |

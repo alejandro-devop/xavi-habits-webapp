@@ -1,11 +1,11 @@
 ---
 id: FEAT-010
 title: Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic
-status: specified
+status: planned
 architect: yes    # vive dentro de la lista de la agenda y se mueve con la sesión en marcha, y retira dos superficies de FEAT-003 derogando criterios entregados
 area: features/vida
 requested: 2026-09-22
-updated: 2026-09-22   # reescrito entero: render nuevo aprobado (14) y una decisión nueva del usuario
+updated: 2026-09-22   # plan escrito: tarjeta dentro del bucle, util puro nuevo y retirada contada consumidor a consumidor
 ---
 
 # FEAT-010 — Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic
@@ -494,3 +494,364 @@ pantalla y funcione.**
   ahora... esto se reemplaza con lo de "que viene"»—. Lo único que decidí yo es
   **cuándo** (la última tajada, no antes) y **que no se quiten sin dejar los
   cuatro caminos abiertos** (criterios 380 y 384).
+
+## 2. The plan — feature-architect
+
+**Summary for the builder:** la tarjeta es **un `<li>` hermano dentro del mismo
+`<ol>` de la agenda**, con la forma de `VidaBlockHint`
+(`components/VidaBlockHint/VidaBlockHint.tsx:44-79` + su `.module.scss`) — que
+es el precedente exacto de «un nodo que cuelga de otra fila sin tocarla—; toda
+la aritmética (a quién proponer, dónde insertarse, qué texto) va en un archivo
+puro nuevo, `utils/vida-up-next.utils.ts`, hermano de `vida-execution.utils.ts`
+y de `vida-gap-window.utils.ts`. **No se crea**: ni hook, ni consulta, ni
+temporizador, ni `kind` nuevo en `buildDayExecution`, ni una segunda hoja, ni
+`usualDurationsByActivityId` si FEAT-011 tajada 3 ya la dejó puesta.
+
+### Lo que ya existe (verificado en `main`, `30a0d40`)
+
+| Lo que hace falta | Dónde está ya | Qué se hace con ello |
+|---|---|---|
+| El bucle donde va la tarjeta | `VidaHoyPage.tsx:642-795` (`agendaList`, `execution.entries.map` en `:647`) | Se convierte en `flatMap` e inserta un nodo. Nada más |
+| Un nodo que cuelga de otra fila, dentro del `<ol>` | `VidaBlockHint.tsx` (`<li class=row>` + `<span class=gutter>` + `<section class=card>`), montado en `VidaHoyPage.tsx:733-740` | **Es la implementación de referencia** |
+| La canaleta con la hora a la izquierda | `VidaAgendaGap.tsx:157-161` (`<span class=gutter><time class=time>`) | Se copia para el criterio 371 (hora de plantilla en gris); `VidaBlockHint` la deja vacía, que es el caso del criterio 377 |
+| Arrancar ahora | `useVidaSessionActions.start(activityId, startTime?)` (`hooks/useVidaSessionActions.ts:124`), ya instanciado en `VidaHoyPage.tsx:148` | Se llama `sessionActions.start(activityId)` **sin hora**: el reloj es el de la mutación (criterios 188 y 196) |
+| Cerrar lo anterior a esa misma hora | **Dentro** de ese mismo `start` (D1 de FEAT-013, `7cbf7c2`) | No se toca. La tarjeta solo lo **dice** (criterio 378) |
+| «dos toques ≠ dos sesiones», compartido | `sessionActions.isBusy` (`useVidaSessionActions.ts:96-110`, `useRef` + estado), ya pasado al bloque en `VidaHoyPage.tsx:717` como `isSessionBusy` | **La hipótesis del analista («si hoy es local del bloque, hay que subirlo») es falsa: ya es de página.** Se pasa la misma variable a la tarjeta y el criterio 188 queda cerrado sin mover nada |
+| Si no se puede empezar | `canStart` (`VidaHoyPage.tsx:157`) | Puerta del criterio 189 |
+| «Empezar otra cosa» / «Empezar algo» | `openLogSheet({ mode: 'start' })` (`VidaHoyPage.tsx:406-410`, usado en `:919`) | Se llama igual. **Sin hoja nueva** |
+| «Ya la hice» | `markBlockDone(block)` (`VidaHoyPage.tsx:474-483`: `logSessionInput` + `plannedSessionMinutes`) | Se llama **esa misma función**, no una copia (criterio 197) |
+| Qué bloque está resuelto | `execution.byBlockId`, `execution.insteadByBlockId` (`vida-execution.utils.ts:648-672`) y `getBlockNote(blockNotes, date, item.id)` (`VidaHoyPage.tsx:722-724`) | Las **tres** fuentes del criterio 186 |
+| Quién está en marcha | `execution.byBlockId[id].isRunning` (`vida-execution.utils.ts:255`) y `ExecutionSessionEntry` con `span.isRunning` (`:339-357`, `toSessionSpans` en `:114`) | Son los **dos** anclajes del criterio 370 (ver abajo) |
+| La costumbre | `useVidaPatterns` ya montado (`VidaHoyPage.tsx:327`) y `VidaActivityPattern` con `itemId` **y** `activityId` (`vida-patterns.utils.ts:273-274`) y `usualDurationMinutes` (`:302`) | Criterio 372, **sin consulta nueva** |
+| El reloj | `useVidaNowMinute(isToday)` (`VidaHoyPage.tsx:145`) | Criterio 204 |
+| Duraciones escritas | `formatDurationFromMinutes` (`utils/vida-time.utils.ts:120`) | Se consume |
+| El fin del día y los minutos que quedan | `dayHours.endTime` y `getDayBudget` (`vida-agenda.utils.ts:304`), ya en `VidaHoyPage.tsx:210` como `budget` | Criterio 377: **los mismos números que la barra**, no una cuenta nueva |
+
+**Nada de esto existe hoy, y eso también es información:** no hay ningún
+componente, util ni prueba que proponga «lo siguiente del plan». `findNextBlockId`
+(`vida-agenda.utils.ts:565`) **no sirve** y no se reutiliza: responde «el primer
+bloque que aún no ha empezado» para pintar «en N min», ignora si está resuelto e
+ignora lo que ya pasó — justo los dos casos del criterio 375.
+
+**Y hay algo que ya existe dos veces, que es la razón de la tajada 3:** colocar
+algo de la plantilla en el día se hace desde `placeSuggestion`
+(`VidaHoyPage.tsx:417-448`, al principio del hueco tocado) **y** desde
+`PlaceInFirstGapButton` (`VidaTemplateAside.tsx:165-240`, primer hueco del día
+donde quepa). Dos superficies, dos reglas, ninguna lo dice.
+
+### Implementación de referencia
+
+**`src/features/vida/components/VidaBlockHint/VidaBlockHint.tsx`** (+ su
+`VidaBlockHint.module.scss`), y su montaje en `VidaHoyPage.tsx:733-740`.
+
+Por qué ésa y no otra: es **el único nodo del proyecto que ya hace la misma
+figura** — un `<li>` hermano dentro del `<ol>` de la agenda, con la canaleta
+vacía o con hora, que cuelga de otra fila sin tocar el componente del que cuelga
+(`VidaAgendaBlock` está entregado desde FEAT-004 y ahí sigue sin tocarse). Su
+`.module.scss:6-29` trae ya resueltos la canaleta de `2.75rem`, el trazo
+punteado por `color-mix` sobre un token (nunca un literal, que es lo que rompe el
+tema oscuro del criterio 214) y el `min-width: 0` que hace verdadero el criterio
+213. Se copia entero y se le cambia el token: `--aura-ring-to` (violeta) **no**,
+porque el criterio 214 prohíbe confundirse con el aviso de FEAT-007; el mint de
+la marca es el que usan `VidaDayBudget.module.scss:91` y
+`VidaReviewBridge.module.scss:1`.
+
+Para la canaleta **con hora en gris** (criterio 371), el trozo a copiar es
+`VidaAgendaGap.tsx:157-161`.
+
+### Dónde vive la regla: `utils/vida-up-next.utils.ts` (nuevo)
+
+Archivo **nuevo**, puro, sin React, hermano de `vida-execution.utils.ts` y de
+`vida-gap-window.utils.ts` (el que FEAT-011 acaba de estrenar). **No va dentro
+de `vida-agenda.utils.ts`**: ese archivo no sabe nada de sesiones **por
+diseño** —está escrito en la cabecera de `vida-execution.utils.ts:1-10`— y la
+regla del criterio 375 necesita saber qué está resuelto.
+
+Cuatro funciones, y ninguna constante de minutos (criterio 375 y la hipótesis
+del analista: *si aparece un umbral, la regla se está reinterpretando*):
+
+1. `collectResolvedBlockIds({ blocks, byBlockId, insteadByBlockId, couldNotItemIds })
+   → Set<string>` — las **tres** fuentes del criterio 186 en un sitio.
+2. `pickUpNextBlock({ blocks, resolvedBlockIds, nowMinutes }) → AgendaBlock | null`
+   — la regla, escrita tal cual la dice el analista y sin números:
+   ```
+   abiertos   = blocks sin resolver
+   llegados   = abiertos con startMinutes <= nowMinutes
+   candidatos = llegados.length ? llegados con startMinutes === max(llegados.startMinutes)
+                                : abiertos con startMinutes === min(abiertos.startMinutes)
+   return candidatos ordenados por (startMinutes asc, durationMinutes asc, índice en blocks)[0]
+   ```
+   El `max`/`min` es lo que hace el criterio 375 (el más reciente que ya llegó;
+   si ninguno, el siguiente) y el desempate de tres pasos es el criterio 184
+   literal. **Nunca devuelve dos.**
+3. `findUpNextAnchorId({ entries, byBlockId }) → string | null` — el criterio
+   370, y aquí está el detalle que no es obvio: **hay dos formas de «lo que está
+   pasando»**. Si la sesión viva está *movida* o *fuera del plan*, la fila real
+   es un `ExecutionSessionEntry` (`vida-execution.utils.ts:339`); si está pegada
+   a su bloque, la fila real es el propio bloque. El orden es:
+   `entries.find(e => e.kind === 'session' && e.span.isRunning)?.id`
+   → si no, `entries.find(e => e.kind === 'block' && byBlockId[e.id]?.isRunning)?.id`
+   → si no, `entries.find(e => e.kind === 'now')?.id` (que vale `'now'`)
+   → si no, `null` (y entonces **no hay tarjeta**, que es lo que pide el
+   criterio 180 cuando el reloj cae fuera del día).
+   Un bloque en marcha **no lleva aviso de FEAT-007** debajo (`pickBlockHints`
+   lo descarta con `isDone`, `VidaHoyPage.tsx:344-348`), así que no hay disputa
+   de orden entre la tarjeta y el aviso.
+4. `buildUpNext({ block, usualMinutes, runningTitle, nowMinutes, dayEndTime, remainingMinutes, canStart, templateHasNothing })
+   → UpNext | null` — **todos los textos ya escritos**, para que el componente
+   sea tonto: `variant: 'proposal' | 'empty'`, `gutterLabel` (`'11:30'` o `''`,
+   criterio 371), `title`, `icon`, `color`, `metaLine`
+   («En tu plantilla, a las 11:30 · suele durarte 30 min», criterios 183 y 372),
+   `truthLine` (criterio 373, **siempre**, con la coletilla del criterio 378
+   cuando `runningTitle` no es `null`), `isOverdue` (criterio 193),
+   `regionLabel`, `buttonLabel` y `buttonSrLabel` («Empezar Daily meeting
+   ahora», criterio 206), `exits: { othersCount, showDidIt }` (criterio 376).
+   **Ninguna hora de fin, en ninguna rama** (criterio 373).
+
+Test hermano `utils/vida-up-next.utils.test.ts`, con los tres casos del criterio
+375 (11:05→11:30 · 13:40→13:00 y no las 18:00 · 20:00 con 13:00 y 18:00 abiertas
+→ 18:00), los tres del 184, los cuatro anclajes del 370 y el barrido de palabras
+del criterio 210 sobre los textos que devuelve (más barato aquí que sobre el DOM,
+y el del DOM se queda igual en la página). El molde de tests es
+`utils/vida-agenda.utils.test.ts`.
+
+**«Suele durarte» (criterio 372).** El bloque del plan es un
+`ActivityDayPlanItem` y **no guarda de qué ítem de plantilla salió** (verificado:
+`types/activity-day-plan.types.ts:15-29`), así que el cruce es por `activityId`.
+FEAT-011 **ya dejó planeada** esa función con su firma en su sección 2
+(`usualDurationsByActivityId`, hermana de `usualDurationsByItemId` en
+`vida-patterns.utils.ts:970-981`, desempatando por `usualDurationSamples`,
+`:302`). **Orden de llegada**: si la tajada 3 de FEAT-011 ya está en `main`, se
+**consume** y no se escribe nada; si no, se crea **ahí mismo y con esa misma
+firma**, y FEAT-011 la consume. Lo que no puede pasar es que existan dos.
+Comprobación de una línea antes de escribirla:
+`git grep -n "usualDurationsByActivityId" -- src`.
+
+### Dónde va el código nuevo, archivo a archivo
+
+**Se crean**
+
+| Archivo | Qué lleva |
+|---|---|
+| `src/features/vida/utils/vida-up-next.utils.ts` | Las cuatro funciones de arriba |
+| `src/features/vida/utils/vida-up-next.utils.test.ts` | Sus casos |
+| `src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx` | El `<li>` tonto: copia de `VidaBlockHint.tsx:44-79` |
+| `src/features/vida/components/VidaUpNextCard/VidaUpNextCard.module.scss` | Copia de `VidaBlockHint.module.scss` con el token mint y la canaleta con hora |
+| `src/features/vida/components/VidaUpNextCard/index.ts` | `export { VidaUpNextCard } from './VidaUpNextCard'` |
+
+**Se modifican** (`VidaHoyPage.tsx`, líneas de `main` `30a0d40`)
+
+| Línea | Qué se hace |
+|---|---|
+| `:8` | Un `import` más, al lado del de `VidaBlockHint` |
+| tras `:321` | `const usualByActivityId = useMemo(() => usualDurationsByActivityId(patterns.patterns), [patterns.patterns])`. **Un `useMemo` hermano, debajo; no se reescribe el de `:319-321`** — ése es el que toca la tajada 3 de FEAT-011 |
+| tras `:260` | `const upNext = useMemo(...)`: `collectResolvedBlockIds` + `pickUpNextBlock` + `findUpNextAnchorId` + `buildUpNext`. Depende de `agenda`, `execution`, `blockNotes`, `nowMinutes`, `openSession.session`, `usualByActivityId`, `canStart`, `executionKnown`, `isToday`. **Puro: cero consultas** (criterio 204) |
+| `:647` | `execution.entries.map(` → `execution.entries.flatMap(`, y el cuerpo actual se extrae a `renderEntry(entry)` **sin tocar su contenido**. El retorno pasa a ser `entry.id === upNext?.anchorId ? [renderEntry(entry), upNextCard] : [renderEntry(entry)]` |
+| tras `:795` | `const upNextCard = upNext ? <VidaUpNextCard key="up-next" … /> : null`, declarado **antes** de `agendaList` |
+
+**El detalle que decide el criterio 379 y no se puede improvisar:** el
+`flatMap` es lo que deja la tarjeta como **hijo directo del `<ol>`** con la
+`key` constante `"up-next"`. Así React la **mueve** cuando cambia de sitio en vez
+de desmontarla y remontarla. Si se mete dentro del `<Fragment key={entry.id}>`
+de `:679` —que es donde vive el aviso de FEAT-007— cambiar de ancla **cambia de
+padre**, y eso sí es desmontar: el foco se va a `body` y el criterio 205 se cae.
+No hay forma de verlo en una revisión rápida; por eso está escrito aquí.
+
+**Qué NO cambia en el bucle:** la fila del bloque propuesto **se queda en la
+lista, en su hora y con su «▶ Empezar»**. La tarjeta no la sustituye ni la
+esconde — es lo que exige el criterio 211 (el test compara el texto de las dos)
+y lo que mantiene vivo el criterio 1 de FEAT-004. La tarjeta es **una segunda
+entrada al mismo gesto**, no una mudanza.
+
+**Tests de página:** `src/features/vida/pages/VidaHoyPage.test.tsx` (es donde
+están los cuatro estados, el espía de consultas del criterio 204 y el barrido de
+lenguaje del criterio 210).
+
+### Qué NO se crea
+
+- **Un `kind` nuevo en `buildDayExecution`.** Es la hipótesis que hay que tirar.
+  `entries` alimenta `getExecutedBudget`, `buildNoDataSlices`
+  (`vida-execution.utils.ts:807`) y, desde FEAT-011 tajada 2,
+  `vida-gap-window.utils.ts`; una entrada fantasma con `trackMinutes` metería
+  ancho en la barra y tramos «sin dato» falsos. **La regla es pura y va en su
+  util; la inserción es cosa del render.**
+- **Un hook, una consulta o un temporizador.** `useVidaPatterns` (`:327`) y
+  `useVidaNowMinute` (`:145`) ya están montados.
+- **Una hoja nueva**, ni una confirmación: el botón llama a `start` y punto
+  (criterio 374). «Empezar otra cosa» reusa `openLogSheet({ mode: 'start' })`.
+- **Una segunda aritmética de «Ya la hice»**: se llama `markBlockDone`
+  (`VidaHoyPage.tsx:474`).
+- **`usualDurationsByActivityId`**, si FEAT-011 tajada 3 ya la dejó.
+- **Nada en `localStorage`**, ningún documento GraphQL, ningún icono nuevo.
+
+### Dónde NO va (medido, para que nadie lo reconsidere)
+
+- **Fuera del `<ol>`, arriba de la lista.** Es el render 11, derogado por el
+  criterio 370.
+- **Dentro de `VidaAgendaBlock`.** Entregado y revisado desde FEAT-004; la
+  tarjeta no es parte de un bloque y el precedente de colgar sin tocar
+  (`VidaBlockHint`, `VidaAgendaNoData`) ya está establecido.
+- **En `vida-agenda.utils.ts`.** Esa capa no sabe de sesiones por diseño.
+- **Reusando `findNextBlockId`** (`vida-agenda.utils.ts:565`): ignora lo
+  resuelto y lo que ya pasó; reusarlo reintroduce exactamente el caso que el
+  criterio 375 arregla.
+- **Ordenando la tarjeta por su hora** dentro de la lista. El render 14, momento
+  3, la pinta **después de AHORA (13:40) con «13:00» en la canaleta**: la
+  posición es estructural y la hora de la izquierda es un dato, no una clave de
+  orden.
+- **Desplegar «Ver las otras N» en la línea** (opción (a) de la D1): ver abajo.
+
+### D1 — qué abre «Ver las otras N»: **(c), y se puede construir**
+
+Verificado en código: `openLogSheet({ mode: 'start' })` monta
+`VidaLogSessionSheet` (`VidaHoyPage.tsx:959-985`), que pasa las `suggestions` del
+día a `VidaActivityPicker` (`VidaLogSessionSheet.tsx:335-340`), y el picker
+**pone primero la plantilla de ese día** (`VidaActivityPicker.tsx:65-66` y
+`:96-143`) **sin excluir nada**, porque la hoja no le pasa `excludeActivityIds`
+(sí lo hace `VidaPlaceInGapSheet`). Así que (c) es **cero UI nueva** y cumple la
+premisa del plan (una intención, una acción: un toque abre la lista ya ordenada).
+
+**La costura, dicha en voz alta:** la hoja enseña **la plantilla del día**, y la
+`N` del rótulo cuenta **los bloques del plan sin resolver**. En un día armado
+desde la plantilla son los mismos; en un día tocado a mano pueden no coincidir
+(un bloque puesto a mano no está en la plantilla). Es un desajuste de rótulo, no
+de camino: nadie se queda sin poder empezar nada. Si al usuario le molesta, (a)
+sigue abierta y solo cambia el tamaño de la tarjeta.
+
+### Las tajadas, con archivos
+
+**Un recorte sobre la sección 1, con su razón** (es lo único que contradigo): la
+sección 1 partía el criterio 375 en dos, dejando la mitad «ya llegó» para la
+tajada 2. **Eso no se puede entregar:** con solo la mitad «el siguiente por
+hora», un día con algo sin resolver a las 13:00 propondría **lo de las 18:00** a
+las 13:40 — que es justo el caso que el criterio 375 escribe como incorrecto, y
+es el día normal del usuario. Así que **el criterio 375 entero, con sus tres
+casos y los del 184, entra en la tajada 1**; la tajada 2 se queda con lo que de
+verdad es borde de pantalla: el rótulo «· se pasó de la hora», «Ya la hice» y la
+cara de «ya no queda nada». Las tres siguen siendo verticales y el orden de la
+sección 1 no cambia.
+
+Con ese recorte, **el criterio 209 queda partido**: su primera mitad (no
+proponer, no decir «ya no queda nada») la cumple la tajada 1 **no pintando
+tarjeta**; la segunda («deja "Empezar algo"») necesita la cara del criterio 377
+y se cierra en la tajada 2. Queda anotado, no reescrito.
+
+| # | What it does | Files | Criteria it closes | State |
+|---|---|---|---|---|
+| 1 | **«Lo que viene» dentro de la línea, con la promesa y un clic.** La regla entera, el anclaje, la tarjeta y el arranque de un toque. Sin candidatos, no se pinta nada (eso es la tajada 2). | **crea** `utils/vida-up-next.utils.ts` + `.test.ts` · **crea** `components/VidaUpNextCard/{VidaUpNextCard.tsx,.module.scss,index.ts}` · `VidaHoyPage.tsx:8` (import), tras `:260` (el `useMemo`), tras `:321` (`usualByActivityId`), `:647` (`map`→`flatMap` + `renderEntry`), antes de `:642` (`upNextCard`) · `vida-patterns.utils.ts` tras `:981` + su test **solo si FEAT-011 t3 no ha llegado** · `VidaHoyPage.test.tsx` | 180, 183, 184, 186, 187, 188, 189, 196, 203, 204, 205, 206, 207, 208, 210, 211, 212, 213, 214, 215, 216, 217, 370, 371, 372, 373, 374, **375 entero**, 376, 378, 379 · 209 su primera mitad | pending |
+| 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo, «Ya la hice» y la cara apagada con lo que queda de día. | `utils/vida-up-next.utils.ts` (`variant: 'empty'`, `isOverdue`, `showDidIt`) + su test · `VidaUpNextCard.tsx` y su `.module.scss` (trazo apagado y punteado) · `VidaHoyPage.tsx` (pasar `budget`/`dayHours.endTime` y enganchar `markBlockDone` en `:474`) · `VidaHoyPage.test.tsx` (los números coinciden con `VidaDayBudget`) | 192, 193, 197, 377 · 209 su segunda mitad · 218 (el usuario) | pending |
+| 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con los cuatro caminos comprobados uno a uno. | ver el plan de retirada | 380, 381, 382, 383, 384, 385 | pending |
+
+### El plan de retirada de la tajada 3, archivo a archivo
+
+**Antes de tocar nada**, y es lo que el criterio 385 pide por escrito:
+
+```
+git grep -n "suggestionsForGap\|MAX_GAP_SUGGESTIONS\|findFirstFittingGap\|GapSuggestion\|fitsInGap\|usualDurationsByItemId" -- src
+```
+
+Contado hoy sobre `main` (`30a0d40`), consumidor a consumidor:
+
+| Símbolo (`utils/vida-agenda.utils.ts`) | Quién lo usa hoy | Qué queda después |
+|---|---|---|
+| `suggestionsForGap` (`:489`) | `VidaHoyPage.tsx:764` y su test | **Sin consumidor → se borra** |
+| `MAX_GAP_SUGGESTIONS` (`:34`) | solo `suggestionsForGap` | **Se borra** |
+| `GapSuggestion` / `GapSuggestions` (`:417`, `:429`) | `VidaAgendaGap.tsx:4,20` y `VidaHoyPage.tsx:35,97` (`NO_SUGGESTIONS`) | **Se borran los tres sitios** |
+| `findFirstFittingGap` (`:472`) | **solo** `VidaTemplateAside.tsx:17,184` | **Se borra** |
+| `fitsInGap` (`:455`) | **solo** `suggestionsForGap` y `findFirstFittingGap` (+ su test) | **La premisa del criterio 385 es falsa: `VidaDurationPills` no lo usa** (verificado en todo `src`). Se queda **sin consumidor**: se borra con sus dos tests, salvo que FEAT-011 t3 lo haya enganchado — la orden `git grep` de arriba lo dice en un segundo |
+| `usualDurationsByItemId` (`vida-patterns.utils.ts:970`) | solo `VidaHoyPage.tsx:319-321` → `suggestionsForGap` | **Sin consumidor → se borra con sus dos tests** (`vida-patterns.utils.test.ts:804,819`). Su mitad útil ya vive en `usualDurationsByActivityId` (criterio 372) |
+| `fitsInGap`/`findFirstFittingGap` y FEAT-014 | FEAT-014 no los nombra: usa `VidaAgendaGap.tsx:106` y `validatePlacement` | No bloquea |
+
+**Archivo a archivo:**
+
+1. `components/VidaAgendaGap/VidaAgendaGap.tsx`
+   - Se borra la rama de fichas, **`:168-250`** (`suggestions.visible.length > 0`:
+     los chips, el «+N más» y la nota de «sueles tardar»).
+   - Se borra la prop `suggestions: GapSuggestions` (`:19-20`), la prop
+     `onPlaceSuggestion` (`:27-36`), `canPlace` (`:96`) y los `import` de
+     `GapSuggestions`, `VidaSuggestion`, `AppIcon` y `UNCATEGORIZED_GROUP_ICON`
+     si quedan huérfanos (`:2-13`).
+   - **Se conserva**: la cabecera del hueco con su franja y su tamaño
+     (`:158-167`), la rama `sliver`/`isPast` (`:106-152`, de FEAT-011) y
+     **«+ otra cosa»** (`:275-294`), que pasa a ser la única salida de la rama
+     futura (criterio 382).
+   - La rama de plantilla vacía (`:251-274`) usaba `suggestions.templateCount`:
+     se sustituye por una prop nueva `templateCount?: number` que la página ya
+     tiene calculada en `VidaHoyPage.tsx:625`. Así el «tu plantilla no trae
+     nada» + «Ver tus actividades» no se pierde por el camino.
+   - `.module.scss`: mueren `.chips`, `.chip`, `.chipName`, `.chipTime`,
+     `.note`; se quedan `.row`, `.gutter`, `.time`, `.card`, `.head`, `.free`,
+     `.size`, `.logButton`.
+2. `components/VidaTemplateAside/` — **desaparece la carpeta**. Antes, **mover**
+   `VidaTomorrowBlock` (`VidaTemplateAside.tsx:243-326`, que solo necesita
+   `viewedDate`) y sus reglas de `.module.scss` a
+   `components/VidaTomorrowAside/` (`.tsx`, `.module.scss`, `index.ts`). Mueren
+   con el archivo: `PlaceInFirstGapButton` (`:165-240`), la lista de plantilla
+   (`:98-144`), el `useAddDayPlanItemMutation` del lateral (`:92`) y el
+   `<h2>Tu plantilla de {dayLabel}</h2>` (`:96`).
+3. `pages/VidaHoyPage.tsx`
+   - `:15` import de `VidaTemplateAside` → `VidaTomorrowAside`.
+   - `:931-939`: el `<VidaTemplateAside …>` pasa a `<VidaTomorrowAside date={date} />`
+     (sin `suggestions`, `planItems`, `agenda`, `dayLabel`).
+   - `:417-448` **se borra `placeSuggestion` entero**, y con él la única llamada
+     a `openSheet({ kind: 'place', preselected })` desde una ficha. **Ojo, lo que
+     NO se borra:** `openSheet` y `SheetState.kind === 'place'` siguen vivos,
+     porque «+ otra cosa» los usa (`:776-780`), y `addMutation` (`:400`) lo usa
+     la hoja. Si se borra `addMutation` se rompe «+ otra cosa».
+   - `:762-775` la prop `suggestions={…}` del hueco → `templateCount={templateCount}`;
+     `:775` `onPlaceSuggestion` fuera; `:97` `NO_SUGGESTIONS` fuera;
+     `:35,42,54` los `import` correspondientes; `:319-321` el `useMemo` de
+     `usualDurations` fuera (el hermano `usualByActivityId` **se queda**).
+   - `isPlacing` (`:791`) se queda solo si la rama futura conserva algún control
+     con estado en vuelo; si no, fuera.
+4. `utils/vida-agenda.utils.ts` y `utils/vida-patterns.utils.ts` — los borrados
+   de la tabla de arriba.
+5. **Tests**: `utils/vida-agenda.utils.test.ts:442-640` (todo el `describe` de
+   `suggestionsForGap`) y `:428-440` (`fitsInGap`) **no se borran a secas**: se
+   sustituyen por un test que afirma lo nuevo —el hueco futuro enseña su franja,
+   su tamaño y **solo** «+ otra cosa»— nombrando el criterio que lo deroga
+   («FEAT-003 18/19/23, derogados por FEAT-010 criterio 381»), como se hizo en
+   FEAT-006. Igual con `vida-patterns.utils.test.ts:804,819` (FEAT-007 criterio
+   91, mitad derogada por el criterio 381; la útil vive en el 372).
+6. **Los cuatro caminos del criterio 384, verificados en código antes de
+   empezar** — los cuatro **sobreviven**, ninguno se toca:
+   **(a)** «+ otra cosa» → `VidaAgendaGap.tsx:275-294` → `onOpenSheet`
+   (`VidaHoyPage.tsx:776-780`) → `VidaPlaceInGapSheet` con el subtítulo del
+   hueco. **(b)** «Armar desde la plantilla» → `VidaHoyPage.tsx:889-910`
+   (`useBuildDayFromTemplate`), más `VidaSemanaPage`. **(c)** «Armar mañana» →
+   `VidaTomorrowBlock`, que se **mueve** y no se borra. **(d)**
+   `/app/vida/plantilla` → `vida-paths.ts`, intacta. Un test por camino en
+   `VidaHoyPage.test.tsx`.
+
+### El orden de entrada, con tres features en el mismo archivo
+
+Condición dura del plan de Vida: **no las construye el mismo constructor en la
+misma rama**. Con eso dado, el orden es:
+
+1. **FEAT-011 tajada 2** (hoy `in-review`, **sin commitear**) cierra primero.
+   Toca `vida-execution.utils.ts:648-672,757-769,790` y `VidaHoyPage.tsx`:
+   empezar FEAT-010 encima de un árbol sucio contamina la línea base de lint y
+   tests de las dos.
+2. **FEAT-010 tajadas 1 y 2.** Solo **añaden** en `VidaHoyPage.tsx` (un import,
+   dos `useMemo`, el `flatMap` del `:647`) y **no tocan** `VidaAgendaGap.tsx`,
+   `VidaAgendaBlock.tsx` ni `VidaLogSessionSheet.tsx`. Pueden ir en paralelo con
+   **FEAT-013 tajadas 2 y 3**, que viven en `VidaAgendaBlock.tsx:203` y en la
+   barra de sesión. Única costura con FEAT-011 t3: el `useMemo` de `:319-321`
+   — por eso el de FEAT-010 va **debajo**, no encima.
+3. **FEAT-011 tajada 3 antes de FEAT-010 tajada 3.** Obligatorio: 011-3 edita
+   `VidaAgendaGap.tsx:108-232` y estrena `usualDurationsByActivityId`; 010-3
+   borra `:168-250` y `usualDurationsByItemId`. Al revés, 011-3 se encuentra un
+   archivo que ya no tiene sus líneas y se replanifica entero.
+4. **FEAT-010 tajada 3, la última de todas** (criterio 380: no se quita un
+   camino antes de que el que lo sustituye esté en pantalla y funcione).
+
+### Lo que no pude comprobar
+
+- **Nada se vio en pantalla**: todo `/app/*` está detrás del login y los agentes
+  no entran (`ENVIRONMENT.md`). Los criterios 212 (375 px), 213 (texto largo),
+  214 (oscuro) y 218 los cierra el usuario a mano; el constructor los deja como
+  pasos escritos.
+- El árbol de trabajo tiene **FEAT-011 tajada 2 sin commitear**: todo lo de
+  arriba está leído sobre `main` (`30a0d40`). Las líneas de `VidaHoyPage.tsx`,
+  `VidaLogSessionSheet.tsx` y `vida-execution.utils.ts` **se habrán movido** para
+  cuando se construya: se localizan por el texto citado, no por el número.

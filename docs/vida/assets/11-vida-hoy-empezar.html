@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — qué toca ahora</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#006c49; --violet:#7c3aed; --violet-text:#5b21b6;
+    --amber:#f59e0b; --amber-text:#92400e;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-2:rgba(255,255,255,.78); --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:#475569;line-height:1.7;max-width:920px;margin:0 0 6px}
+  .lede b{color:#0f172a}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  .phone{width:100%;max-width:375px;border-radius:38px;padding:9px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6)}
+  .screen{position:relative;overflow:hidden;width:100%;border-radius:30px;background:var(--canvas);isolation:isolate;padding-bottom:14px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(100px)}
+  .o1{width:70%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-20%;left:-10%}
+  .o2{width:60%;aspect-ratio:1;background:rgba(210,187,255,.32);top:14%;right:-20%}
+  .z{position:relative;z-index:1}
+  .body{padding:12px 12px 0}
+  .now{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 8px}
+
+  /* ===== LA CAPA NUEVA: qué toca ahora ===== */
+  .lead{border-radius:20px;padding:14px 14px 13px;background:#fff;border:1px solid rgba(16,185,129,.35);
+        box-shadow:0 18px 40px -22px rgba(16,185,129,.55);margin-bottom:12px}
+  .lead .kicker{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .lead .who{display:flex;align-items:center;gap:11px;margin-top:9px}
+  .lead .ic{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:20px;flex:0 0 auto}
+  .lead .nm{font-size:17px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+  .lead .when{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin-top:2px;font-variant-numeric:tabular-nums}
+  .lead .acts{display:flex;gap:8px;margin-top:12px;align-items:center}
+  .play{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:14px;
+        background:var(--mint);color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.01em;
+        box-shadow:0 12px 26px -12px rgba(16,185,129,.8)}
+  .play .tri{font-size:12px}
+  .free{padding:12px 13px;border-radius:14px;border:1px solid rgba(15,23,42,.14);background:#fff;
+        font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+  .lead.late{border-color:rgba(245,158,11,.45);box-shadow:0 18px 40px -22px rgba(245,158,11,.5)}
+  .lead.late .kicker{color:var(--amber-text)}
+  .lead.quiet{border-color:rgba(15,23,42,.1);box-shadow:var(--sh-1);background:var(--glass-2)}
+  .lead.quiet .kicker{color:var(--ink-dim)}
+  .lead .say{font-size:13px;line-height:1.55;margin:9px 0 0;color:var(--ink-soft)}
+  .lead .say b{color:var(--ink);font-weight:700}
+
+  /* corriendo */
+  .lead.run{border-color:rgba(124,58,237,.4);box-shadow:0 18px 40px -22px rgba(124,58,237,.55)}
+  .lead.run .kicker{color:var(--violet-text)}
+  .clock{font-family:'Inter',sans-serif;font-size:30px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px;line-height:1}
+  .clock small{display:block;font-size:11.5px;font-weight:500;letter-spacing:0;color:var(--ink-dim);margin-top:4px}
+  .stop{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 14px;border-radius:14px;background:var(--violet);color:#fff;
+        font-family:'Inter',sans-serif;font-size:14px;font-weight:700;box-shadow:0 12px 26px -12px rgba(124,58,237,.8)}
+
+  /* la agenda de abajo, que sigue siendo la de siempre */
+  .agenda{position:relative;padding-left:44px}
+  .rail{position:absolute;left:36px;top:2px;bottom:2px;width:2px;background:rgba(15,23,42,.08)}
+  .slot{position:relative;margin-bottom:7px}
+  .slot .t{position:absolute;left:-44px;top:10px;width:30px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-13px;top:13px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid rgba(16,185,129,.55)}
+  .card{padding:9px 11px;border-radius:15px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);display:flex;align-items:center;gap:9px;min-width:0}
+  .card.done{opacity:.62}
+  .ic2{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+  .txt{min-width:0;flex:1}
+  .nm2{font-weight:600;font-size:12.5px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+  .meta.ok{color:var(--mint-text);font-weight:600}
+  .mini{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:var(--ink-soft);border:1px solid rgba(15,23,42,.14);border-radius:999px;padding:4px 9px;white-space:nowrap}
+  .nowline{display:flex;align-items:center;gap:7px;margin:2px 0 9px}
+  .nowline .l{flex:1;height:1.5px;background:repeating-linear-gradient(90deg,rgba(225,29,72,.5) 0 4px,transparent 4px 8px)}
+  .nowline .b{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;color:#be123c;background:rgba(225,29,72,.1);border-radius:999px;padding:2px 7px;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Qué toca ahora</h1>
+  <p class="lede">Hoy, para empezar algo, hay que <b>buscar el bloque</b> en la lista y pulsar su «▶ Empezar» pequeño. Esto le da la vuelta: la app dice <b>qué toca según tu plantilla</b> y pone el play delante, con la salida de empezar algo libre siempre al lado. La lista de abajo <b>no cambia</b> y sus botones siguen donde estaban: esto es una capa encima, no un reemplazo.</p>
+
+  <p class="caption">Los cuatro momentos de un día</p>
+  <div class="row">
+
+    <!-- 1 -->
+    <div class="moment">
+      <div class="mtitle">1 · Toca algo<small>Es su hora, o está a punto de serlo.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes · 8:58</p>
+
+          <div class="lead">
+            <span class="kicker">Ahora toca</span>
+            <div class="who">
+              <span class="ic" style="background:rgba(124,58,237,.12)">🥣</span>
+              <span><span class="nm">Desayunar</span><span class="when">9:00 → 9:30 · 30 min</span></span>
+            </div>
+            <div class="acts">
+              <span class="play"><span class="tri">▶</span> Empezar</span>
+              <span class="free">Otra cosa</span>
+            </div>
+          </div>
+
+          <div class="agenda"><div class="rail"></div>
+            <div class="slot"><span class="t">8:00</span><span class="dot"></span>
+              <div class="card done"><span class="ic2" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm2">Working at lululemon</span><span class="meta ok">Hecho · 1 h 5</span></span></div></div>
+            <div class="slot"><span class="t">9:00</span><span class="dot" style="border-color:rgba(124,58,237,.6)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm2">Desayunar</span><span class="meta">30 min</span></span><span class="mini">▶</span></div></div>
+            <div class="slot"><span class="t">11:30</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm2">Daily meeting</span><span class="meta">30 min</span></span><span class="mini">▶</span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">El play grande y <b>«Otra cosa»</b> al lado, siempre: nunca te obliga a seguir la plantilla. Aparece cuando el bloque está a punto de empezar, no todo el día.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="moment">
+      <div class="mtitle">2 · Se pasó la hora<small>Sin una palabra de reproche.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes · 9:25</p>
+
+          <div class="lead late">
+            <span class="kicker">Estaba para las 9:00</span>
+            <div class="who">
+              <span class="ic" style="background:rgba(124,58,237,.12)">🥣</span>
+              <span><span class="nm">Desayunar</span><span class="when">30 min · acabarías a las 9:55</span></span>
+            </div>
+            <div class="acts">
+              <span class="play"><span class="tri">▶</span> Empezar ahora</span>
+              <span class="free">Otra cosa</span>
+            </div>
+            <p class="say">Si ya desayunaste, <b>dilo y listo</b>: «Lo hice».</p>
+          </div>
+
+          <div class="agenda"><div class="rail"></div>
+            <div class="nowline"><span class="b">9:25</span><span class="l"></span></div>
+            <div class="slot"><span class="t">9:00</span><span class="dot" style="border-color:rgba(245,158,11,.7)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm2">Desayunar</span><span class="meta">30 min · sin empezar</span></span><span class="mini">▶</span></div></div>
+            <div class="slot"><span class="t">11:30</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm2">Daily meeting</span><span class="meta">30 min</span></span><span class="mini">▶</span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Dice <b>la hora a la que estaba</b>, no que llegues tarde. Y hace la cuenta que de verdad necesitas: si lo empiezas ahora, <b>acabas a las 9:55</b>. La tercera salida —«ya lo hice»— está escrita, no escondida en un menú.</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="moment">
+      <div class="mtitle">3 · Estás en marcha<small>El sugeridor se calla y se convierte en el reloj.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes · 9:12</p>
+
+          <div class="lead run">
+            <span class="kicker">En marcha</span>
+            <div class="who">
+              <span class="ic" style="background:rgba(124,58,237,.12)">🥣</span>
+              <span><span class="nm">Desayunar</span><span class="when">Empezaste a las 9:00 · de 30 min</span></span>
+            </div>
+            <div class="clock">12:04<small>Te quedan 18 min de lo que pusiste</small></div>
+            <div class="acts">
+              <span class="stop">Terminar</span>
+              <span class="free">Pausar</span>
+            </div>
+          </div>
+
+          <div class="agenda"><div class="rail"></div>
+            <div class="slot"><span class="t">9:00</span><span class="dot" style="border-color:rgba(124,58,237,.8)"></span>
+              <div class="card" style="border-color:rgba(124,58,237,.35)"><span class="ic2" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm2">Desayunar</span><span class="meta">Corriendo · 12:04</span></span></div></div>
+            <div class="slot"><span class="t">11:30</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm2">Daily meeting</span><span class="meta">30 min</span></span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Con una sesión viva <b>no se sugiere nada</b>: el mismo sitio pasa a ser el cronómetro. Una cosa a la vez, y el play de los demás bloques desaparece mientras tanto.</p>
+    </div>
+
+    <!-- 4 -->
+    <div class="moment">
+      <div class="mtitle">4 · No toca nada<small>Estás en un hueco, y eso también es un estado.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes · 10:10</p>
+
+          <div class="lead quiet">
+            <span class="kicker">Ahora no toca nada</span>
+            <p class="say">Tienes libre hasta las <b>11:30</b>, cuando entra <b>Daily meeting</b>. Son <b>1 h 20</b>.</p>
+            <div class="acts">
+              <span class="play"><span class="tri">▶</span> Empezar algo</span>
+            </div>
+          </div>
+
+          <div class="agenda"><div class="rail"></div>
+            <div class="slot"><span class="t">9:00</span><span class="dot"></span>
+              <div class="card done"><span class="ic2" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm2">Desayunar</span><span class="meta ok">Hecho · 28 min</span></span></div></div>
+            <div class="nowline"><span class="b">10:10</span><span class="l"></span></div>
+            <div class="slot"><span class="t">11:30</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm2">Daily meeting</span><span class="meta">30 min</span></span><span class="mini">▶</span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">No se inventa una sugerencia para llenar el hueco: dice <b>cuánto tienes y hasta cuándo</b>, y deja el play libre. Es el mismo dato que ya calcula la agenda, dicho donde miras.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Lo que este render decide</p>
+  <p class="note"><b>Un solo sitio, arriba, que cambia de cara.</b> No son cuatro tarjetas distintas: es la misma, y lo que cambia es qué tiene que decirte. Toca algo → play. Se pasó la hora → play y la cuenta de cuándo acabarías. Estás en marcha → el reloj. No toca nada → cuánto te queda libre.</p>
+  <p class="note"><b>«Otra cosa» nunca desaparece.</b> La plantilla propone, no manda: empezar algo que no estaba planeado tiene que costar un toque, igual que seguir el plan.</p>
+  <p class="note"><b>La lista de abajo no se toca.</b> Sus «▶ Empezar» siguen ahí para cuando quieras empezar algo que no es lo que toca. Lo de arriba te ahorra buscarlo, no te lo quita.</p>
+  <p class="note"><b>Ninguna palabra de reproche</b>, tampoco cuando se pasa la hora: «Estaba para las 9:00» es un dato; «vas tarde» sería una opinión sobre ti.</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vida — registrar en el hueco</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --mint:#10b981; --mint-text:#006c49; --violet:#7c3aed; --violet-text:#5b21b6;
+    --amber:#f59e0b; --rose:#e11d48; --rose-text:#9f1239;
+    --canvas:#fafcfb; --ink:#0f172a; --ink-soft:#475569; --ink-dim:#94a3b8;
+    --glass-2:rgba(255,255,255,.78); --edge:rgba(255,255,255,.7); --sh-1:0 8px 32px rgba(31,38,135,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eef1f6;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 60px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{font-size:13.5px;color:#475569;line-height:1.7;max-width:920px;margin:0 0 6px}
+  .lede b{color:#0f172a}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin:38px 0 12px}
+  .note{font-size:13px;color:#64748b;margin:12px 0 0;line-height:1.7;max-width:1000px}
+  .note b{color:#334155}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px;align-items:start}
+  .moment{display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mtitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mint-text)}
+  .mtitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:2px;font-size:11.5px}
+
+  .phone{width:100%;max-width:375px;border-radius:38px;padding:9px;background:#0f172a;box-shadow:0 26px 60px -24px rgba(15,23,42,.6)}
+  .screen{position:relative;overflow:hidden;width:100%;border-radius:30px;background:var(--canvas);isolation:isolate;padding-bottom:14px}
+  .aurora{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .orb{position:absolute;border-radius:50%;filter:blur(100px)}
+  .o1{width:70%;aspect-ratio:1;background:rgba(78,222,163,.3);top:-20%;left:-10%}
+  .o2{width:60%;aspect-ratio:1;background:rgba(210,187,255,.32);top:14%;right:-20%}
+  .z{position:relative;z-index:1}
+  .body{padding:12px 12px 0}
+  .now{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:0 0 8px}
+
+  .agenda{position:relative;padding-left:44px}
+  .rail{position:absolute;left:36px;top:2px;bottom:2px;width:2px;background:rgba(15,23,42,.08)}
+  .slot{position:relative;margin-bottom:7px}
+  .slot .t{position:absolute;left:-44px;top:10px;width:30px;text-align:right;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:var(--ink-dim);font-variant-numeric:tabular-nums}
+  .slot .dot{position:absolute;left:-13px;top:13px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid rgba(16,185,129,.55)}
+  .card{padding:9px 11px;border-radius:15px;background:var(--glass-2);border:1px solid var(--edge);box-shadow:var(--sh-1);display:flex;align-items:center;gap:9px;min-width:0}
+  .card.done{opacity:.62}
+  .ic2{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+  .txt{min-width:0;flex:1}
+  .nm2{font-weight:600;font-size:12.5px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+  .meta.ok{color:var(--mint-text);font-weight:600}
+
+  /* el hueco: pasado (registrar) vs futuro (poner) */
+  .gap{margin-bottom:7px}
+  .gap .g{padding:8px 11px;border-radius:13px;border:1.5px dashed rgba(16,185,129,.45);background:rgba(16,185,129,.06)}
+  .gap .lab{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;color:var(--mint-text);font-variant-numeric:tabular-nums;display:block}
+  .gap .outs{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .gap .o{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:999px;background:var(--mint);color:#fff;white-space:nowrap}
+  .gap .o.ghost{background:#fff;color:var(--mint-text);border:1px solid rgba(16,185,129,.4)}
+  .gap.past .g{border-color:rgba(148,163,184,.6);background:rgba(148,163,184,.1)}
+  .gap.past .lab{color:var(--ink-soft)}
+  .gap.past .o{background:var(--ink);color:#fff}
+  .gap.past .o.ghost{background:#fff;color:var(--ink-soft);border-color:rgba(15,23,42,.18)}
+  .nowline{display:flex;align-items:center;gap:7px;margin:2px 0 9px}
+  .nowline .l{flex:1;height:1.5px;background:repeating-linear-gradient(90deg,rgba(225,29,72,.5) 0 4px,transparent 4px 8px)}
+  .nowline .b{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;color:#be123c;background:rgba(225,29,72,.1);border-radius:999px;padding:2px 7px;font-variant-numeric:tabular-nums}
+
+  /* la hoja */
+  .sheet{border-radius:19px;background:var(--canvas);padding:14px 13px 15px;border:1px solid rgba(15,23,42,.08)}
+  .grab{width:34px;height:4px;border-radius:999px;background:rgba(15,23,42,.14);margin:0 auto 12px}
+  .stitle{font-size:15px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .ssub{font-family:'Inter',sans-serif;font-size:11.5px;color:var(--ink-dim);margin:3px 0 0}
+  .pick{margin-top:11px;padding:9px 10px;border-radius:13px;background:#fff;border:1px solid rgba(15,23,42,.12);display:flex;align-items:center;gap:9px}
+  .pick .nmp{font-size:13px;font-weight:600}
+  .pick .chev{margin-left:auto;color:#94a3b8}
+  .field{margin-top:12px}
+  .lbl{font-family:'Inter',sans-serif;font-size:12px;font-weight:700}
+  .lbl span{font-weight:500;color:var(--ink-dim)}
+  .inputs{display:flex;gap:8px;margin-top:7px}
+  .box{flex:1;min-width:0;border-radius:13px;background:#fff;border:1px solid rgba(15,23,42,.12);padding:8px 10px;display:flex;align-items:baseline;gap:6px}
+  .box.ok{border-color:rgba(16,185,129,.5);box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+  .box.bad{border-color:rgba(225,29,72,.55);box-shadow:0 0 0 3px rgba(225,29,72,.12)}
+  .box .v{font-family:'Inter',sans-serif;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  .box .u{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--ink-dim);margin-left:auto}
+  .pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+  .p{font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px;background:rgba(15,23,42,.05);color:var(--ink-soft)}
+  .p.on{background:#fff;color:var(--mint-text);border:1px solid rgba(16,185,129,.35)}
+  .cap{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:9px}
+  .cap b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .err{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--rose-text);background:rgba(225,29,72,.08);border:1px solid rgba(225,29,72,.3);border-radius:12px;padding:8px 10px;margin-top:9px;line-height:1.5}
+  .err b{color:#881337}
+  .save{margin-top:13px;padding:11px;border-radius:14px;background:var(--ink);color:#fff;text-align:center;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:700}
+  .save.off{background:rgba(15,23,42,.14);color:rgba(15,23,42,.45)}
+  .bar{height:8px;border-radius:999px;background:rgba(15,23,42,.08);overflow:hidden;display:flex;margin-top:9px}
+  .bar i{display:block;height:100%}
+  .bar .used{background:var(--ink)}
+  .bar .used.over{background:var(--rose)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Registrar en el hueco</h1>
+  <p class="lede">En Hoy el hueco <b>ya existe y ya se pulsa</b>, pero solo hacia delante: «poner algo aquí». Esto le añade la otra mitad, la de mirar hacia atrás: <b>en un hueco que ya pasó, contar qué hiciste</b> — con su duración editable, porque tener dos horas libres no significa que lo que hiciste durara dos horas. Y el sistema no te deja escribir algo que no cabe.</p>
+
+  <p class="caption">De pulsar a guardado</p>
+  <div class="row">
+
+    <!-- 1 -->
+    <div class="moment">
+      <div class="mtitle">1 · El hueco, con sus dos caras<small>Lo que ya pasó se cuenta; lo que viene se planea.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes · 12:40</p>
+          <div class="agenda"><div class="rail"></div>
+
+            <div class="slot"><span class="t">9:00</span><span class="dot"></span>
+              <div class="card done"><span class="ic2" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm2">Desayunar</span><span class="meta ok">Hecho · 28 min</span></span></div></div>
+
+            <div class="gap past"><div class="g">
+              <span class="lab">Libre 9:30 → 11:30 · 2 h</span>
+              <div class="outs"><span class="o">Registrar lo que hice</span></div>
+            </div></div>
+
+            <div class="slot"><span class="t">11:30</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card done"><span class="ic2" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm2">Daily meeting</span><span class="meta ok">Hecho · 30 min</span></span></div></div>
+
+            <div class="nowline"><span class="b">12:40</span><span class="l"></span></div>
+
+            <div class="gap"><div class="g">
+              <span class="lab">Libre 12:40 → 22:00 · 9 h 20</span>
+              <div class="outs"><span class="o">Poner algo</span><span class="o ghost">Registrar</span></div>
+            </div></div>
+
+          </div>
+        </div>
+      </div></div>
+      <p class="note">El mismo hueco cambia de oferta según de qué lado del <b>ahora</b> esté. Atrás, solo se cuenta lo que pasó —planear el pasado no significa nada—. Adelante manda «Poner algo», y «Registrar» queda de segundo por si acabas de hacer algo sin decirlo.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="moment">
+      <div class="mtitle">2 · Lo que hiciste, con su duración real<small>Dos horas libres, quince minutos de verdad.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <div class="sheet">
+            <div class="grab"></div>
+            <p class="stitle">¿Qué hiciste?</p>
+            <p class="ssub">Martes · en el hueco de 9:30 a 11:30</p>
+
+            <div class="pick"><span class="ic2" style="background:rgba(16,185,129,.12)">🐕</span><span class="nmp">Pasear a los peludos</span><span class="chev">›</span></div>
+
+            <div class="field">
+              <div class="lbl">Desde</div>
+              <div class="inputs"><div class="box ok"><span class="v">9:30</span><span class="u">inicio</span></div></div>
+            </div>
+
+            <div class="field">
+              <div class="lbl">Cuánto te llevó</div>
+              <div class="inputs">
+                <div class="box"><span class="v">0</span><span class="u">horas</span></div>
+                <div class="box ok"><span class="v">15</span><span class="u">min</span></div>
+              </div>
+              <div class="pills"><span class="p on">15 min</span><span class="p">30 min</span><span class="p">45 min</span><span class="p">1 h</span><span class="p">Todo el hueco</span></div>
+              <div class="cap">De 9:30 a <b>9:45</b>. Quedan <b>1 h 45</b> libres en este hueco.</div>
+              <div class="bar"><i class="used" style="width:12.5%"></i></div>
+            </div>
+
+            <div class="save">Guardar</div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Arranca en el <b>principio del hueco</b> y con la duración a lo que sueles tardar en eso, no al hueco entero: lo normal es que hicieras algo corto. La barra y la frase dicen a la vez <b>lo que ocupas</b> y <b>lo que queda</b>, que es el dato que hace falta para registrar lo siguiente.</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="moment">
+      <div class="mtitle">3 · Lo que no cabe, no entra<small>Ni más largo que el hueco, ni pisando a los vecinos.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <div class="sheet">
+            <div class="grab"></div>
+            <p class="stitle">¿Qué hiciste?</p>
+            <p class="ssub">Martes · en el hueco de 9:30 a 11:30</p>
+
+            <div class="pick"><span class="ic2" style="background:rgba(16,185,129,.12)">🐕</span><span class="nmp">Pasear a los peludos</span><span class="chev">›</span></div>
+
+            <div class="field">
+              <div class="lbl">Desde</div>
+              <div class="inputs"><div class="box ok"><span class="v">10:45</span><span class="u">inicio</span></div></div>
+            </div>
+
+            <div class="field">
+              <div class="lbl">Cuánto te llevó</div>
+              <div class="inputs">
+                <div class="box"><span class="v">1</span><span class="u">horas</span></div>
+                <div class="box bad"><span class="v">30</span><span class="u">min</span></div>
+              </div>
+              <div class="bar"><i class="used over" style="width:100%"></i></div>
+              <div class="err">Desde las 10:45 caben <b>45 min</b>: a las 11:30 entra <b>Daily meeting</b>. Ponle menos tiempo o empieza antes.</div>
+            </div>
+
+            <div class="save off">Guardar</div>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">El aviso dice <b>cuánto cabe</b>, <b>por qué</b> —con el nombre del bloque que está al otro lado— y <b>las dos salidas</b>. Guardar se apaga: no se guarda algo imposible y luego se avisa. Vale igual por arriba: si mueves el inicio a las 9:15, choca con «Desayunar», que acabó a las 9:28.</p>
+    </div>
+
+    <!-- 4 -->
+    <div class="moment">
+      <div class="mtitle">4 · Guardado<small>El hueco se encoge, no desaparece.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="aurora"><span class="orb o1"></span><span class="orb o2"></span></div>
+        <div class="z body">
+          <p class="now">Martes · 12:41</p>
+          <div class="agenda"><div class="rail"></div>
+
+            <div class="slot"><span class="t">9:00</span><span class="dot"></span>
+              <div class="card done"><span class="ic2" style="background:rgba(124,58,237,.12)">🥣</span>
+                <span class="txt"><span class="nm2">Desayunar</span><span class="meta ok">Hecho · 28 min</span></span></div></div>
+
+            <div class="slot"><span class="t">9:30</span><span class="dot" style="border-color:rgba(16,185,129,.8)"></span>
+              <div class="card"><span class="ic2" style="background:rgba(16,185,129,.12)">🐕</span>
+                <span class="txt"><span class="nm2">Pasear a los peludos</span><span class="meta ok">Hecho · 15 min · fuera del plan</span></span></div></div>
+
+            <div class="gap past"><div class="g">
+              <span class="lab">Libre 9:45 → 11:30 · 1 h 45</span>
+              <div class="outs"><span class="o">Registrar lo que hice</span></div>
+            </div></div>
+
+            <div class="slot"><span class="t">11:30</span><span class="dot" style="border-color:rgba(225,29,72,.5)"></span>
+              <div class="card done"><span class="ic2" style="background:rgba(225,29,72,.12)">💼</span>
+                <span class="txt"><span class="nm2">Daily meeting</span><span class="meta ok">Hecho · 30 min</span></span></div></div>
+
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Lo registrado entra en la lista como una cosa más —marcada <b>fuera del plan</b>, porque no estaba en la plantilla— y el hueco que queda <b>sigue siendo hueco</b>: 1 h 45, y puedes volver a contar otra cosa ahí. Así se puede reconstruir una mañana entera a trozos.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">Lo que este render decide</p>
+  <p class="note"><b>El hueco no cambia de forma, cambia de oferta.</b> Es el mismo componente que ya existe; lo que se añade es qué te ofrece según esté antes o después de ahora.</p>
+  <p class="note"><b>La duración por defecto no es el hueco entero.</b> Tener dos horas libres no dice nada de lo que hiciste. Arranca en lo que sueles tardar en esa actividad —dato que el sistema ya tiene— y de ahí lo mueves.</p>
+  <p class="note"><b>La validación es la misma que ya existe para planear</b>, dicha con las mismas palabras: cuánto cabe, y las dos salidas. Se comprueba por los dos lados, el de arriba y el de abajo, y contra lo <b>real</b> de los vecinos —«Desayunar» acabó a las 9:28, no a las 9:30—, que es lo que de verdad ocupa el día.</p>
+  <p class="note"><b>Ni una palabra de reproche</b>: el tiempo del hueco no se llama perdido, ni desperdiciado, ni se pregunta por qué no hiciste nada.</p>
+
+</div>
+</body>
+</html>

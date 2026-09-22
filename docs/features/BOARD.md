@@ -17,7 +17,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
 | FEAT-008 | building | 1/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
-| FEAT-009 | specified | 0/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
+| FEAT-009 | planned | 0/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | specified | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |

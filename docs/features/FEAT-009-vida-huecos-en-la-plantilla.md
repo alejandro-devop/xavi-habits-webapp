@@ -1,7 +1,7 @@
 ---
 id: FEAT-009
 title: Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena
-status: specified
+status: planned
 architect: yes    # la geometría del hueco ya existe dos veces (Hoy y la plantilla) y el final de un ítem de plantilla es derivado y puede no existir: decidir de dónde sale el hueco y cómo se precarga el alta es código compartido, no una tajada
 area: features/vida
 requested: 2026-09-22
@@ -347,7 +347,361 @@ criterio 145. El arquitecto puede tirarla.
 
 ## 2. El plan — feature-architect
 
-*(pendiente)*
+**Resumen para el constructor:** la geometría del hueco **ya se recorre entera**
+en el bucle de `buildTemplateDay` (`vida-template.utils.ts:216-249`), que hasta
+sus horas conoce —las mete en el `id` del tramo, `free-8:40-9:00`— y las tira;
+el trabajo es **emitir una fila más en ese mismo bucle**, no escribir una
+segunda función. La implementación de referencia es
+`src/features/vida/components/VidaTemplateItemCard/VidaTemplateItemCard.tsx`:
+es el `<li>` vecino en la misma `ol`, con la canaleta de la hora y el contrato
+de «sin la prop de acción soy lectura pura, con ella soy un `<button>`», que es
+exactamente lo que separa las tres formas del render. **No crees** ni una
+función de huecos, ni un umbral, ni un formateador: `MIN_GAP_MINUTES`,
+`formatTimeForDisplay` y `formatDurationFromMinutes` ya existen y son los del
+módulo.
+
+### Lo que ya existe (verificado abriendo los archivos, no el grafo)
+
+**La geometría, ya escrita y correcta** —
+`src/features/vida/utils/vida-template.utils.ts`:
+
+- `buildTemplateDay` (`:175`) ordena los ítems con hora (`:183-187`), calcula
+  `startMinutes` / `endMinutes` / `durationMinutes` (`:192-200`) y **estira la
+  ventana** cuando algo cae fuera del horario (`:204-212`) — de ahí salen
+  `windowStart` y `windowEnd`, que son **los bordes del día** del criterio 141.
+  No hay ningún borde que inventar.
+- `pushGap(from, to)` (`:216-224`) **ya tiene las dos horas**: las escribe en el
+  `id` (`free-${minutesToTime(from)}-${minutesToTime(to)}`) y luego se queda solo
+  con `trackMinutes`. El `if (to <= from) return` de `:217` **es el criterio 144
+  ya implementado**, y el `cursor = Math.max(cursor, entry.endMinutes)` de `:245`
+  es «el hueco siguiente arranca en el final más tardío».
+- Un ítem **sin duración** tiene hoy `endMinutes === startMinutes` (`:197`) y
+  `trackMinutes === 0` (`:241`), así que no empuja tramo `planned` y **el hueco
+  que le sigue se emite tal cual**: eso es exactamente la mentira que prohíbe el
+  criterio 145. Es el único sitio donde hay que decidir algo.
+- `TemplateSegment` (`:83-87`) solo lleva `id`, `kind` y `trackMinutes`. Los
+  tramos `free` son los del criterio 142: `freeMinutes` (`:258`) se calcula como
+  `dayMinutes − plannedMinutes`, **no** desde los tramos, así que tocar la lista
+  de filas no puede mover la barra.
+
+**El umbral y los formateadores** — `src/features/vida/utils/vida-time.utils.ts`
+(la sección 1 los cita en `:84,122`; los reales son estos):
+
+- `MIN_GAP_MINUTES = 15` en **`:167`**. `formatDurationFromMinutes` en **`:84`**
+  («20m», «3h», «7h 15»). `formatTimeForDisplay` en **`:155`** («8:40», sin cero
+  delante). `minutesToTime` y `parseTimeToMinutes` ya se importan en
+  `vida-template.utils.ts`.
+- Ojo con el render: pinta «3 h» y «7 h 15» y `formatDurationFromMinutes`
+  devuelve «3h» y «7h 15». **Manda el criterio 140** (ese formateador y no un
+  segundo); la diferencia es un espacio y no se toca el formateador por ella.
+
+**La forma visual, para copiar de un sitio concreto:**
+
+- `VidaTemplateItemCard.tsx:96` — `<li className={styles.row}>`, y su
+  `.module.scss:6-30` tiene la canaleta (`.gutter`, `flex: 0 0 2.75rem`,
+  alineada a la derecha) y `.time`. La fila de hueco **tiene que usar esas
+  mismas medidas** o las horas dejan de estar en columna.
+- `VidaPlantillaPage.module.scss:39` — `.agenda` es un `flex column` con
+  `gap: .45rem` y `list-style: none`. Las filas nuevas entran ahí sin tocar el
+  contenedor.
+- `VidaAgendaGap.tsx:79-92` — **la forma fina ya está escrita** (canaleta +
+  `<p>Libre {rango} · {tamaño}</p>`, sin nada pulsable). Se **imita el JSX**, no
+  se importa el componente (la sección 1 ya razonó por qué).
+
+**La puerta de la precarga, confirmada en el código de FEAT-008 (`c789d0a`):**
+
+- `VidaDurationPills` guarda un borrador `{hours, minutes}` y el último valor
+  emitido, y **se re-reparte en render cuando `value` llega distinto de lo
+  emitido**. El revisor lo probó por los dos lados (dossier de FEAT-008, sección
+  4, «La regla de sincronización del borrador»). Traducción para esta feature:
+  **basta con que `durationMinutes` cambie en el padre**; los dos campos se
+  reparten solos y el criterio 170 (90 → «1» y «30») sale gratis.
+- El padre es `VidaTemplateAddPanel.tsx:80` (`setDurationMinutes`) y `:79`
+  (`setStartTime`), cableados en `:294-317`. La hoja del ítem usa
+  `patchTemplate` (`VidaActivitySheet.tsx:208`, campos en `:576` y `:602`) —
+  **esa no la toca esta feature salvo en la tajada 3, y solo para el foco**.
+- **`pick()` (`:107-113`) vacía `setStartTime('')` y `setDurationMinutes(null)`**
+  además de `setDays([day])`. Es el hallazgo que rompe la feature entera y está
+  resuelto abajo, en la tajada 2.
+
+**Lo que existe y NO se toca (y una duplicación que ya estaba ahí):**
+
+- `vida-agenda.utils.ts` — `buildDayAgenda` (`:152`), `AgendaGap` con su
+  `isSliver` (`:221`), `formatGapRange` (`:330`). **`formatGapRange` no sirve**:
+  pide un `AgendaGap` y además escribe «10:30 – 13:00» con raya, no con flecha.
+  El rango se compone en el JSX como en `VidaAgendaGap.tsx:82-90`; componer dos
+  llamadas a `formatTimeForDisplay` **no es un formateador nuevo** (criterio 167).
+- **La geometría del hueco está en el módulo tres veces, no dos** (la sección 1
+  contaba dos): además de `buildDayAgenda` y `buildTemplateDay` está
+  `vida-execution.utils.ts:694`, que vuelve a calcular `isSliver` para el día
+  contado. Y **hay un segundo umbral de 15 minutos**: `MIN_PLACEMENT_MINUTES` en
+  `vida-gap-form.utils.ts:34`, gemelo de `MIN_GAP_MINUTES`. **Ninguna de las dos
+  cosas es de esta feature** —las dos son de Hoy— pero quedan anotadas: si
+  alguien cambia el 15, hoy hay que cambiarlo en dos sitios. No lo arregles
+  aquí; sería un cambio en `/app/vida/hoy`, que está fuera de alcance.
+- `vida-gap-form.utils.ts` entero (`GapWindow`, `buildStartTimeOptions`,
+  `validatePlacement`, `toDayPlanTimes`) y `VidaPlaceInGapSheet`: **son de Hoy**
+  y trabajan sobre `AgendaGap`. La plantilla no valida colocaciones ni topa la
+  duración (criterio 155: sin tope y sin redondeo). No se importan.
+- `VidaTemplateDaySummary.tsx` (barra y cifras), `VidaWeekGrid`,
+  `VidaTemplateNoTimeDrawer`: **diff vacío** (criterios 148 y el «fuera de
+  alcance» de la sección 1).
+- `src/features/vida/vida-vocabulary.test.ts` recorre los archivos del módulo
+  por glob: el criterio 166 lo cubre solo, **sin añadir nada**, en cuanto los
+  archivos nuevos vivan bajo `src/features/vida/`.
+
+**Lo que no existe en ninguna parte:** una fila de hueco para la plantilla, una
+línea de «no sabemos cuánto dura», y cualquier forma de precargar hora y
+duración en `VidaTemplateAddPanel` (hoy solo se escriben a mano). Eso es lo
+nuevo, y no hay medio hecho de ello.
+
+### Implementación de referencia
+
+**`src/features/vida/components/VidaTemplateItemCard/VidaTemplateItemCard.tsx`**
+(+ su `.module.scss` y su `index.ts`).
+
+Por qué esa y no `VidaAgendaGap`: es **el vecino en la misma lista** —mismo
+`<li>`, misma canaleta, mismo módulo de estilos, mismo barril— así que copiarla
+mantiene la columna de horas alineada sin inventar medidas; y porque su
+contrato de props es literalmente el que separa las tres formas del render:
+*«sin `onOpen` sigue siendo un `<article>` de solo lectura; con `onOpen` el
+cuerpo se pinta como un `<button>` —no un `div` con `onClick`— para que llegue
+el teclado gratis»* (`:87-97`). Aplicado aquí: **sin `onPlace` la fila es
+texto** (hueco fino y línea de «no sabemos», criterio 161), **con `onPlace` es
+un `<button>`** (criterio 162). De `VidaAgendaGap.tsx:79-92` se copia solo el
+JSX de la línea fina y su vocabulario («Libre …»).
+
+### Dónde va el código nuevo
+
+**La decisión que pedía el dossier: el derivado vive dentro de
+`buildTemplateDay`, en el mismo bucle.** No en una función nueva que vuelva a
+recorrer el día, y no en la página.
+
+`src/features/vida/utils/vida-template.utils.ts` — **modificar**:
+
+1. `:83-87`, `TemplateSegment`: añadir `startMinutes` y `endMinutes` (ya se
+   conocen en las dos inserciones, `:219-223` y `:242-246`). Es aditivo; quien
+   lee `trackMinutes` no se entera.
+2. Justo después, **tipos nuevos exportados**:
+   `TemplateRow = TemplateItemRow | TemplateGapRow | TemplateUnknownRow`, con
+   `kind: 'item' | 'gap' | 'unknown'`; `gap` lleva `startMinutes`, `endMinutes`,
+   `minutes` e `isSliver` (`minutes < MIN_GAP_MINUTES`, importado, **no
+   redefinido**); `unknown` lleva `item`, `untilMinutes` y `isDayEnd`.
+3. `TemplateDay` (`:89-105`): campo nuevo `rows: TemplateRow[]`, documentado
+   como «la misma geometría que `segments`, con las horas y con la regla del
+   criterio 145; `segments` y `freeMinutes` no cambian».
+4. El bucle `:238-249`: `pushGap` empuja **además** la fila, y el bucle empuja
+   la fila del ítem. La regla, entera:
+   - `placed.length === 0` → `rows` queda **vacío** (criterio 149; hoy `pushGap`
+     final pintaría un hueco de todo el día).
+   - Tras empujar la fila del ítem: si su `durationMinutes` es `null` o `<= 0`,
+     se recuerda como `pendingUnknown` y **no se emite hueco** hasta el
+     siguiente corte.
+   - En cada corte (el `startMinutes` del siguiente ítem, o `windowEnd`): si hay
+     `pendingUnknown`, se emite una fila `unknown` con `untilMinutes` = ese corte
+     e `isDayEnd` = si el corte es `windowEnd` (criterios 145 y 146), y se
+     limpia; si no, y el corte es mayor que el cursor, fila `gap`.
+   - `segments` **se sigue empujando igual en los dos casos**: la barra no se
+     mueve y el criterio 142 se cumple exactamente en los días sin ítems sin
+     duración.
+   - **Borde no cubierto por ningún criterio, decídelo y déjalo en un test:**
+     ítem sin duración cuyo corte siguiente es **anterior o igual** a su propia
+     hora (dos ítems a la misma hora). Recomendación: emitir la línea igual con
+     `untilMinutes = Math.max(corte, item.startMinutes)`; nunca un hueco.
+5. `src/features/vida/utils/vida-template.utils.test.ts` — un `describe` nuevo
+   **al final** (el archivo ya prueba `buildTemplateDay` en `:93` y la suma de
+   `segments` en `:130,143,155`; no se toca nada de arriba): criterios 140, 141,
+   142 (suma de filas `gap` === `day.freeMinutes`), 143, 144, 145, 146, 149.
+
+`src/features/vida/components/VidaTemplateGapRow/` — **crear** (`.tsx`,
+`.module.scss`, `index.ts`, molde exacto de `VidaTemplateItemCard/`):
+
+**Un solo componente para las tres formas**, `VidaTemplateGapRow({ row, onPlace,
+onSetDuration })`, con tres ramas dentro del mismo archivo y el mismo
+`.module.scss` —igual que `VidaAgendaGap` resuelve fina y normal en un archivo—:
+
+- `row.kind === 'gap'` y `!row.isSliver` y hay `onPlace` → `<li>` + canaleta con
+  la hora + `<button>` con «Libre 8:40 → 9:00 · 20m» y el «+» del render, con
+  `aria-label` «Poner algo a las 8:40, 20 minutos libres» (criterio 162).
+- `row.kind === 'gap'` y `row.isSliver` (o sin `onPlace`) → la línea fina,
+  copiada de `VidaAgendaGap.tsx:79-92`: un `<p>`, cero elementos pulsables
+  (criterios 143 y 161).
+- `row.kind === 'unknown'` → la línea gris del render (`assets/…:162-165`):
+  «No sabemos cuánto dura **X**, así que no podemos decir qué queda libre hasta
+  las 14:00» (o «…hasta el final del día», según `isDayEnd`). Sin `onSetDuration`
+  no lleva salida (tajada 1); con ella lleva «Ponerle duración» (tajada 3).
+  **Es lo único que imprime un nombre de actividad**, y por eso es lo único que
+  tiene que envolver con 60 caracteres (criterio 151).
+
+`src/features/vida/pages/VidaPlantillaPage.tsx` — **modificar**:
+
+- `:410-421`: la `ol` pasa a mapear `templateDay.rows` en vez de
+  `templateDay.timed`; `kind === 'item'` sigue pintando `VidaTemplateItemCard`
+  con las mismas props; los otros dos, `VidaTemplateGapRow`. La condición de
+  `:411` (`templateDay.timed.length > 0`) **se queda**: es el criterio 149.
+- `:3-12`: un `import` más.
+- `src/features/vida/pages/VidaPlantillaPage.test.tsx` — `describe` nuevo al
+  final del bloque de la agenda (`:207`), sin tocar los de arriba.
+
+**Tajada 2 — el contrato de la precarga, con líneas:**
+
+`VidaTemplateAddPanel.tsx`:
+
+- Props nuevas, **aditivas** (`:35-44`): `gapPrefill?: { token: number;
+  startTime: string; durationMinutes: number; label: string } | null`. El
+  `token` es lo que distingue «otro hueco con los mismos valores» de «nada nuevo»
+  (criterio 160); lo lleva la página.
+- Sincronización **en render, no en `useEffect`**, con el mismo patrón que
+  FEAT-008 dejó probado en `VidaDurationPills` (un `useState` con el último token
+  aplicado; escribir una `ref` en render da **dos errores de lint nuevos** en
+  este repo — medido en FEAT-008, no lo repitas): al cambiar el token,
+  `setStartTime(prefill.startTime)` y `setDurationMinutes(prefill.durationMinutes)`
+  y **nada más** —ni `picked`, ni `days`— (criterio 160).
+- **`pick()` (`:107-113`)**: `setStartTime('')` y `setDurationMinutes(null)` pasan
+  a ejecutarse **solo si no hay `gapPrefill` activo**. Con el «+» flotante
+  `gapPrefill` es `null` y sigue vaciando como siempre (criterio 154, las dos
+  mitades). `setDays([day])` y `setDaysError(null)` no cambian.
+- Tras guardar (`:142-146`, `onSuccess`) se avisa a la página para que suelte el
+  prefill: si no, el siguiente `pick()` seguiría conservando horas viejas.
+- La línea del render «Viene del hueco que pulsaste» / «para las 8:40 · 20m
+  libres» (criterio 159): un `<p>` bajo `styles.head` (**`:245-253`**), pintado
+  solo con `gapPrefill`. Vale para el escritorio y para la hoja de móvil: una
+  sola implementación.
+- El foco al buscador (criterio 159): `ref` en el `Input type="search"` del
+  final (**`:341-347`**), enfocado al aplicar un token nuevo cuando no hay
+  actividad elegida. **Sin `scrollIntoView`** — el criterio pide que la página no
+  dé saltos.
+- `VidaTemplateAddSheet.tsx` **no se toca**: ya hace `{...panel}` (`:22,33`).
+
+`VidaPlantillaPage.tsx`:
+
+- Estado `gapPrefill` junto a `addOpen` (`:90-130`), un `token` que sube en cada
+  toque; el `onPlace` de la fila lo fija y, **en móvil**, abre la hoja
+  (`setAddOpen(true)`, como el FAB de `:455`). En escritorio no abre nada: el
+  panel del aside (`:446`) ya está a la vista.
+- Se pasa `gapPrefill` a los **dos** montajes del panel (`:446` y `:462`).
+
+`VidaTemplateGapRow.tsx`: se empieza a pasar `onPlace` (el componente ya lo
+admite desde la tajada 1; en la tajada 1 nadie lo pasa y la fila es texto).
+
+**El panel no tiene archivo de test propio**: su cobertura vive en
+`VidaPlantillaPage.test.tsx:634` («Añadir a mi Vida», criterios 29-34 y 40). Los
+criterios 153-162 van ahí, en un `describe` nuevo; los espías de
+`useSaveVidaItemForActivity` (criterios 156 y 157) ya tienen molde en ese mismo
+archivo.
+
+**Tajada 3 — la salida de la línea que no sabe:**
+
+- `VidaActivitySheet.tsx`: prop **aditiva** `focusDuration?: boolean` (junto a
+  `lockActivity`, `:80-90`), que al abrir lleva el foco al campo «Cuánto»
+  (`:595-605`) y lo deja a la vista. La hoja **ya se monta con `key` por
+  apertura** (`VidaPlantillaPage.tsx:474-479`), así que basta con un efecto de
+  montaje; no hace falta resincronizar nada. **No se toca `VidaDurationPills`**.
+- `VidaPlantillaPage.tsx:143-147`: `openSheet(item, { focusDuration })`, y el
+  valor viaja a la hoja en `:481-494`. La línea `unknown` recibe
+  `onSetDuration={(item) => openSheet(item, { focusDuration: true })}`.
+- Criterio 164 (al guardar la duración aparece el hueco, sin recargar): sale
+  solo — la lista se deriva de `items`, que la mutación ya invalida. **Hay que
+  probarlo**, no darlo por hecho.
+
+### Lo que NO hay que crear
+
+- **Ninguna función que calcule huecos.** Ni `buildTemplateGaps`, ni
+  `buildTemplateRows` aparte, ni un `useMemo` en la página. Una sola pasada, la
+  que ya existe (criterio 167).
+- **Ningún umbral nuevo** (`MIN_GAP_MINUTES` se importa) ni **ningún formateador
+  nuevo** (criterios 143 y 167).
+- **Ningún componente de hueco de Hoy reutilizado ni copiado**: `VidaAgendaGap`
+  se mira, se imita la línea fina, no se importa.
+- **Nada en la capa de datos**: ni documento GraphQL, ni hook, ni clave de caché,
+  ni `localStorage`. La lista se deriva de los `VidaItem` que la pantalla ya
+  tiene (criterios 147 y 168).
+- **Ni una línea de hora de fin.** El «→ Acaba a las 11:30» que dibuja el render
+  es de **FEAT-008 tajada 2, que no está construida** (su tajada 1 sí, en
+  `c789d0a`). Si FEAT-008 entrega su tajada 2 antes, esa línea aparece sola.
+- **Ningún cambio en la barra de `VidaTemplateDaySummary`**, en `VidaWeekGrid` ni
+  en `VidaTemplateNoTimeDrawer`.
+
+### Dónde NO va (medido y descartado)
+
+- **En una función nueva que vuelva a recorrer el día.** Es lo más cómodo de
+  escribir y es exactamente el fallo que el protocolo quiere evitar: dos reglas
+  de cursor que se separan en el primer solape. Y el criterio 142 dejaría de ser
+  una propiedad y pasaría a ser una coincidencia.
+- **En la página, derivando las filas de `segments`.** No se puede reconstruir el
+  orden: los tramos `planned` con `trackMinutes === 0` **no se empujan**
+  (`:241`), así que un ítem sin duración o pisado desaparece de `segments` y la
+  lista quedaría descolocada.
+- **Cambiando el `kind` del tramo a `'unknown'` en `segments`.** Movería la barra
+  (`TemplateSegment` alimenta `VidaTemplateDaySummary`), que está explícitamente
+  fuera de alcance. Por eso `rows` y `segments` **divergen a propósito** justo
+  en el caso 145, y el criterio 142 ya lo dice.
+- **Adaptar `AgendaGap` con un `endTime` opcional.** Obliga a fabricar un final
+  falso para el ítem sin duración, que es lo único que esta feature no puede
+  hacer. Ya razonado en la sección 1; lo confirmo tras leer `buildDayAgenda`
+  (`:163-165`: hace `parseTimeToMinutes(item.endTime)` sin salida para `null`).
+- **Tres componentes, uno por forma.** Triplica la canaleta y hace que las horas
+  se desalineen al primer retoque de CSS.
+- **Pasarle a `VidaAgendaGap` media docena de props apagadas.** Sale más caro que
+  la fila nueva y ensucia Hoy, que no cambia ni una línea.
+- **Remontar el panel con una `key` al pulsar un hueco** para forzar la
+  precarga. Es lo más corto y **rompe el criterio 160**: borraría la actividad ya
+  elegida y los días marcados.
+- **Pasar la precarga por la URL, por contexto o por `localStorage`.** Props; es
+  el mismo árbol y la página ya es dueña de los dos montajes del panel.
+- **Arreglar aquí la duplicación de `MIN_PLACEMENT_MINUTES`** o el tercer
+  `isSliver` de `vida-execution.utils.ts`. Son de Hoy, que está fuera de alcance.
+  Anotado arriba para quien toque ese módulo.
+
+### Lo que esto le deja dicho a FEAT-012 (la noche)
+
+**Sí, el derivado tendrá que saber de ella, y el punto exacto ya está
+localizado.** Las filas nacen entre `windowStart` y `windowEnd`
+(`vida-template.utils.ts:204-212`), que salen de `dayStart` / `dayEnd`. Si la
+noche se pinta como franjas **fuera de la lista** y no toca esa ventana, esta
+feature no se entera y el último hueco seguirá llegando a las 22:00 — con una
+noche que empieza a las 23:00 quedaría una hora sin nadie que la cuente. Si la
+noche **mueve el borde del día**, entra por `dayStart`/`dayEnd` en `:314-319` y
+las filas la siguen **sin tocar el derivado**. La pregunta que FEAT-012 tiene que
+contestar es solo esa: *¿quién es el dueño del borde del día?* No la contesto
+aquí.
+
+### Tajadas, con archivos
+
+| # | Qué hace | Archivos | Criterios que cierra | Estado |
+|---|---|---|---|---|
+| 1 | **Los huecos se ven.** Las tres formas pintadas, nada pulsable todavía. | **M** `utils/vida-template.utils.ts` (`:83-87` tipo, tipos nuevos tras `:87`, `:89-105` campo `rows`, bucle `:216-249`) · **M** `utils/vida-template.utils.test.ts` (describe al final) · **C** `components/VidaTemplateGapRow/{VidaTemplateGapRow.tsx,.module.scss,index.ts}` · **M** `pages/VidaPlantillaPage.tsx:410-421` (+ import) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:207`) | 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 166, 167, 168, 169 | pendiente |
+| 2 | **El toque precarga.** Pulsar un hueco abre «Añadir a mi Vida» con hora y duración puestas y sobrevive a elegir actividad. | **M** `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (props `:35-44`, sync en render, `pick()` `:107-113`, `onSuccess` `:142-146`, línea del hueco tras `:253`, `ref` del buscador `:341-347`) · **M** `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx` (rama `<button>`) · **M** `pages/VidaPlantillaPage.tsx` (estado + `:446` y `:462`) · **M** `pages/VidaPlantillaPage.test.tsx` (describe tras `:634`) | 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 166, 167, 168, 169, **170** | pendiente |
+| 3 | **El ítem sin duración deja de tapar el hueco.** Su línea ofrece «Ponerle duración» y abre la hoja del ítem con «Cuánto» enfocado. | **M** `components/VidaActivitySheet/VidaActivitySheet.tsx` (prop `focusDuration` junto a `:80-90`, foco en `:595-605`) · **M** `components/VidaTemplateGapRow/VidaTemplateGapRow.tsx` (salida de la línea `unknown`) · **M** `pages/VidaPlantillaPage.tsx:143-147` y `:481-494` · **M** `pages/VidaPlantillaPage.test.tsx` | 163, 164, 165, 166, 167, 168, 169 | pendiente |
+| — | El recorrido real a 375 px, en claro y en oscuro, contra el API de verdad. | — | **171** (lo cierra el usuario) | pendiente |
+
+**Las tajadas no se recortaron**: las tres son verticales y el orden que traía
+la sección 1 es el único que funciona —la tajada 2 necesita una fila que pulsar y
+la 3 necesita una línea a la que colgarle la salida—. Dos precisiones sobre el
+reparto de criterios, que sí cambian respecto a cómo estaban escritos:
+
+- **El criterio 161** («lo que no se pulsa no se pulsa») está escrito en la
+  tajada 2, pero la tajada 1 ya lo deja cierto por construcción: sin `onPlace` no
+  hay `<button>`. En la tajada 2 solo hay que **no romperlo**.
+- **El criterio 170** (el encaje con los campos de horas y minutos) **ya es
+  comprobable**: FEAT-008 tajada 1 está en `main`. Su mitad de la hora de fin
+  **no**: esa línea es de FEAT-008 tajada 2, que no está construida. Compruébalo
+  con el reparto (90 → «1» y «30») y **deja dicho en tu entrega que la hora de
+  fin queda pendiente de FEAT-008 tajada 2**.
+
+### Riesgos que dejo señalados
+
+1. **El render extra de `VidaDurationPills`** que avisó FEAT-008: con la
+   precarga, el borrador se re-reparte de verdad por primera vez en producción.
+   Es el primer sitio donde mirar si algo salta al pulsar un hueco.
+2. **`TemplateDay` gana un campo** y lo consumen `VidaTemplateDaySummary.tsx:16`
+   y la cuadrícula de la semana vía `buildTemplateWeekGrid` (`:886`). Es aditivo
+   —ninguno construye un `TemplateDay` a mano— pero si algún test hace `toEqual`
+   sobre el objeto entero, fallará: los que miré (`:130,143,155`) suman
+   `segments`, no comparan el día completo.
+3. **Los solapes con un ítem sin duración a la vez** son el cruce de los
+   criterios 144 y 145 y no hay ningún caso escrito que los combine. Escribe el
+   test aunque no haya criterio.
 
 ## 3. Construcción — feature-builder
 

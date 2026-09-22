@@ -15,9 +15,31 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
+| FEAT-007 | specified | 0/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-007 `specified`** (2026-09-21, **fase F6 del plan, la última del módulo
+Vida**). Dossier escrito: `FEAT-007-vida-sistema-entiende.md`, criterios
+**64–106** (siguen la numeración del módulo, que FEAT-006 dejó en el 63) y
+**cuatro tajadas**. La sección vive **dentro de Revisión** como tercera sección
+(«Un día» · «La semana» · «Lo que se repite»): **ni ruta, ni píldora, ni
+backend** — todo se deriva en cliente de `activityDayPlan` y
+`activityFollowUpsInDates` de las **últimas 6 semanas** y con
+`vidaKeys.followUps.day`, como hizo la tajada 4 de FEAT-006. **Arquitecto: sí**
+— la ventana de **42 días** y la «sugerencia con respuesta guardada» que
+consumen **tres pantallas** (Revisión, Hoy y la hoja de la plantilla) son
+conceptos nuevos que no deben decidirse tres veces. **Dos decisiones
+escritas:** **D1**, fijada por el analista y cerrada —una sugerencia contestada
+con «Dejarlo» **vuelve a las 4 semanas** si el patrón sigue, y **antes** si el
+número se mueve 10 min o más, siempre con la fecha de vuelta a la vista en
+«Contestadas»—; y **D2**, con valor por defecto y **no bloqueante** —en Hoy la
+salida afirmativa cambia **solo el día**, no la plantilla (criterio 89): si el
+usuario prefiere lo contrario, se corrige antes de la tajada 3—. **D3** no es
+decisión: los umbrales salen del render (adherencia 2 semanas, tendencia 3, día
+de la semana 3, actividad 4 apariciones) y el «3 semanas» del plan es el
+titular. Siguiente: **`feature-architect`**.
 
 **FEAT-006 `delivered`** (2026-09-21). Cuarta revisión: **`accepted`**, y con
 ella las cuatro tajadas. **El criterio 53 queda a medias y con su nota**: la

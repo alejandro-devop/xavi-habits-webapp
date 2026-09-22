@@ -112,6 +112,13 @@ export function VidaPlantillaPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [editing, setEditing] = useState<VidaItem | null>(null)
   const [sheetSession, setSheetSession] = useState(0)
+  /**
+   * **Por qué puerta se entró a la hoja** (FEAT-009, tajada 3): entrando por
+   * «Ponerle duración» la hoja abre con el foco en «Cuánto». Vive aquí y no en
+   * la hoja porque lo sabe quien la abre; se fija en cada apertura, así que la
+   * siguiente vuelve a ser `false` sola.
+   */
+  const [sheetFocusDuration, setSheetFocusDuration] = useState(false)
   const [removing, setRemoving] = useState<VidaItem | null>(null)
   const [activatingId, setActivatingId] = useState<string | null>(null)
   /** La hoja de «Añadir a mi Vida» en móvil; en escritorio el panel va suelto. */
@@ -193,10 +200,27 @@ export function VidaPlantillaPage() {
     setAddOpen(true)
   }
 
-  function openSheet(item: VidaItem) {
+  /**
+   * La hoja del ítem, **la de siempre** (criterio 16). Con
+   * `{ focusDuration: true }` se abre mirando a «Cuánto»: es la salida de la
+   * línea del ítem sin duración (criterio 163), y **no** un segundo sitio
+   * donde ponerla.
+   */
+  function openSheet(item: VidaItem, options?: { focusDuration?: boolean }) {
     setEditing(item)
+    setSheetFocusDuration(options?.focusDuration ?? false)
     setSheetSession((session) => session + 1)
     setSheetOpen(true)
+  }
+
+  /**
+   * «Ponerle duración» (criterio 163): la única salida de la línea del ítem del
+   * que no se sabe dónde acaba. Abre **su** hoja —no un formulario nuevo— y no
+   * guarda nada: cerrar sin guardar deja el ítem y la línea como estaban
+   * (criterio 165).
+   */
+  function setDurationFor(item: VidaItem) {
+    openSheet(item, { focusDuration: true })
   }
 
   /**
@@ -473,10 +497,12 @@ export function VidaPlantillaPage() {
                 <ol className={styles.agenda} aria-label={`Tu ${dayLabel}, ordenado por hora`}>
                   {/* La lista se pinta desde `rows`, que es el mismo recorrido
                       que ya hacía la barra: entre ítem e ítem —y en los bordes
-                      del día— van los huecos (FEAT-009). En esta tajada
-                      **nada de eso se pulsa**: la fila del hueco no recibe
-                      `onPlace` y la línea del ítem sin duración no recibe
-                      `onSetDuration`, así que son texto. */}
+                      del día— van los huecos (FEAT-009). Lo que se pulsa y lo
+                      que no lo decide **quién recibe su salida**: el hueco de
+                      15 min o más recibe `onPlace`, la línea del ítem sin
+                      duración recibe `onSetDuration`, y el hueco fino no
+                      recibe ninguna de las dos, así que sigue siendo texto
+                      (criterios 143 y 161). */}
                   {templateDay.rows.map((row) =>
                     row.kind === 'item' ? (
                       <VidaTemplateItemCard
@@ -495,6 +521,12 @@ export function VidaPlantillaPage() {
                         // 143 y 161): al fino y a la línea de «no sabemos» no
                         // les llega `onPlace`, así que siguen siendo texto.
                         onPlace={row.kind === 'gap' && !row.isSliver ? placeInGap : undefined}
+                        // **Una sola salida** para la línea que no sabe dónde
+                        // acaba el ítem (criterio 163): la hoja de ese ítem,
+                        // la de siempre, abierta en «Cuánto». Al guardar la
+                        // duración, `rows` se recalcula solo y el hueco que no
+                        // se podía afirmar aparece (criterio 164).
+                        onSetDuration={row.kind === 'unknown' ? setDurationFor : undefined}
                       />
                     ),
                   )}
@@ -578,6 +610,7 @@ export function VidaPlantillaPage() {
         vidaItem={editing}
         activityRef={editing?.activity ?? null}
         lockActivity
+        focusDuration={sheetFocusDuration}
         onRemoveFromTemplate={(item) => {
           setSheetOpen(false)
           setRemoving(item)

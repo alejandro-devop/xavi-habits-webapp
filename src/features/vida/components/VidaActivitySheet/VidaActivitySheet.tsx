@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { CreateVidaCategoryStep } from '@/features/vida/components/CreateVidaCategoryStep'
 import { VidaDurationPills } from '@/features/vida/components/VidaDurationPills'
@@ -87,6 +87,15 @@ type VidaActivitySheetProps = {
    * trae—. Cambiar nombre o categoría sigue siendo del catálogo.
    */
   lockActivity?: boolean
+  /**
+   * **Se abre para ponerle duración** (FEAT-009, criterio 163): la hoja lleva
+   * el foco al primer control de «Cuánto» y lo deja a la vista. Es aditiva y
+   * el defecto es `false`: quien no la pasa abre la hoja exactamente como
+   * siempre —el foco se queda donde lo deja el cepo del modal—. **No hay un
+   * segundo sitio donde poner duración**: es esta misma hoja, entrando por
+   * otra puerta.
+   */
+  focusDuration?: boolean
   /** Con ella se pinta «Quitar de la plantilla» (criterio 21). Sin ella, no existe. */
   onRemoveFromTemplate?: (item: VidaItem) => void
   /**
@@ -150,6 +159,7 @@ export function VidaActivitySheet({
   isTemplatePending = false,
   activityRef = null,
   lockActivity = false,
+  focusDuration = false,
   onRemoveFromTemplate,
   multipleItemsNote = null,
   pattern = null,
@@ -199,6 +209,32 @@ export function VidaActivitySheet({
   // puede crear otra actividad. Se recuerda la que nació y se la trata como si
   // hubiera llegado por props: el reintento la edita y vuelve a por la plantilla.
   const [createdActivity, setCreatedActivity] = useState<Activity | null>(null)
+
+  /**
+   * **Entrar por «Ponerle duración» es entrar mirando a «Cuánto»** (criterio
+   * 163). El cepo de foco del modal (`useFocusTrap`) deja el foco en el primer
+   * control de la hoja; este efecto corre **después** —los efectos del hijo
+   * van antes que los del padre— y lo mueve al primer control de «Cuánto», que
+   * es donde la persona venía a escribir.
+   *
+   * Una sola vez por apertura: quien abre esta hoja la monta con una `key`
+   * nueva (`VidaPlantillaPage`), así que el montaje **es** la apertura y no
+   * hace falta resincronizar nada. Si más tarde se toca otra cosa, el foco se
+   * queda donde lo dejó la persona.
+   */
+  const durationFieldRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    if (!open || !focusDuration) return
+    const field = durationFieldRef.current
+    if (!field) return
+    // El primer control del grupo de píldoras: la píldora «15». No se toca
+    // `VidaDurationPills` para esto —no necesita saber quién la enfoca—.
+    const first = field.querySelector<HTMLElement>('button:not([disabled]), input:not([disabled])')
+    first?.focus()
+    // jsdom no lo implementa; en el navegador es lo que deja el campo a la
+    // vista aunque la hoja venga con scroll (molde de `VidaHoyPage.tsx:523`).
+    field.scrollIntoView?.({ block: 'center' })
+  }, [open, focusDuration])
 
   const isMutating =
     createMutation.isPending || updateMutation.isPending || templateSave.isPending
@@ -591,7 +627,7 @@ export function VidaActivitySheet({
                   ) : null}
                 </div>
 
-                <div className={styles.field}>
+                <div className={styles.field} ref={durationFieldRef}>
                   <span className={styles.label} id="vida-activity-duration-label">
                     Cuánto <span className={styles.labelHint}>· opcional</span>
                   </span>

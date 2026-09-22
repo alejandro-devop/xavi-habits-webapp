@@ -17,11 +17,68 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
 | FEAT-007 | delivered | 4/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-22 |
 | FEAT-008 | delivered | 3/3 | features/vida | El tiempo se escribe en horas y minutos, y se ve a qué hora acabas | 2026-09-22 |
-| FEAT-009 | building | 2/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
+| FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | specified | 0/3 | features/vida | Hoy — qué toca ahora: una tarjeta arriba con el play delante y «Otra cosa» al lado | 2026-09-22 |
 | FEAT-011 | planned | 0/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
+
+**FEAT-009 `delivered` 3/3** (2026-09-22, revisor). **Tajada 3 aceptada y con
+ella la feature entregada.** Lo que había que verificar y no creerse: **el
+criterio 170 estaba de verdad cerrado por FEAT-008** —metí mis propios casos en
+el arnés de la página: pulsando el hueco **8:40 → 9:00** el panel abre con
+`08:40`, «0» h y «20» min **y la línea «Acaba a las 9:00»** en una región
+`aria-live="polite"`; con el de 1h 30, las 8:00— y **`VidaTemplateGapRow` no
+está en el diff**, confirmado: su rama de `onSetDuration` nació en la tajada 1.
+El diff son **tres archivos de `src/`**, 98 de cuyas 174 líneas son tests: no se
+infló la tajada. Verificado en un navegador de verdad: entrando por «Ponerle
+duración» el foco acaba **dentro de «Cuánto»** (la píldora «15»), y **sin** la
+prop se queda donde lo deja el cepo del modal —`focusDuration` es aditiva de
+verdad, y solo Plantilla la pasa—; guardar manda **un** `vidaItemUpdate` y hace
+aparecer el hueco, y cerrar sin guardar **no llama a nadie**. **Sobre los 32 px
+de «Ponerle duración»: le doy la razón** —el criterio 150 reescrito habla del
+*hueco pulsable*, la fila no se pulsa, es el mismo `ghost/sm` de la tarjeta
+vecina y fallar el toque no abre nada equivocado—, pero midiéndolo encontré algo
+que sí pesa: **en oscuro ese botón sale a 2,77:1** (`rgb(71,85,105)` fijo, que no
+reacciona al tema). No es de esta tajada —es el `ghost` de `shared/ui/Button`,
+hermano del `danger` ya anotado— y por eso no devuelvo, pero **la única salida
+de esa línea es hoy lo que peor se lee de la lista**: va a la deuda de cierre.
+El foco depende del orden de efectos con `useFocusTrap`: **es frágil pero está
+sujeto por dos tests** (con y sin la prop); lo que falta es una línea de
+comentario **en `useFocusTrap`**, que es donde mirará quien lo toque. Línea base
+corrida entera: typecheck limpio, lint 14/0, **2 fallos de 1673**, build exit 0
+con el chunk en **1.100,58 kB** (+0,39). **La nota de cierre para el usuario, la
+deuda de FEAT-009 entera —el `ghost` en oscuro, los umbrales gemelos
+`MIN_GAP_MINUTES`/`MIN_PLACEMENT_MINUTES` y el tercer `isSliver`, las dos
+validaciones sin uso que encontró el arquitecto de FEAT-011, el criterio 18 de
+FEAT-003 derogado en parte, y `VidaTemplateAddPanel` sin suite— y los cinco
+pasos que tiene que probar él están al final de la sección 4 del dossier.**
+
+**FEAT-009 `in-review` 3/3** (2026-09-22, constructor). **Tajada 3 en revisión
+y es la última: al aceptarse, la feature queda entregada.** La línea de «No
+sabemos cuánto dura X…» ya tiene **una sola salida**, «Ponerle duración», que
+abre **la hoja de ese ítem —la de siempre— con el foco en «Cuánto»**; al guardar,
+el hueco que no se podía afirmar aparece sin recargar, y cerrar sin guardar no
+toca nada. Tres archivos y 174 líneas: prop aditiva `focusDuration` en
+`VidaActivitySheet`, `openSheet(item, {focusDuration})` en `VidaPlantillaPage` y
+cuatro casos nuevos. **`VidaTemplateGapRow` no está en el diff**: su rama ya
+existía desde la tajada 1, así que la tajada solo tenía que pasar la prop —lo
+digo en vez de tocarla por simetría—. **Antes de empezar escribí qué quedaba
+abierto de verdad: solo 163, 164 y 165.** El **150** ya estaba cerrado por el
+usuario (44 px, medidos hoy otra vez: **44,0**) y **el 170 se cerró entero sin
+escribir código**, porque con FEAT-008 entregada el panel precargado ya dice
+«→ Acaba a las 9:00» en un hueco 8:40 → 9:00 (comprobado con un caso temporal y
+borrado). En el navegador, a 375 px y en oscuro, con arnés borrado después:
+hueco pulsable 44,0 px, fino 24,5 sin botón, línea de «no sabemos» 103 px con
+**un** botón de **32 px**, sin scroll horizontal, contrastes 6,10 (claro) y 9,94
+(oscuro) — **y confirmo el aviso: la captura sale a media escala aunque el DOM
+mida 375**, así que las medidas son del DOM. Línea base: typecheck limpio, lint
+**14/0**, **2 fallos de 1673** (+4 míos), build exit 0 con el chunk en
+**1.100,58 kB** (+0,39). **Deuda abierta de la feature entera** y decisión para
+el usuario: **«Ponerle duración» mide 32 px** —el `size="sm"` del módulo, el
+mismo de las salidas de la tarjeta vecina— y el 150 no lo gobierna; fallar ese
+toque no abre nada equivocado, pero el dedo lo juzga él. Siguiente: el
+`feature-reviewer`, y el recorrido real con sesión (criterio 171).
 
 **FEAT-013 `building` 1/3** (2026-09-22, revisor). **Tajada 1 aceptada, y
 desbloquea lo que el usuario no podía hacer desde las 8:07.** Lo esencial lo

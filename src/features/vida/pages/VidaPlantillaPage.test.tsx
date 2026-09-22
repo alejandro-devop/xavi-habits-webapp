@@ -1395,3 +1395,101 @@ describe('«Copiar este día a otros» (criterios 49–53)', () => {
     expect(within(dialog).getByRole('button', { name: 'Listo' })).toBeInTheDocument()
   })
 })
+
+/**
+ * **El ítem sin duración deja de tapar el hueco** (FEAT-009, tajada 3).
+ *
+ * La línea del criterio 145 dice la verdad pero deja al usuario sin salida: la
+ * tajada 3 le pone una, y **una sola** —la hoja de ese ítem, la de siempre,
+ * abierta mirando a «Cuánto»—. Nada de esto estrena sitios donde poner
+ * duración ni guarda nada por su cuenta.
+ */
+describe('la línea del ítem sin duración tiene salida (criterios 163-165)', () => {
+  const agenda = () => screen.getByRole('list', { name: /viernes, ordenado por hora/i })
+  /** La fila entera de «no sabemos», para mirar **qué se puede pulsar dentro**. */
+  const unknownRow = () =>
+    within(agenda()).getByText(/^No sabemos cuánto dura/).closest('li') as HTMLElement
+
+  beforeEach(() => {
+    itemsQuery = ready([
+      item('sin', { startTime: '10:00', title: 'Working at lululemon' }),
+      item('luego', { startTime: '14:00', durationMinutes: 45, title: 'Pasear' }),
+    ])
+  })
+
+  it('trae **una sola salida** y abre la hoja de ESE ítem con el foco en «Cuánto» (criterio 163)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const salidas = within(unknownRow()).getAllByRole('button')
+    expect(salidas.map((boton) => boton.textContent)).toEqual(['Ponerle duración'])
+
+    fireEvent.click(salidas[0]!)
+
+    const sheet = screen.getByRole('dialog')
+    // **La hoja que ya existe** (la de FEAT-005), no un segundo formulario: se
+    // reconoce porque trae dentro la hora que el ítem ya tenía.
+    expect(within(sheet).getByText('Working at lululemon')).toBeInTheDocument()
+    expect(within(sheet).getByLabelText(/A qué hora/)).toHaveValue('10:00')
+    // Y el foco está **dentro de «Cuánto»**: la persona venía a escribir ahí.
+    const cuanto = within(sheet).getByRole('group', { name: 'Cuánto dura' })
+    expect(cuanto.contains(document.activeElement)).toBe(true)
+  })
+
+  it('abrir la hoja por la tarjeta **no** mueve el foco a «Cuánto» (la prop es aditiva)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Abrir Pasear' }))
+
+    const sheet = screen.getByRole('dialog')
+    const cuanto = within(sheet).getByRole('group', { name: 'Cuánto dura' })
+    expect(cuanto.contains(document.activeElement)).toBe(false)
+  })
+
+  it('al guardar la duración aparece el hueco y la línea se va (criterio 164)', () => {
+    const view = renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(within(unknownRow()).getByRole('button', { name: 'Ponerle duración' }))
+    const sheet = screen.getByRole('dialog')
+    fireEvent.click(within(sheet).getByRole('button', { name: '30' }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Guardar' }))
+
+    // Se guarda por **la puerta de siempre**, sobre ese id y sin campos nuevos.
+    expect(updateItem.mutate).toHaveBeenCalledTimes(1)
+    expect(updateItem.mutate.mock.calls[0]![0]).toMatchObject({
+      id: 'sin',
+      durationMinutes: 30,
+    })
+
+    // La lista sale de `items`: esto es lo que se ve cuando la mutación
+    // invalida y la consulta vuelve con la duración puesta. **Sin recargar.**
+    itemsQuery = ready([
+      item('sin', { startTime: '10:00', durationMinutes: 30, title: 'Working at lululemon' }),
+      item('luego', { startTime: '14:00', durationMinutes: 45, title: 'Pasear' }),
+    ])
+    view.rerender(<VidaPlantillaPage />)
+
+    expect(within(agenda()).queryByText(/^No sabemos cuánto dura/)).not.toBeInTheDocument()
+    expect(
+      within(agenda())
+        .getAllByText(/^Libre /)
+        .map((fila) => fila.textContent),
+    ).toContain('Libre 10:30 → 14:00 · 3h 30')
+  })
+
+  it('cerrar sin guardar deja la línea donde estaba y no toca el ítem (criterio 165)', () => {
+    renderWithProviders(<VidaPlantillaPage />)
+
+    fireEvent.click(within(unknownRow()).getByRole('button', { name: 'Ponerle duración' }))
+    const sheet = screen.getByRole('dialog')
+    fireEvent.click(within(sheet).getByRole('button', { name: '30' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(updateItem.mutate).not.toHaveBeenCalled()
+    expect(createItem.mutate).not.toHaveBeenCalled()
+    expect(within(agenda()).getByText(/^No sabemos cuánto dura/).textContent).toBe(
+      'No sabemos cuánto dura Working at lululemon, así que no podemos decir qué queda libre hasta las 14:00.',
+    )
+    // Y donde no se puede afirmar nada **sigue sin pintarse** un hueco.
+    expect(within(agenda()).queryByText(/^Libre 10:00/)).not.toBeInTheDocument()
+  })
+})

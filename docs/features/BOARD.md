@@ -15,10 +15,32 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
-| FEAT-007 | specified | 0/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
+| FEAT-007 | planned | 0/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-007 `planned`** (2026-09-21, arquitecto). Plan escrito en la sección 2.
+**Referencia: la tajada 4 de FEAT-006 entera** — `vida-week-review.utils.ts` +
+`useVidaWeekPlans`/`useVidaWeekFollowUps` + `VidaReviewBridge` +
+`VidaReviewBridgeSection` (`VidaRevisionPage.tsx:945`), el sub-componente que
+monta sus consultas solo con su sección abierta. **La ventana de 42 días
+queda decidida** (criterio 102, que me la delegaba): los planes por
+`vidaKeys.dayPlan.byDate` —**42 consultas, no hay consulta de rango en el SDL y
+no se crea documento**— y los seguimientos por **`vidaKeys.followUps.range`**,
+**una sola**, la clave que el puente de FEAT-006 ya usa para 14 días. Peor caso
+en frío **43 consultas**, ≈22 llegando desde Revisión, 0 al reabrir; se contiene
+con montaje solo-con-la-sección-abierta, `staleTime` 5 min para el pasado y
+`gcTime` 30 min. El derivado va en **dos `utils` puros**
+(`vida-adherence.utils.ts`, `vida-patterns.utils.ts`) y **dos hooks**
+(`useVidaHistoryWindow.ts`, `useVidaPatterns.ts`); la respuesta a una sugerencia
+es un campo más de `vida-device-notes.store.ts` (`patternAnswers`), **sin clave
+nueva de `localStorage`**. Dos hallazgos: **`shiftYmd` ya está duplicada**
+(`vida-window.utils.ts:39` y `VidaRevisionPage.tsx:87`) y **el puente de
+FEAT-006 y las sugerencias de hora de F6 preguntarían lo mismo dos veces** si no
+se cruzan las dos respuestas — resuelto en la tajada 2 sin tocar los criterios
+54-59. Las **cuatro tajadas se mantienen** tal como las cortó el analista.
+Siguiente: el `feature-builder`, tajada 1.
 
 **FEAT-007 `specified`** (2026-09-21, **fase F6 del plan, la última del módulo
 Vida**). Dossier escrito: `FEAT-007-vida-sistema-entiende.md`, criterios

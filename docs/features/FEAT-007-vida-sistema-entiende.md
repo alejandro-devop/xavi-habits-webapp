@@ -1,7 +1,7 @@
 ---
 id: FEAT-007
 title: Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos
-status: specified
+status: planned
 architect: yes
 area: features/vida
 requested: 2026-09-21
@@ -404,7 +404,365 @@ esta lectura no es la del usuario, se corrige en los criterios 65, 69, 71 y
 
 ## 2. El plan — feature-architect
 
-*(pendiente)*
+**Resumen para el constructor:** la implementación de referencia es la tajada 4
+de FEAT-006 entera — `src/features/vida/utils/vida-week-review.utils.ts`
+(derivado puro sobre varios días) + `src/features/vida/hooks/useVidaWeekPlans.ts`
++ `useVidaWeekFollowUps.ts` (la ventana) + `src/features/vida/components/VidaReviewBridge/`
+(la pregunta con dos salidas) + `VidaRevisionPage.tsx:945` (`VidaReviewBridgeSection`,
+el sub-componente que **monta sus consultas solo cuando su sección está abierta**).
+El código nuevo va en dos `utils` puros (`vida-adherence.utils.ts`,
+`vida-patterns.utils.ts`), dos hooks (`useVidaHistoryWindow.ts`,
+`useVidaPatterns.ts`) y componentes nuevos por tajada; **no se crea** ninguna
+clave de caché, ninguna clave de `localStorage`, ningún documento GraphQL,
+ninguna ruta, ni una segunda definición de «seguido».
+
+### Lo que ya existe
+
+Casi todo el andamio existe. Lo que **no** existe es la ventana de 42 días y el
+modelo de sugerencia contestable; todo lo demás se reutiliza.
+
+| Lo que hace falta | Lo que ya existe | Dónde |
+|---|---|---|
+| Leer N días de plan con la clave de día | `useVidaWeekPlans(dates)`: `useQueries` sobre `vidaKeys.dayPlan.byDate(date)`, misma `queryFn` que el día, estado `isPending`/`isError` **por día** | `src/features/vida/hooks/useVidaWeekPlans.ts:56` |
+| Leer N días de seguimientos en **una** consulta | `useActivityFollowUpsInDatesQuery(from, to)` → `vidaKeys.followUps.range(from,to)` sobre el documento `activityFollowUpsInDates`, **ya usado para una ventana de 14 días** | `src/features/vida/hooks/useActivityFollowUps.ts:37`; documento en `src/features/vida/graphql/activity-followups.graphql.ts:70`; uso real en `src/features/vida/pages/VidaRevisionPage.tsx:966` |
+| «Seguido / planeado» de un día | `collectDayClosing({...}).followedCount / .plannedCount` sobre `buildDayAgenda` + `buildDayExecution` | `src/features/vida/utils/vida-execution.utils.ts:1127` |
+| Recorrer varios días aplicando esa aritmética | `buildWeekReview(input)` — el bucle día→agenda→ejecución→cifra, ya escrito y probado | `src/features/vida/utils/vida-week-review.utils.ts:266` |
+| Una sugerencia derivada de lo real, con su base, su consecuencia escrita y dos salidas | `buildTemplateBridge()` + `VidaReviewBridge` — **es literalmente la primera sugerencia del módulo** | `src/features/vida/utils/vida-week-review.utils.ts:412` y `src/features/vida/components/VidaReviewBridge/VidaReviewBridge.tsx` |
+| Montar consultas caras solo cuando su sección está abierta | `VidaReviewBridgeSection` (A5 de FEAT-006) | `src/features/vida/pages/VidaRevisionPage.tsx:945-1014` |
+| Guardar una respuesta «déjalo» en el aparato, con su ámbito en la clave | `dismissedBridges: string[]` + `vidaBridgeKey(weekMonday, itemId)` + `isBridgeDismissed()`, en la **única** clave `xavi.vida.deviceNotes` | `src/features/vida/store/vida-device-notes.store.ts:47,84,95` |
+| Un aviso pegado a una fila de la agenda, con dos salidas y respuesta recordada | `VidaAgendaNoData` («¿Qué pasó?» / «Dejarlo así» + `isDismissed`) | `src/features/vida/components/VidaAgendaNoData/VidaAgendaNoData.tsx` |
+| Barra plan-rayado / real-sólido | `VidaPlanVsRealBar` (anchos normalizados, texto al lado, sin color de alarma) | `src/features/vida/components/VidaPlanVsRealBar/VidaPlanVsRealBar.tsx` |
+| Filas de semana con su fracción y su barra segmentada | `VidaReviewWeek` | `src/features/vida/components/VidaReviewWeek/VidaReviewWeek.tsx` |
+| Control de secciones con teclado | `@/shared/ui/Tabs` (`role="tablist"`, ←/→, panel enlazado), envuelto ya una vez en Vida | `src/shared/ui/Tabs/Tabs.tsx`, uso en `src/features/vida/components/VidaTemplateDayTabs/VidaTemplateDayTabs.tsx` |
+| Lateral de escritorio | `VidaTemplateAside` + `useMediaQuery(DESKTOP_QUERY)` ya presente en la página | `src/features/vida/components/VidaTemplateAside/` y `src/features/vida/pages/VidaRevisionPage.tsx:172` |
+| Barrido de vocabulario sobre el código nuevo | `vida-vocabulary.test.ts` hace `import.meta.glob('./**/*.{ts,tsx}')`: **los archivos nuevos entran solos** | `src/features/vida/vida-vocabulary.test.ts:23` |
+| Chips de duración del hueco | `suggestionsForGap()` / `GapSuggestions` (puro) y su pintado en `VidaAgendaGap` | `src/features/vida/utils/vida-agenda.utils.ts:423,473`; `src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx:108-150` |
+| Hoja del ítem con «A qué hora» y «Cuánto» | `VidaActivitySheet` (prop-driven: recibe `vidaItem`, no monta consultas de plantilla) | `src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx:472` (fila de días), `:504` («A qué hora»), `:517` («Cuánto») |
+
+**Lo que NO existe, comprobado:**
+
+- **No hay ninguna consulta de plan por rango.** El SDL vendorizado solo tiene
+  `activityDayPlan(date: String!)` (`src/features/vida/graphql/schema/activity-day-plan.schema.graphql:40`).
+  No hay `activityDayPlansInDates`. Con el criterio 101 (ni un documento nuevo)
+  y sin backend, **42 días de plan son 42 consultas**. Esto manda sobre todo lo
+  que sigue.
+- **No hay nada de adherencia ni de patrones en el repositorio.** Ni en Vida ni
+  en hábitos: `HabitPanel`/`habit-panel.utils.ts` calcula métricas de un hábito
+  (rachas y series), no adherencia plan-vs-real, y no se reutiliza. Esta capa
+  se escribe desde cero, sobre aritmética que sí existe.
+- **No hay control segmentado en `shared/ui`.** Hay `Tabs`; el render pinta
+  `.segs` con tres píldoras. Se resuelve con `Tabs` (ver más abajo).
+- **No hay `useMediaQuery` en Hoy ni en Plantilla**; en Revisión sí
+  (`VidaRevisionPage.tsx:172`).
+
+**Dos cosas que ya están duplicadas y conviene no triplicar:**
+
+1. **`shiftYmd` existe dos veces, privada**: `src/features/vida/utils/vida-window.utils.ts:39`
+   y `src/features/vida/pages/VidaRevisionPage.tsx:87`. La ventana nueva la
+   necesita. **Se exporta una sola** desde `src/features/vida/utils/vida-date.utils.ts`
+   (con su test) y las dos copias pasan a delegar. Es un cambio de seis líneas
+   y evita la tercera copia.
+2. **El puente de FEAT-006 y las sugerencias de hora de F6 se solapan**: los dos
+   proponen mover la hora de un `VidaItem`, uno con 14 días y otro con 42, y hoy
+   guardan su respuesta en sitios distintos (`dismissedBridges` vs. el
+   `patternAnswers` nuevo). Sin hacer nada, **el usuario recibe la misma
+   pregunta dos veces**, una en «La semana» y otra en «Lo que se repite». Se
+   resuelve en la tajada 2, sin tocar la regla del puente: ver «Cómo se modela
+   la sugerencia», punto 5.
+
+### Implementación de referencia
+
+**`src/features/vida/utils/vida-week-review.utils.ts` (508 líneas) y su trío
+—`useVidaWeekPlans.ts` + `useVidaWeekFollowUps.ts` + `VidaReviewBridgeSection`
+en `VidaRevisionPage.tsx:945`.** Se imita ese conjunto, no otro, porque es
+**la misma figura una escala más grande**: leer N días con las claves de día,
+armar cada día con `buildDayAgenda`+`buildDayExecution`, sacar la cifra con
+`collectDayClosing`, y ofrecer una pregunta con dos salidas que escribe en la
+plantilla y no toca ningún día armado. Está vivo, entregado hace dos días y
+revisado.
+
+Cuatro reglas de ese archivo que el constructor **hereda tal cual** (están
+escritas en su cabecera, líneas 1-20):
+
+1. **Ni un `new Date()`**: `today` y `nowMinutes` entran por parámetro. Sin esto
+   el criterio 83 (los tres momentos con reloj fijo) no se puede probar.
+2. **Ninguna regla nueva de emparejamiento ni de «seguido»**: siempre
+   `matchSessionsToBlocks` / `collectDayClosing` (criterio 70).
+3. **Archivo propio por ventana**: «un archivo que mira siete días no comparte
+   ni un tipo con el que mira uno». Por el mismo motivo lo de 42 días no entra
+   en `vida-week-review.utils.ts`.
+4. **La UI no decide nada**: el componente recibe un objeto ya derivado
+   (`TemplateBridge`) y solo devuelve `onMove`/`onDismiss`.
+
+Secundaria, solo para el dibujo del marco B/E:
+`src/features/habits/pages/HabitDetailPage.tsx` + `components/HabitPanel/`
+(métricas derivadas en cliente, SVG a mano, tabla oculta obligatoria en
+`ChartPanel`). Si alguna barra de adherencia se dibuja con SVG, la tabla oculta
+es obligatoria ahí también.
+
+### La ventana de 42 días: de dónde sale y a qué cuesta
+
+**La decisión (cierra el criterio 102, que me la delega explícitamente):**
+
+| Dato | Clave | Consultas | Por qué |
+|---|---|---|---|
+| Plan de cada día | `vidaKeys.dayPlan.byDate(date)` — **existente** | **1 por día, hasta 42** | No hay consulta de rango en el esquema y no se crea documento nuevo (criterio 101). Además cada día comparte caché con Hoy, la revisión, la tira y el puente, y se invalida solo con `invalidateDayPlanQueries(date)`. |
+| Seguimientos de la ventana | `vidaKeys.followUps.range(from, to)` — **existente** | **1 en total** | El render lo nombra (`activityFollowUpsInDates`, punto 9) y FEAT-006 ya lo usa así para 14 días (`VidaRevisionPage.tsx:966`). Por día serían **42 consultas más**: 84 en total. |
+
+**Por qué el rango y no `vidaKeys.followUps.day` (lo que el criterio 102 pedía
+por defecto):** FEAT-006 rechazó el rango para las **filas de la semana** por
+dos razones —falla entero, y no comparte caché con el día— y las dos siguen
+siendo ciertas. Aquí no pesan igual: (a) esta sección **no tiene un estado de
+error por día** que pintar, su error es global con «Reintentar» (criterio 72),
+así que el todo-o-nada no le quita información a nadie; (b) el ahorro no es
+marginal, es la mitad del coste total. Y hay precedente idéntico: el puente de
+FEAT-006, que mira 14 días, ya lo hace así. **Ninguna clave nueva en
+`vidaKeys`.**
+
+Coste que quedará escrito en el reporte (criterio 103), a medir, no a prometer:
+
+- **Ventana:** del lunes de hace 5 semanas hasta hoy → 36 a 42 días (42 el
+  domingo). Constante única `VIDA_PATTERN_WEEKS = 6` en `vida-patterns.utils.ts`.
+- **Peor caso en frío (abrir «Lo que se repite» sin nada en caché): 43
+  consultas** = 42 planes + 1 rango. La peor lectura de hoy —«La semana» con el
+  puente montado— son ≈21+1; esta la dobla, y ese es el precio medido de la
+  fase.
+- **Caso real llegando desde Revisión:** el puente ya trajo los 14 días
+  anteriores a hoy y la tira/semana otros 7-14, todos **dentro** de la ventana →
+  ≈20 aciertos de caché, **≈22 consultas nuevas**.
+- **Volver a abrir la sección:** 0 consultas dentro del `staleTime`.
+- **Cómo no empeorar lo que ya arrastramos**, tres medidas obligatorias:
+  1. **La ventana se monta solo con su sección abierta**, dentro de un
+     sub-componente `VidaPatternsSection` hermano de `VidaReviewBridgeSection`
+     (mismo patrón A5). «Un día» y «La semana» cuestan **exactamente lo de hoy**;
+     hay test de ello.
+  2. **`staleTime` largo para el pasado**: `1000 * 60 * 5` para los días
+     anteriores a hoy (un día cerrado no cambia, y una escritura lo invalida
+     igual) y `1000 * 30` para hoy, que es el de `useActivityDayPlanQuery`.
+     **`gcTime: 1000 * 60 * 30`** en las consultas de la ventana: sin eso, ir a
+     Hoy y volver a los seis minutos vuelve a pedir los 42.
+  3. **La derivación tolera datos parciales**, como `useVidaWeekPlans`: cada día
+     lleva su `isPending`/`isError` y la sección dice «con N semanas de datos»
+     con lo que haya llegado (criterio 66). No hay pantalla bloqueada esperando
+     42 respuestas.
+- **Palanca si la medida sale mal:** bajar `VIDA_PATTERN_WEEKS` a 4 es una
+  línea, pero **hay que decirlo en el reporte**: la regla de vuelta de D1 son 4
+  semanas y se justifica con que la ventana es más larga que el silencio.
+- **En Hoy y en Plantilla la ventana es la misma** (tajadas 3 y 4) y se monta
+  **diferida**: `enabled` solo cuando los datos propios de la pantalla ya
+  resolvieron y hay algo que mirar. El primer pintado de Hoy no espera a nadie,
+  que es justo lo que pide el criterio 92.
+- **Una sola ventana para las tres pantallas, no una por pantalla.** Si Hoy
+  mirase 4 semanas y Revisión 6, la misma sugerencia tendría dos números y la
+  regla de los 10 min del criterio 83 dispararía sola. El ancho es del módulo,
+  no de la pantalla.
+
+### Dónde vive el derivado
+
+**Dos `utils` puros, no uno.** Juntar adherencia + patrones + sugerencias pasa
+de 1.000 líneas y repite la historia de `vida-execution.utils.ts`; se parten
+por **lo que miran**, que es el criterio que usó FEAT-006:
+
+- `src/features/vida/utils/vida-adherence.utils.ts` — **mira el calendario**.
+  Semanas y días de la semana. Umbrales `ADHERENCE_MIN_WEEKS = 2`,
+  `ADHERENCE_TREND_WEEKS = 3`, `WEEKDAY_MIN_WEEKS = 3`,
+  `WEEK_MIN_PLANNED_DAYS = 3`. Exporta `buildAdherence(input)` →
+  `{ weeks, weekdays, headline, dataNote, waiting, computableWeeks }`, todas las
+  cifras ya compuestas en fracción (el componente no formatea números: así el
+  criterio 67 se prueba sobre el `utils`). Molde: `buildWeekReview`
+  (`vida-week-review.utils.ts:266`), incluida la forma de `WeekDayInput`.
+- `src/features/vida/utils/vida-patterns.utils.ts` — **mira la actividad**.
+  `VIDA_PATTERN_WEEKS = 6`, `PATTERN_MIN_OCCURRENCES = 4`,
+  `PATTERN_TOLERANCE_MINUTES = 10`, `PATTERN_ANSWER_WEEKS = 4`. Exporta
+  `buildActivityPatterns(input)` → `VidaActivityPattern[]` (cabecera de
+  plantilla, «sueles empezar», «suele llevarte», mini-fila L-D, fracción del
+  pie, y `suggestion: VidaPatternSuggestion | null`), más las tres funciones de
+  la sugerencia (abajo) y **`pickBlockHints({ suggestions, blocks, limit: 2 })`**,
+  que es la regla del criterio 88 en un sitio probable, no dentro de la página.
+  Molde: `buildTemplateBridge` (`vida-week-review.utils.ts:412`), incluidos el
+  desempate estable y el «sin base no se inventa el número».
+
+Los dos reciben `days: { date, planItems, followUps }[]`, `items: VidaItem[]`,
+`dayHours`, `today`, `nowMinutes`. **Ninguno importa React ni el store.**
+
+**Dos hooks, en `src/features/vida/hooks/`:**
+
+- `useVidaHistoryWindow.ts` — **solo datos**. `({ enabled, today, weeks })` →
+  `{ dates, from, to, byDate, isPending, hasError, refetch }`. Es
+  `useVidaWeekPlans` + la consulta de rango, combinados; se copia de
+  `useVidaWeekFollowUps.ts` (estructura, lectura de `fetchStatus === 'idle'`
+  para «deshabilitada ≠ cargando», `refetch` que solo repite las que fallaron).
+- `useVidaPatterns.ts` — **el pegamento, y el único punto de entrada de las tres
+  pantallas**. Compone `useVidaHistoryWindow` + `useVidaItemsQuery` +
+  `useVidaDayHours` + las respuestas del store, y devuelve
+  `{ adherence, patterns, liveSuggestions, answered, weeksWithData, isPending, hasError, refetch }`
+  con las sugerencias **ya filtradas** por la regla de D1. Molde:
+  `src/features/vida/hooks/useVidaDayData.ts:65` (hook que junta consultas y
+  derivación y no pinta nada).
+
+### Cómo se modela la «sugerencia con respuesta guardada», una sola vez
+
+1. **Un tipo, en `vida-patterns.utils.ts`:** `VidaPatternSuggestion` con
+   `kind: 'duration' | 'start-time' | 'drop-day'`, el `itemId` de la **plantilla**
+   (nunca el id de un bloque del día), `offsetMinutes` (el desfase con signo del
+   que habla), `dayOfWeek` (solo en `drop-day`), `basis`, `consequence`,
+   `affirmativeLabel` con el número dentro, y **dos parches separados**:
+   `templatePatch` (`{ durationMinutes } | { startTime } | { days }` — lo que
+   manda el `vidaItemUpdate` del criterio 79/81) y `dayPatch` (lo que manda el
+   `activityDayPlanItemEdit` de Hoy, criterio 89, D2). Una sugerencia sabe qué
+   pedir en cada pantalla; **la pantalla no inventa nada**.
+2. **Identidad estable:** `id = kind|itemId` (+ `|dayOfWeek` en `drop-day`).
+   El número **no** entra en el id: tiene que poder cambiar sin que la respuesta
+   deje de referirse a la misma pregunta (criterio 83).
+3. **Dónde se persiste: `src/features/vida/store/vida-device-notes.store.ts`**,
+   sin clave nueva de `localStorage` (criterio 82 y 101). Se añade un campo al
+   lado de `dismissedBridges`:
+   `patternAnswers: Record<string, VidaPatternAnswer>` con
+   `VidaPatternAnswer = { answeredOn: 'YYYY-MM-DD'; offsetMinutes: number; dayOfWeek: VidaDayOfWeek | null }`,
+   la acción `answerPatternSuggestion(id, answer)` y el helper
+   `getPatternAnswer(answers, suggestion)`. Va al `partialize`. **Sin `version`
+   ni migración**: el merge superficial de `persist` deja `{}` en un estado
+   guardado antes de F6, exactamente como se anotó en A7 para `dismissedBridges`
+   (línea 110 del store). Es un `Record` y no un `string[]` porque la respuesta
+   lleva fecha y número; el store ya guarda un `Record` (`blockNotes`), así que
+   la forma no es nueva.
+4. **La regla de D1, en una función pura y en un solo sitio:**
+   `isSuggestionSilenced(answer, suggestion, today)` en `vida-patterns.utils.ts`
+   → silencia si **y solo si** (a) `today` está a menos de
+   `PATTERN_ANSWER_WEEKS * 7` días de `answeredOn`, (b) el desfase no se movió
+   `PATTERN_TOLERANCE_MINUTES` o más, y (c) el día del que habla es el mismo. Su
+   hermana `suggestionReturnDate(answer)` da la fecha de vuelta para
+   «Contestadas» (criterio 99). `useVidaPatterns` las aplica **una vez** y las
+   tres pantallas consumen `liveSuggestions`; ninguna vuelve a decidir.
+   El test del criterio 83 se escribe contra estas dos funciones con `today`
+   inyectado — por eso ni el `utils` ni el hook leen el reloj.
+5. **El puente de FEAT-006 y estas sugerencias no pueden preguntar dos veces.**
+   `isSuggestionSilenced` recibe también `dismissedBridges` y el lunes en curso:
+   una sugerencia `start-time` de un ítem con puente descartado esta semana
+   **no se pinta**. Y al revés, en `VidaRevisionPage.tsx:1003`
+   (`VidaReviewBridgeSection`) se añade la condición simétrica: si hay un
+   `patternAnswer` vivo de `start-time` para ese `itemId`, el puente no se
+   pinta. Son dos condiciones de tres líneas, van en la tajada 2 y **no tocan
+   `buildTemplateBridge` ni los criterios 54-59**.
+
+### Dónde va el código nuevo, archivo por archivo
+
+**Se crean** (cada componente con su trío `Componente.tsx` +
+`Componente.module.scss` + `index.ts`, como todo `src/features/vida/components/*`):
+
+```
+src/features/vida/hooks/useVidaHistoryWindow.ts            (+ .test.tsx)
+src/features/vida/hooks/useVidaPatterns.ts                 (+ .test.tsx)
+src/features/vida/utils/vida-adherence.utils.ts            (+ .test.ts)
+src/features/vida/utils/vida-patterns.utils.ts             (+ .test.ts)
+src/features/vida/components/VidaAdherenceSummary/         frase + «Con N semanas de datos» + fila de espera
+src/features/vida/components/VidaAdherenceWeeks/           filas de semana con barra y fracción
+src/features/vida/components/VidaAdherenceWeekdays/        siete casillas L-D
+src/features/vida/components/VidaPatternCard/              tarjeta por actividad, con o sin pregunta
+src/features/vida/components/VidaBlockHint/                el aviso violeta punteado de Hoy
+src/features/vida/components/VidaPatternsAside/            lateral de escritorio (tajada 4)
+```
+
+**Se modifican:**
+
+```
+src/features/vida/pages/VidaRevisionPage.tsx
+  :179  const [view, setView] = useState<'day'|'week'>  →  añade 'patterns'
+  :~455 exits(): el control de tres secciones (ver nota de Tabs)
+  :~511 if (isWeek) { ... }  →  rama hermana if (isPatterns) { ... }
+  :945  junto a VidaReviewBridgeSection, el nuevo VidaPatternsSection
+  :1003 la condición simétrica del punto 5
+  :87   shiftYmd local → delega en vida-date.utils
+src/features/vida/pages/VidaRevisionPage.module.scss
+src/features/vida/pages/VidaRevisionPage.test.tsx
+src/features/vida/utils/vida-date.utils.ts        exporta shiftYmd (+ su test)
+src/features/vida/utils/vida-window.utils.ts:39   delega en el shiftYmd exportado
+src/features/vida/store/vida-device-notes.store.ts  patternAnswers (tajada 2)
+src/features/vida/vida-vocabulary.test.ts:56      amplía FORBIDDEN (criterio 73)
+src/features/vida/pages/VidaHoyPage.tsx:~551      VidaBlockHint junto al VidaAgendaBlock
+src/features/vida/pages/VidaHoyPage.module.scss / .test.tsx
+src/features/vida/components/VidaAgendaGap/VidaAgendaGap.tsx:111-150   etiqueta «sueles tardar»
+src/features/vida/utils/vida-agenda.utils.ts:473  suggestionsForGap recibe un lookup opcional
+src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx:472,504,517  las dos líneas de dato
+src/features/vida/components/VidaActivitySheet/*.module.scss / *.test.tsx
+src/features/vida/pages/VidaPlantillaPage.tsx     monta la ventana diferida y pasa el patrón a la hoja
+```
+
+**Tres notas que ahorran una discusión cada una:**
+
+- **El control de tres secciones (criterio 64).** Hoy no hay control: hay dos
+  `Button variant="ghost"` sueltos («Ver por semana» en `exits()`, «Volver al
+  día» en la rama de semana). El render pinta tres píldoras (`.segs`). **Se usa
+  `@/shared/ui/Tabs`** —es la regla del `ENVIRONMENT.md`, «no se reescriben
+  pestañas a mano»—, envuelto como lo envuelve
+  `VidaTemplateDayTabs.tsx`, con el `view` local como `value`. **La URL no se
+  mueve y `vida-paths.ts` no se toca.** Los dos botones sueltos se retiran al
+  entrar el control.
+- **El criterio 73 ya está medio hecho:** `vida-vocabulary.test.ts` recorre
+  `./**/*.{ts,tsx}` con `import.meta.glob`, así que los archivos nuevos entran
+  sin registrarlos. Solo hay que añadir las palabras que faltan a `FORBIDDEN`
+  (`:56`) — y **«mal» necesita frontera de palabra** (`/\bmal\b/i`), o revienta
+  con «formal», «normal» y «malla».
+- **La hoja del ítem no monta consultas** y debe seguir así: recibe
+  `pattern: VidaActivityPattern | null` y `onAnswer` por props desde
+  `VidaPlantillaPage`, que es quien monta `useVidaPatterns`. Si la hoja montara
+  la ventana, abrir una hoja costaría 43 consultas cada vez.
+
+### Dónde NO va
+
+- **En el backend.** Ni un campo, ni un documento, ni `activityDayPlansInDates`.
+  Comprobado que no existe: la alternativa barata a las 42 consultas **es**
+  backend, y está fuera de alcance por el criterio 101. Queda anotado como la
+  salida natural si la medida del criterio 103 duele.
+- **Dentro de `vida-week-review.utils.ts`.** Mira 7 días; su propia cabecera
+  explica por qué no se mezclan ventanas. Tampoco en `vida-review.utils.ts`
+  (1.149 líneas) ni en `vida-execution.utils.ts` (1.158).
+- **En una clave de caché nueva.** Ni `vidaKeys.patterns`, ni
+  `dayPlan.range`. Las dos que se usan ya existen y se invalidan solas con
+  `invalidateDayPlanQueries` / `invalidateFollowUpQueries`.
+- **En una clave de `localStorage` nueva.** Un campo más en
+  `xavi.vida.deviceNotes`, como hizo FEAT-006.
+- **En una ruta, una píldora o un `?d=`.** `vida-paths.ts` y
+  `app-nav.config.ts` no aparecen en el diff.
+- **Reescribiendo `VidaReviewBridge` para que sirva a las dos cosas.** Está
+  entregado y revisado contra los criterios 54-59; generalizarlo obliga a
+  re-revisar FEAT-006. `VidaPatternCard` es su hermano, se le copia el
+  esqueleto, y la coexistencia se arregla con las dos condiciones del punto 5.
+- **En un caché propio de los patrones derivados** (localStorage, `sessionStorage`
+  o un contexto global). El render fija en su punto (9) que se calcula en el
+  dispositivo **cada vez que abres**, y lo único que se guarda es la respuesta.
+  El caché es el de React Query, y ya está.
+- **En `variant="danger"`** para ninguna salida: no se lee en oscuro (deuda
+  conocida del sistema de diseño). Las dos salidas son `primary` y `secondary`,
+  como en el puente.
+
+### Tajadas, con rutas
+
+Las cuatro de la sección 1 se mantienen: son verticales, cada una se prueba
+sola y el orden que ya tenían es el único posible (la 3 y la 4 consumen el
+modelo de sugerencia que nace en la 2; la 2 consume la ventana que nace en la
+1). No hay recorte que cambiar.
+
+| # | Qué hace | Archivos | Criterios que cierra | Estado |
+|---|---|---|---|---|
+| 1 | **La sección existe y cuenta tu adherencia.** Ventana de 6 semanas, derivado de adherencia y tercera sección de Revisión, solo lectura. | **Crea:** `hooks/useVidaHistoryWindow.ts` (+test), `utils/vida-adherence.utils.ts` (+test), `components/VidaAdherenceSummary/`, `VidaAdherenceWeeks/`, `VidaAdherenceWeekdays/`. **Modifica:** `pages/VidaRevisionPage.tsx` (:87, :179, :~455 el control con `Tabs`, :~511 la rama, :945 `VidaPatternsSection`), su `.module.scss` y `.test.tsx`, `utils/vida-date.utils.ts` (+test), `utils/vida-window.utils.ts:39`, `vida-vocabulary.test.ts:56` | 64-73, 101-104 | pending |
+| 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta, pregunta con el número dentro, `vidaItemUpdate`, «Dejarlo» con la regla de las 4 semanas, marco F. | **Crea:** `utils/vida-patterns.utils.ts` (+test), `hooks/useVidaPatterns.ts` (+test), `components/VidaPatternCard/`. **Modifica:** `store/vida-device-notes.store.ts` (`patternAnswers`), `pages/VidaRevisionPage.tsx` (`VidaPatternsSection` + la condición simétrica en :1003), `.module.scss`, `.test.tsx` | 74-86 (+101, 104) | pending |
+| 3 | **El aviso llega al planear.** Dos avisos pegados a su bloque en Hoy y la duración habitual en los chips del hueco. | **Crea:** `components/VidaBlockHint/`. **Modifica:** `pages/VidaHoyPage.tsx:~551` + `.module.scss` + `.test.tsx`, `components/VidaAgendaGap/VidaAgendaGap.tsx:111-150`, `utils/vida-agenda.utils.ts:423,473` (lookup opcional de duración habitual, por defecto vacío para que el criterio 92 sea cierto por construcción), `utils/vida-patterns.utils.ts` (`pickBlockHints`) | 87-94 (+101, 104) | pending |
+| 4 | **El dato donde se edita, y el escritorio.** Líneas bajo «A qué hora» y «Cuánto», y la rejilla con su lateral. | **Crea:** `components/VidaPatternsAside/`. **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx:472,504,517` + `.module.scss` + `.test.tsx`, `pages/VidaPlantillaPage.tsx` (monta la ventana diferida y pasa `pattern` a la hoja), `pages/VidaRevisionPage.tsx` (rejilla + lateral con `isDesktop`, :172) | 95-100 (+101, 104) | pending |
+
+**Lo que cada tajada tiene que medir además de sus criterios:** el criterio 103
+se escribe en la tajada 1 (abrir la sección), y se **vuelve a medir** en la 3
+(abrir Hoy, que ahora monta la ventana diferida) y en la 4 (abrir Plantilla).
+Si alguna de las dos empeora el primer pintado de su pantalla, la palanca es el
+`enabled` diferido, no bajar la ventana.
+
+**Lo que no pude comprobar** y queda para el constructor: **nada de esto está
+medido contra el API real** —los agentes no entran con credenciales, y el
+coste de 42 consultas paralelas contra Render (plan gratuito, se duerme a los
+15 min) es exactamente lo que el criterio 103 manda medir y el 105 lo que el
+usuario cierra a mano. Tampoco abrí el marco E del render con detalle
+suficiente para fijar la rejilla de escritorio: la fuente de verdad de la
+tajada 4 sigue siendo `docs/vida/assets/08-vida-entiende.html`.
 
 ## 3. Construcción — feature-builder
 

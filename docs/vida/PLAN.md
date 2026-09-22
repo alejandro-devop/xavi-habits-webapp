@@ -172,3 +172,23 @@ Lo que «aprender» **no** puede hacer sin backend, y se anota como frontera: re
 ## Tamaño, en honesto
 
 El módulo borrado tenía 12.800 líneas porque hacía de todo. Esta v1 hace **una cosa**: el bucle diario con actividades cotidianas. Se rescata lo que sirve al bucle (contratos, cronómetro, métricas, modales de sesión) y se deja fuera todo lo demás. Es más trabajo que una fase del rediseño de hábitos, y bastante menos que el módulo que había.
+
+## Después del módulo: lo que pidió el usuario usándolo
+
+El módulo Vida se cerró el 2026-09-22 con FEAT-007. Lo que sigue **no estaba en
+este plan**: sale de usar la app de verdad, y por eso vale más que lo que
+habíamos previsto. Cada una con su render aprobado antes de construirse.
+
+- **FEAT-008 — horas y minutos, y la hora de fin.** El tiempo se escribe en dos
+  campos y se ve a qué hora acabas. Render `09-vida-cuanto.html`.
+- **FEAT-009 — los huecos llegan a la plantilla.** El tiempo libre entre ítems,
+  y un toque lo llena. Render `10-vida-huecos-plantilla.html`, **aprobado**.
+- **Qué toca ahora (Hoy).** Una tarjeta arriba que cambia de cara —toca algo, se
+  pasó la hora, en marcha, no toca nada— con el play delante y «Otra cosa»
+  siempre al lado. Render `11-vida-hoy-empezar.html`, **aprobado el 2026-09-22**.
+  *El usuario cambió de opinión sobre un diseño que ya había aprobado, después de
+  usarlo: eso manda sobre el render viejo.*
+- **Registrar en el hueco (Hoy).** El hueco que ya pasó se pulsa para contar qué
+  hiciste, con la duración real y validado contra el hueco y contra lo **real**
+  de los vecinos. Render `12-vida-hoy-registrar-en-hueco.html`, **aprobado el
+  2026-09-22**.

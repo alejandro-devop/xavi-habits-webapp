@@ -1,7 +1,7 @@
 ---
 id: FEAT-008
 title: El tiempo se escribe en horas y minutos, y se ve a qué hora acabas
-status: specified
+status: planned
 architect: yes    # el control de «Cuánto» es compartido por cinco pantallas (dos fuera de lo pedido) y la hora de fin ya se calcula en dos sitios: decidir dónde vive el cambio es una decisión de código compartido, no de tajada
 area: features/vida
 requested: 2026-09-22
@@ -394,7 +394,332 @@ de `VidaDurationPills` están contados con un `Grep` sobre `src/`, no estimados.
 
 ## 2. The plan — feature-architect
 
-*(pendiente)*
+**Summary for the builder:** la implementación de referencia es **el propio
+`VidaDurationPills`** (`src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx`),
+que crece con **una prop aditiva `freeInput`** — verificado: los cinco llamadores
+pasan exactamente `value: number | null` y `onChange: (number|null) => void`, así
+que la tajada 3 es literalmente **tres props**. La aritmética nueva (repartir y
+juntar horas/minutos, y la hora de fin que sabe cruzar medianoche) va en
+`src/features/vida/utils/vida-time.utils.ts`, y la frase de fin en
+`src/features/vida/utils/vida-template.utils.ts` junto a `describeTemplatePreview`.
+**No se crea** ningún formateador de duración, ningún componente de campos aparte
+de las píldoras, y `calculateEndTime` **no cambia de salida para ninguna entrada**.
+
+### Lo que ya existe (verificado archivo por archivo)
+
+**El control compartido y sus cinco llamadores** — los cinco pasan el mismo par
+de props y nada más:
+
+| Llamador | Línea del `<VidaDurationPills` | Props que pasa |
+|---|---|---|
+| `components/VidaActivitySheet/VidaActivitySheet.tsx` | **597** | `label`, `value`, `disabled`, `onChange` |
+| `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` | **311** | `label`, `value`, `disabled`, `onChange` |
+| `components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx` | **214** | + `maxMinutes` |
+| `components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` | **282** | `label`, `value`, `disabled`, `onChange` |
+| `components/VidaFinishSessionModal/VidaFinishSessionModal.tsx` | **153** | `value`, `onChange`, `disabled`, `label` |
+
+**Respuesta a la primera pregunta del analista: sí, `freeInput` cabe como prop
+aditiva, y hay prueba de que las otras cuatro pantallas no se enteran.** El
+contrato hacia fuera (`VidaDurationPills.tsx:8-21`) ya es minutos; lo único
+interno es `freeOpen` (`:47`). Y el test actual pide el campo libre con
+**`getByRole('spinbutton')` en singular** (`VidaDurationPills.test.tsx:40`, `:49`,
+`:58`): mientras el valor por defecto de `freeInput` sea `'minutes'`, esos tres
+casos siguen pasando **sin tocar una línea** (criterio 118). Si alguien invirtiera
+el defecto, esos tres tests fallarían en voz alta — es la red, no hace falta otra.
+
+**La aritmética del tiempo** (`utils/vida-time.utils.ts`, todo funciones puras,
+sin React ni API): `parseTimeToMinutes:41`, `minutesToTime:49` (recorta a 1439),
+`isValidHhMm:59`, `calculateEndTime:79`, `formatDurationFromMinutes:84`,
+`formatDurationMinutes:98`, `formatTimeForDisplay:110`, `DURATION_PILLS:116`,
+`DEFAULT_BLOCK_MINUTES:119`. **No existe ninguna función que reparta minutos en
+(h, m)**: lo más parecido es `formatElapsedCompact`
+(`utils/vida-session.utils.ts:114-121`), que hace el mismo `/60` y `%60` pero
+**sobre milisegundos y para devolver texto** («1h 24m») del cronómetro. No se
+reutiliza ni se mueve: no comparte ni la entrada ni la salida.
+
+**La hora de fin, hoy, en tres sitios y todos recortan a las 23:59:**
+`calculateEndTime` (`vida-time.utils.ts:79-81`), que alimenta el `endTime` que
+**viaja al API** (`vida-gap-form.utils.ts:293`, dentro de `toDayPlanTimes`) y
+también la vista previa de la hoja (`vida-template.utils.ts:530`, dentro de
+`describeTemplatePreview`); y `vida-execution.utils.ts:282`, para el rango de una
+sesión. Ninguno puede crecer un `% 24`.
+
+**La frase «Acaba a las …» no existe en el módulo.** `grep` sobre
+`src/features/vida`: solo aparece «acaba a las» en dos comentarios
+(`vida-gap-form.utils.ts:150`, un test). **Se estrena aquí.**
+
+**No hay un solo `onBlur` en todo `src/features`** (`grep -rn "onBlur"
+src/features --include=*.tsx` → vacío). La normalización al salir del campo
+(criterio 112) **no tiene precedente en este repositorio**: es código nuevo y
+necesita su test propio; no hay nada que copiar.
+
+**El sitio físico bajo «Cuánto»** (`VidaActivitySheet.tsx:593-620`): dentro del
+mismo `<div className={styles.field}>` están, en este orden, el rótulo (`:594-596`),
+`VidaDurationPills` (`:597-602`) y **la línea de FEAT-007** (`:603-619`, que es
+`VidaPatternAdvice` cuando hay sugerencia y `<p className={styles.patternNote}>`
+cuando no). **El orden del criterio 124 se cumple insertando la línea de fin entre
+la 602 y la 603, y nada más**: no hay que envolver a nadie, no hay que tocar
+`VidaPatternAdvice` y no hay conflicto de estilos, porque la nota llana de FEAT-007
+ya es un `<p>` hermano y no una caja. El panel de añadir no tiene línea de
+patrones: ahí la de fin va dentro del mismo `.field`, tras `:316` y **antes** del
+«Cabe: …» de `:321`.
+
+**El borrador es minutos en las dos pantallas** —y esa es la puerta de FEAT-009—:
+en la hoja, `templateDraft` (`VidaActivitySheet.tsx:177`) con `durationMinutes`
+derivado en `:188-189` y escrito por `patchTemplate` (`:208-210`, que es también
+por donde entra la sugerencia de FEAT-007 en `:229-234`); en el panel, un
+`useState<number | null>` (`VidaTemplateAddPanel.tsx:80`).
+
+### Implementación de referencia
+
+**`src/features/vida/components/VidaDurationPills/VidaDurationPills.tsx` (y su
+`.module.scss`, su `index.ts` y su `.test.tsx`).** No es «el mejor escrito del
+módulo»: es **el que tiene la forma exacta** de lo que hay que construir —un
+control que recibe minutos, decide qué enseñar, no guarda nada y tiene cinco
+consumidores vivos—, y está mantenido (lo tocó FEAT-003 y lo consume FEAT-007).
+Imitar cualquier otra cosa obligaría a duplicar `freeOpen`.
+
+Para las piezas menores, la referencia es distinta y concreta:
+
+- **La línea de texto derivado bajo un campo:** `<p className={styles.patternNote}>`
+  de la hoja (`VidaActivitySheet.tsx:617`, estilo en
+  `VidaActivitySheet.module.scss:315-322`). Es el hermano de al lado y el que
+  fija el tamaño (0.75rem), el color (`--color-text-secondary`, elegido
+  precisamente por contraste) y el `overflow-wrap: anywhere` de los 375 px.
+- **El componente presentacional pequeño con su carpeta:** `components/VidaPatternAdvice/`
+  (tsx + module.scss + index.ts + test). Misma estructura, sin su caja violeta.
+- **`aria-live="polite"` sobre un dato que se recalcula:**
+  `VidaStartingPoints.tsx:202` y `VidaSessionBar.tsx:82`.
+- **Dos campos numéricos seguidos:** `features/auth/components/OtpInput/OtpInput.tsx:73`
+  **como advertencia, no como molde**: aquél salta el foco solo y el criterio 115
+  lo prohíbe aquí.
+
+### Dónde va el código nuevo
+
+#### A. `src/features/vida/utils/vida-time.utils.ts` (modificar) — criterios 117, 125, 126
+
+Tres cosas, todas puras, junto a las que ya están (detrás de
+`formatDurationMinutes`, antes de `formatTimeForDisplay`):
+
+1. `export const MAX_DURATION_MINUTES = 24 * 60 - 1` (1439).
+2. `splitDurationMinutes(total: number | null): { hours: number | null; minutes: number | null }`
+   — `null` → `{ null, null }`; `95` → `{ 1, 35 }`; `45` → `{ 0, 45 }`; `60` →
+   `{ 1, 0 }`. Nunca devuelve `{0,0}` para un total nulo (criterio 109).
+3. `joinDurationMinutes(hours: number | null, minutes: number | null): number | null`
+   — `h*60 + m`; **`0` devuelve `null`** (criterio 111); por encima de
+   `MAX_DURATION_MINUTES` devuelve `MAX_DURATION_MINUTES` (criterio 113). Que
+   `joinDurationMinutes(0, 90) === 90` es lo que hace que el criterio 112 sea
+   cierto sin trabajo extra: teclear `90` en minutos **ya es** 90.
+4. *(tajada 2)* `resolveEndTime(startTime: string, durationMinutes: number): { endMinutes: number; endTime: string; crossesMidnight: boolean; cappedEndTime: string }`
+   — `endMinutes` es la suma **sin recortar**, `endTime` es `endMinutes % 1440`
+   en `HH:mm`, `crossesMidnight` es `endMinutes >= 1440` y `cappedEndTime` es lo
+   que hace hoy `calculateEndTime`.
+5. *(tajada 2)* **`calculateEndTime` pasa a ser una línea**:
+   `return resolveEndTime(startTime, durationMinutes).cappedEndTime`. **Misma
+   salida para toda entrada** (criterio 126) y **una sola cuenta en el módulo**
+   (criterio 125): la prueba es que `vida-time.utils.test.ts` **no se toca** en
+   sus casos de `calculateEndTime` y sigue verde. Si al builder esto le huele a
+   riesgo, la alternativa —dejar `calculateEndTime` intacto y que
+   `resolveEndTime` repita la suma— **está descartada aquí**: son dos cuentas que
+   pueden discrepar, que es justo lo que el criterio 125 prohíbe.
+
+Tests: `src/features/vida/utils/vida-time.utils.test.ts` (existe), casos nuevos
+al final, sin tocar los de arriba.
+
+#### B. `VidaDurationPills.tsx` (modificar) — criterios 107, 108, 111-116
+
+Dos props nuevas, las dos opcionales:
+
+```
+freeInput?: 'minutes' | 'hoursAndMinutes'   // por defecto 'minutes' = lo de hoy
+describedById?: string                      // para el aria-describedby de la tajada 2
+```
+
+El bloque `{isFree ? …}` (`:93-118`) se bifurca: con `'minutes'`, **el JSX actual
+sin tocar un carácter**; con `'hoursAndMinutes'`, dos campos.
+
+Los dos campos, con las decisiones ya tomadas (no son de estilo):
+
+- **`type="text"` con `inputMode="numeric"`**, no `type="number"`. Es lo que hace
+  cierto el criterio 114 sin trucos (`type="number"` **cambia de valor con la
+  rueda del ratón**, y quitarlo pide un `onWheel` que desenfoca), y es lo que
+  permite un borrador de texto mientras se escribe. Efecto secundario que el
+  builder debe saber: el rol pasa a `textbox`, así que los tests nuevos buscan
+  por `getByLabelText('horas')` / `('minutos')` (criterio 114: **nombre
+  accesible propio para cada uno**, no compartido) y los viejos siguen buscando
+  `spinbutton`, que es el modo que no cambia.
+- **El reparto es estado de pantalla, no dato** (hipótesis del analista:
+  **confirmada**). El componente guarda un borrador `{ hours: string; minutes: string }`
+  y un `useRef` con lo último que emitió; si `value` llega distinto de lo último
+  emitido —una píldora, `applyAdvice`, **o una precarga de FEAT-009**— vuelve a
+  repartir con `splitDurationMinutes`. Sincronización **en render**, no en
+  `useEffect`. Al teclear: se filtra a dígitos (`replace(/\D/g, '')`, 2 dígitos
+  en horas, 4 en minutos), se guarda el borrador tal cual **y se emite ya**
+  `joinDurationMinutes(...)` — esto es lo que hace que la tajada 2 sea honrada
+  (criterio 121: con `90` sin normalizar, el fin es el de 1 h 30) y que guardar
+  sin salir del campo guarde lo mismo (criterio 112).
+- **El blur solo re-reparte el borrador**, no emite: `setDraft(splitDurationMinutes(join(draft)))`.
+  Sin aviso, sin color, sin `role="alert"` (criterio 112 y 132).
+- **El tope se dice, no se pelea:** mientras se escribe, el borrador conserva lo
+  tecleado y lo que sale por `onChange` va topado a `MAX_DURATION_MINUTES`; en
+  cuanto el total tecleado pasa de ahí aparece, reusando el estilo `.hint`,
+  «Como mucho 23 h 59 min.», y el blur deja `23` y `59`. **Es el único punto
+  donde lo enseñado no es letra por letra lo tecleado, y va acompañado de la
+  línea que lo explica**: queda anotado para el revisor.
+- `maxMinutes` **sigue significando lo mismo** y sigue apagando píldoras y
+  escribiendo «Aquí caben …» (`:120-124`): los campos libres no lo imponen hoy y
+  **no empiezan a imponerlo** (criterio 129: la regla no cambia, la valida
+  `validatePlacement`).
+
+`VidaDurationPills.module.scss` (modificar): `.duo`, `.duoField` (ancho ~4.5rem,
+`min-height: 2.75rem` → los 44 px del criterio 116), `.duoUnit`. `flex-wrap` ya
+está resuelto en `.pills`; la fila de los dos campos es un `flex` con `gap` y
+**sin wrap**, que es lo que pide el criterio 116 («en una línea»).
+
+#### C. La hora de fin (tajada 2)
+
+- **`src/features/vida/utils/vida-template.utils.ts` (modificar)**, detrás de
+  `describeTemplatePreview` (acaba en `:539`):
+  `describeEndTime({ startTime, durationMinutes }): { text: string; nextDayText: string | null } | null`.
+  Devuelve `null` sin duración (criterio 122: **sin duración no hay línea**, y
+  **no se usa `DEFAULT_BLOCK_MINUTES`**); «Ponle hora y te digo a qué hora acaba»
+  sin hora válida; «Acaba a las 20:20» con las dos; y cruzando medianoche,
+  «Acaba a las 0:50, ya del día siguiente» + `nextDayText` «Hoy lo cortará a las
+  23:59 al armar el día». Las horas, **siempre** con `formatTimeForDisplay`
+  (criterio 127). Va aquí y no en `vida-time.utils.ts` porque es **una frase de
+  la plantilla** —nombra a «Hoy»—, y `vida-time.utils.ts` es aritmética y
+  constantes. Tests en `vida-template.utils.test.ts`.
+- **`src/features/vida/components/VidaEndTimeLine/` (crear)**: `VidaEndTimeLine.tsx`,
+  `VidaEndTimeLine.module.scss`, `index.ts`, `VidaEndTimeLine.test.tsx`. Props:
+  `{ id: string; startTime: string | null; durationMinutes: number | null }`.
+  Un `<p id={id} aria-live="polite">` con la hora en `<b>`; `null` → no pinta
+  nada. **Un solo componente para las dos pantallas** es lo que hace literal el
+  criterio 120 («la misma línea, con las mismas palabras»). Estilo: copiar
+  `.patternNote` (`VidaActivitySheet.module.scss:315-322`) y subir el `<b>` a
+  `--color-text`; **nada de `--aura-ring-to` ni de caja** (criterio 124).
+- **`VidaActivitySheet.tsx` (modificar)**: `<VidaEndTimeLine id="vida-activity-end-time" …/>`
+  **entre la línea 602 y la 603**, y `describedById="vida-activity-end-time"` en
+  el `VidaDurationPills` de `:597`.
+- **`VidaTemplateAddPanel.tsx` (modificar)**: lo mismo con `id="vida-add-end-time"`
+  **tras la línea 316**, dentro del mismo `.field` y antes del `fitText` de `:321`.
+
+### Lo que NO se crea
+
+- **Ningún formateador de duración nuevo.** `formatDurationMinutes:98` y
+  `formatDurationFromMinutes:84` se quedan y se siguen usando donde se usan
+  (criterio 117). La línea de fin **no formatea una duración**: escribe una
+  **hora del reloj** con `formatTimeForDisplay`.
+- **Ningún componente `VidaDurationFields` al lado de las píldoras.** Quien
+  decide si «libre» está abierto y qué píldora está encendida es el mismo estado
+  (`VidaDurationPills.tsx:47-48`): partirlo en dos componentes es partir ese
+  estado, y ahí es donde aparecen los dos campos desincronizados.
+- **Nada en `shared/ui`.** Fuera de Vida no se escribe ninguna duración; subirlo
+  sería inventar un usuario que no existe.
+- **Ningún cálculo de fin dentro de la hoja o del panel.** Los dos llaman a
+  `describeEndTime`; si uno de los dos calcula, el criterio 125 se ha roto.
+
+### Dónde NO va (descartado, con el motivo)
+
+- **`calculateEndTime` con `% 24`.** Su salida viaja al API
+  (`vida-gap-form.utils.ts:293`) y además alimenta la vista previa de la hoja
+  (`vida-template.utils.ts:530`). Un `% 24` ahí pone bloques de madrugada en el
+  plan del día. La cabecera del archivo (`vida-time.utils.ts:12-15`) dice
+  literalmente que ese `% 24` **se dejó fuera a propósito** al rescatar el
+  módulo viejo.
+- **Guardar `{ hours, minutes }` en los borradores** (`templateDraft` de
+  `VidaActivitySheet.tsx:177` / el `useState` de `VidaTemplateAddPanel.tsx:80`).
+  Obligaría a tocar `patchTemplate`, el `handleSave` de los dos, la sugerencia de
+  FEAT-007 (`:229-234`) y **el punto por donde FEAT-009 va a precargar**. El
+  dato sigue siendo minutos de punta a punta; el reparto vive dentro del control
+  y muere con él.
+- **Cambiar el defecto de `freeInput` a `'hoursAndMinutes'`** «ya que estamos».
+  Rompe los tres tests de `VidaDurationPills.test.tsx` que piden `spinbutton` y,
+  sobre todo, cambia tres pantallas que el usuario no pidió antes de que haya
+  mirado la primera.
+- **Un `<input type="time">` como duración, una rueda o un desplegable.** Ya está
+  en «Out of scope» de la sección 1; se repite aquí porque es la tentación
+  barata: en móvil abre el reloj del sistema.
+- **Enseñar la línea de fin con `DEFAULT_BLOCK_MINUTES` cuando no hay duración.**
+  Sería enseñar como elegido algo que el usuario no eligió; eso ya lo dice, con
+  sus palabras y en su sitio, `describeTemplatePreview` (`vida-template.utils.ts:519`).
+- **Un render de pantalla nuevo.** La opinión del analista (un fragmento estático
+  para la tajada 2) la comparto y **no la decido yo**: es del usuario.
+
+### Las tajadas, con sus archivos
+
+Las tres se quedan **como las cortó el analista**: son verticales, el orden es
+correcto y la 3 sigue siendo prescindible. Lo único que la exploración cambia es
+que **la 3 encoge**: ya no es «repetir lo resuelto», son tres props.
+
+| # | Qué hace | Archivos | Criterios que cierra | Estado |
+|---|---|---|---|---|
+| 1 | **Dos campos, horas y minutos, en la plantilla.** | **Modificar:** `utils/vida-time.utils.ts` (+`MAX_DURATION_MINUTES`, `splitDurationMinutes`, `joinDurationMinutes`, tras `:104`) · `utils/vida-time.utils.test.ts` (casos al final) · `components/VidaDurationPills/VidaDurationPills.tsx` (props `freeInput`/`describedById`; bifurcar `:93-118`) · `.../VidaDurationPills.module.scss` (`.duo`, `.duoField`, `.duoUnit`) · `.../VidaDurationPills.test.tsx` (**añadir** un `describe` del modo nuevo; **no tocar** los siete de arriba) · `components/VidaActivitySheet/VidaActivitySheet.tsx:595` (rótulo «· opcional») y `:597-602` (prop) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx:309` y `:311-316` | 107-118, y 132/133 en lo suyo | pending |
+| 2 | **La hora de fin, mientras programas.** | **Modificar:** `utils/vida-time.utils.ts` (+`resolveEndTime`; `calculateEndTime:79-81` pasa a delegar) · `utils/vida-time.utils.test.ts` · `utils/vida-template.utils.ts` (+`describeEndTime`, tras `:539`) · `utils/vida-template.utils.test.ts` · `components/VidaActivitySheet/VidaActivitySheet.tsx` (insertar entre `:602` y `:603`; `describedById` en `:597`) · `components/VidaTemplateAddPanel/VidaTemplateAddPanel.tsx` (insertar tras `:316`; `describedById` en `:311`). **Crear:** `components/VidaEndTimeLine/{VidaEndTimeLine.tsx, VidaEndTimeLine.module.scss, index.ts, VidaEndTimeLine.test.tsx}` | 119-128, y 132/133 en lo suyo | pending |
+| 3 | **Los otros tres sitios.** Tres props y sus tests. | **Modificar:** `components/VidaPlaceInGapSheet/VidaPlaceInGapSheet.tsx:214` · `components/VidaLogSessionSheet/VidaLogSessionSheet.tsx:282` · `components/VidaFinishSessionModal/VidaFinishSessionModal.tsx:153` (una prop en cada uno) + los tests de esas tres que busquen `spinbutton` (los localiza con `grep -rn "spinbutton" src/features/vida`). **Sin línea de fin**: ahí no se programa nada, se registra lo que pasó. | 129-131, y 132/133 en lo suyo | pending |
+
+El criterio **134 lo cierra el usuario** al final: todo `/app/*` está detrás del
+login y ningún agente entra (`ENVIRONMENT.md`).
+
+### Por dónde entra un valor precargado (FEAT-009)
+
+Por **`value`**, en minutos, sin nada nuevo: `patchTemplate({ startTime, durationMinutes })`
+en la hoja (`VidaActivitySheet.tsx:208`) o `setStartTime`/`setDurationMinutes` en
+el panel (`VidaTemplateAddPanel.tsx:79-80`). Lo que lo hace funcionar es **la
+regla de sincronización del punto B**: el borrador `{hours, minutes}` se vuelve a
+repartir cuando `value` llega distinto de lo último emitido. Sin esa regla, una
+precarga entraría y los campos seguirían enseñando lo viejo — **es el único sitio
+donde FEAT-009 puede romperse, y queda resuelto aquí.**
+
+### Dos cosas encontradas que no son de esta feature
+
+- **Tres formas de escribir una duración en la misma pantalla.**
+  `formatDurationMinutes` (`vida-time.utils.ts:98`) escribe «1 h» y «2 h 30 min»
+  (con espacio); `formatDurationFromMinutes` (`:84`) escribe «2h» y «2h 30»
+  (pegado) y es el que usan el presupuesto del día (`VidaDayBudget.tsx:106-180`),
+  el resumen del día de la plantilla (`VidaTemplateDaySummary.tsx:86-90`), el
+  hueco y el lateral; y `formatElapsedCompact` (`vida-session.utils.ts:114`)
+  escribe «1h 24m» en el cronómetro. **La unificación NO cabe aquí**: son ~20
+  llamadas en dos formateadores y otras tantas afirmaciones de test, el criterio
+  117 y el «Out of scope» lo prohíben explícitamente, y no comparte ni un archivo
+  con estas tres tajadas. **Y esta feature no añade una cuarta forma**: los dos
+  campos llevan las unidades «h» y «min» **como rótulo de un campo**, no como
+  texto formateado, y la línea de fin dice una **hora del reloj** («20:20»), no
+  una duración. Mi lectura de cuál es la forma buena, para quien escriba esa
+  feature: **dos registros, no tres** — el largo «1 h 35 min» para texto que se
+  lee de corrido y el corto «1h 35» para píldoras y chips donde no cabe; el
+  fallo real no es tener dos, es que **los dos aparecen en la misma pantalla**.
+- **Un ítem sin duración se cuenta distinto en dos pantallas, y está en dos
+  líneas:** el presupuesto de la plantilla lo cuenta como **0**
+  (`vida-template.utils.ts:198`, `endMinutes: startMinutes + (durationMinutes ?? 0)`,
+  que alimenta `plannedMinutes` en `:244`), y Hoy lo cuenta como **30**
+  (`vida-build-day.utils.ts:146`, `ownDuration ?? DEFAULT_BLOCK_MINUTES`).
+  **Esta feature no lo toca y no lo empeora**: el criterio 122 prohíbe
+  expresamente usar `DEFAULT_BLOCK_MINUTES` en la línea de fin, así que donde
+  vive la discrepancia la línea nueva **calla**. Lo roza en un sitio: la hoja
+  dirá, sin línea de fin, y cuarenta líneas más abajo, «Sin cuánto dura, Hoy le
+  pone 30 min al armar el día» (`vida-template.utils.ts:519`) — que es la frase
+  honrada, y es la que hace visible la discrepancia. **Queda anotado para otra
+  feature.**
+
+### Lo que no pude averiguar
+
+Nada bloqueante. Dos cosas que el builder confirma en su primer turno y son
+`grep` de un segundo: **qué tests existentes de la hoja y del panel afirman el
+rótulo «· opcional, en minutos»** (`grep -rn "en minutos" src/features/vida`) y
+**cuáles de los tests de las tres pantallas de la tajada 3 buscan `spinbutton`**
+(`grep -rn "spinbutton" src/features/vida`). No los enumero porque cambian con
+lo que cada tajada toque.
+
+---
+
+*Escrito por `feature-architect` el 2026-09-22. Verificado abriendo:
+`VidaDurationPills.tsx` entero y su `.test.tsx` y `.module.scss`,
+`vida-time.utils.ts` entero, `vida-template.utils.ts:180-255` y `:440-540`,
+`vida-gap-form.utils.ts:270-295`, `vida-session.utils.ts:95-130`,
+`VidaActivitySheet.tsx:555-680` (y su estado en `:177-334`),
+`VidaTemplateAddPanel.tsx:280-345`, y los cinco puntos de llamada. `graphify
+query` confirmó el vecindario del control (17 nodos, un solo consumidor de
+`formatDurationMinutes` dentro de `VidaDurationPills`).*
 
 ## 3. Construction — feature-builder
 

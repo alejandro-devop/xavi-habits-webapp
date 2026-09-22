@@ -6,6 +6,7 @@ import { VidaAdherenceWeekdays } from '@/features/vida/components/VidaAdherenceW
 import { VidaAdherenceWeeks } from '@/features/vida/components/VidaAdherenceWeeks'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
 import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
+import { VidaPatternCard } from '@/features/vida/components/VidaPatternCard'
 import { VidaReviewCategories } from '@/features/vida/components/VidaReviewCategories'
 import { VidaReviewFigures } from '@/features/vida/components/VidaReviewFigures'
 import { VidaReviewLanes } from '@/features/vida/components/VidaReviewLanes'
@@ -19,20 +20,20 @@ import {
   useCreateActivityFollowUpMutation,
 } from '@/features/vida/hooks/useActivityFollowUps'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
-import { useVidaHistoryWindow } from '@/features/vida/hooks/useVidaHistoryWindow'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
 import { useVidaItemsQuery, useUpdateVidaItemMutation } from '@/features/vida/hooks/useVidaItems'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
+import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
 import { useVidaWeekFollowUps } from '@/features/vida/hooks/useVidaWeekFollowUps'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import {
   getBlockNote,
+  getStartTimeAnswerFor,
   isBridgeDismissed,
   isNoDataDismissed,
   useVidaDeviceNotesStore,
 } from '@/features/vida/store/vida-device-notes.store'
-import { buildAdherence } from '@/features/vida/utils/vida-adherence.utils'
 import type { AgendaBlock } from '@/features/vida/utils/vida-agenda.utils'
 import { buildDayAgenda } from '@/features/vida/utils/vida-agenda.utils'
 import {
@@ -53,6 +54,11 @@ import {
   resolveReviewDate,
   topNoDataSlices,
 } from '@/features/vida/utils/vida-review.utils'
+import type { VidaPatternSuggestion } from '@/features/vida/utils/vida-patterns.utils'
+import {
+  PATTERN_MIN_OCCURRENCES,
+  isBridgeSilencedByAnswer,
+} from '@/features/vida/utils/vida-patterns.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
 import {
   buildTemplateBridge,
@@ -1050,6 +1056,7 @@ function VidaReviewBridgeSection({
 
   const dismissedBridges = useVidaDeviceNotesStore((state) => state.dismissedBridges)
   const dismissBridge = useVidaDeviceNotesStore((state) => state.dismissBridge)
+  const patternAnswers = useVidaDeviceNotesStore((state) => state.patternAnswers)
   const updateItem = useUpdateVidaItemMutation()
 
   const bridge = useMemo(() => {
@@ -1081,6 +1088,25 @@ function VidaReviewBridgeSection({
   // **«Dejarlo como está» no vuelve esa semana** (criterio 58): la nota es de
   // este aparato, en el mismo store y la misma clave que los «dejarlo así».
   if (isBridgeDismissed(dismissedBridges, weekMonday, bridge.itemId)) return null
+  // **La condición simétrica de FEAT-007** (punto 5 del plan): si la sugerencia
+  // de hora de este mismo ítem ya se contestó en «Lo que se repite», el puente
+  // no la vuelve a hacer. Es la misma pregunta con otra ventana, y preguntarla
+  // dos veces guardando la respuesta en dos sitios es lo que había que evitar.
+  // No se toca `buildTemplateBridge` ni su regla: solo **no se pinta**.
+  //
+  // Y se calla **con las mismas tres condiciones de D1**, no cuatro semanas a
+  // ciegas: si el desfase se mueve diez minutos o más, la pregunta vuelve aquí
+  // igual que vuelve allí. Si no, la misma respuesta tendría dos plazos.
+  if (
+    isBridgeSilencedByAnswer({
+      answer: getStartTimeAnswerFor(patternAnswers, bridge.itemId),
+      offsetMinutes:
+        parseTimeToMinutes(bridge.proposedTime) - parseTimeToMinutes(bridge.currentTime),
+      today,
+    })
+  ) {
+    return null
+  }
 
   return (
     <VidaReviewBridge
@@ -1093,8 +1119,8 @@ function VidaReviewBridgeSection({
 }
 
 /**
- * **«Lo que se repite»: la adherencia de las últimas seis semanas**
- * (FEAT-007, tajada 1, criterios 64–73).
+ * **«Lo que se repite»: la adherencia y los patrones por actividad**
+ * (FEAT-007, tajadas 1 y 2).
  *
  * Es un componente aparte **por el coste**, igual que `VidaReviewBridgeSection`
  * y por la misma razón (A5): sus consultas solo existen mientras está montado,
@@ -1108,9 +1134,12 @@ function VidaReviewBridgeSection({
  *   rango** y esta feature no crea documentos GraphQL. Los que la tira, la
  *   semana y el puente ya trajeron son aciertos de caché.
  * - **Las sesiones, una sola consulta de rango**, la misma que usa el puente.
+ * - **La plantilla**, con la clave que ya piden Plantilla y Actividades.
  *
- * **Aquí no se escribe nada.** Esta tajada es solo lectura: ni una sugerencia,
- * ni un botón que cambie la plantilla. Eso nace en la tajada 2.
+ * **Lo único que escribe es `vidaItemUpdate`** con `{ id }` más el campo que
+ * cambia (criterios 79 y 81): aquí no se nombra ninguna mutación del plan del
+ * día, así que **ningún día ya armado se mueve**. Y «Dejarlo» no llama a
+ * nadie: se guarda en el aparato, en la clave que ya existe.
  */
 function VidaPatternsSection({
   today,
@@ -1121,18 +1150,67 @@ function VidaPatternsSection({
   nowMinutes: number | null
   dayHours: { startTime: string; endTime: string }
 }) {
-  const history = useVidaHistoryWindow({ enabled: true, today })
+  const patterns = useVidaPatterns({ enabled: true, today, nowMinutes, dayHours })
+  const updateItem = useUpdateVidaItemMutation()
+  // Lo aplicado se recuerda **en la pantalla, no en el aparato**: con la
+  // plantilla fresca la regla ya no propone lo mismo, pero entre la respuesta
+  // del API y la lista nueva hay un parpadeo, y en ese hueco no se vuelve a
+  // preguntar lo que se acaba de contestar. Es lo que hace el puente.
+  const [appliedIds, setAppliedIds] = useState<string[]>([])
+  const adherence = patterns.adherence
 
-  const adherence = useMemo(
-    () => buildAdherence({ days: history.days, dayHours, today, nowMinutes }),
-    [history.days, dayHours, today, nowMinutes],
-  )
+  function applySuggestion(suggestion: VidaPatternSuggestion) {
+    updateItem.mutate(
+      // **Un solo `vidaItemUpdate`, con el id y solo el campo que cambia.**
+      { id: suggestion.itemId, ...suggestion.templatePatch },
+      { onSuccess: () => setAppliedIds((current) => [...current, suggestion.id]) },
+    )
+  }
 
-  // Nada ha llegado todavía: esqueletos, y **ninguna cifra a cero** mientras
-  // tanto. Con parte de los días ya dentro se pinta lo que hay: la sección
-  // dice «con N semanas de datos» y no se queda bloqueada esperando a 43
-  // respuestas.
-  const nothingYet = history.isPending && history.days.every((day) => day.isPending)
+  function activityPatterns() {
+    if (patterns.patterns.length === 0 && patterns.waiting.length === 0) return null
+    return (
+      <section className={styles.section} aria-labelledby="vida-review-activities">
+        <h3 className={styles.sectionTitle} id="vida-review-activities">
+          {adherence.hasAdherence ? 'Por actividad' : 'Lo que ya se sabe'}
+        </h3>
+        <p className={styles.sectionNote}>{patterns.patternsLabel}</p>
+
+        <div className={styles.patternList}>
+          {patterns.patterns.map((pattern) => (
+            <VidaPatternCard
+              key={pattern.itemId}
+              pattern={pattern}
+              isSaving={updateItem.isPending}
+              appliedLabel={
+                pattern.suggestion && appliedIds.includes(pattern.suggestion.id)
+                  ? 'Cambiado en tu plantilla. Los días que ya tienes armados se quedan como están.'
+                  : null
+              }
+              onApply={applySuggestion}
+              onDismiss={patterns.answerSuggestion}
+            />
+          ))}
+        </div>
+
+        {patterns.waiting.length > 0 ? (
+          <ul className={styles.waitingList}>
+            {patterns.waiting.map((entry) => (
+              <li className={styles.waitingRow} key={entry.itemId}>
+                <span className={styles.waitingName}>{entry.title}</span>
+                <span className={styles.waitingWhen}>{entry.label}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        <p className={styles.sectionNote}>
+          Una actividad aparece aquí cuando la has planeado {PATTERN_MIN_OCCURRENCES} veces o más.
+          Las demás esperan, y se dice cuántas veces llevan.
+        </p>
+      </section>
+    )
+  }
 
   return (
     <>
@@ -1147,19 +1225,19 @@ function VidaPatternsSection({
 
       {/* Una consulta caída **no es «no tienes datos»** (criterio 72): se dice
           qué pasó, se ofrece reintentar, y lo que sí llegó se sigue contando. */}
-      {history.hasError ? (
+      {patterns.hasError ? (
         <Alert variant="warning" title="Falta algún día de estas semanas">
           <p className={styles.errorText}>
             De los días que no pudimos cargar no se afirma nada: las cuentas de abajo son de los
             que sí llegaron.
           </p>
-          <Button variant="secondary" size="sm" onClick={history.refetch}>
+          <Button variant="secondary" size="sm" onClick={patterns.refetch}>
             Reintentar
           </Button>
         </Alert>
       ) : null}
 
-      {nothingYet ? (
+      {patterns.nothingYet ? (
         <div aria-busy="true" aria-live="polite" className={styles.skeleton}>
           <Skeleton width="100%" height={72} radius="1.25rem" />
           {[0, 1, 2, 3].map((row) => (
@@ -1170,7 +1248,12 @@ function VidaPatternsSection({
         </div>
       ) : (
         <div className={styles.patterns}>
-          <VidaAdherenceSummary adherence={adherence} />
+          {/* Con pocas semanas, el marco F: **lo que ya se sabe primero** —la
+              actividad que sí llegó a sus cuatro apariciones, entera y con sus
+              dos salidas— y debajo lo que llega después (criterio 84). */}
+          <VidaAdherenceSummary adherence={adherence}>
+            {adherence.hasAdherence ? null : activityPatterns()}
+          </VidaAdherenceSummary>
           {adherence.hasAdherence ? (
             <>
               <VidaAdherenceWeeks weeks={adherence.weeks} />
@@ -1179,6 +1262,7 @@ function VidaPatternsSection({
                 weeksLabel={adherence.weeksLabel}
                 note={adherence.weekdayNote}
               />
+              {activityPatterns()}
             </>
           ) : null}
         </div>

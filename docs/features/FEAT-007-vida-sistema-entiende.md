@@ -302,7 +302,7 @@ Verticales, cada una usable sola.
 | # | Qué hace | Estado |
 |---|---|---|
 | 1 | **La sección existe y cuenta tu adherencia.** Tercera sección en Revisión («Lo que se repite»), con la frase, las semanas en fracción, los días de la semana con su umbral y la espera con fechas cuando no hay bastante. Solo lectura: ni una sugerencia todavía. Criterios 64–73, 101–104. | **aceptada** |
-| 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta por actividad, la que va bien que no propone nada, la pregunta con el número dentro, el `vidaItemUpdate` que cambia la plantilla sin tocar ningún día armado, «Dejarlo» guardado en el aparato con la regla de las 4 semanas, y el estado de pocos datos del marco F. Criterios 74–86. | pending |
+| 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta por actividad, la que va bien que no propone nada, la pregunta con el número dentro, el `vidaItemUpdate` que cambia la plantilla sin tocar ningún día armado, «Dejarlo» guardado en el aparato con la regla de las 4 semanas, y el estado de pocos datos del marco F. Criterios 74–86. | **aceptada** |
 | 3 | **El aviso llega al planear.** En Hoy, dos avisos como mucho pegados a su bloque, con sus dos salidas, y la duración habitual en los chips del hueco. Criterios 87–94. | pending |
 | 4 | **El dato donde se edita, y el escritorio.** La línea bajo «A qué hora» y bajo «Cuánto» en la hoja de la plantilla, y en escritorio la rejilla con el lateral de «Sin contestar», «Contestadas» y «De dónde sale todo esto». Criterios 95–100. | pending |
 
@@ -746,7 +746,7 @@ modelo de sugerencia que nace en la 2; la 2 consume la ventana que nace en la
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **La sección existe y cuenta tu adherencia.** Ventana de 6 semanas, derivado de adherencia y tercera sección de Revisión, solo lectura. | **Crea:** `hooks/useVidaHistoryWindow.ts` (+test), `utils/vida-adherence.utils.ts` (+test), `components/VidaAdherenceSummary/`, `VidaAdherenceWeeks/`, `VidaAdherenceWeekdays/`. **Modifica:** `pages/VidaRevisionPage.tsx` (:87, :179, :~455 el control con `Tabs`, :~511 la rama, :945 `VidaPatternsSection`), su `.module.scss` y `.test.tsx`, `utils/vida-date.utils.ts` (+test), `utils/vida-window.utils.ts:39`, `vida-vocabulary.test.ts:56` | 64-73, 101-104 | **aceptada** |
-| 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta, pregunta con el número dentro, `vidaItemUpdate`, «Dejarlo» con la regla de las 4 semanas, marco F. | **Crea:** `utils/vida-patterns.utils.ts` (+test), `hooks/useVidaPatterns.ts` (+test), `components/VidaPatternCard/`. **Modifica:** `store/vida-device-notes.store.ts` (`patternAnswers`), `pages/VidaRevisionPage.tsx` (`VidaPatternsSection` + la condición simétrica en :1003), `.module.scss`, `.test.tsx` | 74-86 (+101, 104) | pending |
+| 2 | **Los patrones por actividad, con sus dos salidas.** Tarjeta, pregunta con el número dentro, `vidaItemUpdate`, «Dejarlo» con la regla de las 4 semanas, marco F. | **Crea:** `utils/vida-patterns.utils.ts` (+test), `hooks/useVidaPatterns.ts` (+test), `components/VidaPatternCard/`. **Modifica:** `store/vida-device-notes.store.ts` (`patternAnswers`), `pages/VidaRevisionPage.tsx` (`VidaPatternsSection` + la condición simétrica en :1003), `.module.scss`, `.test.tsx` | 74-86 (+101, 104) | **aceptada** |
 | 3 | **El aviso llega al planear.** Dos avisos pegados a su bloque en Hoy y la duración habitual en los chips del hueco. | **Crea:** `components/VidaBlockHint/`. **Modifica:** `pages/VidaHoyPage.tsx:~551` + `.module.scss` + `.test.tsx`, `components/VidaAgendaGap/VidaAgendaGap.tsx:111-150`, `utils/vida-agenda.utils.ts:423,473` (lookup opcional de duración habitual, por defecto vacío para que el criterio 92 sea cierto por construcción), `utils/vida-patterns.utils.ts` (`pickBlockHints`) | 87-94 (+101, 104) | pending |
 | 4 | **El dato donde se edita, y el escritorio.** Líneas bajo «A qué hora» y «Cuánto», y la rejilla con su lateral. | **Crea:** `components/VidaPatternsAside/`. **Modifica:** `components/VidaActivitySheet/VidaActivitySheet.tsx:472,504,517` + `.module.scss` + `.test.tsx`, `pages/VidaPlantillaPage.tsx` (monta la ventana diferida y pasa `pattern` a la hoja), `pages/VidaRevisionPage.tsx` (rejilla + lateral con `isDesktop`, :172) | 95-100 (+101, 104) | pending |
 
@@ -999,6 +999,381 @@ en claro y en oscuro, y **se borró**: `git status` no lo lista. Lo medido ahí:
   en esta tajada (tocaría una pantalla entregada que no se toca), pero ahora
   que la función está exportada, es un borrado de cinco líneas.
 
+### Tajada 2 — Los patrones por actividad, con sus dos salidas
+
+**Resumen para quien revise.** «Lo que se repite» ya no solo cuenta: **una
+tarjeta por actividad** con lo que dice tu plantilla frente a lo que pasa de
+verdad, y al final **una pregunta con dos salidas** —o, si el patrón va bien,
+una línea que dice que no hay nada que proponer—. Aquí nace el modelo de
+**sugerencia con respuesta guardada** (`vida-patterns.utils.ts` +
+`useVidaPatterns`), que es lo que consumirán Hoy y la hoja de la plantilla sin
+volver a decidir nada. **Lo que más probablemente he roto: el puente de
+FEAT-006.** Le he metido una condición nueva —si la sugerencia de hora de ese
+ítem ya se contestó aquí, el puente no se pinta— y el store del aparato ha
+ganado un campo (`patternAnswers`) que se persiste en la misma clave. Mirar
+ahí primero: `VidaRevisionPage.tsx:~1090` y
+`store/vida-device-notes.store.ts`.
+
+**Qué se construyó**
+
+*Se crea:*
+
+- `src/features/vida/utils/vida-patterns.utils.ts` — el derivado puro y **el
+  modelo de la sugerencia**. `buildActivityPatterns(input)` →
+  `{ patterns, waiting, withSuggestion }`, con todas las frases y cifras ya
+  compuestas; `VidaPatternSuggestion` con `templatePatch` (lo que manda el
+  `vidaItemUpdate`) y `dayPatch` (lo que mandará Hoy en la tajada 3)
+  **separados**; `vidaPatternSuggestionId`, `isSuggestionSilenced`,
+  `suggestionReturnDate` y `answerNoteFor`. Umbrales exportados:
+  `PATTERN_MIN_OCCURRENCES = 4`, `PATTERN_TOLERANCE_MINUTES = 10`,
+  `PATTERN_ANSWER_WEEKS = 4`, `PATTERN_MIN_DAY_SAMPLES = 2`,
+  `PATTERN_DAY_OUTLIER_MINUTES = 30`. Ni un `new Date()`, ni React, ni store.
+- `src/features/vida/utils/vida-patterns.utils.test.ts` — 21 casos.
+- `src/features/vida/hooks/useVidaPatterns.ts` — el pegamento y **el único
+  punto de entrada de las tres pantallas**: ventana + plantilla + respuestas
+  del aparato, y devuelve `{ adherence, patterns, waiting, liveSuggestions,
+  answered, patternsLabel, nothingYet, isPending, hasError, refetch,
+  answerSuggestion }` con la regla de D1 **ya aplicada**.
+- `src/features/vida/hooks/useVidaPatterns.test.tsx` — 4 casos, los del cruce
+  con el aparato y con el puente.
+- `src/features/vida/components/VidaPatternCard/` — la tarjeta del marco B.
+
+*Se modifica:*
+
+- `src/features/vida/store/vida-device-notes.store.ts` — `patternAnswers:
+  Record<string, VidaPatternAnswer>`, la acción `answerPatternSuggestion`, y
+  los dos lectores `getPatternAnswer` / `getStartTimeAnswerFor`. Va al
+  `partialize`, **sin `version` ni migración** (el merge superficial deja `{}`)
+  y **sin clave nueva**: sigue siendo `xavi.vida.deviceNotes`.
+- `src/features/vida/pages/VidaRevisionPage.tsx` — `VidaPatternsSection` pasa a
+  `useVidaPatterns`, pinta las tarjetas y hace el `vidaItemUpdate`; y
+  `VidaReviewBridgeSection` gana **la condición simétrica** del punto 5 del
+  plan.
+- `src/features/vida/pages/VidaRevisionPage.module.scss` — `.patternList` y las
+  tres clases de la lista de espera.
+- `src/features/vida/pages/VidaRevisionPage.test.tsx` — 9 casos nuevos y
+  `patternAnswers: {}` en el `beforeEach` (sin eso, un «Dejarlo» de un test
+  callaba la pregunta del siguiente).
+- `src/features/vida/components/VidaAdherenceSummary/` — un `children`
+  opcional, que es donde entra «lo que ya se sabe» del marco F (criterio 84).
+
+**Por qué así, y qué se descartó**
+
+1. **La tarjeta habla de una sola dimensión a la vez.** La mini-fila enseña el
+   desfase **de la duración** o **de la hora**, la que se aparta más, y el pie
+   dice cuál es («Minutos frente a los 45m planeados»). Enseñar las dos en una
+   casilla de 30 px no se lee, y el render tampoco lo hace: su primera tarjeta
+   son minutos de más y la segunda minutos más tarde.
+2. **La mediana, no la media.** Una noche que se fue a las 23:00 no debe mover
+   la propuesta. Es la misma elección que hizo `buildTemplateBridge` (D6 de
+   FEAT-006), y por eso la hora se redondea igual, **al cuarto**; la duración,
+   a **cinco minutos**, que es el grano con el que se escriben las duraciones
+   en la plantilla.
+3. **Una sola pregunta por tarjeta y un orden fijo:** primero el día que se
+   sale de la cuenta —mover la hora de todos por un martes sería cambiar lo
+   que va bien—, luego lo que más se aparta entre duración y hora. Dos
+   preguntas a la vez en la misma tarjeta serían dos decisiones disfrazadas de
+   una.
+4. **«Si solo quedara un día, no se ofrece» se ha leído en estricto**
+   (criterio 81): con un ítem de dos días donde uno se sale, **no se propone
+   nada** —ni quitar el día ni mover la hora—, porque la mediana de la hora
+   está arrastrada por ese mismo día y el número mentiría. La tarjeta sí
+   enseña el dato («Los martes · 9:40 · +70 min»). Es la lectura más
+   conservadora de las dos posibles: la otra —«no se ofrece solo si el ítem se
+   quedaría sin días»— ofrecería más y no la he tomado.
+5. **Las actividades por debajo del umbral no ocupan una tarjeta.** El
+   criterio 75 pide que se diga «llevas 2 de 4»; el render lo resuelve con una
+   línea al pie («las demás esperan»). Se pintan como **lista compacta** con
+   su cuenta, no como tarjetas a medias: con quince actividades, quince
+   tarjetas vacías serían la pantalla entera.
+6. **El violeta del render no está.** No hay token semántico de violeta fuera
+   de `[data-ds='aura']` (`--aura-ring-to`), y un color literal no se lee en
+   oscuro. Las etiquetas de desfase van en `--color-primary`, que es lo que
+   hizo la tajada 1 con la barra. **Desviación consciente del render**: si se
+   quiere el violeta, es un token nuevo en `_theme-variables.scss`, no un
+   literal aquí.
+7. **`VIDA_PATTERN_WEEKS` no existe.** El plan lo ponía en este archivo; la
+   tajada 1 dejó `VIDA_HISTORY_WEEKS` en el hook y escribió por qué. Se importa
+   de allí y **no se escribe un segundo número** (el hook lo usa; este archivo
+   no necesita la constante).
+8. **Lo aplicado se recuerda en la pantalla, no en el aparato.** Con la
+   plantilla fresca la regla ya no propone lo mismo; entre la respuesta del
+   API y la lista nueva hay un parpadeo, y en ese hueco no se vuelve a
+   preguntar. Es literalmente lo que hace el puente con `updateItem.isSuccess`.
+
+**Verificación**
+
+*Línea base entera (`docs/features/ENVIRONMENT.md`), al terminar:*
+
+| Qué | Línea base escrita | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio**, exit 0 |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos |
+| `pnpm test` | 2 fallos de 1479 | **2 fallos de 1513** (los mismos dos de `SearchSelect`; **+34 tests**) |
+| `pnpm build` | chunk inicial 1.065,85 kB | **1.079,47 kB** (+13,62 kB), `app-icons` **620,20 kB sin tocar**, `IconPicker` 4,64 kB, exit 0 |
+
+*Criterio 103, vuelto a medir para esta tajada.* La sección no estrena ninguna
+consulta de red **salvo una**: la plantilla, `vidaKeys.items.list(true)` — la
+**misma clave** que ya piden Plantilla, Actividades y Archivadas, así que
+llegando desde cualquiera de ellas es un acierto de caché. En frío el peor caso
+pasa de **43** a **44** (42 planes + 1 rango + 1 plantilla). Las respuestas no
+cuestan red: son `localStorage`. Y sigue sin montarse nada con «Un día» o «La
+semana» abiertas (el test de la tajada 1 lo afirma y sigue en verde).
+
+*En el navegador.* `/app/*` está detrás del login y los agentes no entran con
+credenciales. Se montó un **arnés temporal** (`arnes-patrones.html` +
+`src/harness/arnes-patrones.tsx`) con tres tarjetas —la de quitar el martes, la
+del nombre de 60 caracteres y la que no propone nada—, **servido por el
+servidor del propio usuario en el 5173** (no arranqué ninguno) y **borrado
+antes de reportar**: `git status` no lo lista. Lo medido ahí, a 375 px:
+
+- `document.documentElement.scrollWidth === clientWidth === 375` y **ni un
+  elemento desbordado** (barrido sobre `getBoundingClientRect()` de todos los
+  nodos).
+- **Nombre de 60 caracteres** (criterio 72, el trozo que la tajada 1 no pudo):
+  parte en dos líneas dentro de su caja y no empuja nada.
+- **Ni un «%» en el texto renderizado**: los seis nodos con «%» son etiquetas
+  `<style>`, no contenido.
+- **Oscuro legible** (`[data-theme=dark]` sobre el ámbito `[data-ds='aura']`):
+  captura hecha; texto claro sobre vidrio oscuro, las etiquetas de desfase se
+  leen y las dos salidas también.
+
+**Criterios que cierra, uno por uno**
+
+- **74 ✅** Las tarjetas dicen lo mismo en el mismo orden: «En tu plantilla:
+  L X V · 9:00 · 45m», «Sueles empezar 9:06», «Suele llevarte 1h 10 +25 min»,
+  la mini-fila L M X J V S D y el pie «se siguió 5 de 5 veces». Test de la
+  página y del `utils`.
+- **75 ✅** Con dos apariciones no hay tarjeta ni promedio: «llevas 2 de 4»
+  (test puro y test de la página).
+- **76 ✅** Los días que no están en la plantilla o sin dato son «·», y hay un
+  `expect(...).not.toBe('0')` sobre cada uno.
+- **77 ✅** Con todo dentro de tolerancia: «Esto pasa como lo planeaste. Aquí
+  no hay nada que proponer.» y **ni un botón** (`queryByRole('button')` en
+  cero). Con los datos del marco B esa tarjeta existe (la de «Bañarme» en el
+  arnés).
+- **78 ✅** «Ponerlo en 1h 10» / «Dejarlo», «Moverlo a las 19:30» / «Dejarlo»,
+  «Quitar el martes» / «Dejarlo». Ninguna tarjeta con una sola salida —o hay
+  dos o no hay ninguna— y **ninguna es `danger`**: `primary` + `secondary`.
+- **79 ✅** `expect(updateVidaItem).toHaveBeenCalledTimes(1)` con
+  `{ id: 'i9', durationMinutes: 70 }` y `planMutationsCalled() === 0` (las
+  cuatro mutaciones del plan están espiadas en todo el archivo desde
+  FEAT-006).
+- **80 ✅** «En tu plantilla está 3 días (L X V): se cambia en todos. Los días
+  que ya tienes armados se quedan como están.», **en la tarjeta**, antes de
+  tocar nada.
+- **81 ✅** El patrón de un solo día sale por «Quitar el martes», con
+  `templatePatch: { days: ['monday','wednesday','thursday','friday'] }` —un
+  `update`, **nunca un `vidaItemDelete`**— y la tarjeta dice por qué. Con dos
+  días, no se ofrece.
+- **82 ✅** «Dejarlo» no llama a nadie (`updateVidaItem` sin llamadas,
+  `planMutationsCalled() === 0`) y escribe en `xavi.vida.deviceNotes`:
+  `Object.keys(localStorage)` **no gana ninguna clave de Vida**.
+- **83 ✅** Los tres momentos, con reloj inyectado: al día siguiente calla, el
+  **19 de octubre** vuelve (28 días exactos), y con el desfase movido ≥10 min
+  vuelve antes de plazo; si cambia el día del que habla, también. Y la fecha
+  de vuelta se ve **desde que se contesta** («Lo dejaste el 21 de septiembre.
+  Vuelve el 19 de octubre si el patrón sigue igual.»).
+- **84 ✅** Con una sola semana computable: primero «Lo que ya se sabe» con la
+  tarjeta entera y sus dos salidas, y **debajo** «Lo que llega después» con los
+  umbrales y lo que falta. El test compara los índices en el texto.
+- **85 ✅** Ítem desactivado y actividad archivada (`status === 'cancelled'`):
+  la tarjeta sigue, con su dato, y **sin pregunta**; dice por qué en una línea.
+- **86 ⚠️ casi entero.** Cargando (esqueletos), error con «Reintentar» que no
+  afirma «no tienes datos», 375 px sin scroll, oscuro y nombre largo:
+  comprobados (los dos primeros heredados de la tajada 1, ahora también con
+  `itemsQuery` en la cuenta). **Lo que falta es dentro de `/app/*`**, que es
+  el límite del repositorio.
+- **101 ✅** Ni un documento GraphQL, ni una mutación nueva, ni un tipo de
+  `api/`, ni una ruta, **ni una clave de `localStorage`**: `graphql/`, `api/` y
+  `routes/` no aparecen en el diff.
+- **104 ✅** Tabla de arriba.
+
+**Pendiente de prueba manual, del usuario**
+
+- **105 y 106**: con la API despierta y sus semanas. Pasos: abrir «Lo que se
+  repite», comprobar que las tarjetas hablan de actividades suyas y los
+  números cuadran; pulsar la salida afirmativa de una y **comprobar en la
+  plantilla que cambió solo ese campo y que ningún día ya armado se movió**;
+  contestar otra con «Dejarlo», **recargar** y ver que no vuelve a preguntar y
+  que dice cuándo vuelve.
+- **El cruce con el puente, a mano**: dejar el puente «como está» en «La
+  semana» y comprobar que la sugerencia de hora de ese mismo ítem **no
+  aparece** en «Lo que se repite», y al revés.
+- **86 en el aparato real**: 375 px y oscuro dentro de `/app/*`.
+
+**Riesgos — dónde mirar si algo se rompió**
+
+1. **El puente de FEAT-006.** Ahora tiene una condición más. Si alguien
+   contesta una sugerencia de hora en «Lo que se repite», el puente de ese ítem
+   **desaparece durante cuatro semanas**. Es querido (criterio 83 dice «en
+   ninguna de las tres pantallas»), pero cambia el comportamiento de una
+   feature entregada y los criterios 54-59 no lo decían.
+2. **`patternAnswers` en el store.** Un estado guardado antes de hoy no lo
+   trae; el merge superficial lo deja en `{}`. Si alguien serializa el store
+   entero en otro sitio, ahora hay un campo más.
+3. **`useVidaItemsQuery(true)` en Revisión.** La sección pide la plantilla
+   **con los desactivados**, que es otra entrada de caché distinta de la que
+   pide el puente (`false`). Comparten servidor, no entrada: en frío es una
+   consulta más.
+4. **El umbral del día suelto (30 min y 2 muestras) es mío**, no del render ni
+   de los criterios. Con datos reales puede que señale días que no deberían o
+   que calle alguno: es una constante y se mueve en una línea.
+5. **`VidaAdherenceSummary` acepta `children`.** Es un componente de la tajada
+   1 ya revisado; el cambio es aditivo y sin él no se puede cumplir el orden
+   del marco F.
+
+**Estado del árbol:** sin commitear.
+
+**Además, para quien venga detrás** (no se tocó, es alcance de otro):
+
+- **No arranqué ningún servidor**: el arnés se sirvió desde el **5173 del
+  usuario** (`preview_start` con URL abre una pestaña, no levanta nada). El
+  **5174** del constructor de la tajada 1 sigue como quedó dicho en su
+  reporte; esta sesión tampoco tiene `preview_stop`.
+- **`ENVIRONMENT.md` sigue con la línea base vieja** (2 de 1439, 1.054,0 kB).
+  Hoy son **1513 tests** y **1.079,47 kB**. No lo he tocado —es la regla—,
+  pero cada tajada lo deja más viejo.
+- El render pinta las etiquetas de desfase **en violeta**; aquí van en el
+  color primario por falta de token (punto 6). Es cosa del sistema de diseño,
+  no de esta feature.
+
+
+#### Tajada 2 · corrección tras la devolución
+
+**Resumen para quien revise.** La tarjeta que mentía ya no existe: **«sin dato»
+no es «sin desfase»**. Una actividad planeada varias veces y nunca registrada
+pinta sus dos líneas con «—/sin dato» y termina en «De estas 5 veces no hay
+ninguna registrada: sin dato no se puede decir cómo te sale», nunca en la frase
+del criterio 77. De paso, **ninguna rama puede terminar muda**: hay un campo
+nuevo, `closingLabel`, y un test que recorre cinco caminos y exige que todos
+digan algo. **Lo que más probablemente he roto ahora: el puente, otra vez** —su
+condición de silencio ya no son cuatro semanas a ciegas sino las tres
+condiciones de D1, así que un puente que antes se callaba puede volver a
+aparecer— y **`useVidaItemsQuery`, que ha ganado un parámetro** y lo usan seis
+pantallas.
+
+**Lo que devolvía la tajada, arreglado**
+
+- `src/features/vida/utils/vida-patterns.utils.ts`
+  - **`startLine` y `durationLine` dejan de ser anulables.** Se pintan
+    **siempre** —que es lo que dice el criterio 74— y sin sesiones dicen
+    `valueLabel: '—'` y `offsetLabel: 'sin dato'`. **«Sin dato» es la palabra
+    que el módulo ya usa** para el pasado que no se sabe (`VidaAgendaNoData`,
+    `VidaReviewWeek`, el punto 10 del render): no había que inventar ninguna.
+    Nunca un «0», que sería afirmar que empezó a su hora.
+  - **Los dos `?? 0` de `isSettled`, fuera.** Ahora exige `hasAnyData` y trata
+    cada desfase por separado: `null` ya no cuenta como «dentro de tolerancia»,
+    cuenta como «no se sabe». La frase del criterio 77 vuelve a significar lo
+    que el analista escribió: **un patrón dentro de tolerancia**.
+  - **`closingLabel`**, el final honrado de los caminos que no preguntan y
+    tampoco pueden confirmar nada, con cuatro formas: sin ninguna vez
+    registrada; el día suelto que no se puede quitar porque dejaría la
+    plantilla en un día (**el hallazgo 1 del revisor**, misma causa y mismo
+    arreglo); un ítem sin hora en la plantilla; y el resto. `VidaPatternCard`
+    la pinta con el mismo peso visual que la de «no hay nada que proponer».
+- `src/features/vida/components/VidaPatternCard/VidaPatternCard.tsx` — pinta
+  `closingLabel` y lo dice en su cabecera.
+
+**Los hallazgos, resueltos en el mismo paso**
+
+- **Hallazgo 2 — la promesa de `enabled` ahora es verdad.**
+  `useVidaItemsQuery(includeInactive, enabled = true)`: el parámetro es
+  **aditivo y por defecto `true`**, así que las seis llamadas que ya existían
+  se comportan exactamente igual (`enabled: guard && enabled`).
+  `useVidaPatterns` le pasa su `enabled`, así que con la sección cerrada —o con
+  la ventana diferida de las tajadas 3 y 4— **no se pide nada, tampoco la
+  plantilla**. Era una línea y cierra por adelantado el riesgo del criterio 92.
+- **Hallazgos 3 y 4 — la dirección puente → patrón, con test y con la
+  excepción de D1.** La condición de `VidaRevisionPage.tsx` pasa por
+  `isBridgeSilencedByAnswer(...)`, función pura con **las mismas tres
+  condiciones**: dentro de las cuatro semanas, el desfase sin moverse diez
+  minutos o más, y sin día concreto. El desfase del puente es lo que propone
+  mover (`propuesta − actual`); el de la sugerencia es la mediana menos la
+  plantilla: no son el mismo número al minuto y la comparación lleva su margen
+  de diez, que es justamente el de D1. Cuatro casos en el `utils` y **dos en la
+  página**: con una respuesta de −55 el puente de −60 no se pinta; con una de
+  −5, sí.
+- **Hallazgo 5 — «Contestadas» ya no esconde la respuesta del puente.**
+  `VidaAnsweredSuggestion` gana `source: 'pattern' | 'bridge'` y `answer` pasa
+  a ser anulable: un «Dejarlo como está» dado en «La semana» **aparece en la
+  lista** con su frase y su fecha de vuelta («Lo dejaste como estaba en la
+  semana del 21 de septiembre. Vuelve el 28 de septiembre…», que es la regla
+  del puente: vuelve la semana siguiente). Y la **tarjeta** también lo dice, no
+  solo el lateral de la tajada 4. Test en el hook.
+- **Hallazgo 6 — el umbral del día suelto, escrito como decisión mía.**
+  `PATTERN_DAY_OUTLIER_MINUTES = 30` y `PATTERN_MIN_DAY_SAMPLES = 2`: **no
+  salen del render ni de ningún criterio, los puse yo.** La razón: treinta
+  minutos es el triple de la tolerancia, lo bastante para que nadie llame
+  «patrón» a un cuarto de hora de margen, y por debajo de eso el martes del
+  render (+70) y una mañana floja se parecerían demasiado; y dos muestras es el
+  mínimo para no señalar un día por **una** vez que se torció, que sería
+  exactamente el reproche que el módulo no hace. Los dos están exportados y se
+  mueven en una línea; **los cierra el usuario con datos suyos** (criterio 105).
+
+**Qué NO he tocado**, porque no era de la devolución: el modelo de la
+sugerencia, los dos parches, la regla de D1, el `vidaItemUpdate`, la lista de
+espera, el marco F y la hoja de estilos. El diff de esta corrección son
+**cinco archivos de `src/`** más los tres de test.
+
+**Verificación, línea base entera otra vez**
+
+| Qué | `ENVIRONMENT.md` | Antes de la devolución | **Ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **limpio**, exit 0 |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 / 0**, los mismos |
+| `pnpm test` | 2 de 1479 | 2 de 1513 | **2 fallos de 1526** (los mismos dos de `SearchSelect`; **+13 tests** sobre la entrega devuelta) |
+| `pnpm build` | 1.065,85 kB | 1.079,47 kB | **1.080,83 kB** (+1,36 kB por el arreglo), `app-icons` **620,20 kB sin tocar**, exit 0 |
+
+Los trece tests nuevos: nueve en `vida-patterns.utils.test.ts` (las dos líneas
+con «sin dato», la frase que ya no sale, el caso de sesiones abiertas —hora sí,
+duración no—, **la matriz de cinco caminos que exige que ninguna tarjeta
+termine muda**, y los cinco del puente), dos en `VidaRevisionPage.test.tsx` (la
+tarjeta sin sesiones pintada de verdad, y las dos direcciones del cruce) y uno
+en `useVidaPatterns.test.tsx` («Contestadas» con la respuesta del puente).
+
+**Criterios que esto vuelve a poner en pie**
+
+- **74 ✅** Las dos líneas están en **todas** las tarjetas, también en la que no
+  tiene ni una sesión: test puro (`toEqual` sobre las dos líneas) y test de la
+  página (`getAllByText('sin dato').length === 2` sobre el DOM real).
+- **77 ✅** «Esto pasa como lo planeaste…» **solo** con datos y dentro de
+  tolerancia. Con cero sesiones el texto renderizado **no la contiene** y dice
+  lo que hay; y sigue sin pintar ningún botón. Comprobado sobre
+  `container.textContent`.
+- **86 ✅ (lo de antes, más esto)** El estado «sin dato» es un estado más de la
+  tarjeta y ya está construido y probado; la línea nueva usa la misma clase que
+  la de «no hay nada que proponer», que se miró a 375 px y en oscuro en el
+  arnés de la entrega anterior.
+
+**Lo que sigue pendiente y de quién es**
+
+- **105 y 106, del usuario**, igual que antes. Y con esto se añade un paso
+  fácil de comprobar: **planea algo y no lo registres**; la tarjeta debe decir
+  «no hay ninguna registrada», nunca «pasa como lo planeaste».
+- **No he vuelto a abrir el navegador** en esta corrección: la evidencia de lo
+  que pinta la tarjeta nueva es el test de la página sobre el DOM real, y la
+  caja y los colores no han cambiado (misma clase `.settled`). El arnés de la
+  entrega anterior está borrado y **no he arrancado ningún servidor**.
+
+**Riesgos nuevos — dónde mirar**
+
+1. **El puente puede volver a aparecer donde antes callaba.** Con una respuesta
+   vieja de otro número, la condición ya no lo silencia. Es lo que pide D1 y lo
+   que hace simétrica la regla, pero cambia el comportamiento respecto a lo que
+   se entregó ayer.
+2. **`useVidaItemsQuery` tiene un parámetro más.** Aditivo y con valor por
+   defecto; las seis llamadas existentes están sin tocar y la suite entera pasa,
+   pero el radio es el módulo entero.
+3. **`startLine` y `durationLine` ya no son anulables.** Cualquier consumidor
+   futuro que hiciera `pattern.startLine ? …` sigue funcionando, pero el tipo
+   cambió; hoy el único consumidor es `VidaPatternCard`.
+4. **`VidaAnsweredSuggestion.answer` ahora puede ser `null`.** Lo consumirá la
+   tajada 4: quien pinte «Contestadas» tiene que mirar `source`, no asumir que
+   hay número.
+
+**Estado del árbol:** sin commitear.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — La sección existe y cuenta tu adherencia
@@ -1210,3 +1585,421 @@ criterios **105** y **106**, y el trozo de **375 px y oscuro dentro de `/app/*`*
 del **72**—. Es el límite estructural del repositorio (los agentes no entran con
 credenciales), no un descuido de esta revisión.
 
+
+### Tajada 2 — Los patrones por actividad, con sus dos salidas
+
+**Veredicto: `returned`** — no por lo que el constructor midió, que está bien
+medido y lo he vuelto a correr entero, sino por **una tarjeta que afirma algo
+que no es verdad**: una actividad planeada cuatro veces o más y **nunca
+registrada** pinta la línea «**Esto pasa como lo planeaste. Aquí no hay nada que
+proponer.**» justo debajo de «**se siguió 0 de 5 veces**», y sin las dos líneas
+que el criterio 74 exige en todas las tarjetas. Es el caso más común que le
+queda a este módulo —planear algo y no llegar a registrarlo— y es literalmente
+lo que el analista pidió evitar: decirlo en vez de fingir. Con eso, **74 y 77 no
+se cumplen tal como están escritos**. Todo lo demás (75, 76, 78–86, 101, 104)
+sí, con evidencia propia.
+
+**Lo que devuelve la tajada, comprobado por mí**
+
+`buildActivityPatterns` con cinco días planeados y **cero sesiones** (probado
+con un test temporal sobre el `utils`, borrado después):
+
+| Campo | Valor |
+|---|---|
+| `followedLabel` | `se siguió 0 de 5 veces` |
+| `startLine` | **`null`** |
+| `durationLine` | **`null`** |
+| `weekdayCells` | los siete, `·` |
+| `suggestion` | `null` |
+| `settledLabel` | **`Esto pasa como lo planeaste. Aquí no hay nada que proponer.`** |
+
+El camino es `buildPattern` (`vida-patterns.utils.ts:629`):
+
+```ts
+const isSettled =
+  !suggestion &&
+  Math.abs(startOffset ?? 0) < PATTERN_TOLERANCE_MINUTES &&
+  Math.abs(durationOffset ?? 0) < PATTERN_TOLERANCE_MINUTES
+```
+
+**`startOffset` y `durationOffset` son `null` cuando no hay ni una sesión**, y
+el `?? 0` los convierte en «desfase cero», es decir, en «esto va clavado». No
+hay ninguna prueba que cubra ese caso: los 21 casos del `utils` y los 9 de la
+página siempre tienen sesiones.
+
+- **Criterio 74 — no cumplido.** «Todas dicen lo mismo en el mismo orden […] la
+  línea **Sueles empezar** y la línea **Suele llevarte** con su etiqueta de
+  desfase». Esta tarjeta no tiene ninguna de las dos.
+- **Criterio 77 — no cumplido como está escrito.** La frase está reservada a
+  «una actividad **cuyo patrón está dentro de tolerancia**». Aquí no hay patrón
+  del que hablar: hay un plan y ningún dato. La frase no es un reproche —eso se
+  respeta— pero **es falsa**, que es la otra mitad de la regla del módulo («lo
+  dice en vez de fingir un número», sección 1).
+
+**Cómo se arregla, sin rediseñar nada** (es del constructor, no mío): distinguir
+«sin desfase» de «sin dato» —los dos `?? 0` de `isSettled`— y dar a esa tarjeta
+su propio final, del tipo «De estas 5 veces no hay ninguna registrada: todavía
+no se puede decir cómo te sale». Y un caso en el test del `utils` y otro en el
+de la página, que es lo que faltaba para cazarlo.
+
+**Criterios, uno por uno** (contra la sección 1, no contra el resumen)
+
+| # | Estado | Evidencia que he comprobado yo |
+|---|---|---|
+| 74 | **NO cumplido** | En el caso normal la tarjeta lleva cabecera, las dos líneas, la mini-fila L M X J V S D y el pie en fracción, y el test de la página lo afirma con texto literal. **Falla en la tarjeta sin sesiones** (arriba). |
+| 75 | **cumplido** | `occurrences.length < PATTERN_MIN_OCCURRENCES` → `waiting` con «llevas 2 de 4»; nunca una media. Test puro (`:157`) y de la página («llevas 2 de 4» y `queryByText('1h 10')` en cero). |
+| 76 | **cumplido** | `weekdayCells`: sin dato → `offsetLabel: '·'`. El `0` solo aparece con dato y desfase real de cero. Test `:133`. |
+| 77 | **NO cumplido como está escrito** | La frase sale también sin datos (arriba). Con patrón dentro de tolerancia sí es correcta y **no pinta ni un botón** (`queryByRole('button')` en cero). |
+| 78 | **cumplido** | Las tres formas llevan el número dentro (`Ponerlo en 1h 10`, `Moverlo a las 19:30`, `Quitar el martes`) y la segunda es «Dejarlo». `VidaPatternCard` pinta las dos salidas **en el mismo bloque**: no hay forma de que salga una sola. `variant` `primary` + `secondary`, ninguna `danger`. |
+| 79 | **cumplido, y es lo que más he mirado** | `applySuggestion` (`VidaRevisionPage.tsx:1147`) hace `updateItem.mutate({ id: suggestion.itemId, ...suggestion.templatePatch })` y nada más. Test: `updateVidaItem` **1 llamada**, `{ id: 'i9', durationMinutes: 70 }` exacto, `planMutationsCalled() === 0` —los espías de las **cuatro** mutaciones del plan están puestos en todo el archivo desde FEAT-006 (`:50-57`)— y `createFollowUp` sin llamadas. Espiado, no leído del texto. |
+| 80 | **cumplido** | `consequenceFor()` nombra cuántos días y cuáles («En tu plantilla está 3 días (L X V): se cambia en todos. Los días que ya tienes armados se quedan como están.»), y el componente la pinta **antes** de los botones. |
+| 81 | **cumplido** | `templatePatch: { days: remaining }`; **no existe `vidaItemDelete` en el archivo ni en la página**. Con `remaining.length < 2` no se ofrece (test `:256`). |
+| 82 | **cumplido** | Verificado con mi propio test: sembrando un `xavi.vida.deviceNotes` de FEAT-006 y contestando, `Object.keys(localStorage)` sigue siendo **una** clave. «Dejarlo» no llama a `updateVidaItem` ni a ninguna del plan. |
+| 83 | **cumplido** | Las tres ramas están probadas con reloj inyectado (`:356`, `:360`, `:366`, `:373`) y la regla vive **en una sola función pura**, aplicada **una vez** en `useVidaPatterns`. Vuelta a los 28 días exactos (`suggestionReturnDate`). **Sobrevive a recargar**: la respuesta va a `localStorage` con su fecha y su número, y el test del hook lo comprueba montando el hook **de nuevo** contra el store ya escrito. La fecha se ve desde que se contesta («Lo dejaste el 21 de septiembre. Vuelve el 19 de octubre si el patrón sigue igual.»). |
+| 84 | **cumplido** | Con una sola semana computable, «Lo que ya se sabe» con la tarjeta entera **y sus dos salidas** va **antes** de «Lo que llega después» (el test compara índices sobre el texto), y la última línea sigue siendo «sale de los días que vives». |
+| 85 | **cumplido** | `mutedReasonFor()`: ítem desactivado o actividad `cancelled` → `suggestion: null` y una línea que dice por qué. La tarjeta sigue con su dato. Dos tests puros. |
+| 86 | **cumplido en lo que se puede aquí** | Cargando (esqueletos, ninguna cifra a cero) y error con «Reintentar» que no dice «no tienes datos», ahora contando también `itemsQuery`. Nombre de 60 caracteres: test de la página + `VidaPatternCard.module.scss` con `overflow-wrap: anywhere` y `min-width: 0` en toda la cadena; el único `white-space: nowrap` está en la casilla de la mini-fila («+70»), con `text-overflow: ellipsis`. 375 px: `grid-template-columns: repeat(7, minmax(0,1fr))`, ni un ancho fijo. Oscuro: **ni un color literal** en las 231 líneas de `.scss` —solo `--color-text`, `--color-text-secondary`, `--color-primary` y `color-mix`—. **Dentro de `/app/*` lo cierra el usuario.** |
+| 101 | **cumplido** | Diff + untracked: **ni un archivo** bajo `graphql/`, `api/` ni `routes/`. `patternAnswers` es un campo más en `xavi.vida.deviceNotes`; **`localStorage.length` no sube** (comprobado con estado viejo sembrado). |
+| 104 | **cumplido, línea base corrida entera por mí** | Ver abajo. |
+| 105, 106 | **pendientes del usuario** | Con la API despierta y sus semanas. Nadie los cierra desde aquí. |
+
+**Línea base, corrida entera por mí** (no la del constructor)
+
+| Qué | `ENVIRONMENT.md` | Constructor | **Medido ahora** |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1479 | 2 de 1513 | **2 fallidos de 1513**, 109 archivos de 110 en verde; los dos son `SearchSelect`, preexistentes |
+| `pnpm build` | 1.065,85 kB | 1.079,47 kB | **exit 0**, `index` **1.079,47 kB**, `app-icons` **620,20 kB sin tocar**, `IconPicker` 4,64 kB |
+
+**El crecimiento de +13,62 kB está justificado**: son 825 líneas de derivado
+puro, 228 de hook y 144+231 de la tarjeta y su hoja de estilos, todo código
+propio y **ninguno de iconos** (`app-icons` no se mueve ni un byte). Es el mismo
+orden que la tajada 1 (+11,8 kB por 3 componentes y 2 archivos). Lo que sigue
+siendo deuda es que todo eso caiga en el chunk inicial, y eso viene de
+FEAT-003/005 y está declarado fuera de alcance.
+
+**Lo que se rompió cerca: cómo busqué**
+
+El constructor apuntó al puente de FEAT-006 y al store. Fui por ahí, y por lo
+que cuelga de ellos:
+
+- **`graphify explain "vida-device-notes.store"`**: el grafo es de antes del
+  cambio, que para «quién dependía de esto» es justo lo que hace falta; devuelve
+  poco más que su propio test, así que crucé con `grep -rn "patternAnswers\|
+  getStartTimeAnswerFor" src/`: los consumidores del campo nuevo son **tres**
+  (`useVidaPatterns.ts`, `VidaRevisionPage.tsx:1096` y los tests). Nada más del
+  módulo lee el store entero.
+- **`buildTemplateBridge` no se tocó**, confirmado por el diff: `git diff
+  --stat` toca **5 archivos de `src/`** y `vida-week-review.utils.ts` **no está
+  entre ellos**. La regla del puente (criterios 55 y 56) es byte a byte la de
+  hace dos días.
+- **Criterios 54–59 de FEAT-006, leídos literales en su dossier y contrastados
+  con el código.** 54 (como mucho un aviso), 55 (la regla mínima), 56 (mediana
+  de lo real), 57 (`vidaItemUpdate` y nunca el plan), 59 (sin base no se pinta):
+  intactos, nada de eso pasa por el código nuevo. El **58** es el único que
+  cambia de contorno: el puente ahora tampoco se pinta si la sugerencia de hora
+  de ese ítem ya se contestó en «Lo que se repite» (`VidaRevisionPage.tsx:1096`,
+  tres líneas). Es **lo que el criterio 83 manda** («en ninguna de las tres
+  pantallas») y va en la dirección de callar, no de insistir: **no lo considero
+  regresión**.
+- **`git diff --numstat` del test de la página: 201 añadidas, 0 borradas.**
+  Ninguna afirmación de FEAT-006 se ha relajado; los `describe` del puente
+  (`:1070`) y de la semana siguen enteros y en verde.
+- **La suite entera, corrida por mí**: 1.511 pasan, los 2 de siempre fallan.
+  Incluye `VidaRevisionPage.test.tsx` completo (puente, semana, día), los de
+  `VidaSemanaPage`, `VidaHoyPage` y `vida-device-notes.store.test.ts`.
+- **El `deviceNotes` de un usuario que ya tiene datos de FEAT-006** (lo que
+  preguntaba el encargo): lo sembré antes de importar el store —`blockNotes`,
+  `dismissedNoData`, `dismissedBridges`, **sin `patternAnswers`**— y rehidrata
+  sin romper: conserva los tres campos viejos, deja `patternAnswers` en `{}` y,
+  al contestar, **guarda lo nuevo sin perder lo viejo y sin estrenar clave**. El
+  merge superficial de `persist` hace lo que el plan decía; no hace falta
+  migración.
+- **«0 consultas con la sección cerrada»**: sigue sujeto por montaje —el test de
+  la tajada 1 (`historyMounts` en cero con «Un día» y con «La semana») sigue en
+  verde— y la consulta nueva de plantilla vive **dentro** de
+  `VidaPatternsSection`, así que no se monta antes. La otra
+  `useVidaItemsQuery()` de la página (`:1039`) es la del puente, `false`, y no
+  se ha tocado. **El 43 → 44 del constructor es correcto** y la clave
+  `items.list(true)` ya existía.
+
+**Las tres desviaciones declaradas, juzgadas**
+
+1. **El violeta en `--color-primary`: correcta.** Comprobé la hoja de la
+   tarjeta entera: **ni un color literal**, solo tokens y `color-mix`. En el
+   sistema de diseño no hay token semántico de violeta fuera de
+   `[data-ds='aura']`, y meter un `#7C3AED` a pelo habría sido ilegible en
+   oscuro —exactamente la deuda de `Button variant="danger"` que
+   `ENVIRONMENT.md` avisa—. Queda como **hallazgo para el usuario**, que aprobó
+   el render: si quiere el violeta del marco B, es un token nuevo en
+   `_theme-variables.scss`, no un literal aquí.
+2. **La lectura estricta del criterio 81: aceptable, pero deja una tarjeta
+   muda.** Que un ítem de dos días con uno descolocado no proponga **nada** —ni
+   quitar el día ni mover la hora— está bien razonado (la mediana de la hora la
+   arrastra ese mismo día, y proponer un número arrastrado sería inventarlo).
+   Pero entonces la tarjeta termina en el pie, sin pregunta y **sin la línea que
+   diga por qué no la hay**: ni `settledLabel`, ni `mutedReason`. Son dos casos
+   distintos —este y el de arriba— con la misma causa de fondo: **el final de la
+   tarjeta no está cubierto para todos los caminos**. Va como hallazgo 1; el que
+   devuelve la tajada es el de la frase falsa.
+3. **El coste 43 → 44: verificado.** Una consulta más, `vidaKeys.items.list(true)`,
+   clave existente, acierto de caché llegando de Plantilla o Actividades. Y las
+   otras dos secciones siguen costando cero.
+
+**Estados que nadie construye**
+
+| Estado | Cómo queda |
+|---|---|
+| **Sin datos** | Dos agujeros. El de «planeada y nunca registrada» **devuelve la tajada**; el de «un día se sale y solo quedaría uno» deja la tarjeta sin frase de cierre. Lo demás (por debajo de 4 apariciones) sí está: lista compacta con «llevas 2 de 4». |
+| **Cargando** | Construido y heredado de la tajada 1, ahora con `itemsQuery` dentro de la cuenta. Esqueletos solo si **nada** ha llegado. |
+| **Error** | Construido: «Falta algún día de estas semanas» + «Reintentar», que ahora también reintenta la plantilla si fue ella la que cayó. No afirma «no tienes datos». |
+| **Sin permisos** | No aplica: la rama sin sesión de la página no ofrece el control de secciones. |
+| **Texto largo** | **Cobrado aquí**, que era lo que la tajada 1 no pudo: nombre de 60 caracteres, test de la página + `overflow-wrap: anywhere` con `min-width: 0` en toda la cadena. |
+| **Móvil 375 px** | Verificado por código y por test; la rejilla de la mini-fila es `minmax(0,1fr)` y no hay anchos fijos. **El arnés del constructor ya no existe** (lo borró, correctamente), así que **yo no lo he visto pintado**: lo digo en vez de heredarlo. Dentro de `/app/*` lo cierra el usuario. |
+| **Oscuro** | Igual: solo tokens, ni un literal. Lo cierra el usuario. |
+
+**¿Duplica algo que ya existía?** (contra la sección 2)
+
+No. La sugerencia **no** reescribe `VidaReviewBridge` —que era la tentación que
+el plan prohibía—, sino que le copia el esqueleto en un componente hermano y
+resuelve la coexistencia con dos condiciones de tres líneas. La cuenta de
+«seguido» no se redefine: el pie usa el emparejamiento de
+`matchSessionsToBlocks`, que es lo mismo que `collectDayClosing().followedCount`
+(`vida-execution.utils.ts:1138`, `Object.keys(execution.byBlockId).length`).
+`VIDA_PATTERN_WEEKS` **no se ha escrito**: se usa el `VIDA_HISTORY_WEEKS` de la
+tajada 1, que es justo lo que el arquitecto quería evitar duplicar. Ni claves de
+caché, ni de `localStorage`, ni documentos GraphQL.
+
+**Hallazgos — se anotan, no devuelven la tajada**
+
+1. **La tarjeta sin frase de cierre.** Cuando un día se sale y al quitarlo
+   quedaría uno solo, la tarjeta enseña «Los martes · 9:40 · +70 min» y termina
+   ahí. El propio encabezado del archivo dice «o hay pregunta con dos salidas, o
+   se dice en voz alta que no hay nada que proponer»: este camino no hace
+   ninguna de las dos. Se arregla junto con lo que devuelve la tajada.
+2. **`useVidaPatterns` promete algo que no cumple para las tajadas 3 y 4.** Su
+   cabecera dice «con `enabled: false` no pide nada», pero `useVidaItemsQuery(true)`
+   **no pasa por `enabled`**: se monta siempre que el hook se monte. En Revisión
+   da igual (el hook solo existe con la sección abierta), pero en Hoy y en la
+   Plantilla, donde el plan manda montar la ventana **diferida**, esa consulta se
+   dispararía en el primer pintado. Es una línea y es de la tajada 3, pero la
+   frase de la cabecera hay que corregirla ya o alguien confiará en ella.
+3. **La dirección puente → patrón no tiene test.** La condición de
+   `VidaRevisionPage.tsx:1096` está escrita y es correcta de leer, pero **ningún
+   test la ejecuta**: el cruce probado es el contrario (puente descartado →
+   sugerencia callada). Es la mitad de «en las dos direcciones» que el
+   constructor declara.
+4. **Esa misma condición ignora la excepción de D1.** El puente se calla las
+   cuatro semanas enteras aunque el desfase se mueva ≥10 min o cambie el día,
+   casos en los que la sugerencia de «Lo que se repite» **sí** vuelve. Queda
+   asimétrico: la pregunta vuelve en una pantalla y no en la otra.
+5. **La misma pregunta se puede contestar en dos campos distintos**
+   (`dismissedBridges` si se contesta en «La semana», `patternAnswers` si se
+   contesta aquí). No se pregunta dos veces —cada lado lee los dos—, pero
+   «Contestadas» (criterio 99, tajada 4) se construye **solo** con
+   `patternAnswers`: un «Dejarlo como está» dado en el puente silenciará una
+   sugerencia **sin aparecer en la lista de contestadas ni decir cuándo vuelve**.
+   Hay que resolverlo en la tajada 4 o el criterio 99 no se podrá cumplir.
+6. **El umbral del día suelto (30 min, 2 muestras) es del constructor**, como él
+   mismo dice: no sale del render ni de ningún criterio. No lo devuelvo —es una
+   constante y está exportada—, pero conviene que el usuario lo mire con datos
+   suyos.
+7. **`ENVIRONMENT.md` sigue con la línea base vieja** (2 de 1479, chunk
+   1.065,85 kB, 2026-09-21). Con esta tajada son **1513 tests** y **1.079,47 kB**.
+   **No lo he tocado** —es la regla—, pero ya va dos tajadas por detrás.
+8. **El servidor del constructor de la tajada 1 sigue vivo en el 5174.** Yo no
+   he arrancado ni parado nada, y **no he abierto el navegador en esta
+   revisión**: lo que digo de 375 px y oscuro sale del código y de los tests.
+
+**Lo que no he podido revisar**, y lo digo en vez de aprobarlo por simpatía: el
+recorrido real dentro de `/app/vida/revision` —criterios **105** y **106**, y el
+trozo de **375 px y oscuro dentro de `/app/*`** del **86**—, y la pantalla
+pintada de verdad, porque el arnés del constructor ya no existe. Es el límite
+estructural del repositorio (los agentes no entran con credenciales).
+
+**Para el constructor, en orden:** (1) el final de la tarjeta sin sesiones —los
+dos `?? 0` de `isSettled`— y su caso de test; (2) el final de la tarjeta del día
+suelto; (3) la cabecera de `useVidaPatterns` y, si se quiere cerrar ya, el
+`enabled` de la plantilla; (4) un test de la dirección puente → patrón. Nada de
+esto toca el modelo de la sugerencia, que está bien donde está.
+
+#### Tajada 2 · re-revisión tras la corrección
+
+**Veredicto: `accepted`** — lo que devolvía la tajada está arreglado de raíz y
+no de fachada: «sin dato» ya no es «sin desfase», los criterios **74 y 77**
+vuelven a cumplirse, y el final de la tarjeta pasó de «cuatro caminos que casi
+siempre dicen algo» a **una función total**. Los cinco hallazgos que dejé
+abiertos están cerrados o escritos como decisión. Línea base corrida entera de
+nuevo por mí y no peor. Lo pendiente sigue siendo lo de siempre: 105, 106 y la
+pantalla dentro de `/app/*`.
+
+**Lo que devolvía la tajada: comprobado por mí, no heredado**
+
+Volví a correr mi propio probe sobre el `utils` (test temporal, borrado
+después), el mismo escenario con el que devolví: cinco días planeados, **cero
+sesiones**.
+
+| Antes (devuelto) | Ahora |
+|---|---|
+| `startLine: null` · `durationLine: null` | `{ label: 'Sueles empezar', valueLabel: '—', offsetLabel: 'sin dato' }` y su gemela de duración |
+| `settledLabel: 'Esto pasa como lo planeaste…'` | **`null`** |
+| final de la tarjeta: esa frase falsa | `closingLabel: 'De estas 5 veces no hay ninguna registrada: sin dato no se puede decir cómo te sale.'` |
+
+El arreglo es el bueno: **fuera los dos `?? 0`**, `hasAnyData` exigido, y cada
+desfase tratado por separado (`startOffset === null || Math.abs(...) < …`), de
+modo que una sesión abierta —hora sí, duración no— **sigue pudiendo confirmar
+la hora** sin que la duración inexistente cuente como cero. Eso último tiene su
+propio test y me parece el detalle que demuestra que se entendió el fondo y no
+solo el síntoma.
+
+- **Criterio 74 — cumplido.** Las dos líneas están en **todas** las tarjetas.
+  Verificado en el `utils` con mi probe y en el DOM con el test de la página
+  (`getAllByText('sin dato').length === 2`).
+- **Criterio 77 — cumplido.** La frase queda reservada a un patrón con datos y
+  dentro de tolerancia; con cero sesiones el texto renderizado **no la
+  contiene** (aserción explícita) y no hay ni un botón.
+- **La frase nueva no afirma lo que no sabe y no reprocha.** Dice «no hay
+  ninguna **registrada**» —que es cierto: lo que falta son sesiones, no
+  necesariamente la vida— y no «no lo hiciste». «Sin dato» es la palabra que el
+  módulo ya usa para el pasado que no se sabe (`VidaAgendaNoData`,
+  `VidaReviewWeek`), así que tampoco estrena vocabulario. Pasa el barrido de las
+  nueve palabras en el test de la página. **Aprobado también por el fondo**, que
+  era lo delicado: es una tarjeta que le dice al usuario que cinco veces no
+  registró nada, y lo dice sin apuntar con el dedo.
+
+**`closingLabel`: busqué la sexta rama y no la hay**
+
+El test del constructor recorre cinco caminos. Yo probé **ocho combinaciones
+más raras** con un probe propio, y en todas hay final y las dos líneas:
+sin sesiones + desactivada, sin sesiones + archivada, sin sesiones + ítem sin
+hora, ítem sin hora con desfase de hora, el martes suelto con plantilla de dos
+días (mi hallazgo 1), una duración que redondea a lo que ya hay, un ítem de un
+solo día, y sesiones abiertas sin duración.
+
+Y lo comprobé también **por construcción**, que es lo que de verdad cierra la
+pregunta: `closingLabelFor` **no tiene rama sin `return`** —su último caso es el
+`return` por defecto— y se llama **siempre** que no haya `suggestion`, ni
+`isSettled`, ni `mutedReason` (`vida-patterns.utils.ts:708`). En la vista, el
+único camino que añade el hook es la sugerencia **callada**, y ahí `answerNote`
+se rellena en las dos formas posibles: con la respuesta guardada, o —si el
+silencio viene del puente y no hay respuesta propia— con
+`bridgeAnswerNoteFor(weekMonday)`. Esa era exactamente la sexta rama que iba a
+buscar, y está tapada.
+
+**El riesgo que él mismo declara: ¿puede volver a aparecer un puente?**
+
+Sí, y **está bien**. La clave es contra qué se mide:
+
+- **Contra lo entregado en `main`** (FEAT-006), el código nuevo **solo añade una
+  condición que oculta** el puente; no hay ni una que lo muestre donde antes no
+  salía. `patternAnswers` no existe en `main`, así que para un usuario de hoy el
+  puente se comporta igual salvo que conteste una sugerencia de hora en «Lo que
+  se repite» —y entonces calla, que es lo que manda el criterio 83—.
+- **Contra la entrega que devolví**, sí cambia: antes callaba cuatro semanas a
+  ciegas y ahora respeta las tres condiciones de D1. Es lo que yo mismo pedí en
+  el hallazgo 4 y es la lectura correcta del analista: si el número se mueve
+  diez minutos o más, la pregunta vuelve **en las dos pantallas**, no en una
+  sola.
+- **El criterio 58 de FEAT-006 sigue en pie, y lo verifiqué por orden de
+  código**: `isBridgeDismissed(...)` se evalúa **antes**
+  (`VidaRevisionPage.tsx:1090`) y no se ha tocado; la condición nueva va
+  **después** y solo puede quitar, nunca devolver, un puente que el 58 haya
+  cerrado esa semana. Los criterios 54, 55, 56, 57 y 59 no pasan por nada de
+  esto: `buildTemplateBridge` **sigue fuera del diff**.
+- **Una arista, que anoto sin devolver:** el desfase del puente es
+  `propuesta − actual` y el de la sugerencia es `mediana − plantilla`. No son el
+  mismo número al minuto; la comparación lleva el margen de diez de D1, que lo
+  absorbe en la práctica, pero son dos magnitudes distintas comparadas como si
+  fueran una. Queda escrito por si algún día el usuario ve volver un puente que
+  creía callado.
+
+**«Contestadas» con `source`: la respuesta invisible ya no lo es**
+
+`VidaAnsweredSuggestion` gana `source: 'pattern' | 'bridge'` y `answer` pasa a
+ser anulable. Un «Dejarlo como está» dado en el puente **aparece en la lista**
+—con su frase y su fecha de vuelta, la semana siguiente, que es la regla del
+puente— y **la tarjeta dice lo mismo**, que es lo que evita la tarjeta muda.
+Test en el hook, leído: `answered[0]` con `source: 'bridge'`, `answer: null` y
+la nota completa, más `patterns[0].answerNote`. El hallazgo 5 queda cerrado; lo
+que la tajada 4 tiene que recordar es que **`answer` puede ser `null`** y hay
+que mirar `source` antes de asumir que hay número.
+
+**`useVidaItemsQuery(includeInactive, enabled = true)`: aditivo de verdad**
+
+Confirmado a mano: `enabled: guard && enabled` con `enabled` por defecto `true`,
+y las **seis** llamadas existentes —`VidaTemplateAside:248`,
+`VidaActividadesPage:78`, `VidaArchivadasPage:41`, `VidaSemanaPage:97`,
+`VidaPlantillaPage:93`, `VidaRevisionPage:1039` (la del puente)— **no pasan el
+segundo argumento**, así que se comportan exactamente igual; ninguna pasaba ya
+un segundo parámetro posicional que pudiera cambiar de significado. La única que
+lo usa es `useVidaPatterns`. Con esto el hallazgo 2 queda cerrado y, de paso, el
+criterio **92** de la tajada 3 se vuelve más fácil de cumplir. La suite entera
+sigue verde, incluidos `useVidaItems.test.tsx`, Plantilla, Actividades y
+Archivadas.
+
+**`isBridgeSilencedByAnswer`: las tres condiciones, no cuatro semanas a ciegas**
+
+Leída entera (`vida-patterns.utils.ts:236`): sin respuesta no calla; pasada la
+fecha de vuelta no calla; con el desfase movido ≥10 min no calla; y exige
+`answer.dayOfWeek === null`, que es la tercera condición de D1 traducida a este
+lado (un puente no habla de un día concreto). Cuatro casos en el `utils` y
+**dos en la página** —con una respuesta de −55 el puente de −60 no se pinta; con
+una de −5, sí—, que es la dirección que en la entrega anterior no tenía ni un
+test. Hallazgo 3 cerrado.
+
+**Línea base, corrida entera por mí** (no la del constructor)
+
+| Qué | `ENVIRONMENT.md` | Entrega devuelta | Constructor (corrección) | **Medido ahora** |
+|---|---|---|---|---|
+| `pnpm typecheck` | limpio | limpio | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 / 0 | 14 / 0 | 14 / 0 | **14 errores / 0 warnings**, los mismos |
+| `pnpm test` | 2 de 1479 | 2 de 1513 | 2 de 1526 | **2 fallidos de 1526**, 109 archivos de 110 en verde; los dos de `SearchSelect` |
+| `pnpm build` | 1.065,85 kB | 1.079,47 kB | 1.080,83 kB | **exit 0**, `index` **1.080,83 kB** (+1,36), `app-icons` **620,20 kB sin tocar**, `IconPicker` 4,64 kB |
+
+**+1,36 kB por el arreglo está bien**: son las cuatro frases de `closingLabel`,
+las dos líneas que ahora se componen siempre y `isBridgeSilencedByAnswer`.
+Ninguno de iconos.
+
+**Lo que volví a mirar de cerca, y lo que no**
+
+No repito la revisión entera: los criterios 75, 76, 78–85, 101 y 104 los
+verifiqué en la primera pasada y la corrección no toca su código (el modelo de
+la sugerencia, los dos parches, el `vidaItemUpdate`, la lista de espera y el
+marco F están intactos). Lo que sí volví a correr: **la suite entera**, la
+línea base completa, el orden de las condiciones del puente, las seis llamadas
+de `useVidaItemsQuery` y mis dos probes sobre el `utils`.
+
+**Lo que no se ha verificado en el navegador, y lo digo sin heredarlo:** el
+constructor **no abrió el navegador** en la corrección —su evidencia de lo que
+pinta la tarjeta es el test de la página sobre el DOM— y **yo tampoco**. La
+clase de la línea nueva es la misma `.settled` que ya existía, así que la caja y
+el color no cambian, pero **nadie ha visto esta tarjeta pintada a 375 px ni en
+oscuro**. Va como está: verificado por test y por hoja de estilos, no por
+píxeles.
+
+**Hallazgos que siguen abiertos** (ninguno devuelve la tajada)
+
+1. **La arista de los dos desfases del puente** (arriba): magnitudes distintas
+   comparadas con el margen de diez.
+2. **`VidaAnsweredSuggestion.answer` puede ser `null`.** Para la tajada 4:
+   `source` manda, y «Contestadas» tiene dos formas de frase, no una.
+3. **Una tarjeta desactivada y a la vez dentro de tolerancia pinta las dos
+   líneas** (`settledLabel` y `mutedReason`). No es mudez ni contradicción, pero
+   dice dos veces que no hay nada que proponer.
+4. **El umbral del día suelto** (30 min, 2 muestras) queda **escrito como
+   decisión del constructor** con su razón, que era lo que pedía el hallazgo: lo
+   cierra el usuario con datos suyos (criterio 105).
+5. **`ENVIRONMENT.md` sigue con la línea base vieja** (2 de 1479, chunk
+   1.065,85 kB). Hoy son **1526 tests** y **1.080,83 kB**. **No lo he tocado**
+   —es la regla—, pero ya va tres tajadas por detrás y el próximo agente
+   comparará contra un mapa viejo.
+6. **El servidor del constructor de la tajada 1 sigue vivo en el 5174.** Ni él
+   ni yo arrancamos o paramos nada en esta corrección.
+
+**Lo que no he podido revisar**: el recorrido real dentro de
+`/app/vida/revision` —criterios **105** y **106**, y **375 px y oscuro dentro de
+`/app/*`** del **86**—, con el paso nuevo que el propio constructor apunta y que
+es el más fácil de probar: **planear algo y no registrarlo**; la tarjeta tiene
+que decir «no hay ninguna registrada», nunca «pasa como lo planeaste». Es el
+límite estructural del repositorio, no un descuido.

@@ -1,8 +1,16 @@
+import type { ReactNode } from 'react'
 import type { VidaAdherence } from '@/features/vida/utils/vida-adherence.utils'
 import styles from './VidaAdherenceSummary.module.scss'
 
 type VidaAdherenceSummaryProps = {
   adherence: VidaAdherence
+  /**
+   * **Lo que ya se sabe** (criterio 84, marco F): va **entre** la línea de
+   * datos y «Lo que llega después», porque el render pone primero lo que hay y
+   * después lo que falta. Sin esto, «lo que llega después» quedaría encima de
+   * la única tarjeta útil de la pantalla.
+   */
+  children?: ReactNode
 }
 
 /**
@@ -20,7 +28,7 @@ type VidaAdherenceSummaryProps = {
  * «vuelve en tres semanas», ni una barra a cero, ni una frase que empuje a
  * planear más.
  */
-export function VidaAdherenceSummary({ adherence }: VidaAdherenceSummaryProps) {
+export function VidaAdherenceSummary({ adherence, children }: VidaAdherenceSummaryProps) {
   return (
     <div className={styles.root}>
       <h3 className={styles.title}>Tu adherencia</h3>
@@ -32,6 +40,8 @@ export function VidaAdherenceSummary({ adherence }: VidaAdherenceSummaryProps) {
       ))}
 
       <p className={styles.note}>{adherence.dataNote}</p>
+
+      {children}
 
       {adherence.waiting.length > 0 ? (
         <div className={styles.waiting}>

@@ -201,3 +201,48 @@
   border-radius: 1.25rem;
   background: color-mix(in srgb, var(--color-text) 2%, transparent);
 }
+
+/* Las tarjetas de patrones por actividad (FEAT-007, tajada 2). Una columna a
+   375 px; la rejilla de escritorio es de la tajada 4. */
+.patternList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* Las actividades que todavía no llegan a cuatro apariciones: dicen cuántas
+   llevan y esperan. Ni promedio ni barra a cero (criterio 75). */
+.waitingList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1rem;
+  padding: 0.75rem;
+  min-width: 0;
+  list-style: none;
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+}
+
+.waitingRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.waitingName {
+  overflow-wrap: anywhere;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.waitingWhen {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}

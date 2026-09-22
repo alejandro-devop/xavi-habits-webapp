@@ -1,5 +1,11 @@
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
+import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
+import type {
+  VidaPatternAnswer,
+  VidaPatternSuggestionKind,
+} from '@/features/vida/utils/vida-patterns.utils'
+import { vidaPatternSuggestionId } from '@/features/vida/utils/vida-patterns.utils'
 import { storage } from '@/shared/lib/storage'
 
 /**
@@ -45,6 +51,17 @@ export interface VidaDeviceNotesState {
    * es un campo más, no un segundo `localStorage`.
    */
   dismissedBridges: string[]
+  /**
+   * `kind|itemId` (+ `|día`) → **qué se contestó y cuándo** a una sugerencia de
+   * «Lo que se repite» (FEAT-007, criterios 82 y 83). Va **en este mismo store
+   * y en esta misma clave**: un campo más, no un segundo `localStorage`.
+   *
+   * Es un `Record` y no un `string[]` porque la respuesta lleva fecha y
+   * número: sin ellos no se puede saber ni cuándo vuelve la pregunta ni si el
+   * desfase se ha movido lo bastante como para volver antes (D1). La forma no
+   * es nueva: `blockNotes` ya es un `Record`.
+   */
+  patternAnswers: Record<string, VidaPatternAnswer>
 
   /** «No se pudo», con razón o sin ella. Vuelve a llamarse para cambiarla. */
   markBlockCouldNot: (date: string, itemId: string, reason: string | null) => void
@@ -54,6 +71,8 @@ export interface VidaDeviceNotesState {
   dismissNoData: (date: string, sliceId: string) => void
   /** «Dejarlo como está»: ese aviso no vuelve **esa semana** (criterio 58). */
   dismissBridge: (weekMonday: string, itemId: string) => void
+  /** «Dejarlo»: la sugerencia calla cuatro semanas, con su fecha a la vista (83). */
+  answerPatternSuggestion: (suggestionId: string, answer: VidaPatternAnswer) => void
 }
 
 /** `2026-09-20|a1b2`: la fecha delante para que se lea de un vistazo. */
@@ -96,6 +115,37 @@ export function isBridgeDismissed(
   return dismissed.includes(vidaBridgeKey(weekMonday, itemId))
 }
 
+/**
+ * Lo que se contestó a esta sugerencia, o `null`.
+ *
+ * La identidad la compone `vidaPatternSuggestionId` **y nadie más**: si la
+ * clave se escribiera a mano en cada pantalla, el día que cambie la forma
+ * habría tres sitios que arreglar y dos que se olvidarían.
+ */
+export function getPatternAnswer(
+  answers: Record<string, VidaPatternAnswer>,
+  suggestion: { id: string },
+): VidaPatternAnswer | null {
+  return answers[suggestion.id] ?? null
+}
+
+/**
+ * La respuesta viva a la sugerencia de **hora** de un ítem, si la hay.
+ *
+ * Existe para el cruce con el puente de FEAT-006 (punto 5 del plan): el puente
+ * no puede montar la ventana de 42 días para saber si esta pregunta ya se
+ * contestó, pero sí puede mirar la clave, que es barata y no depende de ningún
+ * cálculo.
+ */
+export function getStartTimeAnswerFor(
+  answers: Record<string, VidaPatternAnswer>,
+  itemId: string,
+  kind: VidaPatternSuggestionKind = 'start-time',
+  dayOfWeek: VidaDayOfWeek | null = null,
+): VidaPatternAnswer | null {
+  return answers[vidaPatternSuggestionId(kind, itemId, dayOfWeek)] ?? null
+}
+
 /** Si este tramo ya recibió un «dejarlo así» en este aparato (criterio 49). */
 export function isNoDataDismissed(dismissed: string[], date: string, sliceId: string): boolean {
   return dismissed.includes(vidaNoDataKey(date, sliceId))
@@ -110,6 +160,9 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
       // por defecto de `persist` es superficial y arranca con `[]`, así que no
       // hace falta ni `version` ni migración (A7).
       dismissedBridges: [],
+      // Lo mismo vale para FEAT-007: un estado guardado antes de F6 no trae
+      // `patternAnswers` y el merge superficial lo deja en `{}`.
+      patternAnswers: {},
 
       markBlockCouldNot: (date, itemId, reason) =>
         set((state) => {
@@ -143,6 +196,14 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
           if (state.dismissedBridges.includes(key)) return state
           return { dismissedBridges: [...state.dismissedBridges, key] }
         }),
+
+      answerPatternSuggestion: (suggestionId, answer) =>
+        set((state) => ({
+          // Se sobreescribe a propósito: contestar otra vez la misma pregunta
+          // reinicia el plazo y guarda el número nuevo, que es lo que hace que
+          // la fecha de vuelta sea siempre la de la última respuesta.
+          patternAnswers: { ...state.patternAnswers, [suggestionId]: answer },
+        })),
     }),
     {
       name: VIDA_DEVICE_NOTES_STORAGE_KEY,
@@ -155,6 +216,7 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
         blockNotes: state.blockNotes,
         dismissedNoData: state.dismissedNoData,
         dismissedBridges: state.dismissedBridges,
+        patternAnswers: state.patternAnswers,
       }),
     },
   ),

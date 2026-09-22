@@ -1,0 +1,1 @@
+export { VidaPatternCard } from './VidaPatternCard'

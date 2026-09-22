@@ -31,11 +31,18 @@ import { useToast } from '@/shared/ui/Toast'
  * esquema y **ningún hook lo genera**: la web es el piloto y no hay modo
  * offline. Cuando lo haya, se emite aquí, no en el `api`.
  */
-export function useVidaItemsQuery(includeInactive = false) {
-  const enabled = useVidaQueryGuard()
+/**
+ * `enabled` es **aditivo y por defecto `true`**: quien no lo pase se comporta
+ * exactamente igual que antes. Lo estrena FEAT-007, donde la ventana de seis
+ * semanas se monta **diferida** en Hoy y en la Plantilla y esta consulta tenía
+ * que poder esperar con ella; sin esto, el primer pintado de Hoy la dispararía
+ * (criterio 92).
+ */
+export function useVidaItemsQuery(includeInactive = false, enabled = true) {
+  const guard = useVidaQueryGuard()
   return useQuery({
     queryKey: vidaKeys.items.list(includeInactive),
-    enabled,
+    enabled: guard && enabled,
     queryFn: () => vidaItemsApi.getVidaItems(includeInactive),
     staleTime: 1000 * 60,
   })

@@ -1,0 +1,231 @@
+/* El marco B de `docs/vida/assets/08-vida-entiende.html`: una tarjeta por
+   actividad, todas con las mismas piezas en el mismo orden. Solo tokens: a
+   375 px cabe en una columna y en tema oscuro se lee sin un color literal. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.capsule {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 16%, transparent);
+  color: color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 65%, var(--color-text));
+}
+
+.headBody {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Un nombre de 60 caracteres **parte por donde sea antes que desbordar la
+   caja** (criterio 72): `overflow-wrap: anywhere` con `min-width: 0` en toda
+   la cadena, que es lo único que evita el scroll horizontal a 375 px. */
+.name {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.template {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  min-width: 0;
+}
+
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.lineLabel {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+.lineValue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+}
+
+/* El desfase: una nota al margen, no una alarma. **Sin color literal** —el
+   violeta del render no tiene token semántico y en oscuro no se lee—: se usa
+   `--color-primary`, que es lo que hizo la tajada 1 con la barra. */
+.tag {
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: color-mix(in srgb, var(--color-primary) 70%, var(--color-text));
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* «a su hora» / «como lo diste»: lo que va bien se lee en apagado. */
+.tagSettled {
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  list-style: none;
+}
+
+.cell,
+.cellEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  overflow: hidden;
+  border-radius: 0.55rem;
+  padding: 0.3rem 0.1rem;
+  min-width: 0;
+}
+
+.cell {
+  /* Cuanto más se aparta, más tono. El peso llega del derivado (0–1). */
+  background: color-mix(
+    in srgb,
+    var(--color-primary) calc(8% + var(--vida-cell-weight, 0) * 18%),
+    transparent
+  );
+  color: var(--color-text);
+}
+
+.cellEmpty {
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  color: var(--color-text-secondary);
+}
+
+.cellDay {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.cellValue {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.footnote {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+
+/* La tarjeta que no propone nada: se lee tan tranquila como las demás. */
+.settled {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.muted {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.done {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.ask {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+/* Lo que pasa **si se dice que sí**, a la vista antes de tocar nada (80). */
+.consequence {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.srOnly {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  width: 1px;
+  height: 1px;
+  white-space: nowrap;
+}

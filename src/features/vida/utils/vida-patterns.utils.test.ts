@@ -1,0 +1,583 @@
+import { describe, expect, it } from 'vitest'
+import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
+import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import type { VidaItem } from '@/features/vida/types/vida-item.types'
+import {
+  PATTERN_MIN_OCCURRENCES,
+  answerNoteFor,
+  bridgeAnswerNoteFor,
+  buildActivityPatterns,
+  isBridgeSilencedByAnswer,
+  isSuggestionSilenced,
+  suggestionReturnDate,
+  vidaPatternSuggestionId,
+  type PatternDayInput,
+  type VidaPatternSuggestion,
+} from '@/features/vida/utils/vida-patterns.utils'
+import { calculateEndTime } from '@/features/vida/utils/vida-time.utils'
+
+/**
+ * **Los patrones por actividad y la respuesta guardada** (FEAT-007, tajada 2):
+ * criterios 74–85.
+ *
+ * Todo con **reloj inyectado**: sin eso los tres momentos de la regla de las
+ * cuatro semanas (criterio 83) no se pueden probar. Aquí no hay React ni
+ * `localStorage`: las respuestas entran como datos.
+ */
+
+const DAY_HOURS = { startTime: '06:30', endTime: '23:00' }
+/** Lunes 21 de septiembre de 2026. Todo lo que se cuenta es anterior. */
+const TODAY = '2026-09-21'
+
+function item(overrides: Partial<VidaItem> & Pick<VidaItem, 'id' | 'activityId'>): VidaItem {
+  return {
+    userId: 1,
+    days: ['monday', 'wednesday', 'friday'],
+    startTime: '09:00',
+    durationMinutes: 45,
+    notes: null,
+    isActive: true,
+    orderIndex: 0,
+    createdAt: '2026-08-01T00:00:00.000Z',
+    updatedAt: '2026-08-01T00:00:00.000Z',
+    activity: { id: overrides.activityId, title: 'Organizar la casa', category: null },
+    ...overrides,
+  }
+}
+
+function block(
+  date: string,
+  activityId: string,
+  startTime: string,
+  durationMinutes: number,
+): ActivityDayPlanItem {
+  return {
+    id: `b-${activityId}-${date}`,
+    userId: 1,
+    activityId,
+    date,
+    startTime,
+    endTime: calculateEndTime(startTime, durationMinutes),
+    orderIndex: 0,
+    completedAt: null,
+    createdAt: `${date}T00:00:00.000Z`,
+    updatedAt: `${date}T00:00:00.000Z`,
+    activity: { id: activityId, title: 'Organizar la casa', category: null },
+  }
+}
+
+function session(
+  date: string,
+  activityId: string,
+  startTime: string,
+  durationMinutes: number,
+): ActivityFollowUp {
+  return {
+    id: `s-${activityId}-${date}`,
+    activityId,
+    date,
+    startTime,
+    durationMinutes,
+    endTime: calculateEndTime(startTime, durationMinutes),
+    endDate: date,
+    endDateTime: null,
+    notes: null,
+    activity: { id: activityId, title: 'Organizar la casa', category: null },
+  }
+}
+
+/** Un día planeado y, si se dice, vivido. */
+function day(
+  date: string,
+  planned: { activityId: string; startTime: string; durationMinutes: number },
+  real: { startTime: string; durationMinutes: number } | null,
+): PatternDayInput {
+  return {
+    date,
+    planItems: [block(date, planned.activityId, planned.startTime, planned.durationMinutes)],
+    followUps: real ? [session(date, planned.activityId, real.startTime, real.durationMinutes)] : [],
+  }
+}
+
+/** Cinco lunes/miércoles/viernes seguidos, todos iguales. */
+const FIVE_DATES = ['2026-09-07', '2026-09-09', '2026-09-11', '2026-09-14', '2026-09-16']
+
+function fiveDays(real: { startTime: string; durationMinutes: number } | null): PatternDayInput[] {
+  return FIVE_DATES.map((date) =>
+    day(date, { activityId: 'a1', startTime: '09:00', durationMinutes: 45 }, real),
+  )
+}
+
+function build(days: PatternDayInput[], items: VidaItem[]) {
+  return buildActivityPatterns({ days, items, dayHours: DAY_HOURS, today: TODAY })
+}
+
+describe('la tarjeta de una actividad (criterios 74, 75, 76 y 77)', () => {
+  it('dice la plantilla, lo que sueles hacer, la mini-fila y la fracción del pie', () => {
+    const { patterns } = build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+      item({ id: 'i1', activityId: 'a1' }),
+    ])
+
+    const card = patterns[0]!
+    expect(card.templateLabel).toBe('En tu plantilla: L X V · 9:00 · 45m')
+    expect(card.startLine).toMatchObject({ label: 'Sueles empezar', valueLabel: '9:06' })
+    expect(card.durationLine).toMatchObject({
+      label: 'Suele llevarte',
+      valueLabel: '1h 10',
+      offsetLabel: '+25 min',
+    })
+    // La cifra del pie va **en fracción**, nunca en porcentaje (criterio 74).
+    expect(card.followedLabel).toBe('se siguió 5 de 5 veces')
+    expect(card.footnote).toContain('se siguió 5 de 5 veces')
+    expect(card.footnote).not.toContain('%')
+  })
+
+  it('un día que no está en la plantilla o sin dato enseña «·», nunca un 0 (76)', () => {
+    const { patterns } = build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+      item({ id: 'i1', activityId: 'a1' }),
+    ])
+
+    const cells = patterns[0]!.weekdayCells
+    expect(cells.map((cell) => cell.day)).toEqual([
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ])
+    const empty = cells.filter((cell) => !cell.hasData)
+    expect(empty.map((cell) => cell.day)).toEqual(['tuesday', 'thursday', 'saturday', 'sunday'])
+    for (const cell of empty) {
+      expect(cell.offsetLabel).toBe('·')
+      expect(cell.offsetLabel).not.toBe('0')
+    }
+    expect(cells.find((cell) => cell.day === 'monday')?.offsetLabel).toBe('+25')
+  })
+
+  it('por debajo de cuatro apariciones no se pinta un promedio: «llevas 2 de 4» (75)', () => {
+    const { patterns, waiting } = build(
+      fiveDays({ startTime: '09:06', durationMinutes: 70 }).slice(0, 2),
+      [item({ id: 'i1', activityId: 'a1' })],
+    )
+
+    expect(patterns).toEqual([])
+    expect(waiting).toEqual([
+      expect.objectContaining({ itemId: 'i1', occurrences: 2, label: 'llevas 2 de 4' }),
+    ])
+    expect(PATTERN_MIN_OCCURRENCES).toBe(4)
+  })
+
+  it('una actividad que va como se planeó **no propone nada y lo dice** (77)', () => {
+    const { patterns } = build(fiveDays({ startTime: '09:03', durationMinutes: 44 }), [
+      item({ id: 'i1', activityId: 'a1' }),
+    ])
+
+    const card = patterns[0]!
+    expect(card.suggestion).toBeNull()
+    expect(card.settledLabel).toBe('Esto pasa como lo planeaste. Aquí no hay nada que proponer.')
+    expect(card.startLine?.offsetLabel).toBe('a su hora')
+    expect(card.durationLine?.offsetLabel).toBe('como lo diste')
+  })
+})
+
+describe('la pregunta, con el número dentro y dos salidas (criterios 78, 79, 80 y 81)', () => {
+  it('la duración: «Ponerlo en 1h 10» y un parche con **solo** ese campo', () => {
+    const { patterns } = build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+      item({ id: 'i1', activityId: 'a1' }),
+    ])
+
+    const suggestion = patterns[0]!.suggestion!
+    expect(suggestion.kind).toBe('duration')
+    expect(suggestion.affirmativeLabel).toBe('Ponerlo en 1h 10')
+    expect(suggestion.dismissLabel).toBe('Dejarlo')
+    expect(suggestion.ask).toBe('¿Le damos 1h 10 en tu plantilla?')
+    expect(suggestion.templatePatch).toEqual({ durationMinutes: 70 })
+    // La consecuencia se lee **antes** de tocar nada, y nombra los días (80).
+    expect(suggestion.consequence).toBe(
+      'En tu plantilla está 3 días (L X V): se cambia en todos. Los días que ya tienes armados se quedan como están.',
+    )
+  })
+
+  it('la hora: «Moverlo a las 19:30», redondeada al cuarto, y solo `startTime`', () => {
+    const days = FIVE_DATES.map((date) =>
+      day(
+        date,
+        { activityId: 'a1', startTime: '19:00', durationMinutes: 30 },
+        { startTime: '19:28', durationMinutes: 32 },
+      ),
+    )
+    const { patterns } = build(days, [
+      item({ id: 'i1', activityId: 'a1', startTime: '19:00', durationMinutes: 30 }),
+    ])
+
+    const suggestion = patterns[0]!.suggestion!
+    expect(suggestion.kind).toBe('start-time')
+    expect(suggestion.affirmativeLabel).toBe('Moverlo a las 19:30')
+    expect(suggestion.templatePatch).toEqual({ startTime: '19:30' })
+    expect(suggestion.offsetMinutes).toBe(28)
+    expect(suggestion.basis).toBe('19:00 planeado · 19:28 real')
+  })
+
+  it('un patrón de **un solo día** sale por «Quitar el martes», con los días que quedan (81)', () => {
+    const template = item({
+      id: 'i1',
+      activityId: 'a1',
+      days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+      startTime: '08:30',
+      durationMinutes: 30,
+    })
+    // Lunes, miércoles, jueves y viernes calcados; **los dos martes**, a las 9:40.
+    const plan = { activityId: 'a1', startTime: '08:30', durationMinutes: 30 }
+    const days = [
+      day('2026-09-07', plan, { startTime: '08:34', durationMinutes: 30 }),
+      day('2026-09-08', plan, { startTime: '09:40', durationMinutes: 30 }),
+      day('2026-09-09', plan, { startTime: '08:35', durationMinutes: 30 }),
+      day('2026-09-10', plan, { startTime: '08:33', durationMinutes: 30 }),
+      day('2026-09-14', plan, { startTime: '08:36', durationMinutes: 30 }),
+      day('2026-09-15', plan, { startTime: '09:40', durationMinutes: 30 }),
+    ]
+
+    const { patterns } = build(days, [template])
+    const card = patterns[0]!
+    const suggestion = card.suggestion!
+
+    expect(suggestion.kind).toBe('drop-day')
+    expect(suggestion.dayOfWeek).toBe('tuesday')
+    expect(suggestion.affirmativeLabel).toBe('Quitar el martes')
+    // **Nunca un `vidaItemDelete`**: es un `update` con los días que quedan.
+    expect(suggestion.templatePatch).toEqual({
+      days: ['monday', 'wednesday', 'thursday', 'friday'],
+    })
+    expect(suggestion.ask).toContain('Tu día empieza más tarde ese día')
+    // Y el día del que habla se lee en la tarjeta, no solo en el botón.
+    expect(card.dayLine).toMatchObject({ label: 'Los martes', valueLabel: '9:40' })
+  })
+
+  it('si al quitar el día solo quedara uno, **no se ofrece** nada (81)', () => {
+    const template = item({
+      id: 'i1',
+      activityId: 'a1',
+      days: ['monday', 'tuesday'],
+      startTime: '08:30',
+      durationMinutes: 30,
+    })
+    const plan = { activityId: 'a1', startTime: '08:30', durationMinutes: 30 }
+    const days = [
+      day('2026-09-07', plan, { startTime: '08:33', durationMinutes: 30 }),
+      day('2026-09-08', plan, { startTime: '09:40', durationMinutes: 30 }),
+      day('2026-09-14', plan, { startTime: '08:35', durationMinutes: 30 }),
+      day('2026-09-15', plan, { startTime: '09:41', durationMinutes: 30 }),
+    ]
+
+    const card = build(days, [template]).patterns[0]!
+    expect(card.suggestion).toBeNull()
+    // El dato **sí** se enseña: lo que no hay es pregunta.
+    expect(card.dayLine).toMatchObject({ label: 'Los martes' })
+    // Y no termina muda: dice por qué no propone nada.
+    expect(card.closingLabel).toContain('Los martes van por su cuenta')
+    expect(card.settledLabel).toBeNull()
+  })
+
+  it('ninguna sugerencia propone lo que el ítem ya tiene', () => {
+    const days = FIVE_DATES.map((date) =>
+      day(
+        date,
+        { activityId: 'a1', startTime: '09:00', durationMinutes: 45 },
+        { startTime: '09:00', durationMinutes: 45 },
+      ),
+    )
+    expect(build(days, [item({ id: 'i1', activityId: 'a1' })]).patterns[0]!.suggestion).toBeNull()
+  })
+})
+
+describe('lo que no propone nada (criterio 85) y lo que no se cuenta', () => {
+  it('un ítem **desactivado** enseña su dato y no pregunta', () => {
+    const { patterns } = build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+      item({ id: 'i1', activityId: 'a1', isActive: false }),
+    ])
+
+    expect(patterns[0]!.suggestion).toBeNull()
+    expect(patterns[0]!.mutedReason).toContain('desactivada en tu plantilla')
+    expect(patterns[0]!.durationLine?.valueLabel).toBe('1h 10')
+  })
+
+  it('una actividad **archivada** tampoco pregunta', () => {
+    const { patterns } = build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+      item({
+        id: 'i1',
+        activityId: 'a1',
+        activity: { id: 'a1', title: 'Organizar la casa', status: 'cancelled', category: null },
+      }),
+    ])
+
+    expect(patterns[0]!.suggestion).toBeNull()
+    expect(patterns[0]!.mutedReason).toContain('archivada')
+  })
+
+  it('los días en vuelo, los caídos y los que no han cerrado **no cuentan**', () => {
+    const days = [
+      ...fiveDays({ startTime: '09:06', durationMinutes: 70 }),
+      { ...day('2026-09-18', { activityId: 'a1', startTime: '09:00', durationMinutes: 45 }, null), isPending: true },
+      { ...day('2026-09-19', { activityId: 'a1', startTime: '09:00', durationMinutes: 45 }, null), isError: true },
+      // Hoy y mañana: ni uno ni otro han cerrado.
+      day(TODAY, { activityId: 'a1', startTime: '09:00', durationMinutes: 45 }, null),
+      day('2026-09-22', { activityId: 'a1', startTime: '09:00', durationMinutes: 45 }, null),
+    ]
+
+    const card = build(days, [item({ id: 'i1', activityId: 'a1' })]).patterns[0]!
+    expect(card.occurrences).toBe(5)
+    expect(card.followedLabel).toBe('se siguió 5 de 5 veces')
+  })
+})
+
+describe('«Dejarlo» y la regla de las cuatro semanas (D1, criterio 83)', () => {
+  const suggestion: VidaPatternSuggestion = {
+    id: vidaPatternSuggestionId('duration', 'i1'),
+    kind: 'duration',
+    itemId: 'i1',
+    activityId: 'a1',
+    title: 'Organizar la casa',
+    icon: 'circle',
+    color: null,
+    offsetMinutes: 25,
+    dayOfWeek: null,
+    basis: '',
+    ask: '',
+    consequence: '',
+    affirmativeLabel: '',
+    dismissLabel: 'Dejarlo',
+    templatePatch: { durationMinutes: 70 },
+    dayPatch: { durationMinutes: 70 },
+  }
+  const answer = { answeredOn: '2026-09-21', offsetMinutes: 25, dayOfWeek: null }
+
+  it('la identidad de la pregunta **no lleva el número**', () => {
+    expect(suggestion.id).toBe('duration|i1')
+    expect(vidaPatternSuggestionId('drop-day', 'i1', 'tuesday')).toBe('drop-day|i1|tuesday')
+  })
+
+  it('al día siguiente **no vuelve**', () => {
+    expect(isSuggestionSilenced({ suggestion, answer, today: '2026-09-22' })).toBe(true)
+  })
+
+  it('a las cuatro semanas **vuelve**', () => {
+    expect(suggestionReturnDate(answer)).toBe('2026-10-19')
+    expect(isSuggestionSilenced({ suggestion, answer, today: '2026-10-18' })).toBe(true)
+    expect(isSuggestionSilenced({ suggestion, answer, today: '2026-10-19' })).toBe(false)
+  })
+
+  it('con el número movido **10 min o más**, vuelve antes de plazo', () => {
+    const moved = { ...suggestion, offsetMinutes: 70 }
+    expect(isSuggestionSilenced({ suggestion: moved, answer, today: '2026-09-22' })).toBe(false)
+    const nudged = { ...suggestion, offsetMinutes: 34 }
+    expect(isSuggestionSilenced({ suggestion: nudged, answer, today: '2026-09-22' })).toBe(true)
+  })
+
+  it('si cambia **el día** del que habla, vuelve', () => {
+    const otherDay = { ...suggestion, kind: 'drop-day' as const, dayOfWeek: 'tuesday' as const }
+    expect(isSuggestionSilenced({ suggestion: otherDay, answer, today: '2026-09-22' })).toBe(false)
+  })
+
+  it('la fecha de vuelta se puede decir **desde el día en que se contesta** (99)', () => {
+    expect(answerNoteFor(answer)).toBe(
+      'Lo dejaste el 21 de septiembre. Vuelve el 19 de octubre si el patrón sigue igual.',
+    )
+  })
+
+  it('el puente de FEAT-006 y esta sugerencia **no preguntan dos veces** (punto 5 del plan)', () => {
+    const start: VidaPatternSuggestion = { ...suggestion, kind: 'start-time', id: 'start-time|i1' }
+    expect(
+      isSuggestionSilenced({
+        suggestion: start,
+        answer: null,
+        today: '2026-09-22',
+        dismissedBridgeItemIds: ['i1'],
+      }),
+    ).toBe(true)
+    // Y solo calla a la de **hora**: la de duración es otra pregunta.
+    expect(
+      isSuggestionSilenced({
+        suggestion,
+        answer: null,
+        today: '2026-09-22',
+        dismissedBridgeItemIds: ['i1'],
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('planeada y nunca registrada: se dice, no se finge (74, 77)', () => {
+  it('las dos líneas están, y dicen **«sin dato»** en vez de un cero', () => {
+    const { patterns } = build(fiveDays(null), [item({ id: 'i1', activityId: 'a1' })])
+
+    const card = patterns[0]!
+    expect(card.followedLabel).toBe('se siguió 0 de 5 veces')
+    // Criterio 74: **todas** las tarjetas llevan estas dos líneas.
+    expect(card.startLine).toEqual({
+      label: 'Sueles empezar',
+      valueLabel: '—',
+      offsetLabel: 'sin dato',
+      isSettled: false,
+    })
+    expect(card.durationLine).toEqual({
+      label: 'Suele llevarte',
+      valueLabel: '—',
+      offsetLabel: 'sin dato',
+      isSettled: false,
+    })
+    for (const cell of card.weekdayCells) expect(cell.offsetLabel).toBe('·')
+  })
+
+  it('**no** dice que pasa como se planeó: no hay patrón del que hablar (77)', () => {
+    const card = build(fiveDays(null), [item({ id: 'i1', activityId: 'a1' })]).patterns[0]!
+
+    expect(card.settledLabel).toBeNull()
+    expect(card.suggestion).toBeNull()
+    expect(card.closingLabel).toBe(
+      'De estas 5 veces no hay ninguna registrada: sin dato no se puede decir cómo te sale.',
+    )
+  })
+
+  it('con dato de hora pero **ninguna duración**, tampoco se afirma que va clavado', () => {
+    // Sesiones abiertas: se sabe a qué hora empezó y no cuánto llevó. Aquí sí
+    // hay patrón de hora —y va a su hora—, así que la tarjeta confirma; lo que
+    // no puede pasar es que la duración inexistente cuente como desfase cero.
+    const days = FIVE_DATES.map((date) => ({
+      ...day(date, { activityId: 'a1', startTime: '09:00', durationMinutes: 45 }, null),
+      followUps: [
+        {
+          id: `open-${date}`,
+          activityId: 'a1',
+          date,
+          startTime: '09:04',
+          durationMinutes: null,
+          endTime: null,
+          endDate: null,
+          endDateTime: null,
+          notes: null,
+        },
+      ],
+    }))
+
+    const card = build(days, [item({ id: 'i1', activityId: 'a1' })]).patterns[0]!
+    expect(card.startLine.valueLabel).toBe('9:04')
+    expect(card.durationLine.offsetLabel).not.toBe('sin dato')
+  })
+
+  it('**ninguna tarjeta termina muda**: siempre hay pregunta, confirmación o porqué', () => {
+    const casos = [
+      // Sin una sola sesión.
+      build(fiveDays(null), [item({ id: 'i1', activityId: 'a1' })]),
+      // Todo dentro de tolerancia.
+      build(fiveDays({ startTime: '09:03', durationMinutes: 44 }), [
+        item({ id: 'i1', activityId: 'a1' }),
+      ]),
+      // Con algo que proponer.
+      build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+        item({ id: 'i1', activityId: 'a1' }),
+      ]),
+      // Desactivada.
+      build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+        item({ id: 'i1', activityId: 'a1', isActive: false }),
+      ]),
+      // Sin hora en la plantilla.
+      build(fiveDays({ startTime: '09:40', durationMinutes: 45 }), [
+        item({ id: 'i1', activityId: 'a1', startTime: null }),
+      ]),
+    ]
+
+    for (const { patterns } of casos) {
+      for (const card of patterns) {
+        const final =
+          card.suggestion?.ask ?? card.settledLabel ?? card.closingLabel ?? card.mutedReason
+        expect(final).toBeTruthy()
+      }
+    }
+  })
+})
+
+describe('la dirección puente → patrón (D1 en las dos pantallas)', () => {
+  const answer = { answeredOn: '2026-09-21', offsetMinutes: 28, dayOfWeek: null }
+
+  it('dentro de las cuatro semanas y con el mismo número, el puente calla', () => {
+    expect(isBridgeSilencedByAnswer({ answer, offsetMinutes: 30, today: '2026-09-22' })).toBe(true)
+  })
+
+  it('pasadas las cuatro semanas, vuelve', () => {
+    expect(isBridgeSilencedByAnswer({ answer, offsetMinutes: 30, today: '2026-10-19' })).toBe(false)
+  })
+
+  it('con el desfase movido 10 min o más, **vuelve antes de plazo** igual que allí', () => {
+    expect(isBridgeSilencedByAnswer({ answer, offsetMinutes: 75, today: '2026-09-22' })).toBe(false)
+  })
+
+  it('sin respuesta no calla nada', () => {
+    expect(isBridgeSilencedByAnswer({ answer: null, offsetMinutes: 30, today: '2026-09-22' })).toBe(
+      false,
+    )
+  })
+
+  it('la respuesta dada en el puente **también se puede contar**, con su vuelta', () => {
+    expect(bridgeAnswerNoteFor('2026-09-21')).toBe(
+      'Lo dejaste como estaba en la semana del 21 de septiembre. Vuelve el 28 de septiembre si el patrón sigue igual.',
+    )
+  })
+})
+
+describe('el orden y el vocabulario', () => {
+  it('primero las que traen pregunta, y el desempate es estable', () => {
+    const settled = FIVE_DATES.map((date) =>
+      day(
+        date,
+        { activityId: 'a2', startTime: '07:00', durationMinutes: 15 },
+        { startTime: '07:03', durationMinutes: 14 },
+      ),
+    )
+    const loud = fiveDays({ startTime: '09:06', durationMinutes: 70 })
+    const days = settled.map((entry, index) => ({
+      date: entry.date,
+      planItems: [...entry.planItems, ...(loud[index]?.planItems ?? [])],
+      followUps: [...entry.followUps, ...(loud[index]?.followUps ?? [])],
+    }))
+
+    const { patterns, withSuggestion } = build(days, [
+      item({
+        id: 'i2',
+        activityId: 'a2',
+        startTime: '07:00',
+        durationMinutes: 15,
+        days: ['monday', 'wednesday', 'friday'],
+      }),
+      item({ id: 'i1', activityId: 'a1' }),
+    ])
+
+    expect(patterns.map((pattern) => pattern.itemId)).toEqual(['i1', 'i2'])
+    expect(withSuggestion).toBe(1)
+  })
+
+  it('ni una palabra de reproche en lo que se compone aquí (73)', () => {
+    const { patterns } = build(fiveDays({ startTime: '09:06', durationMinutes: 70 }), [
+      item({ id: 'i1', activityId: 'a1' }),
+    ])
+    const card = patterns[0]!
+    const texto = [
+      card.templateLabel,
+      card.footnote,
+      card.startLine?.offsetLabel,
+      card.durationLine?.offsetLabel,
+      card.suggestion?.ask,
+      card.suggestion?.consequence,
+      card.suggestion?.affirmativeLabel,
+      card.suggestion?.dismissLabel,
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    for (const palabra of ['desperdicio', 'fallaste', 'incumpl', 'deberías', 'perdiste']) {
+      expect(texto).not.toContain(palabra)
+    }
+    expect(texto).not.toMatch(/\bmal\b/)
+  })
+})

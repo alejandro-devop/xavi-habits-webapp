@@ -15,10 +15,98 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-004 | delivered | 4/4 | features/vida | Hoy — vivir el día: lo real encima de lo planeado, con cronómetro y registro | 2026-09-20 |
 | FEAT-005 | delivered | 4/4 | features/vida | La plantilla Vida — tu semana tipo, con hora y duración por ítem | 2026-09-20 |
 | FEAT-006 | delivered | 4/4 | features/vida | Revisar el día — plan frente a real, la historia del día y el puente a tu plantilla | 2026-09-20 |
-| FEAT-007 | building | 1/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
+| FEAT-007 | building | 2/4 | features/vida | Lo que se repite — adherencia, patrones por actividad y avisos con tus propios datos | 2026-09-21 |
 
 The **Slice** column says which one it's on: `2/4` is "the second of four". A
 feature in `building` at `3/4` has two accepted and one in progress.
+
+**FEAT-007 `building` 2/4** (2026-09-21, revisor). **Tajada 2 aceptada tras la
+corrección.** Lo que la devolvía está arreglado de raíz: fuera los `?? 0` de
+`isSettled`, «sin dato» deja de ser «sin desfase», las líneas «Sueles empezar» y
+«Suele llevarte» se pintan **siempre** (con «—/sin dato» cuando no hay ninguna
+sesión) y esa tarjeta cierra con «De estas 5 veces no hay ninguna registrada…»
+en vez de con la frase del criterio 77. **Criterios 74 y 77 cumplidos**,
+comprobado con probe propio sobre el `utils` y con el test de la página sobre el
+DOM. **Ninguna rama termina muda**: `closingLabelFor` es una función total y la
+única rama que añade el hook —la sugerencia callada— siempre trae nota, también
+cuando el silencio viene del puente; probé ocho combinaciones fuera de la matriz
+del constructor y todas cierran. **El puente de FEAT-006 no sufre**: contra
+`main` el código nuevo **solo añade condiciones que ocultan**, el `58` se evalúa
+**antes** y sin tocar, y `buildTemplateBridge` sigue fuera del diff; el «puede
+volver a aparecer» es contra la entrega devuelta, no contra lo entregado, y es
+la lectura correcta de D1. Cerrados también los hallazgos de «Contestadas» con
+`source: 'pattern' | 'bridge'` (la respuesta del puente ya se ve, con su fecha
+de vuelta) y de `useVidaItemsQuery(includeInactive, enabled = true)` —aditivo,
+las **seis** llamadas existentes sin tocar y ninguna pasaba segundo argumento—.
+Línea base corrida entera por el revisor: typecheck limpio, lint 14/0, **2
+fallos de 1526**, build exit 0 con el chunk en **1.080,83 kB** (+1,36,
+justificado, ninguno de iconos). **Nadie ha visto esta tarjeta pintada**: ni el
+constructor ni el revisor abrieron el navegador en la corrección; la evidencia
+es DOM y hoja de estilos. Seis hallazgos abiertos en la sección 4, ninguno
+bloqueante; los más vivos: el desfase del puente y el de la sugerencia son
+magnitudes distintas comparadas con el margen de diez, «Contestadas» de la
+tajada 4 debe mirar `source` porque `answer` puede ser `null`, y
+**`ENVIRONMENT.md` va tres tajadas por detrás** (dice 1479 tests y 1.065,85 kB).
+Pendiente del usuario: 105, 106 y 375 px/oscuro dentro de `/app/*` —con un paso
+nuevo y fácil: **planear algo y no registrarlo**—. Siguiente: el
+`feature-builder`, tajada 3.
+
+**FEAT-007 `in-review` 2/4** (2026-09-21, constructor, **corrección**).
+**Arreglado lo que devolvía la tajada**: «sin dato» ya no se lee como «sin
+desfase». Una actividad planeada varias veces y **nunca registrada** pinta sus
+dos líneas con «—/sin dato» —el criterio 74 vuelve a cumplirse en todas las
+tarjetas— y termina diciendo que no hay ninguna registrada, **no** la frase del
+criterio 77, que queda reservada a un patrón dentro de tolerancia. Campo nuevo
+`closingLabel` para que **ninguna rama termine muda** (incluye el hallazgo del
+día suelto). De los seis hallazgos van resueltos los cuatro pedidos: `enabled`
+honrado en `useVidaItemsQuery` (parámetro aditivo), la dirección puente →
+patrón **con test y con la excepción de D1**, «Contestadas» que ya muestra la
+respuesta dada en el puente, y el umbral del día suelto escrito como decisión
+del constructor con su razón. Línea base: typecheck limpio, lint 14/0, **2
+fallos de 1526** (+13 tests), build exit 0 con el chunk en **1.080,83 kB**.
+Detalle en la sección 3, bajo «Tajada 2 · corrección tras la devolución».
+
+**FEAT-007 `returned` 2/4** (2026-09-21, revisor). **Tajada 2 devuelta**, por
+una sola cosa y concreta: una actividad **planeada cuatro veces o más y nunca
+registrada** pinta «Esto pasa como lo planeaste. Aquí no hay nada que proponer.»
+justo debajo de «se siguió 0 de 5 veces», y sin las líneas «Sueles empezar» y
+«Suele llevarte» que el criterio 74 exige en todas las tarjetas: los `?? 0` de
+`isSettled` (`vida-patterns.utils.ts:629`) convierten «sin dato» en «sin
+desfase». **Criterios 74 y 77 no cumplidos**; comprobado con un test temporal
+sobre el `utils`, borrado después. **Todo lo demás se cumple y lo he verificado
+yo**: la salida afirmativa manda **un solo `vidaItemUpdate`** con `{id}` + un
+campo y **cero** mutaciones del plan (espías de las cuatro), «Dejarlo» no llama
+a nadie y **no estrena clave** —un `deviceNotes` de FEAT-006 sembrado a mano
+rehidrata sin perder nada y deja `patternAnswers` en `{}`—, la regla de las
+cuatro semanas de D1 está en una función pura con sus tres ramas probadas y la
+fecha de vuelta a la vista desde que se contesta, y `buildTemplateBridge` **no
+se tocó** (no está en el diff): de los criterios 54-59 de FEAT-006 solo cambia
+el contorno del 58, en la dirección de callar, y el test de la página **borra 0
+líneas**. Línea base corrida entera por el revisor y no peor: typecheck limpio,
+lint 14/0, **2 fallos de 1513** (los de `SearchSelect`), build exit 0 con el
+chunk en **1.079,47 kB** (+13,62 kB, justificados: 1.400 líneas propias y
+`app-icons` sin tocar). Ocho hallazgos en la sección 4; los que más pesan: la
+tarjeta del día suelto **también** se queda sin frase de cierre, la cabecera de
+`useVidaPatterns` promete un `enabled` que la consulta de plantilla no respeta
+(muerde en las tajadas 3 y 4), la dirección puente → patrón **no tiene test**, y
+«Contestadas» (criterio 99) no verá los «Dejarlo» dados en el puente. Pendiente
+del usuario, como siempre: 105, 106 y 375 px/oscuro dentro de `/app/*`.
+Siguiente: el `feature-builder`, tajada 2.
+
+**FEAT-007 `in-review` 2/4** (2026-09-21, constructor). **Tajada 2 construida
+y verificada, sin commitear.** «Lo que se repite» ya trae **una tarjeta por
+actividad** con su pregunta de dos salidas —o con la línea que dice que no hay
+nada que proponer—, y aquí nace **el modelo de sugerencia con respuesta
+guardada** (`utils/vida-patterns.utils.ts` + `hooks/useVidaPatterns.ts`) que
+consumirán Hoy y la hoja de la plantilla sin volver a decidir nada. La salida
+afirmativa manda **un solo `vidaItemUpdate`** y **cero** mutaciones del plan;
+«Dejarlo» se guarda en `xavi.vida.deviceNotes` —**ninguna clave nueva**— con la
+regla de las cuatro semanas de D1 y su fecha de vuelta a la vista. Cruzado con
+el puente de FEAT-006 en las dos direcciones. Línea base no peor: typecheck
+limpio, lint 14/0, **2 fallos de 1513** (+34 tests), build exit 0 con el chunk
+en **1.079,47 kB** (+13,6 kB, ninguno de iconos). Criterios 74-86, 101 y 104
+cerrados; 105, 106 y el 86 dentro de `/app/*`, del usuario. Detalle en la
+sección 3.
 
 **FEAT-007 `building` 1/4** (2026-09-21, revisor). **Tajada 1 aceptada.** Los
 catorce criterios (64–73 y 101–104) comprobados uno a uno contra la sección 1,

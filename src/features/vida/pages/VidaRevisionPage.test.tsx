@@ -386,6 +386,9 @@ beforeEach(() => {
     blockNotes: {},
     dismissedNoData: [],
     dismissedBridges: [],
+    // FEAT-007: sin esto, un «Dejarlo» de un test calla la pregunta del
+    // siguiente y el fallo parece de otra cosa.
+    patternAnswers: {},
   })
   templateItems = []
   bridgeSessions = []
@@ -1130,6 +1133,39 @@ describe('el puente a la plantilla (criterios 54, 57, 58 y 59)', () => {
     expect(screen.queryByText('Lo que esto sugiere para tu plantilla')).not.toBeInTheDocument()
   })
 
+  it('contestada ya en «Lo que se repite», **el puente no la vuelve a hacer** (83)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [LEER_ITEM]
+    bridgeData()
+    // El puente propone 21:30 → 20:30, es decir −60 min. La respuesta guardada
+    // hablaba de −55: **es la misma pregunta**, y ya está contestada.
+    useVidaDeviceNotesStore.setState({
+      patternAnswers: {
+        'start-time|i1': { answeredOn: '2026-09-19', offsetMinutes: -55, dayOfWeek: null },
+      },
+    })
+    renderPage()
+    await openWeek(user)
+
+    expect(screen.queryByText('Lo que esto sugiere para tu plantilla')).not.toBeInTheDocument()
+  })
+
+  it('…pero si el desfase se movió 10 min o más, **el puente vuelve** (D1)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [LEER_ITEM]
+    bridgeData()
+    // Contestó a un −5; ahora la propuesta es −60: pregunta nueva.
+    useVidaDeviceNotesStore.setState({
+      patternAnswers: {
+        'start-time|i1': { answeredOn: '2026-09-19', offsetMinutes: -5, dayOfWeek: null },
+      },
+    })
+    renderPage()
+    await openWeek(user)
+
+    expect(screen.getByText('Lo que esto sugiere para tu plantilla')).toBeInTheDocument()
+  })
+
   it('ni el puente ni la semana traen un botón con palabra de culpa', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     templateItems = [LEER_ITEM]
@@ -1333,5 +1369,233 @@ describe('Revisión · Lo que se repite (FEAT-007, tajada 1)', () => {
       expect(texto).not.toContain(palabra)
     }
     expect(texto).not.toMatch(/\bmal\b/)
+  })
+})
+
+/**
+ * **Los patrones por actividad y sus dos salidas** (FEAT-007, tajada 2):
+ * criterios 74, 77, 78, 79, 80, 82, 83 y el trozo de 72 que la tajada 1 no
+ * pudo cobrar (el nombre largo).
+ */
+describe('Revisión · los patrones por actividad (FEAT-007, tajada 2)', () => {
+  /** Lunes, miércoles y viernes de las dos últimas semanas cerradas. */
+  const CASA_DATES = ['2026-09-07', '2026-09-09', '2026-09-11', '2026-09-14', '2026-09-16']
+
+  function casaItem(overrides: Partial<VidaItem> = {}): VidaItem {
+    return {
+      id: 'i9',
+      userId: 1,
+      activityId: 'a9',
+      days: ['monday', 'wednesday', 'friday'],
+      startTime: '09:00',
+      durationMinutes: 45,
+      notes: null,
+      isActive: true,
+      orderIndex: 0,
+      createdAt: '2026-08-01T00:00:00.000Z',
+      updatedAt: '2026-08-01T00:00:00.000Z',
+      activity: { id: 'a9', title: 'Organizar la casa', category: null },
+      ...overrides,
+    }
+  }
+
+  /** Cinco veces planeada a las 9:00 durante 45 min, y vivida como se diga. */
+  function casaDays(realStart: string, realMinutes: number): HistoryDay[] {
+    return CASA_DATES.map((date) => ({
+      date,
+      planItems: [blockOn(date, 'bc', 'a9', 'Organizar la casa', '09:00', '09:45')],
+      followUps: [sessionOn(date, 'sc', 'a9', 'Organizar la casa', realStart, realMinutes)],
+    }))
+  }
+
+  async function openPatterns(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('tab', { name: 'Lo que se repite' }))
+  }
+
+  it('la tarjeta dice la plantilla, lo que sueles hacer y la fracción del pie (74)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.getByText('Organizar la casa')).toBeInTheDocument()
+    expect(screen.getByText('En tu plantilla: L X V · 9:00 · 45m')).toBeInTheDocument()
+    expect(screen.getByText('Sueles empezar')).toBeInTheDocument()
+    expect(screen.getByText('Suele llevarte')).toBeInTheDocument()
+    expect(screen.getByText('1h 10')).toBeInTheDocument()
+    expect(container.textContent).toContain('se siguió 5 de 5 veces')
+    // La mini-fila: siete casillas, y las que no están en la plantilla, «·».
+    expect(screen.getAllByText('·').length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('la pregunta lleva el número dentro y **dos salidas**, con la consecuencia antes (78, 80)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+    renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.getByText('¿Le damos 1h 10 en tu plantilla?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ponerlo en 1h 10' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dejarlo' })).toBeInTheDocument()
+    expect(
+      screen.getByText(/En tu plantilla está 3 días \(L X V\): se cambia en todos/),
+    ).toBeInTheDocument()
+  })
+
+  it('la salida afirmativa manda **un** `vidaItemUpdate` y **cero** mutaciones del plan (79)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+    renderPage()
+
+    await openPatterns(user)
+    await user.click(screen.getByRole('button', { name: 'Ponerlo en 1h 10' }))
+
+    expect(updateVidaItem).toHaveBeenCalledTimes(1)
+    expect(updateVidaItem.mock.calls[0]![0]).toEqual({ id: 'i9', durationMinutes: 70 })
+    // **Los días ya armados no se mueven**: ni una de las cuatro del plan.
+    expect(planMutationsCalled()).toBe(0)
+    expect(createFollowUp).not.toHaveBeenCalled()
+  })
+
+  it('«Dejarlo» no llama a nadie y deja a la vista **cuándo vuelve** (82, 83)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+    renderPage()
+
+    await openPatterns(user)
+    await user.click(screen.getByRole('button', { name: 'Dejarlo' }))
+
+    expect(updateVidaItem).not.toHaveBeenCalled()
+    expect(planMutationsCalled()).toBe(0)
+    expect(screen.queryByRole('button', { name: 'Ponerlo en 1h 10' })).not.toBeInTheDocument()
+    expect(screen.getByText(/Vuelve el 17 de octubre si el patrón sigue igual/)).toBeInTheDocument()
+    // **Ninguna clave nueva de `localStorage`**: de Vida solo la del aparato,
+    // la que ya existía desde FEAT-004 (`xavi-theme` es del tema y es de antes).
+    expect(Object.keys(localStorage).filter((key) => key.includes('vida'))).toEqual([
+      'xavi.vida.deviceNotes',
+    ])
+  })
+
+  it('una actividad que va como se planeó **no pinta ningún botón** y lo dice (77)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:03', 44)
+    renderPage()
+
+    await openPatterns(user)
+
+    expect(
+      screen.getByText('Esto pasa como lo planeaste. Aquí no hay nada que proponer.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Ponerlo en/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Dejarlo' })).not.toBeInTheDocument()
+  })
+
+  it('un nombre de 60 caracteres se pinta entero y sin `nowrap` (72)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const nombre = 'Organizar la casa entera, incluido el trastero del fondo'.padEnd(60, '·')
+    templateItems = [
+      casaItem({ activity: { id: 'a9', title: nombre, category: null } }),
+    ]
+    historyDays = casaDays('09:06', 70)
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    expect(nombre).toHaveLength(60)
+    expect(screen.getByText(nombre)).toBeInTheDocument()
+    // Nada de la tarjeta fuerza una línea que no se pueda partir.
+    expect(container.innerHTML).not.toContain('white-space: nowrap')
+  })
+
+  it('con las tarjetas puestas **sigue sin haber una palabra de reproche** (73)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70)
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    const texto = (container.textContent ?? '').toLowerCase()
+    for (const palabra of [
+      'desperdicio',
+      'fallaste',
+      'incumpliste',
+      'deberías',
+      'perdiste',
+      'racha',
+      'cumplimiento',
+    ]) {
+      expect(texto).not.toContain(palabra)
+    }
+    expect(texto).not.toMatch(/\bmal\b/)
+    // Y ni un porcentaje suelto en las tarjetas: todo va en fracción (67).
+    expect(texto).toContain('se siguió 5 de 5 veces')
+  })
+
+  it('con pocos datos se dice **lo que ya se sabe** y debajo lo que llega después (84)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    // Una sola semana computable: es el marco F.
+    historyDays = casaDays('09:06', 70)
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    const texto = container.textContent ?? ''
+    expect(screen.getByRole('heading', { name: 'Lo que ya se sabe' })).toBeInTheDocument()
+    // La tarjeta entera, **con sus dos salidas**, antes de lo que falta.
+    expect(texto.indexOf('Organizar la casa')).toBeLessThan(texto.indexOf('Lo que llega después'))
+    expect(screen.getByRole('button', { name: 'Ponerlo en 1h 10' })).toBeInTheDocument()
+    expect(screen.getByText(/A partir de 2 semanas completas/)).toBeInTheDocument()
+    expect(texto).toContain('sale de los días que vives')
+  })
+
+  it('planeada 5 veces y **nunca registrada**: se dice, no se finge que va clavado (74, 77)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    // Cinco veces en el plan y **ni una sesión**: el caso más común del módulo.
+    historyDays = CASA_DATES.map((date) => ({
+      date,
+      planItems: [blockOn(date, 'bc', 'a9', 'Organizar la casa', '09:00', '09:45')],
+      followUps: [],
+    }))
+    const { container } = renderPage()
+
+    await openPatterns(user)
+
+    const texto = container.textContent ?? ''
+    expect(texto).toContain('se siguió 0 de 5 veces')
+    // Las dos líneas que el criterio 74 pide en **todas** las tarjetas.
+    expect(screen.getByText('Sueles empezar')).toBeInTheDocument()
+    expect(screen.getByText('Suele llevarte')).toBeInTheDocument()
+    expect(screen.getAllByText('sin dato').length).toBe(2)
+    // Y **no** la frase del criterio 77, que habla de un patrón que aquí no hay.
+    expect(texto).not.toContain('Esto pasa como lo planeaste')
+    expect(texto).toContain('De estas 5 veces no hay ninguna registrada')
+    expect(screen.queryByRole('button', { name: /Ponerlo en/ })).not.toBeInTheDocument()
+    // Sigue sin haber reproche: «sin dato» es el pasado que no se sabe.
+    const bajo = texto.toLowerCase()
+    for (const palabra of ['fallaste', 'incumpl', 'deberías', 'perdiste', 'desperdicio']) {
+      expect(bajo).not.toContain(palabra)
+    }
+  })
+
+  it('por debajo de cuatro apariciones se dice cuántas lleva y se espera (75)', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    templateItems = [casaItem()]
+    historyDays = casaDays('09:06', 70).slice(0, 2)
+    renderPage()
+
+    await openPatterns(user)
+
+    expect(screen.getByText('llevas 2 de 4')).toBeInTheDocument()
+    expect(screen.queryByText('1h 10')).not.toBeInTheDocument()
   })
 })

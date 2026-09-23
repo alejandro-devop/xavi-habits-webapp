@@ -28,9 +28,18 @@
   padding: 0.55rem 0.6rem 0.55rem 0.7rem;
   border: 1px solid color-mix(in srgb, var(--vida-category-color, var(--color-primary)) 35%, var(--color-glass-border));
   border-radius: 1.1rem;
-  background: var(--aura-glass-1, var(--color-surface));
+  /* FEAT-020 — el vidrio tiene que leerse SIN desenfoque: Chrome de Android
+     declara soportar `backdrop-filter` y luego no lo pinta, asi que `@supports`
+     no sirve de puerta. A 92% el texto que pasa por debajo queda en 1,18:1
+     (claro) y 1,20:1 (oscuro): un fantasma, no texto. El desenfoque se queda
+     encima como mejora donde el navegador si lo pinta. */
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  /* Intento de que Chrome de Android vuelva a pintar el desenfoque: capa propia
+     en EL PROPIO elemento (jamas en un ancestro, que lo anularia). Inocuo donde
+     ya funciona. Por confirmar en un Android real. */
+  will-change: backdrop-filter;
   box-shadow: var(--shadow-lg, var(--shadow-md));
   pointer-events: auto;
 }

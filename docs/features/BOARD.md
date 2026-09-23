@@ -28,6 +28,31 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
+| FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
+
+**FEAT-020 `delivered` 1/1** (2026-09-23, revisor). **Tajada única aceptada.**
+Medí yo las cuatro superficies (`AppLayout .bar`, `VidaSessionBar .bar`, `Toast`,
+`RetryNotice`) en los cuatro contextos de tema, inyectando un medidor en el 5173
+del usuario —**vivo, no se tocó**— y leyendo el `color-mix` ya resuelto por
+Chrome: con el desenfoque **apagado**, la fuga del texto de debajo cae a **1,18**
+en claro y **1,20** en oscuro en las dos barras (criterios 591 y 592), desde
+**2,34** y **14,65**. El **92 % no es un gusto: es el mínimo que cumple el 591**
+—a 90 % la fuga oscura es 1,275 y el umbral es 1,25—, y a 92 % el tinte del
+lienzo sobre la barra es ΔE 2,8 / 5,7: **un panel casi sólido**, con el vidrio
+sostenido por borde y sombra (594 cumplido, y mirado). El **593 se acepta como
+deuda declarada**: el atenuado de Aura claro son **2,49:1** por culpa del token
+`--color-text-muted`, no llegaba antes y el `Drawer` intacto está peor (2,39);
+el criterio, como está escrito, es incumplible en Aura claro. Puertas corridas
+enteras: typecheck limpio, lint **14/0**, tests **2 de 1951**, build verde y CSS
+**275,17 kB** (sube desde 275,14), con las **listas de selectores compiladas
+idénticas** a `HEAD` (86 = 86). Sin regresiones: el diff son 4 archivos y una
+declaración de fondo cada uno; el arco de FEAT-019, la nota de sesión de
+FEAT-018 y el hueco reservado ni aparecen en `git status`. **Dos hallazgos para
+feature propia:** lightningcss conserva solo `-webkit-backdrop-filter` cuando el
+`.scss` escribe las dos (**8 estándar frente a 50 prefijadas en el bundle**), así
+que en **Firefox ~45 superficies nunca han tenido desenfoque**; y
+`--color-glass-surface` no existe en ningún tema (más `--aura-glass-2`,
+`--color-danger-text` y `--color-primary-strong`, sin declarar).
 
 **FEAT-019 `delivered` 5/5** (2026-09-23, revisor). **Tajada 4 aceptada: la
 feature se entrega.** Los cuatro criterios (581–584) cumplidos y el **583

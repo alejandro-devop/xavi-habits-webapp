@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790117986.5360246,
-    "ast_hash": "53f6aec98e9a64731acc1523276250cd",
+    "mtime": 1790121532.0650446,
+    "ast_hash": "4021ed80ecd8f10d589c514556a9078e",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790118332.8517833,
-    "ast_hash": "50095ea13714bbddf6aaa482edeb3136",
+    "mtime": 1790122657.145162,
+    "ast_hash": "7e5d0280b5aee08a12aefaf01a2623b3",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790116997.3705895,
-    "ast_hash": "70f54a61ba6bf5388f2ebd9877f063fb",
+    "mtime": 1790122711.5022645,
+    "ast_hash": "a134823e55dd8185151725bd11cadeac",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790118302.9707186,
-    "ast_hash": "eec426a3fa4b81bad4921041e655bbc0",
+    "mtime": 1790121729.319415,
+    "ast_hash": "8eefde31881559562e76b4a06aa00e01",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3830,8 +3830,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-016-vida-barra-de-trabajo.md": {
-    "mtime": 1790117727.8354406,
-    "ast_hash": "5a4cf2a2e573f0b5b7ca41242a90bf34",
+    "mtime": 1790122640.9661314,
+    "ast_hash": "95ceef52ec9c68b57abffffb0b806d22",
     "semantic_hash": ""
   },
   "docs/vida/assets/15-vida-barra-de-trabajo.html": {
@@ -3875,8 +3875,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx": {
-    "mtime": 1790117915.2908657,
-    "ast_hash": "c0658253ce577177929e5ea09c5d438b",
+    "mtime": 1790121490.748967,
+    "ast_hash": "23d2c25ebae700cd0f2c5e15d10d388f",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArcRow.tsx": {
@@ -3900,13 +3900,28 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-018-vida-que-hice.md": {
-    "mtime": 1790118327.9907727,
-    "ast_hash": "77e4620838514c525d4ad911b09eab1c",
+    "mtime": 1790118790.515765,
+    "ast_hash": "295fc6fcc2cd828248a532dabf93f4c1",
     "semantic_hash": ""
   },
   "docs/vida/assets/19-vida-que-hice.html": {
     "mtime": 1790117162.1630497,
     "ast_hash": "6b333f7a4a2a2c9ebffc20010f7352f8",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaGoalPrompt/VidaGoalPrompt.tsx": {
+    "mtime": 1790121456.2169023,
+    "ast_hash": "0e14d78816bbc711de4a000bc625ced7",
+    "semantic_hash": ""
+  },
+  "src/features/vida/components/VidaGoalPrompt/index.ts": {
+    "mtime": 1790121472.9199336,
+    "ast_hash": "1f33621a82c8c279a56873d83a39daa5",
+    "semantic_hash": ""
+  },
+  "graphify-out/memory/query_20260922_231338_de_d\u00f3nde_pueden_salir_las_notas_de_sesiones_anter.md": {
+    "mtime": 1790118818.3438244,
+    "ast_hash": "8211b9aeb43706f6fb1599a94eb03a42",
     "semantic_hash": ""
   }
 }

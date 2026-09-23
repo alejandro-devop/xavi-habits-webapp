@@ -150,6 +150,13 @@
   min-width: 0;
 }
 
+/* El hueco del arco mientras el catálogo viaja (FEAT-016, tajada 3): el mismo
+   alto que la tarjeta, para que la agenda no dé el salto cuando llega. */
+.goalLoading {
+  display: flex;
+  min-width: 0;
+}
+
 .srOnly {
   position: absolute;
   width: 1px;

@@ -1,7 +1,7 @@
 ---
 id: FEAT-016
 title: El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras
-status: building
+status: delivered
 architect: yes    # toca el API en otro repo (nace una tabla de metas, no dos columnas) y una agregación viva que no existe hoy; razón completa en la sección 1
 area: features/vida, API (xavi-platform-node)
 requested: 2026-09-22
@@ -331,7 +331,7 @@ aquí con el 492 nuevo. Todo lo demás se renumera dentro del mismo rango
 |---|---|---|
 | 1 | **La meta nace.** Tabla de metas y su migración, el puntero en `activity_categories`, la creación automática de «Trabajo, 8h» al primer uso, y la casilla en los dos formularios de categoría. El usuario ya puede marcar sus categorías mientras se construye el resto. Criterios 481–488. | aceptada |
 | 2 | **El arco.** Aparece en Hoy cuando al menos una categoría apunta a la meta, suma en vivo (incluida la sesión en marcha), la línea de hora, sin reproche pasadas las 8h, la confesión de «sin dato», y su comportamiento en días futuros/pasados. Criterios 489–499. | aceptada (498 pendiente de prueba a mano) |
-| 3 | **La pregunta cuando nada apunta a una meta.** El segundo camino al mismo puntero, desde Hoy. Criterios 500–503. | pendiente |
+| 3 | **La pregunta cuando nada apunta a una meta.** El segundo camino al mismo puntero, desde Hoy. Criterios 500–503. | aceptada |
 
 Tres tajadas, mismo corte que antes: la 1 es la única que toca el backend y
 desbloquea al usuario de inmediato (puede marcar categorías aunque el arco no
@@ -1091,7 +1091,7 @@ se copian del tono de `VidaBlockOutcomes`.
 |---|---|---|---|---|
 | 1 | **La meta nace.** Tabla `vida_goals`, el `goal_id` en `activity_categories`, la creación automática sin carrera, y la casilla en los dos formularios. | **API:** `migrations/069_vida_goals.sql` (nuevo) · `src/types/services/vida.types.ts` · `src/types/services/activity-category.types.ts` · `src/services/vida-goal.service.ts` (nuevo) · `src/services/activity-category.service.ts` (`CategoryRow` L9-19 y `mapCategory` L21-32) · `src/graphql/modules/vida/vida.schema.ts` · `src/graphql/modules/vida/vida.resolvers.ts` · `src/validators/schemas/vida.schemas.ts` · `tests/unit/services/vida-goal.service.test.ts` (nuevo) · `tests/unit/services/activity-category.service.test.ts` · `tests/unit/validators/vida.schemas.test.ts`. **Front:** `src/features/vida/graphql/schema/vida.schema.graphql` (recopiar) · `src/features/vida/graphql/activity-categories.graphql.ts` · `src/features/vida/graphql/contracts.test.ts` (un nombre en la lista L77-81) · `src/features/vida/types/vida-goal.types.ts` (nuevo) · `src/features/vida/types/activity-category.types.ts` · `src/features/vida/api/activity-categories.api.ts` · `src/features/vida/hooks/useActivityCategories.ts` · `src/features/vida/components/VidaCategoryForm/VidaCategoryForm.tsx` (+ `.module.scss`) · `src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx` (+ `.module.scss`) · `src/features/vida/pages/VidaCategoriasPage.tsx` (~L55-58, ~L74-76, ~L84-91) · `src/features/vida/pages/VidaCategoriasPage.test.tsx`. | 481–488 | aceptada |
 | 2 | **El arco.** La suma viva por meta, la hora en grande, la frase sin reproche, «sin dato», y los días pasados y futuros. | `src/features/vida/utils/vida-goals.utils.ts` (nuevo) · `src/features/vida/utils/vida-goals.utils.test.ts` (nuevo) · `src/features/vida/components/VidaGoalArc/{VidaGoalArc.tsx,VidaGoalArcRow.tsx,VidaGoalArc.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (import, `useActivityCategoriesQuery`, el `useMemo`, el render bajo `<VidaDayBudget/>`) · `src/features/vida/pages/VidaHoyPage.module.scss` (si hace falta hueco) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API.** | 489–499 | aceptada (498 pendiente de prueba a mano) |
-| 3 | **La pregunta cuando nada apunta a una meta.** | `src/features/vida/components/VidaGoalPrompt/{VidaGoalPrompt.tsx,VidaGoalPrompt.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (la rama `arcs.length === 0` y `useSetActivityCategoryGoalMutation`) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API, ningún documento nuevo, ninguna invalidación nueva.** | 500–503 | pendiente |
+| 3 | **La pregunta cuando nada apunta a una meta.** | `src/features/vida/components/VidaGoalPrompt/{VidaGoalPrompt.tsx,VidaGoalPrompt.module.scss,index.ts}` (nuevos) · `src/features/vida/pages/VidaHoyPage.tsx` (la rama `arcs.length === 0` y `useSetActivityCategoryGoalMutation`) · `src/features/vida/pages/VidaHoyPage.test.tsx`. **Nada del API, ningún documento nuevo, ninguna invalidación nueva.** | 500–503 | aceptada |
 
 ### Cómo se verifica cada tajada
 
@@ -1599,6 +1599,200 @@ claro**. El arnés **está borrado** (`git status` lo confirma).
 `graphify update .` corrido tras el cambio. **El repositorio del API no se tocó
 en esta tajada.**
 
+### Tajada 3 — La pregunta
+
+**Resumen para quien revise:** cuando **ninguna** categoría apunta a una meta,
+en el sitio exacto del arco (bajo `VidaDayBudget`, sobre la agenda) aparece la
+pregunta del render 15, momento 8 —«¿Cuál de estas es tu trabajo?», las
+categorías en píldoras con su icono, y «Ahora no»—; un toque escribe el puntero
+con **la misma mutación de la casilla** y el arco sale ahí mismo sin recargar.
+De paso se cierran las **dos deudas** de la revisión de la tajada 2: la frase del
+arco se lee **una sola vez** (el SVG pasa a decorativo y el `<p>` a
+«solo lectores de pantalla») y el catálogo **ya tiene estado de carga**.
+**Lo que más probablemente rompí:** el localizador del arco en los tests —era
+`getByRole('img', {name:/Trabajo/})` y ahora es `getByRole('article', {name:
+'Trabajo'})`—, y el hueco nuevo en `styles.main` de Hoy, que mete un tercer
+elemento (esqueleto / pregunta / arco) entre el presupuesto y la agenda.
+
+**Qué se construyó:**
+
+- **`src/features/vida/components/VidaGoalPrompt/`** (nuevo: `VidaGoalPrompt.tsx`,
+  `VidaGoalPrompt.module.scss`, `index.ts`). Tonto y del reparto de
+  `VidaBlockOutcomes`: recibe `{ categories, onPick, isBusy }`, ordena por
+  `orderIndex` y luego nombre (el orden de Ajustes → Categorías) y pinta una
+  píldora por categoría con su icono (`AppIcon`, `circle-dot` de repuesto). Con
+  el catálogo **vacío devuelve `null`** (criterio 503). El texto y la forma
+  salen del render 15, momento 8 (`docs/vida/assets/15-vida-barra-de-trabajo.html:280-301`):
+  la pregunta, la línea de qué gana el usuario, las píldoras y el «Ahora no».
+  **Del 15 solo se toma la pregunta**; el gráfico vigente es el arco del 18.
+- **`src/features/vida/pages/VidaHoyPage.tsx`** — tres cosas en el mismo sitio
+  donde ya estaba el arco (anclado al elemento `<VidaDayBudget/>`, no a un
+  número de línea):
+  1. `useSetActivityCategoryGoalMutation()` en la página, con
+     `onPick = (categoryId) => mutate({ categoryId, attached: true })`. **La
+     misma mutación de la tajada 1** —el servidor crea «Trabajo, 8 h» si no hay
+     meta— y **ninguna invalidación nueva**: el `onSuccess` del hook ya invalida
+     `vidaKeys.categories.list()`.
+  2. La rama `goalArcs.arcs.length === 0` → `VidaGoalPrompt` (criterio 500), que
+     antes no pintaba nada.
+  3. **El estado de carga del catálogo**: `categoriesLoading = isPending &&
+     fetchStatus !== 'idle'` (el idioma de `useVidaDayData.ts:71-78`, donde
+     `idle` + `isPending` es «deshabilitada», no «cargando») → un `Skeleton` de
+     176 px en el hueco.
+- **`src/features/vida/pages/VidaHoyPage.module.scss`** — `.goalLoading`, la
+  caja del esqueleto.
+- **`src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx` y su
+  `.module.scss`** — la deuda 1 de la revisión anterior: el `<svg>` pierde
+  `role="img"` y su `aria-label` y pasa a `aria-hidden`; el `<p>` de la frase
+  pasa de visible a **`.srLine`** (la clase de «solo lectores de pantalla» del
+  módulo, la misma receta que `VidaReviewRow`). El margen negativo de `.arc`
+  (`-0.9rem`), que existía para compensar el margen superior de ese `<p>`,
+  vuelve a `0`.
+- **`src/features/vida/pages/VidaHoyPage.test.tsx`** — ocho casos nuevos
+  (500, 501, 502 ×2, 503, carga, «Ahora no», botones inhabilitados), el
+  localizador del arco movido y el caso «la tajada 3 aún no existe» reescrito:
+  ahora afirma que ahí va la pregunta.
+
+**Por qué así, y qué se descartó:**
+
+- **La doble lectura, resuelta hacia el render y no hacia el DOM.** Tres salidas
+  posibles: (a) quitar el `<p>` visible y quedarse con el `aria-label`; (b)
+  quitar el `aria-label` y dejar el `<p>` a la vista; (c) **SVG decorativo + el
+  `<p>` en texto real pero oculto a la vista**. Elegida la (c). La (a) deja la
+  frase sin texto real: `getByText` no entra en un `<text>` de SVG y el
+  criterio 493 se quedaría sin nada que comprobar en el DOM. La (b) deja a la
+  vista una frase que el arco **ya dice dentro** (la hora a 32 px y su rótulo) y
+  que el render 18 panel 1 no tiene. La (c) deja la pantalla clavada al render,
+  la frase entera para quien la oye, y el criterio 493 comprobable. **Coste,
+  dicho sin adornos:** los tests ya no pueden encontrar el arco por el
+  `role="img"`, así que el localizador se movió con la estructura accesible —es
+  lo que la revisión de la tajada 2 avisó que habría que hacer— y ahora el
+  ancla es el `<article aria-labelledby>`, que ya existía y no se inventó para
+  el test.
+- **El estado de carga dejó de ser cosmético y por eso entra aquí.** Sin él, el
+  primer viaje del día trae `categories = []`, de ahí salen cero arcos y con
+  esta tajada eso ya no es «no pintar nada»: es **enseñar la pregunta a quien ya
+  marcó su categoría** y cambiarla por el arco un instante después. El esqueleto
+  arregla a la vez ese parpadeo y el salto que empujaba la agenda (hallazgo
+  «Carga» de la revisión de la tajada 2). Sale barato porque `Skeleton` ya
+  existe y la página ya lo usa.
+- **La pregunta vive en el mismo hueco que el arco, también en un día pasado.**
+  El criterio 500 dice «en el lugar donde iría el arco» y no distingue día; la
+  guarda `(isToday || isPast)` que ya estaba se reutiliza tal cual. En un día
+  **futuro** no hay hueco, así que tampoco hay pregunta.
+- **Nada de una bandera de «ya preguntado».** El criterio 502 —«una vez que al
+  menos una categoría apunta a la meta, la pregunta no vuelve a aparecer en
+  ningún día»— lo garantiza **el dato**: en cuanto hay un arco, la rama de la
+  pregunta no se evalúa. Ni `localStorage`, ni ajuste, ni columna.
+- **Es el único sitio del front que dice «trabajo» a pelo**, y es a propósito:
+  ahí todavía **no existe** ninguna meta de la que leer el nombre. El arco, que
+  sí la tiene, sigue genérico (ni «Trabajo» ni 480 dentro del componente).
+
+**A juicio del revisor — un estado que ningún render dibuja:**
+
+- **Qué hace «Ahora no» después de tocarlo.** El render 15 lo dibuja pero no
+  dibuja el después, y no hay criterio que lo mande. **Decidido lo mínimo que no
+  inventa un dato: aparta la pregunta de esta visita** (un `useState` en el
+  componente, como el `isWriting` de `VidaBlockOutcomes`), sin guardar nada en
+  el aparato ni en el servidor, así que vuelve al recargar o al día siguiente.
+  Las alternativas —callarla ese día, o para siempre— piden un sitio donde
+  guardarlo (`localStorage` o un ajuste del usuario) y eso **nadie lo decidió**:
+  queda como pregunta para el usuario, en una línea. Si dice «que no vuelva en
+  todo el día», es la llave del `vida-device-notes.store` y cinco líneas.
+
+**Verificación (comandos y salidas literales):**
+
+| Qué | Resultado | Línea base |
+|---|---|---|
+| `pnpm typecheck` | exit 0, sin salida | limpio ✔ |
+| `pnpm lint` | `✖ 14 problems (14 errors, 0 warnings)` | 14/0 ✔ |
+| `pnpm test` | `Test Files  1 failed \| 114 passed (115)` · `Tests  2 failed \| 1818 passed (1820)` — los dos de `SearchSelect`; el flaky de `IconPicker` no salió | 2 de 1812 ✔ (1812 + 8 casos nuevos = 1820) |
+| `pnpm build` | exit 0 · inicial **1.121,29 kB** · `app-icons` **620,20 kB** · `IconPicker` 4,64 kB | 1.119,84 kB → **+1,45 kB** de código propio (el componente nuevo y el cableado); `app-icons` **sin mover**, que es lo que importa ✔ |
+| `npx vitest run src/features/vida/pages/VidaHoyPage.test.tsx` | `Tests 160 passed (160)` | — |
+
+**En el navegador** (arnés temporal `src/harness-goal-prompt.tsx` +
+`harness-goal-prompt.html`, **ya borrados**; servidor de Vite arrancado por el
+agente en el 5173 porque el del usuario estaba apagado, a 375×812):
+
+- La pregunta se ve como el render: caja de borde punteado, la pregunta, la
+  línea de qué gana, las píldoras con icono y «Ahora no» centrado debajo.
+- **Sin scroll horizontal a 375 px:** `document.documentElement.scrollWidth`
+  **375** = `clientWidth` **375**, también con una categoría de nombre absurdo
+  («Consultoría de sistemas distribuidos y plataformas»), que **envuelve dentro
+  de la píldora** en vez de estirarla (`overflow-wrap: anywhere`).
+- **Catálogo vacío:** el `<div id="vacio">` queda literalmente en blanco
+  (`innerHTML === ''`). Ni botones vacíos, ni error, ni caja.
+- **El arco, tras el arreglo:** `viewBox="0 0 220 124"` con `role → null` y
+  `aria-hidden → "true"`; el `<p>` de la frase mide **1×1 px** y sigue en el
+  DOM con «Llevas 3 h 40 min. A este ritmo paras a las 16:00.»; `[role=alert]`
+  dentro del arco: **0**. Entre el borde inferior del SVG y el de la tarjeta
+  quedan **13 px** (el `padding` de siempre): quitar el margen negativo no dejó
+  los topes «0h»/«8h» pegados al borde.
+
+**Criterios que cierra:**
+
+- **500 ✔** `criterio 500 — la pregunta ocupa el sitio del arco, con las
+  categorías en botones`: con dos categorías sin meta, la pregunta aparece con
+  un botón por categoría, y su sitio se afirma **por posición**
+  (`compareDocumentPosition` contra el `<section>` del presupuesto y contra la
+  primera fila del plan), no con un `toBeInTheDocument`.
+- **501 ✔ (en test; a mano, paso 2 del usuario)** `criterio 501 — un toque
+  escribe el puntero y el arco aparece sin recargar`: el clic llama **una vez**
+  a `mutate({ categoryId: 'cat-trabajo', attached: true })` —la misma forma que
+  usa la casilla del formulario, sin `goalId`, que es lo que hace que el
+  servidor cree la meta— y, cuando el catálogo vuelve con la meta dentro, **la
+  misma página ya montada** (`rerender`, sin desmontar) pinta el arco con
+  «Llevas 1 h. A este ritmo paras a las 16:24.» y la pregunta desaparece.
+- **502 ✔** dos casos: `ni navegación, ni formulario, ni confirmación` (tras el
+  toque no hay ningún `role="dialog"`, la agenda sigue en su sitio y la mutación
+  se llamó una sola vez) y `con una categoría ya apuntada la pregunta no vuelve
+  en ningún día` (hoy y un día pasado, `?d=2026-09-17`).
+- **503 ✔** `con el catálogo vacío no hay botones vacíos ni error`, más la
+  comprobación en el navegador de arriba.
+- **Las dos deudas de la revisión de la tajada 2**, que no son criterios pero se
+  cerraron: una sola lectura de la frase, y el estado de carga del arco.
+
+**Lo que NO se puede comprobar desde aquí** (queda como prueba a mano, sin
+disimulo): el recorrido real está **detrás del login**. No se ha visto la
+pregunta con el catálogo de verdad, ni el arco apareciendo tras el toque contra
+la API desplegada, ni los 375 px en el teléfono del usuario. Los pasos están al
+final del resumen.
+
+**Riesgos (lo que esto pudo romper):**
+
+1. **El localizador del arco.** Cualquier test o herramienta que buscara el arco
+   por `role="img"` ya no lo encuentra. En el repositorio solo lo hacía
+   `VidaHoyPage.test.tsx` (buscado `role="img"` en `src/features/vida/`), y se
+   movió; si alguien tiene una rama con otro, ahí está el motivo.
+2. **El hueco entre el presupuesto y la agenda** cambia de un elemento a tres
+   posibles. Los anclajes por posición del test de Hoy siguen en verde (160/160),
+   pero es el sitio donde FEAT-010 también está trabajando.
+3. **El margen negativo del arco.** Se quitó porque su pareja (el margen
+   superior del `<p>`) desapareció. Si alguien devuelve el `<p>` a la vista sin
+   devolver el margen, los topes «0h»/«8h» se pegarán a la frase.
+4. **`VidaGoalPrompt` monta `AppIcon` una vez por categoría.** El catálogo está
+   topado (`CATALOG_LIMIT`) y los iconos entran por el registro diferido, así
+   que no toca el arranque: `app-icons` sigue en **620,20 kB** exactos.
+
+**Lo que descubrí y no toqué (fuera de alcance):**
+
+- **`VidaArchivadasPage.test.tsx:43-45` mockea el módulo `useActivityCategories`
+  con **una sola** exportación** (`useActivityCategoriesQuery`). No es la trampa
+  que avisa el `ENVIRONMENT.md` —esa es la del mock que pasa **en verde por
+  casualidad**—: esta pantalla usa solo ese hook y, si algún día usara otro,
+  fallaría a gritos. No se tocó porque esta tajada **no cambia la forma de
+  ninguna mutación**. Los otros cinco mocks del módulo (`VidaActivitySheet`,
+  `VidaCategoriasPage`, `VidaActividadesPage`, `VidaPlantillaPage`,
+  `VidaHoyPage`) sí listan las seis exportaciones.
+- **El chunk inicial creció 1,45 kB.** Es el código nuevo, no un barril mal
+  importado; el troceado sigue siendo deuda propia del proyecto.
+
+**Estado del árbol:** sin commitear, sin push. Los dos archivos del arnés,
+borrados (`git status --porcelain` no los lista). `graphify update .` corrido
+tras el cambio. **El repositorio del API no se tocó.** Queda arrancado un
+servidor de Vite en el **5173** (el del usuario estaba apagado y no tengo
+herramienta para pararlo).
+
 ## 4. Revisión — feature-reviewer
 
 *(una entrada por tajada)*
@@ -2084,3 +2278,132 @@ Para probarlo a mano (ya no hace falta ningún push):
    de **ese día pasado** tiene que bajar, porque nada se guarda congelado.
 6. En el móvil, a 375 px, mira que ni el arco ni sus frases saquen barra
    horizontal.
+
+### Tajada 3 — aceptada
+
+**Cómo se revisó:** líneas base reproducidas enteras en este árbol (typecheck
+`exit 0`; lint `✖ 14 problems (14 errors, 0 warnings)`; `pnpm test` → `Tests 2
+failed | 1818 passed (1820)`, los dos de `SearchSelect`, el flaky de
+`IconPicker` no salió; `pnpm build` exit 0 con inicial **1.121,29 kB**,
+`app-icons` **620,20 kB** sin mover y `IconPicker` 4,64 kB). Más un arnés
+temporal propio (`harness-review-016.{html,tsx}`, **ya borrado**) servido por un
+Vite arrancado por mí en el 5173 —el del usuario estaba apagado, lo dijo la
+sonda— a 375×812, para mirar el arco y la pregunta con datos sintéticos.
+
+**Criterios, uno a uno (sección 1, literal):**
+
+- **500 ✔** Sin ninguna categoría apuntando a una meta, en el hueco del arco
+  sale la pregunta con las categorías en botones. Comprobado en el test por
+  **posición** (`compareDocumentPosition` contra el `<section>` del presupuesto
+  y contra la fila «Bañarme» del plan), no por presencia, y visto en el arnés:
+  caja de borde punteado, pregunta, línea de qué gana, píldoras con icono.
+- **501 ✔ (en test; el viaje real queda a mano)** El toque llama **una vez** a
+  `mutate({ categoryId, attached: true })` —sin `goalId`, la misma forma que
+  usan `VidaCategoriasPage.tsx:110` y `CreateVidaCategoryStep.tsx:61`, así que
+  es la meta que crea el servidor— y, al volver el catálogo con la meta dentro,
+  **la misma página ya montada** (`rerender`) pinta el arco y la pregunta
+  desaparece. El hook no se tocó (`git status` no lista
+  `useActivityCategories.ts`): la invalidación es la que ya existía.
+- **502 ✔** Dos casos y los dos aprietan: tras el toque no hay `role="dialog"`,
+  la agenda sigue en su sitio y la mutación se llamó una sola vez; y con una
+  categoría ya apuntada la pregunta no vuelve ni hoy ni en `?d=2026-09-17`. No
+  hay bandera de «ya preguntado»: lo garantiza el dato.
+- **503 ✔** Catálogo vacío: el componente devuelve `null` antes de pintar nada.
+  En el arnés, el contenedor queda con `innerHTML === ''` y **0 px de alto**.
+
+**Las dos deudas de la tajada 2, cerradas y verificadas en navegador:** el SVG
+del arco tiene `role → null` y `aria-hidden → "true"`, y la frase entera vive
+**una sola vez** en el `<p>` de solo lectores de pantalla, que mide **1×1 px**,
+va `position:absolute` con `clip-path: inset(50%)` y **no desplaza nada**. Lo
+que sí se miró con lupa, porque era el riesgo de verdad del arreglo: **la hora
+de parar sigue viéndose**. Está dentro del arco (`<text>` «A este ritmo paras a
+las» + «16:00»), así que esconder el `<p>` **no se llevó por delante el criterio
+492**. Y el estado de carga del catálogo distingue de verdad: `isPending &&
+fetchStatus !== 'idle'` deja fuera la consulta deshabilitada (`idle`, sin
+sesión), los reintentos siguen en `fetching`/`paused` —esqueleto— y el fallo
+real cae en `categoriesFailed`, que ya escondía el bloque entero (criterio 499).
+**No encontré ningún camino que le enseñe la pregunta a quien ya marcó su
+categoría.**
+
+**El localizador movido — ¿se ablandó?** No. `goalArc()` pasó de
+`getByRole('img', {name:/Trabajo/}).closest('article')` a
+`getByRole('article', {name:'Trabajo'})`, y los nueve casos de la tajada 2
+(489–497 y los dos del 499) siguen afirmando lo mismo **dentro** del arco: la
+frase literal, el valor grande, «1h 24» → «1h 25» tras 60 s, la posición entre
+el presupuesto y la agenda, la ausencia de `role="alert"` y de palabras de
+reproche, «Registraste 5 h de Trabajo.» sin «A este ritmo», y el arco ausente en
+día futuro y con consulta caída. Lo único que el ancla nuevo ya no prueba por sí
+mismo es que exista un `<svg>`, pero el dibujo sigue cubierto de rebote: «1h»,
+«0m», «16:24» y la caption se leen de los `<text>` de dentro.
+
+**Qué miré alrededor (y cómo):**
+
+- `graphify explain "useSetActivityCategoryGoalMutation"` → la llaman
+  `VidaHoyPage` (nuevo), `VidaCategoriasPage` y `CreateVidaCategoryStep`; abrí
+  las dos últimas y usan `mutateAsync` con la **misma forma** de entrada. El
+  hook no cambió, así que no hay nada que se haya movido bajo sus pies.
+- `graphify explain "VidaGoalArc"` → solo lo importa `VidaGoalArcRow`, y a ese
+  solo `VidaHoyPage`. El margen negativo que se quitó no tiene más clientes.
+- `role="img"` en `src/features/vida/`: el único otro sitio es
+  `VidaActivityCard.tsx:141`, que no es el arco. Ningún test ajeno buscaba el
+  arco por ahí.
+- **Los mocks de módulo que caducan en silencio** (la trampa del
+  `ENVIRONMENT.md`): el mock de `VidaHoyPage.test.tsx:125-135` **sí** lista
+  `useSetActivityCategoryGoalMutation`, que es la exportación que esta tajada
+  estrena en la página. Y el de `VidaArchivadasPage.test.tsx:43-45`, con una
+  sola exportación, **no miente**: abrí la página y solo importa
+  `useActivityCategoriesQuery` (`VidaArchivadasPage.tsx:5`). El constructor lo
+  declaró bien.
+- Suite entera en verde salvo los dos `SearchSelect` de siempre.
+
+**Estados:**
+
+- **Vacío ✔** (criterio 503, visto en navegador). **Carga ✔** (esqueleto de
+  176 px en el hueco, sin salto). **Error de la consulta ✔** (el bloque entero
+  desaparece, criterio 499). **Texto largo ✔**: «Consultoría de sistemas
+  distribuidos y plataformas de datos» **envuelve dentro de la píldora**.
+  **Móvil ✔**: a 375 px `scrollWidth 375 = clientWidth 375`. **Permisos:** no
+  aplica, todo es del único usuario tras el login.
+- **Error de la mutación:** el usuario **sí** ve algo —el `onError` del hook
+  levanta un toast «No pudimos guardar la meta de la categoría»
+  (`useActivityCategories.ts:96-98`)— y la pregunta se queda donde estaba. No
+  hay caso de test para esa rama desde Hoy: **hallazgo, no motivo de
+  devolución.**
+- **Doble toque rápido en dos píldoras distintas:** `isBusy` llega por
+  `isPending`, así que dos clics en el mismo tick pueden disparar dos
+  mutaciones y dejar **dos** categorías apuntando a la meta. Es exactamente lo
+  que el criterio 482 permite y se deshace desde Ajustes → Categorías:
+  **hallazgo menor**.
+- **«Ahora no»:** como estado de partida es sensato. Aparta la pregunta de la
+  visita con un `useState`, **no escribe nada** ni en el aparato ni en el
+  servidor, y como la otra puerta (la casilla de Ajustes → Categorías) sigue
+  abierta, no se pierde nada al recargar. Callarla más tiempo pide dónde
+  guardarlo y eso es del usuario.
+
+**Hallazgos que no devuelven la tajada:**
+
+1. `aria-labelledby="vida-goal-prompt-title"` es un id **fijo** en el
+   componente (el arco, en cambio, lo deriva de `arc.goal.id`). Con una sola
+   instancia no colisiona; si algún día se pinta dos veces, sí.
+2. El esqueleto lleva `aria-live="polite"` sobre una caja sin texto: no anuncia
+   nada. Inofensivo, pero es ruido de atributos.
+3. Tercera copia de la receta «solo lectores de pantalla» en el módulo
+   (`.srLine` aquí, `.srOnly` en `VidaHoyPage.module.scss`): deuda de estilo del
+   proyecto, no de esta tajada.
+4. A 375 px la caption de dentro del arco («A ESTE RITMO PARAS A LAS») **roza
+   el trazo verde** por la izquierda. Viene de la tajada 2, no de este cambio.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: el puntero, la
+mutación y su invalidación son los de la tajada 1 —ni documento GraphQL nuevo,
+ni clave de caché nueva, ni ajuste nuevo—, y `VidaGoalPrompt` es el primer
+«pregunta con píldoras» de Hoy, que es justo lo que el arquitecto dio por no
+existente. **El repositorio del API no se tocó** (`git status` allí:
+limpio, `HEAD = origin/main = e6c0b7c`, con `069_vida_goals.sql` ya desplegada).
+
+**Veredicto: aceptada.** Con ella, **FEAT-016 queda `delivered`**: lo único que
+sigue abierto es prueba a mano detrás del login —el criterio **498** (quitarle
+el puntero a una categoría y ver bajar también los días pasados), heredado de
+la tajada 2, y el recorrido real de esta tajada contra la API desplegada—,
+porque los agentes no entran con credenciales.
+
+**Para el usuario:** (va en el resumen de la sesión)

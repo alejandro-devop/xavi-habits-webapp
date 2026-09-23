@@ -27,12 +27,18 @@ const FALLBACK_GOAL_ICON = 'circle-dot'
  * salen de `arc.goal`. Aquí dentro no hay ninguna constante «Trabajo» ni
  * ningún 480, y por eso el día que haya tres metas esto no se rediseña.
  *
- * **El SVG no es la única forma de leerlo** (la costumbre de `HabitPanel` y de
- * `VidaDayBudget`): la frase entera va **además** en un `<p>` de texto real,
- * porque el `<text>` de un SVG no lo encuentra `getByText` ni lo lee igual un
- * lector de pantalla. Ese `<p>` **no lleva `role="alert"`** ni el ámbar o el
- * rojo que el módulo reserva para avisos, tampoco pasada la meta: el dato, sin
- * reproche (criterio 493).
+ * **El SVG no es la única forma de leerlo, y solo se lee una vez** (la
+ * costumbre de `ChartPanel` y su tabla oculta): el dibujo es **decorativo**
+ * (`aria-hidden`) y la frase entera vive en un `<p>` de texto real **solo para
+ * lectores de pantalla**. Hasta la tajada 3 iban las dos cosas —el `role="img"`
+ * con su `aria-label` y el mismo `<p>` a la vista—, así que la frase se oía dos
+ * veces y se veía repetida bajo un arco que ya la dice dentro (la hora grande y
+ * su rótulo). El render aprobado (18, panel 1) no tiene ese párrafo: debajo del
+ * arco solo va la línea de la sesión en marcha.
+ *
+ * Ese `<p>` **no lleva `role="alert"`** ni el ámbar o el rojo que el módulo
+ * reserva para avisos, tampoco pasada la meta: el dato, sin reproche
+ * (criterio 493).
  */
 export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
   const style = arc.goal.color
@@ -59,7 +65,8 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
       </p>
 
       <div className={styles.arc}>
-        <svg viewBox="0 0 220 124" role="img" aria-label={`${arc.goal.name}. ${arc.line}`}>
+        {/* Decorativo: lo que dice ya está en texto real justo debajo. */}
+        <svg viewBox="0 0 220 124" aria-hidden>
           <path
             className={styles.trackPath}
             d="M22 106 A 88 88 0 0 1 198 106"
@@ -94,8 +101,9 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
         </svg>
       </div>
 
-      {/* La «tabla oculta» del arco: la misma frase, en texto de verdad. */}
-      <p className={styles.line}>{arc.line}</p>
+      {/* La «tabla oculta» del arco: la frase entera, en texto de verdad y una
+          sola vez. A la vista la dicen la hora grande y su rótulo. */}
+      <p className={styles.srLine}>{arc.line}</p>
 
       {arc.runningTitle ? (
         <p className={styles.sub}>

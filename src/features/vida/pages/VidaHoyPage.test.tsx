@@ -2829,10 +2829,18 @@ function workSession(input: {
   }
 }
 
-/** El arco, buscado por su etiqueta: el `<svg>` va con `role="img"`. */
+/**
+ * El arco, buscado por su `<article>` y el nombre de la meta
+ * (`aria-labelledby`).
+ *
+ * **Antes se buscaba por el `role="img"` del SVG** y desde la tajada 3 ese
+ * papel ya no existe: el dibujo es decorativo y la frase entera vive una sola
+ * vez, en el `<p>` de solo lectores de pantalla. El localizador se movió con la
+ * estructura accesible, que es lo que la revisión de la tajada 2 avisó que
+ * había que hacer si se arreglaba la doble lectura.
+ */
 function goalArc(): HTMLElement | null {
-  const svg = screen.queryByRole('img', { name: /Trabajo/ })
-  return svg ? svg.closest('article') : null
+  return screen.queryByRole('article', { name: 'Trabajo' })
 }
 
 describe('VidaHoyPage — el arco de la meta (FEAT-016)', () => {
@@ -2968,12 +2976,141 @@ describe('VidaHoyPage — el arco de la meta (FEAT-016)', () => {
     expect(screen.getByText('Falta una parte de tu día')).toBeInTheDocument()
   })
 
-  it('sin ninguna categoría apuntando a una meta no se pinta nada (la tajada 3 aún no existe)', () => {
+  it('sin ninguna categoría apuntando a una meta no hay arco: ahí va la pregunta', () => {
     categoriesQuery = ready([categoryOf('cat-casa', 'Casa', null)])
     dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
     renderWithProviders(<VidaHoyPage />)
 
     expect(goalArc()).toBeNull()
     expect(screen.queryByText(/sin dato hoy/)).not.toBeInTheDocument()
+    expect(goalPrompt()).not.toBeNull()
+  })
+})
+
+/* ── La pregunta cuando nada apunta a una meta (FEAT-016, tajada 3) ───────── */
+
+/** La pregunta, buscada por su `<section>` y el texto que la nombra. */
+function goalPrompt(): HTMLElement | null {
+  return screen.queryByRole('region', { name: '¿Cuál de estas es tu trabajo?' })
+}
+
+describe('VidaHoyPage — la pregunta de la meta (FEAT-016, tajada 3)', () => {
+  beforeEach(() => {
+    // Dos categorías del usuario y **ninguna** apuntando a una meta: el estado
+    // de quien nunca fue a Ajustes a marcar nada.
+    categoriesQuery = ready([
+      categoryOf('cat-trabajo', 'Trabajo', null),
+      categoryOf('cat-casa', 'Casa', null),
+    ])
+  })
+
+  it('criterio 500 — la pregunta ocupa el sitio del arco, con las categorías en botones', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    const pregunta = goalPrompt()!
+    expect(
+      within(pregunta).getByText(
+        'Toca una y te digo, cada día, cuánto llevas trabajado y a qué hora llegas a las 8 horas.',
+      ),
+    ).toBeInTheDocument()
+    expect(within(pregunta).getByRole('button', { name: 'Trabajo' })).toBeInTheDocument()
+    expect(within(pregunta).getByRole('button', { name: 'Casa' })).toBeInTheDocument()
+
+    // **El sitio del arco**, afirmado por posición y no por un
+    // `toBeInTheDocument`: debajo del presupuesto y encima de la agenda.
+    const presupuesto = document.getElementById('vida-budget-heading')!.closest('section')!
+    const fila = planRow('Bañarme')
+    expect(presupuesto.compareDocumentPosition(pregunta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(pregunta.compareDocumentPosition(fila) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('criterio 501 — un toque escribe el puntero y el arco aparece sin recargar', () => {
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    const { rerender } = renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(within(goalPrompt()!).getByRole('button', { name: 'Trabajo' }))
+
+    // La **misma** mutación de la casilla del formulario, con la meta sin
+    // nombrar: la crea el servidor si no existe (criterio 484).
+    expect(categoryMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(categoryMutation.mutate).toHaveBeenCalledWith({
+      categoryId: 'cat-trabajo',
+      attached: true,
+    })
+
+    // Lo que hace el `onSuccess` del hook: invalidar el catálogo. Cuando vuelve
+    // con la meta dentro, **la misma página ya montada** pinta el arco.
+    categoriesQuery = ready([
+      categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL),
+      categoryOf('cat-casa', 'Casa', null),
+    ])
+    rerender(<VidaHoyPage />)
+
+    expect(goalPrompt()).toBeNull()
+    expect(within(goalArc()!).getByText('Llevas 1 h. A este ritmo paras a las 16:24.')).toBeInTheDocument()
+  })
+
+  it('criterio 502 — un toque y ya: ni navegación, ni formulario, ni confirmación', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(within(goalPrompt()!).getByRole('button', { name: 'Casa' }))
+
+    // Ni un diálogo, ni una hoja, ni un segundo paso que confirmar.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // Y no se fue a ningún sitio: la agenda sigue donde estaba.
+    expect(planRow('Bañarme')).toBeInTheDocument()
+    expect(categoryMutation.mutate).toHaveBeenCalledTimes(1)
+  })
+
+  it('criterio 502 — con una categoría ya apuntada la pregunta no vuelve en ningún día', () => {
+    categoriesQuery = ready([
+      categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL),
+      categoryOf('cat-casa', 'Casa', null),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+    expect(goalPrompt()).toBeNull()
+
+    // Y tampoco en un día pasado, donde el arco sí se pinta.
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+    expect(goalPrompt()).toBeNull()
+  })
+
+  it('criterio 503 — con el catálogo vacío no hay botones vacíos ni error', () => {
+    categoriesQuery = ready([])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalPrompt()).toBeNull()
+    expect(screen.queryByText(/Cuál de estas/)).not.toBeInTheDocument()
+    expect(goalArc()).toBeNull()
+    // El sitio del arco no se rompe: la agenda sigue entera.
+    expect(planRow('Bañarme')).toBeInTheDocument()
+  })
+
+  it('mientras el catálogo viaja no se afirma ni el arco ni la pregunta', () => {
+    categoriesQuery = { data: undefined, isPending: true, isError: false, fetchStatus: 'fetching', refetch: vi.fn() }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalPrompt()).toBeNull()
+    expect(goalArc()).toBeNull()
+    // El hueco queda reservado: la agenda no da el salto cuando llega.
+    expect(document.querySelector('[aria-busy="true"][aria-live="polite"]')).not.toBeNull()
+  })
+
+  it('«Ahora no» aparta la pregunta sin escribir nada', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ahora no' }))
+
+    expect(goalPrompt()).toBeNull()
+    expect(categoryMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('los botones se inhabilitan mientras la mutación viaja', () => {
+    categoryMutation = { ...categoryMutation, isPending: true }
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(within(goalPrompt()!).getByRole('button', { name: 'Trabajo' })).toBeDisabled()
   })
 })

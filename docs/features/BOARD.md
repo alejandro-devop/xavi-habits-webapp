@@ -24,9 +24,63 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-013 | building | 1/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-22 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
-| FEAT-016 | building | 2/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
+| FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | planned | 0/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+
+**FEAT-016 `delivered` 3/3** (2026-09-22, revisor). **Tajada 3 aceptada: la
+feature está entregada.** Reproducidas las cuatro líneas base en este árbol
+(typecheck limpio, lint 14/0, `2 failed | 1818 passed (1820)` —solo
+`SearchSelect`—, build exit 0 con inicial 1.121,29 kB y `app-icons` 620,20 kB
+sin mover). Criterios **500, 501, 502 y 503** cerrados: la pregunta ocupa el
+sitio del arco afirmado **por posición**, el toque llama una sola vez a la misma
+mutación de la casilla y el arco aparece sin recargar, no hay navegación ni
+formulario ni confirmación, y con el catálogo vacío no se pinta nada (visto en
+un arnés a 375 px, ya borrado). **Las dos deudas de la tajada 2, cerradas y
+comprobadas en navegador:** el SVG es decorativo (`role → null`,
+`aria-hidden → true`) y la frase vive una sola vez en un `<p>` de 1×1 px que no
+desplaza nada — y, lo importante, **la hora de parar sigue viéndose dentro del
+arco**, así que el criterio 492 no se perdió por el camino; el estado de carga
+distingue «aún no sé» de «no hay ninguna» y no encontré ningún camino que
+enseñe la pregunta a quien ya marcó su categoría. El localizador movido de los
+tests **no ablandó** nada: los nueve casos de la tajada 2 siguen afirmando lo
+mismo dentro del arco. Mocks de módulo revisados: el de `VidaHoyPage` lista la
+exportación nueva y el de `VidaArchivadasPage` no miente (esa página solo usa
+la consulta). **Queda a mano, detrás del login:** el criterio **498** (quitar el
+puntero y ver bajar también los días pasados) y el recorrido real de la
+pregunta contra la API desplegada (`069_vida_goals.sql` ya está en
+`origin/main`). Hallazgos anotados en el expediente (id fijo del
+`aria-labelledby` de la pregunta, doble toque rápido, sin test del error de la
+mutación desde Hoy). **Sin commitear, sin push.** Arranqué un Vite en el 5173
+para el arnés y **no tengo herramienta para pararlo**: queda vivo.
+
+**FEAT-016 `in-review` 3/3** (2026-09-22, constructor). **Tajada 3 construida:
+la pregunta con botones, y las dos deudas de la revisión anterior cerradas.**
+Cuando ninguna categoría apunta a una meta, en el sitio exacto del arco sale la
+pregunta del render 15 momento 8 —«¿Cuál de estas es tu trabajo?», las
+categorías en píldoras con icono, «Ahora no»—; un toque llama a **la misma
+mutación de la casilla** (`{categoryId, attached:true}`, sin `goalId`: la meta
+la crea el servidor) y, al volver el catálogo invalidado, la misma página ya
+montada pinta el arco: ni navegación, ni formulario, ni confirmación. Catálogo
+vacío: no se pinta nada (comprobado también en el navegador, `innerHTML` vacío).
+**Deuda 1 cerrada:** la frase del arco se leía dos veces —`aria-label` del SVG y
+`<p>` visible—; ahora el SVG es **decorativo** (`role → null`, `aria-hidden →
+true`, medido en el navegador) y el `<p>` queda en texto real **solo para
+lectores de pantalla** (1×1 px), que es lo que el render 18 panel 1 dibuja. El
+localizador de los tests **se movió con la estructura accesible**: del
+`role="img"` al `<article aria-labelledby>`. **Deuda 2 cerrada:** el catálogo
+tiene estado de carga (`isPending && fetchStatus !== 'idle'`) con un esqueleto
+en el hueco — sin él, esta tajada le enseñaría **la pregunta** a quien ya marcó
+su categoría durante el primer viaje del día. Líneas base clavadas: typecheck
+limpio, lint **14/0**, **2 fallos de 1820** (los de `SearchSelect`; +8 casos
+nuevos), build exit 0 con `app-icons` en **620,20 kB sin mover** y el inicial en
+1.121,29 kB (**+1,45 kB** de código propio). A 375 px, sin scroll horizontal ni
+con un nombre de categoría absurdo. **Un estado que ningún render dibuja y que
+no decido yo:** qué hace «Ahora no» después del toque — hoy aparta la pregunta
+**de esta visita** y vuelve al recargar; si el usuario la quiere callada todo el
+día o para siempre, hace falta dónde guardarlo. **Sin commitear, sin push; el
+repositorio del API no se tocó.** Queda arrancado un Vite en el 5173 (el del
+usuario estaba apagado).
 
 **FEAT-016 `building` 2/3** (2026-09-22, revisor). **Tajada 2 aceptada: el arco
 está en Hoy.** Reproducidas las cuatro líneas base clavadas (typecheck limpio,

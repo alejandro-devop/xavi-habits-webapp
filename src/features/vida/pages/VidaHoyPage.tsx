@@ -11,12 +11,16 @@ import { VidaDayActions } from '@/features/vida/components/VidaDayActions'
 import { VidaDayBudget } from '@/features/vida/components/VidaDayBudget'
 import { VidaDayStrip } from '@/features/vida/components/VidaDayStrip'
 import { VidaGoalArcRow } from '@/features/vida/components/VidaGoalArc'
+import { VidaGoalPrompt } from '@/features/vida/components/VidaGoalPrompt'
 import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaUpNextCard } from '@/features/vida/components/VidaUpNextCard'
 import type { VidaLogSessionMode } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
 import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
-import { useActivityCategoriesQuery } from '@/features/vida/hooks/useActivityCategories'
+import {
+  useActivityCategoriesQuery,
+  useSetActivityCategoryGoalMutation,
+} from '@/features/vida/hooks/useActivityCategories'
 import {
   useAddDayPlanItemMutation,
   useEditDayPlanItemMutation,
@@ -247,7 +251,31 @@ export function VidaHoyPage() {
    * está cacheada por Categorías y Actividades (`staleTime` de 5 min), así que
    * no es tráfico nuevo — pero sí es la primera vez que Hoy la usa.
    */
-  const { data: categories = [], isError: categoriesFailed } = useActivityCategoriesQuery()
+  const {
+    data: categories = [],
+    isError: categoriesFailed,
+    isPending: categoriesPending,
+    fetchStatus: categoriesFetchStatus,
+  } = useActivityCategoriesQuery()
+  /**
+   * **Mientras el catálogo viaja no se afirma nada** (tajada 3). Sin esto,
+   * `categories` es `[]` durante el primer viaje del día y de ahí salen cero
+   * arcos: la pantalla enseñaría **la pregunta** a quien ya tiene su categoría
+   * marcada, y un instante después la cambiaría por el arco. Se reserva el
+   * hueco con un esqueleto, que además quita el salto que empujaba la agenda.
+   *
+   * Deshabilitada (sin sesión) es `isPending` con `fetchStatus: 'idle'`: el
+   * idioma del módulo (`useVidaDayData.ts:71-78`). Eso **no** es cargar.
+   */
+  const categoriesLoading = categoriesPending && categoriesFetchStatus !== 'idle'
+  /**
+   * La **misma** mutación de la casilla del formulario (tajada 1): escribe el
+   * puntero y, si no hay meta todavía, el servidor crea «Trabajo, 8h» en la
+   * misma transacción. Su `onSuccess` invalida `vidaKeys.categories.list()`, así
+   * que el arco aparece solo cuando el catálogo vuelve, sin recargar
+   * (criterio 501) y sin ninguna invalidación nueva.
+   */
+  const setGoalMutation = useSetActivityCategoryGoalMutation()
 
   const execution = useMemo(
     () =>
@@ -1034,15 +1062,34 @@ export function VidaHoyPage() {
                 nombra** el arco, porque el contrato de `failed` es el de las
                 cuatro consultas del día (criterio 499).
               - En un día **futuro** no hay nada vivido que sumar (criterio 496).
-              - Sin ninguna categoría apuntando a una meta, `arcs` viene vacío y
-                el componente devuelve `null`: ahí va **la pregunta de la tajada
-                3**, que todavía no existe. */}
+              - Mientras el **catálogo** viaja, un esqueleto del tamaño del
+                arco: ni el arco ni la pregunta se pueden afirmar todavía, y el
+                hueco queda reservado para que la agenda no dé el salto.
+              - Sin ninguna categoría apuntando a una meta va **la pregunta**
+                (tajada 3, criterio 500): el mismo sitio, el segundo camino al
+                mismo puntero. En cuanto una categoría apunta a la meta, `arcs`
+                deja de estar vacío y la pregunta no vuelve a aparecer en ningún
+                día (criterio 502) — lo dice el dato, no una bandera. */}
           {failed.length === 0 && !categoriesFailed && (isToday || isPast) ? (
-            <VidaGoalArcRow
-              arcs={goalArcs.arcs}
-              noDataLabel={goalArcs.noDataLabel}
-              isPastDay={isPast}
-            />
+            categoriesLoading ? (
+              <div className={styles.goalLoading} aria-busy="true" aria-live="polite">
+                <Skeleton width="100%" height={176} radius="1.25rem" />
+              </div>
+            ) : goalArcs.arcs.length === 0 ? (
+              <VidaGoalPrompt
+                categories={categories}
+                onPick={(categoryId) =>
+                  setGoalMutation.mutate({ categoryId, attached: true })
+                }
+                isBusy={setGoalMutation.isPending}
+              />
+            ) : (
+              <VidaGoalArcRow
+                arcs={goalArcs.arcs}
+                noDataLabel={goalArcs.noDataLabel}
+                isPastDay={isPast}
+              />
+            )
           ) : null}
 
           {/* Un día pasado se dice **sin reproche** (D3, criterio 56): se

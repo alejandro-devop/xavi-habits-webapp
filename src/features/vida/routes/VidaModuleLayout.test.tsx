@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { act, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { VidaModuleLayout } from '@/features/vida/routes/VidaModuleLayout'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
@@ -28,17 +28,58 @@ vi.mock('@/features/vida/hooks/useVidaOpenSession', () => ({
   useVidaOpenSession: () => openSession,
   useVidaSessionPlannedMinutes: () => 45,
 }))
+/**
+ * **Los espías de la sesión viven fuera de la fábrica** (FEAT-018): antes se
+ * creaban con `vi.fn()` dentro, así que cada render devolvía espías nuevos y
+ * no se podía afirmar «esto **no** se llamó». El criterio 543 necesita
+ * exactamente eso.
+ */
+let sessionActions: {
+  session: ActivityFollowUp | null
+  isFromAnotherDay: boolean
+  isBusy: boolean
+  start: ReturnType<typeof vi.fn>
+  finishNow: ReturnType<typeof vi.fn>
+  finishWith: ReturnType<typeof vi.fn>
+  discard: ReturnType<typeof vi.fn>
+  resolveStale: ReturnType<typeof vi.fn>
+}
+
 vi.mock('@/features/vida/hooks/useVidaSessionActions', () => ({
   useVidaSessionActions: () => ({
+    ...sessionActions,
     session: openSession.session,
     isFromAnotherDay: openSession.isFromAnotherDay,
-    isBusy: false,
-    start: vi.fn(),
-    finishNow: vi.fn(),
-    finishWith: vi.fn(),
-    discard: vi.fn(),
-    resolveStale: vi.fn(),
   }),
+}))
+
+/**
+ * **La escritura de la nota** (FEAT-018). Se mockea el hook, no la mutación:
+ * lo que este componente decide es **a quién** se la manda y qué hace la hoja
+ * con el resultado. La ida y vuelta al API la cubre `useActivityFollowUps.test`.
+ */
+let saveNote: ReturnType<typeof vi.fn>
+vi.mock('@/features/vida/hooks/useVidaSessionNote', () => ({
+  useVidaSessionNote: () => ({ saveNote, isSaving: false }),
+}))
+
+/**
+ * **«Lo de otras veces»** (criterios 546 y 547). Se mockea el hook —tiene su
+ * propia consulta y su propio test— y se **guarda lo que recibe**: lo que aquí
+ * hay que comprobar es que solo se pide **con el editor abierto** y sobre la
+ * actividad de esa sesión.
+ */
+let noteHistory: { suggestions: string[]; isPending: boolean }
+let noteHistoryCalls: { activityId: string | null; enabled: boolean; excludeId?: string | null }[]
+vi.mock('@/features/vida/hooks/useVidaActivityNoteHistory', () => ({
+  useVidaActivityNoteHistory: (input: {
+    activityId: string | null
+    enabled: boolean
+    excludeId?: string | null
+  }) => {
+    noteHistoryCalls.push(input)
+    return noteHistory
+  },
 }))
 vi.mock('@/features/vida/hooks/useVidaDayHours', () => ({
   useVidaDayHours: () => ({
@@ -77,6 +118,19 @@ function followUp(overrides: Partial<ActivityFollowUp> = {}): ActivityFollowUp {
 beforeEach(() => {
   vi.useFakeTimers()
   vi.setSystemTime(new Date(2026, 8, 18, 9, 24, 0))
+  sessionActions = {
+    session: null,
+    isFromAnotherDay: false,
+    isBusy: false,
+    start: vi.fn(),
+    finishNow: vi.fn(),
+    finishWith: vi.fn(),
+    discard: vi.fn(),
+    resolveStale: vi.fn(),
+  }
+  saveNote = vi.fn().mockResolvedValue({ ok: true })
+  noteHistory = { suggestions: [], isPending: false }
+  noteHistoryCalls = []
   openSession = {
     session: null,
     startInstant: null,
@@ -267,5 +321,190 @@ describe('VidaModuleLayout — si no se pudo saber qué hay en marcha', () => {
     expect(
       screen.queryByText('No pudimos saber si tienes algo en marcha'),
     ).not.toBeInTheDocument()
+  })
+})
+
+
+/* ── «Qué estás haciendo»: la nota de la sesión en marcha (FEAT-018, tajada 2) ─
+ *
+ * Criterios 542 a 547. Lo que este componente tiene que hacer bien es que
+ * **abrir el editor no sea empezar a terminar**: la hoja se monta una vez, se
+ * abre desde la barra y no toca ni el cronómetro ni la sesión.
+ */
+
+describe('VidaModuleLayout — la nota de la sesión en marcha (FEAT-018)', () => {
+  /**
+   * Guardar resuelve una promesa y la hoja se va con una animación de salida:
+   * con el reloj congelado hay que soltar los microtasks **y** correr los
+   * fotogramas, o el diálogo se queda puesto para siempre.
+   */
+  /**
+   * Guardar resuelve una promesa: hay que soltar los microtasks a mano.
+   *
+   * **Lo que aquí no se puede medir**, y se dice en voz alta: que el diálogo
+   * *desaparezca* del DOM. `SteppedModal` lo saca con una animación de salida
+   * de `AnimatePresence` que en jsdom llega a `opacity: 0` y ahí se queda —con
+   * reloj congelado y con reloj de verdad—. Que «Guardar» **cierra** la hoja
+   * se mide donde sí se puede, en `VidaNoteSheet.test.tsx` (`onClose`
+   * llamado); aquí se mide lo otro: qué se guardó y que la sesión sigue en
+   * marcha.
+   */
+  async function flushSave() {
+    await act(async () => {})
+  }
+
+  function running(notes: string | null = null) {
+    openSession = {
+      session: followUp({ notes }),
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    }
+  }
+
+  it('criterio 542 — sin nota, la barra pregunta «¿Qué estás haciendo?»', () => {
+    running(null)
+    renderWithProviders(<VidaModuleLayout />)
+
+    expect(screen.getByRole('button', { name: '¿Qué estás haciendo?' })).toBeInTheDocument()
+    // La pregunta no es un reproche ni un campo: no se lee «nota» en la barra.
+    expect(screen.queryByText(/añadir qué hiciste/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 542 — con nota, la barra enseña lo que se escribió', () => {
+    running('Bug del carrito — reproduciendo')
+    renderWithProviders(<VidaModuleLayout />)
+
+    expect(screen.getByText('Bug del carrito — reproduciendo')).toBeInTheDocument()
+    expect(screen.queryByText('¿Qué estás haciendo?')).not.toBeInTheDocument()
+  })
+
+  /**
+   * **El criterio 543, que es el delicado.** No se declara: se afirma con lo
+   * que **no** pasó —ninguna acción de sesión llamada— y con lo que **sigue
+   * pasando**: el cronómetro avanza con la hoja abierta y la barra sigue ahí.
+   */
+  it('criterio 543 — abrir el editor no pausa, no termina y no cierra la barra', () => {
+    running('Bug del carrito')
+    renderWithProviders(<VidaModuleLayout />)
+    expect(screen.getByText('00:24:00')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Bug del carrito/ }))
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('dialog')).getByRole('heading', { name: '¿Qué estás haciendo?' }),
+    ).toBeInTheDocument()
+
+    // Nada de la sesión se ha tocado.
+    expect(sessionActions.finishNow).not.toHaveBeenCalled()
+    expect(sessionActions.finishWith).not.toHaveBeenCalled()
+    expect(sessionActions.discard).not.toHaveBeenCalled()
+    expect(sessionActions.start).not.toHaveBeenCalled()
+    expect(saveNote).not.toHaveBeenCalled()
+
+    // La barra sigue entera **y el cronómetro sigue contando** con la hoja
+    // abierta: cinco segundos después marca cinco segundos más.
+    expect(screen.getByRole('button', { name: 'Terminar' })).toBeInTheDocument()
+    act(() => {
+      vi.advanceTimersByTime(5000)
+    })
+    expect(screen.getByText('00:24:05')).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('criterio 544 — guardar escribe **solo** la nota de esa sesión, y la sesión sigue', async () => {
+    running(null)
+    renderWithProviders(<VidaModuleLayout />)
+
+    fireEvent.click(screen.getByRole('button', { name: '¿Qué estás haciendo?' }))
+    fireEvent.change(screen.getByLabelText('¿Qué estás haciendo?'), {
+      target: { value: 'Bug del carrito' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    await flushSave()
+    expect(saveNote).toHaveBeenCalledTimes(1)
+    // **La sesión entera, no un id suelto**: lo que se manda es la que está
+    // abierta, y se manda solo la nota.
+    expect(saveNote.mock.calls[0]![0]).toMatchObject({ id: 'f1', isOpen: true })
+    expect(saveNote.mock.calls[0]![1]).toBe('Bug del carrito')
+    // Guardar la nota **no termina nada**: la barra sigue con su «Terminar».
+    expect(sessionActions.finishNow).not.toHaveBeenCalled()
+    expect(sessionActions.finishWith).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Terminar' })).toBeInTheDocument()
+  })
+
+  it('criterio 545 — se reescribe las veces que haga falta, sin límite', async () => {
+    running('Revisando MRs')
+    renderWithProviders(<VidaModuleLayout />)
+
+    for (const texto of ['Daily', 'Soporte']) {
+      fireEvent.click(screen.getByRole('button', { name: /Revisando MRs/ }))
+      // La hoja se remonta limpia en cada apertura (`key` por apertura): cada
+      // vez arranca de lo que hay guardado, no de lo que se escribió la vez
+      // anterior.
+      expect(screen.getByLabelText('¿Qué estás haciendo?')).toHaveValue('Revisando MRs')
+      fireEvent.change(screen.getByLabelText('¿Qué estás haciendo?'), {
+        target: { value: texto },
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+      await flushSave()
+    }
+
+    // Dos reescrituras, dos guardados, **ningún** tope ni bloqueo por el medio.
+    expect(saveNote).toHaveBeenCalledTimes(2)
+    expect(saveNote.mock.calls.map((call) => call[1])).toEqual(['Daily', 'Soporte'])
+    expect(sessionActions.finishNow).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Terminar' })).toBeInTheDocument()
+  })
+
+  it('criterio 546 — el editor ofrece las últimas notas de **esa** actividad', () => {
+    running(null)
+    noteHistory = { suggestions: ['Revisando MRs', 'Daily + planning'], isPending: false }
+    renderWithProviders(<VidaModuleLayout />)
+
+    // Cerrado: la consulta ni se enciende (cero consultas nuevas al entrar).
+    expect(noteHistoryCalls.every((call) => call.enabled === false)).toBe(true)
+
+    fireEvent.click(screen.getByRole('button', { name: '¿Qué estás haciendo?' }))
+
+    const ultima = noteHistoryCalls.at(-1)!
+    expect(ultima).toMatchObject({ activityId: 'a-casa', enabled: true, excludeId: 'f1' })
+    const seccion = screen.getByLabelText('Lo de otras veces')
+    expect(within(seccion).getByRole('button', { name: 'Revisando MRs' })).toBeInTheDocument()
+
+    fireEvent.click(within(seccion).getByRole('button', { name: 'Revisando MRs' }))
+    expect(screen.getByLabelText('¿Qué estás haciendo?')).toHaveValue('Revisando MRs')
+  })
+
+  it('criterio 547 — sin notas previas no hay sección de píldoras ni explicación', () => {
+    running(null)
+    noteHistory = { suggestions: [], isPending: false }
+    renderWithProviders(<VidaModuleLayout />)
+
+    fireEvent.click(screen.getByRole('button', { name: '¿Qué estás haciendo?' }))
+
+    const hoja = screen.getByRole('dialog')
+    expect(within(hoja).queryByLabelText('Lo de otras veces')).not.toBeInTheDocument()
+    expect(within(hoja).queryByText(/todav|ningun|primera vez|error/i)).not.toBeInTheDocument()
+  })
+
+  it('la sesión de otro día no estrena la línea: ahí lo que se pregunta es la hora', () => {
+    openSession = {
+      session: followUp({ date: '2026-09-17', startTime: '21:00' }),
+      startInstant: new Date(2026, 8, 17, 21, 0, 0),
+      isFromAnotherDay: true,
+      isDisabled: false,
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    }
+    renderWithProviders(<VidaModuleLayout />)
+
+    expect(screen.queryByRole('button', { name: '¿Qué estás haciendo?' })).not.toBeInTheDocument()
   })
 })

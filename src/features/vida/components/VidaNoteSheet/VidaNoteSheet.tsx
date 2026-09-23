@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { VIDA_NOTE_SUGGESTIONS_LABEL } from '@/features/vida/utils/vida-notes.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 import { SteppedModal } from '@/shared/ui/SteppedModal'
@@ -138,18 +139,21 @@ export function VidaNoteSheet({
         {/* «Lo de otras veces» (tajada 2). Sin píldoras **no se pinta nada**:
             ni esqueleto, ni hueco, ni explicación (criterio 547). */}
         {pills.length > 0 ? (
-          <section className={styles.pills} aria-label="Lo de otras veces">
-            {pills.map((pill) => (
-              <button
-                key={pill}
-                type="button"
-                className={styles.pill}
-                disabled={isSaving}
-                onClick={() => setValue(pill)}
-              >
-                {pill}
-              </button>
-            ))}
+          <section className={styles.pills} aria-label={VIDA_NOTE_SUGGESTIONS_LABEL}>
+            <p className={styles.pillsLabel}>{VIDA_NOTE_SUGGESTIONS_LABEL}</p>
+            <div className={styles.pillsRow}>
+              {pills.map((pill) => (
+                <button
+                  key={pill}
+                  type="button"
+                  className={styles.pill}
+                  disabled={isSaving}
+                  onClick={() => setValue(pill)}
+                >
+                  {pill}
+                </button>
+              ))}
+            </div>
           </section>
         ) : null}
 

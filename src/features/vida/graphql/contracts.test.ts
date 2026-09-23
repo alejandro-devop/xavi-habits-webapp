@@ -86,6 +86,8 @@ describe('contratos GraphQL de Vida contra el esquema real', () => {
       'ACTIVITY_FOLLOW_UP_REMOVE_MUTATION',
       'ACTIVITY_FOLLOW_UP_START_MUTATION',
       'ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION',
+      // «Lo de otras veces» (FEAT-018, tajada 2).
+      'ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY',
       'ACTIVITY_FOLLOW_UPS_IN_DATES_QUERY',
       'ACTIVITY_OPEN_FOLLOW_UP_QUERY',
       'ACTIVITY_DAY_PLAN_ITEM_ADD_MUTATION',

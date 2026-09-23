@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>El arco, lo que falta</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --work:#38bdf8; --work-2:#0ea5e9;
+    --ok:#10b981; --mid:#f59e0b; --bad:#f43f5e;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 70px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:900px;margin:0 0 4px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:40px 0 12px}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:0;line-height:1.65}
+  .note b{color:#e2e8f0}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .ctitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#7dd3fc}
+  .ctitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:3px;font-size:11.5px;line-height:1.5}
+
+  .phone{width:100%;max-width:340px;border-radius:32px;padding:8px;background:#020617;box-shadow:0 22px 52px -22px rgba(0,0,0,.9)}
+  .screen{border-radius:26px;background:var(--bg);padding:12px 11px 14px}
+  .budget{padding:9px 10px;border-radius:14px;background:var(--card);border:1px solid var(--edge);opacity:.55}
+  .budget .bd{font-size:12px;font-weight:700;letter-spacing:-.01em}
+  .budget .br{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:1px}
+  .budget .btrack{display:flex;height:6px;border-radius:999px;overflow:hidden;margin:8px 0 0;background:rgba(148,163,184,.12)}
+  .budget .btrack span{display:block;height:100%}
+  .ghosted{margin:5px 0 9px;text-align:center;font-family:'Inter',sans-serif;font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:#475569}
+
+  .one{padding:12px 12px 10px;border-radius:16px;background:linear-gradient(180deg,rgba(56,189,248,.08),var(--card-2));border:1px solid rgba(56,189,248,.24)}
+  .one.g{background:linear-gradient(180deg,rgba(16,185,129,.09),var(--card-2));border-color:rgba(16,185,129,.28)}
+  .one.m{background:linear-gradient(180deg,rgba(245,158,11,.09),var(--card-2));border-color:rgba(245,158,11,.30)}
+  .one.b{background:linear-gradient(180deg,rgba(244,63,94,.09),var(--card-2));border-color:rgba(244,63,94,.30)}
+  .ohead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .olabel{font-size:12.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+  .olabel i{font-style:normal;font-size:12px}
+  .ocount{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ocount b{color:#7dd3fc;font-weight:700}
+  .bigarc{display:flex;justify-content:center;margin:6px 0 -12px}
+  .bigarc svg{width:100%;max-width:210px;height:auto;display:block}
+  .osub{margin:16px 0 0;font-family:'Inter',sans-serif;font-size:11px;line-height:1.5;color:var(--ink-soft);text-align:center}
+  .osub b{color:#e2e8f0;font-weight:700}
+
+  .acap{fill:var(--ink-dim);font-family:'Inter',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .anum{fill:#f8fafc;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:-.02em}
+  .aend{fill:#475569;font-family:'Inter',sans-serif;font-weight:700}
+
+  /* tira de momentos del mismo día */
+  .strip{display:flex;gap:6px;padding:11px 9px 9px;border-radius:16px;background:var(--card-2);border:1px solid var(--edge)}
+  .mom{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:5px 2px 3px;border-radius:11px}
+  .mtime{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:var(--ink-dim)}
+  .mom svg{width:100%;max-width:74px;height:auto;display:block;margin:2px 0 -5px}
+  .mleft{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+  .mdot{width:7px;height:7px;border-radius:999px;margin-top:4px}
+  .verdict{margin:9px 2px 0;font-family:'Inter',sans-serif;font-size:11px;line-height:1.55;color:var(--ink-soft);text-align:center}
+  .verdict b{color:#e2e8f0}
+
+  .flag{display:inline-block;font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:3px 7px;border-radius:999px}
+  .flag.bad{background:rgba(244,63,94,.14);color:#fda4af}
+  .flag.ok{background:rgba(16,185,129,.14);color:#6ee7b7}
+
+  /* ajustes */
+  .set{padding:11px 12px;border-radius:16px;background:var(--card-2);border:1px solid var(--edge)}
+  .setrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .setname{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:7px}
+  .setname i{font-style:normal}
+  .setval{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .days{display:flex;gap:5px;margin-top:11px}
+  .day{flex:1 1 0;text-align:center;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;padding:7px 0;border-radius:9px;background:rgba(148,163,184,.10);color:#475569;border:1px solid transparent}
+  .day.on{background:rgba(56,189,248,.16);color:#7dd3fc;border-color:rgba(56,189,248,.34)}
+  .sethint{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin:9px 0 0;line-height:1.5}
+
+  .empty{padding:14px 12px;border-radius:16px;background:var(--card-2);border:1px dashed var(--edge);text-align:center}
+  .empty p{margin:0;font-family:'Inter',sans-serif;font-size:11px;color:#475569;line-height:1.55}
+
+  .ask{margin:44px 0 0;padding:16px 18px;border-radius:16px;background:linear-gradient(180deg,rgba(56,189,248,.07),var(--card-2));border:1px solid rgba(56,189,248,.22)}
+  .ask h2{font-size:14px;margin:0 0 8px;letter-spacing:-.01em}
+  .ask ol{margin:0;padding-left:19px;font-size:12.5px;color:var(--ink-soft);line-height:1.75}
+  .ask b{color:#f1f5f9}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>El arco: lo que te falta, y cuándo se pone en rojo</h1>
+  <p class="lede">Tres cambios que pediste. <b>El primero lo hago sin preguntar</b>: dentro del arco va el tiempo que falta, no la hora de acabar. <b>El tercero también</b>: el arco no aparece los días que no trabajas. <b>El segundo tiene una decisión tuya</b>, y es para lo que es este render: el semáforo puede medir dos cosas distintas y dan colores opuestos a la misma hora del mismo día.</p>
+
+  <p class="caption">1 · Dentro del arco va lo que falta</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="ctitle">Antes<small>La hora a la que acabarías. Es lo que hay hoy en producción.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bd">Lunes 22 de septiembre · 13:25</div>
+          <div class="br">te quedan 9h 35m hasta las 23:00</div>
+          <div class="btrack"><span style="width:44%;background:var(--work-2)"></span><span style="width:8%;background:#7c3aed"></span><span style="width:48%;background:rgba(148,163,184,.25)"></span></div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+        <div class="one">
+          <div class="ohead"><span class="olabel"><i>💼</i> Trabajo</span><span class="ocount"><b>3h 30</b> de 8h</span></div>
+          <div class="bigarc">
+            <svg viewBox="0 0 220 124">
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="14" stroke-linecap="round" pathLength="100" />
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--work)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="44 100" />
+              <text class="acap" x="110" y="58" text-anchor="middle">A ESTE RITMO</text>
+              <text class="acap" x="110" y="71" text-anchor="middle">PARAS A LAS</text>
+              <text class="anum" x="110" y="101" text-anchor="middle" font-size="32">17:55</text>
+              <text class="aend" x="18" y="121" text-anchor="start" font-size="9.5">0h</text>
+              <text class="aend" x="202" y="121" text-anchor="end" font-size="9.5">8h</text>
+            </svg>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Tuviste que preguntarme si era una hora o el tiempo que falta. <b>Si hay que preguntarlo, no sirve.</b></p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">Después<small>Lo que falta para las 8h. El arco ya mide eso: ahora el número lo dice.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bd">Lunes 22 de septiembre · 13:25</div>
+          <div class="br">te quedan 9h 35m hasta las 23:00</div>
+          <div class="btrack"><span style="width:44%;background:var(--work-2)"></span><span style="width:8%;background:#7c3aed"></span><span style="width:48%;background:rgba(148,163,184,.25)"></span></div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+        <div class="one">
+          <div class="ohead"><span class="olabel"><i>💼</i> Trabajo</span><span class="ocount"><b>3h 30</b> de 8h</span></div>
+          <div class="bigarc">
+            <svg viewBox="0 0 220 124">
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="14" stroke-linecap="round" pathLength="100" />
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--work)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="44 100" />
+              <text class="acap" x="110" y="66" text-anchor="middle">TE FALTAN</text>
+              <text class="anum" x="110" y="101" text-anchor="middle" font-size="34">4h 30</text>
+              <text class="aend" x="18" y="121" text-anchor="start" font-size="9.5">0h</text>
+              <text class="aend" x="202" y="121" text-anchor="end" font-size="9.5">8h</text>
+            </svg>
+          </div>
+          <p class="osub">A este ritmo paras a las <b>17:55</b>.</p>
+        </div>
+      </div></div>
+      <p class="note">La hora <b>no se pierde</b>: baja a la línea de abajo, en letra pequeña, donde ya vive la sesión en marcha. Sigue ahí el día que quieras saberla, pero deja de ser lo primero que ves.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">Y cuando ya pasaste las 8h<small>El único caso donde «lo que falta» no existe.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bd">Lunes 22 de septiembre · 19:40</div>
+          <div class="br">te quedan 3h 20m hasta las 23:00</div>
+          <div class="btrack"><span style="width:62%;background:var(--work-2)"></span><span style="width:10%;background:#7c3aed"></span><span style="width:28%;background:rgba(148,163,184,.25)"></span></div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+        <div class="one">
+          <div class="ohead"><span class="olabel"><i>💼</i> Trabajo</span><span class="ocount"><b>9h 10</b> de 8h</span></div>
+          <div class="bigarc">
+            <svg viewBox="0 0 220 124">
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="14" stroke-linecap="round" pathLength="100" />
+              <path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--work)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="100 100" />
+              <text class="acap" x="110" y="58" text-anchor="middle">PASASTE LAS 8H</text>
+              <text class="acap" x="110" y="71" text-anchor="middle">A LAS</text>
+              <text class="anum" x="110" y="101" text-anchor="middle" font-size="32">18:30</text>
+              <text class="aend" x="18" y="121" text-anchor="start" font-size="9.5">0h</text>
+              <text class="aend" x="202" y="121" text-anchor="end" font-size="9.5">8h</text>
+            </svg>
+          </div>
+        </div>
+      </div></div>
+      <p class="note">Aquí sigue siendo una hora, porque no falta nada: dice <b>a qué hora cruzaste</b> las ocho. Sin «llevas demasiado», sin exclamación y sin rojo — eso no ha cambiado.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">2 · El semáforo · la decisión que es tuya</p>
+  <p class="lede" style="margin-bottom:14px">El mismo día, las mismas horas trabajadas, los mismos cuatro momentos. Solo cambia <b>qué mide el color</b>. Mira la primera columna de cada tira: son las nueve y cuarto de la mañana de un lunes normal.</p>
+
+  <div class="row">
+
+    <div class="col">
+      <div class="ctitle">Lectura A · por cuánto llevas<small>Lo que pediste, literal: verde desde el 90%, naranja cerca, rojo si no.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="strip">
+          <div class="mom">
+            <span class="mtime">9:15</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--bad)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="3 100"/></svg>
+            <span class="mleft" style="color:#fda4af">7h 45</span>
+            <span class="mdot" style="background:var(--bad)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">13:25</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--bad)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="44 100"/></svg>
+            <span class="mleft" style="color:#fda4af">4h 30</span>
+            <span class="mdot" style="background:var(--bad)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">17:00</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--mid)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="81 100"/></svg>
+            <span class="mleft" style="color:#fcd34d">1h 30</span>
+            <span class="mdot" style="background:var(--mid)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">19:00</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--ok)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="94 100"/></svg>
+            <span class="mleft" style="color:#6ee7b7">30m</span>
+            <span class="mdot" style="background:var(--ok)"></span>
+          </div>
+        </div>
+        <p class="verdict">Rojo hasta media tarde. <b>Verde solo en la última media hora del día.</b></p>
+      </div></div>
+      <p class="note"><span class="flag bad">el precio</span><br>A las 9:15 llevas 15 minutos de 8 horas, así que estás en rojo. Y a las 11, y a las 12. <b>El arco te regaña por ir al ritmo normal de un lunes.</b> Es el único sitio del módulo que lo haría: todo lo demás está escrito para no juzgarte. Con esta lectura, el color no te dice nada que no diga ya el propio arco — solo le pone tono.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">Lectura B · por si te va a dar tiempo<small>Mismo verde, naranja y rojo. Lo que mide es si llegas a las 8h antes de que se te acabe el día.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="strip">
+          <div class="mom">
+            <span class="mtime">9:15</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--ok)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="3 100"/></svg>
+            <span class="mleft" style="color:#6ee7b7">7h 45</span>
+            <span class="mdot" style="background:var(--ok)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">13:25</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--ok)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="44 100"/></svg>
+            <span class="mleft" style="color:#6ee7b7">4h 30</span>
+            <span class="mdot" style="background:var(--ok)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">17:00</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--ok)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="81 100"/></svg>
+            <span class="mleft" style="color:#6ee7b7">1h 30</span>
+            <span class="mdot" style="background:var(--ok)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">19:00</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--ok)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="94 100"/></svg>
+            <span class="mleft" style="color:#6ee7b7">30m</span>
+            <span class="mdot" style="background:var(--ok)"></span>
+          </div>
+        </div>
+        <p class="verdict">Un lunes que va bien es <b>verde de principio a fin</b>. Como debe ser.</p>
+      </div></div>
+      <p class="note"><span class="flag ok">lo que gana</span><br>El color solo se mueve cuando hay algo que decidir. Mira la tira de abajo: <b>es otro día distinto</b>, uno que se torció.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">Lectura B · un día que se tuerce<small>Empiezas tarde y se te va la mañana. Aquí el color sí trabaja.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="strip">
+          <div class="mom">
+            <span class="mtime">9:15</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--ok)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="1 100"/></svg>
+            <span class="mleft" style="color:#6ee7b7">8h</span>
+            <span class="mdot" style="background:var(--ok)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">13:25</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--mid)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="13 100"/></svg>
+            <span class="mleft" style="color:#fcd34d">7h</span>
+            <span class="mdot" style="background:var(--mid)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">17:00</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--bad)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="38 100"/></svg>
+            <span class="mleft" style="color:#fda4af">5h</span>
+            <span class="mdot" style="background:var(--bad)"></span>
+          </div>
+          <div class="mom">
+            <span class="mtime">19:00</span>
+            <svg viewBox="0 0 220 124"><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="rgba(148,163,184,.15)" stroke-width="16" stroke-linecap="round" pathLength="100"/><path d="M22 106 A 88 88 0 0 1 198 106" fill="none" stroke="var(--bad)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="50 100"/></svg>
+            <span class="mleft" style="color:#fda4af">4h</span>
+            <span class="mdot" style="background:var(--bad)"></span>
+          </div>
+        </div>
+        <p class="verdict">A las 13:25 naranja: <b>aún llegas, pero cenas tarde.</b> A las 17:00 rojo: ya no cabe antes de las 23:00.</p>
+      </div></div>
+      <p class="note">El umbral no es un porcentaje, es una resta que el módulo <b>ya hace</b>: «te quedan 9h 35m hasta las 23:00», la línea que está justo encima del arco. <b>Verde</b>, te sobra más de una hora. <b>Naranja</b>, cabe justo. <b>Rojo</b>, hoy ya no da.</p>
+    </div>
+
+  </div>
+
+  <p class="caption">3 · Los días que no trabajas</p>
+  <div class="row">
+
+    <div class="col">
+      <div class="ctitle">Sábado<small>Ni arco, ni pregunta, ni hueco donde estaba.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="budget">
+          <div class="bd">Sábado 27 de septiembre · 11:05</div>
+          <div class="br">te quedan 11h 55m hasta las 23:00</div>
+          <div class="btrack"><span style="width:14%;background:#10b981"></span><span style="width:86%;background:rgba(148,163,184,.25)"></span></div>
+        </div>
+        <div class="ghosted">↑ lo que ya existe</div>
+        <div class="empty"><p>Aquí no va nada.<br>El sábado no es un día de trabajo,<br>así que no hay nada que contar.</p></div>
+      </div></div>
+      <p class="note">Y sobre todo: <b>el sábado no cuenta como un día en rojo.</b> No es que no llegaras a las 8h — es que ese día la meta no existe. Lo que trabajes un sábado <b>se sigue registrando</b>, simplemente no se mide contra nada.</p>
+    </div>
+
+    <div class="col">
+      <div class="ctitle">Dónde se elige<small>Ajustes → Metas. Una fila, siete botones.</small></div>
+      <div class="phone"><div class="screen">
+        <div class="set">
+          <div class="setrow">
+            <span class="setname"><i>💼</i> Trabajo</span>
+            <span class="setval">8h al día</span>
+          </div>
+          <div class="days">
+            <span class="day on">L</span><span class="day on">M</span><span class="day on">X</span><span class="day on">J</span><span class="day on">V</span><span class="day">S</span><span class="day">D</span>
+          </div>
+          <p class="sethint">El arco aparece solo estos días. De lunes a viernes, de partida.</p>
+        </div>
+        <div style="height:9px"></div>
+        <div class="set" style="opacity:.5">
+          <div class="setrow">
+            <span class="setname"><i>😴</i> Sueño</span>
+            <span class="setval">7h al día</span>
+          </div>
+          <div class="days">
+            <span class="day on">L</span><span class="day on">M</span><span class="day on">X</span><span class="day on">J</span><span class="day on">V</span><span class="day on">S</span><span class="day on">D</span>
+          </div>
+          <p class="sethint">Los siete días. Dormir no se toma el fin de semana libre.</p>
+        </div>
+      </div></div>
+      <p class="note">Va en la <b>meta</b>, no en la categoría: por eso el día que tengas «Sueño» o «Estudiar» cada una trae sus propios días sin rediseñar nada. La de abajo está apagada solo para enseñarte que <b>esto no es una pantalla nueva</b>: es la fila de la meta, con una línea más.</p>
+    </div>
+
+  </div>
+
+  <div class="ask">
+    <h2>Lo único que necesito de ti</h2>
+    <ol>
+      <li><b>¿Lectura A o lectura B?</b> La A es lo que pediste al pie de la letra y te deja en rojo toda la mañana. La B usa los mismos tres colores pero mide si <b>te va a dar tiempo hoy</b>, que es cuando el color sirve para decidir algo. <b>Yo haría la B</b> — pero si quieres la A la hago, es tu app y llevas usándola más que yo.</li>
+      <li><b>De lunes a viernes de partida, ¿te vale?</b> Es lo que dijiste que haces. Si prefieres que arranque con los siete días marcados y tú quitas, también.</li>
+      <li>Esto necesita <b>una columna nueva</b> en la tabla de metas, así que lleva migración y un empujón tuyo al repositorio del API. Te aviso cuando esté para que lo mandes.</li>
+    </ol>
+  </div>
+
+</div>
+</body>
+</html>

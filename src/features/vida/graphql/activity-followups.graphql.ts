@@ -131,3 +131,30 @@ export const ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION = `
     }
   }
 `
+
+/**
+ * **«Lo de otras veces»** (FEAT-018, criterio 546): las últimas sesiones de
+ * **una** actividad, para sacar de ahí tres píldoras de un toque.
+ *
+ * `activityFollowUps` ya estaba en el esquema y ya estaba resuelto
+ * (`listFollowUps`): devuelve **solo sesiones cerradas** —`duration_minutes IS
+ * NOT NULL`— y ordena por `date DESC, start_time DESC`, así que la sesión que
+ * está corriendo ahora mismo nunca se ofrece a sí misma como píldora.
+ *
+ * **La selección es corta a propósito** y **no** usa `FOLLOW_UP_FIELDS`: para
+ * tres píldoras no hacen falta ni `sessionSubtasksCount` —que son N resoluciones
+ * más en el servidor, una por fila— ni la actividad, que quien abre el editor ya
+ * tiene delante. `date` y `startTime` viajan solo para poder leer la respuesta
+ * en un depurador; `id` es lo que permite excluir la sesión que se está
+ * editando.
+ */
+export const ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY = `
+  query ActivityFollowUpsByActivity($activityId: ID, $limit: Int) {
+    activityFollowUps(activityId: $activityId, limit: $limit) {
+      id
+      date
+      startTime
+      notes
+    }
+  }
+`

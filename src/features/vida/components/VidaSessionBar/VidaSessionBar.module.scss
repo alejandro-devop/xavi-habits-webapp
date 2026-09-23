@@ -14,10 +14,14 @@
   pointer-events: none;
 }
 
+/* La tarjeta de vidrio. **Es una columna desde FEAT-018**: arriba la fila de
+   siempre (nombre, cronómetro, «Terminar») y debajo la línea de «qué estás
+   haciendo», dentro de la misma tarjeta, como el punto 2 del render 19. El
+   hueco entre las dos lo pone `VidaNoteLine` con su `margin-top`, así que sin
+   línea la barra mide **exactamente** lo que medía antes. */
 .bar {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  flex-direction: column;
   width: 100%;
   max-width: 44rem;
   min-width: 0;
@@ -29,6 +33,13 @@
   -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--shadow-lg, var(--shadow-md));
   pointer-events: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
 .identity {

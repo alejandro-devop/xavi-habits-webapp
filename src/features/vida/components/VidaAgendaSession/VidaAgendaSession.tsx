@@ -4,6 +4,10 @@ import { useDeleteActivityFollowUpMutation } from '@/features/vida/hooks/useActi
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { ExecutionSessionEntry } from '@/features/vida/utils/vida-execution.utils'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
+import {
+  VIDA_NOTE_ADD_LABEL,
+  VIDA_NOTE_QUESTION_RUNNING,
+} from '@/features/vida/utils/vida-notes.utils'
 import { formatTimeForDisplay, minutesToTime } from '@/features/vida/utils/vida-time.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
@@ -141,9 +145,18 @@ export function VidaAgendaSession({
           <p className={styles.name}>{entry.span.title}</p>
           {/* Lo que hiciste dentro de este rato (criterio 535), entre el nombre
               y la hora. Sin nota y sin poder escribirla, no deja hueco. */}
+          {/* Con la sesión en marcha la pregunta es otra (criterios 532 y
+              542), y es **la misma** que la del bloque del plan y la de la
+              barra: las tres filas no pueden divergir. */}
           <VidaNoteLine
             text={note}
-            placeholder={onEditNote ? 'añadir qué hiciste' : null}
+            placeholder={
+              onEditNote
+                ? entry.span.isRunning
+                  ? VIDA_NOTE_QUESTION_RUNNING
+                  : VIDA_NOTE_ADD_LABEL
+                : null
+            }
             onEdit={onEditNote}
           />
           <p className={styles.meta}>

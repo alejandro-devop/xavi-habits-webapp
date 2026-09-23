@@ -5,6 +5,7 @@ import {
   ACTIVITY_FOLLOW_UP_REMOVE_MUTATION,
   ACTIVITY_FOLLOW_UP_START_MUTATION,
   ACTIVITY_FOLLOW_UP_SUBTASK_EDIT_MUTATION,
+  ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY,
   ACTIVITY_FOLLOW_UPS_IN_DATES_QUERY,
   ACTIVITY_OPEN_FOLLOW_UP_QUERY,
 } from '@/features/vida/graphql/activity-followups.graphql'
@@ -26,6 +27,22 @@ type ActivityDayFollowUpsData = {
 
 type ActivityFollowUpsInDatesData = {
   activityFollowUpsInDates: ActivityFollowUpsDateGroup[]
+}
+
+/**
+ * La fila corta de «lo de otras veces» (FEAT-018): lo justo para sacar una
+ * píldora. No es un `ActivityFollowUp` entero **a propósito** — ver el
+ * documento.
+ */
+export type ActivityFollowUpNoteRow = {
+  id: string
+  date: string
+  startTime: string
+  notes: string | null
+}
+
+type ActivityFollowUpsByActivityData = {
+  activityFollowUps: ActivityFollowUpNoteRow[]
 }
 
 type ActivityOpenFollowUpData = {
@@ -74,6 +91,22 @@ export async function getActivityFollowUpsInDates(
     { from, to },
   )
   return data.activityFollowUpsInDates ?? []
+}
+
+/**
+ * Las últimas sesiones **cerradas** de una actividad, de la más reciente a la
+ * más vieja (FEAT-018, criterio 546). El `limit` lo acota el API: su validador
+ * admite `int positivo <= 500`.
+ */
+export async function getActivityFollowUpsByActivity(
+  activityId: string,
+  limit: number,
+): Promise<ActivityFollowUpNoteRow[]> {
+  const data = await graphqlRequest<
+    ActivityFollowUpsByActivityData,
+    { activityId: string; limit: number }
+  >(ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY, { activityId, limit })
+  return data.activityFollowUps ?? []
 }
 
 export async function startActivityFollowUp(

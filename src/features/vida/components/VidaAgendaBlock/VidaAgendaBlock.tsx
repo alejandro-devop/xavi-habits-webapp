@@ -13,6 +13,10 @@ import type {
   BlockInstead,
   BlockMissingStatus,
 } from '@/features/vida/utils/vida-execution.utils'
+import {
+  VIDA_NOTE_ADD_LABEL,
+  VIDA_NOTE_QUESTION_RUNNING,
+} from '@/features/vida/utils/vida-notes.utils'
 import { describeOverPlan } from '@/features/vida/utils/vida-session.utils'
 import {
   formatDurationMinutes,
@@ -100,12 +104,16 @@ type VidaAgendaBlockProps = {
    * Aditivo: sin estas dos props el bloque se pinta exactamente como antes.
    */
 
-  /** Lo que se escribió en la sesión de este bloque (criterio 535). */
+  /** Lo que se escribió en la sesión de este bloque (criterios 535 y 542). */
   note?: string | null
   /**
-   * Abre el editor de la nota. **Sin esto no se ofrece el «＋ añadir qué
-   * hiciste»** (criterios 536 y 537): ni en un día futuro, ni sobre la sesión
-   * que sigue en marcha —esa línea es de la tajada 2—.
+   * Abre el editor de la nota. **Sin esto no se ofrece nada** (criterio 537):
+   * en un día futuro la línea no existe.
+   *
+   * **Con el bloque en marcha la pregunta cambia** (criterios 532 y 542): se
+   * lee «¿Qué estás haciendo?» en vez de «＋ añadir qué hiciste», que es lo
+   * que se pregunta de algo que ya terminó. El «＋ añadir qué hiciste» del
+   * criterio 537 **nunca** aparece sobre una sesión en marcha.
    */
   onEditNote?: () => void
 }
@@ -344,7 +352,13 @@ export function VidaAgendaBlock({
               hueco: una línea vacía en cada fila sería ruido diario. */}
           <VidaNoteLine
             text={note}
-            placeholder={onEditNote ? 'añadir qué hiciste' : null}
+            placeholder={
+              onEditNote
+                ? isRunning
+                  ? VIDA_NOTE_QUESTION_RUNNING
+                  : VIDA_NOTE_ADD_LABEL
+                : null
+            }
             onEdit={onEditNote}
           />
           <p className={styles.meta}>

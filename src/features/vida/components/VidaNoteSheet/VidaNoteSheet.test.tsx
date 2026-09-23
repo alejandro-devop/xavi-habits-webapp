@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { VidaNoteSheet } from '@/features/vida/components/VidaNoteSheet'
@@ -118,5 +118,35 @@ describe('VidaNoteSheet', () => {
 
     expect(screen.queryByRole('region', { name: 'Lo de otras veces' })).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Lo de otras veces')).not.toBeInTheDocument()
+  })
+
+  /* ── «Lo de otras veces» (tajada 2, criterios 546 y 547) ───────────────── */
+
+  it('criterio 546 — las píldoras se pintan con su rótulo y una la escribe entera', async () => {
+    const user = userEvent.setup()
+    const { onSave } = renderSheet({
+      title: '¿Qué estás haciendo?',
+      suggestions: ['Revisando MRs', 'Daily + planning del sprint', 'Soporte y tickets'],
+    })
+
+    const seccion = screen.getByLabelText('Lo de otras veces')
+    expect(within(seccion).getByText('Lo de otras veces')).toBeInTheDocument()
+    expect(within(seccion).getAllByRole('button')).toHaveLength(3)
+
+    await user.click(screen.getByRole('button', { name: 'Daily + planning del sprint' }))
+    expect(screen.getByLabelText('¿Qué estás haciendo?')).toHaveValue('Daily + planning del sprint')
+
+    // **Texto de partida, no texto final** (criterio 546): se sigue editando.
+    await user.type(screen.getByLabelText('¿Qué estás haciendo?'), ' y retro')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(onSave).toHaveBeenCalledWith('Daily + planning del sprint y retro')
+  })
+
+  it('criterio 547 — con la consulta en vuelo no hay ni esqueleto ni hueco', () => {
+    renderSheet({ suggestions: [], isSuggestionsPending: true })
+
+    expect(screen.queryByLabelText('Lo de otras veces')).not.toBeInTheDocument()
+    // Ni un aviso, ni un «todavía no tienes»: sencillamente no está.
+    expect(screen.queryByText(/todav|ningun|vac|error/i)).not.toBeInTheDocument()
   })
 })

@@ -8,7 +8,11 @@
    esto taparía el último bloque de la agenda y los botones de una hoja abierta
    en 375 px. Es la altura de la barra más su separación del borde. */
 .root[data-session-bar='on'] {
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  /* 4,5rem era la barra de una sola fila. Desde FEAT-018 lleva debajo la línea
+     de «qué estás haciendo»: medido en el navegador a 375 px, la barra pasa de
+     **69 px a 117 px**, exactamente 3rem más. Sin ampliar el hueco taparía el
+     último bloque de la agenda, que es justo lo que el criterio 60 evita. */
+  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* El aviso de que no se pudo saber si hay algo en marcha (hallazgo 1 de la

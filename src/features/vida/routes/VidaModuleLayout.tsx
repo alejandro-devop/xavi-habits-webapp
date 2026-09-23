@@ -9,10 +9,15 @@ import {
   useVidaOpenSession,
   useVidaSessionPlannedMinutes,
 } from '@/features/vida/hooks/useVidaOpenSession'
+import { useVidaActivityNoteHistory } from '@/features/vida/hooks/useVidaActivityNoteHistory'
 import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActions'
 import { useVidaSessionNote } from '@/features/vida/hooks/useVidaSessionNote'
 import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import {
+  VIDA_NOTE_QUESTION_DONE,
+  VIDA_NOTE_QUESTION_RUNNING,
+} from '@/features/vida/utils/vida-notes.utils'
 import { formatTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
@@ -75,6 +80,16 @@ export function VidaModuleLayout() {
 
   const actions = useVidaSessionActions({ onAddNote: openFinish })
   const { saveNote } = useVidaSessionNote()
+  /**
+   * «Lo de otras veces» (criterio 546). **Solo con el editor abierto**: sin
+   * hoja no hay consulta, así que entrar en cualquier pantalla del módulo
+   * cuesta exactamente lo mismo que antes de esta feature.
+   */
+  const noteHistory = useVidaActivityNoteHistory({
+    activityId: noting?.activityId ?? null,
+    enabled: noteOpen && noting !== null,
+    excludeId: noting?.id ?? null,
+  })
   // Lo que el bloque en marcha de la agenda necesita del layout: abrir el
   // cierre completo y el editor de la nota. Va por contexto porque entre los
   // dos hay un `Outlet`.
@@ -123,6 +138,11 @@ export function VidaModuleLayout() {
           isBusy={actions.isBusy}
           onFinish={() => void actions.finishNow()}
           onOpenFinishModal={() => openFinish(session)}
+          // **Qué estás haciendo** (FEAT-018, criterios 542 a 545). Abrir el
+          // editor es solo abrir una hoja: ni pausa, ni termina, ni desmonta
+          // la barra (criterio 543).
+          note={session.notes}
+          onEditNote={() => openNote(session)}
         />
       ) : null}
 
@@ -145,9 +165,11 @@ export function VidaModuleLayout() {
           key={noteSession}
           open={noteOpen}
           onClose={() => setNoteOpen(false)}
-          title={noting.isOpen ? '¿Qué estás haciendo?' : '¿Qué hiciste?'}
+          title={noting.isOpen ? VIDA_NOTE_QUESTION_RUNNING : VIDA_NOTE_QUESTION_DONE}
           subtitle={noteSubtitle(noting)}
           initialValue={noting.notes ?? ''}
+          suggestions={noteHistory.suggestions}
+          isSuggestionsPending={noteHistory.isPending}
           onSave={(notes) => saveNote(noting, notes)}
         />
       ) : null}

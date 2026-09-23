@@ -47,6 +47,15 @@ export const vidaKeys = {
     day: (date: string) => [...vidaKeys.followUps.all(), 'day', date] as const,
     range: (from: string, to: string) =>
       [...vidaKeys.followUps.all(), 'range', from, to] as const,
+    /**
+     * «Lo de otras veces» (FEAT-018): las últimas sesiones de **una**
+     * actividad. `byActivityAll` existe para poder invalidar por prefijo todas
+     * sus variantes de `limit` sin escribir la clave a mano en
+     * `invalidate-vida-queries.ts`.
+     */
+    byActivityAll: () => [...vidaKeys.followUps.all(), 'byActivity'] as const,
+    byActivity: (activityId: string, limit: number) =>
+      [...vidaKeys.followUps.byActivityAll(), activityId, limit] as const,
   },
   dayPlan: {
     all: () => [...vidaKeys.all, 'dayPlan'] as const,

@@ -26,8 +26,41 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
-| FEAT-018 | building | 1/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+| FEAT-018 | building | 2/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 
+**FEAT-018 `building` 2/4** (2026-09-22, revisor). **Tajada 2 aceptada: con
+algo en marcha se puede decir qué estás haciendo sin parar el cronómetro.**
+Los ocho criterios (542-547, la mitad del 532 y el 552) con evidencia, y las
+cuatro líneas base reproducidas en este árbol: typecheck limpio, lint **14/0**,
+**2 fallos de 1866** (solo `SearchSelect`), build exit 0 con inicial
+**1.126,44 kB** y `app-icons` **620,20 kB sin mover**. El criterio 543 **mide lo
+que dice medir**: ni el cronómetro ni la barra ni la hoja están mockeados, así
+que el `00:24:00 → 00:24:05` con el editor abierto es real. **Medido en
+navegador a 375 px** con arnés propio (ya borrado) lo que el constructor marcó
+como lo más frágil: la huella de la barra pasa de **69,1 px a 116,6 px** y el
+hueco reservado de `7.5rem` (120 px) la cubre — el último bloque termina 3,4 px
+por encima, sin solape y sin barra horizontal. Verificadas también la clave de
+caché nombrada a mano (sin ella las píldoras quedarían viejas), que abrir Hoy
+**no cuesta ninguna consulta nueva**, y la lista de `contracts.test.ts`.
+Hallazgos anotados: falta caso de **error** de la consulta de píldoras (H6) y el
+título envejecido del test del 537 (H7). Queda a mano lo de siempre: el
+recorrido real detrás del login. Sin commitear.
+
+**FEAT-018 `in-review` 2/4** (2026-09-22, constructor). **Tajada 2 construida:
+mientras algo corre, la barra y las dos filas de la agenda preguntan «¿Qué
+estás haciendo?», y el editor ofrece «Lo de otras veces» —tus últimas notas de
+esa actividad— de un toque.** Abrir el editor **no pausa, no termina y no
+cierra la barra**, y eso se afirma con un caso que mide que el cronómetro
+avanza con la hoja abierta y que ninguna acción de sesión se llamó. Cerrado el
+hallazgo **H1** (la fila del plan y la de fuera del plan ya no divergen) y el
+**H3** (las frases viven en `vida-notes.utils.ts`). Líneas base reproducidas:
+typecheck limpio, lint **14/0**, **2 fallos de 1866** (solo `SearchSelect`;
++27 casos nuevos), build exit 0 con inicial **1.126,44 kB** (+1,51) y
+`app-icons` **620,20 kB sin mover**. **Tres cosas que el plan no sabía:** el
+validador del API admite `limit ≤ 500` (el 20 entra de sobra) y valida
+`activityId` como **entero en texto, no UUID**; `invalidateFollowUpQueries`
+**no** arrastraba por prefijo y hubo que nombrar la clave nueva; y
+`contracts.test.ts` **sí** tiene una lista de nombres que editar. Sin commitear.
 **FEAT-018 `building` 1/4** (2026-09-22, revisor). **Tajada 1 aceptada: la
 nota que ya se escribía al terminar por fin se lee en la línea del día.**
 Reproducidas las cuatro líneas base en este árbol (typecheck limpio, lint 14/0,

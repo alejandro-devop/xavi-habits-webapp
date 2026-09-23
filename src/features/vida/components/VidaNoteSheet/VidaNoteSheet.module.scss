@@ -54,8 +54,25 @@
   line-height: 1.45;
 }
 
-/* «Lo de otras veces» (tajada 2). */
+/* «Lo de otras veces» (tajada 2). Con su rótulo, como el render 19: sin él,
+   tres píldoras sueltas debajo del contador no dicen de dónde salen. */
 .pills {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.pillsLabel {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.pillsRow {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;

@@ -49,8 +49,19 @@ abre un render). Para ver un componente con datos, la vía que funciona es un
 el componente con datos sintéticos y `MemoryRouter`; se borra antes de
 reportar. Ya se ha hecho tres veces en este repo con buen resultado.
 
-Los identificadores de la API (`habit.id`, `activity.id`) son UUID del
-backend: no se adivinan.
+Los identificadores de la API no se adivinan, pero **no todos tienen la misma
+forma, y yo lo tuve mal escrito aquí hasta FEAT-018 tajada 2**:
+
+- `habit.id` y `activity.id` son **enteros en texto**, no UUID. El validador lo
+  dice sin ambigüedad: `z.string().regex(/^\d+$/)` en
+  `xavi-platform-node/src/validators/schemas/{habit,activity,vida,workout}.schemas.ts`,
+  primera línea de cada uno. Un UUID de prueba **no** falla como «no existe»:
+  falla antes, en la validación.
+- Los de las tablas nuevas de Vida **sí** son UUID (`vida_goals.id`, con
+  `uuid_generate_v7()` en la migración 069).
+
+Consecuencia práctica para los datos de prueba: si montas un caso con
+`activityId: 'a-b1'` contra la API real, no estás probando lo que crees.
 
 ## Rutas o pantallas
 
@@ -100,8 +111,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 1839** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
-| Paquete | `pnpm build` | chunk inicial **1.124,93 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 1866** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
+| Paquete | `pnpm build` | chunk inicial **1.126,44 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 Cerrar cada tajada con `pnpm build`, no solo con `pnpm typecheck`: son el mismo `tsc -b`, pero el estado incremental de `typecheck` dejó pasar una vez un `TS2783` que el build sí cazó (FEAT-003, tajada 3).
 

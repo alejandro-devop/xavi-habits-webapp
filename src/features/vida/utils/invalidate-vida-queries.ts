@@ -30,6 +30,15 @@ export function invalidateFollowUpQueries(
   void queryClient.invalidateQueries({ queryKey: vidaKeys.followUps.day(date) })
   void queryClient.invalidateQueries({ queryKey: vidaKeys.followUps.range(week.from, week.to) })
   void queryClient.invalidateQueries({ queryKey: vidaKeys.followUps.open() })
+  /**
+   * «Lo de otras veces» (FEAT-018). **Hay que decirlo a mano**: estas
+   * invalidaciones son por clave exacta, no por el prefijo `followUps.all()`,
+   * así que escribir una nota no refrescaría las píldoras si no se nombra aquí.
+   * Se invalidan las de **todas** las actividades por prefijo —son una sola
+   * consulta que solo está montada con el editor abierto— en vez de adivinar
+   * cuál era la de esta sesión.
+   */
+  void queryClient.invalidateQueries({ queryKey: vidaKeys.followUps.byActivityAll() })
 
   if (options.activityId) {
     void queryClient.invalidateQueries({ queryKey: vidaKeys.activities.detail(options.activityId) })

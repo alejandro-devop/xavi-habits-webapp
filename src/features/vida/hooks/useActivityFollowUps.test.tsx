@@ -77,12 +77,18 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-/** La única invalidación del módulo: día, semana, abierto, detalle y lista. */
+/**
+ * La única invalidación del módulo: día, semana, abierto, **«lo de otras
+ * veces»** (FEAT-018), detalle y lista. La de las píldoras va por prefijo y se
+ * nombra a mano: estas invalidaciones son por clave exacta, así que sin
+ * escribirla aquí una nota recién guardada dejaría las píldoras viejas.
+ */
 function expectedInvalidations(date: string, activityId?: string) {
   return [
     vidaKeys.followUps.day(date),
     vidaKeys.followUps.range('2026-09-14', '2026-09-20'),
     vidaKeys.followUps.open(),
+    vidaKeys.followUps.byActivityAll(),
     ...(activityId ? [vidaKeys.activities.detail(activityId)] : []),
     vidaKeys.activities.all(),
   ]

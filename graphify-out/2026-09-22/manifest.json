@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790122816.255462,
-    "ast_hash": "6587e6312bae265012d78117713a29d6",
+    "mtime": 1790124611.5733256,
+    "ast_hash": "d99ea8b5dd2dddc513413dddcce9810b",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790122711.5022645,
-    "ast_hash": "a134823e55dd8185151725bd11cadeac",
+    "mtime": 1790124653.9134643,
+    "ast_hash": "215e39b8a21a8f9e64bc5966a3c070c0",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3875,8 +3875,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx": {
-    "mtime": 1790121490.748967,
-    "ast_hash": "23d2c25ebae700cd0f2c5e15d10d388f",
+    "mtime": 1790123875.2226665,
+    "ast_hash": "fb0e6cdc0a121c8b13c6a66d25dab744",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArcRow.tsx": {
@@ -3890,18 +3890,18 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-goals.utils.test.ts": {
-    "mtime": 1790118302.9677186,
-    "ast_hash": "e4f8d1fea4976bd4b3cd50a2ed40e985",
+    "mtime": 1790123911.5808156,
+    "ast_hash": "d9e44d9ac3b80cdcd2d3d6d43fdc32ea",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-goals.utils.ts": {
-    "mtime": 1790118302.9667184,
-    "ast_hash": "98eddcc79bad8438822d18e7b2485a7e",
+    "mtime": 1790123868.2396374,
+    "ast_hash": "bfc108507134e3f3639a3fab6934ecb9",
     "semantic_hash": ""
   },
   "docs/features/FEAT-018-vida-que-hice.md": {
-    "mtime": 1790122809.3384488,
-    "ast_hash": "579257707f2e3c20aa7d197182c75c87",
+    "mtime": 1790124616.9863434,
+    "ast_hash": "8bdbad397feaaf502b1daee97b71e802",
     "semantic_hash": ""
   },
   "docs/vida/assets/19-vida-que-hice.html": {

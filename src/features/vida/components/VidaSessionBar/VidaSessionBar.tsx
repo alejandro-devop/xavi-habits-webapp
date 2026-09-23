@@ -1,9 +1,11 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
+import { VidaNoteLine } from '@/features/vida/components/VidaNoteLine'
 import { useVidaElapsed } from '@/features/vida/hooks/useVidaElapsed'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
+import { VIDA_NOTE_QUESTION_RUNNING } from '@/features/vida/utils/vida-notes.utils'
 import { describeOverPlan } from '@/features/vida/utils/vida-session.utils'
 import { formatTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
@@ -23,6 +25,19 @@ type VidaSessionBarProps = {
   onOpenFinishModal: () => void
   /** Mientras una mutación está en vuelo (criterio 13). */
   isBusy?: boolean
+
+  /* ── «Qué estás haciendo» (FEAT-018, tajada 2) ───────────────────────────
+   *
+   * Aditivas: sin `onEditNote` la barra se pinta **exactamente como hoy**.
+   */
+
+  /** Lo que se escribió en esta sesión, si hay algo (criterio 542). */
+  note?: string | null
+  /**
+   * Abre el editor corto. **No para el cronómetro, no termina la sesión y no
+   * cierra la barra** (criterio 543): lo único que hace es abrir una hoja.
+   */
+  onEditNote?: () => void
 }
 
 /**
@@ -54,6 +69,8 @@ export function VidaSessionBar({
   onFinish,
   onOpenFinishModal,
   isBusy = false,
+  note = null,
+  onEditNote,
 }: VidaSessionBarProps) {
   const { label, minutes } = useVidaElapsed(startInstant)
   const category = session.activity?.category ?? null
@@ -66,34 +83,49 @@ export function VidaSessionBar({
   return (
     <div className={styles.root} style={colorStyle}>
       <div className={styles.bar}>
-        {/* Un toque en el nombre lleva a Hoy, al día de la sesión (criterio 7). */}
-        <Link className={styles.identity} to={vidaPaths.hoyForDate(session.date)}>
-          <span className={styles.capsule} aria-hidden>
-            <AppIcon name={category?.icon ?? UNCATEGORIZED_GROUP_ICON} size="sm" decorative />
-          </span>
-          <span className={styles.text}>
-            <span className={styles.name}>{title}</span>
-            <span className={styles.meta}>
-              {overPlan ?? `desde las ${formatTimeForDisplay(session.startTime)}`}
+        <div className={styles.row}>
+          {/* Un toque en el nombre lleva a Hoy, al día de la sesión (criterio 7). */}
+          <Link className={styles.identity} to={vidaPaths.hoyForDate(session.date)}>
+            <span className={styles.capsule} aria-hidden>
+              <AppIcon name={category?.icon ?? UNCATEGORIZED_GROUP_ICON} size="sm" decorative />
             </span>
+            <span className={styles.text}>
+              <span className={styles.name}>{title}</span>
+              <span className={styles.meta}>
+                {overPlan ?? `desde las ${formatTimeForDisplay(session.startTime)}`}
+              </span>
+            </span>
+          </Link>
+
+          <span className={styles.timer} aria-live="polite" aria-label={`Llevas ${label}`}>
+            {label}
           </span>
-        </Link>
 
-        <span className={styles.timer} aria-live="polite" aria-label={`Llevas ${label}`}>
-          {label}
-        </span>
+          <Button size="sm" variant="primary" onClick={onFinish} disabled={isBusy}>
+            Terminar
+          </Button>
 
-        <Button size="sm" variant="primary" onClick={onFinish} disabled={isBusy}>
-          Terminar
-        </Button>
+          <IconButton
+            icon="ellipsis"
+            size="sm"
+            aria-label={`Terminar «${title}» con duración, notas y subtareas`}
+            onClick={onOpenFinishModal}
+            disabled={isBusy}
+          />
+        </div>
 
-        <IconButton
-          icon="ellipsis"
-          size="sm"
-          aria-label={`Terminar «${title}» con duración, notas y subtareas`}
-          onClick={onOpenFinishModal}
-          disabled={isBusy}
-        />
+        {/* La línea de «qué estás haciendo», **debajo del cronómetro y dentro
+            de la misma tarjeta** (punto 2 del render 19). Tocarla abre el
+            editor y ya: el cronómetro sigue contra `Date.now()` y la barra no
+            se desmonta (criterio 543). Sin `onEditNote` no se pinta. */}
+        {onEditNote ? (
+          <VidaNoteLine
+            text={note}
+            placeholder={VIDA_NOTE_QUESTION_RUNNING}
+            onEdit={onEditNote}
+            tone="running"
+          />
+        ) : null}
       </div>
     </div>
   )

@@ -3243,4 +3243,76 @@ describe('VidaHoyPage — la nota de la sesión en la línea del día (FEAT-018)
     expect(openNoteSheet).toHaveBeenCalledTimes(1)
     expect(openNoteSheet.mock.calls[0]![0]).toMatchObject({ id: 'f9', notes: null })
   })
+
+  /* ── Durante, en la agenda (tajada 2, criterio 542) ────────────────────────
+   *
+   * La barra vive en `VidaModuleLayout` y tiene su propio test; lo que esta
+   * pantalla tiene que hacer bien es que **la fila del plan y la fila de fuera
+   * del plan se comporten igual** mientras algo corre. Antes divergían: la de
+   * fuera enseñaba la nota y la del plan la escondía (hallazgo 1 de la
+   * revisión de la tajada 1).
+   */
+
+  it('criterio 542 — el bloque del plan en marcha pregunta «¿Qué estás haciendo?»', () => {
+    openSession = {
+      session: openFollowUp('a-b2'),
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    dayFollowUpsQuery = ready([
+      { ...withNote('f1', 'a-b2', 'Leer un rato', '09:00', 0, null), durationMinutes: null, isOpen: true },
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const row = planRow('Leer un rato')
+    expect(within(row).getByRole('button', { name: '¿Qué estás haciendo?' })).toBeInTheDocument()
+    // El «＋ añadir qué hiciste» sigue sin aparecer sobre lo que no ha
+    // terminado (criterio 537): ahí la pregunta es otra.
+    expect(within(row).queryByText('añadir qué hiciste')).not.toBeInTheDocument()
+  })
+
+  it('criterio 542 — con nota escrita, el bloque en marcha la enseña y se toca', () => {
+    const openNoteSheet = vi.fn()
+    openSession = {
+      session: openFollowUp('a-b2'),
+      startInstant: new Date(2026, 8, 18, 9, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    dayFollowUpsQuery = ready([
+      {
+        ...withNote('f1', 'a-b2', 'Leer un rato', '09:00', 0, 'Bug del carrito'),
+        durationMinutes: null,
+        isOpen: true,
+      },
+    ])
+    renderWithNoteSheet(openNoteSheet)
+
+    fireEvent.click(within(planRow('Leer un rato')).getByRole('button', { name: /Bug del carrito/ }))
+
+    expect(openNoteSheet).toHaveBeenCalledTimes(1)
+    expect(openNoteSheet.mock.calls[0]![0]).toMatchObject({ id: 'f1', isOpen: true })
+  })
+
+  it('criterio 542 — la sesión en marcha **fuera del plan** pregunta lo mismo', () => {
+    const openNoteSheet = vi.fn()
+    dayFollowUpsQuery = ready([
+      {
+        ...withNote('f9', 'otra', 'Llamada con el banco', '09:10', 0, null),
+        durationMinutes: null,
+        isOpen: true,
+      },
+    ])
+    renderWithNoteSheet(openNoteSheet)
+
+    const row = screen.getByText('Llamada con el banco').closest('li')!
+    expect(within(row).getByText('en marcha')).toBeInTheDocument()
+    fireEvent.click(within(row).getByRole('button', { name: '¿Qué estás haciendo?' }))
+
+    expect(openNoteSheet).toHaveBeenCalledTimes(1)
+    expect(openNoteSheet.mock.calls[0]![0]).toMatchObject({ id: 'f9', isOpen: true })
+  })
 })

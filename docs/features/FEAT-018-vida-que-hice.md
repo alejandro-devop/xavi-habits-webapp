@@ -271,7 +271,7 @@ lo digo en el resumen de entrega, no lo decido yo.
 | # | What it does | State |
 |---|---|---|
 | 1 | La nota que ya se escribe hoy al terminar se ve y se edita en la línea del día | aceptada |
-| 2 | Ver y editar la nota de la sesión en marcha, sin parar nada, con píldoras de lo de otras veces | pending |
+| 2 | Ver y editar la nota de la sesión en marcha, sin parar nada, con píldoras de lo de otras veces | aceptada |
 | 3 | Escribir la nota antes de empezar, sin tocar el botón de arrancar | pending |
 | 4 | La nota del ítem de plantilla se ve en su fila y en «Lo que viene», y se propone (sin imponerse) al empezar desde ahí | pending |
 
@@ -632,7 +632,7 @@ notas, tampoco. Nunca un error, nunca un vacío con explicación.
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
 | 1 | La nota que ya se escribe hoy al terminar **se ve y se edita en la línea del día** | **Crea:** `components/VidaNoteLine/{VidaNoteLine.tsx,.module.scss,index.ts}`, `components/VidaNoteSheet/{VidaNoteSheet.tsx,.module.scss,index.ts,VidaNoteSheet.test.tsx}` (sin píldoras todavía), `hooks/useVidaSessionNote.ts`. **Modifica:** `hooks/useVidaSessionUi.ts` (+`openNoteSheet`), `routes/VidaModuleLayout.tsx` (monta la hoja una vez), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (+`note`,`onEditNote`, línea entre `name` y `meta`), `components/VidaAgendaSession/VidaAgendaSession.tsx` (ídem), `pages/VidaHoyPage.tsx` (cablea las dos; `onEditNote` solo con `canLogPast` y **no** sobre la sesión en marcha), `pages/VidaHoyPage.test.tsx` | 531, 532 (su mitad «¿Qué hiciste?»), 533, 535, 536, 537, 538, 539, 540, 541, 552 | aceptada |
-| 2 | **Durante, sin parar nada**: la barra y el bloque en marcha enseñan y editan la nota, con píldoras de «lo de otras veces» | **Crea:** `utils/vida-notes.utils.ts` + `.test.ts`, `hooks/useVidaActivityNoteHistory.ts`. **Modifica:** `shared/api/query-keys.ts` (+`followUps.byActivity`), `graphql/activity-followups.graphql.ts` (+`ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY`), `api/activity-followups.api.ts` (+`getActivityFollowUpsByActivity`), `components/VidaNoteSheet/VidaNoteSheet.tsx` (+píldoras), `components/VidaSessionBar/VidaSessionBar.tsx` (+`note`,`onEditNote`), `routes/VidaModuleLayout.tsx` (pasa las dos), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (la rama `isRunning` enseña la línea), `pages/VidaHoyPage.tsx`, `graphql/contracts.test.ts` (**correrlo**, no editarlo) | 542, 543, 544, 545, 546, 547, 532 (su mitad «¿Qué estás haciendo?»), 552 | pending |
+| 2 | **Durante, sin parar nada**: la barra y el bloque en marcha enseñan y editan la nota, con píldoras de «lo de otras veces» | **Crea:** `utils/vida-notes.utils.ts` + `.test.ts`, `hooks/useVidaActivityNoteHistory.ts`. **Modifica:** `shared/api/query-keys.ts` (+`followUps.byActivity`), `graphql/activity-followups.graphql.ts` (+`ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY`), `api/activity-followups.api.ts` (+`getActivityFollowUpsByActivity`), `components/VidaNoteSheet/VidaNoteSheet.tsx` (+píldoras), `components/VidaSessionBar/VidaSessionBar.tsx` (+`note`,`onEditNote`), `routes/VidaModuleLayout.tsx` (pasa las dos), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (la rama `isRunning` enseña la línea), `pages/VidaHoyPage.tsx`, `graphql/contracts.test.ts` (**correrlo**, no editarlo) | 542, 543, 544, 545, 546, 547, 532 (su mitad «¿Qué estás haciendo?»), 552 | aceptada |
 | 3 | **Antes de empezar**, sin tocar el botón de arrancar | **Modifica:** `hooks/useVidaSessionActions.ts` (`start(activityId, startTime?, { notes })`), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`noteDraft`,`onEditNote`; `onStart` intacto), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (lápiz junto al `▶ Empezar`), `pages/VidaHoyPage.tsx` (`startNoteDrafts` + `startWithNote`, una sola función para las dos puertas), `pages/VidaHoyPage.test.tsx` (los dos tests nuevos; **el de `toEqual(['a-b1'])` no se toca**) | 548, 549, 550, 551, 534, 552 | pending |
 | 4 | **La plantilla propone, la sesión decide** | **Modifica:** `utils/vida-notes.utils.ts` (+`templateNoteForActivity` con su test), `components/VidaTemplateItemCard/VidaTemplateItemCard.tsx` (línea de solo lectura), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`templateNote`, línea aparte de `metaLine`), `pages/VidaHoyPage.tsx` (la propuesta como `initialValue` del editor, desde `suggestions[].item.notes`), `pages/VidaPlantillaPage.test.tsx` y `pages/VidaHoyPage.test.tsx` | 553, 554, 555, 556, 557, 558, 552 | pending |
 
@@ -846,6 +846,226 @@ hoja abierta  : textarea.value.length 420 · maxLength 420 · contador «420 / 1
 
 **Estado del árbol:** sin commitear.
 
+### Tajada 2 — durante, sin parar nada
+
+**Resumen para el revisor:**
+1. Con algo en marcha, **la barra de la sesión y las dos filas de la agenda**
+   —el bloque del plan y la sesión de fuera del plan— enseñan una línea que
+   dice lo que estás haciendo, o pregunta «¿Qué estás haciendo?» si todavía no
+   lo has dicho; tocarla abre el editor, que ahora ofrece **«Lo de otras
+   veces»**: tus últimas notas de esa misma actividad, de un toque.
+2. Código nuevo: `utils/vida-notes.utils.ts` (las palabras + las píldoras),
+   `hooks/useVidaActivityNoteHistory.ts` (la consulta, **solo con el editor
+   abierto**), `ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY` +
+   `getActivityFollowUpsByActivity` + `vidaKeys.followUps.byActivity`. El resto
+   son props aditivas y cableado.
+3. **Lo que más probablemente he roto:** el **alto de la barra de la sesión**,
+   que ahora es una tarjeta de dos filas. Medido en el navegador a 375 px:
+   pasa de **69 px a 117 px** (+3rem) y por eso el hueco reservado de
+   `VidaModuleLayout` sube de `4.5rem` a `7.5rem`. Eso afecta a **todas** las
+   pantallas del módulo con algo en marcha —Hoy, Plantilla, Revisión,
+   Actividades—: si alguna contaba con el hueco viejo, ahora sobra o falta
+   espacio abajo, y los tests no miden píxeles. El segundo sitio a mirar es
+   `VidaSessionBar.module.scss`: la tarjeta cambió de fila a columna y la fila
+   de siempre vive ahora en un `.row` nuevo; cualquier cosa que dependiera de
+   que `.bar` fuera el flex-row se resiente.
+
+**Qué se construyó:**
+
+- `src/features/vida/utils/vida-notes.utils.ts` (+ `.test.ts`) — las **palabras
+  del módulo** (`VIDA_NOTE_ADD_LABEL`, `VIDA_NOTE_QUESTION_RUNNING`,
+  `VIDA_NOTE_QUESTION_DONE`, `VIDA_NOTE_SUGGESTIONS_LABEL`) y
+  `recentNoteSuggestions(followUps, { max, excludeId })`: quita vacías, recorta,
+  **deduplica ignorando mayúsculas y espacios**, respeta el orden del API y
+  excluye la sesión que se está editando. **Cierra el hallazgo H3 de la
+  revisión de la tajada 1**: «añadir qué hiciste» ya no vive copiada en dos
+  componentes.
+- `src/features/vida/graphql/activity-followups.graphql.ts` —
+  `ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY` sobre
+  `activityFollowUps(activityId:, limit:)`.
+- `src/features/vida/api/activity-followups.api.ts` —
+  `getActivityFollowUpsByActivity(activityId, limit)` y el tipo corto
+  `ActivityFollowUpNoteRow`.
+- `src/shared/api/query-keys.ts` — `vidaKeys.followUps.byActivityAll()` y
+  `byActivity(activityId, limit)`.
+- `src/features/vida/utils/invalidate-vida-queries.ts` — invalida
+  `byActivityAll()` por prefijo (ver «lo que descubrí»).
+- `src/features/vida/hooks/useVidaActivityNoteHistory.ts` (+ `.test.tsx`) — la
+  consulta, con `useVidaQueryGuard`, `enabled: open && Boolean(activityId)`,
+  `staleTime: 5 min` y `limit: 20`. Devuelve `{ suggestions, isPending }`, y
+  `isPending` es **falso cuando está apagada**: apagada no es «cargando».
+- `src/features/vida/components/VidaNoteSheet/` — las píldoras ganan su
+  **rótulo visible** «Lo de otras veces» (render 19), en su propia fila.
+- `src/features/vida/components/VidaSessionBar/` — props aditivas `note` y
+  `onEditNote`; la tarjeta pasa a columna (`.row` + la línea) y la línea usa el
+  tono `running`, que la tajada 1 ya había dejado escrito en `VidaNoteLine`.
+  **Sin `onEditNote` la barra se pinta exactamente como antes** (medido: 69 px).
+- `src/features/vida/routes/VidaModuleLayout.tsx` — monta
+  `useVidaActivityNoteHistory` con la sesión que tiene el editor abierto, pasa
+  `suggestions`/`isSuggestionsPending` a la hoja y `note`/`onEditNote` a la
+  barra. Los títulos salen ya de las constantes.
+- `src/features/vida/components/VidaAgendaBlock/` y `VidaAgendaSession/` — el
+  texto del hueco depende de si **esa** fila está en marcha: «¿Qué estás
+  haciendo?» mientras corre, «añadir qué hiciste» cuando terminó.
+- `src/features/vida/pages/VidaHoyPage.tsx` — **cierra el hallazgo H1**:
+  `blockNoteSession()` ya no devuelve `null` con la sesión en marcha y el
+  `onEditNote` de la fila de fuera del plan ya no lleva `&& !isRunning`. Las
+  dos filas se comportan igual **a propósito**, y las dos preguntan lo mismo
+  que la barra.
+
+**Por qué así, y qué se descartó:**
+
+- **La línea va dentro de la tarjeta de la barra, no debajo de ella.** La
+  sección 2 decía «dentro de `styles.root`, debajo de `styles.bar`»; ahí la
+  línea habría quedado **fuera del vidrio**, flotando sobre la agenda, y el
+  render 19 la pinta dentro de la tarjeta («la sesión en marcha lleva la nota
+  encima»). Se hizo lo del render: `.bar` es ahora columna y la fila de siempre
+  es `.row`. Es la única desviación de forma respecto del plan.
+- **La selección del documento nuevo es corta y no usa `FOLLOW_UP_FIELDS`**
+  (la sección 2 proponía reusarlo sin `sessionSubtasks`): `FOLLOW_UP_FIELDS`
+  incluye `sessionSubtasksCount`, que son **veinte resoluciones más en el
+  servidor** por abrir un editor. Se piden `id`, `date`, `startTime` y `notes`.
+- **Las píldoras se ofrecen en los cuatro momentos, no solo «durante».** El
+  editor es uno y se monta una vez; condicionar las píldoras a que la sesión
+  esté abierta habría sido código de más para ofrecer menos. Corregir la nota de
+  una sesión terminada también ofrece lo de otras veces, y **nunca se ofrece a
+  sí misma** (`excludeId`).
+- **Se invalidan las píldoras de todas las actividades, no solo la de la
+  sesión.** Es una consulta que solo está viva con el editor abierto: acertar
+  la clave exacta no ahorra nada y sí puede fallar.
+- **Descartado tocar `useVidaHistoryWindow`**, como mandaba la sección 2.
+
+**Lo que descubrí y no estaba en el plan:**
+
+1. **El validador del API admite más de lo que pedía el plan, y el dato viaja
+   distinto de lo que dice `ENVIRONMENT.md`.** En
+   `xavi-platform-node/src/validators/schemas/activity.schemas.ts:154-159`,
+   `activityFollowUpsArgsSchema` acepta `limit: z.number().int().positive().max(500).nullish()`
+   — el SDL solo dice `Int`. **El `limit: 20` del plan entra de sobra**; el
+   techo real es 500 y el **defecto del servicio es 100** si no se manda
+   (`activity-follow-up.service.ts:539`). Dos cosas más que el SDL no dice y sí
+   importan: `activityId` se valida con `/^\d+$/` —**un entero en texto, no un
+   UUID**, al contrario de lo que afirma `ENVIRONMENT.md` en «Cómo conseguir
+   datos reales»— y el resolver llama a `getActivityById`, así que una
+   actividad ajena o inexistente **da error en vez de lista vacía**. El filtro
+   de solo-cerradas es literal: `CLOSED_FOLLOW_UP_FILTER = 'af.duration_minutes
+   IS NOT NULL'` (`:47`). **No se modificó nada de ese repositorio.**
+2. **`invalidateFollowUpQueries` NO arrastraba por prefijo.** Invalida clave a
+   clave (`day`, `range`, `open`), no `followUps.all()`: colgar `byActivity` de
+   `followUps.all()` **no bastaba**. Hay que nombrarla, y se nombra. Sin esto,
+   una nota recién escrita dejaba las píldoras viejas. Se actualizó
+   `expectedInvalidations` en `useActivityFollowUps.test.tsx`, que es el test
+   que fija esa lista.
+3. **`contracts.test.ts` sí tiene una lista que editar.** La sección 2 decía
+   que `documentsOf(module)` la recoge sola; recoge los documentos para
+   **validarlos**, pero el primer caso (`contracts.test.ts:70`) compara el
+   inventario de nombres contra una lista literal. Se añadió el nombre nuevo
+   ahí; sin eso el test falla (y falló).
+4. **Una hoja cerrada no desaparece del DOM en jsdom.** `SteppedModal` la saca
+   con la animación de salida de `AnimatePresence`, que se queda en
+   `opacity: 0` sin desmontar —con reloj congelado **y** con reloj de verdad—.
+   Los casos nuevos de `VidaModuleLayout.test.tsx` miden qué se guardó y que la
+   sesión sigue, no la desaparición del diálogo; que «Guardar» cierra se sigue
+   midiendo en `VidaNoteSheet.test.tsx` con `onClose`.
+5. **Los espías de `useVidaSessionActions` en `VidaModuleLayout.test.tsx` eran
+   inservibles**: se creaban con `vi.fn()` **dentro** de la fábrica del mock, o
+   sea uno nuevo por render, así que «esto no se llamó» no se podía afirmar. Se
+   sacaron fuera (es lo que el criterio 543 necesita). Ningún caso existente
+   cambió de contenido.
+
+**Verificación** (todo con el 5173 del usuario vivo; no arranqué ni paré nada):
+
+- `pnpm typecheck` → limpio, sin salida.
+- `pnpm lint` → **14 problemas (14 errores, 0 warnings)**. Línea base clavada.
+- `pnpm test` → **2 fallos de 1866** (`SearchSelect` ×2, preexistentes). La
+  base eran 2 de 1839: **+27 casos nuevos, ningún fallo nuevo**. El flaky de
+  `IconPicker` no salió esta vez.
+- `pnpm build` → exit 0. Chunk inicial **1.126,44 kB** (base 1.124,93: **+1,51
+  kB**, el código nuevo), `app-icons` **620,20 kB sin mover**, `IconPicker`
+  4,64 kB.
+- `graphify update .` → 4173 nodos, 4954 aristas.
+- **Navegador, arnés temporal a 375 px** (`src/dev-harness/`, **ya borrado**):
+  la barra sin `onEditNote` mide **69 px** —lo de siempre—; con la línea, **117
+  px**; la línea vacía es la caja punteada con «¿Qué estás haciendo?» y la
+  llena la caja mint con el texto, igual que el punto 2 del render 19; con una
+  nota de 190 caracteres el texto se recorta (`scrollWidth` 1115 vs
+  `clientWidth` 297) y **la página no gana scroll horizontal**
+  (`document.scrollWidth === 375`).
+
+**Criterios que cierra, uno a uno:**
+
+- **542** — `VidaModuleLayout.test.tsx`: «sin nota, la barra pregunta “¿Qué
+  estás haciendo?”» y «con nota, la barra enseña lo que se escribió».
+  `VidaHoyPage.test.tsx`: «el bloque del plan en marcha pregunta “¿Qué estás
+  haciendo?”», «con nota escrita, el bloque en marcha la enseña y se toca» y
+  «la sesión en marcha **fuera del plan** pregunta lo mismo» — las tres filas
+  unificadas (H1 cerrado).
+- **543** — `VidaModuleLayout.test.tsx`, «abrir el editor no pausa, no termina
+  y no cierra la barra»: tras tocar la línea, la hoja está abierta y
+  `finishNow`, `finishWith`, `discard`, `start` y `saveNote` **no se llamaron**;
+  «Terminar» sigue en pantalla y, con la hoja abierta, **el cronómetro avanza**
+  de `00:24:00` a `00:24:05` al correr cinco segundos. En el código lo sostiene
+  que la vía de escritura sea `activityFollowUpEdit({ id, notes })`, que el
+  backend aplica **solo a las columnas presentes**.
+- **544** — mismo archivo: guardar llama `saveNote(sesión, 'Bug del carrito')`
+  **una vez**, con la sesión abierta entera, y ni `finishNow` ni `finishWith`
+  se llaman. El refresco sin recargar lo da
+  `useUpdateActivityFollowUpMutation` invalidando `followUps.open()`, que es de
+  donde la barra lee — **la ida y vuelta real va en «pendiente de prueba a
+  mano»**.
+- **545** — «se reescribe las veces que haga falta»: dos ciclos completos, dos
+  `saveNote` (`['Daily', 'Soporte']`), y **cada apertura arranca de lo
+  guardado**, no de lo anterior.
+- **546** — `useVidaActivityNoteHistory.test.tsx`: abierto pide
+  `getActivityFollowUpsByActivity('7', 20)` y devuelve tres píldoras sin
+  duplicados; `VidaModuleLayout.test.tsx`: con el editor cerrado la consulta
+  **nunca se enciende**, al abrirlo se pide con `activityId: 'a-casa'` y
+  `excludeId: 'f1'`, y tocar una píldora escribe el texto en el campo;
+  `VidaNoteSheet.test.tsx`: la píldora es **texto de partida** —se sigue
+  editando antes de guardar (`'Daily + planning del sprint y retro'`)—.
+- **547** — `VidaNoteSheet.test.tsx` («con la consulta en vuelo no hay ni
+  esqueleto ni hueco»), `VidaModuleLayout.test.tsx` («sin notas previas no hay
+  sección de píldoras ni explicación»: nada que diga «todavía», «ninguna»,
+  «primera vez» ni «error») y `vida-notes.utils.test.ts` (sin nada, lista
+  vacía).
+- **532, su mitad** — el título de la hoja sale de `VIDA_NOTE_QUESTION_RUNNING`
+  con la sesión abierta, y `vida-notes.utils.test.ts` afirma que **ninguna** de
+  las tres frases contiene «nota» ni «descripción».
+- **552** — las cuatro medidas de arriba, ninguna peor que la línea base.
+
+**Pendiente de prueba a mano, detrás del login** (`ENVIRONMENT.md`: sin
+credenciales no hay recorrido real):
+
+1. Con algo en marcha, que la línea de la barra **se vea desde Plantilla,
+   Revisión y Actividades**, no solo desde Hoy, y que el hueco de abajo
+   (`7.5rem`) no tape el último bloque ni los botones de una hoja abierta.
+2. Guardar de verdad y ver la barra **y** la fila de la agenda cambiar sin
+   recargar (invalidación de `followUps.open()` y `followUps.day`).
+3. Que **las píldoras traigan notas reales** de otras sesiones de esa actividad
+   y que al guardar una nota nueva la siguiente apertura ya la ofrezca (la
+   invalidación por prefijo).
+4. Que el teclado del móvil no tape el editor al tocar la línea de una barra
+   que vive pegada abajo.
+5. Que una actividad estrenada (sin sesiones cerradas) **no** enseñe ninguna
+   sección de píldoras ni ningún error.
+
+**Riesgos:**
+
+- **El alto de la barra y el hueco reservado** (ver el resumen). Es lo único
+  que no puede medir ningún test de este repositorio.
+- **La consulta nueva se dispara por cada actividad distinta que se edite.**
+  Con `staleTime` de 5 min y solo con el editor abierto, pero es +1 consulta
+  que antes no existía.
+- **El test 537 de la tajada 1 sigue en verde pero su título envejeció**: dice
+  «la sesión en marcha no ofrece la línea: eso es la tajada 2», y lo que afirma
+  —que ahí no aparece «añadir qué hiciste»— **sigue siendo exactamente el
+  criterio 537** y sigue pasando. No lo toqué porque no se editan tests
+  ajenos; si el revisor prefiere, el título es lo único que sobra.
+- **`VidaAgendaSession` con la etiqueta «fuera del plan»** sigue con los ~130 px
+  útiles que anotó H2: la línea en marcha hereda ese ancho.
+
+**Estado del árbol:** sin commitear.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — **aceptada** (2026-09-22)
@@ -1022,3 +1242,178 @@ como lo dejó el constructor:
 muestra lo del constructor). El Vite del 5173 lo encontré vivo y lo dejo vivo:
 no arranqué ni paré nada.
 
+
+### Tajada 2 — **aceptada** (2026-09-22)
+
+**Veredicto: aceptada.** Los ocho criterios de la tajada se cumplen, las cuatro
+líneas base se reproducen en este árbol y **medí en navegador** lo que el
+constructor marcó como «lo que más probablemente he roto»: el alto de la barra
+y el hueco reservado. No encontré ninguna regresión. Lo que queda a mano es la
+ida y vuelta real contra la API, que ningún agente puede hacer aquí.
+
+**Las cuatro líneas base, corridas por mí sobre el árbol sin commitear:**
+
+| Qué | Resultado | Línea base |
+|---|---|---|
+| `pnpm typecheck` | exit 0, sin salida | limpio ✅ |
+| `pnpm lint` | **14 problemas (14 errores, 0 warnings)** | 14/0 ✅ |
+| `pnpm test` | **2 fallos de 1866**, los dos de `SearchSelect`; `IconPicker` no salió flaky | 2 de 1839 + 27 casos nuevos ✅ |
+| `pnpm build` | exit 0 · inicial **1.126,44 kB** · `app-icons` **620,20 kB sin mover** · `IconPicker` 4,64 kB | ✅ |
+
+**Criterios, uno a uno:**
+
+- **542 — cumplido.** Barra: `VidaModuleLayout.test.tsx` («¿Qué estás
+  haciendo?» sin nota, el texto con nota). Filas: los tres casos nuevos de
+  `VidaHoyPage.test.tsx`. Comprobado en navegador: la línea está **dentro** de
+  la tarjeta de vidrio, punteada vacía y mint con texto.
+- **543 — cumplido, y el caso mide lo que dice medir.** Lo verifiqué a mano
+  antes de creérmelo: en `VidaModuleLayout.test.tsx` **no** están mockeados ni
+  `useVidaElapsed`, ni `VidaSessionBar`, ni `VidaNoteSheet` —solo los hooks de
+  datos—, así que el `00:24:00 → 00:24:05` con la hoja abierta es el
+  cronómetro de verdad re-renderizando con su intervalo vivo: si abrir el
+  editor desmontara la barra o parara el reloj, el `getByText('00:24:05')`
+  fallaría. Y los espías `finishNow`/`finishWith`/`discard`/`start` ahora viven
+  **fuera** de la fábrica del `vi.mock` (los verifiqué en el archivo), que es
+  lo que hace afirmable un «no se llamó». En el código lo sostiene que
+  `openNote()` solo toca `noting`/`noteOpen`/`noteSession` y no roza
+  `finishing`, y que la escritura sea `activityFollowUpEdit({ id, notes })`.
+- **544 — cumplido en lo comprobable aquí.** `saveNote` se llama una vez con la
+  sesión abierta entera y el texto; ninguna acción de cierre. El refresco real
+  sin recargar queda en manual (invalidación de `followUps.open()`).
+- **545 — cumplido.** Dos ciclos, dos guardados, y cada apertura arranca de lo
+  guardado (la `key` por apertura).
+- **546 — cumplido.** Tres capas con caso propio: el util puro (orden del API,
+  dedupe, `excludeId`, tope), el hook (`getActivityFollowUpsByActivity('7', 20)`
+  y tres píldoras) y la hoja (la píldora es **texto de partida**: se sigue
+  editando antes de guardar).
+- **547 — cumplido.** Sin píldoras no se pinta la `<section>`; con la consulta
+  en vuelo tampoco (`isPending` es **falso cuando está apagada**, comprobado en
+  el hook y en su test); ni «todavía», ni «ninguna», ni error.
+- **532 (su mitad) — cumplido.** Las cuatro frases viven en
+  `vida-notes.utils.ts` y su test prohíbe «nota» y «descripci». La barra y las
+  dos filas preguntan lo mismo mientras corre.
+- **552 — cumplido.** La tabla de arriba.
+
+### Lo que miré para ver si rompí algo al lado
+
+- **El alto de la barra y el hueco reservado — medido, y no tapa nada.** Arnés
+  temporal propio (`review-bar.html` + `src/review-bar.tsx`, **ya borrados**)
+  contra el Vite del 5173, viewport 375×812, con el `padding-bottom` real de
+  `VidaModuleLayout.module.scss` y doce bloques de relleno:
+  - la tarjeta sin `onEditNote` mide **57,1 px** y con la línea **104,6 px**;
+    sumando el `padding` de 12 px del contenedor fijo, la **huella** de la
+    barra pasa de **69,1 px a 116,6 px** — exactamente lo que declaró el
+    constructor;
+  - el hueco reservado es **120 px** (`7.5rem`), así que con la página scrolleada
+    hasta el final el último bloque termina **3,4 px por encima** del borde
+    superior de la barra. Antes el margen era el mismo (69,1 contra 72): la
+    relación no empeora, **no hay solape**;
+  - con una nota de 180 caracteres la tarjeta **sigue midiendo 104,6 px** (una
+    sola línea, `overflow hidden · text-overflow ellipsis · white-space nowrap`,
+    `scrollWidth 1078` contra `clientWidth 297`) y
+    `document.documentElement.scrollWidth === 375`: **ninguna barra horizontal**.
+  - **Lo que no pude hacer, y lo digo:** ese recorrido en Plantilla, Revisión,
+    Actividades y Archivadas **con una sesión real en marcha** está detrás del
+    login. Lo que sí es verificable sin credenciales: el hueco lo pone el
+    **mismo** `.root[data-session-bar='on']` para las cuatro pantallas (una sola
+    regla, un solo layout), y la barra se pinta desde `VidaModuleLayout`, que es
+    el elemento de ruta común. Queda en manual el pie propio de cada página.
+- **Quién más usa lo que se tocó.** `graphify explain "VidaSessionBar"`,
+  `"VidaModuleLayout"` e `"invalidateFollowUpQueries"`, confirmado abriendo los
+  archivos: `VidaSessionBar` tiene **un solo** consumidor (`VidaModuleLayout`),
+  así que `.bar` pasando de fila a columna no puede resentir a nadie más;
+  `invalidateFollowUpQueries` lo llaman `useActivityFollowUps` y
+  `useVidaWeekFollowUps`, y la clave nueva es un prefijo que **no colisiona**
+  con `day`, `range` ni `open`. El único test que fija esa lista
+  (`useActivityFollowUps.test.tsx`, `expectedInvalidations`) está actualizado y
+  pasa.
+- **Las píldoras y su caché: el punto que el constructor descubrió, verificado.**
+  `invalidateFollowUpQueries` invalida clave a clave, y la nueva está **nombrada
+  a mano** (`vidaKeys.followUps.byActivityAll()`), colgada de `followUps.all()`
+  y por delante de `activityId`/`limit`: invalida todas las variantes. La ida y
+  vuelta real («escribo una nota y la siguiente apertura ya la ofrece») queda en
+  manual, pero el eslabón que faltaba está puesto y con test.
+- **El coste de abrir el editor.** La consulta solo se monta en
+  `VidaModuleLayout` con `enabled: noteOpen && noting !== null` y
+  `Boolean(activityId)`, y `useVidaQueryGuard` devuelve un **booleano** (lo
+  comprobé: no es un objeto siempre-verdadero). Abrir Hoy con algo en marcha
+  cuesta **cero consultas nuevas**, y el test del layout lo afirma
+  (`noteHistoryCalls.every(c => c.enabled === false)` antes de tocar la línea).
+  No se ha reinventado el coste de `useVidaHistoryWindow` por otra puerta: ese
+  hook no se toca y nadie lo monta desde aquí.
+- **Los `vi.mock` que caducan en silencio: buscados uno a uno.** Del módulo de
+  API hay seis mocks; los dos con fábrica literal (`useVidaWeekFollowUps`,
+  `useVidaHistoryWindow`) no listan `getActivityFollowUpsByActivity` y **no
+  deben**: ninguno de esos hooks lo llama. Los mocks de `useActivityFollowUps`
+  (`VidaHoyPage`, `VidaLogSessionSheet`, `VidaRevisionPage`) no se ven afectados
+  por la clave nueva. Los dos hooks nuevos solo se mockean en
+  `VidaModuleLayout.test.tsx`, y ahí el del historial **guarda lo que recibe**
+  en vez de ignorarlo. Nada verde por casualidad.
+- **`contracts.test.ts`: confirmado que el constructor tenía razón y el plan
+  no.** La lista literal de nombres está en el primer caso (línea ~86 en este
+  árbol) y `ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY` entró en orden alfabético;
+  el documento valida contra el SDL vendorizado y la suite pasa.
+- **Nada duplicado (sección 2).** Un solo documento nuevo, una sola función de
+  API, un solo hook de píldoras, un solo montaje del editor. `VidaFinishSessionModal`
+  y `VidaLogSessionSheet` intactos; `useVidaHistoryWindow` intacto;
+  `ActivityDayPlanItem` sin campos nuevos; `startSessionInput` y `finishNow` sin
+  tocar (la tajada 3 es la que los toca).
+- **Nada del API.** El repositorio hermano no se tocó: el diff de esta tajada
+  vive entero en `xavi-habits-webapp`.
+
+### Estados
+
+- **Sin sesión en marcha** ✅ — sin barra no hay línea, y el hueco reservado
+  solo aparece con `data-session-bar='on'`.
+- **Actividad estrenada (547)** ✅ — lista vacía, sin sección, sin esqueleto,
+  sin reproche. Con caso en tres capas.
+- **Error de la consulta de píldoras** ✅ **por construcción, sin caso propio**
+  (ver hallazgo H6): sin `throwOnError` ni `onError` global en
+  `app/providers/query-client.ts`, una consulta en error deja
+  `suggestions: []` e `isPending: false` → la hoja se abre igual y sin píldoras.
+- **Error de la mutación** ✅ — heredado de la tajada 1: `Alert` dentro de la
+  hoja, no se pierde lo escrito, y guardar bien **no saca toast** (`silent: true`).
+- **Texto largo** ✅ — 180 caracteres en la barra: una línea, elipsis, mismo alto.
+- **375 px** ✅ — sin barra horizontal, sin solape con el último bloque.
+- **Cargando** ✅ — la hoja deshabilita botones y campo al guardar; las píldoras
+  en vuelo no pintan nada a propósito.
+- **Sin permisos** — no aplica: el módulo entero vive detrás del login.
+- **El teclado del móvil sobre la barra pegada abajo** — **no verificable aquí**
+  (ni emulador ni sesión): queda en manual, como lo dejó el constructor.
+
+### Hallazgos (anotados, no motivo de devolución)
+
+- **H6 — la consulta de píldoras no tiene caso de error.** El comportamiento es
+  el correcto y lo razoné arriba, pero `useVidaActivityNoteHistory.test.tsx`
+  cubre apagada, sin actividad, con datos y sin notas — no con la consulta en
+  error. Es un caso de tres líneas y fijaría que un fallo de red **no** pinta
+  sección ni rompe el editor. Para quien pase por ahí.
+- **H7 — el título del test del criterio 537 envejeció.** Dice «la sesión en
+  marcha no ofrece la línea: eso es la tajada 2» cuando ahora sí la ofrece (lo
+  que no ofrece es el «＋ añadir qué hiciste», que es lo que el caso afirma y
+  sigue siendo el 537). El constructor hizo bien en no tocar un test ajeno; el
+  título se puede corregir cuando alguien vuelva a ese archivo.
+- **H2 sigue vivo** — la línea en la fila de «fuera del plan» tiene ~130 px
+  útiles a 375 px, y ahora también en marcha. Sin cambio pedido: el texto entero
+  está en el `title` y la hoja se abre de un toque.
+- **H8 — el margen entre el hueco reservado y la barra es de 3,4 px**, el mismo
+  que antes en proporción. Es suficiente, pero es el mismo margen estrecho de
+  siempre: si alguna vez la línea pasa a dos renglones (una fuente más grande
+  del sistema, por ejemplo), el `7.5rem` se queda corto. No lo arreglo porque
+  hoy no falla y porque la línea es `nowrap` por diseño.
+
+### Pendiente de prueba a mano, detrás del login (no se aprueba por simpatía)
+
+Tal como lo dejó el constructor, y lo confirmo como pendiente:
+
+1. La barra con su línea vista desde **Plantilla, Revisión, Actividades y
+   Archivadas**, y el pie de cada una sin quedar tapado.
+2. Guardar de verdad y ver **la barra y la fila** cambiar sin recargar.
+3. Píldoras con notas reales, y que una nota recién escrita aparezca en la
+   siguiente apertura (la invalidación nombrada).
+4. El teclado del móvil al tocar la línea de la barra pegada abajo.
+5. Una actividad estrenada, sin ninguna sección de píldoras.
+
+**Sin commitear y sin push.** El arnés que usé está borrado (`git status` solo
+muestra lo del constructor). El Vite del 5173 lo encontré vivo y lo dejo vivo:
+no arranqué ni paré nada. **`ENVIRONMENT.md` no lo toqué.**

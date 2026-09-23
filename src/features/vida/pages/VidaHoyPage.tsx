@@ -120,12 +120,20 @@ const NO_SUGGESTIONS: GapSuggestions = { visible: [], hiddenCount: 0, templateCo
 /**
  * **La sesión de un bloque cuya nota se puede leer y escribir** (FEAT-018).
  *
- * Solo la que ya **terminó**: mientras corre, la nota se ve y se edita en la
- * barra de la sesión (tajada 2) y no en la fila —criterio 537—. Es el mismo
- * `span.session` que ya usa el «Corregir» del «···» del bloque.
+ * Es el mismo `span.session` que ya usa el «Corregir» del «···» del bloque.
+ *
+ * **Desde la tajada 2 incluye también la que está en marcha** (criterio 542):
+ * la fila del plan y la fila de fuera del plan enseñan y editan la nota
+ * exactamente igual, y las dos preguntan «¿Qué estás haciendo?» mientras corre
+ * —quien decide la palabra es la fila, que ya sabe si está en marcha—. Antes
+ * divergían: la de fuera del plan la enseñaba y la del plan la escondía
+ * (hallazgo 1 de la revisión de la tajada 1).
+ *
+ * El «＋ añadir qué hiciste» del criterio 537 sigue sin aparecer sobre una
+ * sesión en marcha: ahí la línea dice otra cosa.
  */
 function blockNoteSession(execution: BlockExecution | undefined): ActivityFollowUp | null {
-  if (!execution || execution.isRunning) return null
+  if (!execution) return null
   return execution.span.session
 }
 
@@ -862,15 +870,13 @@ export function VidaHoyPage() {
                 ? (session) => openLogSheet({ mode: 'edit', session })
                 : undefined
             }
-            // **Qué hiciste** (FEAT-018, criterios 535 a 538). Se ofrece en los
-            // mismos días en que se registra —hoy y pasados— y **nunca** sobre
-            // una sesión en marcha: esa línea es de la tajada 2.
+            // **Qué hiciste / qué estás haciendo** (FEAT-018, criterios 535 a
+            // 538 y 542). Se ofrece en los mismos días en que se registra
+            // —hoy y pasados—, **también mientras corre**: ahí la fila
+            // pregunta «¿Qué estás haciendo?», igual que la barra y que el
+            // bloque del plan.
             note={entry.span.session.notes}
-            onEditNote={
-              canLogPast && !entry.span.isRunning
-                ? () => openNoteSheet(entry.span.session)
-                : undefined
-            }
+            onEditNote={canLogPast ? () => openNoteSheet(entry.span.session) : undefined}
           />
         )
       }
@@ -928,10 +934,11 @@ export function VidaHoyPage() {
               onEditSession={
                 canLogPast ? (session) => openLogSheet({ mode: 'edit', session }) : undefined
               }
-              // **Qué hiciste** (FEAT-018, criterios 535 a 538). La nota sale de
-              // la sesión que el cruce de D1 asignó a **este** bloque, y solo
-              // cuando ya terminó: mientras corre, la nota se edita desde la
-              // barra (tajada 2).
+              // **Qué hiciste / qué estás haciendo** (FEAT-018, criterios 535 a
+              // 538 y 542). La nota sale de la sesión que el cruce de D1
+              // asignó a **este** bloque, esté terminada o en marcha: mientras
+              // corre se edita desde aquí **y** desde la barra, y las dos
+              // escriben lo mismo porque es la misma sesión.
               note={blockNoteSession(execution.byBlockId[entry.id])?.notes ?? null}
               onEditNote={
                 canLogPast && blockNoteSession(execution.byBlockId[entry.id])

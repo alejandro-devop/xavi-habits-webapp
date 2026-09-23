@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790138686.1858237,
-    "ast_hash": "972cabf74e823a3a503497c1fce278da",
+    "mtime": 1790140350.706373,
+    "ast_hash": "92b6c347dba7576e5b9bac4ece9e85c4",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790138805.2460365,
-    "ast_hash": "dcf09766013ae11048110ceb02996c48",
+    "mtime": 1790140400.9404993,
+    "ast_hash": "07939689d28afab351a83ca053974f42",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2575,8 +2575,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/graphql/contracts.test.ts": {
-    "mtime": 1790125162.7663858,
-    "ast_hash": "a183a4dd0be77e0f3725938c699b5beb",
+    "mtime": 1790161150.7317793,
+    "ast_hash": "6ef304de8fcb14fbb0fe7df4109d82f2",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useActivities.test.tsx": {
@@ -2920,13 +2920,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaAjustesPage.test.tsx": {
-    "mtime": 1789919814.9540281,
-    "ast_hash": "0c13a85d0836407ab00cbd7e39f0d397",
+    "mtime": 1790161326.6981468,
+    "ast_hash": "dff63a148488104ad946a54ab1d20c5c",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaAjustesPage.tsx": {
-    "mtime": 1789919727.7559345,
-    "ast_hash": "e4bb5405a3743277ff916086b6d9b14c",
+    "mtime": 1790161241.8391628,
+    "ast_hash": "8ffa748d522e5331de7633ade81b6572",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-time.utils.test.ts": {
@@ -3865,8 +3865,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/types/vida-goal.types.ts": {
-    "mtime": 1790137498.737116,
-    "ast_hash": "b2c07b523f1122c3aa3eb19178b34aaa",
+    "mtime": 1790161144.1933038,
+    "ast_hash": "15324e173c1941940a01f5ea3a39176e",
     "semantic_hash": ""
   },
   "docs/features/FEAT-017-vida-mas-iconos-y-colores.md": {
@@ -3980,13 +3980,28 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-019-vida-arco-revisado.md": {
-    "mtime": 1790139085.6555467,
-    "ast_hash": "f3a28fa59fbe21031c3e86e247d5ed56",
+    "mtime": 1790160978.6356285,
+    "ast_hash": "e12b435673de4c572fbac256233ed543",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260923_014157_se_hablan_hoy_getdaybudget_y_buildgoalarcs__el_pr.md": {
     "mtime": 1790127717.5486999,
     "ast_hash": "8e56fcd7650c738ad76e67ecf3256ed1",
+    "semantic_hash": ""
+  },
+  "src/features/vida/api/vida-goals.api.ts": {
+    "mtime": 1790161144.1653018,
+    "ast_hash": "c9cc7b6fea07397ef37f2e8ed285085f",
+    "semantic_hash": ""
+  },
+  "src/features/vida/graphql/vida-goals.graphql.ts": {
+    "mtime": 1790161144.1623018,
+    "ast_hash": "d497ae10a2dde96f7e1f8c19c40cb2e5",
+    "semantic_hash": ""
+  },
+  "src/features/vida/hooks/useVidaGoals.ts": {
+    "mtime": 1790161144.168302,
+    "ast_hash": "ac3edb91908fcc9bd28726bbc4fc30cc",
     "semantic_hash": ""
   }
 }

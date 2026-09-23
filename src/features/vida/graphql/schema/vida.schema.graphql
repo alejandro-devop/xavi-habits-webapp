@@ -5,9 +5,10 @@
 #
 # Origen : xavi-platform-node/src/graphql/modules/vida/vida.schema.ts
 #          (la cadena `gql` de `vidaTypeDefs`, copiada literal)
-# Copiado: 2026-09-22 (árbol de trabajo del repo hermano, sin commitear:
-#          FEAT-019 tajada 3, `VidaGoal.activeDays` — la columna active_days de
-#          la migración 070. Antes: FEAT-016 tajada 1, la tabla vida_goals y el
+# Copiado: 2026-09-23 (árbol de trabajo del repo hermano, sin commitear:
+#          FEAT-019 tajada 4, `vidaGoalDaysSet` + `VidaGoalDaysSetInput` — el
+#          camino de escritura de los días. Antes: 2026-09-22, FEAT-019 tajada 3,
+#          `VidaGoal.activeDays`; y FEAT-016 tajada 1, la tabla vida_goals y el
 #          goal_id de la categoría)
 #
 # Aquí no se añade nada: este módulo hace `extend type Query`/`extend type
@@ -120,6 +121,18 @@
     Apunta (o desapunta) una categoría a una meta. Devuelve la categoría ya con su goalId.
     """
     activityCategoryGoalSet(input: ActivityCategoryGoalSetInput!): ActivityCategory!
+    """
+    Cambia los días en que una meta cuenta. Devuelve la meta entera.
+    """
+    vidaGoalDaysSet(input: VidaGoalDaysSetInput!): VidaGoal!
+  }
+
+  input VidaGoalDaysSetInput {
+    goalId: ID!
+    """
+    Al menos uno y sin repetidos. Una meta sin días no se podría medir nunca.
+    """
+    activeDays: [VidaDayOfWeek!]!
   }
 
   input ActivityCategoryGoalSetInput {

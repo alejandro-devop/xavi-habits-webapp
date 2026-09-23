@@ -1,8 +1,11 @@
-import { act, fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { VidaAjustesPage } from '@/features/vida/pages/VidaAjustesPage'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
+import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
+import type { VidaGoal } from '@/features/vida/types/vida-goal.types'
+import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
 import { renderWithProviders } from '@/test/render'
 
 /**
@@ -28,6 +31,59 @@ vi.mock('@/features/settings/hooks/useUserSettings', () => ({
   useUpdateUserSettingsMutation: () => updateSettings,
 }))
 
+/**
+ * El catálogo se mockea porque `useActivityCategoriesQuery` pasa por
+ * `useVidaQueryGuard`, que exige el contexto de sesión que `renderWithProviders`
+ * no monta. De aquí salen las metas: **no hay consulta de metas** (FEAT-019,
+ * tajada 4).
+ */
+let categoriesQuery: {
+  data?: ActivityCategory[]
+  isPending: boolean
+  isError: boolean
+  fetchStatus: 'fetching' | 'idle' | 'paused'
+}
+let setGoalDays: { mutate: ReturnType<typeof vi.fn>; isPending: boolean; isError: boolean }
+
+vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
+  useActivityCategoriesQuery: () => categoriesQuery,
+}))
+
+vi.mock('@/features/vida/hooks/useVidaGoals', () => ({
+  useSetVidaGoalDaysMutation: () => setGoalDays,
+}))
+
+const WEEKDAYS: VidaDayOfWeek[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+
+function buildGoal(overrides: Partial<VidaGoal> = {}): VidaGoal {
+  return {
+    id: 'goal-trabajo',
+    slug: 'work',
+    name: 'Trabajo',
+    icon: 'briefcase',
+    color: '#0284c7',
+    targetMinutes: 480,
+    activeDays: WEEKDAYS,
+    orderIndex: 0,
+    ...overrides,
+  }
+}
+
+function buildCategory(goal: VidaGoal | null, overrides: Partial<ActivityCategory> = {}) {
+  return {
+    id: `cat-${goal?.id ?? 'sin-meta'}`,
+    userId: 1,
+    orderIndex: 0,
+    name: 'Curro',
+    description: null,
+    icon: null,
+    color: null,
+    goalId: goal?.id ?? null,
+    goal,
+    ...overrides,
+  } as ActivityCategory
+}
+
 function buildSettings(overrides: Partial<UserSettings> = {}): UserSettings {
   return {
     userId: 1,
@@ -48,6 +104,8 @@ function ready(settings: UserSettings = buildSettings()) {
 
 beforeEach(() => {
   updateSettings = { mutate: vi.fn(), isPending: false, isError: false }
+  setGoalDays = { mutate: vi.fn(), isPending: false, isError: false }
+  categoriesQuery = { data: [], isPending: false, isError: false, fetchStatus: 'idle' }
   ready()
 })
 
@@ -179,5 +237,131 @@ describe('VidaAjustesPage', () => {
     for (const word of ['desperdici', 'perdiste', 'fallaste', 'error de', 'obligatorio']) {
       expect(text.toLowerCase()).not.toContain(word)
     }
+  })
+
+  /**
+   * FEAT-019, tajada 4: los días de cada meta. Criterios 581 (un toque, un
+   * guardado), 582 (sin metas no hay fila) y el límite que el CHECK de la
+   * columna impone y la pantalla dice antes: nunca cero días.
+   */
+  describe('los días de cada meta', () => {
+    it('sin ninguna meta en el catálogo no se pinta ninguna fila (criterio 582)', () => {
+      categoriesQuery = {
+        data: [buildCategory(null)],
+        isPending: false,
+        isError: false,
+        fetchStatus: 'idle',
+      }
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.queryByText('Los días de tus metas')).not.toBeInTheDocument()
+      expect(screen.queryAllByRole('group')).toHaveLength(0)
+      // Y tampoco se ofrece crearla desde aquí.
+      expect(screen.queryByRole('button', { name: /meta/i })).not.toBeInTheDocument()
+    })
+
+    it('cargando el catálogo tampoco se pinta: todavía no se sabe si hay alguna', () => {
+      categoriesQuery = { isPending: true, isError: false, fetchStatus: 'fetching' }
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.queryByText('Los días de tus metas')).not.toBeInTheDocument()
+    })
+
+    it('una meta enseña sus siete días, con los suyos pulsados (criterio 581)', () => {
+      const goal = buildGoal()
+      categoriesQuery = {
+        data: [buildCategory(goal)],
+        isPending: false,
+        isError: false,
+        fetchStatus: 'idle',
+      }
+      renderWithProviders(<VidaAjustesPage />)
+
+      const row = screen.getByRole('group', { name: 'Días de Trabajo' })
+      const days = within(row).getAllByRole('button')
+      expect(days).toHaveLength(7)
+      expect(days.map((button) => button.getAttribute('aria-label'))).toEqual([
+        'lunes',
+        'martes',
+        'miércoles',
+        'jueves',
+        'viernes',
+        'sábado',
+        'domingo',
+      ])
+      expect(days.map((button) => button.getAttribute('aria-pressed'))).toEqual([
+        'true',
+        'true',
+        'true',
+        'true',
+        'true',
+        'false',
+        'false',
+      ])
+    })
+
+    it('un toque guarda, sin confirmación en medio (criterio 581)', async () => {
+      const user = userEvent.setup()
+      const goal = buildGoal()
+      categoriesQuery = {
+        data: [buildCategory(goal)],
+        isPending: false,
+        isError: false,
+        fetchStatus: 'idle',
+      }
+      renderWithProviders(<VidaAjustesPage />)
+
+      await user.click(screen.getByRole('button', { name: 'sábado' }))
+
+      expect(setGoalDays.mutate).toHaveBeenCalledTimes(1)
+      expect(setGoalDays.mutate.mock.calls[0][0]).toEqual({
+        goalId: 'goal-trabajo',
+        activeDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
+      })
+      // Ni diálogo ni botón de guardar para esto: el toque es el guardado.
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      // Y el botón ya se ve pulsado mientras el viaje está en vuelo.
+      expect(screen.getByRole('button', { name: 'sábado' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+    })
+
+    it('quitar el último día no sale hacia el API: se dice aquí', async () => {
+      const user = userEvent.setup()
+      const goal = buildGoal({ activeDays: ['monday'] })
+      categoriesQuery = {
+        data: [buildCategory(goal)],
+        isPending: false,
+        isError: false,
+        fetchStatus: 'idle',
+      }
+      renderWithProviders(<VidaAjustesPage />)
+
+      await user.click(screen.getByRole('button', { name: 'lunes' }))
+
+      expect(setGoalDays.mutate).not.toHaveBeenCalled()
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Déjale al menos un día: sin ninguno, esta meta no contaría nunca.',
+      )
+      // El lunes sigue pulsado: no se ha quitado nada.
+      expect(screen.getByRole('button', { name: 'lunes' })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('dos categorías que apuntan a la misma meta dan una sola fila', () => {
+      const goal = buildGoal()
+      categoriesQuery = {
+        data: [
+          buildCategory(goal),
+          buildCategory(goal, { id: 'cat-2', name: 'Reuniones', orderIndex: 1 }),
+        ],
+        isPending: false,
+        isError: false,
+        fetchStatus: 'idle',
+      }
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.getAllByRole('group', { name: 'Días de Trabajo' })).toHaveLength(1)
+    })
   })
 })

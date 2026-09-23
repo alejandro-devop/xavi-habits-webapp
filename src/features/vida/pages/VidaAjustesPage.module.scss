@@ -85,3 +85,71 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* ───────────── Los días de cada meta (FEAT-019, tajada 4) ─────────────
+   La fila de siete botones es **copia** de `VidaActivitySheet.module.scss`
+   (`.days`, `.day`, `.dayOn`), no un diseño nuevo: es la cuarta vez que este
+   patrón aparece en el módulo y la deuda de extraerlo a un componente
+   compartido está anotada a propósito en la sección 2 del dossier. */
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-heading, inherit);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.goal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.goalName {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.days {
+  display: flex;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.day {
+  flex: 1 1 0;
+  min-width: 0;
+  /* 0.65rem arriba y abajo deja la casilla en ~40 px de alto: un dedo cabe. */
+  padding: 0.65rem 0;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 0.6rem;
+  background: var(--aura-glass-1);
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.dayOn {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  color: var(--color-primary-hover);
+}

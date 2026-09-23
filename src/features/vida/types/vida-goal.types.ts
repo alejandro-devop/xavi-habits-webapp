@@ -29,3 +29,13 @@ export interface VidaGoal {
   activeDays: VidaDayOfWeek[]
   orderIndex: number
 }
+
+/**
+ * Lo que la mutación `vidaGoalDaysSet` necesita. `activeDays` **nunca vacío**:
+ * el validador del API lo rechaza y la columna tiene `CHECK (cardinality >= 1)`.
+ * La interfaz lo impide antes de llegar hasta allí (criterio 581).
+ */
+export interface VidaGoalDaysSetInput {
+  goalId: string
+  activeDays: VidaDayOfWeek[]
+}

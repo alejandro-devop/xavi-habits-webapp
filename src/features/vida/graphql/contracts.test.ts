@@ -9,6 +9,7 @@ import * as activityDayPlanDocuments from '@/features/vida/graphql/activity-day-
 import * as activityFollowUpDocuments from '@/features/vida/graphql/activity-followups.graphql'
 import * as activityDocuments from '@/features/vida/graphql/activities.graphql'
 import * as vidaItemDocuments from '@/features/vida/graphql/vida-items.graphql'
+import * as vidaGoalDocuments from '@/features/vida/graphql/vida-goals.graphql'
 import * as userSettingsDocuments from '@/features/settings/graphql/user-settings.graphql'
 
 /**
@@ -55,6 +56,7 @@ const vidaDocuments = [
   ...documentsOf(activityFollowUpDocuments),
   ...documentsOf(activityDayPlanDocuments),
   ...documentsOf(vidaItemDocuments),
+  ...documentsOf(vidaGoalDocuments),
 ]
 
 /**
@@ -103,6 +105,7 @@ describe('contratos GraphQL de Vida contra el esquema real', () => {
       'VIDA_SUGGESTIONS_FOR_DATE_QUERY',
       'VIDA_TAKEN_TODAY_QUERY',
       'VIDA_UNMARK_TAKEN_TODAY_MUTATION',
+      'VIDA_GOAL_DAYS_SET_MUTATION',
       'MY_SETTINGS_QUERY',
       'UPDATE_MY_SETTINGS_MUTATION',
     ])

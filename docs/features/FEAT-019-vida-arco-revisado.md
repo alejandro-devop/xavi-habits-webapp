@@ -1,7 +1,7 @@
 ---
 id: FEAT-019
 title: El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas
-status: in-review
+status: delivered
 architect: yes    # toca el API en otro repo (columna nueva + mutación en vida_goals), cruza dos componentes que hoy no se hablan (VidaDayBudget y VidaGoalArc) y estrena la primera edición de una meta en el front; razón completa abajo
 area: features/vida, API (xavi-platform-node)
 requested: 2026-09-22
@@ -406,7 +406,7 @@ cabe» es cierto e inútil, y se leía como un veredicto sobre una jornada de
 |---|---|---|
 | 1 | **Lo que falta, dentro del arco.** Cambia qué se pinta como número grande cuando la meta no está cruzada, y hace visible la hora que antes estaba dentro. Solo front, sin migración: corrige la confusión original del usuario de inmediato. Criterios 559–565. | **accepted** |
 | 2 | **El semáforo, lectura B.** El color verde/naranja/rojo según si da tiempo hoy, usando un dato que `VidaDayBudget` ya calcula. Solo front, sin migración; usable sin depender de la tajada 1 (aunque tiene más sentido junto a ella). Criterios 566–574. | **accepted** (2.ª vuelta) |
-| 3 | **Solo los días laborables.** Migración en el API, filtro del arco y la pregunta por día de la semana, y la fila de días en Ajustes → Vida. La única que toca el backend. Criterios 575–584. | **partida en la sección 2**: la 3 (575–580, camino de lectura) **accepted**; los 581–583 van en la 4, pending |
+| 3 | **Solo los días laborables.** Migración en el API, filtro del arco y la pregunta por día de la semana, y la fila de días en Ajustes → Vida. La única que toca el backend. Criterios 575–584. | **partida en la sección 2**: la 3 (575–580, camino de lectura) **accepted**; los 581–583 van en la 4, **accepted** |
 | 5 | **El rojo solo si el día acaba corto, y fuera la proyección de la hora.** Pedida por el usuario la noche del 2026-09-22 usando la app: el semáforo salía rojo a las 23:00 con 7 h 09 de 8 h hechas, y la frase de «a este ritmo paras a las…» le sobraba. Va **antes** de la 4. Criterios 585–590; **supera el 560**. | **accepted** |
 
 Tres tajadas: la 1 es la más barata y la más urgente —es literalmente lo que
@@ -913,7 +913,7 @@ Hoy un sábado; la 4, tocando un botón en Ajustes y volviendo a Hoy.
 | 1 | **Lo que falta, dentro del arco.** `arcValue = formatDurationFromMinutes(target − worked)`, `arcCaption = ['Te faltan']` (una línea), y la frase de la hora pasa a **visible** solo en ese estado. Sin API. | `utils/vida-goals.utils.ts` (`toArc`, tipo `VidaGoalArc` + `variant`), `components/VidaGoalArc/VidaGoalArc.tsx` (clase del `<p>` + geometría del render), `VidaGoalArc.module.scss` (`.line`), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 559, 560, 561, 562, 563, 564, 565 | **accepted** |
 | 2 | **El semáforo, lectura B.** `dayEnd` entra en `buildGoalArcs`; salen `missingMinutes`, `fitMinutes`, `fitLevel`; el arco pinta `data-fit`. Sin API. | `utils/vida-goals.utils.ts` (`BuildGoalArcsInput`, `GOAL_FIT_OK_MARGIN_MINUTES`), `pages/VidaHoyPage.tsx` (la llamada a `buildGoalArcs` y su `useMemo`), `components/VidaGoalArc/VidaGoalArc.tsx` (`data-fit`), `VidaGoalArc.module.scss`, `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` (un caso nuevo) | 566, 567, 568, 569, 570, 571, 572, 573, 574 | **accepted** (2.ª vuelta) |
 | 3 | **El sábado sin arco (camino de lectura).** Migración 070, `activeDays` en servicio/SDL/tipos, y el filtro por día en la util + la pregunta atada al mismo dato. **Requiere que el usuario haga push y se despliegue** antes de verse. | API: `migrations/070_vida_goals_active_days.sql`, `types/services/vida.types.ts`, `services/vida-goal.service.ts` (`GoalRow`, `mapGoal`), `graphql/modules/vida/vida.schema.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front: `types/vida-goal.types.ts`, `graphql/activity-categories.graphql.ts` (5 sub-selecciones), `graphql/schema/vida.schema.graphql` (recopiar), `utils/vida-goals.utils.ts` (`DEFAULT_GOAL_ACTIVE_DAYS`, filtro, `promptAllowed`), `pages/VidaHoyPage.tsx` (la rama de la pregunta), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 575, 576, 577, 578, 579, 580 | **accepted** |
-| 4 | **Elegir los días (camino de escritura).** Mutación `vidaGoalDaysSet` y la fila de siete botones en Ajustes → Vida. | API: `graphql/modules/vida/vida.schema.ts` (input + mutación), `validators/schemas/vida.schemas.ts`, `graphql/modules/vida/vida.resolvers.ts`, `services/vida-goal.service.ts` (`setGoalDays`), `tests/unit/validators/vida.schemas.test.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front **nuevos**: `graphql/vida-goals.graphql.ts`, `api/vida-goals.api.ts`, `hooks/useVidaGoals.ts`; **modificados**: `graphql/contracts.test.ts`, `pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`) | 581, 582, 583 | pending |
+| 4 | **Elegir los días (camino de escritura).** Mutación `vidaGoalDaysSet` y la fila de siete botones en Ajustes → Vida. | API: `graphql/modules/vida/vida.schema.ts` (input + mutación), `validators/schemas/vida.schemas.ts`, `graphql/modules/vida/vida.resolvers.ts`, `services/vida-goal.service.ts` (`setGoalDays`), `tests/unit/validators/vida.schemas.test.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front **nuevos**: `graphql/vida-goals.graphql.ts`, `api/vida-goals.api.ts`, `hooks/useVidaGoals.ts`; **modificados**: `graphql/contracts.test.ts`, `pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`) | 581, 582, 583 | **accepted** |
 | 5 | **El rojo exige día corto de verdad, y se va la proyección de la hora.** `toFitLevel` mira también el mejor final posible del día (80 % de la meta); `line` deja de decir una hora y vuelve al `<p>` de 1×1 px. Sin API. **Sin arquitecto: la pidió el usuario esta noche y cae entera dentro de lo que ya existe.** | `utils/vida-goals.utils.ts` (`toFitLevel`, `toArc`, tipo `VidaGoalArc`, `GOAL_FIT_SHORT_DAY_RATIO`), `components/VidaGoalArc/VidaGoalArc.tsx` (la clase del `<p>`), `VidaGoalArc.module.scss` (se va `.line`), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 585, 586, 587, 588, 589, 590 (y **supera el 560**) | **accepted** |
 
 **584** (`typecheck` limpio; lint y tests no peores que la línea base **de los
@@ -2071,6 +2071,188 @@ sale.
 `BOARD.md` y lo que reescribe `graphify update .` bajo `graphify-out/` (regla
 de `CLAUDE.md`). Ninguno nuevo, ninguno borrado.
 
+### Tajada 4 — Elegir los días (camino de escritura)
+
+**Resumen para el revisor:** la mutación `vidaGoalDaysSet` en el API y, en
+Ajustes → Vida, una tarjeta nueva con la fila de siete botones por cada meta
+del catálogo; un toque guarda y el catálogo se invalida, así que el arco de Hoy
+aparece o desaparece sin recargar. La fila es **copia literal** de la de
+`VidaActivitySheet` (marcado, `aria-pressed`, `aria-label` con
+`VIDA_DAY_LABELS`, `<span aria-hidden>` corto, `disabled` mientras guarda y
+`<p role="alert">` debajo): cuarta copia, deuda anotada a propósito, sin
+extraer. **Lo que más probablemente rompí:** `VidaAjustesPage` ahora llama a
+`useActivityCategoriesQuery()`, que pasa por `useVidaQueryGuard` — su suite
+reventaba con «falta el contexto de sesión» hasta que añadí el `vi.mock` del
+módulo, y **cualquier otra suite que monte esta página sin ese mock romperá
+igual** (busqué: solo la suya la monta). Segundo candidato: el SDL vendorizado
+`vida.schema.graphql` lo recopié a mano del árbol de trabajo del repo hermano
+—si ese árbol no se commitea tal cual, `contracts.test.ts` estará validando
+contra un esquema que el servidor no tiene.
+
+**Qué se construyó:**
+
+*API (`~/Developer/xavi-platform-node`, sin commitear):*
+
+- `src/validators/schemas/vida.schemas.ts` — `vidaGoalDaysSetInputSchema =
+  z.object({ goalId: uuidString, activeDays: daysArray })`. Reutiliza
+  `daysArray`, que ya impone mínimo uno, máximo siete y sin duplicados.
+- `src/types/services/vida.types.ts` — `SetGoalDaysInput` junto a
+  `SetCategoryGoalInput`.
+- `src/graphql/modules/vida/vida.schema.ts` — `vidaGoalDaysSet(input:
+  VidaGoalDaysSetInput!): VidaGoal!` en el `extend type Mutation` y el `input`
+  nuevo debajo de `ActivityCategoryGoalSetInput`.
+- `src/graphql/modules/vida/vida.resolvers.ts` — un `withValidatedResolver`
+  más, calcado del de `activityCategoryGoalSet` (`requireAuth`, `uid(context)`).
+- `src/services/vida-goal.service.ts` — `setGoalDays`:
+  `getOwnedGoalRowOrThrow` → `UPDATE vida_goals SET active_days = $1,
+  updated_at = NOW() WHERE id = $2 AND user_id = $3 RETURNING *` → `mapGoal`.
+  Exportada en `vidaGoalService`. **Sin transacción**, como pedía el plan.
+- `tests/unit/services/vida-goal.service.test.ts` — dos casos:
+  guarda los días de una meta propia (y comprueba que **no** se llama a
+  `connect()`); rechaza la meta de otro usuario **antes** del `UPDATE` (una
+  sola consulta).
+- `tests/unit/validators/vida.schemas.test.ts` — seis casos del input nuevo:
+  cinco días, un día, array vacío, duplicados, día desconocido, `goalId` que no
+  es UUID y `activeDays` ausente.
+
+*Front (`xavi-habits-webapp`, sin commitear):*
+
+- **Nuevos:** `src/features/vida/graphql/vida-goals.graphql.ts`
+  (`VIDA_GOAL_DAYS_SET_MUTATION`), `src/features/vida/api/vida-goals.api.ts`
+  (`setVidaGoalDays`, calcado de `setActivityCategoryGoal`),
+  `src/features/vida/hooks/useVidaGoals.ts` (`useSetVidaGoalDaysMutation`).
+- `src/features/vida/types/vida-goal.types.ts` — `VidaGoalDaysSetInput`.
+- `src/features/vida/graphql/schema/vida.schema.graphql` — SDL recopiado, con
+  la cabecera actualizada (fecha y origen).
+- `src/features/vida/graphql/contracts.test.ts` — `import * as
+  vidaGoalDocuments`, el módulo dentro de `vidaDocuments` y
+  `'VIDA_GOAL_DAYS_SET_MUTATION'` en la lista de nombres (~L105). **La lista sí
+  existía**, al contrario de lo que decía el plan de la tajada 3.
+- `src/features/vida/pages/VidaAjustesPage.tsx` (+ `.module.scss`,
+  `.test.tsx`) — `goalsOfCatalog()` agrupa por `goal.id` con el mismo orden que
+  `buildGoalArcs` (`orderIndex`, nombre para desempatar); `goalsSection()`
+  pinta una `<Card>` por debajo de la del horario, con una fila por meta.
+
+**Por qué así, y qué se descartó:**
+
+- **La invalidación es la del catálogo, no una clave nueva.** Lo miré por lo
+  que avisaba el encargo (`invalidateFollowUpQueries` invalida clave por clave):
+  aquí no hace falta nombrar nada, porque **no añadí ninguna consulta**. El
+  front lee las metas dentro de `ActivityCategory.goal`, así que
+  `invalidateActivityCategoryQueries(queryClient)` —sin `id`, porque el cambio
+  no es de una categoría concreta— es exactamente la invalidación que hace
+  falta y el mismo mecanismo del criterio 501.
+- **Quedarse en cero días se corta en la interfaz.** `toggleGoalDay` calcula el
+  siguiente conjunto y, si queda vacío, **no llama a `mutate`**: pinta «Déjale
+  al menos un día: sin ninguno, esta meta no contaría nunca.» El servidor no es
+  la primera vez que el usuario se entera. Descartado deshabilitar el último
+  botón encendido: un botón que no responde no explica por qué.
+- **El orden de los días se normaliza al encender.** `VIDA_DAY_ORDER.filter(…)`
+  en vez de `[...current, day]`: así lo que viaja es L→D y no el orden en que
+  el usuario fue tocando. El API acepta las dos, pero la fila de Ajustes y el
+  arco leen el mismo array.
+- **Borrador local mientras el viaje está en vuelo.** El botón se ve pulsado
+  al instante y se suelta en `onSettled`; los siete van `disabled` mientras
+  guarda esa meta (copiado del `disabled={isMutating}` de la referencia). Si la
+  mutación falla, el borrador se suelta y vuelve lo guardado, con el
+  `toast.error` del hook.
+- **Cargando el catálogo no se pinta nada.** Un esqueleto prometería una fila
+  que puede no existir (criterio 582). Con el catálogo **en error** sí se pinta
+  la tarjeta con una línea que lo dice: esconderlo en silencio sería peor.
+  Es una decisión mía, no del plan; si el revisor la prefiere muda, es una
+  línea.
+- **Desviación del plan, dicha:** el plan situaba `VIDA_DAY_LABELS` /
+  `VIDA_DAY_ORDER` / `VIDA_DAY_SHORT_LABELS` en `types/vida-item.types`; viven
+  en `utils/vida-date.utils.ts` (de ahí los importa la referencia). Importado
+  de donde están.
+
+**Verificación:**
+
+| Qué | Resultado |
+|---|---|
+| `npx tsc --noEmit` (API) | limpio, exit 0 — **igual que la línea base** |
+| `npm test` (API) | **3 fallos de 584**, 6 suites en rojo. Línea base: 3 de 576, 6 suites. Los 3 son los mismos de siempre (streak, addHabitLog, walletExpenseUpdate); +8 tests son los míos |
+| `npx jest` de los dos archivos tocados | 32 de 32 en verde, incluidos los 8 nuevos |
+| `npx eslint` de los 5 archivos `src/` tocados del API | **2 errores**, los dos `prettier/prettier` y **fuera de mis hunks** (`vida.schema.ts:149`, docstring de `clientId`, mi hunk es 109-120; `vida.types.ts:2`, la unión `VidaDayOfWeek`, mi hunk es 93-98). Uno mío sí apareció —el `import type` de `vida-goal.service.ts` pasado de ancho— y lo corregí **a mano**; nunca `lint:fix` |
+| `pnpm typecheck` (front) | limpio |
+| `pnpm lint` (front) | **14 errores / 0 warnings** — línea base exacta |
+| `pnpm test` (front) | **2 fallos de 1951** (`SearchSelect` ×2, preexistentes). Línea base: 2 de 1943; +8 son los míos |
+| `pnpm vitest run contracts.test.ts` | 81 de 81 |
+| `pnpm vitest run VidaAjustesPage.test.tsx` | 18 de 18 (10 viejos + 8 nuevos) |
+| `pnpm build` | chunk inicial **1.131,64 kB** (base 1.129,17: +2,47 kB, la página y la capa de datos nuevas) y CSS **275,14 kB** (base 274,19: **+0,95 kB**). La cifra **sube**, que es lo que se espera al añadir reglas |
+| SCSS, lista de selectores | `sass --style=compressed` sobre `HEAD` y sobre el árbol de `VidaAjustesPage.module.scss`: **ningún selector perdido**, seis nuevos (`.sectionTitle`, `.goal`, `.goalName`, `.days`, `.day`, `.dayOn`). Ningún comentario abierto sin cerrar |
+| SDL vendorizado | `diff` desde `type VidaGoal {` hasta el final entre `xavi-platform-node/src/graphql/modules/vida/vida.schema.ts` y la copia del front: **idéntico** salvo el backtick de cierre de la plantilla |
+
+**Criterios que cierra:**
+
+- **581 — cumplido en test, pendiente a mano.** `VidaAjustesPage.test.tsx`:
+  «una meta enseña sus siete días, con los suyos pulsados» comprueba los siete
+  `<button>` con `aria-label` `lunes…domingo` y `aria-pressed`
+  `true,true,true,true,true,false,false` para una meta de L-V; «un toque
+  guarda, sin confirmación en medio» comprueba que un clic en «sábado» llama a
+  `mutate` **una** vez con `{ goalId, activeDays: [monday…saturday] }`, que no
+  aparece ningún `role="dialog"` y que el botón ya se ve pulsado. Lo que no
+  puedo comprobar desde aquí es el viaje real contra el API: `/app/*` está tras
+  un login que no paso (ver «pendiente a mano»).
+- **582 — cumplido.** Dos tests: con una categoría **sin** meta no hay ni
+  título «Los días de tus metas», ni ningún `role="group"`, ni ningún botón que
+  mencione «meta»; y cargando el catálogo tampoco se pinta.
+- **583 — NO lo marco cumplido: pendiente de prueba manual.** El dev server del
+  5173 **estaba apagado** cuando corrí la sonda (`APAGADO (nadie escucha)`, en
+  los dos puertos), y yo no levanto servicios. Lo que sí puedo afirmar por
+  código: `.days`/`.day`/`.dayOn` son **byte a byte** las de
+  `VidaActivitySheet.module.scss`, que ya renderiza esta misma fila a 375 px
+  desde FEAT-005; `flex: 1 1 0` + `min-width: 0` en cada botón y `min-width: 0`
+  en `.days`, `.goal` y `.panel` hacen que los siete encojan en vez de
+  desbordar. La cuenta: 375 − 2×16 (el ancho del contenedor de la app) − 2×24
+  (`Card padding="lg"` = 1,5rem) = 295 px, menos 6 huecos de 0,3rem (28,8 px) =
+  **≈38 px por botón** para una sola letra de 12 px. **No sustituye a mirarlo.**
+- **584 — cumplido en las dos mitades**, con la tabla de arriba: `typecheck`
+  limpio en los dos repos, lint y tests no peores que la línea base en ninguno.
+
+**Lo que queda para prueba manual** (con el 5173 arriba y sesión iniciada):
+
+1. `/app/vida/ajustes` con la meta «Trabajo» ya creada: debajo del horario sale
+   «Los días de tus metas» con la fila L-M-X-J-V-S-D y L→V pulsados.
+2. Tocar «S». Los siete se apagan un instante (guardando) y «S» queda pulsado.
+   Sin diálogo, sin botón de guardar.
+3. Ir a `/app/vida/hoy?d=<un sábado>`: **el arco aparece**, porque el sábado ya
+   cuenta. Volver a Ajustes, quitar «S», y ese mismo sábado vuelve a no tener
+   arco ni pregunta. (Esto cruza con los criterios 576-580 de la tajada 3, ya
+   aceptada; es el ida y vuelta completo.)
+4. Dejar la meta con un solo día y tocar ese día: sale «Déjale al menos un día…»
+   en rojo, el día sigue pulsado y **no hay ninguna llamada de red** (se ve en
+   la pestaña Red).
+5. A 375 px (criterio 583): los siete botones en una sola fila, sin scroll
+   horizontal, en las dos tarjetas.
+
+**Riesgos:**
+
+- **El mock de `useActivityCategories` en `VidaAjustesPage.test.tsx` es nuevo y
+  es una trampa futura** (la que el `ENVIRONMENT.md` describe): lista **solo**
+  `useActivityCategoriesQuery`, que es lo único que la página usa hoy. Si
+  alguien añade otra llamada a ese módulo desde esta página, la suite reventará
+  con «no es una función» — cosa que prefiero a que pase en verde por azar.
+- **El SDL vendorizado va por delante del repo hermano commiteado.** Como en la
+  tajada 3: si el push del API no lleva la mutación, `contracts.test.ts` seguirá
+  en verde y el servidor devolverá «Unknown type VidaGoalDaysSetInput». Nada lo
+  compara solo.
+- **La invalidación sin `id` refresca el catálogo entero** de categorías. Es un
+  refetch de una consulta con `staleTime` de 5 min que ya está montada en media
+  app; barato, pero es un viaje más por cada toque de día. Si el usuario juega
+  con los siete botones seguidos son siete viajes de escritura y siete de
+  lectura: no hay `debounce`, a propósito (un toque, un guardado, criterio 581).
+- **`updated_at = NOW()` lo añadí yo**, no estaba en el plan. Si `vida_goals`
+  tuviera un trigger de `updated_at` sería redundante, no incorrecto.
+
+**Estado del árbol:** sin commitear, en **los dos repositorios**. API: 7
+archivos modificados, ninguno nuevo, ninguno borrado. Front: 3 archivos nuevos
+(`vida-goals.graphql.ts`, `vida-goals.api.ts`, `useVidaGoals.ts`), 6
+modificados (`vida-goal.types.ts`, `vida.schema.graphql`, `contracts.test.ts`,
+`VidaAjustesPage.tsx`, `.module.scss`, `.test.tsx`), más `BOARD.md`, este
+expediente y lo que reescribe `graphify update .` bajo `graphify-out/`. **No
+hay datos de prueba que borrar:** todo lo verificado fue con mocks.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — Lo que falta, dentro del arco
@@ -3013,3 +3195,265 @@ usos)—. La frase del `<p>` se compone con `formatDurationMinutes`, la misma qu
 usa el resto de la util. El arco sigue siendo tonto: ni un hook, ni una
 mutación, ni una consulta nueva. Y **no se reintrodujo** ninguna variante del
 cálculo de la hora que se borró.
+
+### Tajada 4 — Elegir los días (camino de escritura)
+
+**Veredicto: `accepted`.** Los cuatro criterios (581–584) están cumplidos, y el
+**583 lo he medido yo** —que era lo que el constructor no pudo hacer con el
+5173 apagado—: a 375 px y a 760 px los siete botones van en **una sola fila**,
+sin scroll horizontal ni en la página ni dentro de la fila. No encontré
+ninguna regresión en las tajadas 1, 2, 3 y 5. Seis hallazgos anotados; ninguno
+devuelve la tajada.
+
+**El entorno, primero.** `docs/features/ENVIRONMENT.md` leído y **no tocado**.
+La sonda daba `APAGADO` en 5173 y 5174, así que arranqué el servidor con
+`preview_start {name: 'xavi-habits-web'}` —lo que ese archivo permite
+explícitamente cuando no hay nada arriba—; `autoPort` no hizo falta: salió en
+el **5173**. **Lo dejo arriba** para que el usuario haga su recorrido sin
+esperar el arranque.
+
+#### El 583, medido (no razonado)
+
+Arnés temporal (`harness-rev019.html` + `src/harness-rev019.tsx`, **borrados**:
+`git status` solo lista los archivos de la tajada). Monta la
+**`VidaAjustesPage` de verdad** con el catálogo sembrado en la caché de React
+Query (`vidaKeys.categories.list()` y `settingsKeys.my()`), el
+`AuthBootstrapContext` en `ready` y `data-ds='aura'`, dentro de un contenedor
+con el mismo `1rem` de margen lateral que la app. Tres metas: «Trabajo» (L-V),
+una con **nombre de 84 caracteres** y los siete días, y «Foco» con **un solo
+día**. Medido con `getBoundingClientRect` en el navegador, no a ojo:
+
+| Ancho | `documentElement.scrollWidth` vs. viewport | La fila (`role="group"`) | Los siete botones |
+|---|---|---|---|
+| **375 px** | 375 / 375 → **sin scroll horizontal** | `scrollWidth` 293 = `clientWidth` 293: no desborda por dentro | **mismo `top`** (una sola fila, sin apilado), **37,7–37,8 px** cada uno |
+| **760 px** | 760 / 760 → **sin scroll horizontal** | 678 = 678 | mismo `top`, 93 px cada uno |
+
+Los 37,7 px medidos confirman la cuenta del constructor (≈38 px) y, más
+importante, **el nombre largo no rompe nada**: envuelve en dos líneas encima de
+su fila y los botones siguen parejos. Las **dos** secciones de Ajustes
+(horario + metas) se pintan a la vez en la misma captura, que es lo que pedía
+el criterio. El 760 px no añadió ningún defecto nuevo —aquí, al contrario que
+en la tajada 1, la fila **nunca envuelve**, así que no había un ancho
+intermedio donde esconderse.
+
+#### Criterio por criterio
+
+- **581 — cumplido.** En el arnés, la fila de «Trabajo» trae los siete botones
+  con `aria-label` `lunes…domingo` en orden L→D y `aria-pressed`
+  `true×5,false,false`. En la suite,
+  `VidaAjustesPage.test.tsx` comprueba además que **un** clic llama a `mutate`
+  **una** vez con `{goalId, activeDays:[monday…saturday]}`, que no hay
+  `role="dialog"` y que el botón ya se ve pulsado. Sin pantalla ni botón de
+  guardar intermedio. **El viaje real contra el API sigue siendo del usuario**
+  (`/app/*` está tras un login que los agentes no pasan).
+- **582 — cumplido.** Con una categoría sin meta no hay título, ni
+  `role="group"`, ni botón que mencione «meta»; cargando, tampoco. Verificado
+  en la suite y por lectura: `if (goals.length === 0) return null`.
+- **583 — cumplido**, con la tabla de arriba. Deja de estar «pendiente a
+  mano»; lo que sigue siendo del usuario es verlo en su teléfono, no la
+  medida.
+- **584 — cumplido, medido de nuevo por mí en los dos repositorios**:
+  `pnpm typecheck` limpio; `pnpm lint` **14 errores / 0 warnings** (línea base
+  exacta); `pnpm test` **2 fallos de 1951** (`SearchSelect` ×2, preexistentes;
+  las 60 suites de `src/features/vida`, 1531 tests, en verde); `pnpm build`
+  **1.131,64 kB** de chunk y **275,14 kB** de CSS. API: `npm test` **3 fallos
+  de 584 en 52 suites, 6 en rojo** — los mismos tres de siempre (streak,
+  addHabitLog, walletExpenseUpdate) y las mismas seis suites que no compilan.
+  **Confirmo la cifra del constructor: 584 tests**, 576 de la línea base + 8
+  suyos.
+
+**El CSS sube, y la subida es legítima.** Comparé la **lista de selectores**
+compilada con `sass --style=compressed` entre `HEAD` y el árbol para
+`VidaAjustesPage.module.scss`: **ningún selector perdido**, diez líneas nuevas
+(`.sectionTitle`, `.goal`, `.goalName`, `.days`, `.day` con sus tres
+pseudo-estados, `.dayOn`). Ningún comentario abierto sin cerrar.
+
+#### Lo que busqué alrededor, y cómo
+
+`graphify-out/graph.json` existe, pero **el constructor corrió `graphify update
+.`**, así que el grafo refleja su árbol, no el estado anterior: sirve para «de
+qué cuelga esto ahora», no para «qué había antes». Lo usé para lo primero y
+abrí los archivos para confirmarlo.
+
+- `graphify explain "VidaAjustesPage"` → grado 5: `useVidaDayHours`,
+  `useActivityCategoriesQuery`, `useUpdateUserSettingsMutation` y el
+  `useSetVidaGoalDaysMutation` nuevo. Nadie más monta esa página (ni el
+  `AppLayout` ni otra suite): el riesgo que el constructor señaló —«cualquier
+  suite que monte esta página sin el mock del catálogo romperá»— **no tiene
+  hoy ninguna segunda víctima**.
+- `graphify query "VidaAjustesPage y quién usa useActivityCategoriesQuery e
+  invalidateActivityCategoryQueries"` (108 nodos) → los consumidores del
+  catálogo son `VidaHoyPage`, `VidaCategoriasPage`, `VidaActividadesPage`,
+  `VidaArchivadasPage`, `VidaActivitySheet` y ahora Ajustes. **Ninguno de esos
+  archivos está tocado** (`git status`), y `invalidate-vida-queries.ts`
+  **tampoco**: la mutación nueva reutiliza `invalidateActivityCategoryQueries`
+  sin modificarla, así que nada de lo que ya invalidaba cambió de forma.
+- **Las tajadas 1, 2, 3 y 5 no se tocaron**: `git status` no lista **ningún**
+  archivo bajo `src/features/vida/components/` ni `src/features/vida/utils/`.
+  El arco, `toArc`, `toFitLevel` y el filtro por día están byte a byte como en
+  `371c190`, y sus redes (`vida-goals.utils.test.ts`, `VidaHoyPage.test.tsx`,
+  `VidaGoalArc`) pasan enteras en mi corrida. En particular: lo que falta
+  dentro del arco, el punto a cero minutos, el filtro de días laborables, el
+  rojo que exige acabar por debajo del 80 % y la **ausencia** de cualquier
+  frase con una hora bajo el arco siguen tal cual — el criterio 589 no se pudo
+  reabrir desde aquí porque esta tajada no escribe una línea en el arco.
+- **El SDL vendorizado**, que era el segundo riesgo del constructor: `diff`
+  desde `type VidaGoal {` entre la copia del front y
+  `xavi-platform-node/src/graphql/modules/vida/vida.schema.ts` → **idéntico**
+  salvo el backtick de cierre. La copia va por delante del repo hermano
+  **commiteado**, que es exactamente lo que el propio expediente ya avisa: si
+  el push del API no lleva la mutación, `contracts.test.ts` seguirá verde y el
+  servidor responderá «Unknown type». Nada lo compara solo.
+- **La invalidación, comprobada clave contra clave** (el aviso de
+  `invalidateFollowUpQueries`): `useSetVidaGoalDaysMutation` llama a
+  `invalidateActivityCategoryQueries(queryClient)` sin `id`, que invalida
+  **`vidaKeys.categories.list()`**, que es **literalmente** la clave que usa
+  `useActivityCategoriesQuery` (`vidaKeys.categories.list()`), la misma que lee
+  `VidaHoyPage`. Coincidencia exacta, no por prefijo: la vuelta a Hoy repinta
+  el arco sin recargar. Y **nada más se invalida**: ni `followUps`, ni
+  `activities`, ni `dayPlan`. Es la invalidación justa.
+
+#### Los estados que nadie construye
+
+- **Sin datos** — cubierto y correcto: sin metas, la sección entera no existe
+  (criterio 582).
+- **Cargando** — decidido a propósito: no se pinta nada. De acuerdo: un
+  esqueleto prometería una fila que puede no existir.
+- **Error** — se pinta la tarjeta con una línea. Ver el apartado siguiente.
+- **Sin permisos** — sin sesión, `useActivityCategoriesQuery` queda
+  deshabilitada (`useVidaQueryGuard`), `goals` es `[]` y la sección no aparece:
+  el usuario ve el `EmptyState` «Entra para ajustar tu día» y nada más.
+  Correcto, y lo confirmé leyendo la rama `hours.isDisabled`, que **también**
+  llama a `goalsSection()`.
+- **Texto largo** — medido: una meta con 84 caracteres envuelve en dos líneas y
+  la fila de días no se mueve.
+- **Móvil (375 px)** — medido arriba.
+
+#### La decisión fuera de plan: el catálogo en error
+
+**Me quedo con la del constructor: pintar la tarjeta con la línea que lo
+dice.** Tres razones, en este módulo concreto:
+
+1. **Ocultarla en silencio es indistinguible de «no tienes metas».** Es el
+   único sitio de la app donde se tocan los días, y el usuario **sí** tiene una
+   meta. Un hueco mudo le diría que su meta desapareció, que es peor que un
+   fallo: es un fallo que además miente.
+2. **La tarjeta de al lado, en esta misma pantalla, ya lo hace.** Con el
+   horario en error se pinta un `Alert` («No pudimos cargar tu horario») y se
+   sigue. Callar en una y hablar en la otra sería la pantalla contándose dos
+   historias distintas del mismo apagón.
+3. **Las palabras no regañan y ofrecen salida** («Vuelve a entrar en un
+   momento y aparecen»), que es la regla del módulo.
+
+Dicho eso, **no es gratis** y queda como hallazgo: con el catálogo caído,
+alguien que **nunca** ha creado una meta ve un título «Los días de tus metas»
+que no le corresponde. Es el precio de no distinguir «no hay» de «no se sabe»,
+y prefiero pagarlo así que al revés.
+
+#### El cero días
+
+**La interfaz lo corta antes del servidor, y lo comprobé en el navegador, no
+solo en la suite.** Con la meta «Foco» a un solo día, un clic en «lunes»:
+`window.fetch` instrumentado registró **cero llamadas**, apareció el `<p
+role="alert">` «Déjale al menos un día: sin ninguno, esta meta no contaría
+nunca.» y el botón **siguió pulsado**. Sin regaño, sin adjetivos, sin
+exclamación: dice qué pasa y por qué, que es la voz del módulo. Detrás quedan
+las dos redes de verdad: `daysArray.min(1)` en Zod y el `CHECK (cardinality
+(active_days) >= 1)` de la 070.
+
+**Y si aun así llegara: el mensaje del servidor sale crudo.** No por esta
+tajada —es el patrón de todo el módulo—, pero lo escribo porque el encargo lo
+pregunta y la respuesta es que no: `toErrorMessage(error, fallback)` devuelve
+`error.message` si existe, y `classifyGraphQLErrors` construye ese mensaje con
+`validationErrors[0].message` del servidor. Un array vacío que burlara la
+interfaz enseñaría **«At least one day is required»** en un `toast`, en inglés;
+una meta de otro usuario, **«You do not have permission to access this vida
+goal»**. El respaldo en castellano («No pudimos guardar los días de la meta»)
+solo se usa cuando el error no trae mensaje. Hallazgo del módulo entero, no de
+esta tajada: no la devuelvo por él.
+
+#### La trampa del `vi.mock`: se acepta como está
+
+`vi.mock('@/features/vida/hooks/useActivityCategories', () => ({
+useActivityCategoriesQuery: … }))` lista **solo** el hook que la página usa
+hoy, y eso **no es la trampa que describe `ENVIRONMENT.md`**. Esa trampa es la
+suite que **se queda verde por casualidad**: el mock incompleto no revienta
+porque el test no recorre el camino que usa el método que falta. Aquí pasa lo
+contrario: el factory sustituye el módulo entero, así que en cuanto la página
+llame a otro hook de ese módulo, **la suite se cae con «no es una función»** —
+ruidosa, inmediata y en el archivo correcto. Completar el mock con los ocho
+hooks que la página no usa **crearía** la trampa que hoy no existe: un mock que
+absorbe en silencio una llamada nueva. Se queda como está, y el constructor ya
+lo dejó escrito en sus riesgos, que es donde tenía que estar.
+
+#### El validador y la propiedad de la meta (API)
+
+Leído el árbol del repo hermano, no el informe:
+
+- `vidaGoalDaysSetInputSchema = z.object({ goalId: uuidString, activeDays:
+  daysArray })`, y `daysArray` es `z.array(vidaDayOfWeek).min(1,'At least one
+  day is required').max(7).refine(sin duplicados)`. **Día desconocido** →
+  rechazado por el `enum` de `vidaDayOfWeek`; **duplicados** → por el `.refine`;
+  **array vacío** → por el `.min(1)`. Los tres con test nuevo en
+  `tests/unit/validators/vida.schemas.test.ts`. Ni un `.refine` de «al menos un
+  campo» a la vista: los dos campos del input son obligatorios.
+- `setGoalDays` llama a **`getOwnedGoalRowOrThrow(db, goalId, userId)` antes
+  del `UPDATE`** (`NotFoundError` si no existe, `ForbiddenError` si es de
+  otro), y el `UPDATE` repite `WHERE … AND user_id = $3` con un
+  `ForbiddenError` si no tocó ninguna fila. Cinturón y tirantes, sin
+  transacción — correcto: un solo `UPDATE` de una fila.
+- `migrations/070_…` **ya está commiteada** (viajó en la tajada 3): esta tajada
+  no añade ninguna migración, solo la mutación. `git status` del repo hermano
+  lista siete archivos modificados y **ninguno nuevo**.
+
+#### ¿Duplica algo que ya existía?
+
+Contra la sección 2: **no**, salvo lo que el arquitecto autorizó por escrito.
+La fila de siete botones es la **cuarta copia** (`VidaActivitySheet`,
+`VidaTemplateAddPanel`, `VidaStartingPoints` y ahora Ajustes) y el plan dice
+explícitamente que **no se extrae aquí**; la deuda sigue anotada. No hay
+formateador nuevo, ni componente de arco, ni consulta `vidaGoals`, ni clave de
+caché nueva, ni invalidación nueva. Sí hay una duplicación pequeña que el plan
+autorizó y que dejo escrita como hallazgo: `goalsOfCatalog()` en la página
+repite el gesto de `buildGoalArcs` (agrupar por `goal.id`, ordenar por
+`orderIndex` y nombre). Son dos implementaciones del mismo criterio de orden en
+dos archivos; si una cambia, Ajustes y Hoy listarían las metas distinto.
+
+#### Hallazgos (ninguno devuelve la tajada)
+
+1. **El mensaje del servidor sale crudo y en inglés** en el `toast` si una
+   validación del API llega hasta el usuario. Es del módulo entero
+   (`toErrorMessage` + `classifyGraphQLErrors`), no de esta tajada.
+2. **La tarjeta de error aparece también para quien no tiene ninguna meta.**
+   Precio consciente de no distinguir «no hay» de «no se sabe».
+3. **El estado de error no tiene test** —es la única rama nueva de la página
+   sin red— y usa un `<p class=hint>` mientras el horario, en la misma
+   pantalla, usa `Alert variant="danger"`: dos pesos visuales para el mismo
+   apagón.
+4. **`goalsOfCatalog` duplica el orden de `buildGoalArcs`** (ver arriba).
+5. **`useSetVidaGoalDaysMutation` no tiene suite propia.** La invalidación la
+   verifiqué leyendo que las claves coinciden exactamente; el módulo sí tiene
+   `useActivityCategories.test.tsx` como precedente de hook probado.
+6. **La caché de `vidaKeys.categories.detail(id)` no se invalida** al cambiar
+   los días. Hoy no se ve (el detalle de categoría no enseña días), pero queda
+   una copia de la meta con `activeDays` viejo en memoria.
+
+#### Lo que queda para prueba manual del usuario
+
+Los agentes no pasan el login: **el viaje real contra el API es suyo**. El
+5173 lo dejé arriba.
+
+1. **Antes de nada, el push del API.** La mutación `vidaGoalDaysSet` está
+   **sin commitear** en `xavi-platform-node`: hasta que se despliegue, tocar un
+   día responderá «Unknown type `VidaGoalDaysSetInput`». La migración 070 ya
+   corrió con la tajada 3.
+2. `/app/vida/ajustes`: debajo del horario, «Los días de tus metas» con
+   «Trabajo» y L→V pulsados.
+3. Tocar «S»: los siete se apagan un instante y «S» queda pulsado. Sin
+   diálogo, sin botón de guardar.
+4. `/app/vida/hoy?d=<un sábado>` → **el arco aparece**. Volver, quitar «S», y
+   ese sábado vuelve a quedarse sin arco ni pregunta, **sin recargar**.
+5. Dejar una meta con un solo día y tocarlo: sale «Déjale al menos un día…» y
+   **ninguna llamada de red**.
+6. En el teléfono de verdad: los siete botones en una fila (yo lo medí en el
+   navegador a 375 y 760 px, pero un teléfono no es un emulador).

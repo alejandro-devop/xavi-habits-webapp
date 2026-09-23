@@ -27,7 +27,40 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
-| FEAT-019 | building | 4/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
+| FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
+
+**FEAT-019 `delivered` 5/5** (2026-09-23, revisor). **Tajada 4 aceptada: la
+feature se entrega.** Los cuatro criterios (581–584) cumplidos y el **583
+medido, no razonado**: arranqué el 5173 (estaba apagado, `ENVIRONMENT.md` lo
+permite) y monté un arnés temporal —**borrado**— con la página de verdad; a
+**375 px** y a **760 px** los siete botones van en una sola fila (37,7 px y
+93 px cada uno), `scrollWidth == clientWidth` y **cero scroll horizontal**, con
+una meta de 84 caracteres para el texto largo. El cero días lo corta la
+interfaz **antes** del servidor: `fetch` instrumentado registró **cero
+llamadas** y salió «Déjale al menos un día…», sin regaño. La invalidación es la
+justa: `invalidateActivityCategoryQueries` toca `vidaKeys.categories.list()`,
+**la misma clave exacta** que lee Hoy, y nada más. Sin regresiones: `git
+status` no lista ni un archivo de `components/` ni de `utils/`, así que las
+tajadas 1, 2, 3 y 5 están byte a byte como en `371c190` y sus redes pasan.
+Líneas base de nuevo medidas por mí en los dos repos: front 14/0 de lint, **2
+fallos de 1951**, build 1.131,64 kB + CSS 275,14 kB (selectores: diez nuevos,
+ninguno perdido); API **3 fallos de 584** en 52 suites, 6 en rojo — confirmo
+los 584 tests. Seis hallazgos anotados, ninguno devuelve. **Falta el push del
+usuario en los dos repos**: hasta que `xavi-platform-node` despliegue, tocar un
+día responderá «Unknown type VidaGoalDaysSetInput».
+
+**FEAT-019 `in-review` 5/5** (2026-09-23, constructor). **Tajada 4 construida:
+elegir los días.** Última de la feature. `vidaGoalDaysSet` en el API
+(validador + SDL + resolver + `setGoalDays`, sin transacción: un solo UPDATE) y
+en Ajustes → Vida una tarjeta nueva con la fila de siete botones por meta,
+**copiada** de `VidaActivitySheet` (cuarta copia, deuda anotada a propósito).
+Un toque guarda e invalida el catálogo, que es de donde el front lee las metas:
+ninguna clave de caché nueva que nombrar. Quedarse en cero días **se corta en
+la interfaz**, no en el CHECK de la 070. Criterios 581 y 582 cerrados con
+tests; **583 (375 px) queda pendiente de prueba manual: el 5173 estaba apagado
+y no levanto servicios**. 584 cumplido: `typecheck` limpio en los dos repos,
+front 14/0 de lint y 2 fallos de 1951, API 3 fallos de 584 — línea base exacta
+en todo. Sin commitear, en los dos repositorios.
 
 **FEAT-019 `building` 4/5** (2026-09-23, revisor). **Tajada 5 aceptada: el
 rojo solo si el día acaba corto, y fuera la hora proyectada.** Los seis

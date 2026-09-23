@@ -20,7 +20,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | building | 2/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-23 |
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
-| FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
+| FEAT-012 | building | 1/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-23 |
 | FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
@@ -31,6 +31,48 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
 | FEAT-021 | delivered | 2/2 | app/providers, shared/api | La caché guardada caduca cuando cambia la forma de los datos | 2026-09-23 |
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
+| FEAT-023 | planned | 0/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-23 |
+
+**FEAT-012 `building` 1/4** (2026-09-23, revisor). **Tajada 1 aceptada**, sin
+commitear todavía. Medí yo los tres que quedaban pendientes —**313, 314 y 315**—
+con un arnés propio en iframes de **375** y **760** px y en tema oscuro: sin
+scroll horizontal, sin texto cortado, la fila de las siete noches en una sola
+línea en los dos anchos y el color de la noche cambiando con el tema. El
+**`buster` confirmado en `dist/`**: `c354b9032f97` (HEAD) → **`f8edc4f3becd`**,
+o sea **una apertura en frío para todo el mundo** al desplegar, y solo una. El
+criterio **269 pasa a la tajada 2** (la línea de «cuál manda» está en futuro
+porque la ventana la deriva la tajada 2). Suite **2/2141** (los dos de
+`SearchSelect`, de siempre), lint **14/0**, chunk 1.148,03 kB, CSS 279,35 kB.
+
+**FEAT-012 `in-review` 0/4** (2026-09-23, constructor). **Tajada 1 construida y
+sin commitear.** «Tu noche» en `/app/vida/ajustes` y las dos franjas en la
+plantilla; sin mover ninguna ventana ni ninguna cuenta. Criterios 260–276 y
+310–312, 316–318 cerrados con test; **313, 314 y 315 quedan pendientes de
+medida**: el panel del navegador no dejó abrir pestaña («Tab cap reached») y el
+arnés se borró. Lo de mayor alcance: al tocar `user-settings.graphql.ts` cambia
+el `buster` y **todo el mundo pierde la caché persistida una vez** (deseado). El
+detalle, en la sección 3 del expediente.
+
+**FEAT-012 `planned` 0/4** (2026-09-23, arquitecto). **El bloqueo D2 no existe:
+el API ya está hecho y desplegado.** Los tres campos de la noche viajan en
+`mySettings` desde el commit `73e3c44` del repo hermano y la migración 068 corrió
+en verde el 2026-09-22 — **no se toca `xavi-platform-node`**, solo hay que
+recopiar el SDL vendorizado (`src/features/settings/graphql/schema/user-settings.schema.graphql`,
+hoy en el commit anterior) o `contracts.test.ts` se pone rojo. Dos sorpresas de
+ese API que mandan sobre el cliente: **`vidaNightDays: []` lo rechaza** (`.min(1)`
+en el validador), así que cero noches se guarda como `null` (criterio 265); y
+**la igualdad de horas no la valida nadie en el servidor**, así que el criterio
+263 es del cliente y su test también. Referencia: la vertical de días de FEAT-019
+(`VidaAjustesPage.tsx` + `useVidaDayHours.ts`) — **la fila de siete botones ya
+existe cinco veces y la quinta está en esa misma página con esas mismas clases**,
+así que no aparece una sexta. Cuatro tajadas, ninguna bloqueada y ninguna
+dependiente de un despliegue: **moví el criterio 277 de la tajada 1 a la 2**
+porque es la ventana derivada de la noche y en la 1 chocaba con el 273. Aviso
+escrito en el plan: a partir de la tajada 2 el denominador del presupuesto sigue
+a la ventana, y eso hay que decidirlo si el 273 se leía literal. Sin guarda nueva
+de caché (`settingsKeys.my()` se lee con `?.`), pero el `buster` de FEAT-021 se
+disparará solo al tocar `user-settings.graphql.ts` y tirará la caché una vez, que
+aquí es lo que queremos. Siguiente: el `feature-builder` con la tajada 1.
 
 **FEAT-021 `delivered` 2/2** (2026-09-23, revisor). **Tajada 2 aceptada en su
 segunda vuelta; la feature queda entregada.** Las dos devoluciones están

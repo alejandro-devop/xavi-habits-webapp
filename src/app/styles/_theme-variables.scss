@@ -202,6 +202,18 @@
   --aura-ring-from: #10b981;
   --aura-ring-to: #7c3aed;
 
+  // La noche (FEAT-012). Un color **propio**: no es el de ninguna categoría ni
+  // el de ningún estado de bloque (criterio 274), y por eso vive aquí y no
+  // escrito a mano en un `.module.scss`. Índigo para la franja de la noche,
+  // con un punto de ámbar en la del amanecer — es el render aprobado
+  // `docs/vida/assets/13-vida-dormir.html:56-61`.
+  --aura-night-dusk-bg: linear-gradient(135deg, rgba(79, 70, 229, 0.14), rgba(124, 58, 237, 0.1));
+  --aura-night-dawn-bg: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(245, 158, 11, 0.12));
+  --aura-night-border: rgba(79, 70, 229, 0.26);
+  // #3730a3 sobre el vidrio claro pasa AA de sobra; es el `--indigo-text` del
+  // render, no un violeta cualquiera.
+  --aura-night-text: #3730a3;
+
   // ── Enganches de los componentes de shared/ui ──────────────────────────────
   // Cada uno tiene fallback al valor actual, así que fuera de este ámbito los
   // componentes se renderizan exactamente igual que antes.
@@ -268,6 +280,13 @@
   --aura-ring-track: rgba(255, 255, 255, 0.14);
   --aura-ring-from: #4edea3;
   --aura-ring-to: #a78bfa;
+
+  // En oscuro el índigo oscuro no se leería: el texto sube a #c7d2fe y el
+  // fondo baja (criterio 315). El color de la noche **cambia con el tema**.
+  --aura-night-dusk-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(124, 58, 237, 0.16));
+  --aura-night-dawn-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(245, 158, 11, 0.16));
+  --aura-night-border: rgba(165, 180, 252, 0.3);
+  --aura-night-text: #c7d2fe;
 
   --nav-link-active-bg: rgba(255, 255, 255, 0.1);
   --nav-link-active-shadow: 0 8px 22px -10px rgba(78, 222, 163, 0.45);

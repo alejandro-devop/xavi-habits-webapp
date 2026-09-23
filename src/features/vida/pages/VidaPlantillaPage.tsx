@@ -17,6 +17,8 @@ import { VidaTemplateRemoveDialog } from '@/features/vida/components/VidaTemplat
 import { VidaWeekGrid } from '@/features/vida/components/VidaWeekGrid'
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
+import { useVidaNight } from '@/features/vida/hooks/useVidaNight'
+import { VidaNightBand } from '@/features/vida/components/VidaNightBand'
 import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
 import {
   useDeleteVidaItemMutation,
@@ -31,6 +33,7 @@ import {
   getCurrentLocalDate,
   getVidaDayOfWeek,
 } from '@/features/vida/utils/vida-date.utils'
+import { nightBandsForWeekday } from '@/features/vida/utils/vida-night.utils'
 import {
   buildTemplateDay,
   buildTemplateGuidance,
@@ -102,6 +105,16 @@ export function VidaPlantillaPage() {
 
   const itemsQuery = useVidaItemsQuery(true)
   const dayHours = useVidaDayHours()
+  /**
+   * **La noche** (FEAT-012, tajada 1). Sale de `mySettings`, que esta pantalla
+   * ya pide a través de `useVidaDayHours`: ni una consulta más (criterio 318).
+   *
+   * En esta tajada la noche **solo se pinta**: no mueve `dayHours`, no entra en
+   * `buildTemplateDay` y no toca ninguna cuenta, así que «2h puestas de 17h» es
+   * exactamente la misma cifra con noche y sin ella (criterio 273). La ventana
+   * derivada es la tajada 2.
+   */
+  const nightState = useVidaNight()
   const updateItem = useUpdateVidaItemMutation()
   const deleteItem = useDeleteVidaItemMutation()
 
@@ -404,6 +417,12 @@ export function VidaPlantillaPage() {
   })
   const weekTotals = buildWeekTotals(weekGrid)
   const dayLabel = VIDA_DAY_LABELS[day]
+
+  // Qué noche **acaba** en este día (la de arriba) y cuál **empieza** (la de
+  // abajo). No son la misma pregunta: una noche que no cruza la medianoche se
+  // pinta arriba de su propio día y abajo no anuncia nada (criterio 276).
+  const usableNight = nightState.isPending || nightState.isError ? null : nightState.night
+  const { dawn: dawnNight, dusk: duskNight } = nightBandsForWeekday(usableNight, day)
   const guidance = buildTemplateGuidance(templateDay, dayLabel)
   const isDayEmpty = templateDay.timed.length === 0 && templateDay.untimed.length === 0
 
@@ -470,6 +489,18 @@ export function VidaPlantillaPage() {
               </>
             }
           />
+
+          {/* **La franja de arriba y la de abajo, fuera de la lista.** Están
+              aquí y no dentro del `<ol>` a propósito: dentro serían una fila,
+              y una fila se cuenta (criterio 272). Se pintan también en un día
+              vacío, porque la noche es el borde del día y no depende de que
+              haya algo puesto.
+
+              Cargando o con error no se pinta ninguna: una franja que luego
+              salta o una noche inventada serían peores que ninguna (criterios
+              311 y 312). Y un día sin noche marcada no pinta nada en absoluto,
+              ni vacía ni con texto de relleno (criterio 275). */}
+          {dawnNight ? <VidaNightBand variant="dawn" night={dawnNight} day={day} /> : null}
 
           {isDayEmpty ? (
             // Un día vacío **con otros llenos**: quien lo dice sin reproche es
@@ -545,6 +576,8 @@ export function VidaPlantillaPage() {
               />
             </>
           )}
+
+          {duskNight ? <VidaNightBand variant="dusk" night={duskNight} day={day} /> : null}
         </div>
       </VidaTemplateDayTabs>
       </div>

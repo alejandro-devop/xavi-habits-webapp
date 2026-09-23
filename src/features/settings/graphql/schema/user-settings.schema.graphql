@@ -5,13 +5,14 @@
 #
 # Origen : xavi-platform-node/src/graphql/modules/user-settings/user-settings.schema.ts
 #          (la cadena `gql` de `userSettingsTypeDefs`, copiada literal)
-# Copiado: 2026-09-20 (commit 15463da del repo hermano: vidaDayStartTime y
-#          vidaDayEndTime)
+# Copiado: 2026-09-23 (commit 73e3c44 del repo hermano: vidaNightBedTime,
+#          vidaNightWakeTime y vidaNightDays — FEAT-012)
 #
 # Aquí no se añade nada: este módulo hace `extend type Query`/`extend type
-# Mutation` y referencia `DateTime`, que aporta `activity.schema.graphql`. Lo
-# valida `src/features/vida/graphql/contracts.test.ts`, que es el único sitio
-# del repo donde vive el esquema combinado.
+# Mutation` y referencia `DateTime`, que aporta `activity.schema.graphql`, y
+# `VidaDayOfWeek`, que aporta `vida.schema.graphql`. Lo valida
+# `src/features/vida/graphql/contracts.test.ts`, que es el único sitio del repo
+# donde vive el esquema combinado.
 # ─────────────────────────────────────────────────────────────────────────────
 
   type UserSettings {
@@ -44,6 +45,21 @@
     Hora local en que termina el día de Vida, formato HH:mm. Si es null el cliente usa 23:00.
     """
     vidaDayEndTime: String
+    """
+    Hora local a la que se acuesta, formato HH:mm. Null si aún no configuró su noche.
+    """
+    vidaNightBedTime: String
+    """
+    Hora local a la que se levanta, formato HH:mm. **Puede ser anterior a
+    vidaNightBedTime**: una noche que cruza la medianoche («23:00 → 05:00») y una que
+    no la cruza («01:00 → 06:40») son las dos legales, y el servidor no compara una
+    con otra.
+    """
+    vidaNightWakeTime: String
+    """
+    Noches en las que aplica, nombradas por el día en que se acuesta. Null: todas.
+    """
+    vidaNightDays: [VidaDayOfWeek!]
     createdAt: DateTime!
     updatedAt: DateTime!
   }
@@ -85,4 +101,17 @@
     Hora local HH:mm en que termina el día de Vida (o null para limpiar).
     """
     vidaDayEndTime: String
+    """
+    Hora local HH:mm a la que se acuesta (o null para limpiar).
+    """
+    vidaNightBedTime: String
+    """
+    Hora local HH:mm a la que se levanta (o null para limpiar). **No tiene que ser
+    posterior a vidaNightBedTime.**
+    """
+    vidaNightWakeTime: String
+    """
+    Noches en las que aplica, por el día en que se acuesta (o null para limpiar).
+    """
+    vidaNightDays: [VidaDayOfWeek!]
   }

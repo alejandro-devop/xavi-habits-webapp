@@ -92,6 +92,9 @@ function buildSettings(overrides: Partial<UserSettings> = {}): UserSettings {
     standupTodoFolderId: null,
     vidaDayStartTime: null,
     vidaDayEndTime: null,
+    vidaNightBedTime: null,
+    vidaNightWakeTime: null,
+    vidaNightDays: null,
     createdAt: '2026-01-01T00:00:00.000Z',
     updatedAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
@@ -255,7 +258,10 @@ describe('VidaAjustesPage', () => {
       renderWithProviders(<VidaAjustesPage />)
 
       expect(screen.queryByText('Los días de tus metas')).not.toBeInTheDocument()
-      expect(screen.queryAllByRole('group')).toHaveLength(0)
+      // La fila de días **de una meta**. Desde FEAT-012 la página tiene otra
+      // fila de siete botones, la de «Qué noches», que no es de esta sección:
+      // se busca por su nombre en vez de contar todos los grupos.
+      expect(screen.queryByRole('group', { name: /^Días de/ })).not.toBeInTheDocument()
       // Y tampoco se ofrece crearla desde aquí.
       expect(screen.queryByRole('button', { name: /meta/i })).not.toBeInTheDocument()
     })
@@ -362,6 +368,242 @@ describe('VidaAjustesPage', () => {
       renderWithProviders(<VidaAjustesPage />)
 
       expect(screen.getAllByRole('group', { name: 'Días de Trabajo' })).toHaveLength(1)
+    })
+  })
+
+  /**
+   * **Tu noche** (FEAT-012, tajada 1 — criterios 260 a 270).
+   *
+   * Aquí se prueba lo que **no** se prueba en ningún otro sitio: que la
+   * igualdad de horas la para el cliente (el servidor no la mira), que el
+   * orden de las horas **no** se valida, y que «ninguna noche» viaja como
+   * `null` y no como `[]`, que es lo que el servidor rechaza.
+   */
+  describe('Tu noche', () => {
+    async function setNight(bed: string, wake: string) {
+      fireEvent.change(screen.getByLabelText('Me acuesto a las'), { target: { value: bed } })
+      fireEvent.change(screen.getByLabelText('Me levanto a las'), { target: { value: wake } })
+    }
+
+    function save() {
+      fireEvent.click(screen.getByRole('button', { name: 'Guardar mi noche' }))
+    }
+
+    it('son tres cosas y ninguna más: dos horas y qué noches (criterio 260)', () => {
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.getByRole('heading', { name: 'Tu noche' })).toBeInTheDocument()
+      expect(screen.getByLabelText('Me acuesto a las')).toHaveAttribute('type', 'time')
+      expect(screen.getByLabelText('Me levanto a las')).toHaveAttribute('type', 'time')
+      expect(screen.getByRole('group', { name: 'Qué noches' })).toBeInTheDocument()
+      // Ni calidad, ni despertares, ni siestas, ni un campo por día.
+      expect(screen.queryAllByRole('textbox')).toHaveLength(0)
+      expect(screen.queryAllByRole('switch')).toHaveLength(0)
+      expect(screen.queryAllByRole('spinbutton')).toHaveLength(0)
+    })
+
+    it('con los tres nulos es una invitación, sin error y sin horas puestas (criterio 268)', () => {
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.getByLabelText('Me acuesto a las')).toHaveValue('')
+      expect(screen.getByLabelText('Me levanto a las')).toHaveValue('')
+      expect(screen.getByText(/Todavía no has puesto tu noche/)).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      // Y ninguna noche marcada de propina.
+      for (const name of ['La noche del lunes', 'La noche del domingo']) {
+        expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false')
+      }
+    })
+
+    it('23:00 / 5:00 dice la duración y que cruza la medianoche (criterio 261)', async () => {
+      renderWithProviders(<VidaAjustesPage />)
+      await setNight('23:00', '05:00')
+      fireEvent.click(screen.getByRole('button', { name: 'La noche del martes' }))
+
+      expect(screen.getByText('6 h')).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          'Cruza la medianoche, y eso está bien: la noche del martes es la madrugada del miércoles.',
+        ),
+      ).toBeInTheDocument()
+    })
+
+    it('1:00 / 6:40 dice que no cruza la medianoche (criterio 261)', async () => {
+      renderWithProviders(<VidaAjustesPage />)
+      await setNight('01:00', '06:40')
+
+      expect(screen.getByText('5 h 40')).toBeInTheDocument()
+      expect(
+        screen.getByText('Esta noche no cruza la medianoche: empieza y acaba el mismo día.'),
+      ).toBeInTheDocument()
+    })
+
+    it('acostarse después de levantarse se guarda sin error y sin señalar nada (criterio 262)', async () => {
+      renderWithProviders(<VidaAjustesPage />)
+      await setNight('23:00', '05:00')
+      save()
+
+      expect(updateSettings.mutate).toHaveBeenCalledTimes(1)
+      expect(updateSettings.mutate.mock.calls[0]![0]).toEqual({
+        vidaNightBedTime: '23:00',
+        vidaNightWakeTime: '05:00',
+        vidaNightDays: null,
+      })
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      expect(screen.getByLabelText('Me acuesto a las')).not.toHaveAttribute('aria-invalid')
+      expect(screen.getByLabelText('Me levanto a las')).not.toHaveAttribute('aria-invalid')
+    })
+
+    it('las dos horas iguales no se guardan y se señala el campo (criterio 263)', async () => {
+      renderWithProviders(<VidaAjustesPage />)
+      await setNight('23:00', '23:00')
+      save()
+
+      expect(updateSettings.mutate).not.toHaveBeenCalled()
+      expect(screen.getByRole('alert')).toHaveTextContent(/no pueden ser la misma/i)
+      expect(screen.getByLabelText('Me acuesto a las')).toHaveAttribute('aria-invalid', 'true')
+      expect(screen.getByLabelText('Me levanto a las')).toHaveAttribute('aria-invalid', 'true')
+    })
+
+    it('las siete casillas se marcan por la noche en la que te acuestas, y lo dice (criterio 264)', () => {
+      renderWithProviders(<VidaAjustesPage />)
+      const group = screen.getByRole('group', { name: 'Qué noches' })
+
+      expect(within(group).getAllByRole('button')).toHaveLength(7)
+      expect(within(group).getByRole('button', { name: 'La noche del viernes' })).toHaveTextContent(
+        'V',
+      )
+      expect(
+        screen.getByText(/marcar «viernes» es la noche del viernes al sábado/),
+      ).toBeInTheDocument()
+    })
+
+    it('ninguna noche marcada se guarda igual, y viaja como null (criterio 265)', async () => {
+      ready(
+        buildSettings({
+          vidaNightBedTime: '23:00',
+          vidaNightWakeTime: '05:00',
+          vidaNightDays: ['tuesday'],
+        }),
+      )
+      renderWithProviders(<VidaAjustesPage />)
+      // Se desmarca la única que había: cero noches es una respuesta válida.
+      fireEvent.click(screen.getByRole('button', { name: 'La noche del martes' }))
+      save()
+
+      expect(updateSettings.mutate.mock.calls[0]![0]).toEqual({
+        vidaNightBedTime: '23:00',
+        vidaNightWakeTime: '05:00',
+        // **Nunca `[]`**: el `.min(1)` del servidor lo rechazaría.
+        vidaNightDays: null,
+      })
+    })
+
+    it('en el cuerpo viajan exactamente los tres campos de la noche (criterio 266)', async () => {
+      renderWithProviders(<VidaAjustesPage />)
+      await setNight('23:00', '05:00')
+      fireEvent.click(screen.getByRole('button', { name: 'La noche del martes' }))
+      save()
+
+      const body = updateSettings.mutate.mock.calls[0]![0] as Record<string, unknown>
+      expect(Object.keys(body).sort()).toEqual([
+        'vidaNightBedTime',
+        'vidaNightDays',
+        'vidaNightWakeTime',
+      ])
+      expect(body.vidaNightDays).toEqual(['tuesday'])
+    })
+
+    it('al volver se ve lo guardado (criterio 266)', () => {
+      ready(
+        buildSettings({
+          vidaNightBedTime: '23:00',
+          vidaNightWakeTime: '05:00',
+          vidaNightDays: ['tuesday', 'friday'],
+        }),
+      )
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.getByLabelText('Me acuesto a las')).toHaveValue('23:00')
+      expect(screen.getByLabelText('Me levanto a las')).toHaveValue('05:00')
+      expect(screen.getByRole('button', { name: 'La noche del martes' })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+      expect(screen.getByRole('button', { name: 'La noche del lunes' })).toHaveAttribute(
+        'aria-pressed',
+        'false',
+      )
+    })
+
+    it('si la mutación falla se dice y no se pierde lo escrito (criterio 267)', async () => {
+      updateSettings = { mutate: vi.fn(), isPending: false, isError: true }
+      renderWithProviders(<VidaAjustesPage />)
+      await setNight('23:00', '05:00')
+
+      expect(screen.getByText(/No pudimos guardar tu noche/)).toHaveTextContent(
+        /tu noche de antes sigue vigente/,
+      )
+      expect(screen.getByLabelText('Me acuesto a las')).toHaveValue('23:00')
+      expect(screen.getByLabelText('Me levanto a las')).toHaveValue('05:00')
+    })
+
+    it('dice cuál manda entre «Tu día» y «Tu noche» (criterio 269)', () => {
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.getByLabelText('Empieza mi día')).toBeInTheDocument()
+      expect(screen.getByText(/Manda tu noche/)).toBeInTheDocument()
+    })
+
+    it('quitar la noche deja los tres campos nulos (criterio 270)', () => {
+      ready(
+        buildSettings({
+          vidaNightBedTime: '23:00',
+          vidaNightWakeTime: '05:00',
+          vidaNightDays: ['tuesday'],
+        }),
+      )
+      renderWithProviders(<VidaAjustesPage />)
+      fireEvent.click(screen.getByRole('button', { name: 'Quitar mi noche' }))
+
+      expect(updateSettings.mutate.mock.calls[0]![0]).toEqual({
+        vidaNightBedTime: null,
+        vidaNightWakeTime: null,
+        vidaNightDays: null,
+      })
+    })
+
+    it('sin noche guardada no se ofrece quitarla', () => {
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.queryByRole('button', { name: 'Quitar mi noche' })).not.toBeInTheDocument()
+    })
+
+    it('cargando no se pinta ninguna noche que luego salte (criterio 311)', () => {
+      settingsQuery = { data: undefined, isPending: true, isError: false, fetchStatus: 'fetching' }
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.queryByRole('heading', { name: 'Tu noche' })).not.toBeInTheDocument()
+    })
+
+    it('con error se dice y no se afirma «no tienes noche» (criterio 312)', () => {
+      settingsQuery = { data: undefined, isPending: false, isError: true, fetchStatus: 'idle' }
+      renderWithProviders(<VidaAjustesPage />)
+
+      expect(screen.getByText('No pudimos cargar tu noche')).toBeInTheDocument()
+      expect(screen.queryByLabelText('Me acuesto a las')).not.toBeInTheDocument()
+      expect(screen.queryByText(/Todavía no has puesto tu noche/)).not.toBeInTheDocument()
+    })
+
+    it('ni una palabra de reproche en la sección (criterio 316)', async () => {
+      renderWithProviders(<VidaAjustesPage />)
+      await setNight('23:00', '05:00')
+      const section = screen.getByRole('heading', { name: 'Tu noche' }).closest('div')!
+      const text = (section.textContent ?? '').toLowerCase()
+
+      for (const word of ['deberías', 'apenas', 'desperdicio', '¿por qué']) {
+        expect(text).not.toContain(word)
+      }
     })
   })
 })

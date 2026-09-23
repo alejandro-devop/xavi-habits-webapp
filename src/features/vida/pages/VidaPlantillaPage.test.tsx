@@ -1599,3 +1599,146 @@ describe('la nota del ítem, en su fila (criterios 553 y 554)', () => {
     )
   })
 })
+
+/**
+ * **Las dos franjas de la noche** (FEAT-012, tajada 1 — criterios 271 a 276).
+ *
+ * El reloj del archivo está en **viernes 18 de septiembre de 2026**, así que el
+ * día abierto es el viernes. La noche de prueba es `23:00 → 5:00` marcada el
+ * **jueves y el viernes**: el viernes tiene las dos franjas —viene de la noche
+ * del jueves y se acuesta esa misma noche—, y eso es justo lo que hay que poder
+ * distinguir.
+ */
+describe('la noche en la plantilla', () => {
+  function withNight(overrides: Partial<UserSettings> = {}) {
+    settingsQuery = ready({ ...SETTINGS, ...overrides } as UserSettings)
+  }
+
+  function bands(): string[] {
+    return [...document.querySelectorAll('[data-variant]')].map((node) => node.textContent ?? '')
+  }
+
+  it('un día con noche pinta las dos franjas, arriba y abajo (criterio 271)', () => {
+    withNight({
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: ['thursday', 'friday'],
+    })
+    itemsQuery = ready([item('1', { startTime: '21:00', durationMinutes: 45 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const [dawn, dusk] = bands()
+    expect(dawn).toContain('Duermes hasta las 5:00')
+    expect(dawn).toContain('Vienes de anoche · 6 h')
+    expect(dusk).toContain('23:00 · te acuestas')
+    expect(dusk).toContain('Duermes 6 h y te levantas el sábado a las 5:00')
+  })
+
+  it('las franjas NO son filas de la lista ni se cuentan (criterio 272)', () => {
+    withNight({
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: ['thursday', 'friday'],
+    })
+    itemsQuery = ready([item('1', { startTime: '21:00', durationMinutes: 45 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const agenda = screen.getByRole('list', { name: /viernes, ordenado por hora/i })
+    for (const band of document.querySelectorAll('[data-variant]')) {
+      expect(agenda.contains(band)).toBe(false)
+      expect(band.closest('li')).toBeNull()
+      expect(band.querySelector('button')).toBeNull()
+      expect(band.querySelector('time')).toBeNull()
+    }
+    // El recuento del día sigue diciendo una cosa puesta, no tres.
+    expect(within(agenda).getAllByRole('listitem').map((row) => row.textContent ?? '')
+      .filter((text) => !text.startsWith('Libre ') && !text.startsWith('No sabemos '))).toHaveLength(
+      1,
+    )
+  })
+
+  it('el presupuesto es EXACTAMENTE el mismo con noche y sin ella (criterio 273)', () => {
+    itemsQuery = ready([
+      item('1', { startTime: '07:00', durationMinutes: 60 }),
+      item('2', { startTime: '13:00', durationMinutes: 30 }),
+    ])
+    const { unmount } = renderWithProviders(<VidaPlantillaPage />)
+    const sinNoche = screen.getByText(/puestas de/).textContent
+    const puestasSinNoche = screen.getByText('1h 30').textContent
+    unmount()
+
+    withNight({
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: ['thursday', 'friday'],
+    })
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(screen.getByText(/puestas de/).textContent).toBe(sinNoche)
+    expect(screen.getByText('1h 30').textContent).toBe(puestasSinNoche)
+    // Y las franjas sí están: la cifra no cambia **aunque** se pinten.
+    expect(bands()).toHaveLength(2)
+  })
+
+  it('un día sin noche marcada no pinta ninguna franja (criterio 275)', () => {
+    withNight({
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      // Ni el jueves ni el viernes: el viernes no viene de ninguna noche ni se
+      // acuesta en ninguna.
+      vidaNightDays: ['monday'],
+    })
+    itemsQuery = ready([item('1', { startTime: '21:00', durationMinutes: 45 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(bands()).toHaveLength(0)
+  })
+
+  it('una noche que NO cruza se pinta arriba de su propio día y abajo no hay nada (criterio 276)', () => {
+    withNight({
+      vidaNightBedTime: '01:00',
+      vidaNightWakeTime: '06:40',
+      vidaNightDays: ['friday'],
+    })
+    itemsQuery = ready([item('1', { startTime: '21:00', durationMinutes: 45 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const painted = bands()
+    expect(painted).toHaveLength(1)
+    expect(painted[0]).toContain('Duermes hasta las 6:40')
+    expect(painted[0]).not.toContain('Vienes de anoche')
+    expect(document.querySelector('[data-variant="dusk"]')).toBeNull()
+  })
+
+  it('sin noche configurada la plantilla es la de siempre (criterio 310)', () => {
+    itemsQuery = ready([item('1', { startTime: '21:00', durationMinutes: 45 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(bands()).toHaveLength(0)
+  })
+
+  it('con los ajustes en vuelo no se pinta ninguna franja (criterio 311)', () => {
+    settingsQuery = { isPending: true, isError: false, fetchStatus: 'fetching', refetch: vi.fn() }
+    itemsQuery = ready([item('1', { startTime: '21:00', durationMinutes: 45 })])
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(bands()).toHaveLength(0)
+  })
+
+  it('la noche no estrena ninguna consulta (criterio 318)', () => {
+    withNight({
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: ['friday'],
+    })
+    renderWithProviders(<VidaPlantillaPage />)
+
+    // `userSettings` se pide **una sola vez** por render, la que ya pedía
+    // `useVidaDayHours`: `useVidaNight` es el segundo llamante del mismo hook y
+    // react-query lo resuelve con la misma clave. Lo que importa es que no
+    // aparece ningún nombre nuevo.
+    expect(new Set(queryHooks)).toEqual(
+      new Set(['vidaItems', 'userSettings', 'activities', 'vidaPatterns']),
+    )
+  })
+})

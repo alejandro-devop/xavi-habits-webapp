@@ -2480,8 +2480,8 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790188941.1333055,
-    "ast_hash": "ac587a42c1073e7b0bd23041073805bc",
+    "mtime": 1790189993.326961,
+    "ast_hash": "78b75abfea20846431ce0a472dbe4db9",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
@@ -4050,8 +4050,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-021-cache-que-caduca.md": {
-    "mtime": 1790188923.9873714,
-    "ast_hash": "59b29a35f3bc76ad11726bf0ceaa3213",
+    "mtime": 1790189975.210755,
+    "ast_hash": "fe39ff6e6b6ae1d4dc6ff2e8124db631",
     "semantic_hash": ""
   },
   "docs/features/FEAT-022-reabrir-una-sesion.md": {
@@ -4060,13 +4060,18 @@
     "semantic_hash": ""
   },
   "src/app/providers/query-cache-guards.hydration.test.tsx": {
-    "mtime": 1790188201.1583261,
-    "ast_hash": "e8fd0f7033f979772d6fee44fa008716",
+    "mtime": 1790189625.6531415,
+    "ast_hash": "540fc63a474d8d2d3e09932f081e2d2b",
     "semantic_hash": ""
   },
   "src/app/providers/query-cache-guards.ts": {
-    "mtime": 1790188087.6791635,
-    "ast_hash": "6267afe9866052d2c011cd290b320b86",
+    "mtime": 1790189574.5236883,
+    "ast_hash": "e734841cea0480fa716036d7f49be4d9",
+    "semantic_hash": ""
+  },
+  "src/app/providers/query-cache-guards.coverage.test.ts": {
+    "mtime": 1790189552.6025016,
+    "ast_hash": "d668fb10fbf2aa9eaa32876bdfbffe9c",
     "semantic_hash": ""
   }
 }

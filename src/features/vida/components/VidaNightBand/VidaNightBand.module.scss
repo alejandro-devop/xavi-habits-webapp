@@ -1,0 +1,55 @@
+/* La noche: **una franja, no una tarjeta** y no una fila. Sin canaleta y sin
+   punto en el raíl, para que se lea como el borde del día y no como una cosa
+   más de la lista (criterio 272).
+
+   El color es propio de la noche y sale de `--aura-night-*`
+   (`_theme-variables.scss`): nada escrito a mano aquí, porque tiene que cambiar
+   con el tema (criterios 274 y 315). */
+.band {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  row-gap: 0.15rem;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--aura-night-border);
+  border-radius: 0.9rem;
+  background: var(--aura-night-dusk-bg);
+}
+
+.band[data-variant='dawn'] {
+  background: var(--aura-night-dawn-bg);
+}
+
+.mark {
+  grid-row: 1;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.label {
+  grid-row: 1;
+  min-width: 0;
+  color: var(--aura-night-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  /* Una noche de 12 h y una hora rara caben a 375 px porque la frase **envuelve**
+     en vez de desbordar (criterios 313 y 314). */
+  overflow-wrap: anywhere;
+}
+
+/* La segunda línea ocupa el ancho entero: debajo del icono no se deja un
+   canalón vacío que estrecharía el texto justo donde más falta hace. */
+.detail {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}

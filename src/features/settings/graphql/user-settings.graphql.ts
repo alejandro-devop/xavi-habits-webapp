@@ -7,6 +7,9 @@ export const MY_SETTINGS_QUERY = `
       standupTodoFolderId
       vidaDayStartTime
       vidaDayEndTime
+      vidaNightBedTime
+      vidaNightWakeTime
+      vidaNightDays
       createdAt
       updatedAt
     }
@@ -22,6 +25,9 @@ export const UPDATE_MY_SETTINGS_MUTATION = `
       standupTodoFolderId
       vidaDayStartTime
       vidaDayEndTime
+      vidaNightBedTime
+      vidaNightWakeTime
+      vidaNightDays
       createdAt
       updatedAt
     }

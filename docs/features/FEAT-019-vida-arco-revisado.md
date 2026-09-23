@@ -1,7 +1,7 @@
 ---
 id: FEAT-019
 title: El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas
-status: planned
+status: building
 architect: yes    # toca el API en otro repo (columna nueva + mutación en vida_goals), cruza dos componentes que hoy no se hablan (VidaDayBudget y VidaGoalArc) y estrena la primera edición de una meta en el front; razón completa abajo
 area: features/vida, API (xavi-platform-node)
 requested: 2026-09-22
@@ -351,7 +351,7 @@ hasta el 558. Esta feature empieza en el **559**.)
 
 | # | Qué hace | Estado |
 |---|---|---|
-| 1 | **Lo que falta, dentro del arco.** Cambia qué se pinta como número grande cuando la meta no está cruzada, y hace visible la hora que antes estaba dentro. Solo front, sin migración: corrige la confusión original del usuario de inmediato. Criterios 559–565. | pending |
+| 1 | **Lo que falta, dentro del arco.** Cambia qué se pinta como número grande cuando la meta no está cruzada, y hace visible la hora que antes estaba dentro. Solo front, sin migración: corrige la confusión original del usuario de inmediato. Criterios 559–565. | **accepted** |
 | 2 | **El semáforo, lectura B.** El color verde/naranja/rojo según si da tiempo hoy, usando un dato que `VidaDayBudget` ya calcula. Solo front, sin migración; usable sin depender de la tajada 1 (aunque tiene más sentido junto a ella). Criterios 566–574. | pending |
 | 3 | **Solo los días laborables.** Migración en el API, filtro del arco y la pregunta por día de la semana, y la fila de días en Ajustes → Vida. La única que toca el backend. Criterios 575–584. | pending |
 
@@ -856,7 +856,7 @@ Hoy un sábado; la 4, tocando un botón en Ajustes y volviendo a Hoy.
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **Lo que falta, dentro del arco.** `arcValue = formatDurationFromMinutes(target − worked)`, `arcCaption = ['Te faltan']` (una línea), y la frase de la hora pasa a **visible** solo en ese estado. Sin API. | `utils/vida-goals.utils.ts` (`toArc`, tipo `VidaGoalArc` + `variant`), `components/VidaGoalArc/VidaGoalArc.tsx` (clase del `<p>`), `VidaGoalArc.module.scss` (`.line`), `utils/vida-goals.utils.test.ts` | 559, 560, 561, 562, 563, 564, 565 | pending |
+| 1 | **Lo que falta, dentro del arco.** `arcValue = formatDurationFromMinutes(target − worked)`, `arcCaption = ['Te faltan']` (una línea), y la frase de la hora pasa a **visible** solo en ese estado. Sin API. | `utils/vida-goals.utils.ts` (`toArc`, tipo `VidaGoalArc` + `variant`), `components/VidaGoalArc/VidaGoalArc.tsx` (clase del `<p>` + geometría del render), `VidaGoalArc.module.scss` (`.line`), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 559, 560, 561, 562, 563, 564, 565 | **accepted** |
 | 2 | **El semáforo, lectura B.** `dayEnd` entra en `buildGoalArcs`; salen `missingMinutes`, `fitMinutes`, `fitLevel`; el arco pinta `data-fit`. Sin API. | `utils/vida-goals.utils.ts` (`BuildGoalArcsInput`, `GOAL_FIT_OK_MARGIN_MINUTES`), `pages/VidaHoyPage.tsx` (la llamada a `buildGoalArcs` y su `useMemo`), `components/VidaGoalArc/VidaGoalArc.tsx` (`data-fit`), `VidaGoalArc.module.scss`, `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` (un caso nuevo) | 566, 567, 568, 569, 570, 571, 572, 573, 574 | pending |
 | 3 | **El sábado sin arco (camino de lectura).** Migración 070, `activeDays` en servicio/SDL/tipos, y el filtro por día en la util + la pregunta atada al mismo dato. **Requiere que el usuario haga push y se despliegue** antes de verse. | API: `migrations/070_vida_goals_active_days.sql`, `types/services/vida.types.ts`, `services/vida-goal.service.ts` (`GoalRow`, `mapGoal`), `graphql/modules/vida/vida.schema.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front: `types/vida-goal.types.ts`, `graphql/activity-categories.graphql.ts` (5 sub-selecciones), `graphql/schema/vida.schema.graphql` (recopiar), `utils/vida-goals.utils.ts` (`DEFAULT_GOAL_ACTIVE_DAYS`, filtro, `promptAllowed`), `pages/VidaHoyPage.tsx` (la rama de la pregunta), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 575, 576, 577, 578, 579, 580 | pending |
 | 4 | **Elegir los días (camino de escritura).** Mutación `vidaGoalDaysSet` y la fila de siete botones en Ajustes → Vida. | API: `graphql/modules/vida/vida.schema.ts` (input + mutación), `validators/schemas/vida.schemas.ts`, `graphql/modules/vida/vida.resolvers.ts`, `services/vida-goal.service.ts` (`setGoalDays`), `tests/unit/validators/vida.schemas.test.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front **nuevos**: `graphql/vida-goals.graphql.ts`, `api/vida-goals.api.ts`, `hooks/useVidaGoals.ts`; **modificados**: `graphql/contracts.test.ts`, `pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`) | 581, 582, 583 | pending |
@@ -965,4 +965,400 @@ botón de día en Ajustes— lo hace el usuario al cerrar cada tajada.
 
 ## 3. Construcción — feature-builder
 
+### Tajada 1 — Lo que falta, dentro del arco
+
+**Resumen para quien revise:**
+1. Dentro del arco ya no va una hora del reloj sino **lo que falta** («TE FALTAN
+   4h 30») mientras la meta no se ha cruzado y hay reloj; la hora a la que
+   pararías baja a una línea **visible** debajo del arco, con la misma frase
+   palabra por palabra. Pasada la meta y en un día pasado no cambia nada.
+2. Está en `toArc()` (un discriminador nuevo, `variant`), en la clase del `<p>`
+   que ya existía y en la geometría del SVG del estado nuevo. `VidaGoalArc`
+   sigue sin llamar a ningún hook.
+3. **Lo que más probablemente rompí:** la geometría. Metí `fontSize={34}` y el
+   rótulo en `y=66` **solo** para el estado «te faltan», que es lo que dibuja el
+   render 20; los otros dos estados se quedan en 32 y 70/58+71. Si el revisor
+   mira el arco pasada la meta o en un día pasado y lo ve distinto de ayer, eso
+   es un fallo mío, no del plan. El segundo candidato es la línea visible: dice
+   la frase **entera** («Llevas 3 h 30 min. A este ritmo paras a las 17:55.»),
+   así que «3 h 30 min» se lee ahora dos veces en la tarjeta —arriba en la
+   cabecera («3h 30 de 8h») y abajo en la frase—. Es lo que mandan el criterio
+   560 y la sección 2, pero el render solo enseña la mitad de atrás de esa
+   frase. Lo dejo dicho abajo con su razón.
+
+**Qué se construyó:**
+
+- `src/features/vida/utils/vida-goals.utils.ts`
+  - `toArc()`: las dos ramas de «meta sin cruzar, hay reloj, es hoy» pasan a
+    `arcValue = formatDurationFromMinutes(targetMinutes − workedMinutes)` y
+    `arcCaption = ['Te faltan']`. **`line` no cambia en ninguna de las dos**
+    (criterios 560 y 561): ni la del ritmo ni la condicional de cero minutos.
+  - El tipo `VidaGoalArc` gana **`variant: 'missing' | 'passed' | 'logged'`**.
+    Es el único campo nuevo. `missingMinutes`, `fitMinutes` y `fitLevel` son de
+    la tajada 2 y **no** se han adelantado.
+  - `toSessionSpans`, `passedAtOf`, `canProject`, `stopAtTime`, `share`,
+    `overMinutes` y la distinción `isPastDay`: sin tocar.
+- `src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx`
+  - El `<p>` sigue siendo **uno solo**; lo que cambia es su clase:
+    `arc.variant === 'missing' ? styles.line : styles.srLine` (criterios 560 y
+    564). No se añadió ningún nodo de texto.
+  - Geometría **solo** del estado `'missing'`: rótulo en `y=66` y número a
+    `fontSize=34`, que es lo que dibuja `20-vida-arco-lo-que-falta.html` en su
+    segunda columna. Los otros estados siguen en `y=70` (una línea) / `58` y
+    `71` (dos) con `fontSize=32`.
+- `src/features/vida/components/VidaGoalArc/VidaGoalArc.module.scss`
+  - `.line` nueva, con las mismas propiedades que `.sub` (la línea de la sesión
+    en marcha, que va justo debajo): es el `.osub` del render. `.srLine` se
+    queda tal cual para los otros dos estados.
+- `src/features/vida/utils/vida-goals.utils.test.ts`
+  - El test del criterio 492 se reescribe al **559** (es el criterio que la
+    sección 1 enmienda de fondo) conservando literalmente la aserción de `line`.
+  - El del 495 pasa al **561**, con `arcValue === '8h'`; su `line` no se toca.
+  - La prueba de anchura del rótulo (la red de `10a8fcb`) **no se relaja**: se
+    le añade una columna para la meta y **tres casos** con la jornada de 24 h.
+  - `it.each` nuevo de tres casos para los criterios 562 y 563.
+- `src/features/vida/pages/VidaHoyPage.test.tsx`
+  - El caso «criterios 489, 490 y 492 … dice una hora» se renombra a «489, 490 y
+    **559** … dice lo que falta» y gana dos aserciones (`'7h'` y `'Te faltan'`).
+    **Las aserciones de la frase no se tocaron**, que es lo que la sección 2
+    pedía como prueba de que `line` no cambió.
+  - Dos casos nuevos: 560+564 (un solo nodo con la frase, y no es el de 1×1 px)
+    y 562 (pasada la meta, dentro sigue la hora y la frase vuelve al lector).
+
+**Por qué así, y qué se descartó:**
+
+- **Por qué la geometría del render y no la de hoy.** El encargo pedía medirlo,
+  no razonarlo. Medido con `getComputedTextLength()` en un arnés a 375 px (ver
+  abajo), **las dos caben**: con `32`/`y=70` el peor número posible ocupa 94,6
+  de 146,5 unidades de cuerda. Lo que decide no es el ancho sino el **aire entre
+  el rótulo y el número**: con `32`/`70` quedan **1,46** unidades; con `34`/`66`,
+  **4,44**. Mandó el render, que es lo aprobado y lo que arregla justo el
+  problema de legibilidad que abrió esta feature.
+- **Por qué `34` no se aplica a todo el componente.** Medido: con el rótulo de
+  dos líneas (`58`/`71`, el estado «pasaste las 8h»), el número a 34 invade la
+  segunda línea — el hueco pasa a **−0,56** unidades. Y los criterios 562 y 563
+  dicen que ahí no cambia nada. Por eso va atado a `variant`, no a
+  `arcCaption.length`.
+- **Por qué un discriminador y no `arcCaption[0] === 'Te faltan'`.** Comparar
+  contra una cadena visible ata la presentación a la redacción: cambiar «Te
+  faltan» por otra palabra rompería la clase del `<p>` sin que nada avise.
+- **Por qué la frase visible va entera.** El render solo enseña «A este ritmo
+  paras a las 17:55.», pero el criterio 560 dice «la misma frase que hoy compone
+  `arc.line`» y la sección 2 lo blinda: «su aserción de `line` se conserva tal
+  cual». Partir la frase habría obligado a cambiar `line`, que es lo que el 560
+  prohíbe. **Queda como pregunta para el usuario**, no como algo resuelto: ver
+  «Lo que descubrí».
+
+**Verificación** (líneas base de `docs/features/ENVIRONMENT.md`, medidas también
+**antes** de empezar en este mismo árbol):
+
+| Qué | Antes | Después |
+|---|---|---|
+| `pnpm typecheck` | exit 0, limpio | **exit 0, limpio** |
+| `pnpm lint` | `✖ 14 problems (14 errors, 0 warnings)` | **`✖ 14 problems (14 errors, 0 warnings)`** |
+| `pnpm test` | 2 fallos de 1893 | **`Tests  2 failed \| 1899 passed (1901)`** — los dos de `SearchSelect`, los mismos de la línea base. El total sube en 8 porque esta tajada añade 8 casos. `IconPicker` no salió flaky en esta corrida. |
+| `pnpm build` | exit 0, inicial 1.128,43 kB · `app-icons` 620,20 kB | **exit 0**, inicial **1.128,56 kB** (+0,13 kB: un campo y un ternario) · `app-icons` **620,20 kB, sin mover** · `IconPicker` 4,64 kB |
+
+`graphify update .` corrido al terminar (4234 nodos, 5020 aristas).
+
+**La medición del criterio 565, con sus números.** Arnés temporal
+(`harness-feat019.html` + `src/harness-feat019.tsx`, **borrados**; `git status`
+lo confirma) montando `VidaGoalArcRow` con siete estados sintéticos, a **375 px**
+y a **760 px**. La cuerda útil se calcula desde el radio interior **81** y el
+centro **(110, 106)**: `cuerda(y) = 2·√(81² − (106−y)²)`, evaluada en la **cima
+del `getBBox()`** del número, que es donde el semicírculo es más estrecho.
+
+| Estado | Número | `getComputedTextLength()` | Cuerda a esa altura | Holgura |
+|---|---|---|---|---|
+| Te faltan (caso del render) | `4h 30` | 82,03 | 145,56 | **+63,53** |
+| Te faltan, jornada entera | `8h` | 37,69 | 145,56 | **+107,87** |
+| **Jornada de 24 h sin empezar** | `24h` | 56,18 | 145,56 | **+89,37** |
+| **El peor caso que existe** | `23h 59` | 100,52 | 145,56 | **+45,03** |
+| Pasada la meta (sin cambios) | `14:00` | 76,84 | 146,53 | +69,69 |
+| Día pasado (sin cambios) | `5h` | 35,49 | 146,53 | +111,04 |
+
+El peor número posible dentro del arco **no es «24h»** (3 caracteres): es
+**«23h 59»** (6), que sale con una meta de 1440 min y un minuto trabajado.
+Aun así sobran **45 unidades**, un 31 % de la cuerda. Y el aire vertical entre la
+base del rótulo y la cima del número es **4,44** unidades en todos los estados
+«te faltan», sea cual sea el número.
+
+Sin scroll horizontal en ninguna de las dos anchuras:
+`document.documentElement.scrollWidth === clientWidth` (375 = 375 y 760 = 760), y
+`article.scrollWidth` 357 ≤ 359 a 375 px, 742 ≤ 744 a 760 px. La línea visible
+en su versión más larga —«Llevas 23 h 59 min. A este ritmo paras a las 23:51.»—
+ocupa **una sola línea de 18 px** a las dos anchuras.
+
+**Criterios, uno por uno:**
+
+- **559 — cerrado.** `arcValue` es `targetMinutes − workedMinutes` y
+  `arcCaption` es `['Te faltan']`, una sola línea. Evidencia: el test
+  «dentro del arco va lo que falta, no la hora (criterio 559)» afirma
+  `arcValue === '4h 20'` con 220 min de 480 a las 11:45; en el navegador, con
+  210 de 480 a las 13:25, dentro del arco se lee **«TE FALTAN / 4h 30»** — el
+  caso exacto de la segunda columna del render.
+- **560 — cerrado.** El `<p>` lleva `styles.line` (visible) en ese estado, y
+  `line` no cambió ni una coma: el test de la util sigue afirmando
+  `'Llevas 3 h 40 min. A este ritmo paras a las 16:05.'`, y las tres aserciones
+  de `'Llevas 1 h. A este ritmo paras a las 16:24.'` de `VidaHoyPage.test.tsx`
+  siguen verdes **sin tocarlas**. En el navegador la línea mide 18 px de alto
+  (visible) frente a 1 px en los otros estados. El test nuevo comprueba que la
+  clase de ese nodo **no** contiene `srLine`.
+- **561 — cerrado.** Test «con cero minutos faltan las ocho horas enteras»:
+  `arcValue === '8h'`, `arcCaption === ['Te faltan']`, y el `line` condicional
+  intacto (`'Si arrancas ahora, acabarías a las 17:00.'`). En el navegador,
+  «TE FALTAN / 8h».
+- **562 — cerrado.** Test de página «criterio 562»: dentro se lee `17:00` con
+  el rótulo `Pasaste las 8h`, no aparece «Te faltan», la frase está en un solo
+  nodo y su clase **sí** contiene `srLine`. Los tests del criterio 493 (la red
+  de «nada de culpa») siguen verdes sin tocarse. En el navegador: `fontSize=32`,
+  rótulo en 58/71, `<p>` de 1 px.
+- **563 — cerrado.** `it.each` «fuera de «te faltan» el arco no cambia»:
+  día pasado sin llegar → `variant 'logged'`, `arcValue '5h'`; día pasado que se
+  pasó → `'passed'`, `'17:00'`; ninguno con «Te faltan». El test del criterio
+  497 y el `expect(arco).not.toHaveTextContent('A este ritmo')` siguen verdes
+  sin tocarse.
+- **564 — cerrado.** No hay un segundo `<p>`: es el mismo nodo con otra clase.
+  Evidencia literal, en `VidaHoyPage.test.tsx`:
+  `expect(within(arco).getAllByText(frase)).toHaveLength(1)` en los dos estados
+  (visible y de lector). El SVG sigue `aria-hidden` y el localizador
+  `getByRole('article', { name: 'Trabajo' })` **no se movió**.
+- **565 — cerrado**, con la tabla de números de arriba. Medido, no razonado.
+
+**Riesgos:**
+
+- **La geometría de los otros dos estados.** Es el sitio donde un despiste se ve
+  y nadie lo mide: si `isMissing` se hubiera atado mal, «pasaste las 8h» se
+  rompería. Medido en el navegador que sigue en 32 y 58/71 — y medido también
+  **por qué** no puede ir a 34 (el hueco se va a −0,56).
+- **La frase visible repite «3 h 30 min», que la cabecera ya dice.** No rompe
+  nada, pero es ruido que el render no tiene. Ver abajo.
+- **No hay mocks que caduquen.** `vida-goals.utils` no está mockeado en ningún
+  archivo de test del repositorio (`grep -rn "vi.mock.*vida-goals" src` → vacío)
+  y `VidaGoalArc` solo lo consumen `VidaGoalArcRow` y `VidaHoyPage`. El campo
+  nuevo es obligatorio, así que cualquier constructor a mano lo habría cazado
+  `tsc`; no hay ninguno.
+- **Todo está detrás del login y no entré con credenciales.** Lo de arriba se
+  midió en un arnés aislado y en los tests; el recorrido real es del usuario.
+
+**Lo que descubrí y no estaba en el plan:**
+
+1. **El peor número no es «24h», es «23h 59».** El criterio 565 fija el caso en
+   1440 min → «24h» (3 caracteres). Pero una meta de 1440 con un minuto
+   trabajado da «23h 59» (6 caracteres, 100,5 unidades frente a 56,2). Cabe
+   igual, pero **el criterio está mal apuntado** y quien lo escriba la próxima
+   vez debería apuntar al ancho, no a la meta. No lo reescribo.
+2. **El estado «pasaste las 8h» ya venía tocándose, y no es de esta tajada.**
+   Con el rótulo de dos líneas y el número a 32, el hueco entre la base de la
+   segunda línea (`y=71`) y la cima del número es **0,46 unidades**. No se
+   solapan, pero es un cuarto del aire que tiene ahora el estado «te faltan»
+   (4,44). Viene de antes de esta feature y **no lo toqué** (criterio 562 dice
+   que no cambia). Queda apuntado.
+3. **Dos estados de una sola línea con dos geometrías distintas.** «TE FALTAN»
+   queda en `y=66`/34 y «REGISTRASTE» (día pasado) en `y=70`/32. Es lo que sale
+   de aplicar el render sin tocar el 563, pero es una incoherencia visible si
+   alguien compara hoy con ayer en la tira de días. Si molesta, moverlo es una
+   línea — pero es una decisión de forma, y **el render 20 no dibuja ese
+   estado**, así que no la tomo yo.
+4. **Pregunta para el usuario, no resuelta:** la línea visible dice la frase
+   entera —«Llevas 3 h 30 min. A este ritmo paras a las 17:55.»— mientras el
+   render solo enseña «A este ritmo paras a las 17:55.». La cabecera de la
+   tarjeta ya dice «3h 30 de 8h», así que «3 h 30 min» aparece dos veces. La
+   construí entera porque el criterio 560 y la sección 2 lo exigen
+   explícitamente (y recortarla obligaba a cambiar `line`, que el 560 prohíbe).
+   **Si el usuario prefiere el render literal**, es cambiar la rama `'missing'`
+   de `line` y ajustar tres aserciones — pero entonces hay que decidir qué pasa
+   con lo que el lector de pantalla deja de oír.
+
+**Estado del árbol:** sin commitear. Siete archivos modificados, ninguno nuevo,
+ninguno borrado. El arnés temporal está borrado.
+
 ## 4. Revisión — feature-reviewer
+
+### Tajada 1 — Lo que falta, dentro del arco
+
+**Veredicto: `accepted`.** Los siete criterios (559–565) se cumplen, medidos
+por mi cuenta en el navegador y en el árbol; las cuatro líneas base se repiten
+enteras y clavadas; no encontré ninguna regresión. Queda **una pregunta para el
+usuario** (la frase visible entera, ver abajo) y **dos hallazgos anotados** que
+no devuelven la tajada.
+
+**Cómo verifiqué.** Arnés temporal propio (`harness-rev019.html` +
+`src/harness-rev019.tsx`, **borrados**, `git status` lo confirma) montando
+`VidaGoalArcRow` con seis estados sintéticos vía `buildGoalArcs` —los mismos
+datos que ve la página—, a **375 px** y a **760 px**. No entré a `/app/*`: el
+recorrido con sesión sigue siendo del usuario (límite estructural del
+`ENVIRONMENT.md`).
+
+**Criterios, uno por uno:**
+
+- **559 — cumplido.** Medido en el navegador: con 210 min de 480 a las 13:25,
+  dentro del arco se lee **«TE FALTAN / 4h 30»** en una sola línea de rótulo
+  (`y=66`), y el `<text>` del valor contiene `4h 30`, no `17:55`. En el árbol,
+  `arcValue === '4h 20'` y `arcCaption === ['Te faltan']`.
+- **560 — cumplido.** El `<p>` con la frase entera mide **317 × 18 px** a 375
+  y **702 × 18 px** a 760 (no 1×1), con clase `_line_…`, y dice literalmente
+  «Llevas 3 h 30 min. A este ritmo paras a las 17:55.». Con cero minutos, «Si
+  arrancas ahora, acabarías a las 17:00.», también visible. `line` no cambió
+  en ninguna rama: lo comprobé contra el `git diff` —las tres asignaciones de
+  `line` de `toArc` son idénticas a las de HEAD— y contra la aserción literal
+  del test, que sigue siendo la misma cadena.
+- **561 — cumplido.** Con 0 minutos: dentro «TE FALTAN / 8h» (no una hora de
+  parada), y la cabecera sigue diciendo «0m de 8h». Mismo estado de texto, no
+  uno distinto.
+- **562 — cumplido.** Con 560 de 480 a las 18:10: dentro sigue **«PASASTE LAS
+  8H / A LAS / 17:00»**, rótulo de dos líneas en `y=58/71` y `font-size=32`,
+  exactamente la geometría de HEAD; la frase vuelve al `<p>` de 1×1 px; no
+  aparece «Te faltan» por ningún lado. Sin adjetivos, sin `role="alert"` y sin
+  un solo color de alarma: el `module.scss` no gana ningún ámbar ni rojo (lo
+  verifiqué archivo entero, todos los colores son `--color-text`,
+  `--color-text-secondary` o `--vida-goal-color`), y en pantalla solo hay azul
+  de la meta y gris de la pista. **Cero naranja, cero rojo, cero exclamación**
+  en los seis estados: el semáforo no se ha colado.
+- **563 — cumplido.** Día pasado con 300 min: «REGISTRASTE / 5h», `font-size=32`,
+  rótulo en `y=70`, frase a 1×1 px, sin proyección. Igual que HEAD.
+  `variant = passedAtTime !== null ? 'passed' : 'logged'` cubre además el día
+  **sin reloj** (futuro, `stopAtTime === null`) por la misma rama: tampoco ahí
+  se ve la línea nueva.
+- **564 — cumplido, y comprobado a la vista y al oído.** En el DOM hay **un
+  solo `<p>`** con la frase (`getAllByText` de longitud 1 en el test, y en el
+  navegador un único nodo); el `find` del árbol de accesibilidad devuelve
+  **una sola coincidencia** para «A este ritmo paras a las 17:55»; el `<svg>`
+  lleva `aria-hidden="true"` y **no tiene `aria-label`**, así que no hay
+  segunda lectura por ahí. En «pasada la meta» y «día pasado» el mismo nodo
+  vuelve a `srLine` (1×1 px) y la frase se oye una vez, no se ve ninguna.
+  El hallazgo de FEAT-016 tajada 3 **no se ha reabierto**.
+- **565 — cumplido, repitiendo la medición.** A 375 y a 760:
+  `documentElement.scrollWidth === clientWidth` (375=375, 760=760) y
+  `article.scrollWidth − clientWidth === 0` en los seis estados. La línea
+  visible cabe en **una sola línea de 18 px** a las dos anchuras.
+
+**La geometría, medida de nuevo (y dónde discrepo del constructor).** Repetí
+`getComputedTextLength()` y `getBBox()` a 375 y 760 px. **Los anchos coinciden
+cifra por cifra** con los suyos: `4h 30` 82,03 · `8h` 37,69 · `24h` 56,18 ·
+`23h 59` **100,52** · `17:00` 76,84 · `5h` 35,49, contra una cuerda de 144,54
+unidades a la altura de la cima del número. **Confirmo que el peor caso real es
+«23h 59», no «24h»**, y que aun así sobran **44 unidades** (un 30 % de la
+cuerda): el número no toca el trazo. La geometría es idéntica a 375 y a 760
+—son unidades del `viewBox`, no píxeles—, así que la anchura no la cambia.
+
+Donde **no** reproduzco sus números es en el aire vertical: yo mido la cima del
+número con `getBBox()` y él con otra referencia, y sale un desfase constante de
+~0,09 × `font-size` (≈3 unidades a 34, ≈2 a 32). Mis cifras: «te faltan» con
+`34`/`y=66` → **+1,39**; el mismo estado con la geometría anterior (`32`/`y=70`)
+→ **−0,58**; «pasaste las 8h» tal como está (`32`, rótulo `58`/`71`) → **−1,58**;
+y ese mismo estado forzado a `34` → **−3,61**. **Las tres conclusiones del
+constructor se sostienen con mis números**: la geometría del render da más aire
+que la anterior, el `34` **no puede ser global** (empeora el rótulo de dos
+líneas), y el estado «pasaste las 8h» es el más apretado de todos.
+
+**Dictamen sobre «PASASTE LAS 8H»: queda anotado, no se arregla ahora.** Es
+preexistente (FEAT-016), el criterio 562 dice expresamente que ese estado no
+cambia en esta tajada, y **en pantalla no se ve colisión**: el solape es de
+cajas de texto, no de trazos —comprobado en captura a 375 px, «A LAS» y «17:00»
+se tocan de cerca pero se leen sin ambigüedad—. Arreglarlo aquí habría sido
+tocar justo lo que el criterio blinda. **Hallazgo abierto para quien retome la
+pieza**, no defecto de esta tajada.
+
+**Qué se rompió cerca — cómo busqué.** `graphify explain "VidaGoalArc"` da
+grado 3: solo `VidaGoalArcRow.tsx`, el propio archivo y el barril. `graphify
+query "who uses buildGoalArcs and VidaGoalArc arcValue line"` (35 nodos, BFS 2)
+no saca ningún consumidor fuera del módulo. Lo confirmé abriendo los archivos:
+`buildGoalArcs` solo se llama en `VidaHoyPage.tsx:379` y en sus tests; el tipo
+`VidaGoalArc` solo lo importan `VidaGoalArc.tsx` y `VidaGoalArcRow.tsx`; y
+`arc.line` / `arc.arcValue` no se leen en ningún otro archivo de `src/`
+(comprobado con `grep` acotado). Como el campo `variant` es **obligatorio** en
+el tipo, cualquier otro productor del objeto habría reventado en `tsc`: el
+typecheck sale limpio, así que no hay ninguno. **Ningún hallazgo.**
+
+Lo que el constructor marcó como «lo que más probablemente rompí» —la doble
+lectura de la frase— lo miré primero y es lo que está en el 564. **El
+componente sigue siendo tonto**: `VidaGoalArc` no importa ni llama ningún hook
+(lo único que añade es `const isMissing = arc.variant === 'missing'`), así que
+la garantía de FEAT-016 se mantiene.
+
+**Los tests, ¿se ablandaron?** Los leí con `git diff`, aserción por aserción.
+**No.** Los dos casos «re-apuntados» conservan sus aserciones de `line`
+literales (`'Llevas 3 h 40 min. A este ritmo paras a las 16:05.'` y `'Si
+arrancas ahora, acabarías a las 17:00.'`), que es justo lo que ata el criterio
+560, y **ganan** aserciones (`arcValue`, `arcCaption`, `variant`, y un
+`not.toContain('4h 20')` sobre `line`). Nada quedó preguntando menos. Se añaden
+8 casos (1893 → 1901 total, cuadra).
+
+Dos matices que sí anoto:
+
+- **La red de ancho de rótulo creció poco, no mucho.** Los tres casos de 24 h
+  entran en un `it.each` cuyo cuerpo solo comprueba `caption.length ≤ 18` y
+  `≤ 2` líneas — y «Te faltan» son 9 caracteres: pasan sin esfuerzo. Lo que de
+  verdad estrena esta tajada es **el ancho del número**, y eso ningún test
+  automático lo mide (`getComputedTextLength` no existe en jsdom); vive solo en
+  la medición del navegador, que caduca en cuanto alguien cambie la geometría.
+  No es un test ablandado, es una red que no cubre el riesgo nuevo. **Hallazgo.**
+- El cambio de `startTime: '08:00'` a `'00:00'` en ese `it.each` **no debilita**
+  los cuatro casos viejos: sus aserciones son solo sobre el rótulo, que no
+  depende de la hora de arranque; era necesario para que 1450 minutos cupieran
+  en el día.
+
+**Estados.** Sin datos: con cero metas `VidaGoalArcRow` devuelve `null` —sin
+cambios—; con cero minutos, el 561 es exactamente ese caso y está construido.
+Cargando y error: no aplican, la tajada no añade ninguna consulta (el arco se
+deriva de datos que la página ya tenía). Permisos: no aplica, no hay roles.
+Texto largo: cubierto por el 565 y medido (el número más largo que existe,
+«23h 59», y la frase visible). Móvil: 375 px sin scroll horizontal, verificado
+en el documento **y** en la tarjeta. **Ninguno pendiente.** Matiz honesto: la
+frase visible más larga que llegué a medir tiene 44 caracteres; si la de 50
+llegara a partirse en dos líneas no sería defecto —no hay recorte ni scroll—,
+pero no la vi con mis ojos.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: no se añadió ningún
+`<p>`, es el mismo nodo con otra clase (lo que la sección 2 pedía
+explícitamente); no se creó ninguna utilidad de formato nueva —usa
+`formatDurationFromMinutes`, que ya existía en `vida-time.utils.ts`—; `toArc`
+sigue siendo el único sitio donde se decide qué va dentro del arco; y el
+discriminador `variant` es un campo del tipo que ya estaba, no una estructura
+paralela. La clase `.line` es nueva pero necesaria: `.sub` (la línea de la
+sesión en marcha) ya está ocupada por otro texto que convive con esta.
+
+**Líneas base, repetidas enteras (mismo árbol, con el cambio dentro):**
+
+| Qué | Línea base | Medido ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **`✖ 14 problems (14 errors, 0 warnings)`** |
+| `pnpm test` | 2 fallos (`SearchSelect`) | **`Tests 2 failed \| 1899 passed (1901)`**, los dos de `SearchSelect`. `IconPicker` no salió flaky |
+| `pnpm build` | exit 0 · inicial 1.128,56 kB · `app-icons` 620,20 kB | **exit 0** · inicial **1.128,56 kB** · `app-icons` **620,20 kB, sin mover** · `IconPicker` 4,64 kB |
+
+**La pregunta que el constructor dejó abierta, dictaminada: es del usuario, y
+el 560 no la resuelve.** El criterio 560 dice «con la misma frase que hoy
+compone `arc.line`», así que **construirla entera fue lo correcto** y recortarla
+por iniciativa propia habría sido desobedecer el criterio. Pero lo que el
+constructor observó es real y lo confirmé en pantalla: la tarjeta dice «3h 30 de
+8h» arriba y la línea de abajo repite «Llevas 3 h 30 min.», mientras el render
+20 solo dibuja «A este ritmo paras a las 17:55.». **Dos razones para no
+resolverlo aquí:** (1) recortar la parte visible cambia lo que oye un lector de
+pantalla, que hoy recibe la frase entera y perdería el «llevas» que le da
+contexto —o exige partir `line` en dos campos, que es diseño, no retoque—; y
+(2) el render aprobado y el criterio se contradicen en este punto, y quien
+desempata un render aprobado es el usuario. **Va como pregunta, con el matiz de
+accesibilidad incluido.** No bloquea: lo que hay hoy es correcto y cumple el
+criterio escrito.
+
+**Para el usuario:** mañana, cuando esto esté desplegado, el número grande de
+dentro del arco de trabajo dejará de ser una hora del reloj y pasará a ser **lo
+que te falta**: «TE FALTAN 4h 30». Es la respuesta directa a tu pregunta
+—«¿falta tiempo? ¿esa es la hora?»—: el arco mide horas trabajadas, así que
+ahora dentro hay una cantidad de horas, no una hora. La hora a la que pararías
+a ese ritmo **no se pierde**: baja a una línea que ahora se lee de verdad
+debajo del arco («Llevas 3 h 30 min. A este ritmo paras a las 17:55.»), donde
+antes estaba escondida para lectores de pantalla.
+
+Dos cosas siguen exactamente igual, a propósito: cuando ya pasaste las ocho
+horas, dentro sigue la hora a la que las cruzaste («PASASTE LAS 8H A LAS
+17:00»), porque ahí ya no falta nada que anunciar; y un día que ya terminó
+sigue contándose en pasado, sin proyección. **El semáforo de colores todavía no
+está** —es la tajada 2—, así que si mañana ves algún naranja o rojo, eso sí
+sería un defecto. Para probarlo a mano: entra en Vida → Hoy un día laborable
+con la sesión de trabajo a medias, mira dentro del arco (tiene que decir «TE
+FALTAN» y unas horas) y la línea de debajo (la hora de parada, dicha una sola
+vez); luego pasa las ocho horas y comprueba que dentro vuelve a haber una hora
+y que la línea de debajo desaparece.

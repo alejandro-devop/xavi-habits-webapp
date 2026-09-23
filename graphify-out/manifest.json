@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790130456.1985917,
-    "ast_hash": "02095500a5b71ad1402fc15dc94d0a23",
+    "mtime": 1790131949.8812225,
+    "ast_hash": "aab18cd6f3c2cb8ab243acafaa0087d0",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790130552.397793,
-    "ast_hash": "fba6a30baf9f3029e9e8122228458893",
+    "mtime": 1790131990.9713707,
+    "ast_hash": "2ea0fc72e801a73097f28dcb30f5c523",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790129570.1617174,
-    "ast_hash": "2da3dc523c2f4516fcf3824b7fcad4ef",
+    "mtime": 1790130888.142494,
+    "ast_hash": "ce56588bfcfdc82ae1a125426ab7b3d8",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3875,8 +3875,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx": {
-    "mtime": 1790123875.2226665,
-    "ast_hash": "fb0e6cdc0a121c8b13c6a66d25dab744",
+    "mtime": 1790131060.0618525,
+    "ast_hash": "abf281d916690a1d3d0694b6d6f01f16",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArcRow.tsx": {
@@ -3890,13 +3890,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-goals.utils.test.ts": {
-    "mtime": 1790123911.5808156,
-    "ast_hash": "d9e44d9ac3b80cdcd2d3d6d43fdc32ea",
+    "mtime": 1790130899.737518,
+    "ast_hash": "f5a46cb1e2e0080953bdfc6f13ffc356",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-goals.utils.ts": {
-    "mtime": 1790123868.2396374,
-    "ast_hash": "bfc108507134e3f3639a3fab6934ecb9",
+    "mtime": 1790130741.6461883,
+    "ast_hash": "6324ff0ab601f84fee31290b6823f5d3",
     "semantic_hash": ""
   },
   "docs/features/FEAT-018-vida-que-hice.md": {
@@ -3980,8 +3980,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-019-vida-arco-revisado.md": {
-    "mtime": 1790127700.68366,
-    "ast_hash": "e24c7f3008bd33de2f6a7e14ba6c6936",
+    "mtime": 1790131937.139176,
+    "ast_hash": "3d1e4e79ee4db0346119f24a55b64b2f",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260923_014157_se_hablan_hoy_getdaybudget_y_buildgoalarcs__el_pr.md": {

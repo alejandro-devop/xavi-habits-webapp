@@ -111,8 +111,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 1893** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
-| Paquete | `pnpm build` | chunk inicial **1.128,43 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 1901** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
+| Paquete | `pnpm build` | chunk inicial **1.128,56 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
 
 Cerrar cada tajada con `pnpm build`, no solo con `pnpm typecheck`: son el mismo `tsc -b`, pero el estado incremental de `typecheck` dejó pasar una vez un `TS2783` que el build sí cazó (FEAT-003, tajada 3).
 

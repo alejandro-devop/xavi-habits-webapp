@@ -27,7 +27,30 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
-| FEAT-019 | planned | 0/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+| FEAT-019 | building | 1/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+
+**FEAT-019 `building` 1/4** (2026-09-22, revisor). **Tajada 1 aceptada: dentro
+del arco ya va lo que falta.** El número grande deja de ser una hora del reloj
+—«TE FALTAN 4h 30»— y la hora de parada baja a una línea que ahora se lee de
+verdad. Los siete criterios (559–565) verificados en un arnés propio a **375 y
+760 px**: la frase se dice **una sola vez** a la vista y al oído (un único
+`<p>`, `<svg aria-hidden>` sin `aria-label`, una sola coincidencia en el árbol
+de accesibilidad), «pasada la meta» y «día pasado» no cambian una coma, y **no
+hay ni un naranja ni un rojo**: el semáforo es la tajada 2 y no se coló. Repetí
+la geometría: los anchos coinciden cifra por cifra con los del constructor y
+**confirmo que el peor caso es «23h 59», no «24h»** (100,5 de 144,5 unidades de
+cuerda, +44 de holgura); el aire vertical lo mido con otra referencia —desfase
+constante de ~0,09 × `font-size`— pero sus tres conclusiones se sostienen, `34`
+incluido no puede ser global. Tests **no ablandados**: las aserciones de `line`
+siguen literales y los casos re-apuntados *ganan* aserciones. Líneas base
+clavadas (typecheck limpio · lint 14/0 · 2 fallos de 1901, `SearchSelect` ·
+build exit 0, 1.128,56 kB, `app-icons` 620,20 kB sin mover). **Dos hallazgos
+anotados** (el rótulo «PASASTE LAS 8H» es el más apretado de todos, pero es
+preexistente y el 562 lo blinda; y el ancho del número no lo cubre ningún test
+automático, solo la medición del navegador) y **una pregunta para el usuario**:
+la línea visible dice la frase entera y repite el «3 h 30» de la cabecera,
+mientras el render 20 solo dibuja la mitad de atrás — recortarla cambia lo que
+oye un lector de pantalla, así que desempata él.
 
 **FEAT-018 `delivered` 4/4** (2026-09-22, revisor). **Tajada 4 aceptada, y con
 ella la feature entera: la plantilla propone y la sesión decide.** El criterio

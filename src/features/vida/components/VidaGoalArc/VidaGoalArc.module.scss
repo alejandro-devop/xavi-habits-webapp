@@ -93,8 +93,9 @@
 /* ── El arco ─────────────────────────────────────────────────────────────── */
 
 /* El SVG es **decorativo** (`aria-hidden`): la frase entera la dice el `<p>` de
-   solo lectores de pantalla que va debajo, y así no se oye dos veces. Lo que se
-   ve es lo del render: la hora grande dentro y su rótulo. */
+   texto real que va debajo, y así no se oye dos veces. Lo que se ve dentro es
+   lo del render: **lo que falta** en grande con su rótulo mientras la meta no
+   se ha cruzado, y una hora en los dos casos en que no falta nada. */
 .arc {
   display: flex;
   justify-content: center;
@@ -141,7 +142,28 @@
 
 /* ── Las líneas de texto ─────────────────────────────────────────────────── */
 
-/* La frase del arco, entera y **solo para lectores de pantalla**: a la vista ya
+/* La frase del arco cuando **sí** se ve: el estado «te faltan», donde dentro
+   del arco ya no hay ninguna hora y la de parada tiene que aparecer en algún
+   sitio (criterio 560). Es el `.osub` del render 20, panel 1, y por eso viste
+   igual que `.sub` —la línea de la sesión en marcha, que va justo debajo—: es
+   la misma banda de texto pequeño bajo el arco, no una franja nueva.
+
+   Sigue **sin** ámbar, sin rojo y sin `role="alert"` (criterio 493): el color
+   del semáforo es de la tajada 2 y va en el trazo, nunca en esta frase.
+
+   Es **el mismo nodo** que `.srLine`, con otra clase; nunca los dos a la vez
+   (criterio 564). */
+.line {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: pretty;
+}
+
+/* La frase del arco cuando dentro ya va una hora —pasada la meta, o un día que
+   ya terminó—: entera y **solo para lectores de pantalla**, porque a la vista
    la dicen la hora grande de dentro y su rótulo, y repetirla debajo era verla
    dos veces (y oírla dos veces, con el `aria-label` del SVG). Misma costumbre
    que la tabla oculta de `ChartPanel`. **Ni ámbar ni rojo ni `role="alert"`**,

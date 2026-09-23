@@ -58,7 +58,16 @@ export type VidaGoalArc = {
   runningTitle: string | null
   /** «10:15», la hora a la que arrancó esa sesión. `null` si no hay ninguna. */
   runningSince: string | null
-  /** Lo grande de dentro del arco: una hora, o los minutos en un día pasado. */
+  /**
+   * Lo grande de dentro del arco. **Lo que falta para la meta** mientras no se
+   * ha cruzado y hay reloj («4h 30», criterio 559): el arco mide horas
+   * trabajadas, así que dentro va una cantidad de horas y no una hora del
+   * reloj. El usuario tuvo que preguntar cuál de las dos era.
+   *
+   * Sigue siendo **una hora** en los dos casos en que no falta nada que
+   * anunciar: pasada la meta, la hora a la que se cruzó (criterio 562); y en un
+   * día que ya terminó sin cruzarla, los minutos registrados (criterio 563).
+   */
   arcValue: string
   /**
    * El rótulo de encima, en versales, **partido en las líneas que caben dentro
@@ -72,8 +81,9 @@ export type VidaGoalArc = {
    * faltaba. Partirlo cabe, y deja decir **«a las»**, que es la palabra que
    * convierte «20:25» en una hora del reloj y no en una cuenta atrás.
    *
-   * La única entrada de una sola línea es la del día pasado sin meta cruzada
-   * («REGISTRASTE»), donde el valor **no** es una hora sino una duración.
+   * Las entradas de una sola línea son las dos en que el valor **no** es una
+   * hora sino una duración: «TE FALTAN» (criterio 559) y la del día pasado sin
+   * meta cruzada («REGISTRASTE»).
    */
   arcCaption: string[]
   /**
@@ -82,6 +92,22 @@ export type VidaGoalArc = {
    * meta (criterio 493).
    */
   line: string
+  /**
+   * **Qué se está diciendo dentro del arco**, y de paso quién enseña `line`.
+   *
+   * `'missing'` es lo que falta (criterio 559) y **el único estado en que la
+   * frase de la hora se ve de verdad** debajo del arco (criterio 560): ahí
+   * dentro ya no hay ninguna hora, así que la de parada tiene que aparecer en
+   * algún sitio. En `'passed'` (la hora a la que se cruzó la meta, criterio
+   * 562) y `'logged'` (lo registrado en un día que ya terminó, criterio 563) el
+   * arco **no cambia nada** respecto a FEAT-016 y la frase se queda donde
+   * estaba, en el `<p>` de solo lectores de pantalla.
+   *
+   * Se lee **una sola vez** en los tres casos: el SVG es decorativo
+   * (`aria-hidden`) y `line` vive en un único `<p>` al que solo le cambia la
+   * clase (criterio 564, el hallazgo de la doble lectura de FEAT-016 tajada 3).
+   */
+  variant: 'missing' | 'passed' | 'logged'
 }
 
 export type VidaGoalArcs = {
@@ -239,9 +265,14 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
       ? ` Pasaste las ${formatDurationMinutes(targetMinutes)} a las ${formatTimeForDisplay(passedAtTime)}.`
       : ''
 
+  // Lo que falta, que es lo que el arco mide. `targetMinutes > workedMinutes`
+  // está garantizado en las dos ramas que lo usan: las de la meta sin cruzar.
+  const missingLabel = formatDurationFromMinutes(targetMinutes - workedMinutes)
+
   let arcValue: string
   let arcCaption: string[]
   let line: string
+  let variant: VidaGoalArc['variant']
   if (day.isPastDay || stopAtTime === null) {
     arcValue = passedAtTime !== null ? formatTimeForDisplay(passedAtTime) : workedLabel
     arcCaption =
@@ -250,20 +281,30 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
       workedMinutes > 0
         ? `Registraste ${workedSentence} de ${goal.name}.${passedSentence}`
         : `No hay nada registrado de ${goal.name} ese día.`
+    variant = passedAtTime !== null ? 'passed' : 'logged'
   } else if (passedAtTime !== null) {
     arcValue = formatTimeForDisplay(passedAtTime)
     arcCaption = [`Pasaste las ${targetLabel}`, 'a las']
     line = `Llevas ${workedSentence}.${passedSentence}`
+    variant = 'passed'
   } else if (workedMinutes === 0) {
-    // Con cero trabajado la fórmula sigue siendo exacta, solo que en
-    // condicional: si arrancas ahora y no paras, esa es la hora (D-C).
-    arcValue = formatTimeForDisplay(stopAtTime)
-    arcCaption = ['Si arrancas ahora', 'acabas a las']
+    // Con cero trabajado lo que falta es la jornada entera (criterio 561). La
+    // fórmula de la hora sigue siendo exacta, solo que en condicional (D-C), y
+    // por eso `line` no cambia: si arrancas ahora y no paras, esa es la hora.
+    arcValue = missingLabel
+    arcCaption = ['Te faltan']
     line = `Si arrancas ahora, acabarías a las ${formatTimeForDisplay(stopAtTime)}.`
+    variant = 'missing'
   } else {
-    arcValue = formatTimeForDisplay(stopAtTime)
-    arcCaption = ['A este ritmo', 'paras a las']
+    // **Dentro del arco va lo que falta, no la hora** (criterio 559). El arco
+    // mide horas trabajadas de una jornada: meter dentro una hora del reloj
+    // eran dos cosas distintas en el mismo sitio, y el usuario tuvo que
+    // preguntar cuál era. La hora no se pierde —sigue en `line`, que a partir
+    // de aquí se ve de verdad (criterio 560)—, deja de ser lo primero que ves.
+    arcValue = missingLabel
+    arcCaption = ['Te faltan']
     line = `Llevas ${workedSentence}. A este ritmo paras a las ${formatTimeForDisplay(stopAtTime)}.`
+    variant = 'missing'
   }
 
   return {
@@ -282,5 +323,6 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
     arcValue,
     arcCaption,
     line,
+    variant,
   }
 }

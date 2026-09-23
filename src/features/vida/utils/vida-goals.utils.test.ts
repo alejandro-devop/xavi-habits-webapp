@@ -38,6 +38,17 @@ const STUDY: VidaGoal = {
   orderIndex: 1,
 }
 
+/** La jornada más larga que el módulo admite: 24 h (criterio 565). */
+const LONG_DAY: VidaGoal = {
+  id: 'goal-long',
+  slug: 'long',
+  name: 'Jornada larga',
+  icon: 'briefcase',
+  color: '#0284c7',
+  targetMinutes: 1440,
+  orderIndex: 0,
+}
+
 function category(id: string, name: string, goal: VidaGoal | null): ActivityCategory {
   return {
     id,
@@ -138,7 +149,13 @@ describe('buildGoalArcs', () => {
     expect(at1030.runningSince).toBe('9:00')
   })
 
-  it('la línea principal es una hora, no una resta (criterio 492)', () => {
+  // Enmienda el criterio 492 de FEAT-016, que pedía justo lo contrario: una
+  // hora dentro del arco y «ningún texto que obligue a restar». El usuario vio
+  // eso en producción y tuvo que preguntar «¿falta tiempo? ¿esa es la hora?»,
+  // porque el arco mide horas trabajadas y dentro había una hora del reloj.
+  // Ahora dentro va la resta —que es lo que el arco mide— y la hora baja a
+  // `line`, que en este estado se ve de verdad (criterio 560).
+  it('dentro del arco va lo que falta, no la hora (criterio 559)', () => {
     const { arcs } = buildGoalArcs({
       followUps: [session({ id: 's1', startTime: '08:00', durationMinutes: 220, categoryId: 'trabajo' })],
       date: DATE,
@@ -148,27 +165,38 @@ describe('buildGoalArcs', () => {
       isPastDay: false,
     })
 
+    expect(arcs[0].arcValue).toBe('4h 20')
+    expect(arcs[0].arcCaption).toEqual(['Te faltan'])
+    expect(arcs[0].variant).toBe('missing')
+    // La hora no se pierde: sigue calculada y sigue dicha, palabra por palabra
+    // como antes (criterio 560). Si esta línea cambia, el 560 está roto.
     expect(arcs[0].stopAtTime).toBe('16:05')
-    expect(arcs[0].arcValue).toBe('16:05')
-    expect(arcs[0].arcCaption).toEqual(['A este ritmo', 'paras a las'])
     expect(arcs[0].line).toBe('Llevas 3 h 40 min. A este ritmo paras a las 16:05.')
     expect(arcs[0].passedAtTime).toBeNull()
+    // Y lo que falta no se dice dos veces: dentro va la resta, fuera la hora.
+    expect(arcs[0].line).not.toContain('4h 20')
   })
 
   it.each([
-    ['a este ritmo', 11 * 60 + 45, 220, false],
-    ['sin nada trabajado', 11 * 60 + 45, 0, false],
-    ['pasada la meta', 18 * 60, 560, false],
-    ['un dia que ya termino', 11 * 60 + 45, 300, true],
+    ['a este ritmo', 11 * 60 + 45, 220, false, WORK],
+    ['sin nada trabajado', 11 * 60 + 45, 0, false, WORK],
+    ['pasada la meta', 18 * 60, 560, false, WORK],
+    ['un dia que ya termino', 11 * 60 + 45, 300, true, WORK],
+    // La jornada mas larga que cabe en un dia, en los dos estados que estrena
+    // esta feature: el rotulo es el mismo «Te faltan» y el que crece es el
+    // numero («24h», «23h 59»), que se mide aparte en el navegador (565).
+    ['la jornada mas larga sin empezar', 6 * 60, 0, false, LONG_DAY],
+    ['la jornada mas larga a medias', 11 * 60 + 45, 1, false, LONG_DAY],
+    ['la jornada mas larga pasada', 23 * 60, 1450, false, LONG_DAY],
   ])(
     'ninguna linea del rotulo se sale del arco: %s',
-    (_caso, nowMinutes, workedMinutes, isPastDay) => {
+    (_caso, nowMinutes, workedMinutes, isPastDay, goal) => {
       const { arcs } = buildGoalArcs({
         followUps: workedMinutes
           ? [
               session({
                 id: 's1',
-                startTime: '08:00',
+                startTime: '00:00',
                 durationMinutes: workedMinutes,
                 categoryId: 'trabajo',
               }),
@@ -176,7 +204,7 @@ describe('buildGoalArcs', () => {
           : [],
         date: DATE,
         nowMinutes,
-        categories: [category('trabajo', 'Trabajo', WORK)],
+        categories: [category('trabajo', 'Trabajo', goal)],
         isPastDay,
       })
 
@@ -251,7 +279,11 @@ describe('buildGoalArcs', () => {
     expect(result.noDataLabel).toBe('')
   })
 
-  it('con cero minutos el arco aparece vacío y la fórmula va en condicional (criterio 495, D-C)', () => {
+  // Enmienda el criterio 495 de FEAT-016 en una sola cosa: el número grande. Con
+  // cero trabajado lo que falta es la jornada entera, y eso es lo que se dice —
+  // no una hora de parada proyectada desde cero. `line` no se toca (criterio
+  // 561): la fórmula en condicional sigue siendo exacta y sigue viéndose.
+  it('con cero minutos faltan las ocho horas enteras (criterio 561, D-C)', () => {
     const { arcs } = buildGoalArcs({
       followUps: [],
       date: DATE,
@@ -263,9 +295,43 @@ describe('buildGoalArcs', () => {
     expect(arcs).toHaveLength(1)
     expect(arcs[0].workedMinutes).toBe(0)
     expect(arcs[0].share).toBe(0)
+    expect(arcs[0].arcValue).toBe('8h')
+    expect(arcs[0].arcCaption).toEqual(['Te faltan'])
+    expect(arcs[0].variant).toBe('missing')
     expect(arcs[0].stopAtTime).toBe('17:00')
     expect(arcs[0].line).toBe('Si arrancas ahora, acabarías a las 17:00.')
   })
+
+  // Los dos casos en que **no falta nada que anunciar**, y por eso el arco no
+  // cambia una coma respecto a FEAT-016: dentro sigue una hora (o lo
+  // registrado) y la frase se queda donde estaba, a 1×1 px.
+  it.each([
+    ['pasada la meta hoy', 18 * 60, 560, false, 'passed', '17:00'],
+    ['un día pasado sin llegar', 11 * 60 + 45, 300, true, 'logged', '5h'],
+    ['un día pasado que se pasó', 11 * 60 + 45, 540, true, 'passed', '17:00'],
+  ])(
+    'fuera de «te faltan» el arco no cambia: %s (criterios 562 y 563)',
+    (_caso, nowMinutes, workedMinutes, isPastDay, variant, arcValue) => {
+      const { arcs } = buildGoalArcs({
+        followUps: [
+          session({
+            id: 's1',
+            startTime: '09:00',
+            durationMinutes: workedMinutes,
+            categoryId: 'trabajo',
+          }),
+        ],
+        date: DATE,
+        nowMinutes,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay,
+      })
+
+      expect(arcs[0].variant).toBe(variant)
+      expect(arcs[0].arcValue).toBe(arcValue)
+      expect(arcs[0].arcCaption).not.toContain('Te faltan')
+    },
+  )
 
   it('en un día pasado se cuenta en pasado y sin proyección (criterio 497, D-B)', () => {
     const past = '2026-09-17'

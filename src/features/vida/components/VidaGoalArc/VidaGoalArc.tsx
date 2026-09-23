@@ -29,18 +29,27 @@ const FALLBACK_GOAL_ICON = 'circle-dot'
  *
  * **El SVG no es la única forma de leerlo, y solo se lee una vez** (la
  * costumbre de `ChartPanel` y su tabla oculta): el dibujo es **decorativo**
- * (`aria-hidden`) y la frase entera vive en un `<p>` de texto real **solo para
- * lectores de pantalla**. Hasta la tajada 3 iban las dos cosas —el `role="img"`
- * con su `aria-label` y el mismo `<p>` a la vista—, así que la frase se oía dos
- * veces y se veía repetida bajo un arco que ya la dice dentro (la hora grande y
- * su rótulo). El render aprobado (18, panel 1) no tiene ese párrafo: debajo del
- * arco solo va la línea de la sesión en marcha.
+ * (`aria-hidden`) y la frase entera vive en **un solo** `<p>` de texto real.
+ * Hasta la tajada 3 de FEAT-016 iban las dos cosas —el `role="img"` con su
+ * `aria-label` y el mismo `<p>` a la vista—, así que la frase se oía dos veces
+ * y se veía repetida bajo un arco que ya la dice dentro.
+ *
+ * **Ese `<p>` se ve o no según `arc.variant`, y sigue siendo uno solo**
+ * (FEAT-019, criterios 560 y 564). Cuando el arco dice **lo que falta**
+ * (`'missing'`) dentro ya no hay ninguna hora, así que la de parada —«A este
+ * ritmo paras a las 17:55.»— se ve de verdad debajo, que es el sitio que le da
+ * el render 20, panel 1. En `'passed'` y `'logged'` el arco ya dice una hora
+ * dentro y la frase vuelve a ser solo para lectores de pantalla, como en el
+ * render 18. **Lo que no se hace nunca es añadir un segundo `<p>`**: es
+ * exactamente lo que se cerró en FEAT-016.
  *
  * Ese `<p>` **no lleva `role="alert"`** ni el ámbar o el rojo que el módulo
  * reserva para avisos, tampoco pasada la meta: el dato, sin reproche
  * (criterio 493).
  */
 export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
+  /** El estado que estrena FEAT-019: dentro del arco va lo que falta. */
+  const isMissing = arc.variant === 'missing'
   const style = arc.goal.color
     ? ({ '--vida-goal-color': arc.goal.color } as CSSProperties)
     : undefined
@@ -88,20 +97,36 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
           ) : null}
           {/* El rótulo baja hacia el número cuando es de una sola línea, para
               que el hueco de dentro del arco quede igual de repartido en los
-              dos casos: con dos líneas se apoya en 58 y 71, con una en 70. */}
+              dos casos: con dos líneas se apoya en 58 y 71, con una en 70.
+
+              **«Te faltan» es la excepción, y es la del render 20 (panel 1):
+              66 y 34.** Medido a 375 px con `getComputedTextLength()`: con el
+              rótulo en 70 y el número a 32 quedan **1,46** unidades de aire
+              entre la base del rótulo y la cima del número; con 66 y 34 quedan
+              **4,44**, y el número más grande sigue sobrando —«23h 59», el peor
+              caso posible, ocupa 100,5 de las 145,6 unidades de cuerda que hay
+              a su altura—. Esos 34 **no valen para los otros estados**: con el
+              rótulo de dos líneas el número se come la segunda (−0,56, medido),
+              y además los criterios 562 y 563 dicen que ahí no cambia nada. */}
           {arc.arcCaption.map((caption, index) => (
             <text
               key={caption}
               className={styles.caption}
               x="110"
-              y={arc.arcCaption.length > 1 ? 58 + index * 13 : 70}
+              y={arc.arcCaption.length > 1 ? 58 + index * 13 : isMissing ? 66 : 70}
               textAnchor="middle"
               fontSize="9.5"
             >
               {caption}
             </text>
           ))}
-          <text className={styles.value} x="110" y="101" textAnchor="middle" fontSize="32">
+          <text
+            className={styles.value}
+            x="110"
+            y="101"
+            textAnchor="middle"
+            fontSize={isMissing ? 34 : 32}
+          >
             {arc.arcValue}
           </text>
           <text className={styles.edge} x="18" y="121" textAnchor="start" fontSize="9.5">
@@ -113,9 +138,11 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
         </svg>
       </div>
 
-      {/* La «tabla oculta» del arco: la frase entera, en texto de verdad y una
-          sola vez. A la vista la dicen la hora grande y su rótulo. */}
-      <p className={styles.srLine}>{arc.line}</p>
+      {/* La frase entera, en texto de verdad y **una sola vez**: el mismo nodo
+          a la vista o a 1×1 px, nunca los dos (criterio 564). Visible solo
+          cuando dentro del arco va lo que falta y la hora no cabe ahí
+          (criterio 560). */}
+      <p className={arc.variant === 'missing' ? styles.line : styles.srLine}>{arc.line}</p>
 
       {arc.runningTitle ? (
         <p className={styles.sub}>

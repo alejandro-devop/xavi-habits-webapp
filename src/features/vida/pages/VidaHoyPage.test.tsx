@@ -3091,14 +3091,23 @@ describe('VidaHoyPage — el arco de la meta (FEAT-016)', () => {
     categoriesQuery = ready([categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL)])
   })
 
-  it('criterios 489, 490 y 492 — el arco va bajo el presupuesto y dice una hora', () => {
+  // El nombre y el comentario de este caso decían «dice una hora» (criterio 492
+  // de FEAT-016). FEAT-019 enmienda ese criterio de fondo: dentro del arco va
+  // **lo que falta**, porque el arco mide horas trabajadas y una hora del reloj
+  // ahí dentro eran dos cosas distintas en el mismo sitio. Las aserciones de la
+  // frase **no se tocan** —el 560 la conserva palabra por palabra—, solo baja de
+  // sitio y se ve.
+  it('criterios 489, 490 y 559 — el arco va bajo el presupuesto y dice lo que falta', () => {
     dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
     renderWithProviders(<VidaHoyPage />)
 
     const arco = goalArc()
     expect(arco).not.toBeNull()
-    // 9:24 + (8h − 1h) = 16:24. La línea principal **es una hora**, no una
-    // resta: en ningún sitio se pide restar para saber cuánto queda.
+    // 8h − 1h = 7h dentro del arco, con su rótulo.
+    expect(within(arco!).getByText('7h')).toBeInTheDocument()
+    expect(within(arco!).getByText('Te faltan')).toBeInTheDocument()
+    // 9:24 + (8h − 1h) = 16:24. La hora **no se pierde**: baja a la línea de
+    // debajo, con la misma frase de siempre (criterio 560).
     expect(within(arco!).getByText('Llevas 1 h. A este ritmo paras a las 16:24.')).toBeInTheDocument()
     expect(within(arco!).getByText('1h')).toBeInTheDocument()
 
@@ -3107,6 +3116,50 @@ describe('VidaHoyPage — el arco de la meta (FEAT-016)', () => {
     const fila = planRow('Bañarme')
     expect(presupuesto.compareDocumentPosition(arco!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(arco!.compareDocumentPosition(fila) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  /**
+   * **La frase se dice una sola vez, y aquí es donde se comprueba.**
+   *
+   * En FEAT-016 tajada 3 se descubrió que se leía dos veces —el `aria-label`
+   * del SVG y el `<p>` a la vista— y se arregló dejando **un solo** `<p>` a
+   * 1×1 px. El criterio 560 vuelve a hacerlo visible en el estado «te faltan»,
+   * así que hay que volver a demostrar que **no hay un segundo nodo**: el
+   * mismo `<p>`, otra clase (criterio 564).
+   */
+  it('criterios 560 y 564 — la hora se ve debajo del arco y se dice una sola vez', () => {
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()!
+    const frase = 'Llevas 1 h. A este ritmo paras a las 16:24.'
+    // Un solo nodo con la frase: ni uno visible y otro para el lector.
+    expect(within(arco).getAllByText(frase)).toHaveLength(1)
+    // Y ese nodo **no** es el de 1×1 px: se ve de verdad (criterio 560).
+    expect(within(arco).getByText(frase).className).not.toContain('srLine')
+    // Dentro del arco no se repite la hora: dentro va la resta, fuera la hora.
+    expect(within(arco).queryByText('16:24')).toBeNull()
+  })
+
+  it('criterio 562 — pasada la meta el arco sigue diciendo una hora, y la frase vuelve al lector', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 18, 10, 0))
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '09:00', durationMinutes: 300 }),
+      workSession({ id: 'w2', startTime: '14:00', durationMinutes: 240 }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()!
+    // Dentro sigue la hora a la que se cruzaron las 8 h, con su rótulo de dos
+    // líneas: aquí no falta nada, así que no hay nada nuevo que anunciar.
+    expect(within(arco).getByText('17:00')).toBeInTheDocument()
+    expect(within(arco).getByText('Pasaste las 8h')).toBeInTheDocument()
+    expect(arco).not.toHaveTextContent('Te faltan')
+    // Y la frase vuelve a ser solo para lectores de pantalla (criterio 564):
+    // a la vista ya la dice la hora grande.
+    const frase = 'Llevas 9 h. Pasaste las 8 h a las 17:00.'
+    expect(within(arco).getAllByText(frase)).toHaveLength(1)
+    expect(within(arco).getByText(frase).className).toContain('srLine')
   })
 
   it('criterio 490 — una categoría sin meta no suma en el arco', () => {

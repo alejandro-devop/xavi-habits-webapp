@@ -35,8 +35,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/AppProviders.tsx": {
-    "mtime": 1789706565.5088217,
-    "ast_hash": "fb1539284254e5051c826e61b64bdfc0",
+    "mtime": 1790184842.2114563,
+    "ast_hash": "4878a96b04cbd0e53fef401716d35fc1",
     "semantic_hash": ""
   },
   "src/app/providers/query-client.ts": {
@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/query-persist.ts": {
-    "mtime": 1789696614.9415405,
-    "ast_hash": "ebe4444dfae683293036b4a58d37b96c",
+    "mtime": 1790184842.2114563,
+    "ast_hash": "d36fc01baa4e011f703f05ed949b8c67",
     "semantic_hash": ""
   },
   "src/app/router/index.tsx": {
@@ -1595,8 +1595,8 @@
     "semantic_hash": ""
   },
   "src/vite-env.d.ts": {
-    "mtime": 1789696614.9935408,
-    "ast_hash": "40443fedb500f06bd68dba04d18ddcc4",
+    "mtime": 1790184820.7985969,
+    "ast_hash": "3ef8cbd93ca539e0ecd80ce4b8c1fda5",
     "semantic_hash": ""
   },
   "tsconfig.app.json": {
@@ -1610,8 +1610,8 @@
     "semantic_hash": ""
   },
   "tsconfig.node.json": {
-    "mtime": 1789696614.9935408,
-    "ast_hash": "70bdd0a673bcfc0e828080b306e7c680",
+    "mtime": 1790184803.5447102,
+    "ast_hash": "394ad1f44c4c8798126fa2cc45762ed6",
     "semantic_hash": ""
   },
   "vercel.json": {
@@ -1620,8 +1620,8 @@
     "semantic_hash": ""
   },
   "vite.config.ts": {
-    "mtime": 1789696614.9945407,
-    "ast_hash": "67446aba8c0b9d336442d792340ec75d",
+    "mtime": 1790184803.5447102,
+    "ast_hash": "48a1d8516731b9f68aba3ae5e2d011d6",
     "semantic_hash": ""
   },
   ".claude/CLAUDE.md": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790172637.4353905,
-    "ast_hash": "15565dbdbf801e78740dcac7ddb0fd8e",
+    "mtime": 1790186444.2237802,
+    "ast_hash": "45c5849c4085b74ac3ca226fce3eb113",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790170339.9500296,
-    "ast_hash": "a0c374f3ff26d023ffe7e084dd46e814",
+    "mtime": 1790173920.8521144,
+    "ast_hash": "acb1f705050b030dc5ea20dc7649c83c",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3750,8 +3750,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-013-vida-empezar-con-hora.md": {
-    "mtime": 1790172631.3753836,
-    "ast_hash": "9506753cf2d237103e0717645471d129",
+    "mtime": 1790173868.27698,
+    "ast_hash": "0dc353f1b6536477e065c90a0c44b134",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaEndTimeLine/VidaEndTimeLine.test.tsx": {
@@ -4032,6 +4032,31 @@
   "src/features/vida/components/VidaStartTimeSheet/index.ts": {
     "mtime": 1790166344.6651156,
     "ast_hash": "9ac4313d161d4d4b739bda1a62ae830c",
+    "semantic_hash": ""
+  },
+  "src/app/providers/query-persist.hydration.test.tsx": {
+    "mtime": 1790184894.7001128,
+    "ast_hash": "2aa39da64d82e2f8de7107e463d66778",
+    "semantic_hash": ""
+  },
+  "vite/cache-shape.test.ts": {
+    "mtime": 1790186041.6297243,
+    "ast_hash": "bdea877a04f5859f76652f2f8fa3f0fb",
+    "semantic_hash": ""
+  },
+  "vite/cache-shape.ts": {
+    "mtime": 1790186009.198396,
+    "ast_hash": "a30284d9dd45f5966be9a9e18d279e4c",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-021-cache-que-caduca.md": {
+    "mtime": 1790186266.1039336,
+    "ast_hash": "4591a6489c67f5d87b23aed8814c7618",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-022-reabrir-una-sesion.md": {
+    "mtime": 1790185713.2657962,
+    "ast_hash": "bfcfae27bde7b6ff443fea5fff82967b",
     "semantic_hash": ""
   }
 }

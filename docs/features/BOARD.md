@@ -29,6 +29,196 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
+| FEAT-021 | building | 1/2 | app/providers, shared/api | La caché guardada caduca cuando cambia la forma de los datos | 2026-09-23 |
+| FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
+
+**FEAT-021 tajada 1 `accepted` (2.ª vuelta)** (2026-09-23, revisor). **Sigue
+`building` 1/2:** la tajada 2 no está construida y la decide el usuario. El
+cierre del hallazgo 1 es bueno y lo comprobé entero, no de palabra. **Que no
+tocó lo aceptado es verdad**: mtimes de la primera vuelta intactas
+(`query-persist.ts` y `AppProviders.tsx` 12:34:02, el arnés 12:34:54) y el diff
+de los cinco versionados sigue midiendo 13/58/9/2/12 líneas. **Repetí la historia
+con la regla nueva** y sus ocho valores están clavados: `17e69be`
+`5609fae5cfe2 → 918c5294af29` (caduca), `68dac8b` `cc0d1c23fc92` (conserva),
+`1887d62` y `bd8cdf1` `c354b9032f97` (conservan). De propina: la regla 2 **habría
+caducado la caché en `77beea7`**, el despliegue que cambió la forma del híbrido
+cacheado y que la regla vieja no veía. Línea base clavada: 2 fallos de 2045,
+lint 14/0, chunk 1.138,74 kB, CSS 277,96 kB, 18/18 en `cache-shape.test.ts`, y en
+el artefacto `` buster:`v${Df.appVersion}-c354b9032f97` `` sin `sin-forma`.
+**Dos hallazgos nuevos, ninguno de devolución.** (A) **Sí hay una evasión
+plausible de la regla por contenido**: las dos obvias fallan —desestructurar o
+renombrar `setQueryData` conserva el literal—, pero **separar quien escribe de
+quien compone** la esquiva; creé un fichero que fabrica el híbrido sin mencionar
+ningún marcador y el hash no se movió, y este repositorio **ya factoriza las
+operaciones de caché fuera de los hooks** (`invalidate-vida-queries.ts`), así que
+no es hipotético. Falta además nombrar `query.setData()` vía `getQueryCache()`,
+que es API pública y no está en los marcadores. (B) El falso positivo por
+subcadena **tiene cola**: una página que solo *mencione* `setQueryData` en un
+comentario entra en el conjunto (32 → 33) **y se queda**, así que cada retoque
+cosmético suyo caduca la caché de todos; fijar el total en el test, y no solo los
+2 de `/hooks/`, lo cazaría. Verificado también que de 554 ficheros no-test hoy
+entran exactamente 2, y que los otros 6 que mencionan los marcadores son tests
+correctamente excluidos. Siguiente: el usuario decide la tajada 2.
+
+**FEAT-021 `in-review` 1/2** (2026-09-23, constructor, **2.ª vuelta**). **Tajada 1
+revisada para cerrar el hallazgo 1 del revisor, sin commitear.** Los dos puntos
+ciegos que él midió —`graphql-client.ts`, el embudo por el que pasa el 100 % de
+lo cacheado, y los hooks que **fabrican** el objeto cacheado con `setQueryData`—
+ya no existen: la selección deja de ser tres rutas y pasa a ser **dos reglas que
+se aplican solas**, una por ruta (**toda** la carpeta `src/shared/api/*.ts`, para
+que un transporte nuevo entre sin que nadie se acuerde) y otra **por contenido**
+(quien llame a `setQueryData`/`setQueriesData`/`setQueryState`). Esa segunda es
+el entregable de verdad: un hook entra **el día que escribe la llamada**, sin
+tocar `cache-shape.ts` — porque un hash que hay que actualizar a mano es
+`VITE_APP_VERSION=0.0.0` con otra cara. **`hooks/` entero sigue fuera**, como se
+pidió: hoy la regla coge exactamente 2 de 676 ficheros, y el test lo fija.
+Medido igual que lo midió él: tocando `graphql-client.ts` el hash se mueve
+(`c354b9032f97` → `22b07d3c1495`), tocando `useActivityFollowUps.ts` también
+(`52af0343b24f`), y tocando `VidaHoyPage.tsx` **no**. **La historia vuelta a
+medir y la propiedad intacta:** `17e69be` sigue caducando la caché
+(`5609fae5cfe2` → `918c5294af29`) y `68dac8b`, `1887d62` y `bd8cdf1` siguen
+conservándola; ninguno de los seis ficheros nuevos aparece en su `--stat`, que es
+por lo que no se movió. Escritos en la cabecera de `vite/cache-shape.ts`, que es
+donde mira quien va a crear un fichero: las dos reglas, los **tres puntos ciegos
+que quedan** (la forma que cambia en el servidor, una vía de escritura fuera de
+`CACHE_WRITE_MARKERS`, `initialData` desde un componente) y el **coste de los
+falsos positivos** con sus dos mediciones —un comentario o **un espacio al final
+de `query-keys.ts`** caducan la caché de todo el mundo; un falso positivo cuesta
+una apertura fría, un falso negativo una pantalla en blanco—. Corregidas en el
+dossier las dos afirmaciones que se quedaban cortas («los hooks consumen la
+forma, no la definen» y «solo ve cambios del front»). **No se tocó nada de lo
+aceptado**: el arnés de hidratación, el veredicto sobre zod y `query-persist.ts`
+están byte a byte; el diff de esta vuelta es `vite/cache-shape.ts`, su test y el
+dossier. **La tajada 2 sigue sin construir** y la reserva del revisor —«borrar y
+recargar» es recuperación a ciegas; su alternativa es validar en el `deserialize`
+del persister— está copiada junto a la decisión en la sección 1, con las dos
+opciones delante para que la decida el usuario. Línea base: lint 14/0, **2 fallos
+de 2045** (los mismos de `SearchSelect`, +7 casos míos), chunk **1.138,74 kB** y
+CSS **277,96 kB** idénticos. **Sigue pendiente el paso 1 de la prueba manual: el
+5173 del usuario arrancó antes del cambio y corre con la configuración vieja**
+(`v0.0.0-sin-forma`); hay que reiniciarlo. Siguiente: el `feature-reviewer`,
+solo esta vuelta.
+
+**FEAT-021 tajada 1 `accepted`** (2026-09-23, revisor). **La feature queda
+`building` 1/2, sin commitear:** la tajada 2 no está construida y no es de un
+agente —es una decisión con alcance que espera al usuario—. Los siete criterios
+(596–602) se cumplen. **La afirmación que sostiene todo la repetí yo desde cero**,
+reimplementando el cálculo del hash y corriéndolo sobre `git archive` de los ocho
+árboles: `17e69be` (el despliegue de `activeDays` que tumbó Hoy) **sí** habría
+caducado la caché (`aae207567bd7` → `b60eac114deb`) y `68dac8b`, `1887d62` y
+`bd8cdf1` la habrían conservado (`c4e2522f5cb9` los seis). Y **el control del
+arnés no es vacuo**: copié el test a un fichero temporal cambiando solo la forma
+sembrada y **falló**, que es lo que demuestra que la pantalla de error la
+provoca la forma vieja hidratada. El `define` llega a `dev` (lo medí en el
+navegador sobre un Vite efímero: `v0.0.0-c4e2522f5cb9`) y al bundle
+(`buster:`v${Df.appVersion}-c4e2522f5cb9``, sin `sin-forma`). Líneas base
+clavadas: 14/0 de lint, 2 fallos de 2038, chunk 1.138,74 kB, CSS 277,96 kB
+idéntico. **Dos hallazgos que no incumplen criterio pero pesan para la tajada 2:**
+hay dos sitios del **propio front** que deciden la forma de lo cacheado y **no
+entran en el hash** —`src/shared/api/graphql-client.ts`, el embudo por el que
+pasa todo, y los `setQueryData` que **fabrican** el objeto cacheado en
+`useActivityFollowUps.ts:109-129`—, los dos medidos tocando el fichero y viendo
+el hash quieto; y el hash es **sensible al byte** (un espacio al final de
+`query-keys.ts` caduca la caché de todos), que es fallar del lado bueno pero no
+está escrito. Lo que queda es del usuario: `/app/*` está tras login. Y un aviso
+de entorno: **el dev server del 5173 se arrancó antes de este cambio y corre con
+la configuración vieja** (`buster` = `v0.0.0-sin-forma`); hay que reiniciarlo.
+Siguiente: el usuario decide si se construye la tajada 2.
+
+**FEAT-022 `delivered` 1/1** (2026-09-23, revisor). **Tajada única aceptada; la
+feature queda entregada, sin commitear y solo en el repo del API.** Los trece
+criterios (603–615) se cumplen y no hay regresión. Lo que más me importó lo
+comprobé yo, no lo di por bueno: **el criterio 611 lo verifiqué de verdad sin
+revertir el árbol**, copiando con `git show HEAD:…` el servicio y el validador
+viejos a ficheros temporales del repo del API y corriéndolos en un test
+temporal — HEAD rechaza `durationMinutes: null` en zod **y** lanza «Duration
+must be at least 1 minute» en el servicio; las tres copias se borraron. De ahí
+salió el hallazgo que vale más que el arreglo: al compilar el servicio de HEAD
+**contra el tipo nuevo** (`number | null`), `tsc` canta `TS18047: possibly
+'null'` en la línea exacta del `< 1`; **el agujero era detectable por el
+compilador en cuanto el tipo dejara de mentir**. También medí el salto
+ausente/`null` sobre el **SDL real** con `coerceInputValue` (ausente no aparece;
+`null` aparece con valor nulo) y la línea base entera: `tsc` exit 0, `npm test`
+**3 fallos de 596 y 6 suites de 53**, los mismos de siempre por su nombre, y el
+lint por fichero tocado sin empeorar. **La regla de «una sola abierta» está bien
+puesta y además tiene red:** `migrations/031` ya crea un índice único parcial
+`(user_id) WHERE duration_minutes IS NULL`, así que ni la carrera entre el
+guardia y el `UPDATE` puede dejar dos abiertas —aunque ese caso se vería como
+error interno, porque este servicio no traduce el `23505`—. **El camino del
+sueño no se rompió** (`sleep_logs.duration_minutes` es `NOT NULL` desde la 010 y
+ningún `ALTER` la abrió), pero su suite es una de las 6 que ni compilan: si
+mañana alguien hace anulable ese campo, nadie lo cazará. Hallazgos sin bloquear:
+el mensaje dice «before reopening **another**» cuando lo que se reabre es
+**esta**; `updated_at` sigue sin tocarse y aquí no importa (nada ordena por él).
+**Queda sin probar la llamada real contra el servidor vivo**, que está tras el
+login. Siguiente: del usuario — revisar y hacer el push del repo del API, que
+despliega y migra.
+
+**FEAT-021 `in-review` 1/2** (2026-09-23, constructor). **Tajada 1 construida,
+sin commitear.** El `buster` de la caché persistida deja de ser `env.appVersion`
+—que valía `0.0.0` en los tres `.env` y en `package.json` desde el primer commit,
+así que **esa protección no se ejecutó jamás**— y pasa a ser
+`` `v${appVersion}-${hash}` ``, con el hash calculado por Vite en build sobre el
+contenido de los documentos GraphQL, los `*.api.ts` y `query-keys.ts`
+(`vite/cache-shape.ts`, nuevo; `define` en `vite.config.ts`). **Atado a la forma
+y no al build a propósito:** medido con `git archive` sobre la historia real, el
+despliegue que tumbó Hoy esta mañana (`17e69be`, el que añadió `activeDays`)
+**sí** habría caducado la caché —`aae207567bd7` → `b60eac114deb`— y los tres
+despliegues siguientes (`68dac8b` puro SCSS, `1887d62`, `bd8cdf1`) la habrían
+**conservado**, que es lo que un invalidador por commit habría perdido. No me
+apoyo en `VERCEL_GIT_COMMIT_SHA` y por eso no hizo falta comprobarla: Vite solo
+publica `VITE_*` al cliente, así que habría necesitado el mismo puente por
+`define` y en un build local no existiría. **Demostrado como pasó de verdad**, no
+con un test del `buster`: un arnés monta la app con las opciones de persistencia
+reales sobre una caché fabricada con `dehydrate`, y los tres casos son forma
+vieja + invalidador viejo (pantalla de pie, y la caché envenenada borrada), misma
+forma + mismo invalidador (datos al instante, sin pedir nada: **no** se borra la
+caché siempre) y el control forma vieja + invalidador de hoy (la pantalla **sí**
+se cae, así que el arnés sabe reproducir el fallo). **Veredicto sobre zod: no
+compensa y apunta a la puerta equivocada** — los datos que tumbaron Hoy venían de
+`localStorage`, no de la API, así que un validador en `graphqlRequest` no los
+habría visto pasar; y serían 63 documentos duplicando un SDL que
+`contracts.test.ts` ya valida. En su lugar queda **propuesta la tajada 2**, que
+no es validación sino recuperación, y que cubre el único hueco que este
+invalidador no puede cubrir: que la forma cambie **en el servidor**, que se
+despliega solo desde otro repositorio. **El usuario no tiene que cambiar nada en
+Vercel**: no se tocó ningún `.env*` ni `package.json`. Línea base igual (14/0 de
+lint, 2 fallos de 2038 —los mismos de `SearchSelect`, +15 tests míos—, CSS
+**277,96 kB** idéntico, chunk 1.138,72 → **1.138,74 kB**). Queda para el usuario
+el recorrido tras el login, en los dos sentidos: que Hoy abra de pie tras este
+despliegue, y que tras un despliegue que no toque la capa de datos los datos
+sigan apareciendo **al instante**. Siguiente: el `feature-reviewer`, tajada 1.
+
+**FEAT-022 `in-review` 1/1** (2026-09-23, constructor). **Tajada única
+construida, sin commitear y solo en el repo del API.** `durationMinutes: null`
+en `activityFollowUpEdit` ahora **reabre** una sesión cerrada, que es lo que
+faltaba para que un «Deshacer» honesto se pueda construir en el front sin el
+apaño de `delete` + `start` + `delete`. **El diagnóstico se quedaba corto en un
+punto que cambia el arreglo:** el `null < 1` del servicio
+(`activity-follow-up.service.ts:368`, `null` se convierte a `0` en una
+comparación relacional) es real, pero **la puerta que de verdad estaba cerrada
+era zod**: `activityFollowUpEditInputSchema.durationMinutes` no era
+`.nullable()`, así que un `null` moría con «Expected number, received null»
+antes de llegar al servicio. Tocar solo el servicio no habría reabierto nada.
+El camino entero se midió, no se supuso: con una sonda de `coerceInputValue`
+sobre el SDL real, un campo **ausente** no aparece en el objeto coercido y uno
+a `null` aparece con valor `null`; `withValidation`
+(`graphql/utils/validation.ts:30-57`) le pasa al resolver **la salida de zod**,
+así que el validador era el único sitio donde la distinción se podía perder.
+**Decisión con criterio, no por simetría:** reabrir exige que no haya otra
+sesión abierta —`getOpenFollowUp` es `ORDER BY created_at DESC LIMIT 1`, con dos
+abiertas una queda invisible y sin forma de cerrarse desde la app— pero **solo
+en la transición cerrada → abierta**, para que reabrir algo ya abierto sea un
+no-op y no choque contra sí mismo. Siete tests de servicio y un fichero nuevo de
+tests del validador (no había ninguno); en HEAD ni compilan, con el cambio pasan
+los 20 + 5. `npx tsc --noEmit` exit 0 y `npm test` con los **mismos 3 fallos y
+las mismas 6 suites rojas** de la línea base (596 tests, +12 míos). Dos trampas
+que dejo escritas: **una tilde invertida dentro de una descripción del SDL rompe
+la compilación** del API (el esquema vive dentro de una plantilla `gql` y la tilde cierra la
+cadena; me pasó y lo cazó `tsc`), y **`ts-node` no arranca en ese repositorio**,
+así que un TypeScript suelto se ejecuta como test temporal de jest — usé tres
+sondas y las borré todas. Numeré los criterios **603–615** porque FEAT-021
+apareció mientras escribía y se llevó 600–602. Siguiente: el `feature-reviewer`.
 
 **FEAT-020 `delivered` 1/1** (2026-09-23, revisor). **Tajada única aceptada.**
 Medí yo las cuatro superficies (`AppLayout .bar`, `VidaSessionBar .bar`, `Toast`,

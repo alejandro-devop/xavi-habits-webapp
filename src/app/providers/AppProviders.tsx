@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/features/theme'
 import { ConfirmDialogProvider } from '@/shared/ui/ConfirmDialog'
 import { ToastProvider } from '@/shared/ui/Toast'
 import { queryClient } from './query-client'
-import { queryPersistBuster, queryPersister } from './query-persist'
+import { queryPersistOptions } from './query-persist'
 
 type AppProvidersProps = {
   children: ReactNode
@@ -15,14 +15,9 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{
-        persister: queryPersister,
-        buster: queryPersistBuster,
-        // Explícito y alineado con el gcTime de query-client.ts: si maxAge
-        // superara al gcTime, se hidratarían queries que la caché en memoria
-        // ya descartó.
-        maxAge: 1000 * 60 * 60 * 24,
-      }}
+      // Definidas en `query-persist.ts` para que los tests monten exactamente
+      // esta configuración: el invalidador y el `maxAge` se explican allí.
+      persistOptions={queryPersistOptions}
     >
       <ThemeProvider>
         {/* Avisos y confirmaciones son cromo global y se montan en portales:

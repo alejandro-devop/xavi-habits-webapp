@@ -26,7 +26,33 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
-| FEAT-018 | planned | 0/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+| FEAT-018 | building | 1/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+
+**FEAT-018 `building` 1/4** (2026-09-22, revisor). **Tajada 1 aceptada: la
+nota que ya se escribía al terminar por fin se lee en la línea del día.**
+Reproducidas las cuatro líneas base en este árbol (typecheck limpio, lint 14/0,
+**2 fallos de 1839** —solo `SearchSelect`—, build exit 0 con inicial 1.124,93 kB
+y `app-icons` **620,20 kB sin mover**). Criterios **531, 532 (su mitad), 533,
+535-541 y 552** cerrados. **La garantía de la que cuelga la tajada 2 está
+verificada de punta a punta en el repositorio del API, no de palabra:**
+`activityFollowUpEditInputSchema` acepta `{id, notes}` solo y sin defaults, y
+`updateFollowUp` arma el `UPDATE` únicamente con las columnas presentes — ni
+hora, ni duración, ni cierre de una sesión abierta. **El riesgo declarado, el
+alto de las filas, medido en navegador a 375 px con arnés propio (ya borrado):
++11 px por sesión terminada del día que se mira**, y la marca «Ahora» no se
+mueve de sitio porque la agenda está en flujo normal y el salto usa
+`scrollIntoView` sobre el nodo vivo: no hay constante de alto que se quede
+vieja. Recorte de una nota de 420 caracteres: una línea de 16,2 px, puntos
+suspensivos, `title` con el texto entero y **sin barra horizontal**; la hoja la
+abre entera, dice «420 / 140» y **guarda los 420**. Mocks revisados: no existe
+ninguno de `useVidaSessionUi` ni del hook nuevo, así que no hay lista
+incompleta pasando por casualidad. **Nada del API tocado** (`git status` de
+`xavi-platform-node`, limpio). Hallazgos anotados: la sesión en marcha *fuera
+del plan* enseña la nota en lectura mientras el bloque del plan no (que lo
+unifique la tajada 2), los 130 px de ancho útil de la nota junto a «fuera del
+plan», y la frase «añadir qué hiciste» escrita en dos archivos. **Queda a mano,
+detrás del login:** guardar contra la API y ver la fila refrescarse, que no sale
+toast y que el error se lee dentro de la hoja. **Sin commitear, sin push.**
 
 **FEAT-016 `delivered` 3/3** (2026-09-22, revisor). **Tajada 3 aceptada: la
 feature está entregada.** Reproducidas las cuatro líneas base en este árbol
@@ -110,7 +136,29 @@ oye dos veces; no hay estado de carga (el arco aparece de golpe y empuja la
 agenda); y el nombre de la meta no lleva `overflow-wrap`. Falta la **tajada 3**
 (la pregunta con botones).
 
-**FEAT-018 `planned` 0/4** (2026-09-22, arquitecto). **Sección 2 escrita, las
+**FEAT-018 `in-review` 1/4** (2026-09-22, constructor). **Tajada 1 construida:
+la nota que ya se guardaba al terminar por fin se ve y se edita en la fila del
+día.** `VidaNoteLine` (la línea que se lee, con el recorte y el «＋ añadir qué
+hiciste»), `VidaNoteSheet` (el editor, ya con la firma de props de las cuatro
+tajadas; la sección de píldoras está escrita e **inerte**, nadie le pasa
+`suggestions`) y `useVidaSessionNote` (`activityFollowUpEdit({ id, notes })`,
+`silent: true`). Cableado en `VidaAgendaBlock`, `VidaAgendaSession` y
+`VidaHoyPage`, con la hoja montada **una sola vez** en `VidaModuleLayout`.
+Líneas base reproducidas: typecheck limpio · lint **14/0** · test **2 fallos de
+1835** (los dos de `SearchSelect`; +15 tests nuevos) · build exit 0 con chunk
+inicial **1.124,85 kB** (+3,56 kB) y `app-icons` **620,20 kB** sin mover.
+Criterio 541 **medido en navegador** a 375 px con 420 caracteres: `scrollWidth`
+= `clientWidth` = 375, la nota en una línea de 16 px con `ellipsis` y el texto
+entero en el `title`. **Decisión que tocó resolver al constructor y que el
+usuario debería ver**: una nota que llega con más caracteres que el tope **no se
+trunca ni se pierde** — se pinta entera, el tope efectivo del campo pasa a ser
+lo que ya ocupaba, el contador lo dice («420 / 140») y una línea lo explica.
+**Lo que más probablemente se ha roto**: el **alto de las filas** de la agenda
+(cada sesión terminada de un día editable suma ~16 px aunque no tenga nota), y
+en `VidaAgendaSession` la nota comparte línea con la etiqueta «fuera del plan»
+y se queda en 114 px útiles a 375 px. Sin commitear.
+
+**FEAT-018 `building` 0/4** (2026-09-22, arquitecto). **Sección 2 escrita, las
 cuatro tajadas con sus rutas.** Referencia: `VidaFinishSessionModal` + cómo lo
 monta `VidaModuleLayout` (una vez, por contexto). Lo nuevo son `VidaNoteLine`
 (la línea que se lee, donde viven el recorte y el «＋ añadir qué hiciste») y

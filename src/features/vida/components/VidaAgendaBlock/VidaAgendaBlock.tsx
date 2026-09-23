@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { VidaBlockOutcomes } from '@/features/vida/components/VidaBlockOutcomes'
+import { VidaNoteLine } from '@/features/vida/components/VidaNoteLine'
 import { VidaPlanVsRealBar } from '@/features/vida/components/VidaPlanVsRealBar'
 import { useRemoveDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
 import { useDeleteActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
@@ -93,6 +94,20 @@ type VidaAgendaBlockProps = {
    * «···» no ofrece nada de la sesión — que es lo que pasa en un día futuro.
    */
   onEditSession?: (session: ActivityFollowUp) => void
+
+  /* ── «Qué hiciste» (FEAT-018, tajada 1) ─────────────────────────────────
+   *
+   * Aditivo: sin estas dos props el bloque se pinta exactamente como antes.
+   */
+
+  /** Lo que se escribió en la sesión de este bloque (criterio 535). */
+  note?: string | null
+  /**
+   * Abre el editor de la nota. **Sin esto no se ofrece el «＋ añadir qué
+   * hiciste»** (criterios 536 y 537): ni en un día futuro, ni sobre la sesión
+   * que sigue en marcha —esa línea es de la tajada 2—.
+   */
+  onEditNote?: () => void
 }
 
 /**
@@ -155,6 +170,8 @@ export function VidaAgendaBlock({
   couldNot = null,
   outcomes = null,
   onEditSession,
+  note = null,
+  onEditNote,
 }: VidaAgendaBlockProps) {
   const { confirm } = useConfirmDialog()
   const removeMutation = useRemoveDayPlanItemMutation()
@@ -322,6 +339,14 @@ export function VidaAgendaBlock({
         </span>
         <div className={styles.body}>
           <p className={styles.name}>{title}</p>
+          {/* Lo que hiciste dentro de este bloque (criterio 535), entre el
+              nombre y la hora. Sin nota y sin poder escribirla, no deja
+              hueco: una línea vacía en cada fila sería ruido diario. */}
+          <VidaNoteLine
+            text={note}
+            placeholder={onEditNote ? 'añadir qué hiciste' : null}
+            onEdit={onEditNote}
+          />
           <p className={styles.meta}>
             {isRunning ? (
               <>

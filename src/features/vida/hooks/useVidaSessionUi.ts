@@ -4,6 +4,14 @@ import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.t
 export type VidaSessionUiValue = {
   /** Abre el cierre completo sobre esa sesión (criterio 6). */
   openFinishModal: (session: ActivityFollowUp) => void
+  /**
+   * Abre **solo la nota** de esa sesión (FEAT-018, criterio 538): el editor
+   * corto de «¿Qué hiciste?». Va por aquí y no por props por lo mismo que el
+   * cierre completo —entre el layout y la fila de la agenda hay un `Outlet`— y
+   * se monta **una sola vez**, en el layout, porque se llega desde la fila del
+   * día, desde la barra y desde antes de empezar.
+   */
+  openNoteSheet: (session: ActivityFollowUp) => void
 }
 
 /**
@@ -28,6 +36,7 @@ export type VidaSessionUiValue = {
  */
 export const VidaSessionUiContext = createContext<VidaSessionUiValue>({
   openFinishModal: () => {},
+  openNoteSheet: () => {},
 })
 
 export function useVidaSessionUi(): VidaSessionUiValue {

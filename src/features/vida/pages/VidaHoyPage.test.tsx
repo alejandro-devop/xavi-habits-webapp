@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
+import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
 import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
 import { useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
 import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
@@ -3112,5 +3113,134 @@ describe('VidaHoyPage — la pregunta de la meta (FEAT-016, tajada 3)', () => {
     renderWithProviders(<VidaHoyPage />)
 
     expect(within(goalPrompt()!).getByRole('button', { name: 'Trabajo' })).toBeDisabled()
+  })
+})
+
+/* ── «Qué hiciste» en la línea del día (FEAT-018, tajada 1) ───────────────
+ *
+ * Criterios 535 a 538. Lo que la pantalla tiene que hacer bien es **cablear**:
+ * de qué sesión sale la nota de cada fila, en qué días se ofrece escribirla y
+ * a quién se le pasa al abrir el editor. El editor tiene su propio test en
+ * `components/VidaNoteSheet/VidaNoteSheet.test.tsx`, y la línea que se lee es
+ * un componente aparte para que el recorte viva en un solo sitio.
+ */
+describe('VidaHoyPage — la nota de la sesión en la línea del día (FEAT-018)', () => {
+  function withNote(
+    id: string,
+    activityId: string,
+    title: string,
+    startTime: string,
+    durationMinutes: number,
+    notes: string | null,
+    date = '2026-09-18',
+  ): ActivityFollowUp {
+    return {
+      id,
+      activityId,
+      date,
+      startTime,
+      durationMinutes,
+      isOpen: false,
+      endTime: null,
+      endDate: null,
+      endDateTime: null,
+      notes,
+      activity: { id: activityId, title, category: null },
+    }
+  }
+
+  /** La pantalla dentro del contexto del módulo: quien abre el editor es el layout. */
+  function renderWithNoteSheet(
+    openNoteSheet: (session: ActivityFollowUp) => void,
+    search = '',
+  ) {
+    renderWithProviders(
+      <VidaSessionUiContext.Provider value={{ openFinishModal: () => {}, openNoteSheet }}>
+        <VidaHoyPage />
+      </VidaSessionUiContext.Provider>,
+      search ? { routerProps: { initialEntries: [`/app/vida/hoy${search}`] } } : undefined,
+    )
+  }
+
+  it('criterio 535 — un bloque del plan con nota la enseña bajo el nombre', () => {
+    dayFollowUpsQuery = ready([
+      withNote('f1', 'a-b1', 'Bañarme', '08:00', 45, 'Con agua fría, a ver si espabilo'),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const row = planRow('Bañarme')
+    expect(within(row).getByText('Con agua fría, a ver si espabilo')).toBeInTheDocument()
+    // Y no ofrece añadir lo que ya está escrito.
+    expect(within(row).queryByText('añadir qué hiciste')).not.toBeInTheDocument()
+  })
+
+  it('criterio 535 — una sesión fuera del plan con nota también la enseña', () => {
+    dayFollowUpsQuery = ready([
+      withNote('f9', 'otra', 'Llamada con el banco', '11:40', 32, 'La hipoteca'),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const row = screen.getByText('Llamada con el banco').closest('li')!
+    expect(within(row).getByText('La hipoteca')).toBeInTheDocument()
+  })
+
+  it('criterio 536 — una sesión terminada sin nota ofrece «añadir qué hiciste», sin reproche', () => {
+    dayFollowUpsQuery = ready([withNote('f1', 'a-b1', 'Bañarme', '08:00', 45, null)])
+    renderWithProviders(<VidaHoyPage />)
+
+    const row = planRow('Bañarme')
+    expect(within(row).getByText('añadir qué hiciste')).toBeInTheDocument()
+    // Ni «falta», ni «vacío», ni «sin nota».
+    expect(within(row).queryByText(/falta|vac|sin nota|olvid/i)).not.toBeInTheDocument()
+  })
+
+  it('criterio 537 — en un día futuro no se ofrece añadir nada', () => {
+    plansByDate = {
+      '2026-09-19': [{ ...block('p1', 'Leer un rato', '09:00', '09:30'), date: '2026-09-19' }],
+    }
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.getByText('Leer un rato')).toBeInTheDocument()
+    expect(screen.queryByText('añadir qué hiciste')).not.toBeInTheDocument()
+  })
+
+  it('criterio 537 — la sesión en marcha no ofrece la línea: eso es la tajada 2', () => {
+    dayFollowUpsQuery = ready([
+      { ...withNote('f9', 'otra', 'Llamada con el banco', '09:10', 0, null), durationMinutes: null, isOpen: true },
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const row = screen.getByText('Llamada con el banco').closest('li')!
+    expect(within(row).getByText('en marcha')).toBeInTheDocument()
+    expect(within(row).queryByText('añadir qué hiciste')).not.toBeInTheDocument()
+  })
+
+  it('criterio 538 — tocar la nota de un bloque abre el editor con **esa** sesión', async () => {
+    const openNoteSheet = vi.fn()
+    dayFollowUpsQuery = ready([
+      withNote('f1', 'a-b1', 'Bañarme', '08:00', 45, 'Con agua fría'),
+    ])
+    renderWithNoteSheet(openNoteSheet)
+
+    fireEvent.click(within(planRow('Bañarme')).getByRole('button', { name: /Con agua fría/ }))
+
+    expect(openNoteSheet).toHaveBeenCalledTimes(1)
+    expect(openNoteSheet.mock.calls[0]![0]).toMatchObject({ id: 'f1', notes: 'Con agua fría' })
+  })
+
+  it('criterio 538 — «añadir qué hiciste» abre el editor sobre la sesión suelta', () => {
+    const openNoteSheet = vi.fn()
+    dayFollowUpsQuery = ready([
+      withNote('f9', 'otra', 'Llamada con el banco', '11:40', 32, null),
+    ])
+    renderWithNoteSheet(openNoteSheet)
+
+    const row = screen.getByText('Llamada con el banco').closest('li')!
+    fireEvent.click(within(row).getByRole('button', { name: 'añadir qué hiciste' }))
+
+    expect(openNoteSheet).toHaveBeenCalledTimes(1)
+    expect(openNoteSheet.mock.calls[0]![0]).toMatchObject({ id: 'f9', notes: null })
   })
 })

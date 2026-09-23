@@ -55,7 +55,11 @@ import {
   collectDayClosing,
   plannedSessionMinutes,
 } from '@/features/vida/utils/vida-execution.utils'
-import type { ExecutionEntry, NoDataSlice } from '@/features/vida/utils/vida-execution.utils'
+import type {
+  BlockExecution,
+  ExecutionEntry,
+  NoDataSlice,
+} from '@/features/vida/utils/vida-execution.utils'
 import { buildGoalArcs } from '@/features/vida/utils/vida-goals.utils'
 import type { VidaBlockHint as BlockHint } from '@/features/vida/utils/vida-patterns.utils'
 import {
@@ -113,6 +117,18 @@ const SUBTITLE = 'Tu día repartido, y dónde te queda sitio.'
 /** Un hueco de un día pasado no ofrece nada: se mira (D3, criterio 38). */
 const NO_SUGGESTIONS: GapSuggestions = { visible: [], hiddenCount: 0, templateCount: 0 }
 
+/**
+ * **La sesión de un bloque cuya nota se puede leer y escribir** (FEAT-018).
+ *
+ * Solo la que ya **terminó**: mientras corre, la nota se ve y se edita en la
+ * barra de la sesión (tajada 2) y no en la fila —criterio 537—. Es el mismo
+ * `span.session` que ya usa el «Corregir» del «···» del bloque.
+ */
+function blockNoteSession(execution: BlockExecution | undefined): ActivityFollowUp | null {
+  if (!execution || execution.isRunning) return null
+  return execution.span.session
+}
+
 /** El subtítulo cambia con el día que se mira: la pantalla sigue siendo «Hoy». */
 function subtitleFor(date: string, isToday: boolean, isPast: boolean): string {
   if (isToday) return SUBTITLE
@@ -165,7 +181,7 @@ export function VidaHoyPage() {
   // por React Query (criterio 8). El cierre completo lo abre el layout, que es
   // quien monta el modal.
   const openSession = useVidaOpenSession()
-  const { openFinishModal } = useVidaSessionUi()
+  const { openFinishModal, openNoteSheet } = useVidaSessionUi()
   const sessionActions = useVidaSessionActions({ onAddNote: openFinishModal })
   // «▶ Empezar» solo en **hoy**: en un día futuro no ha llegado y en uno pasado
   // se registra, que es la tajada 3 (criterio 1, su mitad de días). La otra
@@ -846,6 +862,15 @@ export function VidaHoyPage() {
                 ? (session) => openLogSheet({ mode: 'edit', session })
                 : undefined
             }
+            // **Qué hiciste** (FEAT-018, criterios 535 a 538). Se ofrece en los
+            // mismos días en que se registra —hoy y pasados— y **nunca** sobre
+            // una sesión en marcha: esa línea es de la tajada 2.
+            note={entry.span.session.notes}
+            onEditNote={
+              canLogPast && !entry.span.isRunning
+                ? () => openNoteSheet(entry.span.session)
+                : undefined
+            }
           />
         )
       }
@@ -902,6 +927,16 @@ export function VidaHoyPage() {
               // se corrige, y también en un día pasado.
               onEditSession={
                 canLogPast ? (session) => openLogSheet({ mode: 'edit', session }) : undefined
+              }
+              // **Qué hiciste** (FEAT-018, criterios 535 a 538). La nota sale de
+              // la sesión que el cruce de D1 asignó a **este** bloque, y solo
+              // cuando ya terminó: mientras corre, la nota se edita desde la
+              // barra (tajada 2).
+              note={blockNoteSession(execution.byBlockId[entry.id])?.notes ?? null}
+              onEditNote={
+                canLogPast && blockNoteSession(execution.byBlockId[entry.id])
+                  ? () => openNoteSheet(blockNoteSession(execution.byBlockId[entry.id])!)
+                  : undefined
               }
             />
             {/* **Pegado al bloque y debajo de él** (criterios 87 y 94): así

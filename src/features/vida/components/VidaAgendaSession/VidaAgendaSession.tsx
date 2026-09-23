@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { VidaNoteLine } from '@/features/vida/components/VidaNoteLine'
 import { useDeleteActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { ExecutionSessionEntry } from '@/features/vida/utils/vida-execution.utils'
@@ -18,6 +19,20 @@ type VidaAgendaSessionProps = {
    * —ahí se termina, no se corrige— y en cualquier pantalla que no lo cablee.
    */
   onEdit?: (session: ActivityFollowUp) => void
+
+  /* ── «Qué hiciste» (FEAT-018, tajada 1) ─────────────────────────────────
+   *
+   * Aditivo: sin estas dos props la fila se pinta exactamente como antes.
+   */
+
+  /** Lo que se escribió en esta sesión. Se pinta bajo el nombre (criterio 535). */
+  note?: string | null
+  /**
+   * Abre el editor de la nota. **Sin esto no se ofrece el «＋ añadir qué
+   * hiciste»**: es lo que pasa en un día futuro, donde no hay nada que contar
+   * (criterios 536 y 537).
+   */
+  onEditNote?: () => void
 }
 
 /**
@@ -50,7 +65,12 @@ type VidaAgendaSessionProps = {
  * desde la barra del módulo, y corregir la hora de algo que aún no ha acabado
  * sería corregir lo que todavía no se sabe.
  */
-export function VidaAgendaSession({ entry, onEdit }: VidaAgendaSessionProps) {
+export function VidaAgendaSession({
+  entry,
+  onEdit,
+  note = null,
+  onEditNote,
+}: VidaAgendaSessionProps) {
   const { confirm } = useConfirmDialog()
   const removeMutation = useDeleteActivityFollowUpMutation()
   const session = entry.span.session
@@ -119,6 +139,13 @@ export function VidaAgendaSession({ entry, onEdit }: VidaAgendaSessionProps) {
         </span>
         <div className={styles.body}>
           <p className={styles.name}>{entry.span.title}</p>
+          {/* Lo que hiciste dentro de este rato (criterio 535), entre el nombre
+              y la hora. Sin nota y sin poder escribirla, no deja hueco. */}
+          <VidaNoteLine
+            text={note}
+            placeholder={onEditNote ? 'añadir qué hiciste' : null}
+            onEdit={onEditNote}
+          />
           <p className={styles.meta}>
             {entry.rangeLabel} · {entry.durationLabel}
             {entry.span.isRunning ? (

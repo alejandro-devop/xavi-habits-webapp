@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Outlet } from 'react-router'
 import { VidaFinishSessionModal } from '@/features/vida/components/VidaFinishSessionModal'
+import { VidaNoteSheet } from '@/features/vida/components/VidaNoteSheet'
 import { VidaSessionBar } from '@/features/vida/components/VidaSessionBar'
 import { VidaStaleSessionPrompt } from '@/features/vida/components/VidaStaleSessionPrompt'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
@@ -9,8 +10,10 @@ import {
   useVidaSessionPlannedMinutes,
 } from '@/features/vida/hooks/useVidaOpenSession'
 import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActions'
+import { useVidaSessionNote } from '@/features/vida/hooks/useVidaSessionNote'
 import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import { formatTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 import styles from './VidaModuleLayout.module.scss'
@@ -56,10 +59,26 @@ export function VidaModuleLayout() {
     setFinishOpen(true)
   }
 
+  // **Solo la nota** (FEAT-018). Estado propio y `key` propia por el mismo
+  // motivo que el cierre completo: se llega desde la fila del día —hoy o
+  // cualquier día pasado— y desde la barra, y una hoja por puerta serían dos
+  // estados que se contradicen.
+  const [noting, setNoting] = useState<ActivityFollowUp | null>(null)
+  const [noteOpen, setNoteOpen] = useState(false)
+  const [noteSession, setNoteSession] = useState(0)
+
+  function openNote(target: ActivityFollowUp) {
+    setNoting(target)
+    setNoteSession((value) => value + 1)
+    setNoteOpen(true)
+  }
+
   const actions = useVidaSessionActions({ onAddNote: openFinish })
+  const { saveNote } = useVidaSessionNote()
   // Lo que el bloque en marcha de la agenda necesita del layout: abrir el
-  // cierre completo. Va por contexto porque entre los dos hay un `Outlet`.
-  const sessionUi = useMemo(() => ({ openFinishModal: openFinish }), [])
+  // cierre completo y el editor de la nota. Va por contexto porque entre los
+  // dos hay un `Outlet`.
+  const sessionUi = useMemo(() => ({ openFinishModal: openFinish, openNoteSheet: openNote }), [])
 
   // Sin sesión de usuario no se pinta nada de esto (criterio 64): ni barra, ni
   // pregunta, ni hueco reservado.
@@ -117,6 +136,27 @@ export function VidaModuleLayout() {
           onDiscard={actions.discard}
         />
       ) : null}
+
+      {/* El editor corto de la nota. **Es una pregunta, no un campo**
+          (criterio 532): «¿Qué estás haciendo?» mientras corre, «¿Qué hiciste?»
+          en cualquier otro momento. */}
+      {noting ? (
+        <VidaNoteSheet
+          key={noteSession}
+          open={noteOpen}
+          onClose={() => setNoteOpen(false)}
+          title={noting.isOpen ? '¿Qué estás haciendo?' : '¿Qué hiciste?'}
+          subtitle={noteSubtitle(noting)}
+          initialValue={noting.notes ?? ''}
+          onSave={(notes) => saveNote(noting, notes)}
+        />
+      ) : null}
     </div>
   )
+}
+
+/** «Trabajo en lululemon · 11:40»: de qué rato hablamos, sin repetir la pregunta. */
+function noteSubtitle(session: ActivityFollowUp): string {
+  const title = session.activity?.title ?? 'Actividad'
+  return `${title} · ${formatTimeForDisplay(session.startTime)}`
 }

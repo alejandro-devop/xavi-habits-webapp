@@ -1,0 +1,90 @@
+/* La línea de «qué hiciste». Una sola línea, siempre: lo que no cabe se recorta
+   con puntos suspensivos y **nunca** ensancha la fila (criterios 533 y 541).
+
+   Los tres ingredientes que sostienen el recorte, y que no se pueden quitar:
+   `min-width: 0` (sin esto un flex-item no baja de su contenido), `max-width:
+   100%` y el `overflow: hidden` del texto. Medido a 375 px con una nota de 420
+   caracteres. */
+.line {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0.1rem 0 0;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  background: none;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+/* Como botón se comporta como botón, pero no se disfraza de botón: en la fila
+   del día es texto que se puede tocar. */
+button.line {
+  cursor: pointer;
+
+  &:hover .text {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 0.4rem);
+  }
+}
+
+.mark {
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  font-size: 0.6875rem;
+}
+
+.text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Con nota escrita el texto sube de tono: se lee como contenido, no como un
+   hueco por rellenar. */
+.line[data-filled] {
+  color: var(--color-text);
+
+  .mark {
+    color: color-mix(in srgb, var(--aura-ring-from, #10b981) 70%, var(--color-text));
+  }
+}
+
+/* ── La barra de la sesión en marcha (tajada 2) ──────────────────────────── */
+
+/* Ahí la línea es una caja: punteada mientras está vacía, sólida en mint cuando
+   tiene texto. Es el `.noteline` del render 19. */
+.line[data-tone='running'] {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px dashed color-mix(in srgb, var(--color-text) 20%, transparent);
+  border-radius: 0.7rem;
+  font-size: 0.8125rem;
+
+  &[data-filled] {
+    border-style: solid;
+    border-color: color-mix(in srgb, var(--aura-ring-from, #10b981) 32%, transparent);
+    background: color-mix(in srgb, var(--aura-ring-from, #10b981) 7%, transparent);
+  }
+}
+
+/* ── La fila del ítem de plantilla (tajada 4) ────────────────────────────── */
+
+.line[data-tone='plan'] {
+  color: var(--color-text-secondary);
+}

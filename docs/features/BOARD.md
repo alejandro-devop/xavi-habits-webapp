@@ -27,7 +27,57 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
-| FEAT-019 | building | 2/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+| FEAT-019 | building | 3/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+
+**FEAT-019 `building` 3/4** (2026-09-22, revisor). **Tajada 3 aceptada: el
+sábado sin arco.** Los seis criterios de lectura (575–580) cumplidos con
+evidencia propia, y el 584 medido por mí en los dos repositorios (front:
+typecheck limpio, lint 14/0, test 2 fallos de 1935, build con **CSS 274,32 kB
+clavado**; API: `tsc` exit 0, `npm test` 3 fallos de 576 con las mismas 6
+suites, `vida-goal.service` 9/9). Comprobado que las tajadas 1 y 2 siguen
+intactas —ni `VidaGoalArc.tsx` ni ningún `.module.scss` están tocados— y que
+**el test movido del criterio 571 no afloja nada**: mismas dos aserciones, solo
+cambia el sábado 19 por el lunes 21 (con el sábado `arcs[0]` habría sido
+`undefined`). `promptAllowed` y el filtro del arco salen del **mismo**
+`buildGoalArcs` y la página solo lo consume: no pueden divergir. **Hallazgo que
+corrige al constructor: el fallo del orden de despliegue es peor de lo
+descrito.** Validé los documentos nuevos contra el SDL desplegado hoy y cinco
+de seis fallan con «Cannot query field "activeDays"» — es un error de
+**validación**, el servidor no devuelve datos y `graphqlRequest` lanza: si el
+front sale antes que el API se cae **el catálogo entero** de Vida (nueve
+pantallas), cualquier día, no «la pregunta en vez del arco un lunes». **No hay
+tolerancia barata en el front** (el fallo ocurre antes de leer la respuesta):
+el orden API-primero es la única red, y la referencia no es «ya hice push» sino
+**el workflow en verde**, porque Render auto-despliega antes de que el job de
+migración termine. Menores: la 070 no es reejecutable a mano (el `ADD
+CONSTRAINT` no admite `IF NOT EXISTS`) y su `DOWN` va comentado (precedente de
+la 069). Pendiente y solo del usuario: push + migración y todo el recorrido en
+`/app/*` (login; el 5173 sigue apagado). Sigue sin commitear en los dos
+repositorios. Siguiente: **tajada 4** (elegir los días en Ajustes, 581–583).
+
+**FEAT-019 `in-review` 3/4** (2026-09-22, constructor). **Tajada 3 construida:
+el sábado sin arco.** `vida_goals` gana `active_days TEXT[] NOT NULL DEFAULT
+ARRAY['monday'…'friday']` (**migración 070, nueva y sin desplegar**), el dato
+viaja dentro de la categoría y `buildGoalArcs` saca del reparto a las metas que
+no cuentan el día mostrado **antes de sumar nada**: un sábado no hay arco, ni
+semáforo, ni nodo oculto con ceros. La pregunta «¿Cuál de estas es tu trabajo?»
+cuelga del **mismo objeto** (`goalArcs.promptAllowed`), así que no puede salir
+un sábado mientras el arco no sale; sin metas en el catálogo se compara con
+`DEFAULT_GOAL_ACTIVE_DAYS`, la constante que duplica el `DEFAULT` de la
+columna. **La migración la probé contra un Postgres de verdad** (contenedor
+efímero, borrado): la fila que ya existe se rellena sola con los cinco días en
+el mismo `ALTER TABLE` y el `INSERT` de `ensureDefaultGoal` —que no nombra la
+columna— sigue creando metas correctas. **El riesgo que hay que mirar primero:
+el orden del despliegue**; los cinco documentos del catálogo ya piden
+`activeDays`, que es no nulo, así que **el API va antes que el front** o un
+lunes saldrá la pregunta en lugar del arco. Líneas base: API `tsc` limpio y
+`npm test` **3 fallos / 576 con las mismas 6 suites rotas** (ninguna de Vida;
+la de `vida-goal.service` 9/9), eslint sin errores nuevos en lo tocado; front
+typecheck limpio, lint **14/0**, test **2 fallos de 1935** (los de
+`SearchSelect`; +10 son los casos nuevos), build exit 0, inicial 1.129,25 kB y
+**CSS 274,32 kB clavado** (no se tocó SCSS). Sin commitear y **sin push** en
+ninguno de los dos repositorios. Lo no verificable: todo `/app/*` (login) — y
+el 5173 estuvo apagado toda la sesión— y la 070, que no está desplegada.
 
 **FEAT-019 `building` 2/4** (2026-09-22, revisor, **2.ª vuelta**). **Tajada 2
 aceptada: el semáforo, con el cero resuelto.** El punto del arranque

@@ -16,6 +16,7 @@ export const ACTIVITY_CATEGORIES_QUERY = `
         icon
         color
         targetMinutes
+        activeDays
         orderIndex
       }
     }
@@ -40,6 +41,7 @@ export const ACTIVITY_CATEGORY_QUERY = `
         icon
         color
         targetMinutes
+        activeDays
         orderIndex
       }
     }
@@ -64,6 +66,7 @@ export const ACTIVITY_CATEGORY_ADD_MUTATION = `
         icon
         color
         targetMinutes
+        activeDays
         orderIndex
       }
     }
@@ -88,6 +91,7 @@ export const ACTIVITY_CATEGORY_EDIT_MUTATION = `
         icon
         color
         targetMinutes
+        activeDays
         orderIndex
       }
     }
@@ -118,6 +122,7 @@ export const ACTIVITY_CATEGORY_GOAL_SET_MUTATION = `
         icon
         color
         targetMinutes
+        activeDays
         orderIndex
       }
     }

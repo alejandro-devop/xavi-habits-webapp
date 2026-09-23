@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790133628.9679358,
-    "ast_hash": "f823249a75e0ff9ff871eff663b5eb77",
+    "mtime": 1790137540.0111482,
+    "ast_hash": "dc94a4fb5ba361ee0b1b1763c1facf92",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2565,8 +2565,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/graphql/activity-categories.graphql.ts": {
-    "mtime": 1790115019.1725116,
-    "ast_hash": "41a88a93dcafa0579399135fa27d7e7b",
+    "mtime": 1790137493.167112,
+    "ast_hash": "275e91e272b93a8e23bef5684cae10b5",
     "semantic_hash": ""
   },
   "src/features/vida/graphql/activity-followups.graphql.ts": {
@@ -2885,8 +2885,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaCategoriasPage.test.tsx": {
-    "mtime": 1790115262.4085803,
-    "ast_hash": "a6ae18a27a0038e71498c2149fb4c23d",
+    "mtime": 1790137600.4742012,
+    "ast_hash": "e13134964ae4392b6b4e3a6e16c2c42b",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaCategoriasPage.tsx": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790133658.3910048,
-    "ast_hash": "1e247ccd49e3517b7a2ca558b1ed4021",
+    "mtime": 1790137674.4182754,
+    "ast_hash": "43d65f39a0fae78b0abe0daaebe7218a",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3865,8 +3865,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/types/vida-goal.types.ts": {
-    "mtime": 1790115019.1775117,
-    "ast_hash": "9e3b1e93deb3761b957961f39ac233ed",
+    "mtime": 1790137498.737116,
+    "ast_hash": "b2c07b523f1122c3aa3eb19178b34aaa",
     "semantic_hash": ""
   },
   "docs/features/FEAT-017-vida-mas-iconos-y-colores.md": {
@@ -3890,13 +3890,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-goals.utils.test.ts": {
-    "mtime": 1790133643.3319693,
-    "ast_hash": "53dda55443b8aec8b8bf52e146d0e671",
+    "mtime": 1790137701.677305,
+    "ast_hash": "205b476652ca818fec04188df97d86e5",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-goals.utils.ts": {
-    "mtime": 1790133620.962917,
-    "ast_hash": "cc47f5d70d404cc218333d26a6a09448",
+    "mtime": 1790137526.6721375,
+    "ast_hash": "0bcc31257540aef1d0c37a1d1ba8170a",
     "semantic_hash": ""
   },
   "docs/features/FEAT-018-vida-que-hice.md": {
@@ -3980,8 +3980,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-019-vida-arco-revisado.md": {
-    "mtime": 1790134468.6130116,
-    "ast_hash": "9069a0bfcf6820f03f803c40813b5b82",
+    "mtime": 1790137293.3270216,
+    "ast_hash": "a5df66b827860f31ace1e9678e94ac2f",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260923_014157_se_hablan_hoy_getdaybudget_y_buildgoalarcs__el_pr.md": {

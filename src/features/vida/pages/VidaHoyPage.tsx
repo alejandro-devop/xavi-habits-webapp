@@ -1218,13 +1218,19 @@ export function VidaHoyPage() {
                 <Skeleton width="100%" height={176} radius="1.25rem" />
               </div>
             ) : goalArcs.arcs.length === 0 ? (
-              <VidaGoalPrompt
-                categories={categories}
-                onPick={(categoryId) =>
-                  setGoalMutation.mutate({ categoryId, attached: true })
-                }
-                isBusy={setGoalMutation.isPending}
-              />
+              // Un día que ninguna meta cuenta —un sábado— no enseña la
+              // pregunta tampoco: el mismo `goalArcs` decide las dos cosas, así
+              // que no pueden divergir (criterio 580). Si la pregunta saliera,
+              // tocar una categoría no haría aparecer ningún arco.
+              goalArcs.promptAllowed ? (
+                <VidaGoalPrompt
+                  categories={categories}
+                  onPick={(categoryId) =>
+                    setGoalMutation.mutate({ categoryId, attached: true })
+                  }
+                  isBusy={setGoalMutation.isPending}
+                />
+              ) : null
             ) : (
               <VidaGoalArcRow
                 arcs={goalArcs.arcs}

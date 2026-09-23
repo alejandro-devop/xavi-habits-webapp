@@ -24,7 +24,9 @@
  */
 import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
 import type { VidaGoal } from '@/features/vida/types/vida-goal.types'
+import { VIDA_DAY_ORDER, getVidaDayOfWeek } from '@/features/vida/utils/vida-date.utils'
 import type { SessionSpan } from '@/features/vida/utils/vida-execution.utils'
 import { toSessionSpans } from '@/features/vida/utils/vida-execution.utils'
 import {
@@ -45,6 +47,31 @@ import {
  * excavación por la función.
  */
 export const GOAL_FIT_OK_MARGIN_MINUTES = 60
+
+/**
+ * **Con qué días nace una meta**, y contra qué se compara cuando todavía no hay
+ * ninguna (FEAT-019, criterio 575).
+ *
+ * De lunes a viernes: el mismo valor que el `DEFAULT` de `vida_goals.active_days`
+ * (migración 070 del API). Está aquí duplicado a propósito y no llega por la
+ * red: mientras **no** hay ninguna meta en el catálogo no hay `activeDays` que
+ * mirar, y aun así hay que decidir si un sábado se hace la pregunta «¿cuál de
+ * estas es tu trabajo?». Si el día de mañana cambia el `DEFAULT` de la columna,
+ * cambia esta línea con él.
+ */
+export const DEFAULT_GOAL_ACTIVE_DAYS: readonly VidaDayOfWeek[] = VIDA_DAY_ORDER.slice(0, 5)
+
+/**
+ * **¿Cuenta esta lista de días el día mostrado?**
+ *
+ * Un sábado para una meta de lunes a viernes no es un día en rojo: la meta
+ * **ese día no existe** (criterio 578). Por eso el filtro pasa por quitar la
+ * meta del reparto —no hay arco, ni semáforo, ni nodo oculto—, y no por pintar
+ * un arco vacío.
+ */
+function countsOn(activeDays: readonly VidaDayOfWeek[], date: string): boolean {
+  return activeDays.includes(getVidaDayOfWeek(date))
+}
 
 /** Un arco: una meta, lo que llevas de ella hoy y la hora que sale de ahí. */
 export type VidaGoalArc = {
@@ -164,6 +191,21 @@ export type VidaGoalArcs = {
   noDataMinutes: number
   /** «2 h 40 min sin dato hoy.» Cadena vacía si no hay ninguno. */
   noDataLabel: string
+  /**
+   * **Si este día admite la pregunta** «¿Cuál de estas es tu trabajo?»
+   * (criterio 580).
+   *
+   * `false` un día que ninguna meta cuenta: **el mismo dato que esconde el arco
+   * esconde la pregunta**, y por eso no pueden divergir. Si la pregunta saliera
+   * un sábado, tocar una categoría no haría aparecer ningún arco —lo que el
+   * criterio 501 de FEAT-016 promete— y el usuario se quedaría mirando un hueco
+   * después de contestar.
+   *
+   * Sin ninguna meta en el catálogo todavía no hay `activeDays` que mirar: se
+   * compara con `DEFAULT_GOAL_ACTIVE_DAYS`, que es con lo que nacerá la meta que
+   * cree esa misma pregunta.
+   */
+  promptAllowed: boolean
 }
 
 export type BuildGoalArcsInput = {
@@ -266,6 +308,21 @@ export function buildGoalArcs({
     })
   }
 
+  // **El día no laborable se resuelve aquí y en ningún otro sitio.** Las metas
+  // que no cuentan hoy salen del reparto **antes** de sumar nada: así no hay
+  // arco, ni semáforo, ni un nodo escondido con ceros (criterios 576 y 578). Lo
+  // que se registre ese día se sigue guardando igual —esto no toca ninguna
+  // sesión, solo contra qué se suman (criterio 577)—, y cada meta se mide por
+  // **sus propios** días (criterio 579).
+  const goalsInCatalog = tallies.size
+  for (const [goalId, tally] of tallies) {
+    if (!countsOn(tally.goal.activeDays, date)) tallies.delete(goalId)
+  }
+  // Sin ninguna meta en el catálogo la pregunta se rige por los días con los que
+  // nacería la meta que ella misma crea; con metas, por si alguna cuenta hoy.
+  const promptAllowed =
+    goalsInCatalog === 0 ? countsOn(DEFAULT_GOAL_ACTIVE_DAYS, date) : tallies.size > 0
+
   const spans = toSessionSpans({ followUps, date, nowMinutes })
   let noDataMinutes = 0
   for (const span of spans) {
@@ -296,6 +353,7 @@ export function buildGoalArcs({
       noDataMinutes > 0
         ? `${formatDurationMinutes(noDataMinutes)} sin dato ${isPastDay ? 'ese día' : 'hoy'}.`
         : '',
+    promptAllowed,
   }
 }
 

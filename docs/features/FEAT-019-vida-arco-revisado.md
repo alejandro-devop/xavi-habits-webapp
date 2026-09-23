@@ -353,7 +353,7 @@ hasta el 558. Esta feature empieza en el **559**.)
 |---|---|---|
 | 1 | **Lo que falta, dentro del arco.** Cambia qué se pinta como número grande cuando la meta no está cruzada, y hace visible la hora que antes estaba dentro. Solo front, sin migración: corrige la confusión original del usuario de inmediato. Criterios 559–565. | **accepted** |
 | 2 | **El semáforo, lectura B.** El color verde/naranja/rojo según si da tiempo hoy, usando un dato que `VidaDayBudget` ya calcula. Solo front, sin migración; usable sin depender de la tajada 1 (aunque tiene más sentido junto a ella). Criterios 566–574. | **accepted** (2.ª vuelta) |
-| 3 | **Solo los días laborables.** Migración en el API, filtro del arco y la pregunta por día de la semana, y la fila de días en Ajustes → Vida. La única que toca el backend. Criterios 575–584. | pending |
+| 3 | **Solo los días laborables.** Migración en el API, filtro del arco y la pregunta por día de la semana, y la fila de días en Ajustes → Vida. La única que toca el backend. Criterios 575–584. | **partida en la sección 2**: la 3 (575–580, camino de lectura) **accepted**; los 581–583 van en la 4, pending |
 
 Tres tajadas: la 1 es la más barata y la más urgente —es literalmente lo que
 el usuario no entendió—, y no depende de nada; la 2 añade una capa visual
@@ -858,7 +858,7 @@ Hoy un sábado; la 4, tocando un botón en Ajustes y volviendo a Hoy.
 |---|---|---|---|---|
 | 1 | **Lo que falta, dentro del arco.** `arcValue = formatDurationFromMinutes(target − worked)`, `arcCaption = ['Te faltan']` (una línea), y la frase de la hora pasa a **visible** solo en ese estado. Sin API. | `utils/vida-goals.utils.ts` (`toArc`, tipo `VidaGoalArc` + `variant`), `components/VidaGoalArc/VidaGoalArc.tsx` (clase del `<p>` + geometría del render), `VidaGoalArc.module.scss` (`.line`), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 559, 560, 561, 562, 563, 564, 565 | **accepted** |
 | 2 | **El semáforo, lectura B.** `dayEnd` entra en `buildGoalArcs`; salen `missingMinutes`, `fitMinutes`, `fitLevel`; el arco pinta `data-fit`. Sin API. | `utils/vida-goals.utils.ts` (`BuildGoalArcsInput`, `GOAL_FIT_OK_MARGIN_MINUTES`), `pages/VidaHoyPage.tsx` (la llamada a `buildGoalArcs` y su `useMemo`), `components/VidaGoalArc/VidaGoalArc.tsx` (`data-fit`), `VidaGoalArc.module.scss`, `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` (un caso nuevo) | 566, 567, 568, 569, 570, 571, 572, 573, 574 | **accepted** (2.ª vuelta) |
-| 3 | **El sábado sin arco (camino de lectura).** Migración 070, `activeDays` en servicio/SDL/tipos, y el filtro por día en la util + la pregunta atada al mismo dato. **Requiere que el usuario haga push y se despliegue** antes de verse. | API: `migrations/070_vida_goals_active_days.sql`, `types/services/vida.types.ts`, `services/vida-goal.service.ts` (`GoalRow`, `mapGoal`), `graphql/modules/vida/vida.schema.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front: `types/vida-goal.types.ts`, `graphql/activity-categories.graphql.ts` (5 sub-selecciones), `graphql/schema/vida.schema.graphql` (recopiar), `utils/vida-goals.utils.ts` (`DEFAULT_GOAL_ACTIVE_DAYS`, filtro, `promptAllowed`), `pages/VidaHoyPage.tsx` (la rama de la pregunta), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 575, 576, 577, 578, 579, 580 | pending |
+| 3 | **El sábado sin arco (camino de lectura).** Migración 070, `activeDays` en servicio/SDL/tipos, y el filtro por día en la util + la pregunta atada al mismo dato. **Requiere que el usuario haga push y se despliegue** antes de verse. | API: `migrations/070_vida_goals_active_days.sql`, `types/services/vida.types.ts`, `services/vida-goal.service.ts` (`GoalRow`, `mapGoal`), `graphql/modules/vida/vida.schema.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front: `types/vida-goal.types.ts`, `graphql/activity-categories.graphql.ts` (5 sub-selecciones), `graphql/schema/vida.schema.graphql` (recopiar), `utils/vida-goals.utils.ts` (`DEFAULT_GOAL_ACTIVE_DAYS`, filtro, `promptAllowed`), `pages/VidaHoyPage.tsx` (la rama de la pregunta), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 575, 576, 577, 578, 579, 580 | **accepted** |
 | 4 | **Elegir los días (camino de escritura).** Mutación `vidaGoalDaysSet` y la fila de siete botones en Ajustes → Vida. | API: `graphql/modules/vida/vida.schema.ts` (input + mutación), `validators/schemas/vida.schemas.ts`, `graphql/modules/vida/vida.resolvers.ts`, `services/vida-goal.service.ts` (`setGoalDays`), `tests/unit/validators/vida.schemas.test.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front **nuevos**: `graphql/vida-goals.graphql.ts`, `api/vida-goals.api.ts`, `hooks/useVidaGoals.ts`; **modificados**: `graphql/contracts.test.ts`, `pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`) | 581, 582, 583 | pending |
 
 **584** (`typecheck` limpio; lint y tests no peores que la línea base **de los
@@ -1605,6 +1605,218 @@ vuelta anterior (ninguno nuevo, ninguno borrado) más este expediente y el
 7. Y si entras con la conexión lenta: el arco **no** debe parpadear de verde a
    rojo al cargar. Sale sin color hasta que se sabe a qué hora acaba tu día.
 
+### Tajada 3 — El sábado sin arco (camino de lectura)
+
+**Resumen para quien revise:**
+1. **Un sábado ya no hay arco, ni semáforo, ni pregunta.** `vida_goals` gana
+   `active_days TEXT[] NOT NULL DEFAULT ARRAY['monday'…'friday']` (migración
+   **070**, sin desplegar), el dato viaja dentro de la categoría
+   (`goal.activeDays`) y `buildGoalArcs` saca del reparto a las metas que no
+   cuentan el día mostrado **antes de sumar nada**.
+2. La pregunta «¿Cuál de estas es tu trabajo?» cuelga del **mismo objeto**
+   (`goalArcs.promptAllowed`), así que no puede salir un sábado mientras el
+   arco no sale.
+3. **Lo que más probablemente he roto:** el **orden del despliegue**. Los cinco
+   documentos GraphQL del catálogo ya piden `activeDays`, que es un campo
+   **no nulo**. Si el front sale antes de que la migración 070 corra, el
+   resolver de `ActivityCategory.goal` devolverá una meta sin ese campo, el
+   campo no nulo hará nulo el `goal` entero y **el usuario verá la pregunta en
+   vez de su arco, un lunes**. El API va primero, y con su migración. Segundo
+   candidato: el test del criterio 571 («un día futuro de la tira, sin reloj»)
+   usaba el **sábado** 19; lo moví al lunes 21 porque ese día ya no produce
+   arco — misma aserción, otro día.
+
+**Qué se construyó:**
+
+*API (`~/Developer/xavi-platform-node`) — sin commitear, sin push:*
+
+- **`migrations/070_vida_goals_active_days.sql` (nuevo).** `ADD COLUMN IF NOT
+  EXISTS active_days TEXT[] NOT NULL DEFAULT ARRAY['monday','tuesday',
+  'wednesday','thursday','friday']::TEXT[]` + el `CHECK (cardinality >= 1)` en
+  su propio `ALTER` (para que el `DOWN`, comentado como en la 069, pueda
+  quitarlo suelto). El último número era el 069; lo comprobé al escribirla.
+- `src/types/services/vida.types.ts` — `VidaGoal.activeDays: string[]`.
+- `src/services/vida-goal.service.ts` — `GoalRow.active_days` y
+  `mapGoal().activeDays`. **`ensureDefaultGoal` no se ha tocado**: su `INSERT`
+  no lista la columna y el `DEFAULT` hace el trabajo (probado, abajo).
+- `src/graphql/modules/vida/vida.schema.ts` — `activeDays: [VidaDayOfWeek!]!`
+  en `type VidaGoal`, con el enum que **ya existía** en el mismo módulo.
+- `tests/unit/services/vida-goal.service.test.ts` — `active_days` en el
+  `goalRow()`, la aserción de que el upsert **no** nombra la columna, un caso
+  de meta de siete días y uno nuevo de `listGoals`.
+
+*Front (este repositorio) — sin commitear:*
+
+- `types/vida-goal.types.ts` — `activeDays: VidaDayOfWeek[]`, importando el
+  tipo de `vida-item.types` (el vocabulario de la plantilla, sin traducir nada).
+- `graphql/activity-categories.graphql.ts` — `activeDays` en **las cinco**
+  sub-selecciones `goal { … }`.
+- `graphql/schema/vida.schema.graphql` — **recopiado del repo hermano**, no
+  editado a mano: comprobé antes que el cuerpo vendorizado era **literalmente
+  igual** al de la cadena `gql` del API (único diff: mi campo nuevo) y lo
+  regeneré desde ahí, actualizando la cabecera de origen.
+- `utils/vida-goals.utils.ts` — `DEFAULT_GOAL_ACTIVE_DAYS`, `countsOn()`, el
+  filtro del `Map` de tallies antes de sumar, y `promptAllowed` en
+  `VidaGoalArcs`.
+- `pages/VidaHoyPage.tsx` — un solo toque: `goalArcs.promptAllowed ? <VidaGoalPrompt …/> : null`
+  dentro de la rama que ya existía. **Ni una consulta nueva, ni una fecha más
+  al componente de la pregunta.**
+- `utils/vida-goals.utils.test.ts` (+5 casos), `pages/VidaHoyPage.test.tsx`
+  (+5 casos), `pages/VidaCategoriasPage.test.tsx` (fixture).
+
+**Por qué así, y qué descarté:**
+
+- **`promptAllowed` sale de `buildGoalArcs` y no de la página.** Es lo que pide
+  la sección 2 y el motivo se sostiene solo: si la página volviera a preguntar
+  por el día de la semana habría **dos** condiciones que mantener iguales, y el
+  día que divergieran el usuario tocaría una categoría un sábado y no vería
+  aparecer nada (el criterio 501 de FEAT-016 promete lo contrario).
+- **Sin metas en el catálogo, la pregunta se compara con
+  `DEFAULT_GOAL_ACTIVE_DAYS`** —la constante duplica el `DEFAULT` de la
+  columna, con un comentario que lo dice—. La alternativa era preguntar siempre
+  y dejar que el sábado el toque no enseñe nada: es exactamente el caso que el
+  criterio 580 prohíbe.
+- **El filtro quita la meta del reparto; no pinta un arco vacío ni uno oculto.**
+  Un `hidden`, o un arco con ceros, sería «hoy vas por 0 de 8»: un día en rojo
+  disfrazado. El 578 dice que ese día la meta **no existe**.
+- **No toqué `arcValue`/`variant` (tajada 1) ni `fitLevel`/`fitDot`
+  (tajada 2)**, ni una línea del SCSS del arco: el punto y el remate del trazo
+  siguen compartiendo centro y radio.
+
+**Verificación:**
+
+*La migración, contra un Postgres de verdad* (contenedor `postgres:17-alpine`
+efímero, creado y **borrado** en la misma sesión; no se tocó Neon ni ningún
+servicio del proyecto). Sobre una tabla que imita `vida_goals` con **una fila
+ya dentro**, el `-- UP` literal de la 070:
+
+```
+--- la fila que YA existia, despues de la 070 ---
+ slug |                active_days
+------+--------------------------------------------
+ work | {monday,tuesday,wednesday,thursday,friday}
+--- meta nueva por el INSERT de ensureDefaultGoal (no lista active_days) ---
+ user_id |                active_days
+---------+--------------------------------------------
+       2 | {monday,tuesday,wednesday,thursday,friday}
+--- el CHECK rechaza el array vacio ---
+ERROR:  new row for relation "vida_goals" violates check constraint "vida_goals_active_days_not_empty"
+--- y acepta un dia suelto ---
+ user_id | active_days
+---------+-------------
+       1 | {saturday}
+```
+
+Es decir: **la meta «Trabajo» que el usuario ya tiene en producción amanecerá
+con lunes a viernes sin ningún `UPDATE` de relleno**, y el upsert que no nombra
+la columna sigue creando metas correctas. (Lo que **no** pude comprobar: que en
+Neon esa fila exista y cuántas hay — es la base de producción detrás de un
+`DATABASE_URL` que no es mío.)
+
+*Puertas, las dos líneas base:*
+
+| Repo | Comando | Antes (ENVIRONMENT.md) | Ahora |
+|---|---|---|---|
+| API | `npx tsc --noEmit` | limpio, exit 0 | **limpio, exit 0** |
+| API | `npm test` | 3 fallos, 6 suites en rojo | **3 fallos / 576 (573 ok), 6 suites en rojo — las mismas seis** (habits ×3, sleep, standup, expense; ninguna de Vida). `vida-goal.service.test.ts`: **9/9 verde** |
+| API | `npx eslint` (solo lo tocado) | no es puerta; «no empeorar» | **sin errores nuevos**: el único de `vida.types.ts` está en la línea 2 (una unión que no toqué) y el «Parsing error» del test es de config, preexistente |
+| Front | `pnpm typecheck` / `tsc -b` | limpio | **limpio** |
+| Front | `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos |
+| Front | `pnpm test` | 2 fallos de 1925 | **2 fallos de 1935** — los dos de `SearchSelect`; +10 son los casos nuevos |
+| Front | `pnpm build` | inicial 1.128,98 kB · **CSS 274,32 kB** | exit 0 · inicial **1.129,25 kB** (+0,27, el código nuevo) · `app-icons` 620,20 kB · **CSS 274,32 kB, clavado** (no toqué SCSS; lo miro por lo de ayer) |
+
+**Criterios, uno a uno:**
+
+- **575 — la columna, y la meta automática nace L-V.** ✅ Migración 070 +
+  `GoalRow`/`mapGoal`/SDL, y la salida de psql de arriba: la fila existente y
+  la creada por el `INSERT` sin la columna salen las dos con los cinco días.
+  **Pendiente de despliegue**: la migración no ha corrido (la corre el push del
+  usuario).
+- **576 — un sábado no aparece el arco.** ✅ En la util
+  (`arcs` es `[]` un sábado con una meta L-V, con sesión registrada incluida) y
+  en la página, en jsdom con el reloj puesto en **sábado 19**: `queryByRole('article', {name:'Trabajo'})`
+  nulo **y** `document.querySelector('[data-fit]')` nulo —ni escondido ni con
+  ceros— y la agenda sigue pegada al presupuesto (sin hueco).
+- **577 — lo registrado ese día se sigue guardando.** ✅ Comprobado en los dos
+  lados de lo que esta tajada toca: en la util, la sesión de ese sábado **no**
+  se recoloca en «sin dato» (`noDataMinutes` 0, `noDataLabel` vacío) y el array
+  de `followUps` entra y sale intacto (`structuredClone` comparado); en la
+  página, la sesión «Working at lululemon» **se sigue viendo** en la línea del
+  día sin arco. Nada del camino de escritura (mutaciones de sesión, Revisión,
+  catálogo) se ha tocado.
+- **578 — no cuenta como día en rojo.** ✅ Es la misma evidencia del 576 más el
+  caso del **sábado pasado** (12/09): `arcs` vacío y `promptAllowed` falso, sin
+  ningún `fitLevel`. No existe ningún nodo de semáforo, pintado ni oculto.
+- **579 — cada meta por sus propios días.** ✅ Util: con «Trabajo» (L-V) y
+  «Estudiar» (7 días), el sábado sale `['Estudiar']` y el viernes
+  `['Trabajo','Estudiar']`. Página: el sábado, `article` «Trabajo» nulo y
+  `article` «Sueño» presente al mismo tiempo.
+- **580 — sin metas, el sábado tampoco pregunta.** ✅ Util: catálogo sin ninguna
+  meta → `promptAllowed` **true** el viernes, **false** el sábado. Página: con
+  dos categorías y ninguna apuntando, el sábado no hay `region` «¿Cuál de estas
+  es tu trabajo?» ni texto suelto; **y el lunes siguiente vuelve** (un test
+  aparte, para que nadie la apague para siempre).
+- **584 (se comprueba en cada tajada)** — ✅ la tabla de puertas de arriba.
+
+**Lo que NO pude verificar (y no doy por cerrado):**
+
+1. **Nada de `/app/*` a mano.** Todo está detrás de un login en el que un
+   agente no entra. Lo de arriba es jsdom y aritmética, no la pantalla real.
+   Además **el 5173 estaba apagado** durante toda la sesión (`probe.sh`:
+   «APAGADO» en 5173 y 5174); no levanté nada.
+2. **La migración no está desplegada.** Hasta que el usuario haga push, la API
+   en Render/Cloud Run devuelve metas **sin** `activeDays`.
+3. **No hay arnés esta vez** y no hacía falta: esta tajada no dibuja nada
+   nuevo, solo quita. No hay geometría que medir.
+
+**Recorrido a mano, para el usuario** (después del push del API, y en este
+orden):
+
+1. Push del API → esperar a que el workflow termine en verde (ejecuta la 070).
+2. Abrir **Hoy** un lunes cualquiera: el arco tiene que estar donde estaba, con
+   su color. Si aquí sale la **pregunta** en vez del arco, el orden se rompió:
+   la migración no corrió.
+3. Abrir **Hoy** un **sábado** (o esperar al sábado): ni arco, ni pregunta, ni
+   hueco. El presupuesto del día y la agenda, pegados.
+4. Registrar algo ese sábado y mirar **Revisión** de ese día: la sesión está
+   entera, con su categoría.
+
+**Riesgos:**
+
+- **El orden del despliegue** (dicho arriba): front después del API, no antes.
+- **`DEFAULT_GOAL_ACTIVE_DAYS` duplica el `DEFAULT` de la columna.** Si mañana
+  cambia uno y no el otro, la pregunta y la meta recién creada discreparían un
+  día. Está escrito en el comentario de la constante; no hay forma barata de
+  atarlos sin una consulta nueva (`vidaGoals` sigue sin consumidor).
+- **Los días todavía no se pueden cambiar**: eso es la tajada 4. Hasta
+  entonces, cualquiera que trabaje los sábados se queda sin arco ese día y sin
+  manera de decirlo. Es lo que el corte del arquitecto acepta a propósito.
+- Toqué el fixture `WORK_GOAL` de `VidaHoyPage.test.tsx` y el de
+  `VidaCategoriasPage.test.tsx` (el tipo lo exige): si algún test de esos
+  archivos dependía de que la meta contara **todos** los días, ahora depende de
+  que el día de la prueba sea laborable. El día por defecto de los dos es
+  **viernes 18**, y las 196 + 63 pruebas siguen verdes.
+
+**Lo que encontré y no estaba en el plan:**
+
+- **El test del criterio 571 usaba el sábado 19** como «día futuro de la tira».
+  Con esta tajada ese día deja de producir arco y `arcs[0]` era `undefined`: lo
+  moví al **lunes 21**, mismas aserciones, con el motivo escrito encima. Es un
+  choque real entre las tajadas 2 y 3 que el plan no anticipó.
+- **El cuerpo del SDL vendorizado era literal-idéntico** al del repo hermano
+  (lo comparé línea a línea antes de tocarlo). Eso permite regenerarlo en vez
+  de editarlo a mano — merece la pena dejarlo escrito para la tajada 4.
+- **`npm test` del API ya no da «3 de 560»** sino **3 de 576** (52 suites, no
+  51): la línea base de `ENVIRONMENT.md` se quedó corta, con los mismos 3
+  fallos y las mismas 6 suites. No lo edito (el archivo es del usuario), pero
+  ahí queda.
+
+**Estado del árbol:** sin commitear, en **los dos** repositorios. Front: 8
+archivos modificados (+ este expediente y `BOARD.md`), ninguno nuevo, ninguno
+borrado. API: 4 modificados y **1 nuevo** (`migrations/070_vida_goals_active_days.sql`).
+Sin `git add`, sin commit y **sin push** en ninguno de los dos. El contenedor
+de Postgres de la prueba está borrado (`docker ps -a` no lo lista).
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — Lo que falta, dentro del arco
@@ -2130,3 +2342,167 @@ la pantalla real a 375 ni a 760 px, porque Hoy está detrás del login y no entr
 con credenciales. El punto lo he dictaminado por geometría del SVG (que es
 determinista) y el color por el CSS emitido, pero **el recorrido a mano lo
 cierra el usuario**. Tampoco he cotejado píxel a píxel contra el render 20.
+
+### Revisión de la tajada 3 — **aceptada**
+
+**Cómo revisé.** Contra los criterios literales de la sección 1 (575–580 y
+584), no contra el resumen del constructor; en **los dos** repositorios, con el
+árbol tal como lo dejó (sin revertir nada) y corriendo yo las puertas.
+`graphify explain "buildGoalArcs"` y `graphify explain "ensureDefaultGoal"`
+para el radio de lo tocado, y `graphify query` para el resolver de
+`ActivityCategory.goal`. **No entré a `/app/*`** (login): todo lo de abajo es
+jsdom, SQL, `graphql` y aritmética.
+
+**Criterios, uno a uno:**
+
+- **575 — la columna, y la meta automática nace L-V.** ✅ en código, **pendiente
+  de despliegue** (lo dice el propio criterio de hecho: la migración la corre
+  el push del usuario). `ALTER TABLE … ADD COLUMN IF NOT EXISTS active_days
+  TEXT[] NOT NULL DEFAULT ARRAY['monday'…'friday']` rellena las filas que ya
+  existen en el mismo `ALTER` (PG ≥ 11 no reescribe), y **verifiqué que
+  `ensureDefaultGoal` sigue siendo correcto sin nombrar la columna leyendo el
+  SQL, no el resumen**: su `INSERT … ON CONFLICT DO UPDATE RETURNING *` —igual
+  que `getOwnedGoalRowOrThrow` y `listGoals`, que también son `SELECT *`—
+  trae la columna nueva sin listarla, así que `mapGoal` la ve. Ningún `SELECT`
+  de metas enumera columnas: no hay sitio donde el campo se caiga.
+  El runner (`scripts/migrate.ts`) lleva registro en la tabla `migrations`,
+  ordena por nombre y corre cada `-- UP` en su propia transacción → la
+  070 no se reejecuta.
+- **576 — un sábado no aparece el arco.** ✅ El filtro saca la meta del `Map` de
+  tallies **antes** de sumar (`vida-goals.utils.ts:319`), no pinta un arco
+  vacío ni oculto; el test de página lo comprueba en negativo por tres vías
+  (`article` nulo, `[data-fit]` nulo, sin el texto «Te faltan») y además que la
+  agenda queda pegada al presupuesto (sin hueco). Corrí yo las suites.
+- **577 — lo registrado ese día se sigue guardando.** ✅ Lo comprobé por el lado
+  que más me preocupaba, que no es el test: **quién más lee las metas**. El
+  único consumidor de `buildGoalArcs` en todo el front es `VidaHoyPage`
+  (`grep` tras `graphify`: `VidaHoyPage.tsx:380`), y **`VidaRevisionPage` no
+  menciona `goal` ni una vez** — la Revisión nunca pasó por aquí, así que no
+  hay forma de que este filtro le quite una sesión. En la util, la sesión del
+  sábado no se recoloca en «sin dato» (`noDataMinutes` 0) y el array de
+  `followUps` sale idéntico; en la página, «Working at lululemon» se sigue
+  viendo. Ninguna mutación de escritura se ha tocado.
+- **578 — no cuenta como día en rojo.** ✅ No existe ningún nodo de semáforo:
+  `[data-fit]` es nulo en el DOM y `arcs` es `[]` también en el **sábado
+  pasado** (12/09). No hay color, ni pintado ni escondido.
+- **579 — cada meta por sus propios días.** ✅ El filtro lee
+  `tally.goal.activeDays` meta a meta; util (sábado → solo «Estudiar») y página
+  (sábado → «Trabajo» nulo y «Sueño» presente) lo cubren.
+- **580 — la pregunta no puede divergir del arco.** ✅ y es lo que mejor está
+  resuelto: `promptAllowed` **sale del mismo `buildGoalArcs`** y la página solo
+  lo consume (`VidaHoyPage.tsx:1225`), dentro de la rama `arcs.length === 0`
+  que ya existía. Miré si podían divergir por algún camino: con metas en el
+  catálogo, `promptAllowed` es `tallies.size > 0` **después** del filtro, y si
+  hay tallies hay arcos → la pregunta no puede salir con arcos ocultos; sin
+  ninguna meta, se compara con `DEFAULT_GOAL_ACTIVE_DAYS`. No hay una segunda
+  condición de día de la semana en la página. El test del lunes siguiente evita
+  que alguien la apague para siempre.
+- **584 — puertas en los dos repositorios.** ✅ **corridas por mí**, no
+  heredadas: front `pnpm typecheck` limpio, `pnpm lint` **14 errores / 0
+  warnings**, `pnpm test` **2 fallos de 1935** (los dos de `SearchSelect`),
+  `pnpm build` exit 0 con **CSS 274,32 kB clavado** (la señal de SCSS perdido
+  que pide `ENVIRONMENT.md`) y JS inicial 1.129,25 kB. API: `npx tsc --noEmit`
+  exit 0 y `npm test` **3 fallos de 576, 6 suites en rojo — las mismas seis**
+  (hábitos, sueño, standup, gastos), `vida-goal.service` 9/9.
+
+**Qué se rompió alrededor (cómo busqué, no solo el resultado):**
+
+- `graphify explain "buildGoalArcs"` → aristas a `countsOn`, `categoryIdOf`,
+  `toSessionSpans`, `formatDurationMinutes`; ningún consumidor nuevo. Confirmado
+  abriendo los archivos: **un solo llamador**, `VidaHoyPage`.
+- **Las tajadas 1 y 2, intactas.** `git diff --stat` no lista
+  `VidaGoalArc.tsx`, `VidaGoalArcRow.tsx` ni ningún `.module.scss`: `arcValue`,
+  `variant`, `fitLevel` y `fitDot` no se tocan, y el CSS sale byte a byte con
+  el mismo tamaño. **El test movido del criterio 571 no afloja nada**: comparé
+  la versión de `HEAD` con la actual línea a línea — cambia `date:
+  '2026-09-19'` por `'2026-09-21'` (lunes, y sigue siendo futuro respecto al
+  viernes 18 de la suite) y **las dos aserciones son idénticas**
+  (`arcs[0].stopAtTime` nulo, `arcs[0].fitLevel` nulo). Con el sábado, `arcs[0]`
+  habría sido `undefined` y el test habría reventado en vez de afirmar: el
+  cambio lo devuelve a medir lo que medía.
+- **Quién más depende del dato tocado:** los cinco documentos del catálogo los
+  consume `useActivityCategories`, y de ahí cuelgan **nueve archivos** de Vida
+  (Hoy, Categorías, Actividades, Archivadas, `VidaTemplateAddPanel`,
+  `VidaActivitySheet`, `CreateVidaCategoryStep`, `vida-error.utils`). De ahí
+  sale el hallazgo 1.
+- `getVidaDayOfWeek` usa `parseYmdToLocalDate` (no `new Date(ymd)`): no hay
+  corrimiento de día por zona horaria al comparar `activeDays`.
+
+**Hallazgo 1 — el orden del despliegue es correcto, pero el fallo que describe
+el constructor es más pequeño que el real.** No me fié de la descripción y lo
+reproduje: construí el esquema con el SDL vendorizado **de `HEAD`** (el que hay
+desplegado hoy) y validé con `graphql` los documentos nuevos:
+
+```
+ACTIVITY_CATEGORIES_QUERY      → Cannot query field "activeDays" on type "VidaGoal".
+ACTIVITY_CATEGORY_QUERY        → Cannot query field "activeDays" on type "VidaGoal".
+ACTIVITY_CATEGORY_ADD_MUTATION → Cannot query field "activeDays" on type "VidaGoal".
+ACTIVITY_CATEGORY_EDIT_MUTATION→ Cannot query field "activeDays" on type "VidaGoal".
+ACTIVITY_CATEGORY_GOAL_SET_MUTATION → Cannot query field "activeDays" on type "VidaGoal".
+```
+
+Es un error de **validación del documento**, antes de que corra ningún
+resolver: el servidor no devuelve `data` en absoluto. Y
+`graphql-client.ts:51-53` lanza en cuanto `json.errors` trae algo, incluso con
+datos parciales. Es decir: si el front sale antes que el API **no se ve «la
+pregunta en vez del arco un lunes»** — se cae **el catálogo entero** de Vida
+(listar, crear, editar categoría y apuntar la meta) en las nueve pantallas de
+arriba, cualquier día de la semana. El síntoma que hay que buscar en el paso 2
+del recorrido a mano no es la pregunta: es el estado de error del módulo.
+
+**¿Hay forma barata de que el front tolere `activeDays` ausente? No, y conviene
+decirlo sin adornos.** Un `activeDays?:` en el tipo o un `?? DEFAULT_GOAL_
+ACTIVE_DAYS` en `countsOn` no ayudan: el documento sigue pidiendo el campo y el
+fallo ocurre en la validación, no al leer la respuesta. Lo único que taparía
+algo es hacer el campo **anulable** en el SDL del API, y solo taparía la
+segunda ventana (código desplegado con la migración aún sin correr), a cambio
+de un contrato más flojo para siempre. **El orden API-primero es la única red
+de verdad.** Y con un matiz que `ENVIRONMENT.md` ya trae y que conviene leer
+junto a esto: **Render auto-despliega por su cuenta y el job de migración de
+Cloud Run tarda minutos**, así que la referencia no es «ya hice push» sino **el
+workflow en verde**; hasta entonces el front nuevo tampoco debe usarse. El
+front que hay hoy en producción no pide el campo y no se entera de esa ventana.
+
+**Hallazgo 2 (menor) — la migración no es reejecutable a mano.** El
+`ADD COLUMN` lleva `IF NOT EXISTS`, pero el `ADD CONSTRAINT
+vida_goals_active_days_not_empty` no puede llevarlo (Postgres no lo soporta):
+correr la 070 dos veces contra la misma base sin pasar por el runner falla.
+Con el runner y su tabla `migrations` no ocurre; lo dejo escrito porque la
+asimetría entre los dos `ALTER` invita a pensar que sí es idempotente.
+
+**Hallazgo 3 (menor) — el `DOWN` va entero comentado** (como la 069): una
+vuelta atrás con `migrate:rollback` no quita ni la columna ni el `CHECK`.
+Es el precedente del repositorio, no una desviación de esta tajada.
+
+**Estados que nadie construye:** esta tajada **quita** interfaz, no dibuja
+nada; ninguno de los estados nuevos aplica. *Vacío*: es precisamente el caso
+que construye (sábado → hueco limpio, comprobado que la agenda no deja
+agujero). *Carga*: la rama del `Skeleton` no se toca y va **antes** del filtro.
+*Error*: sin cambios propios, pero es el que amplifica el hallazgo 1. *Sin
+permisos*: no aplica (todo es del usuario y el resolver ya valida propiedad;
+`getOwnedGoalRowOrThrow` sigue igual). *Texto largo* y *móvil a 375 px*: no
+aplican, no hay nada nuevo que pintar y el CSS no cambió. Lo que sí queda
+**pendiente de prueba manual**: cualquier cosa en `/app/*` —el sábado real sin
+arco, el lunes con arco, la sesión del sábado en Revisión— porque está detrás
+del login y **el 5173 sigue apagado**; y la migración 070 contra Neon, que solo
+existe cuando el usuario haga push.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: reutiliza
+`getVidaDayOfWeek`, `VIDA_DAY_ORDER` y el tipo `VidaDayOfWeek` (no inventa
+vocabulario ni traduce en ningún borde), no crea consulta `vidaGoals`, no toca
+`user_settings`, no añade componentes ni formateadores y respeta la forma
+`TEXT[]` con sus tres precedentes. La única duplicación es
+`DEFAULT_GOAL_ACTIVE_DAYS` frente al `DEFAULT` de la columna, que el propio
+plan acepta y el código documenta; no hay forma de atarlas sin una consulta que
+la sección 2 prohíbe.
+
+**Veredicto: aceptada.** Los seis criterios de lectura (575–580) están
+cumplidos con evidencia propia y el 584 lo he medido yo en los dos
+repositorios; lo pendiente (migración desplegada, recorrido a mano) es del
+usuario por construcción, no una deuda de la tajada. Los tres hallazgos se
+quedan escritos: ninguno es un criterio incumplido ni una regresión.
+
+**Nota para `ENVIRONMENT.md` (no lo edito, es del usuario):** la línea base del
+API dice «3 fallos de 560» y hoy son **3 de 576, 52 suites** (los mismos tres
+fallos y las mismas seis suites rotas) — lo confirmo con mi propia corrida, el
+constructor ya lo había señalado.

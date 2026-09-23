@@ -87,6 +87,7 @@ const categories = [
       icon: 'briefcase',
       color: '#0284c7',
       targetMinutes: 480,
+      activeDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
       orderIndex: 0,
     },
   }),

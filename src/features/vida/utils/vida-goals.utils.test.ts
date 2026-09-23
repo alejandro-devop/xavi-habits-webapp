@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { VidaGoal } from '@/features/vida/types/vida-goal.types'
-import { buildGoalArcs, GOAL_FIT_OK_MARGIN_MINUTES } from '@/features/vida/utils/vida-goals.utils'
+import {
+  buildGoalArcs,
+  DEFAULT_GOAL_ACTIVE_DAYS,
+  GOAL_FIT_OK_MARGIN_MINUTES,
+} from '@/features/vida/utils/vida-goals.utils'
 
 /**
  * **La suma viva de una meta** (FEAT-016, tajada 2, criterios 489–499).
@@ -25,6 +29,9 @@ const WORK: VidaGoal = {
   icon: 'briefcase',
   color: '#0284c7',
   targetMinutes: 480,
+  // De lunes a viernes, como nace la meta automática (criterio 575). El día de
+  // las pruebas —viernes 18— cuenta; el sábado 19 no.
+  activeDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
   orderIndex: 0,
 }
 
@@ -35,6 +42,17 @@ const STUDY: VidaGoal = {
   icon: 'book',
   color: '#f59e0b',
   targetMinutes: 60,
+  // Los siete días: es la segunda meta con **sus propios** días, y con ella se
+  // mide el criterio 579 sin inventar una tercera.
+  activeDays: [
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+  ],
   orderIndex: 1,
 }
 
@@ -46,6 +64,7 @@ const LONG_DAY: VidaGoal = {
   icon: 'briefcase',
   color: '#0284c7',
   targetMinutes: 1440,
+  activeDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
   orderIndex: 0,
 }
 
@@ -568,9 +587,13 @@ describe('buildGoalArcs', () => {
     )
 
     it('un día futuro de la tira, sin reloj, tampoco lleva color (criterio 571)', () => {
+      // Lunes 21 y no sábado 19: desde la tajada 3 un sábado no produce **ningún**
+      // arco para una meta de lunes a viernes (criterio 576), así que el caso de
+      // «futuro sin reloj» se mide en un día que la meta sí cuenta. Lo que este
+      // test vigila —que sin reloj no hay color— no cambia.
       const { arcs } = buildGoalArcs({
         followUps: [],
-        date: '2026-09-19',
+        date: '2026-09-21',
         nowMinutes: null,
         categories: [category('trabajo', 'Trabajo', WORK)],
         isPastDay: false,
@@ -747,5 +770,158 @@ describe('buildGoalArcs', () => {
     // Cada meta con su hora: 11:00 + (60 − 25) = 11:35.
     expect(arcs[1].stopAtTime).toBe('11:35')
     expect(arcs[1].line).toBe('Llevas 25 min. A este ritmo paras a las 11:35.')
+  })
+
+  /**
+   * **El sábado sin arco** (FEAT-019, tajada 3, criterios 576 a 580).
+   *
+   * Un día que la meta no cuenta no es un día en rojo: la meta **ese día no
+   * existe**. Por eso lo que se comprueba es que la meta sale del reparto
+   * entera —sin arco, sin color y sin un nodo con ceros— y que la pregunta se
+   * apaga con ella, desde el mismo dato.
+   *
+   * `WORK` cuenta de lunes a viernes; `STUDY`, los siete días.
+   */
+  describe('los días en que la meta cuenta', () => {
+    /** Sábado 19 de septiembre de 2026, el día siguiente al de las pruebas. */
+    const SATURDAY = '2026-09-19'
+    const AT_10 = 10 * 60
+
+    it('un sábado no hay arco ni pregunta, y no es un color: es que no existe (576, 578, 580)', () => {
+      const { arcs, promptAllowed } = buildGoalArcs({
+        followUps: [
+          session({
+            id: 's1',
+            startTime: '08:00',
+            durationMinutes: 60,
+            categoryId: 'trabajo',
+            date: SATURDAY,
+          }),
+        ],
+        date: SATURDAY,
+        nowMinutes: AT_10,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      // Ni un arco vacío, ni uno con `fitLevel` en rojo: ninguno.
+      expect(arcs).toEqual([])
+      expect(promptAllowed).toBe(false)
+    })
+
+    it('lo registrado ese sábado ni se pierde ni se recoloca en «sin dato» (577)', () => {
+      const followUps = [
+        session({
+          id: 's1',
+          startTime: '08:00',
+          durationMinutes: 60,
+          categoryId: 'trabajo',
+          date: SATURDAY,
+        }),
+      ]
+      const copia = structuredClone(followUps)
+
+      const { arcs, noDataMinutes, noDataLabel } = buildGoalArcs({
+        followUps,
+        date: SATURDAY,
+        nowMinutes: AT_10,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      expect(arcs).toEqual([])
+      // «Sin dato» es de las sesiones **sin categoría**: esta tiene la suya y no
+      // se reclasifica solo porque la meta no cuente hoy.
+      expect(noDataMinutes).toBe(0)
+      expect(noDataLabel).toBe('')
+      // Y las sesiones entran y salen intactas: quien las guarda y las enseña no
+      // es esta función.
+      expect(followUps).toEqual(copia)
+    })
+
+    it('cada meta va por sus propios días (579)', () => {
+      const categories = [category('trabajo', 'Trabajo', WORK), category('cursos', 'Cursos', STUDY)]
+
+      const sabado = buildGoalArcs({
+        followUps: [],
+        date: SATURDAY,
+        nowMinutes: AT_10,
+        categories,
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+      expect(sabado.arcs.map((arc) => arc.goal.name)).toEqual(['Estudiar'])
+      expect(sabado.promptAllowed).toBe(true)
+
+      const viernes = buildGoalArcs({
+        followUps: [],
+        date: DATE,
+        nowMinutes: AT_10,
+        categories,
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+      expect(viernes.arcs.map((arc) => arc.goal.name)).toEqual(['Trabajo', 'Estudiar'])
+    })
+
+    it('sin ninguna meta todavía, la pregunta se rige por los días con los que nacería (580)', () => {
+      const sinMetas = [category('trabajo', 'Trabajo', null), category('casa', 'Casa', null)]
+
+      expect(
+        buildGoalArcs({
+          followUps: [],
+          date: DATE,
+          nowMinutes: AT_10,
+          categories: sinMetas,
+          isPastDay: false,
+          dayEnd: DAY_END,
+        }).promptAllowed,
+      ).toBe(true)
+
+      expect(
+        buildGoalArcs({
+          followUps: [],
+          date: SATURDAY,
+          nowMinutes: AT_10,
+          categories: sinMetas,
+          isPastDay: false,
+          dayEnd: DAY_END,
+        }).promptAllowed,
+      ).toBe(false)
+
+      expect(DEFAULT_GOAL_ACTIVE_DAYS).toEqual([
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+      ])
+    })
+
+    it('un día pasado que no contaba tampoco deja rastro (576, 578)', () => {
+      // El sábado 12, ya pasado: ni arco ni color. Un día que la meta no existía
+      // no se cuenta hacia atrás como un día fallado.
+      const { arcs, promptAllowed } = buildGoalArcs({
+        followUps: [
+          session({
+            id: 's1',
+            startTime: '09:00',
+            durationMinutes: 300,
+            categoryId: 'trabajo',
+            date: '2026-09-12',
+          }),
+        ],
+        date: '2026-09-12',
+        nowMinutes: null,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: true,
+        dayEnd: DAY_END,
+      })
+
+      expect(arcs).toEqual([])
+      expect(promptAllowed).toBe(false)
+    })
   })
 })

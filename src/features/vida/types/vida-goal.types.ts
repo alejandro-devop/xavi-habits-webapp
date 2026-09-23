@@ -1,3 +1,5 @@
+import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
+
 /**
  * Una meta del módulo Vida: nombre, icono, color y los minutos que el usuario
  * se propone. Varias categorías pueden apuntar a la misma.
@@ -16,5 +18,14 @@ export interface VidaGoal {
   icon: string | null
   color: string | null
   targetMinutes: number
+  /**
+   * **Los días de la semana en que esta meta cuenta** (FEAT-019, criterio 575).
+   * Nunca vacío: la columna lo impone (`CHECK (cardinality >= 1)`, migración
+   * 070) y nace de lunes a viernes.
+   *
+   * Mismo vocabulario que los días de la plantilla (`VidaItem.days`), así que
+   * `getVidaDayOfWeek(date)` se compara con esto sin traducir nada.
+   */
+  activeDays: VidaDayOfWeek[]
   orderIndex: number
 }

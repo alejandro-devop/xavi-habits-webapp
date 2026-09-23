@@ -6,14 +6,15 @@
 # Origen : xavi-platform-node/src/graphql/modules/vida/vida.schema.ts
 #          (la cadena `gql` de `vidaTypeDefs`, copiada literal)
 # Copiado: 2026-09-22 (árbol de trabajo del repo hermano, sin commitear:
-#          FEAT-016 tajada 1, la tabla vida_goals y el goal_id de la categoría)
+#          FEAT-019 tajada 3, `VidaGoal.activeDays` — la columna active_days de
+#          la migración 070. Antes: FEAT-016 tajada 1, la tabla vida_goals y el
+#          goal_id de la categoría)
 #
 # Aquí no se añade nada: este módulo hace `extend type Query`/`extend type
 # Mutation` y referencia `Activity` y `DateTime`, que aporta
 # `activity.schema.graphql`. El test de contrato construye **un solo** esquema
 # concatenando los tres SDL vendorizados.
 # ─────────────────────────────────────────────────────────────────────────────
-
   """
   Días de la plantilla Vida (sin hora). Valores alineados con DayOfWeek de routines.
   """
@@ -78,6 +79,12 @@
     icon: String
     color: String
     targetMinutes: Int!
+    """
+    Días de la semana en que esta meta cuenta. Nunca vacío: una meta sin días
+    sería un arco que desaparece sin que nada lo explique. Nace de lunes a
+    viernes (DEFAULT de la migración 070).
+    """
+    activeDays: [VidaDayOfWeek!]!
     orderIndex: Int!
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -174,4 +181,3 @@
     vidaItemId: ID!
     date: String!
   }
-

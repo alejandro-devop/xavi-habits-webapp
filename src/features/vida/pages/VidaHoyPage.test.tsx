@@ -3024,6 +3024,9 @@ const WORK_GOAL: VidaGoal = {
   icon: 'briefcase',
   color: '#0284c7',
   targetMinutes: 480,
+  // Como nace la meta automática (criterio 575). El día de estas pruebas es
+  // viernes, así que cuenta; el caso del sábado tiene su propio bloque abajo.
+  activeDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
   orderIndex: 0,
 }
 
@@ -3515,6 +3518,112 @@ describe('VidaHoyPage — la pregunta de la meta (FEAT-016, tajada 3)', () => {
     renderWithProviders(<VidaHoyPage />)
 
     expect(within(goalPrompt()!).getByRole('button', { name: 'Trabajo' })).toBeDisabled()
+  })
+})
+
+/* ── El sábado sin arco (FEAT-019, tajada 3) ──────────────────────────────
+ *
+ * Criterios 576, 578, 579 y 580. Un sábado la meta de lunes a viernes **no
+ * existe**: no es que se haya fallado, es que ese día no cuenta. Ni arco, ni
+ * semáforo, ni pregunta, ni hueco donde estaban.
+ */
+
+/** La meta que cuenta los siete días, para medir que cada una va por su cuenta. */
+const SLEEP_GOAL: VidaGoal = {
+  id: 'goal-sleep',
+  slug: 'sleep',
+  name: 'Sueño',
+  icon: 'moon',
+  color: '#7C3AED',
+  targetMinutes: 480,
+  activeDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+  orderIndex: 1,
+}
+
+describe('VidaHoyPage — el sábado sin arco (FEAT-019, tajada 3)', () => {
+  beforeEach(() => {
+    // **Hoy es sábado 19.** El reloj y el día mirado se mueven juntos: sin `?d=`
+    // la página mira hoy, que es lo que el usuario ve al abrirla un fin de semana.
+    vi.setSystemTime(new Date(2026, 8, 19, 9, 24, 0))
+    viewedDate = '2026-09-19'
+    plansByDate['2026-09-19'] = [...PLAN]
+    planQuery = ready(plansByDate['2026-09-19']!)
+  })
+
+  it('criterios 576 y 578 — un sábado no hay arco, ni semáforo, ni nodo escondido', () => {
+    categoriesQuery = ready([categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL)])
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60, date: '2026-09-19' }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalArc()).toBeNull()
+    // Ni escondido: no hay **ningún** nodo del arco, tampoco con `data-fit`.
+    expect(document.querySelector('[data-fit]')).toBeNull()
+    expect(screen.queryByText('Te faltan')).not.toBeInTheDocument()
+    // Y el sitio no queda en obras: la agenda va donde iba, pegada al presupuesto.
+    const presupuesto = document.getElementById('vida-budget-heading')!.closest('section')!
+    const fila = planRow('Bañarme')
+    expect(presupuesto.compareDocumentPosition(fila) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('criterio 577 — lo registrado ese sábado sigue en la pantalla, solo deja de sumar', () => {
+    categoriesQuery = ready([categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL)])
+    dayFollowUpsQuery = ready([
+      workSession({
+        id: 'w1',
+        startTime: '08:00',
+        durationMinutes: 60,
+        date: '2026-09-19',
+        title: 'Working at lululemon',
+      }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalArc()).toBeNull()
+    // La sesión se ve en la línea del día: no se ha perdido ni se ha dejado de
+    // registrar, solo no cuenta contra ninguna meta.
+    expect(screen.getAllByText('Working at lululemon').length).toBeGreaterThan(0)
+    // Y tampoco se recoloca en «sin dato»: eso es para lo que no tiene categoría.
+    expect(screen.queryByText(/sin dato hoy/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 579 — la meta de los siete días sí sale ese mismo sábado', () => {
+    categoriesQuery = ready([
+      categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL),
+      categoryOf('cat-sueno', 'Sueño', SLEEP_GOAL),
+    ])
+    dayFollowUpsQuery = ready([])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalArc()).toBeNull()
+    expect(screen.queryByRole('article', { name: 'Sueño' })).not.toBeNull()
+  })
+
+  it('criterio 580 — sin ninguna categoría apuntando a una meta, el sábado tampoco pregunta', () => {
+    categoriesQuery = ready([
+      categoryOf('cat-trabajo', 'Trabajo', null),
+      categoryOf('cat-casa', 'Casa', null),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    // El mismo dato esconde las dos cosas: si la pregunta saliera, tocar una
+    // categoría no haría aparecer ningún arco y el usuario se quedaría mirando
+    // un hueco después de contestar.
+    expect(goalPrompt()).toBeNull()
+    expect(goalArc()).toBeNull()
+    expect(screen.queryByText(/Cuál de estas/)).not.toBeInTheDocument()
+  })
+
+  it('el lunes siguiente la pregunta vuelve: el sábado no la apaga para siempre', () => {
+    vi.setSystemTime(new Date(2026, 8, 21, 9, 24, 0))
+    viewedDate = '2026-09-21'
+    plansByDate['2026-09-21'] = [...PLAN]
+    planQuery = ready(plansByDate['2026-09-21']!)
+    categoriesQuery = ready([categoryOf('cat-trabajo', 'Trabajo', null)])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalPrompt()).not.toBeNull()
   })
 })
 

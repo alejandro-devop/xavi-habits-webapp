@@ -1,5 +1,6 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { env } from '@/app/config/env'
+import { sanitizePersistedClient } from './query-cache-guards'
 
 /**
  * Clave donde react-query guarda la caché hidratada. Se expone para poder
@@ -20,6 +21,13 @@ let quotaWarned = false
  */
 export const queryPersister = createAsyncStoragePersister({
   key: QUERY_PERSIST_KEY,
+  /**
+   * La red de abajo (tajada 2). Sustituye al `JSON.parse` por defecto y descarta
+   * las entradas cuya forma no cuadra **antes** de que exista un árbol de React.
+   * Tapa el hueco que el invalidador no puede ver: que la forma cambie en el
+   * servidor. El porqué y qué se valida, en `query-cache-guards.ts`.
+   */
+  deserialize: sanitizePersistedClient,
   storage: {
     getItem: (key) => {
       if (!isBrowser) return Promise.resolve(null)

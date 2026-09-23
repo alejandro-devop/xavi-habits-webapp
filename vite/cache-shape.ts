@@ -68,8 +68,13 @@ import path from 'node:path'
  * - **Escribir en la caché por una vía que no esté en `CACHE_WRITE_MARKERS`.**
  *   Si un día se usa otra API de react-query para meter datos, hay que añadirla
  *   a esa lista.
- * - **`initialData` / datos sembrados desde un componente** que no pase por
- *   ninguna de las dos reglas.
+ * - **`initialData` o `placeholderData` sembradas desde un componente** que no
+ *   pase por ninguna de las dos reglas. Son hermanas y tienen el mismo efecto:
+ *   meten una forma en la caché sin tocar la capa de datos.
+ *
+ * Los tres están tapados, por otra vía, por la red de la tajada 2
+ * (`src/app/providers/query-cache-guards.ts`): allí se valida **lo que se
+ * rehidrata**, venga de donde venga.
  *
  * ────────────────────────────────────────────────────────────────────────────
  * EL COSTE: EL HASH ES SENSIBLE AL BYTE

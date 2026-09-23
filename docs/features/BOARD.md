@@ -29,8 +29,141 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
-| FEAT-021 | building | 1/2 | app/providers, shared/api | La caché guardada caduca cuando cambia la forma de los datos | 2026-09-23 |
+| FEAT-021 | delivered | 2/2 | app/providers, shared/api | La caché guardada caduca cuando cambia la forma de los datos | 2026-09-23 |
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
+
+**FEAT-021 `delivered` 2/2** (2026-09-23, revisor). **Tajada 2 aceptada en su
+segunda vuelta; la feature queda entregada.** Las dos devoluciones están
+cerradas y las comprobé sembrando yo los datos, no leyendo sus tests. **El
+criterio 618, que era el que se incumplía, ahora se cumple:** sembré trece
+entradas legítimas cubriendo las ocho formas guardadas —`goal: null`,
+`followUps.open()` a `null`, `items.list(true)` con `days: []`, lista vacía— más
+dos claves excluidas, y no se descartó ninguna ni se llamó a `console.warn` una
+sola vez. Mi cadena original ya no se cae: el ítem sin `days` se descarta antes
+de llegar a `templateItemsForDate`. **Verifiqué el «todas»** que sostenía «con
+una guarda basta»: clasifiqué cada `.days` sin `?.` del repositorio y todas las
+de `VidaItem` comen de `items.list` o `suggestions` (ya guardadas), las de
+hábitos son un **número** —no lanzan— y `history.days`/`input.days` los construye
+el propio hook. **La regla «una guarda, una forma» no es vacua**: reañadí el
+prefijo ancho de antes y la comprobación lo caza; sobre el registro real, cero
+solapes. `range.isValid` de una respuesta buena → `true`. Las cuatro exclusiones
+deliberadas están bien justificadas (comprobados sus consumidores: leen con `?.`
+y `?? []`). **Y lo prometido al usuario se cumple: el invalidador en `dist/` sigue
+siendo `c354b9032f97`, el mismo desplegado — esto no provoca apertura fría.**
+Línea base: lint 14/0, chunk 1.141,22 kB, CSS 277,96 kB idéntico, 33 casos verdes
+en las pruebas de caché y **2 fallos de 2074** en limpio (una corrida con un build
+en paralelo dio 4: los otros dos no reaparecen al repetir). **Tres hallazgos, de
+seguimiento, ninguno de devolución:** el test de cobertura descubre por
+convención y tiene tres maneras de no ver una consulta —una hoja cuyo nombre
+acabe en `All`, una hoja escrita como array `const`, y una clave inline fuera de
+la fábrica, patrón que **ya se usa** en `useHabitFollowUps.ts:22-38`—; el motivo
+escrito para dejar `habitKeys` fuera («sus pantallas degradan a vacío») **no es
+cierto** —`HabitDetailPage:197` pasa `weekView.days` a un `days.map(...)` sin
+red—, y el alcance me parece correcto pero el motivo debería decir «riesgo
+residual aceptado»; y `clientState.mutations` sigue sin validarse como se valida
+`queries`. Siguiente: nada. Entregada.
+
+**FEAT-021 `in-review` 2/2** (2026-09-23, constructor). **Tajada 2 construida,
+sin commitear.** El `deserialize` del persister deja de ser `JSON.parse` y pasa a
+ser `sanitizePersistedClient` (`src/app/providers/query-cache-guards.ts`, nuevo):
+descarta las entradas con forma inesperada **antes** de que exista un árbol de
+React, sin recargar nada. Tapa el hueco que el invalidador no puede ver por
+diseño —**que la forma cambie en el servidor**, que es lo que pasó esta mañana— y
+de paso los otros puntos ciegos (una escritura factorizada a un fichero sin
+marcadores, `initialData`/`placeholderData` desde un componente). **Qué se
+valida, con la regla que lo decide:** «lleva guarda la consulta cuya forma
+inesperada **tumba** una pantalla; la que solo la **vacía**, no». Da **cuatro
+guardas**, las de `/app/vida/hoy`, y la prueba de que la regla no es «todo» es
+que `settingsKeys.my()` se queda **fuera** aunque alimenta Hoy: `useVidaDayHours`
+lo lee entero con `?.`. Las guardas miran invariantes de carga —de
+`ActivityDayPlanItem`, 3 campos de 11— y **el SDL no se copia en ningún sitio**.
+**Lo que no valida:** se tira **solo esa entrada**, la consulta vuelve a pedir lo
+suyo y la pantalla queda **en carga**, no en error; lo sano de la misma caché se
+hidrata igual. **Si la validación revienta:** no lanza nunca —guarda que lanza se
+trata como guarda que falla; cualquier otro error devuelve un cliente vacío con
+`timestamp: 0`, que además **borra** la caché—. **Coste al abrir, medido:**
+sobrecoste de **0,05 a 0,62 ms** según tamaño (51 kB → 1 MB), sobre un
+`JSON.parse` de 0,26 a 5,90 ms que ya se pagaba; las guardas recorren entradas
+(88), no bytes. **Demostrado con el arnés**, no con un test del validador: misma
+caché de forma vieja pero **con el invalidador acertando** —el caso que la tajada
+1 no cubre— y la pantalla de pie; más un caso que monta lo mismo **sin las
+guardas** y ahí sí se cae, que es la prueba de no vacuidad del revisor trasladada
+a esta capa. **El control del criterio 598 de la tajada 1, repuntado por
+decisión del usuario, no jubilado:** la tajada 2 elimina el escenario que
+afirmaba, pero ese test no dice «la app se cae», dice «**el arnés reproduce el
+fallo**» —es la vara con la que el revisor comprobó, mutándolo, que el 596 no es
+vacuo—. Repuntado a un **persister sin guardas** sigue diciendo lo mismo,
+nombrando qué red prueba, y **sigue sin ser vacuo**: copiado a un temporal y
+cambiada solo la forma sembrada, falla. Dentro del fichero queda el aviso de **no
+enchufarlo al persister de producción**, que lo dejaría sin poder fallar nunca.
+**El invalidador no cambia** (`c354b9032f97` en `dist/`): desplegar esto **no** provoca apertura
+fría. Recogidas de paso las dos menores del revisor: `placeholderData` en los
+puntos ciegos y el **total del conjunto fijado en 32** en el test. Línea base **de vuelta a la del
+coordinador, medida entera**: typecheck limpio, lint **14/0**, **2 fallos de
+2054** (solo los dos de `SearchSelect`), CSS **277,96 kB** idéntico, chunk
+1.138,74 → **1.140,54 kB** (+1,80 kB del módulo de guardas). Siguiente: el
+`feature-reviewer`, tajada 2.
+
+**FEAT-021 `in-review` 2/2** (2026-09-23, constructor, **2.ª vuelta**). **Las dos
+devoluciones arregladas, sin commitear.** **(1) El contraejemplo:**
+`vidaKeys.items.list` estrena guarda (`id` + `days` lista) — era el mismo gesto
+del 23 con otro campo, y la ironía es que mi guarda de `suggestions` ya validaba
+`item.days` por ese motivo. Apliqué la regla a la lista que señaló el revisor y
+**una guarda basta**: busqué todas las desreferencias sin red de arrays del
+módulo y salen **13 sitios, todos sobre `.days` de `VidaItem`**, que llega por
+`items.list` o por `suggestions`. No metí guardas a todo por susto: las cuatro
+claves de Vida que siguen sin guarda están en `SIN_GUARDA_A_PROPOSITO` **con su
+motivo escrito**. **(2) La guarda que tiraba caché buena:** la de `followUps`
+partida en **cuatro, una por forma** —`range` devuelve `{date, followUps[]}` y no
+tiene `id` ni `startTime`—, con la lección convertida en regla, **«una guarda, una
+forma»**, y un test que la hace cumplir: ninguna guarda puede ser prefijo de otra.
+El criterio 618 ahora **siembra las cuatro formas legítimas**, que es por lo que
+no lo veía. **(3) Y lo que más importa: la cobertura deja de decidirse de
+memoria.** `query-cache-guards.coverage.test.ts` recorre `vidaKeys` y **falla** si
+aparece una clave que no esté ni guardada ni excluida con motivo: una consulta
+nueva pone el test en rojo hasta que alguien decida. Misma idea que la regla por
+contenido de la tajada 1. **Ese test cazó un fallo mío nada más escribirlo:**
+`vidaKeys.items.list()` devuelve la clave **con el argumento dentro**, así que
+`list(true)` se me quedaba fuera. Corregida también la frase del coste —el trabajo
+es lineal en **elementos**, no en entradas— y remedida con el caso que lo prueba:
+**8 entradas y una lista de 10.000 ítems, +0,41 ms** frente a un `JSON.parse` de
+25,68 ms que ya se pagaba. Recogida la línea de `mutations` que sugirió. Línea
+base: typecheck limpio, lint **14/0**, **2 fallos de 2074** (solo `SearchSelect`),
+CSS **277,96 kB** idéntico, chunk 1.140,54 → **1.141,22 kB**, y el invalidador en
+`dist/` sigue en **`c354b9032f97`**: **esto sigue sin provocar apertura fría**.
+No toqué nada de lo que dio por bueno. Siguiente: el `feature-reviewer`, tajada 2,
+2.ª vuelta.
+
+**FEAT-021 tajada 2 `returned`** (2026-09-23, revisor). **La forma de la
+solución es la correcta** —validar al rehidratar, por entrada, sin recargar— y el
+arranque no se puede tumbar. La devuelvo por dos cosas medidas, las dos dentro de
+lo que la tajada dice cubrir. **(1) Hay contraejemplo de la regla y cae en la
+pantalla que esto viene a proteger:** `vidaKeys.items.list()` **no lleva guarda**
+y alimenta `/app/vida/hoy` (`VidaHoyPage` → `VidaTemplateAside:248` →
+`templateItemsForDate` → `vida-build-day.utils.ts:80`, `item.days.includes(day)`
+sin red). Es el mismo gesto que tumbó Hoy el 23, con otro campo: si el servidor
+deja de mandar `days`, la pantalla se cae entera y la red no se entera. Medido:
+`findGuard(items.list())` → `undefined`, `templateItemsForDate` **lanza** con un
+ítem sin `days`, y el saneador deja pasar la entrada. La ironía es que la guarda
+de `suggestions` valida `item.days` **porque se desreferencia sin red**: el mismo
+`VidaItem` entra por otra clave sin guarda. **(2) Una guarda descarta datos
+legítimos:** la de `followUps` cubre por prefijo también `range`, cuyo dato es
+`{date, followUps[]}` y **no tiene `id` ni `startTime`** — `isValid` de una
+respuesta buena da `false`, medido, así que en cada arranque se tira la caché
+sana de Revisión y se avisa de una «forma inesperada» que no lo es. Eso incumple
+literalmente el **criterio 618** («no se descarta nada ni se avisa de nada»), y
+deja el **616** cumplido solo en el caso que su test siembra. Cumplidos: 617, 619,
+620 y 621. **Lo verificado y correcto:** no tocó la tajada 1 desplegada
+(`query-persist.ts` +8/-0, `AppProviders.tsx` y `vite.config.ts` ni aparecen), el
+**invalidador en `dist/` no cambia** (`c354b9032f97`: desplegar esto **no**
+provoca apertura fría, confirmado), el control del 598 **sigue sin ser vacuo** (lo
+mutéé otra vez y falla), el degradado es por entrada y `deserialize` no puede
+lanzar. Dos notas menores: `clientState.mutations` no se valida como se valida
+`queries` (sin consecuencia, la librería envuelve el restore en `.catch`), y el
+argumento del coste dice «recorre entradas, no bytes» cuando `everyItem` recorre
+**elementos** —su propia tabla lo delata: mismas 88 entradas, el doble de bytes,
+el doble de coste—. Línea base sin reproche: lint 14/0, chunk 1.140,54 kB, CSS
+277,96 kB idéntico. Siguiente: el constructor, tajada 2.
 
 **FEAT-021 tajada 1 `accepted` (2.ª vuelta)** (2026-09-23, revisor). **Sigue
 `building` 1/2:** la tajada 2 no está construida y la decide el usuario. El

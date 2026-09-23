@@ -193,6 +193,13 @@ describe('sobre los ficheros reales del repositorio', () => {
     const hooks = fuentes.filter((f) => f.includes('/hooks/'))
     expect(hooks).toHaveLength(2)
 
+    // El TOTAL, fijado a propósito. La regla 2 mira texto, no AST: un fichero
+    // que solo **mencione** un marcador en un comentario entra en el conjunto y
+    // se queda, y a partir de ahí cada retoque cosmético suyo caduca la caché de
+    // todo el mundo en silencio. Si este número sube, mira **qué** entró antes
+    // de actualizarlo.
+    expect(fuentes).toHaveLength(32)
+
     expect(fuentes.some((f) => f.includes('/pages/'))).toBe(false)
     expect(fuentes.some((f) => f.includes('/components/'))).toBe(false)
     expect(fuentes.some((f) => f.endsWith('.scss'))).toBe(false)

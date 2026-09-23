@@ -1,3 +1,4 @@
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { dehydrate, QueryClient, useQuery } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { render, screen } from '@testing-library/react'
@@ -100,13 +101,34 @@ function sembrarCache(datos: unknown, buster: string): void {
   clienteDeAyer.clear()
 }
 
-function montarLaApp() {
+/**
+ * El persister **sin la red de la tajada 2**: mismo almacenamiento, pero con el
+ * `JSON.parse` de siempre en vez de `sanitizePersistedClient`.
+ *
+ * **NO LO ENCHUFES AL DE PRODUCCIÓN.** Lo usa el control del criterio 598, y ese
+ * control no afirma que la app se caiga: afirma que **este arnés reproduce el
+ * fallo**. Es la vara con la que se comprueba que el criterio 596 no es vacuo —el
+ * revisor la verificó mutando este fichero—. Si se apunta al persister de
+ * producción, las guardas de la tajada 2 impiden la caída y queda un control que
+ * **no puede fallar nunca**: seguiría verde el día que el arnés dejara de medir
+ * nada, y nadie se enteraría.
+ *
+ * Que la app de verdad no se cae en ese escenario es cosa del criterio 616, en
+ * `query-cache-guards.hydration.test.tsx`. Aquí se prueba la red de arriba —el
+ * invalidador— y por eso hay que quitar la de abajo para verla trabajar sola.
+ */
+const persisterSinGuardas = createAsyncStoragePersister({
+  key: QUERY_PERSIST_KEY,
+  storage: window.localStorage,
+})
+
+function montarLaApp(persistOptions = queryPersistOptions) {
   // Cliente nuevo por test: el singleton de la app guarda estado entre pruebas.
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 1000 * 60 * 60 * 24 } },
   })
   return render(
-    <PersistQueryClientProvider client={client} persistOptions={queryPersistOptions}>
+    <PersistQueryClientProvider client={client} persistOptions={persistOptions}>
       <Frontera>
         <ArcoDeHoy />
       </Frontera>
@@ -146,10 +168,14 @@ describe('la caché persistida y un despliegue que cambia la forma', () => {
     expect(screen.queryByText(PANTALLA_DE_ERROR)).not.toBeInTheDocument()
   })
 
-  it('criterio 598 — control: con el invalidador de hoy y la forma vieja, la pantalla se cae', async () => {
+  it('criterio 598 — control: con la forma vieja y sin la red de la tajada 2, la pantalla se cae', async () => {
     sembrarCache([CATEGORIA_FORMA_VIEJA], queryPersistBuster)
 
-    montarLaApp()
+    // Con el invalidador acertando y sin guardas debajo, esta caché tumba la
+    // pantalla. Eso es lo que hace que el criterio 596 signifique algo: lo que
+    // allí la mantiene de pie es que el invalidador NO acierta, no un descuido
+    // del arnés. Ver el comentario de `persisterSinGuardas`.
+    montarLaApp({ ...queryPersistOptions, persister: persisterSinGuardas })
 
     expect(await screen.findByText(PANTALLA_DE_ERROR)).toBeInTheDocument()
   })

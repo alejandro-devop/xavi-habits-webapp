@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/query-persist.ts": {
-    "mtime": 1790184842.2114563,
-    "ast_hash": "d36fc01baa4e011f703f05ed949b8c67",
+    "mtime": 1790188087.6791635,
+    "ast_hash": "770ab00d6193792a867af06ba63eecd3",
     "semantic_hash": ""
   },
   "src/app/router/index.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790186444.2237802,
-    "ast_hash": "45c5849c4085b74ac3ca226fce3eb113",
+    "mtime": 1790189993.326961,
+    "ast_hash": "78b75abfea20846431ce0a472dbe4db9",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790173920.8521144,
-    "ast_hash": "acb1f705050b030dc5ea20dc7649c83c",
+    "mtime": 1790186954.0077336,
+    "ast_hash": "1f65490c21593e8d313144cf141be547",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -4035,28 +4035,43 @@
     "semantic_hash": ""
   },
   "src/app/providers/query-persist.hydration.test.tsx": {
-    "mtime": 1790184894.7001128,
-    "ast_hash": "2aa39da64d82e2f8de7107e463d66778",
+    "mtime": 1790188672.6727097,
+    "ast_hash": "65dc2c73bcebda4b30f393d9869c0ee7",
     "semantic_hash": ""
   },
   "vite/cache-shape.test.ts": {
-    "mtime": 1790186041.6297243,
-    "ast_hash": "bdea877a04f5859f76652f2f8fa3f0fb",
+    "mtime": 1790188275.7367697,
+    "ast_hash": "ea805bb840eed0edc6b68db622adfdeb",
     "semantic_hash": ""
   },
   "vite/cache-shape.ts": {
-    "mtime": 1790186009.198396,
-    "ast_hash": "a30284d9dd45f5966be9a9e18d279e4c",
+    "mtime": 1790188275.7367697,
+    "ast_hash": "81ba07230540c194d5010852d677fbfa",
     "semantic_hash": ""
   },
   "docs/features/FEAT-021-cache-que-caduca.md": {
-    "mtime": 1790186266.1039336,
-    "ast_hash": "4591a6489c67f5d87b23aed8814c7618",
+    "mtime": 1790189975.210755,
+    "ast_hash": "fe39ff6e6b6ae1d4dc6ff2e8124db631",
     "semantic_hash": ""
   },
   "docs/features/FEAT-022-reabrir-una-sesion.md": {
     "mtime": 1790185713.2657962,
     "ast_hash": "bfcfae27bde7b6ff443fea5fff82967b",
+    "semantic_hash": ""
+  },
+  "src/app/providers/query-cache-guards.hydration.test.tsx": {
+    "mtime": 1790189625.6531415,
+    "ast_hash": "540fc63a474d8d2d3e09932f081e2d2b",
+    "semantic_hash": ""
+  },
+  "src/app/providers/query-cache-guards.ts": {
+    "mtime": 1790189574.5236883,
+    "ast_hash": "e734841cea0480fa716036d7f49be4d9",
+    "semantic_hash": ""
+  },
+  "src/app/providers/query-cache-guards.coverage.test.ts": {
+    "mtime": 1790189552.6025016,
+    "ast_hash": "d668fb10fbf2aa9eaa32876bdfbffe9c",
     "semantic_hash": ""
   }
 }

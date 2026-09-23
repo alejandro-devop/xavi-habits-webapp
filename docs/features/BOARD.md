@@ -27,7 +27,71 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
-| FEAT-019 | building | 3/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+| FEAT-019 | building | 4/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
+
+**FEAT-019 `building` 4/5** (2026-09-23, revisor). **Tajada 5 aceptada: el
+rojo solo si el día acaba corto, y fuera la hora proyectada.** Los seis
+criterios (585–590) cumplidos con evidencia propia: barrí la frontera **minuto
+a minuto de 6:00 a 23:59** llamando a `buildGoalArcs` con varios valores de
+trabajado (arnés temporal, borrado) en vez de fiarme de los casos elegidos. Con
+meta de 480 y el día hasta las 22:00, el rojo empieza a las **15:37** con cero
+hecho, **16:07** con 30 min, **19:37** con 4 h, y **nunca** a partir del 80 %
+hecho; cada fila cambia de color una sola vez y en un solo sentido. **Las 20:00
+con poco registrado siguen en rojo con margen**: con el día hasta las 23:00, lo
+son con cualquier cosa por debajo de **3 h 24** trabajadas — el 588 (0, 30, 60
+min) es el borde fácil, no el límite. Lo único que el rojo perdió es la franja
+14:01–15:36 con nada hecho, donde el día todavía puede acabar por encima del
+80 %: justo el aviso «cierto e inútil». El caso del usuario (429 de 480 a las
+23:05, día hasta las 22:00) sale `data-fit="tight"` con «TE FALTAN 51m».
+**Comprobaciones mías, no heredadas:** la bajada del CSS es **exactamente** la
+regla `.line` —compilé las dos versiones del `.module.scss` con `sass
+--style=compressed` y comparé selectores: **26 reglas antes, 25 después**, solo
+falta `.line`, 117 bytes, y las cuatro del semáforo siguen ahí; no hay ningún
+comentario sin cerrar—; `stopAtTime` no tenía **ningún** lector vivo (solo tres
+comentarios y expedientes); la puerta del color es la misma (`canProject &&
+dayEnd !== null`, y con `dayEnd: null` el arco sale sin color, verificado en
+ejecución); y las tajadas 1, 2 y 3 siguen enteras (lo que falta dentro, el
+punto a cero minutos, la hora **ocurrida** de la meta cruzada, el día pasado y
+el filtro de días laborables de `17e69be`). Líneas base clavadas: typecheck
+limpio, lint **14/0**, tests **2 fallos de 1943** (+8 casos nuevos), build con
+chunk **1.129,17 kB** y **CSS 274,19 kB**. El **560** queda anotado como
+superado con las palabras del usuario, no borrado. **Cuatro hallazgos, ninguno
+devuelve:** las «dos condiciones» del rojo son aritméticamente **una** («el día
+no puede acabar en el 80 %»); el naranja carga ahora dos significados opuestos;
+pasada la hora de fin, un día que acabó por debajo del 80 % sigue en rojo; y el
+565 quedó con una cláusula huérfana (la línea visible que el 560 pedía). **El
+rojo casi inalcanzable con metas pequeñas es un defecto de la tajada 2, no de
+esta**: la ventana de rojo siempre fue proporcional a la meta y esta tajada
+solo la encoge en `0,2 × meta` (12 min en una meta de 60). **No revisado:**
+`/app/*` (login) y la medida en píxeles a 375 px —esa es del constructor—.
+Siguiente: **tajada 4** (elegir los días en Ajustes, 581–583).
+
+**FEAT-019 `in-review` 4/5** (2026-09-23, constructor). **Tajada 5 construida
+—nueva, pedida por el usuario la noche del 22 usando la app y con prioridad
+sobre la 4, que sigue pendiente.** Dos cosas. **(1) El rojo pide ahora dos
+condiciones**: que lo que falta ya no quepa **y** que el día vaya a acabar por
+debajo del **80 %** de la meta (`workedMinutes + max(0, dayEnd − ahora)`, con
+`GOAL_FIT_SHORT_DAY_RATIO` exportada). Su captura —23:05, día hasta las 22:00,
+7 h 09 de 8 h, arco rojo— pasa a **naranja**; el verde no se toca (sigue siendo
+el margen, porque verde aquí afirma «todavía da para la meta entera»); y las
+**20:00 con casi nada registrado siguen en rojo**, con `it.each` de 0/30/60 min
+como red. **(2) Fuera la proyección de la hora**: desaparecen «A este ritmo
+paras a las H» y «Si arrancas ahora, acabarías a las H», se funden las dos ramas
+de «te faltan» y `stopAtTime` sale del tipo (estaba muerto: la puerta que lo
+usaba es `!canProject`). Con la hora fuera, la línea visible bajo el arco
+repetía la cabecera y el interior, así que **desaparece de la vista**: el `<p>`
+vuelve a 1×1 px con «Te faltan 51 min de Trabajo.» —el arco es `aria-hidden` y
+sin él un lector no oiría nada del dibujo—. **El criterio 560 queda anotado
+como superado por decisión suya, con sus palabras, no borrado.** Puertas:
+typecheck limpio, lint **14/0**, tests **2 fallos de 1943** (los mismos dos;
++8 casos nuevos), build 1.129,17 kB y **CSS 274,19 kB**: baja 0,13 kB **a
+propósito** (borrada la regla `.line`), comprobado clase a clase que el módulo
+del arco emite las mismas 19 que declara y que las cuatro reglas de
+`[data-fit]` siguen ahí. Visto renderizado en un arnés temporal ya borrado —el
+5173 estaba apagado y lo arranqué yo; **no tengo `preview_stop`**, así que ese
+dev server sigue vivo—. Pendiente y solo del usuario: el recorrido en `/app/*`
+(login) y el lector de pantalla. Sin commitear: seis archivos. Siguiente:
+**tajada 4** (elegir los días en Ajustes, 581–583), que la 5 adelantó.
 
 **FEAT-019 `building` 3/4** (2026-09-22, revisor). **Tajada 3 aceptada: el
 sábado sin arco.** Los seis criterios de lectura (575–580) cumplidos con

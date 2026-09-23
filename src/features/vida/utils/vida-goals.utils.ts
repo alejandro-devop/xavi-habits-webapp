@@ -4,7 +4,12 @@
  * La versión **viva** de lo que `buildCategoryBreakdown`
  * (`vida-review.utils.ts:904-1039`) hace con un día ya cerrado: allí es la foto
  * de Revisión, aquí es el día en marcha —con la sesión abierta contada hasta el
- * minuto actual— y una hora a la que parar.
+ * minuto actual— y lo que todavía falta.
+ *
+ * **Aquí ya no se proyecta ninguna hora** (FEAT-019, tajada 5, criterio 589):
+ * la hora a la que pararías a este ritmo se calculaba y se enseñaba, y el
+ * usuario la quitó. La única hora que queda es la del `'passed'`, que
+ * **ocurrió**.
  *
  * Tres cosas se imitan de allí y **solo** tres: leer
  * `session.activity?.category ?? null` y tratar el nulo como su propio cubo, el
@@ -49,6 +54,23 @@ import {
 export const GOAL_FIT_OK_MARGIN_MINUTES = 60
 
 /**
+ * **Por debajo de qué parte de la meta el día se considera corto de verdad**
+ * (FEAT-019, tajada 5, criterio 585).
+ *
+ * El rojo pide **dos** cosas, no una: que lo que falta ya no quepa **y** que el
+ * día vaya a acabar por debajo de esta fracción de la meta. Existe porque el
+ * semáforo miraba solo el reloj que queda por delante y nunca lo que ya llevas
+ * hecho: a las 23:05, con el día acabado a las 22:00 y 7 h 09 de 8 h
+ * trabajadas, «ya no cabe» es cierto e inútil, y el arco rojo se leía como un
+ * veredicto sobre una jornada buena.
+ *
+ * **El 0,8 es del usuario, palabra por palabra** («creo que completé al menos
+ * un 80 % de mi jornada, debería ser naranja o verde (80 % me parece bien)»),
+ * no una propuesta del render: no se toca sin volver a preguntárselo.
+ */
+export const GOAL_FIT_SHORT_DAY_RATIO = 0.8
+
+/**
  * **Con qué días nace una meta**, y contra qué se compara cuando todavía no hay
  * ninguna (FEAT-019, criterio 575).
  *
@@ -89,8 +111,6 @@ export type VidaGoalArc = {
   share: number
   /** Lo que pasa de la meta. 0 si no se pasó. */
   overMinutes: number
-  /** «15:25». `null` sin reloj (día pasado) — entonces no hay proyección. */
-  stopAtTime: string | null
   /** «18:40», la hora a la que se cruzó la meta. `null` si no se cruzó. */
   passedAtTime: string | null
   /** La sesión en marcha que cuenta para esta meta, o `null`. */
@@ -127,24 +147,36 @@ export type VidaGoalArc = {
   arcCaption: string[]
   /**
    * La misma frase, entera y en texto de verdad, para el `<p>` de fuera del
-   * SVG. **Sin adjetivos, sin exclamaciones y sin reproche**, también pasada la
-   * meta (criterio 493).
+   * SVG — que es **de 1×1 px en los tres estados** (FEAT-019, tajada 5): el
+   * SVG es `aria-hidden`, así que esta frase es lo único que un lector de
+   * pantalla oye del dibujo, y no puede faltar (criterio 590).
+   *
+   * **Ya no dice ninguna hora proyectada** (criterio 589): ni «A este ritmo
+   * paras a las 17:55», ni «Si arrancas ahora, acabarías a las…». El usuario
+   * las quitó las dos —«no lo veo necesario… solo con saber cuánto me quedó
+   * faltando es suficiente»— y, sin la hora, la frase repetía la cabecera
+   * («7h 09 de 8h») y el interior del arco («TE FALTAN 51m»). Lo que queda en
+   * el estado `'missing'` es el interior del arco dicho en texto, para quien
+   * no ve el arco.
+   *
+   * **Sin adjetivos, sin exclamaciones y sin reproche**, también pasada la
+   * meta (criterio 493) y también en rojo (criterio 572).
    */
   line: string
   /**
-   * **Qué se está diciendo dentro del arco**, y de paso quién enseña `line`.
+   * **Qué se está diciendo dentro del arco.**
    *
-   * `'missing'` es lo que falta (criterio 559) y **el único estado en que la
-   * frase de la hora se ve de verdad** debajo del arco (criterio 560): ahí
-   * dentro ya no hay ninguna hora, así que la de parada tiene que aparecer en
-   * algún sitio. En `'passed'` (la hora a la que se cruzó la meta, criterio
-   * 562) y `'logged'` (lo registrado en un día que ya terminó, criterio 563) el
-   * arco **no cambia nada** respecto a FEAT-016 y la frase se queda donde
-   * estaba, en el `<p>` de solo lectores de pantalla.
+   * `'missing'` es lo que falta (criterio 559). En `'passed'` (la hora a la
+   * que se cruzó la meta, criterio 562) y `'logged'` (lo registrado en un día
+   * que ya terminó, criterio 563) el arco **no cambia nada** respecto a
+   * FEAT-016 — y el 589 los deja igual a propósito: la hora del `'passed'`
+   * **ocurrió**, no es una predicción, y sin ella ese arco se queda sin nada
+   * que enseñar.
    *
-   * Se lee **una sola vez** en los tres casos: el SVG es decorativo
-   * (`aria-hidden`) y `line` vive en un único `<p>` al que solo le cambia la
-   * clase (criterio 564, el hallazgo de la doble lectura de FEAT-016 tajada 3).
+   * Lo usa el componente para la geometría del rótulo y del número, no para
+   * decidir si `line` se ve: desde la tajada 5 **no se ve en ninguno**
+   * (criterio 564, el hallazgo de la doble lectura de FEAT-016 tajada 3, ahora
+   * trivialmente a salvo: un solo nodo y siempre la misma clase).
    */
   variant: 'missing' | 'passed' | 'logged'
   /**
@@ -169,14 +201,20 @@ export type VidaGoalArc = {
    */
   fitMinutes: number | null
   /**
-   * **El semáforo** (criterios 566–569): `'ok'` verde, `'tight'` naranja,
-   * `'over'` rojo. `null` = **sin ningún color** (criterios 571 y 573).
+   * **El semáforo** (criterios 566–569 y 585): `'ok'` verde, `'tight'`
+   * naranja, `'over'` rojo. `null` = **sin ningún color** (criterios 571 y
+   * 573).
    *
    * Mide si lo que falta **cabe antes de que se acabe el día**, no el
    * porcentaje de la meta. La diferencia no es un detalle: por porcentaje, un
    * lunes a las 9:15 con 15 minutos hechos estaría en rojo, y el arco estaría
    * regañando por ir al ritmo de cualquier lunes en un módulo escrito entero
    * para no juzgar. Por margen, ese mismo lunes es verde (criterio 570).
+   *
+   * **Pero el margen solo no basta para el rojo** (tajada 5): mira hacia
+   * adelante y nunca hacia lo ya hecho, y con el día acabado siempre dice «ya
+   * no cabe», que es cierto e inútil. El rojo pide además que el día vaya a
+   * acabar corto de verdad — ver `toFitLevel` y `GOAL_FIT_SHORT_DAY_RATIO`.
    *
    * **Es una marca visual y nada más** (criterio 572): ni una palabra cambia
    * en `line` ni en `arcCaption` por llevar color, tampoco en rojo.
@@ -358,18 +396,38 @@ export function buildGoalArcs({
 }
 
 /**
- * **El semáforo, a partir del margen** (criterios 567, 568 y 569).
+ * **El semáforo: el margen para el verde, el margen *y* el día entero para el
+ * rojo** (criterios 567, 568, 569 y 585).
  *
- * Verde si sobra más de una hora, naranja si cabe justo —el cero entra en el
- * naranja: cabe, aunque sin un minuto de sobra—, rojo si el margen es
- * negativo. `null` entra y sale igual: fuera de la ventana no hay color
- * (criterios 571 y 573).
+ * - **Verde** si sobra más de una hora de margen. **No cambia en la tajada 5**:
+ *   verde en este módulo afirma «todavía da para la meta entera», y a las
+ *   23:00 con un 89 % hecho eso sería mentira. El módulo no dice cosas que no
+ *   son.
+ * - **Naranja** si cabe justo —el cero entra aquí: cabe, aunque sin un minuto
+ *   de sobra— **y también si ya no cabe pero el día acaba en el 80 % de la
+ *   meta o por encima**.
+ * - **Rojo** solo cuando se juntan las dos: ya no cabe **y** el día va a
+ *   acabar corto de verdad.
+ *
+ * `bestPossibleMinutes` es lo mejor a lo que puede acabar el día:
+ * `workedMinutes + max(0, dayEnd − ahora)`. El `max(0, …)` es el caso que
+ * disparó esta tajada —son las 23:05 y el día acababa a las 22:00—: entonces
+ * ya no queda día, y lo mejor posible es exactamente lo que ya se llevaba.
+ *
+ * `null` entra y sale igual: fuera de la ventana no hay color (criterios 571
+ * y 573).
  */
-function toFitLevel(fitMinutes: number | null): VidaGoalArc['fitLevel'] {
+function toFitLevel(
+  fitMinutes: number | null,
+  day: { bestPossibleMinutes: number; targetMinutes: number },
+): VidaGoalArc['fitLevel'] {
   if (fitMinutes === null) return null
   if (fitMinutes > GOAL_FIT_OK_MARGIN_MINUTES) return 'ok'
   if (fitMinutes >= 0) return 'tight'
-  return 'over'
+  // Ya no cabe. ¿Y aun así el día acaba bien? Entonces no es un rojo: es un
+  // día que se quedó corto por poco, y decirle «rojo» a una jornada de 7 h 09
+  // de 8 h es el reproche que este módulo no hace.
+  return day.bestPossibleMinutes < day.targetMinutes * GOAL_FIT_SHORT_DAY_RATIO ? 'over' : 'tight'
 }
 
 function toArc(
@@ -381,12 +439,17 @@ function toArc(
   const workedMinutes = tally.spans.reduce((total, span) => total + span.durationMinutes, 0)
   const overMinutes = Math.max(0, workedMinutes - targetMinutes)
   const passedAtTime = workedMinutes >= targetMinutes ? passedAtOf(tally.spans, targetMinutes) : null
-  // Sin reloj no hay proyección: un día que ya terminó no tiene un «ahora»
-  // desde el que proyectar (D-B).
+  // **Sin reloj no hay proyección** (D-B): un día que ya terminó no tiene un
+  // «ahora» desde el que proyectar.
+  //
+  // Hasta la tajada 5 esto producía además `stopAtTime` —la hora a la que
+  // pararías a este ritmo—, y la puerta de abajo se escribía `stopAtTime ===
+  // null`. El usuario quitó esa hora de la pantalla («no lo veo necesario…
+  // solo con saber cuánto me quedó faltando es suficiente», criterio 589), así
+  // que **ya no se calcula ninguna**: la puerta vuelve a ser `canProject`, que
+  // es lo que siempre significó, y `stopAtTime` sale del tipo por muerto — no
+  // lo leía nadie fuera de esta función.
   const canProject = day.nowMinutes !== null && !day.isPastDay
-  const stopAtTime = canProject
-    ? minutesToTime(day.nowMinutes! + Math.max(0, targetMinutes - workedMinutes))
-    : null
 
   const running = tally.spans.find((span) => span.isRunning) ?? null
   const workedLabel = formatDurationFromMinutes(workedMinutes)
@@ -419,10 +482,19 @@ function toArc(
   // La medianoche sigue sin arreglarse aquí: un día que termina a las 00:00 se
   // lee como el minuto cero, igual que en `getDayBudget`. Es el límite conocido
   // del módulo, no de esta resta.
-  const fitCandidate =
-    canProject && day.dayEnd !== null
-      ? parseTimeToMinutes(day.dayEnd) - day.nowMinutes! - missingMinutes
-      : null
+  const hasFitWindow = canProject && day.dayEnd !== null
+  const fitCandidate = hasFitWindow
+    ? parseTimeToMinutes(day.dayEnd!) - day.nowMinutes! - missingMinutes
+    : null
+
+  // **Lo mejor a lo que puede acabar el día**: lo que ya llevas más todo el día
+  // que queda por delante (criterio 585). El `max(0, …)` no es defensivo: es el
+  // caso del que nació esta tajada —son las 23:05 y el día acababa a las
+  // 22:00—, donde no queda nada de día y lo mejor posible es lo ya hecho.
+  const minutesLeftOfDay = hasFitWindow
+    ? Math.max(0, parseTimeToMinutes(day.dayEnd!) - day.nowMinutes!)
+    : 0
+  const bestPossibleMinutes = workedMinutes + minutesLeftOfDay
 
   let arcValue: string
   let arcCaption: string[]
@@ -431,7 +503,7 @@ function toArc(
   // `null` mientras no se demuestre lo contrario: el color es la excepción —el
   // tramo anterior a cruzar la meta, hoy—, no lo que trae el arco por defecto.
   let fitMinutes: number | null = null
-  if (day.isPastDay || stopAtTime === null) {
+  if (day.isPastDay || !canProject) {
     arcValue = passedAtTime !== null ? formatTimeForDisplay(passedAtTime) : workedLabel
     arcCaption =
       passedAtTime !== null ? [`Pasaste las ${targetLabel}`, 'a las'] : ['Registraste']
@@ -445,24 +517,24 @@ function toArc(
     arcCaption = [`Pasaste las ${targetLabel}`, 'a las']
     line = `Llevas ${workedSentence}.${passedSentence}`
     variant = 'passed'
-  } else if (workedMinutes === 0) {
-    // Con cero trabajado lo que falta es la jornada entera (criterio 561). La
-    // fórmula de la hora sigue siendo exacta, solo que en condicional (D-C), y
-    // por eso `line` no cambia: si arrancas ahora y no paras, esa es la hora.
-    arcValue = missingLabel
-    arcCaption = ['Te faltan']
-    line = `Si arrancas ahora, acabarías a las ${formatTimeForDisplay(stopAtTime)}.`
-    variant = 'missing'
-    fitMinutes = fitCandidate
   } else {
     // **Dentro del arco va lo que falta, no la hora** (criterio 559). El arco
     // mide horas trabajadas de una jornada: meter dentro una hora del reloj
     // eran dos cosas distintas en el mismo sitio, y el usuario tuvo que
-    // preguntar cuál era. La hora no se pierde —sigue en `line`, que a partir
-    // de aquí se ve de verdad (criterio 560)—, deja de ser lo primero que ves.
+    // preguntar cuál era. Con cero trabajado lo que falta es la jornada
+    // entera, y se dice igual (criterio 561): no hay un estado de texto
+    // distinto para el día que todavía no ha empezado.
+    //
+    // **Y la hora proyectada ya no se dice en ninguna parte** (criterio 589,
+    // tajada 5). Aquí vivían las dos formas que el usuario quitó —«A este
+    // ritmo paras a las H» y «Si arrancas ahora, acabarías a las H»—, y con
+    // ellas las dos ramas que se diferenciaban solo en eso. Lo que queda es el
+    // interior del arco dicho en texto real, porque el SVG es `aria-hidden` y
+    // alguien tiene que decírselo a un lector de pantalla (criterio 590). No
+    // se ve: a la vista lo dicen el arco y la cabecera.
     arcValue = missingLabel
     arcCaption = ['Te faltan']
-    line = `Llevas ${workedSentence}. A este ritmo paras a las ${formatTimeForDisplay(stopAtTime)}.`
+    line = `Te faltan ${formatDurationMinutes(missingMinutes)} de ${goal.name}.`
     variant = 'missing'
     fitMinutes = fitCandidate
   }
@@ -476,7 +548,6 @@ function toArc(
     targetLabel,
     share: Math.min(1, Math.max(0, workedMinutes / targetMinutes)),
     overMinutes,
-    stopAtTime,
     passedAtTime,
     runningTitle: running?.title ?? null,
     runningSince: running ? formatTimeForDisplay(minutesToTime(running.startMinutes)) : null,
@@ -486,6 +557,6 @@ function toArc(
     variant,
     missingMinutes,
     fitMinutes,
-    fitLevel: toFitLevel(fitMinutes),
+    fitLevel: toFitLevel(fitMinutes, { bestPossibleMinutes, targetMinutes }),
   }
 }

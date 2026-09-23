@@ -1,11 +1,11 @@
 ---
 id: FEAT-019
 title: El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas
-status: building
+status: in-review
 architect: yes    # toca el API en otro repo (columna nueva + mutación en vida_goals), cruza dos componentes que hoy no se hablan (VidaDayBudget y VidaGoalArc) y estrena la primera edición de una meta en el front; razón completa abajo
 area: features/vida, API (xavi-platform-node)
 requested: 2026-09-22
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # FEAT-019 — El arco de trabajo, corregido
@@ -260,6 +260,15 @@ hasta el 558. Esta feature empieza en el **559**.)
   lectores de pantalla) debajo del arco, con la misma frase que hoy compone
   `arc.line` («A este ritmo paras a las 17:55.» / «Si arrancas ahora,
   acabarías a las…» con cero minutos).
+
+  > **SUPERADO por decisión del usuario del 2026-09-22 (tajada 5).** No se
+  > borra —se cumplió, se revisó y se aceptó en la tajada 1—, pero ya no se
+  > exige: el usuario lo anuló usando la app esa noche. Sus palabras: «quiero
+  > remover ese cálculo de "a qué hora terminaría mi jornada", no lo veo
+  > necesario… solo con saber cuánto me quedó faltando es suficiente». Con la
+  > hora fuera, la línea repetía la cabecera («7h 09 de 8h») y el interior del
+  > arco («TE FALTAN 51m»), así que deja de verse. Lo vigente es el **589** y
+  > el **590**. Los criterios 559, 561–565 siguen en pie sin cambios.
 - [ ] 561. Con cero minutos trabajados hoy y la meta sin cruzar, el arco
   muestra igualmente «TE FALTAN» con el total de la jornada (p. ej. «TE
   FALTAN 8h»), sin un estado de texto distinto — sustituye, en este caso, la
@@ -347,6 +356,50 @@ hasta el 558. Esta feature empieza en el **559**.)
 - [ ] 584. `typecheck` limpio; lint y tests no peores que la línea base de
   `ENVIRONMENT.md` en los dos repositorios.
 
+*El rojo que no era rojo, y la hora que sobraba (tajada 5 — solo front, sin
+migración). Pedida por el usuario la noche del **2026-09-22** usando la app,
+con prioridad sobre la tajada 4. No pasó por el analista: la escribo yo, el
+constructor, a partir de su encargo, y por eso va marcada como tal.*
+
+**Sus palabras, sin reinterpretar:** «el semáforo quedó inverso… creo que
+completé al menos un 80 % de mi jornada, debería ser naranja o verde (80 % me
+parece bien), eso es bueno, trabajé un buen tiempo» · «quiero remover ese
+cálculo de "a qué hora terminaría mi jornada", no lo veo necesario… solo con
+saber cuánto me quedó faltando es suficiente».
+
+**Lo que pasó:** cabecera «→ 22:00», arco en rojo, dentro «TE FALTAN 51m»,
+debajo «Llevas 7 h 9 min. A este ritmo paras a las 23:59.», pasadas las 23:00.
+La aritmética era correcta —`fitMinutes = (22:00 − 23:0x) − 51m ≈ −2 h` →
+`over`—, pero el color **solo miraba el reloj que queda por delante y nunca lo
+que ya llevas hecho**: a las 23:00, con el día acabado a las 22:00, «ya no
+cabe» es cierto e inútil, y se leía como un veredicto sobre una jornada de
+7 h 09.
+
+- [ ] 585. El **rojo** exige **dos** cosas a la vez: que lo que falta ya no
+  quepa (`fitMinutes < 0`) **y** que el día vaya a acabar por debajo del
+  **80 %** de la meta. «Lo mejor a lo que puede acabar el día» es
+  `workedMinutes + max(0, dayEnd − ahora)`. Si ya no cabe pero el día acaba en
+  el 80 % o más, el arco es **naranja**.
+- [ ] 586. El caso literal del usuario —meta de 480, día hasta las 22:00, son
+  las 23:05, lleva 429 minutos (89 %)— el arco es **naranja**, no rojo.
+- [ ] 587. El **verde no cambia**: sigue siendo `fitMinutes >
+  GOAL_FIT_OK_MARGIN_MINUTES` y nada más. Verde en este módulo afirma
+  «todavía da para la meta entera», y a las 23:00 con un 89 % eso sería
+  mentira. Una mañana con cero trabajado sigue siendo verde.
+- [ ] 588. **Las 20:00 con casi nada registrado siguen en rojo** (0 o 30
+  minutos de 480, con el día hasta las 23:00): es el momento en el que el rojo
+  sirve, y si se vuelve naranja la tajada 2 está rota.
+- [ ] 589. Ni «A este ritmo paras a las H» ni «Si arrancas ahora, acabarías a
+  las H» aparecen en ninguna parte del arco: ni a la vista, ni en el nodo de
+  1×1 px, ni en ningún atributo. **No se toca**: el arco de meta cruzada sigue
+  enseñando dentro la hora a la que la cruzaste («PASASTE LAS 8H / A LAS
+  17:55» y su frase), y el día pasado sigue con «Registraste X de Y» y «No hay
+  nada registrado de Y ese día».
+- [ ] 590. El arco **no se queda mudo**: en el estado «te faltan» sigue
+  habiendo **un solo** nodo de texto real que dice lo que el SVG dibuja (el
+  SVG es `aria-hidden`), sin reintroducir por la puerta de atrás la hora que
+  el usuario quitó.
+
 **Tajadas:**
 
 | # | Qué hace | Estado |
@@ -354,6 +407,7 @@ hasta el 558. Esta feature empieza en el **559**.)
 | 1 | **Lo que falta, dentro del arco.** Cambia qué se pinta como número grande cuando la meta no está cruzada, y hace visible la hora que antes estaba dentro. Solo front, sin migración: corrige la confusión original del usuario de inmediato. Criterios 559–565. | **accepted** |
 | 2 | **El semáforo, lectura B.** El color verde/naranja/rojo según si da tiempo hoy, usando un dato que `VidaDayBudget` ya calcula. Solo front, sin migración; usable sin depender de la tajada 1 (aunque tiene más sentido junto a ella). Criterios 566–574. | **accepted** (2.ª vuelta) |
 | 3 | **Solo los días laborables.** Migración en el API, filtro del arco y la pregunta por día de la semana, y la fila de días en Ajustes → Vida. La única que toca el backend. Criterios 575–584. | **partida en la sección 2**: la 3 (575–580, camino de lectura) **accepted**; los 581–583 van en la 4, pending |
+| 5 | **El rojo solo si el día acaba corto, y fuera la proyección de la hora.** Pedida por el usuario la noche del 2026-09-22 usando la app: el semáforo salía rojo a las 23:00 con 7 h 09 de 8 h hechas, y la frase de «a este ritmo paras a las…» le sobraba. Va **antes** de la 4. Criterios 585–590; **supera el 560**. | **accepted** |
 
 Tres tajadas: la 1 es la más barata y la más urgente —es literalmente lo que
 el usuario no entendió—, y no depende de nada; la 2 añade una capa visual
@@ -860,6 +914,7 @@ Hoy un sábado; la 4, tocando un botón en Ajustes y volviendo a Hoy.
 | 2 | **El semáforo, lectura B.** `dayEnd` entra en `buildGoalArcs`; salen `missingMinutes`, `fitMinutes`, `fitLevel`; el arco pinta `data-fit`. Sin API. | `utils/vida-goals.utils.ts` (`BuildGoalArcsInput`, `GOAL_FIT_OK_MARGIN_MINUTES`), `pages/VidaHoyPage.tsx` (la llamada a `buildGoalArcs` y su `useMemo`), `components/VidaGoalArc/VidaGoalArc.tsx` (`data-fit`), `VidaGoalArc.module.scss`, `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` (un caso nuevo) | 566, 567, 568, 569, 570, 571, 572, 573, 574 | **accepted** (2.ª vuelta) |
 | 3 | **El sábado sin arco (camino de lectura).** Migración 070, `activeDays` en servicio/SDL/tipos, y el filtro por día en la util + la pregunta atada al mismo dato. **Requiere que el usuario haga push y se despliegue** antes de verse. | API: `migrations/070_vida_goals_active_days.sql`, `types/services/vida.types.ts`, `services/vida-goal.service.ts` (`GoalRow`, `mapGoal`), `graphql/modules/vida/vida.schema.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front: `types/vida-goal.types.ts`, `graphql/activity-categories.graphql.ts` (5 sub-selecciones), `graphql/schema/vida.schema.graphql` (recopiar), `utils/vida-goals.utils.ts` (`DEFAULT_GOAL_ACTIVE_DAYS`, filtro, `promptAllowed`), `pages/VidaHoyPage.tsx` (la rama de la pregunta), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 575, 576, 577, 578, 579, 580 | **accepted** |
 | 4 | **Elegir los días (camino de escritura).** Mutación `vidaGoalDaysSet` y la fila de siete botones en Ajustes → Vida. | API: `graphql/modules/vida/vida.schema.ts` (input + mutación), `validators/schemas/vida.schemas.ts`, `graphql/modules/vida/vida.resolvers.ts`, `services/vida-goal.service.ts` (`setGoalDays`), `tests/unit/validators/vida.schemas.test.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front **nuevos**: `graphql/vida-goals.graphql.ts`, `api/vida-goals.api.ts`, `hooks/useVidaGoals.ts`; **modificados**: `graphql/contracts.test.ts`, `pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`) | 581, 582, 583 | pending |
+| 5 | **El rojo exige día corto de verdad, y se va la proyección de la hora.** `toFitLevel` mira también el mejor final posible del día (80 % de la meta); `line` deja de decir una hora y vuelve al `<p>` de 1×1 px. Sin API. **Sin arquitecto: la pidió el usuario esta noche y cae entera dentro de lo que ya existe.** | `utils/vida-goals.utils.ts` (`toFitLevel`, `toArc`, tipo `VidaGoalArc`, `GOAL_FIT_SHORT_DAY_RATIO`), `components/VidaGoalArc/VidaGoalArc.tsx` (la clase del `<p>`), `VidaGoalArc.module.scss` (se va `.line`), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 585, 586, 587, 588, 589, 590 (y **supera el 560**) | **accepted** |
 
 **584** (`typecheck` limpio; lint y tests no peores que la línea base **de los
 dos repositorios**) se comprueba al cerrar **cada** tajada, no solo la última.
@@ -1817,6 +1872,205 @@ borrado. API: 4 modificados y **1 nuevo** (`migrations/070_vida_goals_active_day
 Sin `git add`, sin commit y **sin push** en ninguno de los dos. El contenedor
 de Postgres de la prueba está borrado (`docker ps -a` no lo lista).
 
+### Tajada 5 — El rojo solo si el día acaba corto, y fuera la hora proyectada
+
+**Resumen para quien revise:**
+
+1. El rojo ya no sale por mirar el reloj: pide **dos** cosas a la vez —que lo
+   que falta ya no quepa **y** que el día vaya a acabar por debajo del 80 % de
+   la meta—. El caso del usuario (23:05, día hasta las 22:00, 7 h 09 de 8 h)
+   pasa de rojo a **naranja**, y las 20:00 con casi nada registrado siguen en
+   rojo.
+2. La hora proyectada desaparece del módulo: ni «A este ritmo paras a las H»
+   ni «Si arrancas ahora, acabarías a las H». Con ella se fue la línea
+   visible bajo el arco —repetía la cabecera y el interior— y el `<p>` volvió a
+   1×1 px, que es donde estaba en FEAT-016. `stopAtTime` sale del tipo.
+3. **Lo que más probablemente he roto:** el rojo ahora es bastante más raro, y
+   el umbral del 80 % se mide contra `targetMinutes`, no contra la parte del
+   día que la meta ocupa — con una meta pequeña (`Estudiar`, 60 min) basta con
+   que queden 48 minutos de día para que no haya rojo nunca. Lo segundo es la
+   **baja de `stopAtTime`**: nadie lo leía fuera de la util, pero es un campo
+   público menos y el `git grep` que hice es toda la prueba que tengo. Y lo
+   tercero, **el CSS: he borrado la regla `.line`**, así que el CSS emitido
+   **baja** 0,13 kB respecto a la línea base — que es justo la señal que
+   `ENVIRONMENT.md` manda investigar. Abajo dejo la comprobación de que no se
+   comió nada más.
+
+**Qué se construyó:**
+
+- `src/features/vida/utils/vida-goals.utils.ts`
+  - **`GOAL_FIT_SHORT_DAY_RATIO = 0.8`**, exportada y documentada como del
+    usuario, no del render.
+  - **`toFitLevel(fitMinutes, { bestPossibleMinutes, targetMinutes })`**: el
+    verde y el naranja no se tocan; el rojo pasa a exigir además
+    `bestPossibleMinutes < targetMinutes * 0,8`. `bestPossibleMinutes =
+    workedMinutes + max(0, dayEnd − ahora)`, calculado en `toArc` con el mismo
+    `parseTimeToMinutes(dayEnd)` que ya usaba `fitCandidate` (una sola lectura
+    del dato, dos usos).
+  - **Se va `stopAtTime`**, del tipo y del cálculo. La puerta que escribía
+    `stopAtTime === null` vuelve a ser `!canProject`, que es lo que siempre
+    significó (`minutesToTime` nunca devuelve `null`), con un comentario que lo
+    dice.
+  - **Las dos ramas de «te faltan» se funden en una**: solo se diferenciaban en
+    la frase de la hora. `line` pasa a ser
+    `Te faltan <duración larga> de <meta>.` en los dos casos, cero minutos
+    incluido.
+- `src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx`: el `<p>` es
+  siempre `styles.srLine`. Sigue siendo **uno solo** (criterio 564, ahora
+  trivial). El resto del componente no cambia: la geometría de `isMissing`
+  (rótulo en 66, número a 34), el punto del semáforo y `data-fit` se quedan
+  como los dejó la tajada 2.
+- `src/features/vida/components/VidaGoalArc/VidaGoalArc.module.scss`: fuera la
+  regla `.line`, con un comentario en su sitio que explica la baja **y avisa
+  de la bajada del CSS** para que nadie la confunda con un comentario sin
+  cerrar.
+- `src/features/vida/utils/vida-goals.utils.test.ts` y
+  `src/features/vida/pages/VidaHoyPage.test.tsx`: los casos que fijaban la
+  frase de la hora ahora fijan que **no está**, y los del semáforo se
+  recalculan. Cuatro casos nuevos: el del usuario con sus números exactos, el
+  borde del 80 %, la red de las 20:00 y la mañana verde.
+
+**Por qué así, y qué descarté:**
+
+- **La línea desaparece entera en vez de quedarse reducida.** El encargo lo
+  dejaba a mi criterio. Lo que podía quedar era «Llevas 7 h 9 min.», y eso es
+  **exactamente** lo que ya dice la cabecera («7h 09 de 8h») dos centímetros
+  más arriba: una tercera copia del mismo dato en la misma tarjeta. Medido en
+  el arnés: las cinco tarjetas quedan a 180 px de alto, la de «te faltan»
+  incluida, y ya no es la única más alta que las demás.
+- **Pero el `<p>` no se borra, se esconde.** El SVG es `aria-hidden` (y lo es
+  a propósito desde FEAT-016 tajada 3, que cerró la doble lectura), así que
+  sin ese `<p>` un lector de pantalla oiría del arco solo «Trabajo, 7h 9 de
+  8h» y **nada** de lo que el dibujo dice. La frase que queda —«Te faltan 51
+  min de Trabajo.»— es el interior del arco dicho en texto, **no** la frase
+  que el usuario quitó: no hay ninguna hora proyectada en ella. Descarté
+  `aria-label` en el `<article>` por la misma razón que FEAT-016: se acaba
+  oyendo dos veces.
+- **`stopAtTime` fuera del tipo y no un comentario.** El encargo admitía las
+  dos. Quedaba muerto de verdad: `git grep` no encuentra ningún lector fuera
+  de `vida-goals.utils.ts` y de su propio test, y la puerta que parecía
+  necesitarlo (`stopAtTime === null`) es literalmente `!canProject`. Dejarlo
+  habría sido publicar una proyección que ya nadie pinta.
+- **El umbral se mide contra `targetMinutes`** y no contra «la parte de la meta
+  que cabía en el día». Es lo que dice el encargo palabra por palabra («que el
+  día vaya a acabar por debajo del 80 % de la meta») y es lo que el usuario
+  usó para juzgar su propio día («completé al menos un 80 % de mi jornada»).
+  La consecuencia rara está arriba, en lo que puedo haber roto.
+- **Verde intacto**, como pedía el encargo: a las 23:05 con un 89 % el arco es
+  naranja, nunca verde, porque verde aquí afirma que todavía da para la meta
+  entera.
+
+**Verificación:**
+
+| Qué | Comando | Resultado |
+|---|---|---|
+| Tipos | `pnpm typecheck` | limpio, exit 0 |
+| Linter | `pnpm lint` | **14 errores / 0 warnings** — la línea base exacta |
+| Tests | `pnpm test` | **2 fallos de 1943** (`SearchSelect` ×2, preexistentes). Eran 2 de 1935: +8 son los casos nuevos de esta tajada |
+| Suites tocadas | `npx vitest run …vida-goals.utils.test.ts` | 52/52 |
+| | `npx vitest run …VidaHoyPage.test.tsx` | 197/197 |
+| Paquete | `pnpm build` | chunk inicial **1.129,17 kB** (base 1.129,25), `app-icons` 620,20 kB, `IconPicker` 4,64 kB. **CSS 274,19 kB** (base 274,32) |
+
+**La bajada del CSS, comprobada y no supuesta.** `ENVIRONMENT.md` manda buscar
+un comentario sin cerrar cuando el CSS baja. Contadas las clases que el módulo
+del arco emite en `dist/assets/index-*.css` contra las declaradas en el
+`.module.scss`: **19 y 19**, las mismas —`arc, capsule, caption, card, count,
+countValue, edge, fitDot, head, label, noData, root, row, srLine, sub,
+subValue, trackPath, value, valuePath`—. Y las cuatro reglas del semáforo
+siguen ahí: `[data-fit=ok]`, `[data-fit=tight]` (×2, la de tema claro y la de
+contraste), `[data-fit=over]`. Lo único que falta es `.line`, que es lo que
+borré: −0,13 kB ≈ los ~125 bytes de esa regla minificada.
+
+**Criterios, uno por uno:**
+
+- **585 (el rojo exige las dos cosas)** — `toFitLevel` devuelve `'over'` solo
+  si `fitMinutes < 0` **y** `bestPossibleMinutes < targetMinutes * 0,8`.
+  Probado en los dos bordes: a las 17:36 con 60 min hechos el mejor final son
+  384 minutos clavados → `'tight'`; a las 17:37 son 383 → `'over'`. También en
+  la tabla: «ya no cabe, pero el día acaba bien» (16:30, margen −30) →
+  `'tight'`; «ya no cabe y además el día acaba corto» (19:00, margen −180) →
+  `'over'`. **Cumplido.**
+- **586 (el caso del usuario es naranja)** — `fitMinutes` sigue siendo −116 y
+  `fitLevel` es `'tight'`, en la util y en la página (con
+  `vidaDayEndTime: '22:00'` y el reloj a las 23:05, el `<article>` sale con
+  `data-fit="tight"` y dentro «TE FALTAN 51m»). Visto también renderizado en
+  el arnés: arco ámbar. **Cumplido.**
+- **587 (el verde no cambia)** — la rama del verde es la misma línea de antes.
+  La mañana a las 8:00 con cero trabajado da margen 420 y `'ok'`; el lunes a
+  las 9:15 con 15 min (criterio 570) sigue verde. Y el caso del 586 **no** es
+  verde. **Cumplido.**
+- **588 (las 20:00 siguen en rojo)** — `it.each` con 0, 30 y 60 minutos a las
+  20:00 con el día hasta las 23:00: los tres `'over'`. En la página, el caso de
+  cero minutos sigue pintando el punto rojo. Visto en el arnés con 30 minutos.
+  **Cumplido.**
+- **589 (ni una hora proyectada)** — el `textContent` y el `innerHTML` del
+  `<article>` no contienen `ritmo`, `acabarías` ni la hora; comprobado en el
+  DOM real del arnés sobre los cinco estados. Lo que **no** se tocó, verificado
+  en el mismo sitio: el arco de meta cruzada sigue con «PASASTE LAS 8H / A LAS
+  / 16:00» y su frase, y el día pasado con «Registraste 5 h de Trabajo.» y «No
+  hay nada registrado de … ese día». **Cumplido.**
+- **590 (el arco no se queda mudo)** — un solo `<p>` por tarjeta, de 1×1 px
+  medido en el navegador (`getBoundingClientRect()` → 1×1 en los cinco), con
+  «Te faltan 51 min de Trabajo.» / «Te faltan 8 h de Trabajo.» / «Llevas 9 h.
+  Pasaste las 8 h a las 16:00.». El `<svg>` sigue `aria-hidden`. **Cumplido.**
+- **584 (las puertas)** — tabla de arriba. Solo este repositorio: la tajada no
+  toca el API. **Cumplido.**
+- **560** — **superado por decisión del usuario del 2026-09-22**, anotado en la
+  sección 1 debajo del propio criterio, con sus palabras y sin borrarlo. Esta
+  tajada lo incumple **a propósito**: la hora ya no está en `line` ni se ve.
+- **Los que esta tajada no debía mover y he vuelto a medir**: 559 (dentro va lo
+  que falta), 561 (cero minutos → «TE FALTAN 8h»), 562 (pasada la meta, sin
+  cambios), 563 (día pasado), 564 (una sola vez), 565 (el rótulo por debajo de
+  18 caracteres — el test paramétrico sigue verde, no lo he aflojado), 566–574
+  (el semáforo de la tajada 2, con el rojo redefinido por el 585), 576–580 (el
+  sábado). Todos en verde en las dos suites.
+
+**Lo que queda para prueba manual del usuario** (`/app/*` está tras un login
+que no puedo pasar, y el arnés usa datos sintéticos):
+
+1. Abrir **Vida → Hoy** un día laborable con la jornada empezada. Debajo del
+   arco **no debe haber ninguna frase**: la tarjeta acaba en el arco (o en
+   «Cuenta …, en marcha desde las …» si hay sesión abierta).
+2. Repetir el momento de la captura: pasadas las 23:00, con el día configurado
+   hasta las 22:00 y ~7 h registradas. El arco tiene que verse **ámbar**, no
+   rojo, con «TE FALTAN 51m» dentro.
+3. Comprobar que el rojo sigue apareciendo cuando toca: sobre las 20:00 de un
+   día con poco o nada registrado.
+4. Con lector de pantalla (VoiceOver/TalkBack), el arco debe leerse «Trabajo,
+   7h 09 de 8h» y «Te faltan 51 min de Trabajo.», **sin ninguna hora**.
+
+**Lo que descubrí y no estaba en el plan** (no lo he tocado, por alcance):
+
+- **El semáforo no distingue una meta que hoy no podía caber de una que se
+  abandonó.** Con «Estudiar» (60 min), el rojo exige que queden menos de 48
+  minutos de día: entre semana eso solo pasa después de las 22:12. Para metas
+  pequeñas el rojo es casi inalcanzable. No es un defecto de esta tajada —el
+  umbral es el que el usuario fijó— pero conviene saberlo antes de crear la
+  segunda meta.
+- **La medianoche sigue sin arreglarse** en todo el módulo (`getDayBudget`
+  incluido): un día que acaba a las 00:00 se lee como el minuto cero. Con la
+  hora de parada fuera, el síntoma más visible de eso (el «23:59» que salía en
+  la frase) ha desaparecido — pero la causa sigue ahí y ahora se ve menos.
+- **`ENVIRONMENT.md` no dice que no exista `preview_stop`** en el juego de
+  herramientas del constructor. Ver la nota de abajo.
+
+**Nota de entorno (no he tocado `ENVIRONMENT.md`, que es del usuario).** El
+probe dio el **5173 apagado** al empezar. Para ver el arco renderizado arranqué
+el servidor de `.claude/launch.json` (`preview_start {name}`), que cogió el
+**5173** (no el 5174, así que el CORS de la API no se ve afectado), y monté el
+arnés temporal `arnes-arco.html` + `src/arnes-arco.tsx` con datos sintéticos y
+`MemoryRouter`. **Los dos archivos están borrados** (`git status` no los lista;
+lo que aparece es esta tajada más lo que reescribe `graphify update .`). Lo que no pude hacer es **pararlo**: no tengo
+`preview_stop` entre mis herramientas, solo `preview_start`. Queda un dev server
+en el 5173 que yo arranqué; si el usuario levanta el suyo, que sepa de dónde
+sale.
+
+**Estado del árbol:** sin commitear. **Seis archivos de código y documento**
+—`vida-goals.utils.ts`, `vida-goals.utils.test.ts`, `VidaGoalArc.tsx`,
+`VidaGoalArc.module.scss`, `VidaHoyPage.test.tsx` y este expediente—, más
+`BOARD.md` y lo que reescribe `graphify update .` bajo `graphify-out/` (regla
+de `CLAUDE.md`). Ninguno nuevo, ninguno borrado.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — Lo que falta, dentro del arco
@@ -2506,3 +2760,256 @@ quedan escritos: ninguno es un criterio incumplido ni una regresión.
 API dice «3 fallos de 560» y hoy son **3 de 576, 52 suites** (los mismos tres
 fallos y las mismas seis suites rotas) — lo confirmo con mi propia corrida, el
 constructor ya lo había señalado.
+
+### Tajada 5 — El rojo solo si el día acaba corto, y fuera la hora proyectada
+
+**Veredicto: `accepted`.** Los seis criterios (585–590) están cumplidos con
+evidencia propia —barrido de la frontera minuto a minuto, no solo los casos que
+el constructor eligió—, el 584 lo he vuelto a medir entero, la bajada del CSS
+es **exactamente** la regla `.line` y nada más, y `stopAtTime` no tenía ningún
+consumidor vivo. No encontré ninguna regresión. Cuatro hallazgos anotados;
+ninguno devuelve la tajada.
+
+**Cómo verifiqué la aritmética (y no solo los casos del constructor).** Monté
+un barrido temporal (`src/features/vida/utils/zz-rev-sweep.test.ts`, **borrado**
+— `git status` solo lista los cinco archivos de la tajada más el expediente,
+`BOARD.md` y `graphify-out/`) que llama a `buildGoalArcs` **minuto a minuto de
+las 6:00 a las 23:59** para varios valores de minutos trabajados, y anota cada
+cambio de `fitLevel`. Meta de 480, día hasta las **22:00** (el caso del
+usuario):
+
+| Trabajado | Verde hasta | Naranja desde | **Rojo desde** |
+|---|---|---|---|
+| 0 | 12:59 | 13:00 | **15:37** |
+| 30 | 13:29 | 13:30 | **16:07** |
+| 2 h | 14:59 | 15:00 | **17:37** |
+| 4 h | 16:59 | 17:00 | **19:37** |
+| 5 h | 17:59 | 18:00 | **20:37** |
+| 6 h 24 (80 %) | 19:23 | 19:24 | **nunca** |
+| 7 h 09 (89 %) | 20:08 | 20:09 | **nunca** |
+
+**La frontera cae donde tiene sentido y no deja ningún hueco raro.** Tres cosas
+que el barrido demuestra y que no se ven leyendo el código:
+
+1. **Cada fila cambia de color una sola vez en cada sentido** (verde →
+   naranja → rojo, nunca de vuelta): el semáforo es monótono en el reloj, no
+   parpadea.
+2. **El rojo sigue donde servía.** Las 20:00 con poco registrado son rojas: con
+   el día hasta las 23:00 lo son con **cualquier cosa por debajo de 3 h 24**
+   trabajadas, y con el día hasta las 22:00, por debajo de **4 h 24**. El
+   criterio 588 (0, 30 y 60 min) es el borde fácil de ese rango, no el límite.
+3. **Lo único que el rojo perdió está donde debía perderlo.** Con cero
+   trabajado y el día hasta las 22:00, antes había rojo desde las **14:01**;
+   ahora desde las **15:37**. En esa franja de hora y media el día todavía
+   puede acabar por encima del 80 % (a las 15:00 con nada hecho aún caben 7 h
+   de 8), así que el aviso que se retira es justo el que el usuario llamó
+   «cierto e inútil». No hay ningún tramo en que el rojo desaparezca **y** el
+   día vaya a acabar corto: la condición es exactamente «lo mejor a lo que
+   puede acabar el día < 80 % de la meta».
+
+**Criterios, uno por uno** (y también **como redacción**, que es lo que pedía
+el encargo: los escribió el constructor):
+
+- **585 — cumplido.** `toFitLevel` devuelve `'over'` solo con las dos
+  condiciones, y el empate está donde la redacción lo pone: con 384 minutos
+  clavados de mejor final (el 80 % exacto) el arco es **naranja**; con 383,
+  rojo. Medido en el barrido a las 19:24 con 6 h 24 hechas. *Como redacción es
+  preciso y comprobable* —da la fórmula y el caso de empate—, con **un matiz
+  que anoto abajo**: las «dos cosas a la vez» son, en la aritmética, una sola.
+- **586 — cumplido.** Los números exactos del usuario: 429 de 480, día hasta
+  las 22:00, reloj a las 23:05 → `fitMinutes` −116, `fitLevel` `'tight'`,
+  `arcValue` «51m». En la página, el `<article>` sale con `data-fit="tight"`.
+- **587 — cumplido.** El verde es la misma línea de antes (`fitMinutes >
+  GOAL_FIT_OK_MARGIN_MINUTES`); en el barrido, todas las filas empiezan en
+  verde y el caso del 586 nunca lo es. La mañana con cero trabajado sigue
+  verde.
+- **588 — cumplido**, y con margen (ver la tabla y el punto 2 de arriba).
+- **589 — cumplido.** Ni «A este ritmo paras a las…» ni «Si arrancas ahora,
+  acabarías a las…» existen ya en `src/` (grep en todo el árbol: solo quedan
+  como comentario histórico y como aserciones **negativas** en los tests). Lo
+  que **no** se tocó, medido por mí en la util: `'passed'` sigue diciendo
+  «Llevas 9 h. Pasaste las 8 h a las 16:00.» con «16:00» dentro del arco —esa
+  hora ocurrió—, y el día pasado, «Registraste 5 h de Trabajo.».
+- **590 — cumplido.** Un solo `<p>`, siempre `styles.srLine`, con «Te faltan 51
+  min de Trabajo.» (y «Te faltan 8 h de Trabajo.» con cero minutos): es el
+  interior del arco dicho en texto, sin ninguna hora. El `<svg>` sigue
+  `aria-hidden`. *Como redacción*, «**un solo** nodo de texto real» es laxo —la
+  tarjeta tiene además la cabecera y, con sesión abierta, la línea de «Cuenta
+  …»—; leído en su contexto («que dice lo que el SVG dibuja») se entiende y se
+  comprueba, pero se presta a leerse como que la tarjeta entera tiene un solo
+  texto.
+- **584 — cumplido, medido por mí, entero:** `pnpm typecheck` limpio;
+  `pnpm lint` **14 errores / 0 warnings** (la línea base clavada); `pnpm test`
+  **2 fallos de 1943** (`SearchSelect` ×2, preexistentes; eran 2 de 1935, +8
+  son los casos nuevos de la tajada); `pnpm build` en verde con chunk
+  **1.129,17 kB** y **CSS 274,19 kB**. Solo este repositorio: la tajada no toca
+  el API.
+- **560 — anotado, no borrado, y correctamente.** Sigue en la sección 1 en su
+  sitio, con el aviso «SUPERADO por decisión del usuario del 2026-09-22» y sus
+  palabras literales debajo del propio criterio. Lo comprobé en el texto: no se
+  reescribió el criterio, se le añadió la nota.
+
+**Qué se oye ahora, comparado con lo que se oía (la pregunta del encargo).**
+El `<article>` se nombra con `aria-labelledby` → el nombre de la meta; la
+cabecera es texto real («Trabajo», «7h 09 de 8h»); el SVG es `aria-hidden`; y
+el `<p>` de 1×1 px dice «Te faltan 51 min de Trabajo.». Antes de esta tajada,
+ese mismo `<p>` era **visible** y decía «Llevas 7 h 9 min. A este ritmo paras a
+las 23:59.». **Lo que se oye no ha empeorado**: lo que se pierde es la hora
+proyectada (la que el usuario quitó) y el «Llevas 7 h 9 min», que la cabecera
+sigue diciendo con las mismas cifras; lo que se gana es «lo que falta», que es
+justo lo que el arco dibuja y antes no se decía en texto. Y no cuela la frase
+de vuelta por ningún lado: comprobé `textContent` e `innerHTML` del arco en los
+tests de página, y el grep del árbol.
+
+**Texto visible duplicado y hueco de maquetación: ninguno de los dos.**
+`.srLine` es `position: absolute` con `clip-path: inset(50%)`, así que **no es
+un ítem en el flujo** del `.card` (flex column con `gap: 0.35rem`): no deja
+hueco ni suma separación. Y como `.row` es `display: flex` con el
+`align-items: stretch` por defecto, las tarjetas de una misma fila siguen
+midiendo lo mismo aunque la de «te faltan» tenga ahora una línea menos: no hay
+tarjetas desparejas. A la vista, la tarjeta queda cabecera + arco (+ la línea
+de sesión en marcha, que no se tocó).
+
+**Regresiones: dónde busqué y qué encontré (nada).**
+
+- **`graphify explain "VidaGoalArc"` y `graphify explain "buildGoalArcs"`** (el
+  grafo refleja el commit anterior a la tajada, que es exactamente lo que hace
+  falta para «¿quién dependía de esto?»): `buildGoalArcs` solo tiene aristas
+  hacia abajo (`countsOn`, `toSessionSpans`, `categoryIdOf`,
+  `formatDurationMinutes`) y `VidaGoalArc()` solo lo importan
+  `VidaGoalArcRow.tsx` y el barril. Confirmado abriendo los archivos: el único
+  consumidor de `buildGoalArcs` en todo `src/` es `VidaHoyPage.tsx:380`, y el
+  único que lee campos del arco es `VidaGoalArc.tsx`.
+- **`stopAtTime`, el campo que se fue del tipo.** Cero lectores vivos:
+  `grep -rn "stopAtTime" src/` solo devuelve **tres comentarios** dentro de
+  `vida-goals.utils.ts`. Fuera de `src/` aparece únicamente en expedientes
+  (FEAT-016, FEAT-019, `BOARD.md`), que son historia, no código. El grafo no
+  tiene nodo para él.
+- **La puerta del color, que es lo que podía cambiar sin que nadie lo viera.**
+  `canProject = nowMinutes !== null && !isPastDay` y
+  `hasFitWindow = canProject && dayEnd !== null` — la misma condición que
+  antes: `stopAtTime === null` era, literalmente, `!canProject`
+  (`minutesToTime` nunca devuelve `null`). Comprobado además **en ejecución**:
+  con `dayEnd: null` (lo que sirve la página mientras cargan los ajustes) el
+  arco sale con `fitMinutes: null` y `fitLevel: null` —sin color— y su frase
+  intacta. Sin hora de fin conocida, sin color.
+- **`styles.line` en otros componentes.** Hay siete componentes más con una
+  clase `.line` (`VidaNoteLine`, `VidaReviewFigures`, `VidaEndTimeLine`,
+  `VidaPatternCard`, `VidaPatternsAside`, `HabitPurposeBanner`…): son **módulos
+  CSS distintos**, con su propio ámbito, y ninguno importa el `.module.scss`
+  del arco. Nada se llevó por delante.
+- **Las tajadas 1, 2 y 3, una por una, ejecutadas por mí** en el barrido: lo
+  que falta dentro del arco (`arcValue` «4h 20» / «8h», `arcCaption`
+  `['Te faltan']`); el punto de color a cero minutos (con cero trabajado el
+  arco trae `fitLevel` —verde a las 9:00, rojo a las 20:00—, que es lo único de
+  lo que depende el `<circle>`); la meta cruzada con su hora dentro («16:00»,
+  «Pasaste las 8h / a las», sin color); el día pasado («Registraste 5 h de
+  Trabajo.», sin color); y el filtro por días laborables de `17e69be`
+  (`countsOn` no se tocó, y las suites del sábado siguen verdes). Las 1943
+  pruebas lo confirman: los dos únicos fallos son los de `SearchSelect`.
+- **Los tests que el constructor borró, revisados uno a uno** (`git diff` de
+  los dos ficheros de test): todo lo que se fue nombraba la hora proyectada o
+  el rojo viejo, y cada caso tiene su relevo —el 569 sigue probado (19:00 y las
+  20:00 de la página), el cero de margen sigue en naranja (568), y el test de
+  «el final del día manda» conserva el contraste con `dayEnd` 17:00 → rojo—.
+  **Ninguna aserción se aflojó para que pasara la tajada.**
+
+**El CSS, comprobado y no supuesto (la alarma de `ENVIRONMENT.md`).** No me
+quedé con el recuento de clases del constructor: compilé **las dos versiones
+del `.module.scss`** —`git show HEAD:…` y la del árbol— con `sass --style=compressed`
+y comparé los selectores emitidos. Resultado: **26 reglas antes, 25 después**;
+la única que falta es **`.line`**, ninguna se añadió, y la diferencia son
+**117 bytes** comprimidos (los ~130 del `dist`, con el nombre hasheado, que
+explican la bajada de 274,32 a **274,19 kB**). Las cuatro reglas del semáforo
+(`[data-fit='ok']`, las dos de `'tight'` y `'over'`) siguen emitiéndose. **No
+hay ningún comentario sin cerrar**: si lo hubiera, el bloque se habría comido
+las reglas siguientes y el diff de selectores lo habría mostrado.
+
+**El hallazgo que el constructor declaró: ¿defecto nuevo o ya existente?**
+**Ya existente, y de la tajada 2 — esta tajada no lo introduce, lo agranda 12
+minutos.** La aritmética: el rojo pide `trabajado + (dayEnd − ahora) < k`, con
+`k = targetMinutes` antes de esta tajada y `k = 0,8 × targetMinutes` después.
+Con la meta de 60 minutos y cero trabajado, el rojo ya solo era posible en los
+**últimos 60 minutos del día** (con la tajada 2, que está en `main` desde
+`1fc019d`); ahora, en los **últimos 48**. Medido en el barrido con el día hasta
+las 23:00: rojo desde las **22:13** con cero hecho, desde las **22:23** con 10
+minutos, y **nunca** con 48. O sea: la ventana de rojo se encoge siempre en
+`0,2 × meta` —96 minutos para una jornada de 8 h, 12 para una de 60— y lo que
+hace que sea «casi inalcanzable» en una meta pequeña es que la ventana **ya
+era** pequeña, porque es proporcional a la meta. No es una regresión de la
+tajada 5; es una propiedad del semáforo desde que nació. Queda como hallazgo,
+no como criterio incumplido.
+
+**Hallazgos (ninguno devuelve la tajada):**
+
+1. **Las «dos condiciones» del 585 son, en la aritmética, una.** Si el día
+   puede acabar por debajo del 80 % de la meta, entonces **necesariamente** ya
+   no cabe (`mejor final < 0,8·meta < meta` ⟹ `fitMinutes < 0`), y cuando ya
+   pasó la hora de fin, `fitMinutes < 0` se cumple siempre. El rojo es, en
+   realidad, **una sola regla**: «el día no puede acabar en el 80 % de la
+   meta». El código es correcto y el guardián de `fitMinutes < 0` no hace daño
+   —documenta la intención—, pero la redacción del criterio y el comentario de
+   `toFitLevel` sugieren dos filtros independientes que no lo son. Si alguien
+   afina el umbral mañana, conviene saber cuál es la condición que manda.
+2. **El naranja carga ahora dos significados muy distintos**: «cabe justo»
+   (margen entre 0 y 60) y «ya no cabe, pero acabarás por encima del 80 %».
+   Son estados opuestos en lo accionable —en el primero todavía llegas, en el
+   segundo no— y se ven igual. Lo pidió el usuario así («80 % me parece bien»),
+   así que no lo toco; lo dejo escrito por si algún día quiere distinguirlos.
+3. **Después de la hora de fin, un día que acabó por debajo del 80 % sigue en
+   rojo.** Con la meta de 480, el día hasta las 22:00 y 6 h hechas (75 %), a
+   las 23:05 el arco es rojo. Es exactamente el umbral que el usuario fijó, y
+   por eso no es un incumplimiento; pero la crítica que originó la tajada
+   —«cierto e inútil» cuando ya no hay nada que hacer— sigue viva por debajo
+   del 80 %. Si vuelve a molestarle, la pregunta no es el umbral sino si el
+   semáforo debe seguir hablando **después** de que el día se acabe.
+4. **El criterio 565 quedó con una cláusula huérfana**: pide 375 px «con la
+   línea visible del 560 en su versión más larga», y esa línea ya no existe. Al
+   superarse el 560, esa parte del 565 se queda sin objeto (el resto —«TE
+   FALTAN 24h» sin scroll ni número cortado— sigue vigente y su test
+   paramétrico sigue verde). No lo reescribo: es un hallazgo, no una licencia.
+
+**Estados.** *No hay datos* (cero minutos): cubierto y medido —«TE FALTAN 8h»
+con su punto de color—. *Carga*: cubierto por construcción —mientras los
+ajustes no llegan, `dayEnd` es `null` y el arco sale **sin color** en vez de
+saltar de verde a rojo—, verificado en ejecución. *Error* y *sin permisos*: no
+aplican, la tajada no añade ninguna petición ni ninguna ruta. *Texto largo*: el
+riesgo bajó en vez de subir (se quita una línea; el número grande no cambió) y
+el test paramétrico del rótulo sigue verde, pero **no lo he vuelto a medir en
+un navegador**. *Móvil 375 px*: **no verificado en navegador por mí** — ver
+abajo.
+
+**Lo que no revisé, dicho sin disimular.** No entré a `/app/*`: está detrás del
+login y los agentes no entran con credenciales (límite estructural del
+`ENVIRONMENT.md`). No monté arnés propio en el navegador esta vez —el dev
+server del 5173 que dejó el constructor sigue vivo y no lo toqué—, así que **la
+medida en píxeles a 375 px, la altura de las tarjetas y el ámbar del arco
+renderizado son del constructor, no míos**; lo que sí es mío es que la
+maquetación no puede dejar hueco (`position: absolute` + `stretch`, leído en el
+SCSS) y todo lo aritmético y de DOM de arriba.
+
+**Pendiente de prueba manual del usuario** (nada de esto puede cerrarlo un
+agente):
+
+1. **Vida → Hoy**, día laborable con la jornada empezada: debajo del arco **no
+   debe quedar ninguna frase** — la tarjeta acaba en el arco, o en «Cuenta …,
+   en marcha desde las …» si hay sesión abierta.
+2. **El caso de la captura**: pasadas las 23:00, día configurado hasta las
+   22:00, ~7 h registradas → arco **ámbar**, con «TE FALTAN 51m» dentro.
+3. **Que el rojo siga apareciendo**: sobre las 20:00 con poco o nada
+   registrado (con el día hasta las 23:00, cualquier cosa por debajo de 3 h 24
+   trabajadas).
+4. **Con lector de pantalla**: el arco debe leerse «Trabajo, 7h 09 de 8h» y «Te
+   faltan 51 min de Trabajo.», **sin ninguna hora**.
+5. **A 375 px** (móvil real o el inspector): sin scroll horizontal y con las
+   tarjetas de la fila parejas.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: no crea ningún
+componente, ningún formateador ni ninguna constante paralela —`toFitLevel`
+sigue siendo la única puerta del color, `GOAL_FIT_SHORT_DAY_RATIO` vive al lado
+de `GOAL_FIT_OK_MARGIN_MINUTES`, y `bestPossibleMinutes` reutiliza el
+`parseTimeToMinutes(dayEnd)` que ya leía `fitCandidate` (una lectura, dos
+usos)—. La frase del `<p>` se compone con `formatDurationMinutes`, la misma que
+usa el resto de la util. El arco sigue siendo tonto: ni un hook, ni una
+mutación, ni una consulta nueva. Y **no se reintrodujo** ninguna variante del
+cálculo de la hora que se borró.

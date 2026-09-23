@@ -34,14 +34,15 @@ const FALLBACK_GOAL_ICON = 'circle-dot'
  * `aria-label` y el mismo `<p>` a la vista—, así que la frase se oía dos veces
  * y se veía repetida bajo un arco que ya la dice dentro.
  *
- * **Ese `<p>` se ve o no según `arc.variant`, y sigue siendo uno solo**
- * (FEAT-019, criterios 560 y 564). Cuando el arco dice **lo que falta**
- * (`'missing'`) dentro ya no hay ninguna hora, así que la de parada —«A este
- * ritmo paras a las 17:55.»— se ve de verdad debajo, que es el sitio que le da
- * el render 20, panel 1. En `'passed'` y `'logged'` el arco ya dice una hora
- * dentro y la frase vuelve a ser solo para lectores de pantalla, como en el
- * render 18. **Lo que no se hace nunca es añadir un segundo `<p>`**: es
- * exactamente lo que se cerró en FEAT-016.
+ * **Ese `<p>` es de 1×1 px en los tres estados** (FEAT-019, tajada 5,
+ * criterios 564, 589 y 590). La tajada 1 lo hizo visible en `'missing'` para
+ * que se viera la hora a la que pararías; el usuario quitó esa hora —«no lo
+ * veo necesario… solo con saber cuánto me quedó faltando es suficiente»—, y
+ * sin ella la línea repetía la cabecera y el interior del arco. Así que
+ * vuelve a donde estaba en el render 18: solo para lectores de pantalla, que
+ * es quien de verdad la necesita, porque el SVG es `aria-hidden`. **Lo que no
+ * se hace nunca es añadir un segundo `<p>`**: es exactamente lo que se cerró
+ * en FEAT-016.
  *
  * Ese `<p>` **no lleva `role="alert"`** ni el ámbar o el rojo que el módulo
  * reserva para avisos, tampoco pasada la meta: el dato, sin reproche
@@ -57,8 +58,10 @@ const FALLBACK_GOAL_ICON = 'circle-dot'
  * **Ni una palabra cambia por llevar color** (criterio 572): `arc.line` y
  * `arc.arcCaption` dicen exactamente lo mismo en rojo que en verde, y no hay
  * `role="alert"` en ninguna parte. El color informa de si cabe; no reprocha
- * nada, y por eso tampoco es lo único que lo dice: la frase visible del
- * criterio 560 sigue diciendo a qué hora pararías.
+ * nada. Y desde la tajada 5 **el rojo pide además que el día acabe corto de
+ * verdad**, así que una jornada de 7 h 09 de 8 h ya no se pinta de rojo por
+ * mirar el reloj a las 23:00 (criterio 585); eso se decide en la util, no
+ * aquí.
  */
 export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
   /** El estado que estrena FEAT-019: dentro del arco va lo que falta. */
@@ -169,11 +172,14 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
         </svg>
       </div>
 
-      {/* La frase entera, en texto de verdad y **una sola vez**: el mismo nodo
-          a la vista o a 1×1 px, nunca los dos (criterio 564). Visible solo
-          cuando dentro del arco va lo que falta y la hora no cabe ahí
-          (criterio 560). */}
-      <p className={arc.variant === 'missing' ? styles.line : styles.srLine}>{arc.line}</p>
+      {/* La frase entera, en texto de verdad, **una sola vez y a 1×1 px en los
+          tres estados** (criterios 564 y 590). Vuelve a ser solo para lectores
+          de pantalla: sin la hora proyectada dentro, lo que le quedaba por
+          decir ya lo dicen la cabecera («7h 09 de 8h») y el interior del arco
+          («TE FALTAN 51m»), y repetirlo debajo era verlo tres veces. Muda no
+          se queda: el SVG es `aria-hidden`, así que este `<p>` es lo único que
+          un lector de pantalla oye del dibujo. */}
+      <p className={styles.srLine}>{arc.line}</p>
 
       {arc.runningTitle ? (
         <p className={styles.sub}>

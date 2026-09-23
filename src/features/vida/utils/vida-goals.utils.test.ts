@@ -6,6 +6,7 @@ import {
   buildGoalArcs,
   DEFAULT_GOAL_ACTIVE_DAYS,
   GOAL_FIT_OK_MARGIN_MINUTES,
+  GOAL_FIT_SHORT_DAY_RATIO,
 } from '@/features/vida/utils/vida-goals.utils'
 
 /**
@@ -181,8 +182,9 @@ describe('buildGoalArcs', () => {
   // hora dentro del arco y «ningún texto que obligue a restar». El usuario vio
   // eso en producción y tuvo que preguntar «¿falta tiempo? ¿esa es la hora?»,
   // porque el arco mide horas trabajadas y dentro había una hora del reloj.
-  // Ahora dentro va la resta —que es lo que el arco mide— y la hora baja a
-  // `line`, que en este estado se ve de verdad (criterio 560).
+  // Ahora dentro va la resta, que es lo que el arco mide. La hora bajó a `line`
+  // en la tajada 1 y **se fue del todo en la 5** (criterio 589): el usuario la
+  // quitó, y sin ella esa línea repetía la cabecera y el propio arco.
   it('dentro del arco va lo que falta, no la hora (criterio 559)', () => {
     const { arcs } = buildGoalArcs({
       followUps: [session({ id: 's1', startTime: '08:00', durationMinutes: 220, categoryId: 'trabajo' })],
@@ -197,13 +199,10 @@ describe('buildGoalArcs', () => {
     expect(arcs[0].arcValue).toBe('4h 20')
     expect(arcs[0].arcCaption).toEqual(['Te faltan'])
     expect(arcs[0].variant).toBe('missing')
-    // La hora no se pierde: sigue calculada y sigue dicha, palabra por palabra
-    // como antes (criterio 560). Si esta línea cambia, el 560 está roto.
-    expect(arcs[0].stopAtTime).toBe('16:05')
-    expect(arcs[0].line).toBe('Llevas 3 h 40 min. A este ritmo paras a las 16:05.')
+    // La hora proyectada ya no se dice en ninguna parte (criterio 589).
+    expect(arcs[0].line).toBe('Te faltan 4 h 20 min de Trabajo.')
+    expect(arcs[0].line).not.toMatch(/ritmo|16:05|acabarías/)
     expect(arcs[0].passedAtTime).toBeNull()
-    // Y lo que falta no se dice dos veces: dentro va la resta, fuera la hora.
-    expect(arcs[0].line).not.toContain('4h 20')
   })
 
   it.each([
@@ -314,8 +313,9 @@ describe('buildGoalArcs', () => {
 
   // Enmienda el criterio 495 de FEAT-016 en una sola cosa: el número grande. Con
   // cero trabajado lo que falta es la jornada entera, y eso es lo que se dice —
-  // no una hora de parada proyectada desde cero. `line` no se toca (criterio
-  // 561): la fórmula en condicional sigue siendo exacta y sigue viéndose.
+  // no una hora de parada proyectada desde cero. Desde la tajada 5 `line` dice
+  // lo mismo que en cualquier otro «te faltan»: la hora en condicional («si
+  // arrancas ahora, acabarías a las…») se fue con la otra (criterio 589).
   it('con cero minutos faltan las ocho horas enteras (criterio 561, D-C)', () => {
     const { arcs } = buildGoalArcs({
       followUps: [],
@@ -332,8 +332,8 @@ describe('buildGoalArcs', () => {
     expect(arcs[0].arcValue).toBe('8h')
     expect(arcs[0].arcCaption).toEqual(['Te faltan'])
     expect(arcs[0].variant).toBe('missing')
-    expect(arcs[0].stopAtTime).toBe('17:00')
-    expect(arcs[0].line).toBe('Si arrancas ahora, acabarías a las 17:00.')
+    expect(arcs[0].line).toBe('Te faltan 8 h de Trabajo.')
+    expect(arcs[0].line).not.toMatch(/acabarías|17:00|ritmo/)
   })
 
   // Los dos casos en que **no falta nada que anunciar**, y por eso el arco no
@@ -383,7 +383,6 @@ describe('buildGoalArcs', () => {
     })
 
     expect(arcs[0].workedMinutes).toBe(300)
-    expect(arcs[0].stopAtTime).toBeNull()
     expect(arcs[0].line).toBe('Registraste 5 h de Trabajo.')
     expect(arcs[0].line).not.toContain('ritmo')
     expect(arcs[0].arcValue).toBe('5h')
@@ -472,8 +471,13 @@ describe('buildGoalArcs', () => {
       // `margen = (23:00 − ahora) − lo que falta`. Con la meta de 8 h:
       // a las 9:00 con 60 min hechos → 840 − 420 = 420, de sobra.
       ['de sobra', AT_9, 60, 'ok', 420],
-      // A las 16:30 con 60 min hechos → 390 − 420 = −30: hoy ya no da.
-      ['ya no cabe', 16 * 60 + 30, 60, 'over', -30],
+      // A las 16:30 con 60 min hechos → 390 − 420 = −30: ya no cabe. Pero si
+      // no paras hasta las 23:00 el día acaba en 7 h 30 de 8 h (93 %), así que
+      // no es un rojo: es naranja (criterio 585, tajada 5).
+      ['ya no cabe, pero el día acaba bien', 16 * 60 + 30, 60, 'tight', -30],
+      // A las 19:00 con 60 min hechos → 240 − 420 = −180, y aunque no pares el
+      // día acaba en 5 h de 8 h (62 %). Ahí sí: rojo.
+      ['ya no cabe y además el día acaba corto', 19 * 60, 60, 'over', -180],
       // A las 15:30 con 60 min hechos → 450 − 420 = 30: cabe justo.
       ['cabe justo', 15 * 60 + 30, 60, 'tight', 30],
       // El borde exacto del umbral: 61 es verde, 60 todavía es naranja.
@@ -503,7 +507,7 @@ describe('buildGoalArcs', () => {
       },
     )
 
-    it('el cero de margen cae en naranja y el −1 en rojo (criterios 568 y 569)', () => {
+    it('el cero de margen cae en naranja, y el −1 ya no basta para el rojo (568, 569, 585)', () => {
       const at = (nowMinutes: number) =>
         buildGoalArcs({
           followUps: [
@@ -519,9 +523,72 @@ describe('buildGoalArcs', () => {
       // 23:00 − 16:00 = 420, y faltan 420: margen 0, cabe justo.
       expect(at(16 * 60).fitMinutes).toBe(0)
       expect(at(16 * 60).fitLevel).toBe('tight')
-      // Un minuto más tarde ya no cabe.
+      // Un minuto más tarde ya no cabe, y **hasta la tajada 5 eso era rojo**.
+      // Ahora no: trabajando hasta el final el día acabaría en 7 h 59 de 8 h.
       expect(at(16 * 60 + 1).fitMinutes).toBe(-1)
-      expect(at(16 * 60 + 1).fitLevel).toBe('over')
+      expect(at(16 * 60 + 1).fitLevel).toBe('tight')
+    })
+
+    /**
+     * **El borde del rojo, ahora que son dos condiciones** (criterio 585). Con
+     * 60 minutos hechos y el día hasta las 23:00, el mejor final posible es
+     * `60 + (1380 − ahora)`; el umbral es el 80 % de 480, o sea 384. Cae justo
+     * a las 17:36 —384 clavados, todavía naranja— y se vuelve rojo un minuto
+     * después.
+     */
+    it('el rojo empieza donde el día deja de poder acabar en el 80 % (criterio 585)', () => {
+      const at = (nowMinutes: number) =>
+        buildGoalArcs({
+          followUps: [
+            session({ id: 's1', startTime: '08:00', durationMinutes: 60, categoryId: 'trabajo' }),
+          ],
+          date: DATE,
+          nowMinutes,
+          categories: [category('trabajo', 'Trabajo', WORK)],
+          isPastDay: false,
+          dayEnd: DAY_END,
+        }).arcs[0]
+
+      // El umbral, dicho con la constante y no con un 384 a pelo.
+      expect(480 * GOAL_FIT_SHORT_DAY_RATIO).toBe(384)
+      // 17:36: quedan 324 de día y llevas 60 → 384 exactos. El 80 % entra en
+      // el naranja, como pidió el usuario («80 % me parece bien»).
+      expect(at(17 * 60 + 36).fitLevel).toBe('tight')
+      // 17:37: 383. Ya no llega ni al 80 % aunque no pare.
+      expect(at(17 * 60 + 37).fitLevel).toBe('over')
+    })
+
+    /**
+     * **El caso que pidió esta tajada, con sus números exactos.** Captura del
+     * usuario del 2026-09-22: cabecera «→ 22:00», pasadas las 23:00, «TE
+     * FALTAN 51m» dentro y el arco en **rojo** con 7 h 09 de 8 h hechas. Sus
+     * palabras: «el semáforo quedó inverso… creo que completé al menos un 80 %
+     * de mi jornada, debería ser naranja o verde».
+     */
+    it('a las 23:05, con el día acabado a las 22:00 y el 89 % hecho, es naranja (criterio 586)', () => {
+      const { arcs } = buildGoalArcs({
+        followUps: [
+          session({ id: 's1', startTime: '08:00', durationMinutes: 429, categoryId: 'trabajo' }),
+        ],
+        date: DATE,
+        nowMinutes: 23 * 60 + 5,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: '22:00',
+      })
+
+      expect(arcs[0].workedMinutes).toBe(429)
+      expect(arcs[0].missingMinutes).toBe(51)
+      // El margen sigue siendo el que era: el día se acabó hace 65 minutos.
+      expect(arcs[0].fitMinutes).toBe(-116)
+      // Y aun así **no** es rojo: 429 de 480 es un 89 %, por encima del 80 %.
+      expect(arcs[0].workedMinutes / arcs[0].targetMinutes).toBeGreaterThan(
+        GOAL_FIT_SHORT_DAY_RATIO,
+      )
+      expect(arcs[0].fitLevel).toBe('tight')
+      // Verde tampoco: verde afirma que todavía da para la meta entera, y a
+      // las 23:05 eso sería mentira (criterio 587).
+      expect(arcs[0].fitLevel).not.toBe('ok')
     })
 
     /**
@@ -600,7 +667,6 @@ describe('buildGoalArcs', () => {
         dayEnd: DAY_END,
       })
 
-      expect(arcs[0].stopAtTime).toBeNull()
       expect(arcs[0].fitLevel).toBeNull()
     })
 
@@ -623,7 +689,10 @@ describe('buildGoalArcs', () => {
         }).arcs[0]
 
       const verde = at(AT_9)
-      const rojo = at(17 * 60)
+      // Las 20:00 y no las 17:00: desde la tajada 5 el rojo pide además que el
+      // día acabe por debajo del 80 %, y a las 17:00 con el día hasta las
+      // 23:00 todavía acabaría en 7 h 59 (criterio 585).
+      const rojo = at(20 * 60)
 
       expect(verde.fitLevel).toBe('ok')
       expect(rojo.fitLevel).toBe('over')
@@ -631,10 +700,10 @@ describe('buildGoalArcs', () => {
       expect(rojo.arcCaption).toEqual(verde.arcCaption)
       expect(rojo.arcValue).toBe(verde.arcValue)
       expect(rojo.variant).toBe(verde.variant)
-      // La misma frase, con la misma forma: solo cambia la hora que dice.
-      const forma = /^Llevas 1 h\. A este ritmo paras a las \d\d:\d\d\.$/
-      expect(verde.line).toMatch(forma)
-      expect(rojo.line).toMatch(forma)
+      // Sin la hora proyectada (criterio 589) las dos frases son **la misma**,
+      // letra por letra: lo que falta no depende de qué hora sea.
+      expect(rojo.line).toBe(verde.line)
+      expect(rojo.line).toBe('Te faltan 7 h de Trabajo.')
       expect(rojo.line).not.toMatch(/!|tarde|corre|no llegas|deberías|cuidado|ya no da/i)
     })
 
@@ -693,6 +762,54 @@ describe('buildGoalArcs', () => {
     })
 
     /**
+     * **La red de seguridad del rojo** (criterio 588). La tajada 5 hace el
+     * rojo más difícil a propósito, y el riesgo es pasarse: el momento en que
+     * el rojo **sirve** son las ocho de la tarde con el día casi sin empezar.
+     * Si esto se vuelve naranja, la tajada 2 está rota.
+     */
+    it.each([
+      ['sin nada', 0],
+      ['con media hora', 30],
+      ['con una hora', 60],
+    ])('a las 20:00 y casi nada registrado sigue en rojo: %s (criterio 588)', (_caso, worked) => {
+      const { arcs } = buildGoalArcs({
+        followUps:
+          worked > 0
+            ? [session({ id: 's1', startTime: '08:00', durationMinutes: worked, categoryId: 'trabajo' })]
+            : [],
+        date: DATE,
+        nowMinutes: 20 * 60,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      expect(arcs[0].fitLevel).toBe('over')
+    })
+
+    /**
+     * **El verde no se mueve** (criterio 587): sigue siendo el margen y nada
+     * más. La mañana en blanco es verde porque todavía da para la jornada
+     * entera —que es lo que el verde afirma en este módulo—, no porque se
+     * haya hecho nada.
+     */
+    it('la mañana con cero trabajado sigue siendo verde (criterio 587)', () => {
+      const { arcs } = buildGoalArcs({
+        followUps: [],
+        date: DATE,
+        nowMinutes: 8 * 60,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      expect(arcs[0].workedMinutes).toBe(0)
+      expect(arcs[0].fitMinutes).toBe(900 - 480)
+      expect(arcs[0].fitMinutes!).toBeGreaterThan(GOAL_FIT_OK_MARGIN_MINUTES)
+      expect(arcs[0].fitLevel).toBe('ok')
+    })
+
+    /**
      * **Sin la hora de fin real no hay color.** `useVidaDayHours` sirve el
      * respaldo de las 23:00 mientras cargan los ajustes: pintar con él haría
      * que un día que acaba a las 18:00 se viera verde y saltara a rojo al
@@ -711,11 +828,11 @@ describe('buildGoalArcs', () => {
         dayEnd: null,
       })
 
-      // Todo lo demás sigue igual: el arco dice lo que falta y la hora de
-      // parada. Lo único que falta es el color.
+      // Todo lo demás sigue igual: el arco dice lo que falta. Lo único que
+      // falta es el color.
       expect(arcs[0].variant).toBe('missing')
       expect(arcs[0].missingMinutes).toBe(420)
-      expect(arcs[0].line).toBe('Llevas 1 h. A este ritmo paras a las 23:59.')
+      expect(arcs[0].line).toBe('Te faltan 7 h de Trabajo.')
       expect(arcs[0].fitMinutes).toBeNull()
       expect(arcs[0].fitLevel).toBeNull()
     })
@@ -734,10 +851,13 @@ describe('buildGoalArcs', () => {
         }).arcs[0]
 
       // Faltan 7 h. Hasta las 23:00 quedan 9 h: sobra. Hasta las 21:00, 7 h
-      // justas. Hasta las 20:00, ya no cabe.
+      // justas. Hasta las 20:00 ya no cabe, pero el día acabaría en 7 h de 8 h
+      // (87 %), así que es naranja y no rojo (criterio 585). Hasta las 17:00
+      // el día acaba en 4 h: ahí sí es rojo.
       expect(conFinal('23:00').fitLevel).toBe('ok')
       expect(conFinal('21:00').fitLevel).toBe('tight')
-      expect(conFinal('20:00').fitLevel).toBe('over')
+      expect(conFinal('20:00').fitLevel).toBe('tight')
+      expect(conFinal('17:00').fitLevel).toBe('over')
     })
   })
 
@@ -767,9 +887,8 @@ describe('buildGoalArcs', () => {
     expect(arcs[0].targetLabel).toBe('8h')
     expect(arcs[1].workedMinutes).toBe(25)
     expect(arcs[1].targetLabel).toBe('1h')
-    // Cada meta con su hora: 11:00 + (60 − 25) = 11:35.
-    expect(arcs[1].stopAtTime).toBe('11:35')
-    expect(arcs[1].line).toBe('Llevas 25 min. A este ritmo paras a las 11:35.')
+    // Cada meta con lo suyo: a «Estudiar» le faltan 60 − 25 = 35 min.
+    expect(arcs[1].line).toBe('Te faltan 35 min de Estudiar.')
   })
 
   /**

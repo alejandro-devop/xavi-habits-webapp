@@ -115,6 +115,13 @@ describe('VidaLogSessionSheet — «Empezar algo» (criterios 30, 330 a 334)', (
       .toBeInTheDocument()
   })
 
+  it('criterio 625 — la ficha no promete una duración que no se va a usar', () => {
+    renderSheet({ mode: 'start', onStart: vi.fn().mockResolvedValue({ ok: true }) })
+
+    expect(screen.getByRole('button', { name: 'Poner lavadora' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Poner lavadora20m' })).not.toBeInTheDocument()
+  })
+
   it('criterio 332 — sin tocar la hora, se empieza como siempre: sin hora que mandar', async () => {
     const onStart = vi.fn().mockResolvedValue({ ok: true })
     renderSheet({ mode: 'start', onStart })
@@ -237,6 +244,9 @@ describe('VidaLogSessionSheet — «Registrar tiempo pasado» (criterios 31, 32 
     renderSheet()
 
     expect(screen.getByLabelText('Hora a la que empezó')).toHaveValue('08:54')
+    // Aquí la duración de la ficha **sí** se sigue viendo: se preselecciona al
+    // elegir, así que significa algo (lo contrario que en «Empezar algo»).
+    expect(screen.getByRole('button', { name: 'Poner lavadora20m' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /Poner lavadora/ }))
     // Lo que la plantilla decía viene puesto y se puede cambiar.
     expect(screen.getByRole('button', { name: '30' })).toHaveAttribute('aria-pressed', 'false')

@@ -47,6 +47,14 @@ type VidaActivityPickerProps = {
   headingId: string
   /** El rótulo de la pregunta. Casi siempre «Qué». */
   label?: string
+  /**
+   * ¿La ficha enseña la duración que dice la plantilla? Por defecto **sí**, que
+   * es lo de siempre: en el hueco y al registrar ese número se preselecciona y
+   * significa algo. **«Empezar algo» la apaga** porque ahí no viaja a ningún
+   * sitio —`chooseActivity` la descarta en modo `start`— y la hoja promete que
+   * la duración se dice al terminar (FEAT-023, criterio 625).
+   */
+  showTemplateDuration?: boolean
   /** La clase del contenedor: la pone la hoja, para que sus separadores casen. */
   className?: string
 }
@@ -87,6 +95,7 @@ export function VidaActivityPicker({
   headingId,
   label = 'Qué',
   className,
+  showTemplateDuration = true,
 }: VidaActivityPickerProps) {
   const [search, setSearch] = useState('')
 
@@ -129,7 +138,7 @@ export function VidaActivityPicker({
               >
                 <AppIcon name={activity.icon ?? UNCATEGORIZED_GROUP_ICON} size="2xs" decorative />
                 <span className={styles.optionName}>{activity.title}</span>
-                {templateMinutes !== null ? (
+                {showTemplateDuration && templateMinutes !== null ? (
                   <span className={styles.optionMeta}>
                     {formatDurationFromMinutes(templateMinutes)}
                   </span>

@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790172751.5975385,
-    "ast_hash": "c2e1e39100a193865423d1c850249066",
+    "mtime": 1790201445.8698523,
+    "ast_hash": "566687add220ffe96b978e273fc7dfe3",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790199158.1253774,
-    "ast_hash": "e72a0d8a2aefd00f3cf931d180b4ebec",
+    "mtime": 1790200921.5778828,
+    "ast_hash": "7a99b9b75ad5d5de6636a386e73ac064",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790190579.3085244,
-    "ast_hash": "9a707d59a8019a9c71fa06d2bac3de10",
+    "mtime": 1790200871.3427837,
+    "ast_hash": "c5918e4e509044fa841273e270d582fe",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790198972.6512914,
-    "ast_hash": "1ab32bcf4ee2f205ffd49283fa979ed4",
+    "mtime": 1790201096.5172176,
+    "ast_hash": "735ec24250155725e780d020684c344a",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3240,13 +3240,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivityPicker/VidaActivityPicker.test.tsx": {
-    "mtime": 1789948064.4692724,
-    "ast_hash": "9a5ea2f94e05e59612901cdee990f3f3",
+    "mtime": 1790201041.9291148,
+    "ast_hash": "874fce751a874ce7569f184cb88340cb",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivityPicker/VidaActivityPicker.tsx": {
-    "mtime": 1789947561.0005722,
-    "ast_hash": "fc97da01e434366f7591360abbd7f69b",
+    "mtime": 1790201007.8850498,
+    "ast_hash": "0ac5b9a6b967d8ecdc7cce7ce2a81831",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivityPicker/index.ts": {
@@ -3255,13 +3255,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.test.tsx": {
-    "mtime": 1790106657.9933465,
-    "ast_hash": "b25fd4efdd3de13f6f26fef6a18f5655",
+    "mtime": 1790201058.3501458,
+    "ast_hash": "e0fa1dece6bed77d2dfce8850df1872e",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx": {
-    "mtime": 1790106606.5492291,
-    "ast_hash": "18fc3be8e2f10832fa765b430fe7492b",
+    "mtime": 1790201012.228058,
+    "ast_hash": "3f96910e3403b5256b489d8da9773482",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaLogSessionSheet/index.ts": {
@@ -3735,8 +3735,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-012-vida-la-noche.md": {
-    "mtime": 1790198770.457304,
-    "ast_hash": "1335da2ce96c4660c4fcba8a0fbc8a7b",
+    "mtime": 1790200801.8266437,
+    "ast_hash": "d1798d035e082631ad6a311ff24f98ba",
     "semantic_hash": ""
   },
   "docs/vida/assets/13-vida-dormir.html": {
@@ -4110,8 +4110,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-023-empezar-algo-sin-muro.md": {
-    "mtime": 1790199149.871372,
-    "ast_hash": "b48d1b3a2e072cb3e0f797abbe35e2ea",
+    "mtime": 1790200921.5788827,
+    "ast_hash": "9cbf10492f3eb459e52c0167d1dbd0d0",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260923_210235_donde_vive_la_ventana_del_dia_de_vida_y_quien_la_l.md": {
@@ -4122,6 +4122,16 @@
   "graphify-out/memory/query_20260923_213254_quien_lista_y_filtra_las_fichas_de__qu\u00e9__al_empeza.md": {
     "mtime": 1790199174.5543885,
     "ast_hash": "dd25c3ae17c0d11d18f2c67294f1d9ca",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-start-suggestions.utils.test.ts": {
+    "mtime": 1790201473.1669006,
+    "ast_hash": "38888bea9679144cb672865215356160",
+    "semantic_hash": ""
+  },
+  "src/features/vida/utils/vida-start-suggestions.utils.ts": {
+    "mtime": 1790201403.7777777,
+    "ast_hash": "62694b257cd5a4f30c0a6dd48853c374",
     "semantic_hash": ""
   }
 }

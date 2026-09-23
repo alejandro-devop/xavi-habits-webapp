@@ -1,7 +1,7 @@
 ---
 id: FEAT-023
 title: Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas
-status: planned
+status: building
 architect: yes    # toca VidaActivityPicker y el modo `start` de VidaLogSessionSheet, compartidos por FEAT-003, FEAT-004, FEAT-011 y FEAT-018 (ya entregadas) y por el modo `edit` de FEAT-013; el propio encargo pide que alguien con Bash mire el terreno antes de construir
 area: features/vida
 requested: 2026-09-23
@@ -592,7 +592,7 @@ pasa a ser la 2, intacta.
 
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
-| 1 | «Qué» ofrece **cinco fichas como mucho, una por actividad y sin duración**, ordenadas por lo que toca ahora: el buscador y el campo de hora se ven sin scroll | **Crea** `src/features/vida/utils/vida-start-suggestions.utils.ts` y `…utils.test.ts`. **Modifica** `src/features/vida/pages/VidaHoyPage.tsx` (~:509 `useMemo`, ~:1487 `suggestions=`), `src/features/vida/components/VidaActivityPicker/VidaActivityPicker.tsx` (:30-52 prop, :80-90, :131-135), `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` (:390-399). **Tests**: `VidaActivityPicker.test.tsx`, `VidaLogSessionSheet.test.tsx`, `VidaHoyPage.test.tsx` (:1409) | 622, 623, 624, 625, 626, 627, 629, 630 — y **628 se comprueba sin tocar nada** | pending |
+| 1 | «Qué» ofrece **cinco fichas como mucho, una por actividad y sin duración**, ordenadas por lo que toca ahora: el buscador y el campo de hora se ven sin scroll | **Crea** `src/features/vida/utils/vida-start-suggestions.utils.ts` y `…utils.test.ts`. **Modifica** `src/features/vida/pages/VidaHoyPage.tsx` (~:509 `useMemo`, ~:1487 `suggestions=`), `src/features/vida/components/VidaActivityPicker/VidaActivityPicker.tsx` (:30-52 prop, :80-90, :131-135), `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` (:390-399). **Tests**: `VidaActivityPicker.test.tsx`, `VidaLogSessionSheet.test.tsx`, `VidaHoyPage.test.tsx` (:1409) | 622, 623, 624, 625, 626, 627, 629, 630 — y **628 se comprueba sin tocar nada** | accepted |
 | 2 | El campo «¿A qué hora empezaste?» se lee en 24 h, sin depender del sistema | **Modifica** `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` (:411-425 `lang`, :426-432 la frase). **Test**: `VidaLogSessionSheet.test.tsx` (`describe` de :104) | 631 | pending |
 
 **Lo que no se toca, dicho para que nadie lo dude:**
@@ -624,4 +624,316 @@ criterio 631 sigue siendo cierto por el texto del módulo.
 
 ## 3. Construction — feature-builder
 
+### Tajada 1 — «Qué» ofrece cinco fichas, una por actividad y sin duración
+
+**Summary for the reviewer:**
+1. «Empezar algo» (modo `start`) ya no pinta un ítem de plantilla por ficha:
+   la página recorta la lista con `topStartSuggestions` —una por `activityId`,
+   ordenada por distancia a `nowMinutes`, tope `VIDA_START_SUGGESTIONS_MAX = 5`—
+   y el picker apaga la duración con una prop nueva opt-in.
+2. Medido en el navegador a 375×667: el buscador y el campo de hora quedan
+   dentro de la pantalla (antes el campo de hora caía a 772 px, 105 px por
+   debajo del borde).
+3. **Lo que más probablemente he roto:** el orden de las fichas en «Empezar
+   algo» — quien esperaba ver su plantilla en orden cronológico ahora ve
+   primero lo más cercano a ahora, y **la actividad que representa a tres
+   bloques cambia según la hora del día**. Y, en segundo lugar, el modo `log`:
+   comparte componente y solo lo separa **una** expresión en `VidaHoyPage.tsx`
+   y **una** prop en la hoja; si esas dos líneas están mal, «Registrar tiempo
+   pasado» pierde fichas o duraciones sin que salte nada más.
+
+**What was built:**
+
+- **Se crea** `src/features/vida/utils/vida-start-suggestions.utils.ts`:
+  `VIDA_START_SUGGESTIONS_MAX = 5` (**el cinco vive solo aquí**; ningún
+  componente lleva un literal) y `topStartSuggestions({ suggestions,
+  nowMinutes, excludeActivityIds?, max? })`, que devuelve `VidaSuggestion[]`
+  tal cual. La regla «lo de ahora, sin repetir, cinco» está escrita entera en
+  el comentario de cabecera, con el porqué de no ordenar por patrones.
+  Deduplicar y ordenar son **una sola pasada**: ordenado ya, el primero de
+  cada `activityId` es su representante (el más cercano hacia delante o, si
+  todos pasaron, el más reciente).
+- **Se crea** `…/vida-start-suggestions.utils.test.ts` — 14 casos, uno por fila
+  de la tabla «dónde se rompe» de la sección 2, más el tope sobreescrito
+  (modelo `vida-notes.utils.test.ts`) y el determinismo del desempate
+  (dos corridas con el array al derecho y al revés dan la misma lista).
+- **Se modifica** `src/features/vida/pages/VidaHoyPage.tsx`: el import, y en el
+  montaje de `VidaLogSessionSheet` (~:1495) `suggestions={logSheet.mode ===
+  'start' ? topStartSuggestions({ suggestions, nowMinutes }) : suggestions}`.
+  **Esa expresión es toda la separación de modos.**
+- **Se modifica** `VidaActivityPicker.tsx`: prop `showTemplateDuration?:
+  boolean` con **valor por defecto `true`** (comportamiento de hoy) y el
+  `<span className={styles.optionMeta}>` envuelto en `showTemplateDuration &&
+  templateMinutes !== null`. **`onChange(activity, templateMinutes)` no se
+  toca**: sigue avisando con los minutos, y hay un test que lo fija.
+- **Se modifica** `VidaLogSessionSheet.tsx`: `showTemplateDuration={mode !==
+  'start'}` en el picker. Una línea, dentro del `else` que ya distinguía
+  `edit`.
+- **Tests añadidos**: `VidaActivityPicker.test.tsx` (con la prop apagada no hay
+  duración, y `onChange` sigue llevando los 20 min), `VidaLogSessionSheet.test.tsx`
+  (en `start` la ficha es «Poner lavadora» pelada; en `log` sigue siendo
+  «Poner lavadora20m»), `VidaHoyPage.test.tsx` (el caso de los cinco con tres
+  bloques de «Working at lululemon», el de plantilla vacía y uno que fija que
+  «Registrar tiempo pasado» **sigue viendo la plantilla entera con duraciones**).
+
+**Why this way (y qué se descartó sobre la marcha):**
+
+- **Desvío del plan, dicho en voz alta: no hay `useMemo`.** El plan pedía
+  `const startSuggestions = useMemo(…)` junto a `usualDurations`. Escrito así,
+  `pnpm lint` daba un **error nuevo** (15 en vez de 14):
+  `react-hooks/preserve-manual-memoization` — *«Compilation Skipped: Existing
+  memoization could not be preserved… `suggestions`: This dependency may be
+  modified later»*. En vez de silenciar la regla, la llamada se hace **en el
+  sitio del montaje**, exactamente como `suggestionsForGap` unas líneas más
+  arriba (`:1176`), que tampoco está memoizada. El compilador de React
+  memoiza igual, solo se calcula cuando hay hoja abierta, y de paso la
+  separación de modos queda en **un** punto en vez de dos.
+- **Segundo desvío: `nowMinutes` es `number | null`.** `useVidaNowMinute`
+  devuelve `null` cuando el día que se mira no es hoy, así que la firma lo
+  acepta y sin «ahora» manda el orden del día (medianoche como origen). El
+  plan asumía `number`; con `number` el `pnpm typecheck` fallaba
+  (`TS2322` en `VidaHoyPage.tsx`). Hay un test para ese caso.
+- **No se tocó `onChange`**, ni la consulta, ni el buscador, ni
+  `VidaPlaceInGapSheet`, ni `VidaStartTimeSheet`, ni el SCSS (cero cambios de
+  estilo: la ficha sin duración usa las clases de siempre).
+
+**Verification:**
+
+| Comprobación | Línea base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 errores / 0 warnings** (los mismos ficheros: `HabitDifficultyPicker`, `CommandPalette*`, `ConfirmDialogProvider`, `IconPicker`, `SteppedModal`, `Tabs`, `toast.context`, `test/render`) |
+| `pnpm test` | 2 fallos de 2141 (`SearchSelect` ×2) | **2 fallos de 2160** — los mismos dos de `SearchSelect`; +19 tests nuevos. Sin `IconPicker` flaky esta vez |
+| `pnpm build` | chunk 1.148,03 kB · CSS 279,35 kB | chunk **1.148,97 kB** (+0,94 kB, el módulo nuevo) · CSS **279,35 kB** *(idéntico: no se tocó ni un `.scss`)* |
+| Caché (FEAT-021) | — | **Nadie pierde la caché.** Ningún fichero tocado está en `graphql/`, `api/` ni `src/shared/api/`, y ninguno nombra `setQueryData`/`setQueriesData`/`setQueryState` (comprobado con `grep -l` sobre los cuatro). `pnpm vitest run vite/` → 18 de 18 |
+
+**Medido en el navegador, no razonado.** `/app/*` está tras el login, así que
+se montó un **arnés temporal** (`src/harness-feat023.tsx` + `harness-feat023.html`
++ un envoltorio en `public/`) que renderiza `VidaLogSessionSheet` en modo
+`start` con `AppProviders`, 14 ítems de plantilla sobre 10 actividades (tres
+bloques de «Working at lululemon», dos de «Salir con sheyko y Layla», dos de
+«Desayunar», dos de «Organizar la casa», uno sin hora y un título de 60
+caracteres) y **las 15:40** como «ahora» — la hora de la captura del usuario.
+La pantalla se midió **dentro de un `iframe` del ancho exacto**, no en la
+pestaña (que emula 568 px). **Los tres ficheros del arnés están borrados**
+(`git status` solo muestra los dos ficheros nuevos de `utils/` y los seis
+modificados).
+
+```
+375×667, con la regla puesta   → 5 fichas · buscador 413–454 px · hora 514–559 px
+375×667, con la lista de hoy   → 14 fichas · buscador 626–666 px · hora 726–772 px (FUERA)
+   (y el caso real del usuario eran 22 fichas, no 14: peor que esto)
+panel: scrollHeight−clientHeight = 39 px con la regla · 251 px sin ella
+568×667 y 760×667 → mismas 5 fichas, sin desbordes; «Empezar» visible sin scroll
+```
+
+**Criteria it closes:**
+
+- **622 — buscador visible sin scroll a 375×667: SÍ.** Medido: el
+  `input[type="search"]` va de 413 a 454 px en una ventana de 667. Antes,
+  626–666 px (pegado al borde con 14 fichas; con las 22 de la captura, fuera).
+- **623 — campo «¿A qué hora empezaste?» visible sin scroll: SÍ.** Medido:
+  514–559 px. Antes: 726–772 px, es decir **105 px por debajo del borde**.
+- **624 — ninguna ficha indistinguible de otra: SÍ.** Por construcción: una
+  ficha por `activityId`. Test en `VidaHoyPage.test.tsx` («Working at
+  lululemon» en tres bloques → `getAllByRole(…)` devuelve **1**) y en el
+  arnés se vio una sola ficha de cada una.
+- **625 — ninguna ficha lleva duración en esta hoja: SÍ** (es la opción 2 de la
+  Decisión B, la que cerró el usuario). Tests en el picker, en la hoja y a
+  ojo en el arnés: «Working at lululemon», no «Working at lululemon4h».
+- **626 — el buscador no pierde alcance: SÍ, por no tocarlo.** Sigue siendo
+  `filterActivitiesBySearch(excludeArchivedActivities(activitiesQuery.data…))`
+  sobre el catálogo (`CATALOG_LIMIT = 100`), no sobre las sugerencias: ni una
+  línea cambiada en `VidaActivityPicker` fuera del `<span>` de la duración.
+  Sus dos límites preexistentes siguen donde estaban (8 resultados, 100
+  actividades traídas).
+- **627 — elegir sigue siendo una sola acción: SÍ.** `onStart(activityId,
+  startTime?)` no cambia; los tests de los criterios 330, 331b y 332 siguen en
+  verde sin tocarlos.
+- **629 — plantilla vacía: SÍ.** Sin ítems activos la función devuelve `[]` y
+  el picker pinta la frase que ya existía. Test nuevo en `VidaHoyPage.test.tsx`.
+- **630 — nombre largo: SÍ.** Con un título de 60 caracteres, medido a 375,
+  568 y 760 px: `scrollWidth − clientWidth = 0` en las cinco fichas y ningún
+  rectángulo invade el de la ficha vecina (a 568 y 760 la grilla pone dos por
+  fila y la larga ocupa su fila entera). El texto se recorta con puntos
+  suspensivos, como ya hacía.
+- **628 — no está en juego, y se comprueba sin tocarlo:** el test de
+  `VidaHoyPage.test.tsx` que compara el array completo del mock del «▶
+  Empezar» **no se editó** y sigue verde (la suite entera pasa: 129 tests del
+  fichero).
+
+**Lo que queda para prueba manual del usuario** (no se puede desde aquí,
+`/app/*` está tras el login):
+
+1. Abrir Hoy con sesión y pulsar «Empezar algo» en el teléfono: ver **cinco
+   fichas como mucho**, cada actividad una sola vez, **sin el número de
+   minutos**, y el buscador y «¿A qué hora empezaste?» **sin desplazar**.
+2. Comprobar que las cinco son las que tocan **a esa hora** (lo más próximo por
+   delante primero) y que a última hora de la noche sale lo último que tocaba,
+   no lo de las 7:00.
+3. Escribir «lulu» en «Busca otra cosa…» y comprobar que sigue apareciendo
+   «Working at lululemon» aunque ya no esté entre las cinco.
+4. Abrir «Registrar tiempo pasado» y confirmar que **ahí sigue todo igual**:
+   la plantilla entera, con sus duraciones, y la duración que viene puesta al
+   elegir.
+
+**Risks:**
+
+- **El orden cambia para el mismo día según la hora.** Es la regla elegida,
+  pero es un cambio de comportamiento visible: la lista ya no es la plantilla
+  en orden cronológico.
+- **`log` y `edit` cuelgan de dos líneas.** `logSheet.mode === 'start' ? … :
+  suggestions` y `showTemplateDuration={mode !== 'start'}`. Hay un test para
+  cada una, pero es ahí donde miraría primero.
+- **Cuatro ficheros llaman al picker con la prop por defecto** (`VidaPlaceInGapSheet`
+  y los otros modos): si alguien invierte el valor por defecto de
+  `showTemplateDuration`, se apagan duraciones que sí significan algo.
+- **Lo que no se pudo medir:** el comportamiento real en el teléfono del
+  usuario (tamaño de fuente del sistema, densidad). Las medidas son de
+  Chromium a 375, 568 y 760 px con la fuente por defecto.
+
+**Lo que encontré y no estaba en el plan** (anotado, **no tocado**):
+
+- El panel de la hoja **todavía desborda 39 px** a 375×667: el botón «Empezar»
+  queda 7 px por debajo del borde y pide un empujón de scroll. No lo pide
+  ningún criterio (el 622 y el 623 hablan del buscador y de la hora) y tocar
+  el alto del pie es cambiar la hoja para los tres modos. Antes de esta tajada
+  el desborde era de 251 px.
+- En el arnés se ve que el campo de hora pinta **«03:40 PM»**: es exactamente
+  lo que arregla la **tajada 2** (`lang="es-ES"` + la frase en 24 h). No se
+  tocó.
+- `VidaActivityPicker` sigue usando `key={activity.id}`. Con la lista
+  deduplicada de `start` ya no puede haber dos `<li>` con la misma clave, pero
+  en `log`/`edit` y en `VidaPlaceInGapSheet` **la colisión de `key` sigue ahí**
+  tal cual (una plantilla con dos bloques de la misma actividad). Fuera de
+  alcance: cambiarlo tocaría los modos que esta feature no toca.
+
+**Tree state:** sin commitear. Dos ficheros nuevos
+(`vida-start-suggestions.utils.ts` y su test) y seis modificados —cuatro de
+código y test, más `BOARD.md` y este dossier—. Nada del arnés queda en el
+árbol.
+
 ## 4. Review — feature-reviewer
+
+### Tajada 1 — revisión
+
+**Veredicto: `accepted`.** Los ocho criterios de la tajada (622, 623, 624,
+625, 626, 627, 629, 630) se cumplen medidos, y el 628 sigue verde sin editar
+el test. Dos hallazgos quedan escritos abajo, ninguno bloquea: el botón
+«Empezar» **sí** se va por debajo del borde a 375×667 **cuando una de las
+cinco fichas ocupa fila entera** (medido: 17 px), y a media tarde la lista no
+ofrece el bloque **en curso**.
+
+**Criterios, uno a uno** (medidos en un arnés temporal, ya borrado, dentro de
+un `iframe` de ancho exacto; plantilla sintética de 22 ítems sobre 17
+actividades, la forma de la captura del usuario):
+
+| # | Veredicto | Evidencia |
+|---|---|---|
+| 622 buscador sin scroll | **cumple** | 375×667: `input[type=search]` en 386–427 px con cinco fichas cortas y 423–464 px con una ficha de fila entera. Sin la regla: 722–763 px (fuera) |
+| 623 hora sin scroll | **cumple** | 475–532 px según el caso; sin la regla, 823–868 px (fuera) |
+| 624 ninguna ficha indistinguible | **cumple** | Una ficha por `activityId` por construcción; con 22 ítems y 17 actividades salen 5 títulos distintos. Test propio en `VidaHoyPage.test.tsx` |
+| 625 sin duración en la ficha | **cumple** | Las cinco fichas del arnés en `start` son «Trabajar en graphify», «Comprar mercado»… sin minutos; en `log` siguen siendo «Working at lululemon1h» |
+| 626 el buscador no pierde alcance | **cumple** | `filterActivitiesBySearch` (`activity-filters.ts:44-48`) sin tocar: `includes` sobre el título normalizado del catálogo (`CATALOG_LIMIT = 100`, no las sugerencias). El diff no toca ni esa función ni el bloque de búsqueda del picker |
+| 627 una sola acción | **cumple** | `onStart(activityId, startTime?)` intacto; las suites de los criterios 330/331b/332 pasan sin editarse |
+| 629 plantilla vacía | **cumple** | `topStartSuggestions` devuelve `[]` y el picker pinta «Tu plantilla de … no tiene nada más que ofrecer aquí». Test nuevo, verde |
+| 630 nombre largo | **cumple** | Título de 53 caracteres entre las cinco, a 375 y 760 px: `scrollWidth − clientWidth = 0` en las cinco fichas, cero solapes entre rectángulos, `hScroll = 0` |
+| 628 «▶ Empezar» de un toque | **cumple, sin tocar nada** | `git diff` de `VidaHoyPage.test.tsx`: **90 líneas añadidas, 0 borradas**. La comparación del array completo del mock no se editó y la suite entera pasa |
+
+**La regla, probada a distintas horas** (ejecutando `topStartSuggestions`
+sobre la plantilla sintética):
+
+```
+sin «ahora» (otro día) → 07:00 · 08:00 · 08:30 · 09:00 · 14:00   (orden del día, no vacía)
+06:30 → 07:00 · 08:00 · 08:30 · 09:00 · 14:00
+12:40 → 14:00 · 14:45 · 15:00 · 15:30 · 16:30
+15:40 → 16:30 · 18:00 · 19:00 · 21:00 · 21:30
+20:10 → 21:00 · 21:30 · 22:00 · 23:00 · 19:00 (el de las 19:00, en curso, cierra la lista)
+23:40 → 23:00 · 22:00 · 21:30 · 21:00 · 19:00 (lo último que tocaba, no lo de las 7:00)
+```
+
+De noche y a primera hora la lista es la que una persona esperaría. **El punto
+flojo está a media tarde**: a las 15:40, con el bloque de las 15:30 todavía en
+marcha, ese bloque **no sale** entre las cinco —cae al cajón «ya pasó» detrás
+de cinco futuros—. Se queda como hallazgo y no como devolución porque lo que
+está en curso tiene su propio camino de un toque («Lo que viene» y el «▶
+Empezar» de la agenda), y quien abre «Empezar algo» suele estar diciendo
+justamente «eso no».
+
+**Los dos desvíos declarados, comprobados:**
+
+- **Sin `useMemo`:** la llamada vive dentro del bloque `logSheet ? (…)`, así
+  que solo se ejecuta con la hoja abierta, y su coste es un `map`+`sort` sobre
+  la plantilla de un día (22 ítems en el peor caso medido). La comparación con
+  `suggestionsForGap` se sostiene: está llamada en línea en el mismo montaje
+  (`VidaHoyPage.tsx:1166`) y tampoco está memoizada.
+- **`nowMinutes: number | null`:** con `null` (un día que no es hoy) la lista
+  sale en el orden del día, cinco fichas, ni vacía ni aleatoria. Medido arriba.
+
+**Qué se rompió cerca, y cómo lo busqué:**
+
+- `graphify explain "VidaActivityPicker"` → cinco conexiones, ninguna que la
+  tajada toque salvo el propio componente. Abierto el fichero para confirmarlo.
+- Quién monta el picker: **dos sitios**, `VidaLogSessionSheet` y
+  `VidaPlaceInGapSheet`. El segundo **no pasa** `showTemplateDuration`, y el
+  valor por defecto es `true`: comportamiento de hoy, letra por letra.
+- Dentro de la hoja, `suggestions` se usa **una sola vez** (`:397`, el picker);
+  la separación de modos es una expresión ternaria y una prop.
+- Medido en el navegador, no razonado: en `mode="log"` con los mismos 22 ítems
+  salen **las 22 fichas con sus duraciones** («Working at lululemon1h»,
+  «Dormir8h»…). `edit`, `VidaPlaceInGapSheet` y `VidaStartTimeSheet` no
+  aparecen en el diff.
+- `pnpm vitest run` de los cuatro ficheros tocados + `vite/`: **293 de 293**.
+  `pnpm lint`: **14 errores / 0 warnings**, la línea base exacta.
+- **Nadie pierde la caché, comprobado ejecutando la huella**, no por grep:
+  `collectShapeSources('.')` devuelve **32 ficheros** y **ninguno de los cinco
+  de código tocados está en la lista** (`buster` actual `f8edc4f3becd`). Ni por
+  ruta (`graphql/`, `api/`, `src/shared/api/`) ni por contenido
+  (`setQueryData`…). La tajada **no cuesta una apertura fría**.
+- Ningún `.scss` tocado (`git status`), así que la cifra de CSS no puede haber
+  bajado: la trampa del comentario sin cerrar no aplica aquí.
+
+**El precio del «top 5», medido:** llegar a algo que antes estaba a la vista
+cuesta **un toque más y escribir**: tocar «Busca otra cosa…» (visible sin
+desplazar en todos los casos medidos), teclear un trozo de palabra («lulu»,
+sin tildes ni mayúsculas) y tocar el resultado. Dos toques en vez de uno. Los
+límites preexistentes siguen donde estaban: 8 resultados y las primeras 100
+actividades del catálogo.
+
+**Estados:** vacío (629) **cubierto y probado**; carga y error del catálogo
+**no cambian** (el esqueleto y la lista de resultados solo aparecen al
+escribir, y el diff no los toca); permisos **no aplica** (toda la hoja está
+tras el login y no hay roles); texto largo (630) **cubierto y medido**; móvil
+a 375 px **medido**, sin scroll horizontal.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: no hay segundo
+buscador (el glob de `VidaActivityPicker.test.tsx:160` sigue verde), no hay
+normalizador nuevo, no hay tipo nuevo —`topStartSuggestions` devuelve
+`VidaSuggestion[]`—, no hay consulta nueva y el «ahora» es el `nowMinutes` que
+ya estaba. La función nueva imita a `suggestionsForGap`, que es justo la forma
+que el arquitecto señaló.
+
+**Hallazgos que no devuelven la tajada** (del usuario es la decisión):
+
+1. **El botón «Empezar» por debajo del borde a 375×667, confirmado y acotado.**
+   Con cinco fichas cortas el panel desborda **11 px** y el botón queda
+   **entero dentro** (606–647 en una ventana de 667). Con una de las cinco
+   ocupando fila entera (título largo) el desborde sube a **49 px** y el botón
+   cae en **644–684: 17 px fuera**. O sea: es real, pero **depende del reparto
+   de filas**, no pasa siempre. **No es barato**: el panel lo limita
+   `SteppedModal.module.scss:46` (`max-height: 92vh`) y el pie va dentro del
+   área que desborda; fijar el pie o recortar el alto toca el molde que
+   comparten los tres modos de esta hoja y el resto de modales de la app. Por
+   eso queda aquí y no en una devolución. Antes de la tajada el desborde era
+   de **348 px** medido con los mismos datos.
+2. **A media tarde no se ofrece el bloque en curso** (arriba).
+3. **`key={activity.id}`** sigue colisionando en `log`/`edit` y en
+   `VidaPlaceInGapSheet` cuando la plantilla repite actividad. Ya lo anotó el
+   constructor; sigue fuera de alcance.
+
+**Lo que queda para prueba manual del usuario** (`/app/*` está tras el login y
+los agentes no entran): abrir Hoy con sesión, pulsar «Empezar algo» y
+confirmar las cinco fichas sin minutos, con el buscador y la hora a la vista;
+mirar a media tarde y de noche si las cinco son las que espera; escribir
+«lulu» y comprobar que sigue apareciendo; y abrir «Registrar tiempo pasado»
+para ver que ahí sigue la plantilla entera con sus duraciones.

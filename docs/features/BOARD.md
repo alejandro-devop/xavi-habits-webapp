@@ -31,7 +31,19 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
 | FEAT-021 | delivered | 2/2 | app/providers, shared/api | La caché guardada caduca cuando cambia la forma de los datos | 2026-09-23 |
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
-| FEAT-023 | planned | 0/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-23 |
+| FEAT-023 | building | 1/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-23 |
+
+**FEAT-023 `building` 1/2** (2026-09-23, revisor). **Tajada 1 aceptada.** Los
+ocho criterios medidos en un `iframe` de 375 px: cinco fichas, una por
+actividad, sin duración, con el buscador (386–464 px) y la hora (475–532 px)
+dentro de la pantalla; antes, 22 fichas y los dos campos fuera. `log` sigue
+viendo la plantilla entera con duraciones, medido en el navegador. Lint 14/0 y
+293 tests de los ficheros tocados en verde. **Nadie pierde la caché**:
+`collectShapeSources` devuelve 32 ficheros y ninguno de los tocados está.
+Hallazgos anotados, no devueltos: el botón «Empezar» se va **17 px** por
+debajo del borde **solo** cuando una de las cinco fichas ocupa fila entera
+(arreglarlo toca `SteppedModal`, el molde de todos los modales), y a media
+tarde la lista no ofrece el bloque en curso. Queda la tajada 2 (24 h).
 
 **FEAT-012 `building` 1/4** (2026-09-23, revisor). **Tajada 1 aceptada**, sin
 commitear todavía. Medí yo los tres que quedaban pendientes —**313, 314 y 315**—

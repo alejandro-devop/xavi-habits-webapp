@@ -1427,6 +1427,96 @@ describe('VidaHoyPage — registrar lo que se sale (criterios 30 a 37 y 56)', ()
     expect(startSession).toHaveBeenCalledWith('a-s1', undefined)
   })
 
+  it('criterios 622 a 625 — «Empezar algo» ofrece cinco fichas, una por actividad y sin duración', () => {
+    // El caso reportado: la misma actividad en tres ratos de la plantilla, y
+    // más ítems de los que caben en la pantalla. El reloj del test son las 9:24.
+    suggestionsQuery = ready([
+      suggestion('lulu-am', 'Working at lululemon', 60, {
+        activityId: 'a-lulu',
+        startTime: '07:00',
+        activity: { id: 'a-lulu', title: 'Working at lululemon', category: null },
+      }),
+      suggestion('lulu-pm', 'Working at lululemon', 240, {
+        activityId: 'a-lulu',
+        startTime: '10:00',
+        activity: { id: 'a-lulu', title: 'Working at lululemon', category: null },
+      }),
+      suggestion('lulu-noche', 'Working at lululemon', 120, {
+        activityId: 'a-lulu',
+        startTime: '20:00',
+        activity: { id: 'a-lulu', title: 'Working at lululemon', category: null },
+      }),
+      suggestion('des', 'Desayunar', 30, { startTime: '11:00' }),
+      suggestion('casa', 'Organizar la casa', 15, { startTime: '12:00' }),
+      suggestion('pas', 'Pasear', 30, { startTime: '13:00' }),
+      suggestion('leer', 'Leer', 45, { startTime: '14:00' }),
+      suggestion('estudiar', 'Estudiar', 60, { startTime: '15:00' }),
+    ])
+
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar algo' }))
+
+    const sheet = screen.getByRole('dialog')
+    const options = within(sheet)
+      .getAllByRole('button')
+      .filter((button) => button.closest('li') !== null)
+
+    // Cinco como mucho, ordenadas por lo que toca ahora: el bloque de las 10
+    // representa a «Working at lululemon» y «Estudiar» (15:00) se queda fuera.
+    expect(options.map((button) => button.textContent)).toEqual([
+      'Working at lululemon',
+      'Desayunar',
+      'Organizar la casa',
+      'Pasear',
+      'Leer',
+    ])
+    // Ninguna ficha indistinguible de otra: la actividad repetida sale una vez.
+    expect(within(sheet).getAllByRole('button', { name: 'Working at lululemon' })).toHaveLength(1)
+    expect(within(sheet).queryByRole('button', { name: /Estudiar/ })).not.toBeInTheDocument()
+    // Y el resto sigue alcanzable: el buscador y la hora están en la hoja.
+    expect(within(sheet).getByLabelText('Buscar entre tus actividades')).toBeInTheDocument()
+    expect(within(sheet).getByLabelText('Hora a la que empezaste')).toBeInTheDocument()
+  })
+
+  it('criterio 629 — sin plantilla activa, la hoja no se rompe: aviso y buscador', () => {
+    suggestionsQuery = ready([])
+
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar algo' }))
+
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByText(/no tiene nada más que ofrecer aquí/)).toBeInTheDocument()
+    expect(within(sheet).getByLabelText('Buscar entre tus actividades')).toBeInTheDocument()
+  })
+
+  it('«Registrar tiempo pasado» sigue viendo la plantilla entera, con sus duraciones', () => {
+    suggestionsQuery = ready([
+      suggestion('lulu-am', 'Working at lululemon', 60, {
+        activityId: 'a-lulu',
+        startTime: '07:00',
+        activity: { id: 'a-lulu', title: 'Working at lululemon', category: null },
+      }),
+      suggestion('lulu-pm', 'Working at lululemon', 240, {
+        activityId: 'a-lulu',
+        startTime: '10:00',
+        activity: { id: 'a-lulu', title: 'Working at lululemon', category: null },
+      }),
+    ])
+
+    renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Registrar tiempo pasado' }))
+
+    const sheet = screen.getByRole('dialog')
+    const options = within(sheet)
+      .getAllByRole('button')
+      .filter((button) => button.closest('li') !== null)
+
+    expect(options.map((button) => button.textContent)).toEqual([
+      'Working at lululemon1h',
+      'Working at lululemon4h',
+    ])
+  })
+
   it('criterios 330 y 331b — «empecé a las 8:07 y sigo» es **una** acción y **una** sesión', async () => {
     renderWithProviders(<VidaHoyPage />)
     fireEvent.click(screen.getByRole('button', { name: 'Empezar algo' }))

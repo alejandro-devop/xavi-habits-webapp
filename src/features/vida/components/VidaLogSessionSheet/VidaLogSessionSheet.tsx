@@ -397,6 +397,11 @@ export function VidaLogSessionSheet({
             suggestions={suggestions}
             dayLabel={dayLabel}
             disabled={isPending}
+            // En «Empezar algo» la duración de la plantilla no viaja a ningún
+            // sitio (`chooseActivity` la descarta en `start`) y la cabecera ya
+            // dice que se pregunta al terminar: un número que promete algo que
+            // no pasa. En `log` sigue puesta, que ahí sí se preselecciona.
+            showTemplateDuration={mode !== 'start'}
           />
         )}
 

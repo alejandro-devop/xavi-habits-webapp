@@ -69,6 +69,7 @@ import {
   usualDurationsByItemId,
 } from '@/features/vida/utils/vida-patterns.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
+import { topStartSuggestions } from '@/features/vida/utils/vida-start-suggestions.utils'
 import {
   buildUpNext,
   buildUpNextEmpty,
@@ -1486,7 +1487,18 @@ export function VidaHoyPage() {
           mode={logSheet.mode}
           date={date}
           dayLabel={dayLabel}
-          suggestions={suggestions}
+          // **Estas líneas son toda la separación de modos** (FEAT-023): en
+          // «Empezar algo» la lista se recorta a una ficha por actividad,
+          // ordenada por lo que toca ahora y cortada en cinco; «Registrar
+          // tiempo pasado» y «Corregir» siguen viendo la plantilla entera,
+          // letra por letra. La regla vive en la función pura y se aplica
+          // aquí, igual que `suggestionsForGap` unas líneas más arriba: el
+          // picker no aprende nada nuevo.
+          suggestions={
+            logSheet.mode === 'start'
+              ? topStartSuggestions({ suggestions, nowMinutes })
+              : suggestions
+          }
           // «Empezar algo» parte de **ahora** (criterio 330); «Registrar tiempo
           // pasado», de media hora atrás. La misma hoja, dos puntos de partida.
           defaultStartTime={

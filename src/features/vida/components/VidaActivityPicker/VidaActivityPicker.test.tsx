@@ -97,6 +97,21 @@ describe('VidaActivityPicker — el «qué», una sola vez (criterio 38)', () =>
     expect(screen.getByRole('button', { name: 'Pasear' })).toBeInTheDocument()
   })
 
+  it('con `showTemplateDuration={false}` la ficha no lleva duración (FEAT-023)', () => {
+    const onChange = renderPicker({ showTemplateDuration: false })
+
+    expect(screen.getByRole('button', { name: 'Poner lavadora' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Poner lavadora20m' })).not.toBeInTheDocument()
+
+    // Apagar el número **no** cambia lo que se avisa: quien llama sigue
+    // recibiendo los minutos de la plantilla y decide si los usa.
+    fireEvent.click(screen.getByRole('button', { name: 'Poner lavadora' }))
+    expect(onChange).toHaveBeenCalledWith(
+      { id: 'a-s1', title: 'Poner lavadora', icon: null, color: null },
+      20,
+    )
+  })
+
   it('avisa con la actividad y con lo que su plantilla decía que dura', () => {
     const onChange = renderPicker()
 

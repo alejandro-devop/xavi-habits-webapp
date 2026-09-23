@@ -26,6 +26,108 @@
   font-weight: 600;
 }
 
+/* **La hora del plan, tocable** (FEAT-013, tajada 3, criterios 350 y 351).
+
+   No es un control nuevo: es el mismo `<time>` de siempre dentro de un botón,
+   con el idioma que ya se aceptó en la barra de sesión (`button.meta`) y en
+   `VidaNoteLine` — subrayado punteado, sin disfrazarse de botón.
+
+   Las tres medidas que no se pueden quitar, y por qué:
+   - `padding: 0.3rem 0` + `line-height: 1.5` → **26,1 px** de alto, por encima
+     del mínimo de **24 px** de WCAG 2.2 AA. Nace ya por encima: la tajada 2
+     costó una vuelta por nacer en 18,4.
+   - `margin-top: -0.3rem` **devuelve el texto a su sitio**: la fila mide
+     exactamente lo que medía, así que esto **no toca la reserva de abajo** de
+     `VidaModuleLayout` (criterio 60). El dedo crece hacia arriba y hacia abajo;
+     la hora no se mueve ni un píxel.
+   - `min-width` de 1.75rem para que el objetivo tenga **24 px también de
+     ancho**: «8:00» a 0,6875rem mide menos. Alineado a la derecha, que es como
+     se alinea la columna de horas. */
+.timeStart {
+  /* **Fila, y centrada.** La marca ▸ y la hora, uno al lado del otro. `center`
+     y no `baseline` a propósito: la caja de la hora (16,5 px) es la más alta de
+     las dos, así que marca el alto del contenido y **su borde superior no se
+     mueve** — que es lo que mantiene la hora en el mismo píxel que las filas
+     sin atajo. Con `baseline` la posición dependería del cuerpo del glifo. */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  /* **El ancla del ▸**, que va fuera del flujo. La razón está medida: la
+     canaleta mide 2,75rem **fijos** y con una hora de cinco cifras («12:45»)
+     un glifo que ocupara sitio la empujaba a 45,14 px y movía la tarjeta de esa
+     fila 1,14 px. Fuera del flujo, el botón mide **exactamente lo que medía**
+     (28 px) y la columna de horas no se mueve en ninguna fila. */
+  position: relative;
+  margin: -0.3rem 0 0;
+  padding: 0.3rem 0;
+  border: none;
+  background: none;
+  /* El mínimo de 24 px **de ancho** también es de WCAG 2.2 AA: «9:00» a
+     0,6875rem mide 21,3. Se queda, y ahora además es lo que impide que la
+     canaleta crezca con las horas de cinco cifras. */
+  min-width: 1.75rem;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  /* Explícito, no heredado: de este número sale la altura de la caja, y un
+     `font-size` de botón por defecto la descuadraría. Es el de `.time`. */
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  text-align: right;
+  cursor: pointer;
+
+  /* **El subrayado vive en la hora, no en el botón.** Un contenedor `flex` no
+     propaga su `text-decoration` a los hijos con la misma garantía que un
+     bloque, y además así el glifo **no** sale subrayado, que es como tiene que
+     verse. Es el mismo punteado de `button.meta` y de `VidaNoteLine`. */
+  .time {
+    text-decoration: underline dotted;
+    text-underline-offset: 0.15rem;
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--color-text);
+
+    .time {
+      color: var(--color-text);
+      text-decoration-style: solid;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 0.4rem);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  /* **Lo que deja la hora en su sitio exacto.** En la canaleta el `<time>` es
+     un hijo de un `flex` y se comporta como bloque; dentro del botón sería una
+     caja en línea y el texto caía **2,1 px más abajo** que el de las filas
+     vecinas (medido). Como bloque vuelve a ocupar su `line-height` y el
+     `margin-top` negativo lo devuelve al píxel. */
+  .time {
+    display: block;
+  }
+}
+
+/* El ▸: pequeño, del mismo color que la hora y **sin ocupar sitio**. Vive
+   pegado al borde izquierdo del botón, en el aire que la canaleta ya tenía;
+   `position: absolute` es lo que garantiza que no cambie **ni el ancho ni el
+   alto** de nada (medido). Decorativo: no lleva nombre accesible. */
+.timeStartMark {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  font-size: 0.5rem;
+  line-height: 1;
+}
+
 .tick {
   width: 0.5rem;
   height: 0.5rem;

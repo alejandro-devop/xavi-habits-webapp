@@ -1,7 +1,7 @@
 ---
 id: FEAT-013
 title: Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha
-status: building
+status: delivered
 architect: no    # un campo más en una hoja que ya existe y una condición que se levanta; el API ya lo admite tal cual (ver sección 1)
 area: features/vida
 requested: 2026-09-22
@@ -293,7 +293,7 @@ la hoja sigue siendo **una** con sus modos.
 |---|---|---|
 | 1 | **«Empezar algo» pregunta a qué hora empezó.** Un campo más en la hoja que ya existe (modo `start`), con «ahora» por defecto, y `start()` aceptando esa hora. Criterios 330–341 (incluido el **331b**). **Es lo más corto que resuelve el problema de hoy del usuario**, y es una sola acción: lo que lleva desde las 8:07 queda **en marcha** y contando desde las 8:07. | aceptada |
 | 2 | **Corregir la hora de una sesión en marcha.** *Secundaria: el pedido no la necesita.* Se levanta la condición de `VidaAgendaBlock.tsx:203`, y desde el «···» del bloque en marcha y la barra de sesión se manda `activityFollowUpEdit` con solo `startTime`. Cubre a **quien pulsó Empezar tarde y se da cuenta después**, que es otro caso. Criterios 342–349. | in-review (2026-09-23, retoque sobre la aceptada: la línea de la hora sube a 24,8 px —WCAG 2.2 AA— y la reserva del layout a 8rem; el revisor mira solo esto) |
-| 3 | **Empezar desde la hora planeada, en un toque.** El atajo «empecé a las 8:00, lo que tenías planeado» junto al play, sin encarecer el gesto de empezar ahora. Criterios 350–354. | pending |
+| 3 | **Empezar desde la hora planeada, en un toque.** El atajo «empecé a las 8:00, lo que tenías planeado» junto al play, sin encarecer el gesto de empezar ahora. Criterios 350–354. | **aceptada** (2026-09-23, con los dos retoques revisados: «deshacer», el ▸ y el atajo suprimido mientras algo corre) |
 
 **Por qué este orden:** la 1 es **literalmente el pedido, y el pedido entero**
 —el usuario lo estrechó él mismo: una acción, una sesión viva, inicio en el
@@ -1013,6 +1013,463 @@ Revisión.
 
 **Tree state:** sin commitear.
 
+### Tajada 3 — empezar desde la hora planeada, en un toque
+
+**Summary for the reviewer:**
+1. **El atajo cuelga de un dato que ya estaba pintado y no hacía nada**: la
+   **hora de la canaleta** del bloque. Cuando su hora planeada ya pasó (y hace
+   menos de 60 min), «9:00» se vuelve tocable —subrayado punteado, el idioma de
+   `VidaNoteLine` y de la línea de la barra de la tajada 2— y **un toque** deja
+   la sesión en marcha contando desde las 9:00, por la **misma** `start()` de la
+   tajada 1.
+2. **El «▶ Empezar» no se ha tocado**: sigue a un toque, sigue mandando
+   `start(activityId)` con **un solo argumento** y sigue guardando el reloj. El
+   test intocable de `VidaHoyPage.test.tsx` (`un solo toque arranca…`, que
+   compara el array entero) sigue en verde **sin editarlo**, y hay dos casos
+   nuevos que lo repiten desde el bloque.
+3. **Lo que más probablemente rompí:** la **canaleta de la hora**, que hasta hoy
+   era un `<time>` y en un bloque de esos ahora es un `<button>` con un `<time>`
+   dentro. Quien consulte `li > .gutter > time` sigue encontrándolo, pero quien
+   dé por hecho que no hay botones en la canaleta, no. Segundo sospechoso: el
+   **falso toque** — tocar la hora de un bloque que se pasó **empieza la sesión
+   sin confirmar**, igual que el ▶; no hay paso intermedio y eso es lo que pide
+   el criterio 350, pero es escritura a un toque en un sitio que antes no
+   reaccionaba.
+
+**Qué se construyó, archivo por archivo:**
+
+- `utils/vida-session.utils.ts` — **`plannedStartShortcut({ blockStartMinutes,
+  nowMinutes })`**: devuelve el `HH:mm` planeado cuando toca ofrecer el atajo y
+  `null` cuando no. Las tres puertas son los criterios escritos: sin reloj no
+  hay atajo, la hora tiene que **haber pasado** (igual al minuto de ahora es
+  «ahora», y para eso está el ▶) y la ventana es
+  **`VIDA_MOVED_THRESHOLD_MINUTES`** importada de `vida-execution.utils`, **no
+  una segunda constante** (criterio 354). No toca `startSessionInput` ni
+  `start()`: la aritmética del arranque no se copia.
+- `components/VidaAgendaBlock/VidaAgendaBlock.tsx` — prop nueva
+  **`onStartAtPlanned?: (block, startTime) => void`**, aditiva como todas las
+  demás: sin ella la canaleta es el `<time>` de siempre. Solo se pinta donde ya
+  hay un **«▶ Empezar»** (`onStart` presente, sin sesión y sin `execution`): un
+  bloque que no se puede empezar no estrena una segunda puerta para empezarlo.
+  El `<time>` **sigue existiendo** dentro del botón, con su `dateTime`.
+- `components/VidaAgendaBlock/VidaAgendaBlock.module.scss` — `.timeStart`, y
+  **solo** eso: lista de selectores comparada con `sass --style=compressed`
+  contra `HEAD`, 30 → 31, **ninguno perdido** (abajo).
+- `pages/VidaHoyPage.tsx` — `startWithNote` gana un **tercer parámetro
+  opcional** (`startTime`) y el bloque recibe `onStartAtPlanned` con **las
+  mismas** condiciones que el `onStart`. La rama sin hora llama
+  `start(activityId)` con **un argumento**, literalmente la de ayer: es lo que
+  sostiene el test intocable.
+- Tests: `VidaAgendaBlock.test.tsx` **+9**, `VidaHoyPage.test.tsx` **+6**,
+  `vida-session.utils.test.ts` **+6**. Ninguno existente editado.
+
+**Por qué así, y qué se descartó:**
+
+- **Descartado: un control nuevo al lado del ▶** («empecé a las 9:00» como
+  segundo botón o como línea bajo la tarjeta). Es lo que devolvió la tajada 2 en
+  su primera vuelta: inventar sitio en vez de colgar la puerta de un dato que ya
+  estaba escrito. Además la sección 1 avisa de que un control nuevo en la agenda
+  **pide render**, y engordaría la fila —que es lo que vigila el criterio 60.
+- **Descartado: llevar el atajo a la tarjeta de «Lo que viene»** (FEAT-010).
+  Ahí el dato «En tu plantilla, a las 8:00» también está pintado, pero la
+  tarjeta propone **un** bloque y el criterio 350 habla de cualquiera que se
+  haya pasado de la hora; y su criterio 196 dice que **su** botón guarda el
+  reloj. Queda para FEAT-010 si el usuario lo quiere también arriba (D2).
+- **Descartado: preguntar antes** (hoja de confirmación, o abrir la hoja de la
+  tajada 1 con la hora rellena). Son dos toques o más y el criterio 350 dice
+  **uno**.
+
+**Los toques, contados antes y después** (medido sobre `77beea7`):
+
+| Gesto | HEAD (`77beea7`) | Ahora | Δ |
+|---|---|---|---|
+| **Empezar ahora** desde el ▶ del bloque | 1 | **1** | **0** |
+| **Empezar ahora** desde «Lo que viene» | 1 | **1** | **0** |
+| **Empezar desde la hora planeada** | 4 (hoja «Empezar algo» → elegir la actividad → escribir la hora → «Empezar») | **1** | **−3** |
+| **Escribir la nota antes de empezar** (el ✎ de la fila) | 1 | 1 | **0** |
+| **Terminar**, desde la barra y desde el bloque | 1 | 1 | **0** |
+| **Terminar y añadir una nota**, barra / bloque | 1 / 2 | 1 / 2 | **0** |
+| **Corregir la hora** de lo que corre, barra / bloque | 1 / 2 | 1 / 2 | **0** |
+| Abrir el «···» del bloque | 1 | 1 | **0** |
+
+Ni un gesto vecino se encarece: el atajo **no comparte sitio con ninguno**. Vive
+en la canaleta, donde hasta hoy no había ningún control.
+
+**Verification:**
+
+```
+pnpm typecheck → limpio (exit 0)
+pnpm lint      → ✖ 14 problems (14 errors, 0 warnings)     [los mismos ajenos de siempre]
+pnpm test      → Tests 2 failed | 2013 passed (2015)       [SearchSelect ×2, preexistentes]
+pnpm build     → exit 0 · index 1.138,38 kB · CSS 277,72 kB · app-icons 620,20 kB sin tocar
+```
+
+Los 1994 de la línea base pasan a **2015** porque esta tajada suma 21 tests y no
+borra ninguno. Paquete **+0,69 kB** y CSS **+0,75 kB**: el CSS **sube**, que es
+lo que tiene que pasar al añadir una regla (la señal de alarma del
+`ENVIRONMENT.md` es que baje).
+
+**Selectores compilados, no tamaños** (`sass --style=compressed`, `HEAD` contra
+el árbol):
+
+```
+VidaAgendaBlock HEAD  → … .tick .time .timer            (30)
+VidaAgendaBlock árbol → … .tick .time .timeStart .timer (31)
+diff → 30a31 > .timeStart      (ni uno perdido)
+```
+
+**En el navegador, medido por mí** (arnés temporal ya borrado; dev server del
+usuario en el 5173, no se arrancó ni se paró nada). Dos `iframe` de **375** y
+**760 px** exactos, en `position: absolute` para que ningún `flex` los
+encogiera. Tres bloques a la vez: uno **con** atajo, uno **sin** él y uno con un
+título de 58 caracteres.
+
+| Qué | 375 px | 760 px |
+|---|---|---|
+| El atajo | **28 × 26,1 px** (mínimo WCAG 2.2 AA: 24 × 24) | **28 × 26,1 px** |
+| Su aspecto | `underline dotted`, texto «9:00» | igual |
+| Nombre accesible | «Empezar «Bañarme» desde las 9:00, lo que tenías planeado» — **contiene el texto visible** | igual |
+| La hora, **con** atajo | arriba de su fila a **13,59 px**, borde derecho a **30,41** | idem |
+| La hora, **sin** atajo | **13,59 px** / **30,41** — **el mismo píxel** | idem |
+| Alto de la fila, con / sin atajo | **106,5 / 106,5 px** | **67,3 / 67,3 px** |
+| El «▶ Empezar» de esa fila | 100,2 × 32 px, idéntico al de la fila sin atajo | igual |
+| Desbordes | 0 nodos, `scrollWidth === clientWidth === 375` | 0 nodos, 760 |
+| Contraste del texto | **6,96:1** en claro; en oscuro **es el mismo token** que la hora de siempre (`--color-text-secondary`, 9,94:1 sobre el fondo del arnés): no se estrena tinta | igual |
+
+**Lo importante de esa tabla, y por eso la medí:** **la fila no crece ni un
+píxel** y la hora no se mueve. El atajo se hace alto hacia arriba y hacia abajo
+con `padding` + un `margin-top` negativo. Así que **el hueco reservado de
+`VidaModuleLayout.module.scss` (criterio 60, `8rem` con 3,1 px de aire) no se
+toca**: aquí no crece nada de lo que está siempre en pantalla —la barra de
+sesión no se ha rozado—, y lo que crece es una fila de la agenda que **no
+crece**.
+
+Y una honestidad sobre el primer intento: con el `<time>` en línea dentro del
+botón, la hora caía **2,1 px más abajo** que la de las filas vecinas. Se ve
+midiendo y no razonando; se arregló con `display: block` en el `<time>` de
+dentro, y la tabla de arriba es la de después.
+
+**Criterios, uno por uno:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| **350** | ✅ | Un toque en la hora del plan de un bloque que se pasó manda **una** llamada: `startSession.mock.calls[0]` → `['a-b1', '08:00']`, con `createFollowUpMutation.mutate` **sin llamar** y **sin `dialog`** en pantalla entre el toque y la mutación (`VidaHoyPage.test.tsx`, «criterio 350 y 352»). Visto además en el navegador. |
+| **351** | ✅ | Tres pruebas: el ▶ del mismo bloque manda `['a-b1']` —**un argumento**— y el atajo ni se roza (`VidaAgendaBlock.test.tsx` compara el array entero de `onStart`); y el test **intocable** de la tarjeta sigue verde **sin una sola edición**. La tabla de toques de arriba está medida gesto a gesto: ningún Δ distinto de 0 salvo el del propio atajo, que baja de 4 a 1. |
+| **352** | ✅ | El atajo entra por `startWithNote`, la **misma** función del ▶, que llama a la **misma** `sessionActions.start` de la tajada 1 con la hora en el hueco que ya existía. Con nota escrita antes sigue siendo **una** llamada: `['a-b1', '08:00', { notes: 'Con agua fría' }]`. Cero aritmética copiada: la ventana es una función pura de 8 líneas. |
+| **353** | ✅ | `plannedStartShortcut` devuelve `null` con la hora por venir, con la hora **igual** al minuto de ahora (eso es «ahora») y con `nowMinutes === null` (día pasado o futuro). Cuatro tests de componente y cuatro de `utils`; en un día pasado la pantalla no pinta ningún control con «lo que tenías planeado». |
+| **354** | ✅ | La ventana sale de **`VIDA_MOVED_THRESHOLD_MINUTES`** importada, y un test la compara **contra la constante** además de contra el 60 literal: 60 min dentro, 61 fuera. A las 9:24, «Bañarme» de las 8:00 (84 min) **no** ofrece nada. |
+| 355, 356, 357 | ✅ para lo de esta tajada | 0 desbordes a 375 y 760 con un título de 58 caracteres; la fila mide lo mismo con atajo y sin él; el color es el token que ya tenía la hora, así que oscuro no estrena nada. (La parte de esos criterios que habla de **la hoja** la cerró la tajada 1.) |
+| 359 | ✅ | Lo que se lee es **«9:00»** y lo que se dicta, «Empezar «Bañarme» desde las 9:00, lo que tenías planeado». Ni «tarde», ni «se te olvidó», ni «deberías». El toast de después es el de la tajada 1: «En marcha: … · contamos desde las 9:00». |
+| 360 | ✅ | Las cuatro puertas arriba. **Ningún documento GraphQL nuevo**: `contracts.test.ts` no se ha tocado. |
+| **361** | ⏳ **prueba manual, detrás del login** | `/app/*` no se puede abrir desde aquí. Pasos: abrir **Hoy** entre 1 y 60 minutos después de la hora de un bloque; tocar **la hora de la canaleta** de ese bloque (aparece subrayada con puntos); comprobar que el cronómetro nace con los minutos que ya llevabas y que el toast dice «contamos desde las …»; comprobar que el **▶ Empezar** del bloque de al lado sigue arrancando en el segundo del toque. Y un paso de vigilancia: que bajo el último bloque de la agenda **siga habiendo aire** con algo en marcha. |
+
+**Lo que dejo dicho y no toco:**
+
+- **El atajo es discreto a propósito, y eso tiene su contrapartida**: quien no
+  se fije en el subrayado punteado puede no descubrirlo. Es el precio de no
+  inventar un control ni encarecer la fila, y es exactamente la forma que el
+  usuario aprobó en la barra de sesión. Si al usarlo resulta invisible, la
+  salida barata **no** es un botón nuevo: es un glifo ▸ delante de la hora
+  dentro del mismo botón (la canaleta mide 44 px y la hora ocupa 21,3).
+- **La tarjeta de «Lo que viene» no ofrece el atajo** (D2). No es un olvido:
+  está escrito arriba por qué, y su criterio 196 sigue literal.
+- **Fuera de alcance y lo dejo escrito:** un bloque planeado hace **más** de una
+  hora no ofrece nada nuevo; para eso están «Lo hice» de las tres salidas y
+  «Registrar tiempo pasado», que ya existen.
+- **`ENVIRONMENT.md` se queda como está** (es del usuario), aunque tras esta
+  tajada sus cifras son **2015 tests**, **1.138,38 kB** y **277,72 kB**.
+
+**Tree state:** sin commitear. Ocho archivos modificados, ninguno nuevo; el
+arnés del navegador, borrado (`src/__harness/` y `harness-feat013-t3.html`).
+
+### Tajada 3 — retoque: el «deshacer» del arranque y el ▸ del atajo
+
+**Summary for the reviewer:** (solo estas dos cosas; nada de lo que aceptaste se
+ha tocado)
+1. **El aviso del arranque lleva «deshacer»** —un toque en vez de tres— **y solo
+   cuando de verdad deshace**. Si el arranque **cerró otra sesión de paso**, el
+   botón **no se ofrece**: el API **no sabe reabrir** una sesión cerrada, y un
+   deshacer a medias es peor que ninguno. La evidencia del «no se puede» está
+   abajo, con la línea del servicio del repo hermano.
+2. **El atajo lleva el ▸ dentro del mismo botón** y **no cuesta un píxel**: la
+   fila mide **106,45 px a 375** y **67,27 a 760** con atajo y sin él, la hora
+   sigue en **13,59 / 30,41** y el botón sigue midiendo **28 × 26,09**. El glifo
+   va **fuera del flujo** (`position: absolute`), y eso no es adorno: dentro del
+   flujo, una hora de cinco cifras («12:45») empujaba la canaleta de 44 a
+   **45,14 px** y movía la tarjeta de esa fila.
+3. **Lo que más probablemente rompí:** `useVidaSessionActions.start` ya no llama
+   a `toast.success` sino a `toast.show('success', …)`. El mensaje es **el
+   mismo** carácter por carácter —lo sujetan cinco tests que ya existían—, pero
+   cualquier espía que mirara `success` en ese camino ahora ve `show`. Segundo
+   sospechoso: **`discard` se ha movido** dentro del hook, de debajo de
+   `finishWith` a encima de `start` (una `useCallback` no puede depender de algo
+   declarado después). **El cuerpo no ha cambiado ni una línea**; lo que cambia
+   es el orden del archivo.
+
+**Nota de estado, para que nadie se confunda:** he devuelto el `status` del
+front-matter de `delivered` a `building` y la tajada a `in-review`. No estoy
+deshaciendo tu veredicto —la tajada que revisaste sigue aceptada—: es que con
+código sin revisar en el árbol, `delivered` diría algo que no es cierto. La
+transición vuelve a ser tuya.
+
+**1 · «Deshacer», y por qué no siempre.**
+
+- `hooks/useVidaSessionActions.ts` — el aviso del arranque pasa de
+  `toast.success(msg)` a `toast.show('success', { message: msg, action })`, el
+  molde de «Terminar» desde FEAT-004. La acción llama a **`discard(started)`**,
+  el camino que ya existía para «una sesión empezada por error» (criterio 14):
+  **ni una segunda aritmética, ni una segunda mutación**. Si sale bien, un
+  segundo aviso: *«Quitada. No quedó registrado nada.»*; si falla, **no se dice
+  que se quitó** —el error ya lo cuenta `discard`—.
+- **La condición**: `closedNote === ''`, o sea **solo cuando el arranque no
+  cerró nada**. Ahí el deshacer es **exacto y completo**: borra la única fila
+  que se escribió.
+- **Y por qué no cuando sí cerró algo, que es lo que pediste que dijera con
+  precisión.** Devolver «las dos cosas a su sitio» exige **reabrir** la sesión
+  que se cerró, y eso el API **no lo hace**: `activityFollowUpEdit` con
+  `durationMinutes: null` no la reabre, **revienta**, porque el guardia es
+  `if (input.durationMinutes !== undefined) { if (input.durationMinutes < 1)
+  throw … }` y en JavaScript **`null < 1` es `true`**
+  (`xavi-platform-node/src/services/activity-follow-up.service.ts:367-372`,
+  leído hoy). No es que sea caro: **no existe la operación**.
+  - *Lo único que quedaría* sería **borrarla y volver a arrancarla** con su hora
+    y sus notas: **tres escrituras** (`delete` la nueva → `start` la vieja →
+    `delete` la fila cerrada), con dos órdenes posibles y **las dos con un fallo
+    intermedio que deja algo peor que el estado de ahora**: si falla el `start`,
+    la sesión anterior **desaparece entera**; si falla el último `delete`, el día
+    queda con **dos filas de la misma actividad** y el presupuesto cuenta el rato
+    dos veces —justo lo que evitó el criterio 26 de FEAT-004—. Y el `id` cambia.
+    **No lo he construido**: es una feature, no un retoque, y se decide con el
+    usuario delante.
+  - *La alternativa barata que tampoco he tomado, y es decisión de producto:*
+    **no pintar el atajo mientras algo está en marcha** (una condición más en
+    `VidaHoyPage`). Eso **elimina el escenario destructivo entero** en vez de
+    intentar repararlo, y cuesta que con algo corriendo el atajo no esté. Lo
+    dejo escrito porque es la salida más limpia si el caso preocupa.
+  - Mientras tanto, **lo que pasó se sigue leyendo**: el mensaje dice
+    «Terminamos «Trabajar» a las 9:00. En marcha: …», y corregir esa duración es
+    el «Corregir» del «···» que existe desde FEAT-004 (criterio 35).
+- Tests: **+3** en `useVidaSessionActions.test.tsx` —el deshacer borra de verdad
+  `f2` y lo dice; el arranque que cerró otra **no** trae acción; y si el borrado
+  falla **no se afirma** que se quitó—. El mock del `Toast` ahora guarda la
+  acción entera para poder **pulsarla**; las aserciones que ya había no se
+  tocan.
+
+**2 · Que se vea: el ▸.**
+
+- `components/VidaAgendaBlock/VidaAgendaBlock.tsx` — un
+  `<span aria-hidden>▸</span>` **dentro del mismo botón**, delante del `<time>`.
+  No cuesta un toque, no toca el nombre accesible (un test lo fija:
+  `toHaveAccessibleName` sigue siendo «Empezar «Bañarme» desde las 9:00, lo que
+  tenías planeado», **sin el glifo**) y el `<time>` conserva su `datetime`.
+- `…/VidaAgendaBlock.module.scss` — `.timeStartMark`, y tres cambios en
+  `.timeStart`: `display: flex` con `align-items: center` —con `center` la caja
+  de la hora, que es la más alta, **manda en el alto**, y por eso su borde
+  superior no se mueve—, `position: relative` como ancla del glifo, y **el
+  subrayado punteado se muda del botón a `.time`**: un contenedor `flex` no
+  propaga `text-decoration` con la misma garantía que un bloque, y de paso el
+  glifo **no sale subrayado**, que es como debe verse. El `min-width: 1.75rem`
+  **se queda**: ahora sostiene dos cosas, el mínimo de 24 px de **ancho** de
+  WCAG y que la canaleta no crezca con las horas de cinco cifras.
+- **El `display: block` del `<time>` que arregla los 2,1 px sigue intacto**, la
+  ventana sigue importando `VIDA_MOVED_THRESHOLD_MINUTES`, y
+  `VidaHoyPage.test.tsx` sigue con **un solo hunk, 94 líneas añadidas y 0
+  borradas** (`git diff --numstat`, comprobado después del retoque).
+
+**Las medidas, hechas por mí después del retoque** (arnés temporal borrado; dev
+server del usuario en el 5173, no se arrancó ni se paró nada; dos `iframe` de
+**375** y **760 px** exactos en `position: absolute`). Cuatro filas a la vez:
+**con** atajo, **sin** él, con **título de 58 caracteres** y con una **hora de
+cinco cifras** (12:45), que es el caso ancho de la columna:
+
+| Qué | 375 px | 760 px |
+|---|---|---|
+| Alto de la fila, las **cuatro** | **106,45 px** | **67,27 px** |
+| El botón del atajo | **28 × 26,09 px** (idéntico al que mediste) | **28 × 26,09 px** |
+| Borde superior de la hora, respecto a su fila | **13,59** en las cuatro | **13,59** en las cuatro |
+| Borde derecho de la hora | **30,41** en las tres de «9:00» | igual |
+| Ancho de la canaleta | **44,00** en las cuatro | **44,00** en las cuatro |
+| El ▸ | **4,02 × 8 px**, 1,61 px por fuera del borde izquierdo de la fila (la página reserva **16 px** de `padding`: `.content` de `AppLayout`) | igual |
+| Subrayado punteado | `underline dotted` en la hora, **no** en el glifo | igual |
+| ¿Se acierta? | `elementFromPoint` en el centro y en **las dos esquinas** devuelve el botón | igual |
+| Desbordes | 0 nodos (por la derecha **y por la izquierda**), `scrollWidth === clientWidth === 375` | 0 nodos, 760 |
+
+**La reserva de `8rem` sigue sin tocarse**, por las dos vías: por **medida** —lo
+único que podría crecer es una fila de la agenda, y **no crece**— y por
+**estructura**: `VidaSessionBar` y `VidaModuleLayout` **no aparecen en el diff**
+de este retoque. Los 3,1 px de aire siguen donde estaban.
+
+**Y lo que costó una vuelta, dicho en vez de tragado:** el primer intento metía
+el ▸ **en el flujo** del `flex`. Medido: la fila no crecía de alto, pero con la
+hora «12:45» la canaleta pasaba de **44,00 a 45,14 px** y arrastraba la tarjeta
+**1,14 px** a la derecha, solo en esa fila. Se ve midiendo el caso ancho, no el
+caso bonito. Con el glifo fuera del flujo, las cuatro filas miden lo mismo.
+
+**Verification:**
+
+```
+pnpm typecheck → limpio (exit 0)
+pnpm lint      → ✖ 14 problems (14 errors, 0 warnings)   [los mismos ajenos]
+pnpm test      → Tests 2 failed | 2017 passed (2019)     [SearchSelect ×2, preexistentes]
+pnpm build     → exit 0 · index 1.138,66 kB · CSS 277,96 kB · app-icons 620,20 kB sin tocar
+```
+
+Los 2015 pasan a **2019**: **+4 tests** (tres del deshacer, uno del ▸) y **cero
+borrados**. Paquete **+0,28 kB**, CSS **+0,24 kB**: sube, que es lo que tiene
+que pasar al añadir una regla. Selectores comparados con `sass
+--style=compressed`: `VidaAgendaBlock` suma **`.timeStartMark`** a
+**`.timeStart`** y **no pierde ninguno** (`diff` → `30a31,32`).
+
+**Lo que queda para el usuario:** el **361** de siempre, con dos pasos más que
+solo se comprueban usándolo: (a) tocar el ▸ y **pulsar «deshacer»** en el aviso,
+comprobando que el bloque vuelve a ofrecer «▶ Empezar» y que no queda nada en la
+agenda; y (b) decir si **ahora sí** se encuentra el atajo sin que nadie lo
+señale.
+
+**Tree state:** sin commitear.
+
+### Tajada 3 — retoque 2: con algo en marcha, el atajo no se pinta
+
+**Summary for the reviewer:** (solo esto; lo del retoque anterior no se ha
+tocado)
+1. **El atajo desaparece de todos los bloques mientras algo está en marcha.**
+   Una condición más en `VidaHoyPage`, `canStartAtPlanned = canStart &&
+   !openSession.session`, **solo** para `onStartAtPlanned`. El **▶ sigue en
+   todos los bloques** y hace lo de siempre.
+2. **Con eso el escenario destructivo deja de existir** en vez de repararse a
+   medias: el atajo era lo único que podía cerrar la sesión viva **a una hora
+   del pasado** y borrar retroactivamente minutos ya trabajados. El ▶ cierra a
+   **este momento**, que no borra nada vivido — por eso no se toca.
+3. **Lo que más probablemente rompí:** el atajo **también desaparece en el caso
+   inofensivo** de tener algo en marcha y querer empezar otra cosa desde su hora
+   planeada. Es el precio elegido, y no hay ningún aviso que lo explique: la
+   hora simplemente vuelve a ser texto. Segundo sospechoso: `canStartAtPlanned`
+   cuelga de `openSession.session`, así que si algún día esa consulta empieza a
+   devolver una sesión **de otro día** sin que `canStart` la filtre, el atajo se
+   apagaría de más (hoy `canStart` ya la excluye).
+
+**El «Deshacer» del aviso se queda, y ahora ya no puede ser parcial nunca.** Es
+la consecuencia buena de lo anterior y la digo como composición de dos pruebas
+que están escritas, no como impresión:
+
+- `VidaHoyPage.test.tsx` — con algo en marcha **no hay ningún** botón
+  «… lo que tenías planeado» en la pantalla.
+- `useVidaSessionActions.test.tsx` — el «deshacer» se ofrece **si y solo si** el
+  arranque no cerró nada, y cuando se ofrece borra de verdad la fila que se
+  escribió.
+
+Juntas: **todo arranque que venga del atajo empieza sin nada en marcha**, luego
+no cierra nada, luego trae «deshacer», luego ese deshacer es **completo**. Por
+las otras dos puertas (el ▶ y la hoja) el arranque **sí** puede cerrar algo, y
+ahí el botón sigue sin ofrecerse, que es lo correcto.
+
+**El hallazgo del API, escrito aquí para que se encuentre** (vale más que esta
+tajada): **una sesión cerrada no se puede volver a abrir.**
+`activityFollowUpEdit` con `durationMinutes: null` **no la reabre: revienta**,
+porque el guardia del servicio es
+
+```ts
+if (input.durationMinutes !== undefined) {
+  if (input.durationMinutes < 1) throw new BadRequestError('Duration must be at least 1 minute')
+```
+
+y en JavaScript **`null < 1` es `true`** (`null` se convierte a `0`).
+`xavi-platform-node/src/services/activity-follow-up.service.ts:367-372`, leído
+el 2026-09-23. Consecuencia para quien venga: **cualquier «deshacer» que
+necesite reabrir una sesión no se puede construir en cliente**; lo más parecido
+son tres escrituras (`delete` la nueva → `start` la vieja → `delete` la fila
+cerrada) y **las dos órdenes posibles tienen un fallo intermedio peor que el
+estado de partida**: o la sesión anterior desaparece entera, o el día queda con
+dos filas de la misma actividad y el rato contado dos veces (contra el criterio
+26 de FEAT-004). Si alguna vez hace falta de verdad, **es una petición al API**
+—permitir `durationMinutes: null` para reabrir—, no un apaño de cliente.
+
+**Qué cambió, archivo por archivo:**
+
+- `pages/VidaHoyPage.tsx` — `canStartAtPlanned`, con el razonamiento entero
+  escrito encima para que nadie lo deshaga sin saber lo que quita, y su uso en
+  la prop `onStartAtPlanned`. `canStart` y el `onStart` **no se tocan**.
+- `pages/VidaHoyPage.test.tsx` — **+3**: con algo en marcha no hay atajo en
+  ningún bloque; el ▶ de otro bloque **sigue** y manda `['a-b1']` (un
+  argumento); y la hora de ese bloque **vuelve a ser un `<time>` suelto**, sin
+  botón alrededor. Ninguna aserción existente tocada.
+
+**Medido por mí después del cambio** (arnés temporal borrado; dev server del
+usuario en el 5173, no se arrancó ni se paró nada; `iframe` de **375** y
+**760 px** exactos en `position: absolute`). **Cinco** filas a la vez, que son
+los dos estados que pediste comparar más los bordes:
+
+| Fila | 375 px | 760 px | La hora es |
+|---|---|---|---|
+| **Con** atajo (nada en marcha) | **106,45 px** | **67,27 px** | `TIME` dentro del botón |
+| **Sin** atajo, el **mismo bloque** con algo en marcha | **106,45 px** | **67,27 px** | **`TIME` suelto** |
+| Con atajo, título de 58 caracteres | **106,45 px** | **67,27 px** | `TIME` dentro del botón |
+| Con atajo, hora de cinco cifras (12:45) | **106,45 px** | **67,27 px** | `TIME` dentro del botón |
+| La que **está corriendo** (cronómetro + «Terminar») | **106,45 px** | **67,27 px** | **`TIME` suelto** |
+
+Y en las cinco: borde superior de la hora **13,59 px** respecto a su fila, borde
+derecho **30,41**, canaleta **44,00**, y **0 desbordes** por la derecha y por la
+izquierda (`scrollWidth === clientWidth`). El botón, donde lo hay, **28 × 26,09
+px**, y `elementFromPoint` en el centro y en **las dos esquinas** devuelve el
+botón.
+
+**Lo que esa tabla contesta, punto por punto:** aparecer y desaparecer el atajo
+**no mueve un píxel** —ni el alto de la fila ni la posición de la hora—; cuando
+no se ofrece, la hora es **texto**, no un botón inerte; el objetivo táctil sigue
+por encima de 24 × 24; la canaleta sigue en 44. Y **la reserva de `8rem` sigue
+sin tocarse**: lo único que podría crecer es una fila de la agenda y no crece, y
+`VidaSessionBar` y `VidaModuleLayout` **no aparecen en el diff**.
+
+**Lo que declaré haber podido romper, ahora comprobado y no supuesto:**
+**ningún test espía `toast.success` en el camino de `start`.** Lo busqué en los
+tres sitios posibles: (1) el único que mira ese aviso es
+`useVidaSessionActions.test.tsx`, y su `vi.mock` del `Toast` mete **`success` y
+`show` en la misma lista** `toastCalls`, así que sus cinco aserciones de mensaje
+siguen viendo lo mismo —y siguen verdes—; (2) las demás suites que tocan
+sesiones (`VidaHoyPage`, `VidaModuleLayout`, `vida.routes`) **mockean el hook
+entero**, así que no llegan al `toast`; (3) `useActivityFollowUps.test.tsx`
+mockea `success` y `show`, pero **no afirma nada** sobre el arranque —esa
+mutación se crea con `{ silent: true }`—. El único test que lee el **texto
+fuente** del módulo, `vida-vocabulary.test.ts:101`, mira
+`useActivityFollowUps.ts`, que no he tocado. **Nada se quedó a oscuras.**
+
+**Verification:**
+
+```
+pnpm typecheck → limpio (exit 0)
+pnpm lint      → ✖ 14 problems (14 errors, 0 warnings)   [los mismos ajenos]
+pnpm test      → Tests 2 failed | 2021 passed (2023)     [SearchSelect ×2, preexistentes]
+pnpm build     → exit 0 · index 1.138,72 kB · CSS 277,96 kB · app-icons 620,20 kB sin tocar
+```
+
+**Y un aviso que hay que leer antes de comparar cifras: no estaba solo en el
+árbol, y `HEAD` se ha movido debajo de mí.** A mitad de esta verificación
+aparecieron modificados `utils/vida-goals.utils.ts` y su test, que **yo no he
+tocado** (el arreglo de la caché del teléfono de FEAT-019: `countsOn` con
+`Array.isArray`). En la corrida de en medio su test salía en rojo —estaban a
+medio guardar—, luego se puso verde y ahora ya están **commiteados**:
+**`1887d62`, encima de `77beea7`**. Consecuencias exactas para las cifras de
+arriba:
+
+- **Uno de los 2023 tests es suyo.** Los míos son **7** sobre los 2015 que dejó
+  la tajada aceptada: 4 del retoque anterior y 3 de este. La línea base de
+  `ENVIRONMENT.md` (1994) sigue sin tocarse, y **no la toco yo**: es del
+  usuario.
+- **Los 0,06 kB que el chunk sube sobre mis 1.138,66 son suyos.** El CSS,
+  **277,96 kB**, es mío entero.
+- Todas mis comparaciones de esta tajada —toques, selectores, medidas— están
+  hechas contra **`77beea7`**, que es donde estaba `HEAD` cuando empecé. Su
+  commit no toca ninguno de mis diez archivos, así que siguen valiendo.
+
+**Lo que queda para el usuario:** el **361**, y dentro de él dos pasos nuevos:
+(a) con algo en marcha, mirar que **ninguna** hora de la agenda aparece
+subrayada; (b) sin nada en marcha, tocar el ▸ y **pulsar «deshacer»** en el
+aviso, comprobando que el bloque vuelve a ofrecer «▶ Empezar» y que no queda
+nada registrado.
+
+**Tree state:** sin commitear. Mis archivos son diez; los dos de
+`vida-goals.utils` son de otra sesión.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — «Empezar algo» pregunta a qué hora empezó
@@ -1682,3 +2139,376 @@ igual):
 8. Con algo en marcha, baja del todo en **Hoy** y en **Revisión**: bajo el último
    bloque tiene que quedar **aire**, sin que la barra tape nada. Y en tu teléfono,
    **acierta la línea de la hora**: ahora mide 24,8 px, un tercio más alta.
+
+### Tajada 3 — empezar desde la hora planeada, en un toque
+
+**Veredicto: aceptada.** Los cinco criterios se cumplen, medí yo lo que él
+midió y **sale lo mismo hasta la centésima**, y ningún gesto vecino se ha
+encarecido. Con esto la feature queda **entregada**. Dos hallazgos van escritos y
+ninguno devuelve la tajada: **el deshacer cuesta tres toques y no repara el daño
+colateral**, y **el atajo puede no encontrarse nunca**. El criterio 361 sigue
+siendo del usuario.
+
+**1 · El toque que escribe sin preguntar: hay riesgo, está acotado, y el
+deshacer es caro.** Lo miré hasta el fondo porque es lo que él mismo señala.
+
+*¿Qué escribe exactamente?* `start(activityId, '09:00')`, la misma ruta de la
+tajada 1. Sin sesión en marcha, lo peor que pasa es una sesión de más que se
+puede quitar.
+
+*¿Y con otra cosa en marcha?* Aquí está lo serio, y no lo dice su entrada. El
+atajo **se sigue pintando** en los demás bloques mientras algo corre (la
+condición solo lo esconde en el bloque de la actividad en marcha), y `start()`
+**cierra lo que corre** para abrir lo nuevo (FEAT-004, D1). Dos casos:
+
+- Lo que corre empezó **después** de la hora del atajo → salta el guardia de D1,
+  sale un aviso y **no se escribe nada**. Seguro.
+- Lo que corre empezó **antes** → se cierra **a la hora planeada**, o sea **en el
+  pasado**, y arranca lo nuevo desde ahí. Un toque accidental puede recortarle
+  media hora a lo que llevabas haciendo. Es la semántica correcta de «empecé
+  esto a las 9:00» —alguien tenía que acabar—, pero es **destructivo y sin
+  confirmación**.
+
+*¿Se deshace?* **En tres toques, y solo a medias.** El camino es «···» de la
+barra → «No guardarla» del cierre completo → confirmar en el diálogo. Eso borra
+la sesión que se abrió por error, pero **no resucita la que se cerró de paso**:
+esa queda cerrada a la hora planeada y hay que corregirla a mano. **No hay
+«deshacer» en ninguna parte**, y el toast del arranque es un `toast.success`
+pelado, sin acción — aunque **el componente ya admite una**: el toast de
+«Terminar» lleva «añadir una nota» desde FEAT-004.
+
+*Mi juicio:* **no devuelve la tajada.** El criterio 350 pide **un toque** con
+todas las letras, así que meter una confirmación sería incumplirlo; y escribir a
+un toque ya es lo que hace el ▶ que está en esa misma fila desde FEAT-004. Lo
+que esta tajada estrena no es la escritura sin preguntar, es que **una etiqueta
+pasó a ser un control**. **Lo que sí recomiendo, y es barato**: darle al toast
+del arranque la acción **«deshacer»** que el `Toast` ya sabe pintar. Un toque
+para deshacer en vez de tres, y es el único sitio donde el cierre colateral se
+podría revertir con contexto. Queda como hallazgo, no como condición.
+
+**2 · Los toques, medidos por mí** (código de `77beea7` contra el árbol; el ▶
+además medido en el DOM en filas con atajo y sin él: **100,17 × 32 px en las
+dos**):
+
+| Gesto | HEAD (`77beea7`) | Ahora | Δ |
+|---|---|---|---|
+| **▶ Empezar** (bloque) | 1 | **1** | **0** |
+| **▶ Empezar** desde «Lo que viene» | 1 | **1** | **0** |
+| **Empezar desde la hora planeada** | no existía en un toque | **1** | nuevo |
+| El **✎** de la nota de antes de empezar | 1 | 1 | **0** |
+| El **«···»** del bloque | 1 | 1 | **0** |
+| Terminar · terminar con nota (barra / bloque) | 1 · 1 / 2 | 1 · 1 / 2 | **0** |
+| Corregir la hora de lo que corre (barra / bloque) | 1 / 2 | 1 / 2 | **0** |
+
+La razón de que no se encarezca nada es estructural y la comprobé en el diff: el
+cambio de `VidaAgendaBlock.tsx` **vive entero dentro de la canaleta**, donde no
+había ningún control. Y `startWithNote` conserva la rama de antes **literal**
+—`if (!note && !startTime) return void start(activityId)`, un argumento—, que es
+lo que sostiene los criterios 196, 332 y 351; el botón de «Lo que viene»
+(línea 1189) sigue llamándola con dos argumentos, así que su criterio 196 no se
+roza.
+
+**3 · El test intocable, comprobado en el diff.** `VidaHoyPage.test.tsx` tiene
+**un solo hunk**, `@@ -4040,0 +4041,94 @@`: **94 líneas añadidas al final y cero
+borradas**. Ninguna aserción existente tocada. `it('un solo toque arranca, y **la
+duración planeada no viaja**…')`, en la 2511, no aparece en el diff y sigue en
+verde.
+
+**4 · Los 2,1 px y el alto de la fila, medidos por mí.** Arnés propio con **tres
+bloques a la vez** —con atajo, sin atajo y con título de 58 caracteres—, en
+`iframe` de ancho exacto y `position: absolute` (5173 del usuario; borrado, `git
+status` no lo lista):
+
+| | 375 px | 760 px |
+|---|---|---|
+| Alto de la fila **con** atajo | **102,45 px** | **67,27 px** |
+| Alto de la fila **sin** atajo | **102,45 px** | **67,27 px** |
+| Alto de la fila, título de 58 caracteres | **102,45 px** | **67,27 px** |
+| Borde superior de la hora, respecto a su fila | 13,59 · 13,60 · 13,59 | 13,59 · 13,59 · 13,60 |
+| Borde derecho de la hora | 30,41 en las tres | 30,41 en las tres |
+| El ▶ de cada fila | 100,17 × 32 px en las tres | idem |
+| Desbordes | 0 nodos, `scrollWidth === clientWidth === 375` | 0 nodos, 760 |
+
+**La fila no crece y la hora no se mueve**: las diferencias son de **una
+centésima**, ruido de subpíxel. El `margin-top: -0.3rem` que compensa el
+`padding` hace su trabajo. Sus 67,3 px a 760 coinciden exactos; mis 102,45 a 375
+difieren de sus 106,5 porque mi arnés monta el bloque con menos adornos, pero
+**lo que importa es la comparación dentro de la misma medida**, y ahí las tres
+filas son idénticas.
+
+**Corolario que me pediste confirmar: la reserva de `8rem` no se toca.** Lo
+confirmo por dos vías. Por medida: lo que crece o no crece aquí es **una fila de
+la agenda**, y no crece. Y por estructura: la reserva depende del alto de **la
+barra de sesión**, y ni `VidaSessionBar` ni `VidaModuleLayout` aparecen en el
+diff de esta tajada (`git diff --stat`: solo `VidaAgendaBlock`, `VidaHoyPage`,
+`vida-session.utils` y sus tests). Los 3,1 px de aire siguen intactos.
+
+**5 · El objetivo táctil, verificado.** **28 × 26,09 px** a 375 **y** a 760 —por
+encima del mínimo de 24 × 24 de WCAG 2.2 AA— y **nada lo tapa**:
+`elementFromPoint` en el centro, en la esquina superior izquierda **y** en la
+inferior derecha devuelve el propio botón. No está `disabled`, y el ▶ más cercano
+queda a **230 px** a 375 (576 a 760): no hay dos objetivos pegados como sí pasaba
+en la barra de la tajada 2. Contraste del texto: **6,96:1**, su número exacto; y
+el color es `--color-text-secondary`, **el mismo token que ya tenía `.time`**
+(lo comprobé en el SCSS, línea 23), así que el tema oscuro no estrena tinta.
+
+**6 · ¿Se descubre? Mi juicio: probablemente no, y el remedio ya está escrito.**
+La señal es un **subrayado punteado** sobre un número de 11 px, en una columna de
+horas que se ven **exactamente iguales** —mismo token de color, mismo tamaño,
+mismo peso 600—: el atajo se distingue de sus gemelas **solo** por esa línea de
+puntos. En la barra de sesión el mismo idioma funcionaba porque el texto era una
+frase en un sitio que se mira; aquí es un dato más en una columna de datos. El
+`title` solo ayuda con ratón. **No es un criterio y por eso no devuelvo**, pero
+lo digo sin rodeos: tal como está, hay bastante probabilidad de que esto sea una
+función que nadie encuentre. Su salida —un **▸** dentro del mismo botón— me
+parece la correcta: no cuesta ni un toque, no cambia el alto (el botón mide 28 px
+de ancho y la canaleta 44: hay sitio), y convierte «un número igual que los
+otros» en «un número con marca de play». **Decisión del usuario**, con la feature
+ya en la mano.
+
+**7 · Lo de esta semana, sin tocar.** Por intersección de ficheros sobre
+`git diff --stat`: esta tajada toca `VidaAgendaBlock.{tsx,module.scss,test}`,
+`VidaHoyPage.{tsx,test}` y `vida-session.utils.{ts,test}` — y **nada más**.
+FEAT-020 vive en `AppLayout`, `RetryNotice` y `Toast`; FEAT-010 tajada 2 en
+`VidaUpNextCard`; FEAT-019 en `vida-goals.*` y `VidaAjustesPage`; y **la tajada 2
+de esta feature** en `VidaSessionBar` y `VidaModuleLayout`: ninguno aparece. De
+`VidaHoyPage.tsx` solo cambian la firma de `startWithNote` y una prop del bloque,
+lejos del arco y del semáforo. La hora tocable de la barra y la reserva de `8rem`
+están **intactas por no haber sido tocadas**.
+
+**Criterios, uno a uno:**
+
+| # | Estado | Cómo lo comprobé |
+|---|---|---|
+| **350** | ✅ | Un toque en la hora llama `onStartAtPlanned(block, '09:00')` → `startWithNote(..., '09:00')` → `start(activityId, '09:00')`. Sin diálogo intermedio: leí la rama entera, no hay `confirm` en el camino. Medido en el DOM: el control existe, se acierta y nada lo tapa. |
+| **351** | ✅ | El ▶ conserva su rama literal de un argumento; medido, mide lo mismo (100,17 × 32) en filas con atajo y sin él; el test intocable sigue verde **sin una edición**. El atajo es una salida al lado, nunca un paso previo. |
+| **352** | ✅ | Una sola ruta: `startWithNote` → `sessionActions.start`, la de la tajada 1. `plannedStartShortcut` son 8 líneas que solo deciden **si** se ofrece y devuelven un `HH:mm`; no toca `startSessionInput` ni la aritmética del arranque. |
+| **353** | ✅ | Leído el código: `nowMinutes === null → null`, `late <= 0 → null` (incluido el empate, que es «ahora»). Medido en el arnés: el bloque de las 11:00 con el reloj en 9:30 **pinta un `<span>`**, no un botón. |
+| **354** | ✅ | `VIDA_MOVED_THRESHOLD_MINUTES` **importada** de `vida-execution.utils`, no una constante nueva; `late > VIDA_MOVED_THRESHOLD_MINUTES → null`. Ninguna otra cifra aparece en la función. |
+| 355–357, 359 | ✅ en lo que toca aquí | 0 desbordes a 375 y 760 con título de 58 caracteres; la fila no crece; el color es el token que ya existía; lo que se lee es «9:00» y lo que se dicta, «Empezar «X» desde las 9:00, lo que tenías planeado». Ni «tarde», ni «se te olvidó», ni «deberías». |
+| **360** | ✅ | Corrido por mí: `pnpm test` → **3 fallos de 2015**, de los cuales `IconPicker > normalizes selection to stored name bell` es **el flaky que documenta `ENVIRONMENT.md`**: lo corrí aislado y pasa **6/6**. Quedan los 2 de `SearchSelect`, preexistentes. `pnpm lint` → **14/0**. `pnpm build` → CSS **277,72 kB**, chunk **1.138,38 kB**. Cuadra con lo declarado. |
+| **361** | ⏳ **del usuario** | Detrás del login. Pasos abajo. |
+
+**Los selectores, compilados por mí** (`sass --style=compressed`, `HEAD` contra
+el árbol, contando solo clases): `VidaAgendaBlock` pasa de **28 a 29**, y el
+`diff` de las dos listas es una sola línea: `> .timeStart`. **Ninguno perdido**,
+que es lo que busca la regla de `ENVIRONMENT.md`. El CSS sube 0,75 kB, que es lo
+que debe pasar al añadir una regla.
+
+**Hallazgos, recogidos:**
+
+1. **No hay «deshacer» del arranque**, y el camino manual cuesta 3 toques y no
+   repara la sesión cerrada de paso. El `Toast` ya admite una acción.
+2. **La visibilidad del atajo** (punto 6): el ▸ dentro del mismo botón.
+3. `ENVIRONMENT.md` se ha quedado corto otra vez —hoy son **2015 tests**,
+   **1.138,38 kB** y **277,72 kB**— y el flaky de `IconPicker` volvió a salir en
+   la corrida completa, tal y como está escrito allí. **No lo he tocado**: es del
+   usuario.
+
+## Cierre de FEAT-013
+
+**Para ti, ahora que está.** Hasta hoy la app solo sabía contar desde el segundo
+en que pulsabas el botón: si llevabas hora y media trabajando y te acordabas
+tarde, tenías que mentir, esperar a terminar para registrarlo como pasado, o no
+registrar nada. Ahora puedes decir **desde cuándo**. Al empezar algo, la hoja te
+pregunta a qué hora empezaste y te propone «ahora», así que si no tocas nada todo
+funciona igual que siempre; y si escribes las 8:07, la sesión queda **viva y
+contando desde las 8:07**, en una sola acción, que es exactamente lo que pediste.
+
+Y hay dos atajos más para los dos despistes normales. Si pulsaste «Empezar»
+tarde y te das cuenta al rato, **toca la hora que aparece en la barra de abajo**
+—«desde las 9:00»— y corrígela de un toque, sin terminar nada: el cronómetro
+recuenta solo. Y si lo que vas a empezar estaba planeado para hace un rato, en la
+agenda **la hora del plan se ha vuelto tocable**: un toque y la sesión nace
+contando desde esa hora, sin dejar de tener el botón de siempre para empezar
+ahora mismo. Ninguno de estos atajos te cobra un toque de más en lo que ya
+hacías.
+
+**Para probarlo a mano** (lo de la API tarda ~1 min en despertar si lleva rato
+parada):
+
+1. En **Hoy**, empieza algo con «▶ Empezar»: debe arrancar **en el segundo del
+   toque**, como siempre.
+2. Abre «Empezar algo», escribe **8:07** y guarda: la sesión tiene que quedar
+   **en marcha**, con el cronómetro ya en las horas que llevas.
+3. Toca la línea **«desde las 9:00»** de la barra de abajo, pon otra hora y
+   guarda: debe leerse «Contamos desde las …», la barra seguir ahí y el
+   cronómetro saltar **sin recargar**.
+4. Pulsa «Terminar» y comprueba que los minutos guardados son **los de verdad**.
+5. Busca un bloque cuya hora planeada pasó **hace menos de una hora**: su hora
+   aparece **subrayada con puntos**. Tócala: la sesión nace desde esa hora.
+6. Prueba una hora **del futuro** y una **dentro de un rato ya registrado**: las
+   dos tienen que avisarte sin guardar.
+7. Con algo en marcha, baja del todo en **Hoy** y en **Revisión**: bajo el último
+   bloque tiene que quedar aire.
+8. Y dinos dos cosas que solo se ven usándolo: si **encuentras** la hora
+   subrayada de la agenda sin que nadie te la señale, y si **aciertas** con el
+   dedo la línea de la hora en la barra.
+
+### Tajada 3 — los dos retoques: «deshacer», el ▸ y el atajo suprimido con algo en marcha
+
+**Veredicto: aceptada, y con esto la feature queda entregada.** Miré solo los
+dos retoques. Lo medido cuadra hasta la centésima salvo una fila, que explico. Y
+traigo **dos cosas que no están en ninguna de las dos entradas**: la pata que le
+faltaba a su composición del «deshacer» —y que la hace más sólida de lo que
+argumentan— y **el precio real del punto 5, que no es el que él cree**.
+
+**1 · `canStartAtPlanned` solo toca el atajo. Comprobado en el código y en el
+DOM.** `canStart` sigue literal en la línea 201 (`isToday && !isDisabled &&
+!isFromAnotherDay`); `canStartAtPlanned = canStart && !openSession.session`
+aparece **una sola vez más** en todo el archivo, en la prop `onStartAtPlanned`
+(línea 1062). El `onStart` **no aparece en el diff**. Y lo confirmé midiendo, que
+es lo que no se puede discutir: en la fila sin atajo del arnés **sigue habiendo
+un botón «▶ Empezar»**, mientras que el botón del atajo no existe.
+
+**2 · La hora vuelve a ser texto muerto, no un botón inerte.** Medido con
+`getComputedStyle` en las dos filas del mismo bloque:
+
+| | Con atajo | Sin atajo |
+|---|---|---|
+| Padre del `<time>` | `BUTTON` | **`SPAN`** |
+| `text-decoration` | `underline dotted` | **`none solid`** |
+| `cursor` | `pointer` | **`auto`** |
+| ¿Dentro de un `<button>`? | sí | **no** (`closest('button') === null`) |
+| Color | `rgb(71,85,105)` | el mismo |
+
+No queda nada que parezca tocable: desaparecen el subrayado **y** el ▸. Y el
+subrayado vive en el `<time>`, no en el botón (el botón mide `none solid`), así
+que **el glifo no sale subrayado**, como él decía.
+
+**3 · La composición del «deshacer» se sostiene — y por una razón mejor que la
+que dan.** Su argumento son dos tests. Yo busqué los caminos que se les escapan
+y encontré **tres**, los tres cerrados, pero dos de ellos **no por sus tests**:
+
+- **La condición del deshacer no depende de lo que la pantalla supuso**, sino de
+  lo que el arranque **hizo**: `closedNote === ''` se evalúa **dentro** de
+  `start`, después de intentar el cierre. Aunque la pantalla pintara el atajo con
+  la caché desfasada y entre el render y el toque apareciera una sesión viva,
+  `start` la cerraría y **no ofrecería el botón**. La condición de pintado
+  elimina el escenario; la corrección del deshacer no depende de ella.
+- **Y el servidor no cierra nada a tus espaldas**, que es la pata que faltaba y
+  que ninguno de los dos tests cubre: `startFollowUp` llama a
+  **`assertNoOpenFollowUp(userId)`** antes del `INSERT`
+  (`xavi-platform-node/src/services/activity-follow-up.service.ts:296`, leído
+  hoy). Si de verdad hubiera una sesión abierta que el cliente no conoce, el
+  arranque **falla** — no crea nada, no cierra nada y no hay aviso con
+  «deshacer». No existe el caso «el cliente cree que no cerró nada y el servidor
+  sí».
+- Si el borrado del deshacer falla, no se afirma que se quitó: `discard` ya
+  cuenta su propio error y el segundo aviso solo sale con `removed.ok`.
+
+Además comprobé que **`discard` se movió sin tocarse**: extraje el bloque de
+`HEAD` y el del árbol y el `diff` sale **vacío**, 17 líneas idénticas.
+
+**4 · La fila no cambia de alto al aparecer y desaparecer el atajo.** Arnés
+propio con **cinco filas a la vez** (borrado; `git status` no lo lista), `iframe`
+de ancho exacto en `position: absolute`:
+
+| Fila | 375 px | 760 px | La hora es |
+|---|---|---|---|
+| Con atajo (12:30) | **106,45** | **67,27** | `TIME` en `BUTTON` |
+| **El mismo bloque sin atajo** | **106,45** | **67,27** | **`TIME` suelto** |
+| Con atajo, título de 58 caracteres | **106,45** | **67,27** | `TIME` en `BUTTON` |
+| Con atajo, hora de cinco cifras (12:45) | **106,45** | **67,27** | `TIME` en `BUTTON` |
+| La que está corriendo | **126,94** | **87,75** | `TIME` suelto |
+
+**Las cuatro primeras son idénticas**, que es exactamente lo que había que
+probar: **el atajo aparece y desaparece sin mover un píxel**, ni el alto ni la
+hora (borde superior **13,59** en las cinco, derecho **46,41** en las cinco,
+canaleta **44,00** en las cinco). Sus 106,45 y 67,27 son mis mismos números.
+
+**La única cifra suya que no reproduzco** es la quinta: **la fila en marcha me
+sale más alta** (126,94 / 87,75), no 106,45. No es un defecto ni contradice nada:
+una fila en marcha enseña cronómetro y «Terminar», y mi arnés se los pasa; es un
+estado distinto, **anterior a esta tajada**, donde la hora es texto suelto en los
+dos casos. Lo digo porque su tabla afirma que las cinco miden lo mismo y **eso no
+es cierto**: las cuatro que se comparan entre sí, sí.
+
+**El ▸**: 4,02 × 8 px, con su borde izquierdo en **14,39 px** de la página —
+dentro de los 16 px de `padding` que reserva el contenido—, y por eso **0 nodos
+desbordados por la izquierda** además de por la derecha, con `scrollWidth ===
+clientWidth` a 375 y a 760.
+
+**5 · El precio de suprimir el atajo: no es el que él declara, y hay que
+corregirlo en el acta.** Él dice que el atajo «también desaparece en el caso
+inofensivo». Lo miré caso por caso y **el caso inofensivo no existe**. Con algo
+en marcha solo hay dos situaciones:
+
+- **Lo que corre empezó después** de la hora planeada → el guardia de D1 ya
+  paraba el arranque y solo salía un aviso. Ahí el atajo era **un botón que no
+  podía funcionar**: quitarlo no quita nada.
+- **Lo que corre empezó antes** → cerraba la sesión viva **en el pasado**. Y
+  aquí está lo que **tampoco** dice su entrada: ese caso no es solo el accidente.
+  Es también **el uso más natural de la feature**: «estaba en Trabajar, a las
+  12:30 me puse a Comer y se me olvidó pulsar». Ese gesto era legítimo y ahora
+  **no tiene camino corto**.
+
+Y el rodeo tampoco sirve: arrancar con el ▶ a las 12:45 y corregir la hora a
+12:30 con la tajada 2 **queda bloqueado por la regla de solape de esa misma
+tajada** —«Ese rato ya lo tiene «Trabajar», hasta las 12:45»—, así que primero
+hay que corregir la duración de Trabajar por el «···» y después la hora de la
+nueva: dos hojas y media docena de toques.
+
+**Mi juicio: se acepta, pero se anota, porque es una decisión de producto con
+coste y el acta tiene que llevarlo.** La decisión es defendible y está bien
+razonada —el API **no sabe reabrir** una sesión cerrada (su hallazgo del
+`null < 1`, que confirmé en el servicio), así que un accidente ahí es
+irreversible y no hay «deshacer» que valga—. **Una palabra en pantalla no hace
+falta**: explicar una ausencia en la fila más cargada de la agenda sería ruido, y
+lo medido dice que no queda ningún control fantasma. Lo que sí queda pendiente
+para el usuario es **si echa de menos el caso «se me olvidó cambiar»**; si lo
+echa, la salida limpia no es devolver el atajo, es **pedirle al API que acepte
+`durationMinutes: null` para reabrir** —que es lo que desbloquea un deshacer
+completo— y entonces el atajo puede volver entero.
+
+**Y una consecuencia formal, que es mi trabajo señalar y no arreglar:** el
+**criterio 350** dice, literal, «cuando se empieza un bloque cuya hora planeada
+ya pasó, **se ofrece** en un solo toque empezar desde esa hora», **sin excepción
+escrita**. Con este retoque el criterio se cumple **salvo cuando hay algo en
+marcha**. Es una decisión del usuario posterior a la redacción, no un
+incumplimiento del constructor, y **no reescribo el criterio**: queda dicho aquí
+para que quien lea el 350 dentro de un año sepa que tiene una excepción y dónde
+está escrita.
+
+**6 · Lo demás, medido:** objetivo táctil **28 × 26,09 px** a 375 y a 760, por
+encima de 24 × 24; `elementFromPoint` en el centro **y en las dos esquinas**
+devuelve el botón; canaleta **44,00** en las cinco filas; **0 desbordes** a los
+dos anchos. **La reserva de `8rem` intacta**, por las dos vías: nada crece, y
+`VidaSessionBar` y `VidaModuleLayout` **no aparecen en el diff**. Selectores
+compilados por mí (`sass --style=compressed`, `HEAD` contra árbol):
+`VidaAgendaBlock` pasa de **28 a 30** y el `diff` de las dos listas son dos
+líneas, `> .timeStart` y `> .timeStartMark`: **ninguno perdido**.
+
+**Línea base, corrida por mí:**
+
+```
+pnpm test  → Tests 2 failed | 2021 passed (2023)   [SearchSelect ×2, preexistentes]
+pnpm lint  → ✖ 14 problems (14 errors, 0 warnings)
+pnpm build → CSS 277,96 kB · index 1.138,72 kB
+```
+
+Cuadra al kilobyte con lo declarado, y con el aviso de que **uno de los 2023 es
+del arreglo de `vida-goals.utils` que ya viaja en `1887d62`**, no de esta tajada.
+Su commit no toca ninguno de los diez archivos de aquí, así que las comparaciones
+contra `77beea7` siguen valiendo.
+
+**Hallazgos que quedan abiertos, para quien venga:**
+
+1. **El API no sabe reabrir una sesión cerrada** (`null < 1` es `true` en el
+   guardia del servicio). Mientras eso siga así, **ningún «deshacer» que
+   necesite reabrir se puede construir en cliente**. Es la petición al API que
+   desbloquearía el atajo con algo en marcha.
+2. **«Se me olvidó cambiar de actividad» se ha quedado sin camino corto** (punto
+   5). Coste medido: dos hojas y media docena de toques, y de paso choca con la
+   regla de solape de la tajada 2.
+3. `ENVIRONMENT.md` sigue corto: hoy **2023 tests**, **1.138,72 kB** y
+   **277,96 kB**. **No lo toco**: es del usuario.
+
+**Dos pasos más para la prueba manual**, que se suman a los ocho del cierre:
+
+9. **Sin nada en marcha**, toca el ▸ de un bloque cuya hora pasó hace poco y
+   pulsa **«deshacer»** en el aviso: el bloque tiene que volver a ofrecer
+   «▶ Empezar» y no debe quedar nada registrado.
+10. **Con algo en marcha**, mira la agenda: **ninguna** hora debe aparecer
+    subrayada, y el «▶ Empezar» de los demás bloques tiene que seguir ahí. Dinos
+    si echas de menos poder decir «me cambié a esto a las 12:30».

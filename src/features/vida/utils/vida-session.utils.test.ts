@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
+import { VIDA_MOVED_THRESHOLD_MINUTES } from '@/features/vida/utils/vida-execution.utils'
 import {
   VIDA_UNKNOWN_SESSION_MINUTES,
   closeSessionInput,
@@ -14,6 +15,7 @@ import {
   isSessionFromAnotherDay,
   logSessionInput,
   minutesUntilEndTime,
+  plannedStartShortcut,
   proposeLogDuration,
   resolveUnknownEndMinutes,
   sessionStartInstant,
@@ -601,5 +603,42 @@ describe('validateCorrectedStart — la hora nueva de una sesión en marcha (cri
         daySessions: [enMarcha],
       }).valid,
     ).toBe(true)
+  })
+})
+
+/**
+ * **La ventana del atajo** (FEAT-013, tajada 3, criterios 353 y 354). Aquí se
+ * sujeta que el borde sale de `VIDA_MOVED_THRESHOLD_MINUTES` y **no de una
+ * segunda constante**: si alguien escribe un 45 o un 90 a mano, este caso lo
+ * dice.
+ */
+describe('plannedStartShortcut — cuándo se ofrece empezar desde la hora planeada', () => {
+  const NUEVE = 9 * 60
+
+  it('criterio 350 — la hora planeada que ya pasó se devuelve como `HH:mm`', () => {
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: NUEVE + 12 })).toBe('09:00')
+  })
+
+  it('criterio 353 — la que todavía no ha llegado, no', () => {
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: NUEVE - 1 })).toBeNull()
+  })
+
+  it('criterio 353 — el minuto exacto es «ahora», y para eso está el ▶', () => {
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: NUEVE })).toBeNull()
+  })
+
+  it('criterio 353 — sin reloj (día pasado o futuro) no hay atajo', () => {
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: null })).toBeNull()
+  })
+
+  it('criterio 354 — el borde es el de FEAT-004: 60 min dentro, 61 fuera', () => {
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: NUEVE + 60 })).toBe('09:00')
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: NUEVE + 61 })).toBeNull()
+  })
+
+  it('criterio 354 — el borde es exactamente la constante, no un número copiado', () => {
+    const limite = NUEVE + VIDA_MOVED_THRESHOLD_MINUTES
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: limite })).not.toBeNull()
+    expect(plannedStartShortcut({ blockStartMinutes: NUEVE, nowMinutes: limite + 1 })).toBeNull()
   })
 })

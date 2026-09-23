@@ -31,10 +31,12 @@ import type {
   ActivityFollowUpStartInput,
 } from '@/features/vida/types/activity-followup.types'
 import { formatDateToYmd } from '@/features/vida/utils/vida-date.utils'
+import { VIDA_MOVED_THRESHOLD_MINUTES } from '@/features/vida/utils/vida-execution.utils'
 import {
   DEFAULT_BLOCK_MINUTES,
   formatTimeForDisplay,
   isValidHhMm,
+  minutesToTime,
   normalizeTimeForApi,
   normalizeTimeForDisplay,
   parseTimeToMinutes,
@@ -563,4 +565,38 @@ export function proposeLogDuration({
     durationMinutes: minutes,
     fromUsual: usualMinutes !== null && minutes === usualMinutes ? usualMinutes : null,
   }
+}
+
+/**
+ * **Empezar desde la hora planeada** (FEAT-013, tajada 3, criterios 350 a 354).
+ *
+ * Devuelve el `HH:mm` **planeado** cuando tiene sentido ofrecer el atajo, y
+ * `null` cuando no. No decide nada más: quien llama pinta la puerta y llama a
+ * `start(activityId, startTime)`, **la misma** función de la tajada 1 — aquí no
+ * se copia ni un gramo de la aritmética del arranque (criterio 352).
+ *
+ * Las tres puertas, y las tres son el criterio escrito:
+ *
+ * 1. **Sin reloj no hay atajo** (`nowMinutes === null`): un día pasado o futuro
+ *    no tiene «ya pasó».
+ * 2. **Nada del futuro** (criterio 353): la hora planeada tiene que haber
+ *    pasado de verdad. Igual al minuto de ahora **no** cuenta: eso es «ahora»,
+ *    y para eso está el ▶ de siempre.
+ * 3. **La ventana es `VIDA_MOVED_THRESHOLD_MINUTES`** (60 min), la de FEAT-004
+ *    criterio 20, **no una segunda constante** (criterio 354): más allá de ahí
+ *    la sesión ya no sería «este bloque, algo tarde» sino un bloque movido, y
+ *    un plan de hace cuatro horas no ofrece registrar cuatro horas de un toque.
+ */
+export function plannedStartShortcut({
+  blockStartMinutes,
+  nowMinutes,
+}: {
+  blockStartMinutes: number
+  nowMinutes: number | null
+}): string | null {
+  if (nowMinutes === null) return null
+  const late = nowMinutes - blockStartMinutes
+  if (late <= 0) return null
+  if (late > VIDA_MOVED_THRESHOLD_MINUTES) return null
+  return minutesToTime(blockStartMinutes)
 }

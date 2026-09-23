@@ -118,6 +118,34 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
   }, [])
 
   /**
+   * Una sesión empezada por error (criterio 14). Nunca «cancelar» ni
+   * «eliminar».
+   *
+   * **Vive aquí arriba desde FEAT-013 tajada 3 (retoque)** y no donde estaba:
+   * el «deshacer» del toast de `start` lo llama, y una `useCallback` no puede
+   * llevar en sus dependencias algo declarado más abajo. El cuerpo **no ha
+   * cambiado ni una línea**: es un movimiento, no una reescritura.
+   */
+  const discard = useCallback(
+    async (target: ActivityFollowUp): Promise<VidaSessionActionResult> => {
+      try {
+        await discardMutation.mutateAsync({
+          id: target.id,
+          date: target.date,
+          activityId: target.activityId,
+          wasOpen: target.durationMinutes === null,
+        })
+        return OK
+      } catch (error) {
+        const message = translateSessionError(error, 'No pudimos quitarla. Inténtalo otra vez.')
+        toast.error(message)
+        return { ok: false, message }
+      }
+    },
+    [discardMutation, toast],
+  )
+
+  /**
    * Empezar un bloque **ahora** (criterios 2, 15 y 17) o **desde la hora que se
    * diga** (criterios 331 y 331b): «llevo trabajando desde las 8:07 y sigo» es
    * **un solo gesto** y queda como **una sola sesión abierta** —una única
@@ -213,9 +241,48 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
             formatClock(startedAt) !== formatClock(now)
               ? ` · contamos desde las ${formatClock(startedAt)}`
               : ''
-          toast.success(
-            `${closedNote}${title ? `En marcha: ${title}` : 'En marcha'}${fromEarlier}`,
-          )
+          /**
+           * **«deshacer», y solo cuando de verdad deshace** (hallazgo 1 del
+           * revisor de la tajada 3).
+           *
+           * Empezar es ya **escritura a un toque** —lo es el ▶ desde
+           * FEAT-004—, y desde la tajada 3 también lo es tocar la hora del
+           * plan. El camino manual para revertirlo cuesta **tres toques**
+           * («···» → «No guardarla» → confirmar), así que el aviso lleva la
+           * salida de **uno**. El molde es el de «Terminar», que ofrece
+           * «añadir una nota» desde FEAT-004: `toast.show` con una acción, no
+           * un `toast.success` pelado.
+           *
+           * **La condición es la parte importante, y es una negativa
+           * deliberada:** si este arranque **cerró otra sesión de paso** (D1,
+           * criterio 339), no se ofrece. Un «deshacer» ahí quitaría la sesión
+           * nueva y dejaría la anterior **cerrada en el pasado**, que es
+           * justamente el daño; y **el API no sabe volver a abrirla**:
+           * `activityFollowUpEdit` con `durationMinutes: null` no la reabre,
+           * revienta —`null < 1` es `true` en el guardia de
+           * `activity-follow-up.service.ts:369`—. Antes que un botón que dice
+           * deshacer y deshace la mitad, ninguno: lo que pasó se lee en el
+           * propio mensaje («Terminamos «X» a las 9:00»).
+           */
+          const undo =
+            closedNote === ''
+              ? {
+                  label: 'deshacer',
+                  onClick: () => {
+                    void (async () => {
+                      const removed = await discard(started)
+                      // El fallo ya lo cuenta `discard` con su propio aviso: no
+                      // se dice dos veces, y sobre todo no se dice «quitada» de
+                      // algo que sigue ahí.
+                      if (removed.ok) toast.success('Quitada. No quedó registrado nada.')
+                    })()
+                  },
+                }
+              : undefined
+          toast.show('success', {
+            message: `${closedNote}${title ? `En marcha: ${title}` : 'En marcha'}${fromEarlier}`,
+            action: undo,
+          })
           return OK
         } catch (error) {
           const message = translateSessionError(error, 'No pudimos empezarla. Inténtalo otra vez.')
@@ -226,7 +293,7 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
         unlock()
       }
     },
-    [closeMutation, isFromAnotherDay, lock, session, startMutation, toast, unlock],
+    [closeMutation, discard, isFromAnotherDay, lock, session, startMutation, toast, unlock],
   )
 
   /**
@@ -328,26 +395,6 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
       }
     },
     [closeMutation, toast],
-  )
-
-  /** Una sesión empezada por error (criterio 14). Nunca «cancelar» ni «eliminar». */
-  const discard = useCallback(
-    async (target: ActivityFollowUp): Promise<VidaSessionActionResult> => {
-      try {
-        await discardMutation.mutateAsync({
-          id: target.id,
-          date: target.date,
-          activityId: target.activityId,
-          wasOpen: target.durationMinutes === null,
-        })
-        return OK
-      } catch (error) {
-        const message = translateSessionError(error, 'No pudimos quitarla. Inténtalo otra vez.')
-        toast.error(message)
-        return { ok: false, message }
-      }
-    },
-    [discardMutation, toast],
   )
 
   /**

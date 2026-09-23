@@ -199,6 +199,28 @@ export function VidaHoyPage() {
   // mitad —esconderlo también en el bloque que **ya tiene** sesión— necesita el
   // cruce de D1 y llega en la tajada 2.
   const canStart = isToday && !openSession.isDisabled && !openSession.isFromAnotherDay
+  /**
+   * **El atajo de la hora planeada pide una condición más que el ▶: que no
+   * haya nada en marcha** (FEAT-013, tajada 3; decisión del usuario tras la
+   * revisión).
+   *
+   * El ▶ de esa misma fila **ya** cierra lo que corre desde FEAT-004, así que
+   * escribir sin preguntar no es lo que estrenaba el atajo. Lo que estrenaba
+   * era cerrarlo **a una hora del pasado** (D1, criterio 339): un toque
+   * accidental **le borraba minutos que el usuario sí trabajó**, y eso **no se
+   * puede deshacer** —el API no sabe reabrir una sesión cerrada, ver la
+   * entrada de la tajada 3 en el dossier—. Quitando el atajo mientras algo
+   * corre, ese escenario **deja de existir** en vez de repararse a medias.
+   *
+   * Consecuencia buena y comprobada: el «deshacer» del aviso de arranque, que
+   * solo se ofrece cuando el arranque no cerró nada, **nunca es parcial**
+   * viniendo de aquí.
+   *
+   * Lo que **no** cambia: el ▶ sigue en todos los bloques, y con algo en
+   * marcha sigue haciendo lo de siempre —cerrar lo anterior **a este
+   * momento**, que no borra nada ya vivido—.
+   */
+  const canStartAtPlanned = canStart && !openSession.session
 
   /**
    * **Lo que se escribió antes de empezar** (FEAT-018, tajada 3), por bloque.
@@ -222,11 +244,18 @@ export function VidaHoyPage() {
    * `activityFollowUpStart` que ya la lleva dentro — nunca un arranque más una
    * edición aparte. El `null` del segundo hueco deja escrito que la hora de la
    * plantilla no viaja: la pone el reloj de la mutación.
+   *
+   * **`startTime` es de la tajada 3 de FEAT-013 y solo lo manda el atajo de la
+   * hora planeada** (criterio 352): es esta misma función, no una segunda ruta
+   * al API. Quien no lo manda —el ▶ del bloque y el botón de «Lo que viene»—
+   * sigue llamando `start(activityId)` **con un solo argumento**, así que la
+   * hora la sigue poniendo el reloj (criterios 196, 332 y 351).
    */
-  function startWithNote(blockId: string, activityId: string) {
+  function startWithNote(blockId: string, activityId: string, startTime: string | null = null) {
     const note = (startNoteDrafts[blockId] ?? '').trim()
-    if (!note) return void sessionActions.start(activityId)
-    void sessionActions.start(activityId, null, { notes: note })
+    if (!note && !startTime) return void sessionActions.start(activityId)
+    if (!note) return void sessionActions.start(activityId, startTime)
+    void sessionActions.start(activityId, startTime, { notes: note })
   }
 
   /**
@@ -1015,6 +1044,24 @@ export function VidaHoyPage() {
               onStart={
                 canStart && !execution.byBlockId[entry.id] && entry.item.activityId !== runningActivityId
                   ? (block) => startWithNote(block.id, block.item.activityId)
+                  : undefined
+              }
+              // **«Empecé a la hora que tenías planeado»** (FEAT-013, tajada 3,
+              // criterios 350 a 352). Las mismas puertas que el ▶ —no se
+              // ofrece empezar donde no se puede empezar— y **la misma
+              // función**: lo único que cambia es que la hora viaja. Cuándo se
+              // pinta lo decide `plannedStartShortcut` dentro del bloque, con
+              // la ventana que ya existía.
+              //
+              // **Y una puerta más que el ▶ no tiene: `canStartAtPlanned`.**
+              // Con algo en marcha el atajo **no se ofrece en ningún bloque**;
+              // el ▶ sigue en todos. La razón está escrita en
+              // `canStartAtPlanned`, unas líneas más arriba, y es la
+              // diferencia entre los dos gestos.
+              onStartAtPlanned={
+                canStartAtPlanned && !execution.byBlockId[entry.id] && entry.item.activityId !== runningActivityId
+                  ? (block, startTime) =>
+                      startWithNote(block.id, block.item.activityId, startTime)
                   : undefined
               }
               // **Antes de empezar** (criterios 548 a 551). Se ofrece en los

@@ -19,7 +19,7 @@ import {
   VIDA_NOTE_QUESTION_RUNNING,
 } from '@/features/vida/utils/vida-notes.utils'
 import { VIDA_START_TIME_LABEL } from '@/features/vida/components/VidaStartTimeSheet'
-import { describeOverPlan } from '@/features/vida/utils/vida-session.utils'
+import { describeOverPlan, plannedStartShortcut } from '@/features/vida/utils/vida-session.utils'
 import {
   formatDurationMinutes,
   formatTimeForDisplay,
@@ -56,6 +56,16 @@ type VidaAgendaBlockProps = {
 
   /** «▶ Empezar» (criterios 1 y 2). Sin esto no se pinta: no se empieza el pasado ni el futuro. */
   onStart?: (block: AgendaBlock) => void
+  /**
+   * **«Empecé a la hora que tenías planeado»** (FEAT-013, tajada 3, criterios
+   * 350 a 354): arranca el bloque **desde su hora del plan**, en un toque.
+   *
+   * La puerta es **la hora de la canaleta**, que ya estaba pintada y no hacía
+   * nada; el «▶ Empezar» **no se toca** y sigue guardando el reloj (criterio
+   * 351). Aditiva como todo lo demás: sin esta prop —o fuera de la ventana del
+   * criterio 354— la canaleta es el mismo `<time>` de siempre.
+   */
+  onStartAtPlanned?: (block: AgendaBlock, startTime: string) => void
   /** Este bloque es el que está en marcha ahora mismo. */
   isRunning?: boolean
   /** El instante en que empezó la sesión: lo que cuenta el cronómetro (criterio 3). */
@@ -198,6 +208,7 @@ export function VidaAgendaBlock({
   date = null,
   onEdit,
   onStart,
+  onStartAtPlanned,
   isRunning = false,
   sessionStartInstant = null,
   onFinish,
@@ -239,6 +250,18 @@ export function VidaAgendaBlock({
   // que ya existe y queda «en 15 h 20 min» (hallazgo 4 del revisor).
   // «llevas 52 min · planeado 45». Solo cuando hay sesión y solo cuando se pasa.
   const overPlan = isRunning ? describeOverPlan(elapsed.minutes, block.durationMinutes) : null
+  /**
+   * **La hora planeada, cuando ya pasó y hace poco** (criterio 350). Se calcula
+   * con la función de `vida-session.utils` —ventana incluida—, no aquí: el
+   * bloque pinta, no decide cuándo es tarde.
+   *
+   * Solo donde ya hay un «▶ Empezar»: un bloque que no se puede empezar no
+   * estrena una segunda puerta para empezarlo (criterios 1 y 351).
+   */
+  const plannedStart =
+    onStart && onStartAtPlanned && !isRunning && !execution
+      ? plannedStartShortcut({ blockStartMinutes: block.startMinutes, nowMinutes })
+      : null
   const soonLabel =
     startsIn === null || startsIn <= 0
       ? null
@@ -383,9 +406,43 @@ export function VidaAgendaBlock({
   return (
     <li className={styles.row} style={colorStyle} data-execution={execution?.status}>
       <span className={styles.gutter}>
-        <time className={styles.time} dateTime={minutesToTime(block.startMinutes)}>
-          {formatTimeForDisplay(minutesToTime(block.startMinutes))}
-        </time>
+        {/* **El atajo cuelga del dato que ya estaba escrito** (criterios 350 y
+            352): la hora del plan, que hasta hoy no hacía nada. Un toque y la
+            sesión nace contando desde ella — la misma `start()` de la tajada 1,
+            ni una segunda escritura. El ▶ de al lado sigue costando **un
+            toque** y sigue guardando el reloj (criterio 351). */}
+        {plannedStart ? (
+          <button
+            type="button"
+            className={styles.timeStart}
+            // Dos toques seguidos no crean dos sesiones, igual que el ▶
+            // (criterio 13).
+            disabled={isSessionBusy}
+            onClick={() => onStartAtPlanned?.(block, plannedStart)}
+            // El nombre accesible **contiene el texto visible** (la hora), para
+            // que quien dicta por voz acierte el control; y dice lo que hace,
+            // que es lo único que el subrayado no puede decir.
+            title={`Empezar «${title}» desde las ${formatTimeForDisplay(plannedStart)}, lo que tenías planeado`}
+            aria-label={`Empezar «${title}» desde las ${formatTimeForDisplay(plannedStart)}, lo que tenías planeado`}
+          >
+            {/* **La marca de que esto se puede pulsar** (hallazgo 2 del
+                revisor). Sin ella el atajo era un número igual que los de
+                arriba y los de abajo —mismo color, mismo tamaño, mismo peso—
+                separado solo por un subrayado de puntos de 11 px. No cuesta un
+                toque y **no cuesta un píxel de alto**: la fila mide lo mismo,
+                medido. Decorativa: el nombre accesible ya lo dice todo. */}
+            <span className={styles.timeStartMark} aria-hidden>
+              ▸
+            </span>
+            <time className={styles.time} dateTime={plannedStart}>
+              {formatTimeForDisplay(plannedStart)}
+            </time>
+          </button>
+        ) : (
+          <time className={styles.time} dateTime={minutesToTime(block.startMinutes)}>
+            {formatTimeForDisplay(minutesToTime(block.startMinutes))}
+          </time>
+        )}
         <span className={styles.tick} aria-hidden />
       </span>
 

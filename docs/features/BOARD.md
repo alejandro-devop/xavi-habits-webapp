@@ -21,7 +21,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-010 | building | 2/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-23 |
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
 | FEAT-012 | specified | 0/4 | features/vida, features/settings, API | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-22 |
-| FEAT-013 | building | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
+| FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |

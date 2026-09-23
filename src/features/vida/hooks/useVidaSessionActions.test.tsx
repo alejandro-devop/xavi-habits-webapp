@@ -19,7 +19,14 @@ vi.mock('@/features/auth/store/auth.selectors', () => ({
   selectIsAuthenticated: (s: { accessToken: string | null }) => Boolean(s.accessToken),
 }))
 
-const toastCalls: { kind: string; message: string; hasAction: boolean }[] = []
+type ToastCall = {
+  kind: string
+  message: string
+  hasAction: boolean
+  /** La acción, entera: desde FEAT-013 tajada 3 hay que **pulsarla**. */
+  action?: { label: string; onClick: () => void }
+}
+const toastCalls: ToastCall[] = []
 vi.mock('@/shared/ui/Toast', () => ({
   useToast: () => ({
     success: (message: string) => toastCalls.push({ kind: 'success', message, hasAction: false }),
@@ -27,8 +34,13 @@ vi.mock('@/shared/ui/Toast', () => ({
     info: vi.fn(),
     warning: vi.fn(),
     dismiss: vi.fn(),
-    show: (kind: string, input: { message: string; action?: unknown }) =>
-      toastCalls.push({ kind, message: input.message, hasAction: Boolean(input.action) }),
+    show: (kind: string, input: { message: string; action?: ToastCall['action'] }) =>
+      toastCalls.push({
+        kind,
+        message: input.message,
+        hasAction: Boolean(input.action),
+        action: input.action,
+      }),
   }),
 }))
 
@@ -440,6 +452,75 @@ describe('useVidaSessionActions — corregir la hora de lo que está en marcha (
     // La sesión de la caché conserva su hora de antes.
     expect(queryClient.getQueryData<ActivityFollowUp>(vidaKeys.followUps.open())?.startTime).toBe(
       '09:30',
+    )
+  })
+})
+
+/**
+ * **El «deshacer» del arranque** (FEAT-013, tajada 3, retoque; hallazgo 1 del
+ * revisor).
+ *
+ * Lo que estos casos sujetan no es que el botón exista: es **cuándo no
+ * existe**. Un «deshacer» que solo deshace la mitad sería peor que ninguno, y
+ * el arranque que cierra otra sesión de paso no se puede revertir entero —el
+ * API no sabe reabrir una sesión cerrada—.
+ */
+describe('useVidaSessionActions — deshacer el arranque', () => {
+  it('sin nada en marcha, el aviso trae «deshacer» y **quita la sesión de verdad**', async () => {
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).toBeNull())
+
+    await act(async () => {
+      await result.current.start('a-leer', '09:00')
+    })
+
+    expect(toastCalls).toHaveLength(1)
+    expect(toastCalls[0]?.action?.label).toBe('deshacer')
+
+    await act(async () => {
+      toastCalls[0]!.action!.onClick()
+    })
+
+    // La sesión recién creada (`f2`), quitada. Un toque, no tres.
+    await waitFor(() => expect(followUpsApi.deleteActivityFollowUp).toHaveBeenCalledWith('f2'))
+    await waitFor(() =>
+      expect(toastCalls.some((call) => call.message === 'Quitada. No quedó registrado nada.')).toBe(
+        true,
+      ),
+    )
+  })
+
+  it('si el arranque **cerró otra sesión**, no se ofrece deshacer', async () => {
+    seedOpen(openFollowUp())
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).not.toBeNull())
+
+    await act(async () => {
+      await result.current.start('a-leer', '10:00')
+    })
+
+    expect(toastCalls).toHaveLength(1)
+    // Lo que pasó se sigue leyendo en el mensaje; lo que no hay es un botón que
+    // prometa devolverlo todo a su sitio, porque no puede.
+    expect(toastCalls[0]?.message).toContain('Terminamos «Organizar la casa» a las 10:00')
+    expect(toastCalls[0]?.hasAction).toBe(false)
+  })
+
+  it('si quitar la sesión falla, **no se dice que se quitó**', async () => {
+    vi.mocked(followUpsApi.deleteActivityFollowUp).mockRejectedValue(new Error('boom'))
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).toBeNull())
+
+    await act(async () => {
+      await result.current.start('a-leer')
+    })
+    await act(async () => {
+      toastCalls[0]!.action!.onClick()
+    })
+
+    await waitFor(() => expect(toastCalls.some((call) => call.kind === 'error')).toBe(true))
+    expect(toastCalls.some((call) => call.message === 'Quitada. No quedó registrado nada.')).toBe(
+      false,
     )
   })
 })

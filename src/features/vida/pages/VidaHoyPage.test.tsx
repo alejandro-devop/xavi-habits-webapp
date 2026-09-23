@@ -4038,3 +4038,145 @@ describe('VidaHoyPage — la nota de la sesión en la línea del día (FEAT-018)
     expect(openNoteSheet.mock.calls[0]![0]).toMatchObject({ id: 'f9', isOpen: true })
   })
 })
+
+/**
+ * **Empezar desde la hora planeada, en un toque** (FEAT-013, tajada 3,
+ * criterios 350 a 354).
+ *
+ * El caso de arriba —«un solo toque arranca, y la duración planeada no viaja»,
+ * que compara el **array entero**— es el guardián del ▶ y **no se ha tocado**.
+ * Estos comparan el array entero por el mismo motivo: si el atajo colara la
+ * duración del plan, o si el ▶ empezara a mandar una hora, se pondrían rojos.
+ *
+ * El reloj se mueve a las **8:20**: «Bañarme» estaba planeado a las 8:00, así
+ * que se pasó veinte minutos y está dentro de la ventana.
+ */
+describe('VidaHoyPage — el atajo de la hora planeada (FEAT-013, criterios 350 a 354)', () => {
+  const PLANNED_LABEL = 'Empezar «Bañarme» desde las 8:00, lo que tenías planeado'
+
+  it('criterio 350 y 352 — un toque en la hora del plan manda **una** llamada con esa hora', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 8, 20, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: PLANNED_LABEL }))
+
+    // **Una sola ruta al API**: la misma `start()` de la tajada 1, con la hora
+    // en su hueco de siempre. Ni un `activityFollowUpAdd` del trozo pasado, ni
+    // una segunda escritura, ni la duración planeada.
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1', '08:00'])
+    expect(createFollowUpMutation.mutate).not.toHaveBeenCalled()
+    // Sin hoja, sin elegir, sin confirmar: entre el toque y la mutación no se
+    // abre nada.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('criterio 351 — el ▶ del mismo bloque sigue costando un toque y sigue sin hora', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 8, 20, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(within(planRow('Bañarme')).getByRole('button', { name: '▶ Empezar' }))
+
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+  })
+
+  it('criterio 352 — con la nota escrita antes, sigue siendo **una** llamada', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 8, 20, 0))
+    const openStartNoteSheet = vi.fn((request: VidaStartNoteRequest) => {
+      request.onSave('Con agua fría')
+    })
+    renderWithProviders(
+      <VidaSessionUiContext.Provider
+        value={{
+          openFinishModal: () => {},
+          openNoteSheet: () => {},
+          openStartNoteSheet,
+          openStartTimeSheet: () => {},
+        }}
+      >
+        <VidaHoyPage />
+      </VidaSessionUiContext.Provider>,
+    )
+
+    fireEvent.click(within(planRow('Bañarme')).getByRole('button', { name: /¿Qué vas a hacer\?/ }))
+    fireEvent.click(screen.getByRole('button', { name: PLANNED_LABEL }))
+
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1', '08:00', { notes: 'Con agua fría' }])
+  })
+
+  it('criterio 353 — a las 7:40, con «Bañarme» todavía por venir, no hay atajo', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 7, 40, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.queryByRole('button', { name: PLANNED_LABEL })).not.toBeInTheDocument()
+  })
+
+  it('criterio 354 — a las 9:24 (84 min tarde) ya no se ofrece', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(screen.queryByRole('button', { name: PLANNED_LABEL })).not.toBeInTheDocument()
+  })
+
+  /**
+   * **Con algo en marcha el atajo no existe, en ningún bloque** (decisión del
+   * usuario tras la revisión de la tajada 3).
+   *
+   * Lo que se sujeta aquí es la razón, no el detalle: el atajo cerraría lo que
+   * corre **a una hora del pasado** y eso le borraría minutos ya vividos. El ▶
+   * sí se queda —cierra a este momento, que no borra nada—, y estos casos lo
+   * comprueban en la misma pantalla para que nadie «arregle» uno rompiendo el
+   * otro.
+   */
+  function conAlgoEnMarcha() {
+    vi.setSystemTime(new Date(2026, 8, 18, 8, 20, 0))
+    openSession = {
+      session: openFollowUp('a-b2', '08:00'),
+      startInstant: new Date(2026, 8, 18, 8, 0, 0),
+      isFromAnotherDay: false,
+      isDisabled: false,
+      isPending: false,
+    }
+    renderWithProviders(<VidaHoyPage />)
+  }
+
+  it('con algo en marcha, **ningún** bloque ofrece el atajo', () => {
+    conAlgoEnMarcha()
+
+    expect(
+      screen.queryAllByRole('button', { name: /lo que tenías planeado/ }),
+    ).toHaveLength(0)
+  })
+
+  it('con algo en marcha, el ▶ **sigue** en los demás bloques', () => {
+    conAlgoEnMarcha()
+
+    // El ▶ no se toca: cierra lo anterior **a este momento**, que no borra
+    // nada ya vivido (FEAT-004, criterio 15).
+    fireEvent.click(within(planRow('Bañarme')).getByRole('button', { name: '▶ Empezar' }))
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+  })
+
+  it('con algo en marcha, la hora vuelve a ser texto: nada que parezca tocable', () => {
+    conAlgoEnMarcha()
+
+    const hora = within(planRow('Bañarme')).getByText('8:00')
+    expect(hora.tagName).toBe('TIME')
+    expect(hora.closest('button')).toBeNull()
+  })
+
+  it('en un día pasado no hay atajo: allí no se empieza nada', () => {
+    viewedDate = '2026-09-17'
+    plansByDate['2026-09-17'] = [block('p1', 'Leer un rato', '10:00', '10:30')]
+    planQuery = ready(plansByDate['2026-09-17']!)
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    expect(
+      screen.queryByRole('button', { name: /lo que tenías planeado/ }),
+    ).not.toBeInTheDocument()
+  })
+})

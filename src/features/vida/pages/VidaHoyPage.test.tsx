@@ -3162,6 +3162,113 @@ describe('VidaHoyPage — el arco de la meta (FEAT-016)', () => {
     expect(within(arco).getByText(frase).className).toContain('srLine')
   })
 
+  /**
+   * **El semáforo, visto desde la pantalla** (FEAT-019, tajada 2).
+   *
+   * El color entra por `data-fit` en el `<article>` del arco y no toca ni una
+   * palabra: el mismo localizador de siempre (`role="article"` con el nombre
+   * de la meta), la misma frase y ningún `role="alert"`. Lo de dentro —cómo
+   * sale el margen— se prueba en `vida-goals.utils.test.ts`; aquí se prueba
+   * que llega hasta el DOM y que no se convierte en un reproche.
+   */
+  it('criterios 566 y 567 — el arco se pinta de verde cuando lo que falta cabe de sobra', () => {
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaHoyPage />)
+
+    // 9:24, faltan 7 h y el día acaba a las 23:00: sobran 6 h 36.
+    expect(goalArc()!.getAttribute('data-fit')).toBe('ok')
+  })
+
+  it('criterio 569 — cuando ya no cabe hoy, el arco se pinta de rojo', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 17, 0, 0))
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaHoyPage />)
+
+    // Las 17:00: faltan 7 h y hasta las 23:00 quedan 6. Ya no da.
+    expect(goalArc()!.getAttribute('data-fit')).toBe('over')
+  })
+
+  /**
+   * **El color no puede convertirse en un reproche** (criterio 572). El mismo
+   * día, el mismo arco, con el rojo puesto: ni un adjetivo, ni una
+   * exclamación, ni un `role="alert"`, y la frase visible del 560 dice
+   * exactamente lo que diría sin semáforo.
+   */
+  it('criterio 572 — en rojo el texto es el mismo y no hay ningún aviso', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 17, 0, 0))
+    dayFollowUpsQuery = ready([workSession({ id: 'w1', startTime: '08:00', durationMinutes: 60 })])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()!
+    expect(arco.getAttribute('data-fit')).toBe('over')
+    // La misma frase de siempre: la hora a la que pararías, y nada más.
+    expect(within(arco).getByText('Llevas 1 h. A este ritmo paras a las 23:59.')).toBeInTheDocument()
+    expect(within(arco).getByText('Te faltan')).toBeInTheDocument()
+    expect(within(arco).queryAllByRole('alert')).toHaveLength(0)
+    expect(arco.textContent).not.toMatch(/!|tarde|corre|no llegas|deberías|cuidado/i)
+  })
+
+  /**
+   * **El caso que devolvió esta tajada la primera vez.** Con cero minutos no
+   * hay trazo de avance que teñir (`share === 0`, el `<path>` no se dibuja),
+   * así que el color se apoyaba en algo que no existía: a las 20:00 sin nada
+   * registrado el arco se veía idéntico a uno neutro. El punto del arranque es
+   * lo que lo sostiene ahora, y es la marca que el propio criterio 572 nombra.
+   */
+  it('criterios 561 y 566 — con cero minutos el semáforo se ve igual', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 20, 0, 0))
+    dayFollowUpsQuery = ready([])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()!
+    // A las 20:00 faltan las 8 h enteras y hasta las 23:00 quedan 3: no cabe.
+    expect(arco.getAttribute('data-fit')).toBe('over')
+    // Y hay algo pintado de ese color, aunque el trazo de avance no exista.
+    expect(arco.querySelector('svg path[class*="valuePath"]')).toBeNull()
+    expect(arco.querySelector('svg circle')).not.toBeNull()
+    // Sin una palabra de más por estar en rojo y sin nada hecho.
+    expect(within(arco).queryAllByRole('alert')).toHaveLength(0)
+    expect(arco.textContent).not.toMatch(/!|tarde|corre|no llegas|deberías|cuidado/i)
+  })
+
+  it('el punto del semáforo no existe fuera de la ventana (criterio 571)', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 18, 10, 0))
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '09:00', durationMinutes: 300 }),
+      workSession({ id: 'w2', startTime: '14:00', durationMinutes: 240 }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    const arco = goalArc()!
+    expect(arco.hasAttribute('data-fit')).toBe(false)
+    expect(arco.querySelector('svg circle')).toBeNull()
+  })
+
+  it('criterio 571 — pasada la meta el arco no lleva ningún color', () => {
+    vi.setSystemTime(new Date(2026, 8, 18, 18, 10, 0))
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '09:00', durationMinutes: 300 }),
+      workSession({ id: 'w2', startTime: '14:00', durationMinutes: 240 }),
+    ])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(goalArc()!.hasAttribute('data-fit')).toBe(false)
+  })
+
+  it('criterio 573 — un día pasado nunca lleva color, haya llegado o no a la meta', () => {
+    dayFollowUpsQuery = ready([
+      workSession({ id: 'w1', startTime: '09:00', durationMinutes: 300, date: '2026-09-17' }),
+    ])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    const arco = goalArc()!
+    expect(arco.hasAttribute('data-fit')).toBe(false)
+    // Y sigue sin proyectar nada: el semáforo no reabre lo que cerró el 497.
+    expect(arco).not.toHaveTextContent('A este ritmo')
+  })
+
   it('criterio 490 — una categoría sin meta no suma en el arco', () => {
     categoriesQuery = ready([
       categoryOf('cat-trabajo', 'Trabajo', WORK_GOAL),

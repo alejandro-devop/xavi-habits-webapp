@@ -27,7 +27,106 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
-| FEAT-019 | building | 1/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+| FEAT-019 | building | 2/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+
+**FEAT-019 `building` 2/4** (2026-09-22, revisor, **2.ª vuelta**). **Tajada 2
+aceptada: el semáforo, con el cero resuelto.** El punto del arranque
+(`<circle r="7">`, solo con `fitLevel`) cierra el 566 en el estado que lo
+tumbaba. Verifiqué la afirmación que protege lo ya aceptado y es **más fuerte**
+de lo que decía el constructor: el orden de pintado es `trackPath` → punto →
+`valuePath`, así que con cero se ve (va **encima** de la pista) y con un minuto
+queda tapado **exactamente** —el remate redondo de `valuePath` es el mismo
+disco r=7 en (22,106), y no depende de la longitud del tramo—. Lo del solape de
+1 px con el «0h» es un no-problema y **se queda como está**: la pista gris, que
+se dibuja siempre con el mismo grosor y el mismo remate, ya pintaba ese disco
+desde FEAT-016; el punto no ocupa un píxel nuevo. **El incidente del comentario
+SCSS sin cerrar, comprobado por mi cuenta:** el commit desplegado `1a8423d`
+sobrevive intacto al quitarle todos los comentarios (`.caption`, `.value`,
+`.edge` siguen ahí, ningún `/*` huérfano) y el `dist` de hoy trae las **cuatro**
+reglas `[data-fit]` y las veinte clases del módulo. Que ninguna de las cuatro
+puertas mire dentro de un `.scss` es real: el tamaño del CSS era la única
+señal, y añadirlo a la línea base es la respuesta correcta. **El respaldo de las
+23:00** se cierra con `isPending` y **no** con `isDefault` —quien nunca
+configuró su día ve su semáforo igual—, con `dayEnd: string | null` y la puerta
+en `toArc`; queda sin red de página ese cableado, que es hallazgo menor. El
+ámbar `#D97706` manda ahora en los dos temas: en oscuro da ΔE 19,6 y 28,1, por
+encima del listón, y 5,12:1 de contraste sobre la superficie oscura (el peldaño
+más apagado de los tres, dato para la hucha). Líneas base enteras, ninguna se
+movió: typecheck limpio · lint 14/0 · test 2 de 1925 (`SearchSelect`,
+confirmado aislado) · build exit 0, 1.128,98 kB, `app-icons` 620,20 kB · **CSS
+274,32 kB**. **No es la última tajada**: quedan la 3 y la 4, las del API. Sin
+commit ni push. Lo no revisado: la pantalla a 375 y 760 px (login).
+
+**FEAT-019 `in-review` 2/4** (2026-09-22, constructor, **2.ª vuelta**). **El
+cero, cerrado con un punto.** Con `workedMinutes === 0` no hay trazo de avance
+que teñir, así que el semáforo se apoyaba en un `<path>` que no se dibuja: ahora
+hay un `<circle>` de 14 px en el arranque del arco, del color del semáforo y
+**solo** con `fitLevel` — a las 20:00 sin nada registrado el arco ya se ve rojo.
+Elegí el punto sobre las otras dos salidas y está medido: el trazo mínimo
+falsificaría el avance (el 495 de FEAT-016 dice que con cero el arco está
+**vacío**) y teñir la pista pinta el semicírculo entero de rojo cada mañana; el
+punto es la marca que nombra el propio 572 y, con `r=7` en `(22,106)`, **queda
+tapado por el remate del trazo en cuanto hay un minuto**, así que ningún estado
+ya aceptado cambia. **Y algo peor que no venía en la devolución: el bloque de
+comentario del color se había quedado sin `*/`** y se comía hasta la línea 201
+del SCSS — en el CSS emitido no había **ni una** regla `[data-fit]` ni
+`.caption`/`.value`/`.edge` (esas, de la tajada 1, ya aceptada). Arreglado y
+demostrado en el `dist`: de 16 clases del módulo y 0 `data-fit`, a 20 y las
+cuatro reglas. **Cierro también el respaldo de las 23:00** que anotó el revisor:
+`dayEnd` pasa a `string | null` y la página manda `null` mientras
+`dayHours.isPending`, así el arco no parpadea de verde a rojo al cargar (con
+`isDefault` **no** se retiene: esas 23:00 sí son reales). Líneas base:
+typecheck limpio, lint 14/0, test **2 fallos de 1925** (los de `SearchSelect`),
+build exit 0, inicial 1.128,98 kB, `app-icons` 620,20 kB sin mover, CSS 274,32
+kB. `probe.sh` **no tiene cifras propias** (lee la tabla de `ENVIRONMENT.md`):
+nada que arreglar ahí. Sin commitear.
+
+**FEAT-019 `returned` 2/4** (2026-09-22, revisor). **Tajada 2 devuelta: el
+semáforo se calcula bien pero no se ve con cero minutos.** Ocho de los nueve
+criterios están cumplidos y con evidencia —la fórmula del margen, los cuatro
+bordes del umbral (61 verde, 60 y 0 naranja, −1 rojo), el lunes a las 9:15 en
+**verde** que es la prueba viva de la lectura B, el «sin color» fuera de la
+ventana comprobado renderizado, y el rojo sin un adjetivo, sin exclamación y
+sin `role="alert"`—. Falla el **566**: `VidaGoalArc` solo dibuja el trazo de
+avance si `arc.share > 0`, y `--vida-fit-color` solo lo consume ese trazo, así
+que con `workedMinutes === 0` el `data-fit` se escribe pero **no se pinta ni un
+píxel** — y el 561 mete ese caso dentro de la ventana del semáforo. Es cada
+mañana antes de la primera sesión, y las 20:00 con nada registrado, que es
+donde el rojo más valdría. **Sin regresiones:** un único llamador de producción
+(`VidaHoyPage`), ningún `vi.mock` de `vida-goals` que pudiera caducar, la red
+de los 18 caracteres intacta, `VidaGoalArc` sigue sin hooks y la util sigue sin
+importar presentación. Las cifras ΔE del token ámbar propio (`#D97706`:
+**18,8** contra el rojo, **23,7** contra el verde; heredado **5,2**) están
+verificadas con el mismo código de `habit-colors.test.ts`, y la cascada
+—comprobada en el CSS emitido— gana en claro (0-3-0) y pierde en oscuro
+(0-4-0). Líneas base repetidas enteras y **ninguna se movió**: typecheck
+limpio, lint 14/0, test 2 de 1920 (`SearchSelect`), build exit 0 con 1.128,81
+kB y `app-icons` 620,20 kB. Dos hallazgos que no bloquean: el arco puede
+pintarse con el fin de día por defecto mientras cargan los ajustes y **saltar
+de verde a rojo**, y el color es el **único** portador del escalón naranja
+(«cabe, con menos de una hora de margen» no está escrito en ninguna parte) —
+eso último es pregunta para el usuario, no defecto. `ENVIRONMENT.md` está
+desfasado en dos cifras (1901 tests y 1.128,56 kB); no lo toco. Detalle en la
+sección 4 del expediente.
+
+**FEAT-019 `in-review` 2/4** (2026-09-22, constructor). **Tajada 2 construida:
+el semáforo.** El arco se pinta de verde, naranja o rojo mientras la meta no se
+ha cruzado y hay reloj, según si lo que falta **cabe antes de que se acabe el
+día** (`margen = (dayEnd − ahora) − lo que falta`; verde > 60 min, naranja 0-60,
+rojo negativo) — **no** por porcentaje: un lunes a las 9:15 con 15 minutos de
+480 sale **verde**, que es la decisión que el usuario tomó sobre el render.
+`dayEnd` entra en `buildGoalArcs` desde `dayHours.endTime`, que la página ya
+tenía; salen `missingMinutes`, `fitMinutes` (con signo) y `fitLevel`, y el arco
+solo cuelga un `data-fit`. Fuera de la ventana **el atributo no se escribe**:
+meta cruzada, día pasado y día futuro siguen sin ningún color. Criterios
+566–574 cerrados con tests en la util, en la página y medición en el navegador
+a 375 y 760 px; **el 572 se prueba comparando el mismo arco en verde y en rojo**
+—mismo rótulo, mismo valor, misma frase, cero `role="alert"`—. Líneas base
+clavadas: typecheck limpio, lint 14/0, test 2 fallos de 1920 (los de
+`SearchSelect`), build exit 0 con `app-icons` sin mover. **Hallazgo que hay que
+decidir:** `--color-warning` no está definido en los bloques de Aura y el que
+hereda es `#C93400`, casi indistinguible del rojo `#BA1A1A` en tema claro; no
+lo toco porque cambiar ese color afecta a toda la app. Sin commitear.
 
 **FEAT-019 `building` 1/4** (2026-09-22, revisor). **Tajada 1 aceptada: dentro
 del arco ya va lo que falta.** El número grande deja de ser una hora del reloj

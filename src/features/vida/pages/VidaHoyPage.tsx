@@ -376,8 +376,28 @@ export function VidaHoyPage() {
    * (criterio 491).
    */
   const goalArcs = useMemo(
-    () => buildGoalArcs({ followUps: dayFollowUps, date, nowMinutes, categories, isPastDay: isPast }),
-    [dayFollowUps, date, nowMinutes, categories, isPast],
+    () =>
+      buildGoalArcs({
+        followUps: dayFollowUps,
+        date,
+        nowMinutes,
+        categories,
+        isPastDay: isPast,
+        // El final del día, el **mismo** que ya recibe `getDayBudget` unas
+        // líneas más arriba: el semáforo del arco mide contra él si lo que
+        // falta todavía cabe hoy (FEAT-019, criterio 566). Ninguna consulta
+        // nueva; el dato ya estaba en el ámbito.
+        //
+        // **`null` mientras los ajustes cargan**, y entonces no hay color:
+        // `useVidaDayHours` sirve el respaldo de las 23:00 hasta que llega el
+        // dato real, así que un día que acaba a las 18:00 se vería verde y
+        // saltaría a rojo un instante después. El resto de la pantalla sí usa
+        // el respaldo —es mejor una agenda aproximada que un hueco—, pero un
+        // color de alarma que aparece solo porque una consulta iba a medias no
+        // lo es.
+        dayEnd: dayHours.isPending ? null : dayHours.endTime,
+      }),
+    [dayFollowUps, date, nowMinutes, categories, isPast, dayHours.endTime, dayHours.isPending],
   )
   const guidance = buildGuidanceLine({
     agenda,

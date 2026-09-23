@@ -111,8 +111,8 @@ Valores válidos del campo `area:` de un dossier:
 |---|---|---|
 | Tipos | `pnpm typecheck` | limpio |
 | Linter | `pnpm lint` | **14 errores / 0 warnings**, preexistentes |
-| Tests | `pnpm test` | **2 fallos de 1901** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
-| Paquete | `pnpm build` | chunk inicial **1.128,56 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB |
+| Tests | `pnpm test` | **2 fallos de 1925** (`SearchSelect` ×2, preexistentes). A veces salen **3**: `IconPicker.test.tsx > normalizes selection to stored name bell` es **flaky en la corrida completa** —el esqueleto de carga sigue en el DOM, el archivo tarda ~10 s— y **pasa 6/6 corriéndolo solo**. Visto en FEAT-014 tajada 2. Si aparece, córrelo aislado antes de culpar a tu cambio. |
+| Paquete | `pnpm build` | chunk inicial **1.128,98 kB** (pasó del megabyte tras FEAT-005; el troceado es deuda propia) + `app-icons` 620 kB perezoso + `IconPicker` 4,6 kB. **Y el CSS: 274,32 kB.** Está aquí porque el 2026-09-22 un bloque de comentario sin cerrar en un `.module.scss` se comio cuatro reglas —el semaforo entero y tres estilos ya aceptados— y **nada lo cazo**: no es TypeScript, el linter no mira SCSS, vitest no compila CSS y el build paso en verde. La unica senal fue que el CSS bajo de 274,18 a 273,61 kB. Si esta cifra **baja** sin que hayas borrado estilos a proposito, busca un comentario abierto sin cerrar antes de seguir. |
 
 Cerrar cada tajada con `pnpm build`, no solo con `pnpm typecheck`: son el mismo `tsc -b`, pero el estado incremental de `typecheck` dejó pasar una vez un `TS2783` que el build sí cazó (FEAT-003, tajada 3).
 

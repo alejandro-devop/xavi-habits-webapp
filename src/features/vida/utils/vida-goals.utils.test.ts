@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { VidaGoal } from '@/features/vida/types/vida-goal.types'
-import { buildGoalArcs } from '@/features/vida/utils/vida-goals.utils'
+import { buildGoalArcs, GOAL_FIT_OK_MARGIN_MINUTES } from '@/features/vida/utils/vida-goals.utils'
 
 /**
  * **La suma viva de una meta** (FEAT-016, tajada 2, criterios 489–499).
@@ -95,6 +95,13 @@ function session(input: {
 /** 9:00 en minutos desde medianoche, que es la hora del render. */
 const AT_9 = 9 * 60
 
+/**
+ * **La hora a la que se acaba el día del usuario**, la de por defecto del
+ * módulo y la del render 20 («te quedan 9h 35m hasta las 23:00»). Contra ella
+ * mide el semáforo si lo que falta todavía cabe hoy (FEAT-019, criterio 566).
+ */
+const DAY_END = '23:00'
+
 describe('buildGoalArcs', () => {
   it('suma solo las sesiones de las categorías que apuntan a la meta (criterio 490)', () => {
     const { arcs } = buildGoalArcs({
@@ -112,6 +119,7 @@ describe('buildGoalArcs', () => {
         category('casa', 'Casa', null),
       ],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(arcs).toHaveLength(1)
@@ -136,6 +144,7 @@ describe('buildGoalArcs', () => {
       date: DATE,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     }
 
     const at1030 = buildGoalArcs({ ...base, nowMinutes: 10 * 60 + 30 }).arcs[0]
@@ -163,6 +172,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: 11 * 60 + 45,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(arcs[0].arcValue).toBe('4h 20')
@@ -206,6 +216,7 @@ describe('buildGoalArcs', () => {
         nowMinutes,
         categories: [category('trabajo', 'Trabajo', goal)],
         isPastDay,
+        dayEnd: DAY_END,
       })
 
       // 18 caracteres es lo que el render aprobado metia dentro del arco
@@ -231,6 +242,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: 18 * 60 + 10,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     const arc = arcs[0]
@@ -257,6 +269,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: 14 * 60,
       categories: [category('trabajo', 'Trabajo', WORK), category('casa', 'Casa', null)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(result.noDataMinutes).toBe(160)
@@ -273,6 +286,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: 14 * 60,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(result.noDataMinutes).toBe(0)
@@ -290,6 +304,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: AT_9,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(arcs).toHaveLength(1)
@@ -325,6 +340,7 @@ describe('buildGoalArcs', () => {
         nowMinutes,
         categories: [category('trabajo', 'Trabajo', WORK)],
         isPastDay,
+        dayEnd: DAY_END,
       })
 
       expect(arcs[0].variant).toBe(variant)
@@ -344,6 +360,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: null,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: true,
+      dayEnd: DAY_END,
     })
 
     expect(arcs[0].workedMinutes).toBe(300)
@@ -364,6 +381,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: null,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: true,
+      dayEnd: DAY_END,
     })
 
     expect(arcs[0].passedAtTime).toBe('16:00')
@@ -379,6 +397,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: 8 * 60,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(arcs[0].workedMinutes).toBe(120)
@@ -391,6 +410,7 @@ describe('buildGoalArcs', () => {
       nowMinutes: AT_9,
       categories: [category('casa', 'Casa', null)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(result.arcs).toEqual([])
@@ -412,9 +432,290 @@ describe('buildGoalArcs', () => {
       nowMinutes: AT_9,
       categories: [category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(arcs[0].workedMinutes).toBe(60)
+  })
+
+
+  /**
+   * **El semáforo** (FEAT-019, tajada 2, criterios 566–574).
+   *
+   * Mide **si lo que falta cabe antes de que se acabe el día**, no el
+   * porcentaje de la meta. El usuario pidió el porcentaje al pie de la letra y
+   * lo descartó al ver el render: por porcentaje, un lunes a las 9:15 con 15
+   * minutos hechos sale rojo, y el arco estaría regañando por ir al ritmo de
+   * cualquier lunes. El caso del 570 está aquí abajo como red de esa decisión.
+   */
+  describe('el semáforo (criterios 566-574)', () => {
+    it.each([
+      // `margen = (23:00 − ahora) − lo que falta`. Con la meta de 8 h:
+      // a las 9:00 con 60 min hechos → 840 − 420 = 420, de sobra.
+      ['de sobra', AT_9, 60, 'ok', 420],
+      // A las 16:30 con 60 min hechos → 390 − 420 = −30: hoy ya no da.
+      ['ya no cabe', 16 * 60 + 30, 60, 'over', -30],
+      // A las 15:30 con 60 min hechos → 450 − 420 = 30: cabe justo.
+      ['cabe justo', 15 * 60 + 30, 60, 'tight', 30],
+      // El borde exacto del umbral: 61 es verde, 60 todavía es naranja.
+      ['el borde del umbral, 61', 14 * 60 + 59, 60, 'ok', 61],
+      ['el borde del umbral, 60', 15 * 60, 60, 'tight', 60],
+    ])(
+      'el color sale del margen, no del porcentaje: %s (criterios 566, 567, 568, 569)',
+      (_caso, nowMinutes, workedMinutes, fitLevel, fitMinutes) => {
+        const { arcs } = buildGoalArcs({
+          followUps: [
+            session({
+              id: 's1',
+              startTime: '08:00',
+              durationMinutes: workedMinutes,
+              categoryId: 'trabajo',
+            }),
+          ],
+          date: DATE,
+          nowMinutes,
+          categories: [category('trabajo', 'Trabajo', WORK)],
+          isPastDay: false,
+          dayEnd: DAY_END,
+        })
+
+        expect(arcs[0].fitMinutes).toBe(fitMinutes)
+        expect(arcs[0].fitLevel).toBe(fitLevel)
+      },
+    )
+
+    it('el cero de margen cae en naranja y el −1 en rojo (criterios 568 y 569)', () => {
+      const at = (nowMinutes: number) =>
+        buildGoalArcs({
+          followUps: [
+            session({ id: 's1', startTime: '08:00', durationMinutes: 60, categoryId: 'trabajo' }),
+          ],
+          date: DATE,
+          nowMinutes,
+          categories: [category('trabajo', 'Trabajo', WORK)],
+          isPastDay: false,
+          dayEnd: DAY_END,
+        }).arcs[0]
+
+      // 23:00 − 16:00 = 420, y faltan 420: margen 0, cabe justo.
+      expect(at(16 * 60).fitMinutes).toBe(0)
+      expect(at(16 * 60).fitLevel).toBe('tight')
+      // Un minuto más tarde ya no cabe.
+      expect(at(16 * 60 + 1).fitMinutes).toBe(-1)
+      expect(at(16 * 60 + 1).fitLevel).toBe('over')
+    })
+
+    /**
+     * **La prueba viva de la decisión del usuario** (criterio 570). Si esto se
+     * pone rojo, alguien construyó la lectura A —la del porcentaje— que se
+     * descartó en el render: a las 9:15, 15 minutos de 480 son un 3 %.
+     */
+    it('un lunes a las 9:15 con 15 minutos de 480 el arco es verde (criterio 570)', () => {
+      const monday = '2026-09-21'
+      const { arcs } = buildGoalArcs({
+        followUps: [
+          session({
+            id: 's1',
+            startTime: '09:00',
+            durationMinutes: 15,
+            categoryId: 'trabajo',
+            date: monday,
+          }),
+        ],
+        date: monday,
+        nowMinutes: 9 * 60 + 15,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      expect(arcs[0].workedMinutes).toBe(15)
+      expect(arcs[0].missingMinutes).toBe(465)
+      // Por porcentaje esto sería un 3 % y saldría rojo; por margen sobran 6 h.
+      expect(arcs[0].workedMinutes / arcs[0].targetMinutes).toBeLessThan(0.9)
+      expect(arcs[0].fitMinutes).toBe(360)
+      expect(arcs[0].fitMinutes!).toBeGreaterThan(GOAL_FIT_OK_MARGIN_MINUTES)
+      expect(arcs[0].fitLevel).toBe('ok')
+    })
+
+    it.each([
+      ['pasada la meta hoy', 18 * 60, 540, false, 'passed'],
+      ['un día pasado sin llegar', null, 300, true, 'logged'],
+      ['un día pasado que se pasó de la meta', null, 540, true, 'passed'],
+    ])(
+      'fuera de la ventana no hay ningún color: %s (criterios 571, 573 y 562)',
+      (_caso, nowMinutes, workedMinutes, isPastDay, variant) => {
+        const { arcs } = buildGoalArcs({
+          followUps: [
+            session({
+              id: 's1',
+              startTime: '08:00',
+              durationMinutes: workedMinutes,
+              categoryId: 'trabajo',
+            }),
+          ],
+          date: DATE,
+          nowMinutes,
+          categories: [category('trabajo', 'Trabajo', WORK)],
+          isPastDay,
+          dayEnd: DAY_END,
+        })
+
+        expect(arcs[0].variant).toBe(variant)
+        expect(arcs[0].fitLevel).toBeNull()
+        expect(arcs[0].fitMinutes).toBeNull()
+      },
+    )
+
+    it('un día futuro de la tira, sin reloj, tampoco lleva color (criterio 571)', () => {
+      const { arcs } = buildGoalArcs({
+        followUps: [],
+        date: '2026-09-19',
+        nowMinutes: null,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      expect(arcs[0].stopAtTime).toBeNull()
+      expect(arcs[0].fitLevel).toBeNull()
+    })
+
+    /**
+     * El color no puede colarse en el texto: ni un adjetivo, ni un signo, ni
+     * una palabra de más en rojo respecto al verde (criterio 572). Se compara
+     * el mismo arco a dos horas distintas — lo único que cambia es `fitLevel`.
+     */
+    it('el rojo y el verde dicen exactamente el mismo texto (criterio 572)', () => {
+      const at = (nowMinutes: number) =>
+        buildGoalArcs({
+          followUps: [
+            session({ id: 's1', startTime: '08:00', durationMinutes: 60, categoryId: 'trabajo' }),
+          ],
+          date: DATE,
+          nowMinutes,
+          categories: [category('trabajo', 'Trabajo', WORK)],
+          isPastDay: false,
+          dayEnd: DAY_END,
+        }).arcs[0]
+
+      const verde = at(AT_9)
+      const rojo = at(17 * 60)
+
+      expect(verde.fitLevel).toBe('ok')
+      expect(rojo.fitLevel).toBe('over')
+      // Mismo rótulo, mismo valor dentro del arco y misma frase salvo la hora.
+      expect(rojo.arcCaption).toEqual(verde.arcCaption)
+      expect(rojo.arcValue).toBe(verde.arcValue)
+      expect(rojo.variant).toBe(verde.variant)
+      // La misma frase, con la misma forma: solo cambia la hora que dice.
+      const forma = /^Llevas 1 h\. A este ritmo paras a las \d\d:\d\d\.$/
+      expect(verde.line).toMatch(forma)
+      expect(rojo.line).toMatch(forma)
+      expect(rojo.line).not.toMatch(/!|tarde|corre|no llegas|deberías|cuidado|ya no da/i)
+    })
+
+    it('cada meta lleva su propio color, con sus propios minutos (criterio 574)', () => {
+      const { arcs } = buildGoalArcs({
+        followUps: [
+          session({ id: 's1', startTime: '08:00', durationMinutes: 60, categoryId: 'trabajo' }),
+          session({ id: 's2', startTime: '09:30', durationMinutes: 10, categoryId: 'cursos' }),
+        ],
+        date: DATE,
+        // Las 16:00, el mismo momento para los dos arcos: a «Trabajo» le faltan
+        // 7 h y quedan 7 h de día (cabe justo), a «Estudiar» le faltan 50 min
+        // (sobra). Mismo reloj, mismo final de día, colores distintos.
+        nowMinutes: 16 * 60,
+        categories: [category('cursos', 'Cursos', STUDY), category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      const [trabajo, estudiar] = arcs
+      expect(trabajo.goal.name).toBe('Trabajo')
+      // Trabajo: faltan 420 y quedan 420 de día → cabe justo.
+      expect(trabajo.missingMinutes).toBe(420)
+      expect(trabajo.fitMinutes).toBe(0)
+      expect(trabajo.fitLevel).toBe('tight')
+      // Estudiar: faltan 50 de una meta de 60 y quedan 420 → de sobra.
+      expect(estudiar.goal.name).toBe('Estudiar')
+      expect(estudiar.missingMinutes).toBe(50)
+      expect(estudiar.fitMinutes).toBe(370)
+      expect(estudiar.fitLevel).toBe('ok')
+    })
+
+    /**
+     * **El cero entra en la ventana** (criterio 561 leído junto al 566): con
+     * nada registrado falta la jornada entera, y eso cabe o no cabe igual que
+     * cualquier otra cantidad. Es el estado de cada mañana antes de la primera
+     * sesión, y el de las ocho de la tarde sin haber empezado.
+     */
+    it.each([
+      ['a las 9:00 sin nada, todavía cabe', AT_9, 'ok'],
+      ['a las 20:00 sin nada, ya no cabe', 20 * 60, 'over'],
+    ])('con cero minutos también hay semáforo: %s (criterios 561 y 566)', (_caso, nowMinutes, fitLevel) => {
+      const { arcs } = buildGoalArcs({
+        followUps: [],
+        date: DATE,
+        nowMinutes,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: DAY_END,
+      })
+
+      expect(arcs[0].workedMinutes).toBe(0)
+      expect(arcs[0].share).toBe(0)
+      expect(arcs[0].missingMinutes).toBe(480)
+      expect(arcs[0].fitLevel).toBe(fitLevel)
+    })
+
+    /**
+     * **Sin la hora de fin real no hay color.** `useVidaDayHours` sirve el
+     * respaldo de las 23:00 mientras cargan los ajustes: pintar con él haría
+     * que un día que acaba a las 18:00 se viera verde y saltara a rojo al
+     * llegar el dato. Un rojo que aparece por una consulta a medias no es un
+     * dato, es un susto.
+     */
+    it('sin la hora de fin del día todavía no hay semáforo', () => {
+      const { arcs } = buildGoalArcs({
+        followUps: [
+          session({ id: 's1', startTime: '08:00', durationMinutes: 60, categoryId: 'trabajo' }),
+        ],
+        date: DATE,
+        nowMinutes: 17 * 60,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay: false,
+        dayEnd: null,
+      })
+
+      // Todo lo demás sigue igual: el arco dice lo que falta y la hora de
+      // parada. Lo único que falta es el color.
+      expect(arcs[0].variant).toBe('missing')
+      expect(arcs[0].missingMinutes).toBe(420)
+      expect(arcs[0].line).toBe('Llevas 1 h. A este ritmo paras a las 23:59.')
+      expect(arcs[0].fitMinutes).toBeNull()
+      expect(arcs[0].fitLevel).toBeNull()
+    })
+
+    it('el final del día manda: el mismo momento cambia de color si el día acaba antes', () => {
+      const conFinal = (dayEnd: string) =>
+        buildGoalArcs({
+          followUps: [
+            session({ id: 's1', startTime: '08:00', durationMinutes: 60, categoryId: 'trabajo' }),
+          ],
+          date: DATE,
+          nowMinutes: 14 * 60,
+          categories: [category('trabajo', 'Trabajo', WORK)],
+          isPastDay: false,
+          dayEnd,
+        }).arcs[0]
+
+      // Faltan 7 h. Hasta las 23:00 quedan 9 h: sobra. Hasta las 21:00, 7 h
+      // justas. Hasta las 20:00, ya no cabe.
+      expect(conFinal('23:00').fitLevel).toBe('ok')
+      expect(conFinal('21:00').fitLevel).toBe('tight')
+      expect(conFinal('20:00').fitLevel).toBe('over')
+    })
   })
 
   /**
@@ -435,6 +736,7 @@ describe('buildGoalArcs', () => {
       // A propósito al revés: el orden lo pone `goal.orderIndex`, no el catálogo.
       categories: [category('cursos', 'Cursos', STUDY), category('trabajo', 'Trabajo', WORK)],
       isPastDay: false,
+      dayEnd: DAY_END,
     })
 
     expect(arcs.map((arc) => arc.goal.name)).toEqual(['Trabajo', 'Estudiar'])

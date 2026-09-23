@@ -32,7 +32,19 @@ import {
   formatDurationMinutes,
   formatTimeForDisplay,
   minutesToTime,
+  parseTimeToMinutes,
 } from '@/features/vida/utils/vida-time.utils'
+
+/**
+ * **El margen a partir del cual el semáforo está en verde**, en minutos
+ * (FEAT-019, criterio 567; decisión D1 del expediente).
+ *
+ * Una hora de colchón entre lo que falta y el final del día. Es lo que propone
+ * el render 20 y el usuario no lo confirmó palabra por palabra: vive aquí, en
+ * una constante exportada, **para que cambiarlo sea una línea** y no una
+ * excavación por la función.
+ */
+export const GOAL_FIT_OK_MARGIN_MINUTES = 60
 
 /** Un arco: una meta, lo que llevas de ella hoy y la hora que sale de ahí. */
 export type VidaGoalArc = {
@@ -108,6 +120,41 @@ export type VidaGoalArc = {
    * clase (criterio 564, el hallazgo de la doble lectura de FEAT-016 tajada 3).
    */
   variant: 'missing' | 'passed' | 'logged'
+  /**
+   * **Lo que falta para la meta**, en minutos. `0` si ya se cruzó.
+   *
+   * Es el mismo número que `arcValue` dice en el estado `'missing'`, sin
+   * formatear: el semáforo se calcula con él y así no hay dos restas que
+   * puedan dejar de coincidir.
+   */
+  missingMinutes: number
+  /**
+   * **El margen, con signo**: `(dayEnd − ahora) − missingMinutes`.
+   *
+   * Positivo, lo que falta cabe antes de que se acabe el día y aún sobra;
+   * negativo, hoy ya no da. `null` fuera de la ventana del semáforo (meta
+   * cruzada, día pasado, día sin reloj).
+   *
+   * **No sale de `budget.remainingMinutes`** aunque sea la misma resta: ese
+   * está topado en `max(0, …)` y después de la hora de fin mentiría. Viene de
+   * `dayEnd`, el mismo `'HH:mm'` que recibe `getDayBudget` — y es `null`
+   * también mientras ese dato no sea real (ver `BuildGoalArcsInput.dayEnd`).
+   */
+  fitMinutes: number | null
+  /**
+   * **El semáforo** (criterios 566–569): `'ok'` verde, `'tight'` naranja,
+   * `'over'` rojo. `null` = **sin ningún color** (criterios 571 y 573).
+   *
+   * Mide si lo que falta **cabe antes de que se acabe el día**, no el
+   * porcentaje de la meta. La diferencia no es un detalle: por porcentaje, un
+   * lunes a las 9:15 con 15 minutos hechos estaría en rojo, y el arco estaría
+   * regañando por ir al ritmo de cualquier lunes en un módulo escrito entero
+   * para no juzgar. Por margen, ese mismo lunes es verde (criterio 570).
+   *
+   * **Es una marca visual y nada más** (criterio 572): ni una palabra cambia
+   * en `line` ni en `arcCaption` por llevar color, tampoco en rojo.
+   */
+  fitLevel: 'ok' | 'tight' | 'over' | null
 }
 
 export type VidaGoalArcs = {
@@ -129,6 +176,21 @@ export type BuildGoalArcsInput = {
   categories: ActivityCategory[]
   /** Un día ya terminado: se cuenta en pasado y **sin proyección** (D-B). */
   isPastDay: boolean
+  /**
+   * `'HH:mm'` en que termina el día del usuario. **El mismo dato que recibe
+   * `getDayBudget`** (`useVidaDayHours().dayHours.endTime`), y por eso se llama
+   * igual: contra él se mide si lo que falta todavía cabe hoy.
+   *
+   * **`null` mientras el dato no es real todavía**, y entonces no hay
+   * semáforo. `useVidaDayHours` devuelve el respaldo de las 23:00 mientras
+   * cargan los ajustes, así que un usuario cuyo día acaba a las 18:00 vería el
+   * arco **verde y saltando a rojo** un instante después. Un rojo que aparece
+   * solo porque una consulta iba a medio camino es exactamente el reproche que
+   * el criterio 572 no quiere: mejor sin color hasta que se sepa. El campo
+   * sigue siendo obligatorio: lo que no se admite es olvidarlo, no decir «aún
+   * no lo sé».
+   */
+  dayEnd: string | null
 }
 
 type GoalTally = {
@@ -184,6 +246,7 @@ export function buildGoalArcs({
   nowMinutes,
   categories,
   isPastDay,
+  dayEnd,
 }: BuildGoalArcsInput): VidaGoalArcs {
   const tallies = new Map<string, GoalTally>()
   for (const category of categories) {
@@ -224,7 +287,7 @@ export function buildGoalArcs({
       (a, b) =>
         a.goal.orderIndex - b.goal.orderIndex || a.goal.name.localeCompare(b.goal.name, 'es'),
     )
-    .map((tally) => toArc(tally, { nowMinutes, isPastDay }))
+    .map((tally) => toArc(tally, { nowMinutes, isPastDay, dayEnd }))
 
   return {
     arcs,
@@ -236,7 +299,25 @@ export function buildGoalArcs({
   }
 }
 
-function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: boolean }): VidaGoalArc {
+/**
+ * **El semáforo, a partir del margen** (criterios 567, 568 y 569).
+ *
+ * Verde si sobra más de una hora, naranja si cabe justo —el cero entra en el
+ * naranja: cabe, aunque sin un minuto de sobra—, rojo si el margen es
+ * negativo. `null` entra y sale igual: fuera de la ventana no hay color
+ * (criterios 571 y 573).
+ */
+function toFitLevel(fitMinutes: number | null): VidaGoalArc['fitLevel'] {
+  if (fitMinutes === null) return null
+  if (fitMinutes > GOAL_FIT_OK_MARGIN_MINUTES) return 'ok'
+  if (fitMinutes >= 0) return 'tight'
+  return 'over'
+}
+
+function toArc(
+  tally: GoalTally,
+  day: { nowMinutes: number | null; isPastDay: boolean; dayEnd: string | null },
+): VidaGoalArc {
   const { goal } = tally
   const targetMinutes = Math.max(1, goal.targetMinutes)
   const workedMinutes = tally.spans.reduce((total, span) => total + span.durationMinutes, 0)
@@ -267,12 +348,31 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
 
   // Lo que falta, que es lo que el arco mide. `targetMinutes > workedMinutes`
   // está garantizado en las dos ramas que lo usan: las de la meta sin cruzar.
-  const missingLabel = formatDurationFromMinutes(targetMinutes - workedMinutes)
+  const missingMinutes = Math.max(0, targetMinutes - workedMinutes)
+  const missingLabel = formatDurationFromMinutes(missingMinutes)
+
+  // **El margen del semáforo**: lo que queda de día menos lo que falta de
+  // meta. Con signo a propósito —`budget.remainingMinutes` está topado en 0 y
+  // después de la hora de fin diría que aún cabe—, y solo donde hay un «ahora»
+  // desde el que proyectar: `canProject` es la misma puerta que ya decide si
+  // hay hora de parada, así que el color no puede aparecer donde no hay
+  // proyección (criterios 571 y 573).
+  //
+  // La medianoche sigue sin arreglarse aquí: un día que termina a las 00:00 se
+  // lee como el minuto cero, igual que en `getDayBudget`. Es el límite conocido
+  // del módulo, no de esta resta.
+  const fitCandidate =
+    canProject && day.dayEnd !== null
+      ? parseTimeToMinutes(day.dayEnd) - day.nowMinutes! - missingMinutes
+      : null
 
   let arcValue: string
   let arcCaption: string[]
   let line: string
   let variant: VidaGoalArc['variant']
+  // `null` mientras no se demuestre lo contrario: el color es la excepción —el
+  // tramo anterior a cruzar la meta, hoy—, no lo que trae el arco por defecto.
+  let fitMinutes: number | null = null
   if (day.isPastDay || stopAtTime === null) {
     arcValue = passedAtTime !== null ? formatTimeForDisplay(passedAtTime) : workedLabel
     arcCaption =
@@ -295,6 +395,7 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
     arcCaption = ['Te faltan']
     line = `Si arrancas ahora, acabarías a las ${formatTimeForDisplay(stopAtTime)}.`
     variant = 'missing'
+    fitMinutes = fitCandidate
   } else {
     // **Dentro del arco va lo que falta, no la hora** (criterio 559). El arco
     // mide horas trabajadas de una jornada: meter dentro una hora del reloj
@@ -305,6 +406,7 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
     arcCaption = ['Te faltan']
     line = `Llevas ${workedSentence}. A este ritmo paras a las ${formatTimeForDisplay(stopAtTime)}.`
     variant = 'missing'
+    fitMinutes = fitCandidate
   }
 
   return {
@@ -324,5 +426,8 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
     arcCaption,
     line,
     variant,
+    missingMinutes,
+    fitMinutes,
+    fitLevel: toFitLevel(fitMinutes),
   }
 }

@@ -352,7 +352,7 @@ hasta el 558. Esta feature empieza en el **559**.)
 | # | Qué hace | Estado |
 |---|---|---|
 | 1 | **Lo que falta, dentro del arco.** Cambia qué se pinta como número grande cuando la meta no está cruzada, y hace visible la hora que antes estaba dentro. Solo front, sin migración: corrige la confusión original del usuario de inmediato. Criterios 559–565. | **accepted** |
-| 2 | **El semáforo, lectura B.** El color verde/naranja/rojo según si da tiempo hoy, usando un dato que `VidaDayBudget` ya calcula. Solo front, sin migración; usable sin depender de la tajada 1 (aunque tiene más sentido junto a ella). Criterios 566–574. | pending |
+| 2 | **El semáforo, lectura B.** El color verde/naranja/rojo según si da tiempo hoy, usando un dato que `VidaDayBudget` ya calcula. Solo front, sin migración; usable sin depender de la tajada 1 (aunque tiene más sentido junto a ella). Criterios 566–574. | **accepted** (2.ª vuelta) |
 | 3 | **Solo los días laborables.** Migración en el API, filtro del arco y la pregunta por día de la semana, y la fila de días en Ajustes → Vida. La única que toca el backend. Criterios 575–584. | pending |
 
 Tres tajadas: la 1 es la más barata y la más urgente —es literalmente lo que
@@ -857,7 +857,7 @@ Hoy un sábado; la 4, tocando un botón en Ajustes y volviendo a Hoy.
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **Lo que falta, dentro del arco.** `arcValue = formatDurationFromMinutes(target − worked)`, `arcCaption = ['Te faltan']` (una línea), y la frase de la hora pasa a **visible** solo en ese estado. Sin API. | `utils/vida-goals.utils.ts` (`toArc`, tipo `VidaGoalArc` + `variant`), `components/VidaGoalArc/VidaGoalArc.tsx` (clase del `<p>` + geometría del render), `VidaGoalArc.module.scss` (`.line`), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 559, 560, 561, 562, 563, 564, 565 | **accepted** |
-| 2 | **El semáforo, lectura B.** `dayEnd` entra en `buildGoalArcs`; salen `missingMinutes`, `fitMinutes`, `fitLevel`; el arco pinta `data-fit`. Sin API. | `utils/vida-goals.utils.ts` (`BuildGoalArcsInput`, `GOAL_FIT_OK_MARGIN_MINUTES`), `pages/VidaHoyPage.tsx` (la llamada a `buildGoalArcs` y su `useMemo`), `components/VidaGoalArc/VidaGoalArc.tsx` (`data-fit`), `VidaGoalArc.module.scss`, `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` (un caso nuevo) | 566, 567, 568, 569, 570, 571, 572, 573, 574 | pending |
+| 2 | **El semáforo, lectura B.** `dayEnd` entra en `buildGoalArcs`; salen `missingMinutes`, `fitMinutes`, `fitLevel`; el arco pinta `data-fit`. Sin API. | `utils/vida-goals.utils.ts` (`BuildGoalArcsInput`, `GOAL_FIT_OK_MARGIN_MINUTES`), `pages/VidaHoyPage.tsx` (la llamada a `buildGoalArcs` y su `useMemo`), `components/VidaGoalArc/VidaGoalArc.tsx` (`data-fit`), `VidaGoalArc.module.scss`, `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` (un caso nuevo) | 566, 567, 568, 569, 570, 571, 572, 573, 574 | **accepted** (2.ª vuelta) |
 | 3 | **El sábado sin arco (camino de lectura).** Migración 070, `activeDays` en servicio/SDL/tipos, y el filtro por día en la util + la pregunta atada al mismo dato. **Requiere que el usuario haga push y se despliegue** antes de verse. | API: `migrations/070_vida_goals_active_days.sql`, `types/services/vida.types.ts`, `services/vida-goal.service.ts` (`GoalRow`, `mapGoal`), `graphql/modules/vida/vida.schema.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front: `types/vida-goal.types.ts`, `graphql/activity-categories.graphql.ts` (5 sub-selecciones), `graphql/schema/vida.schema.graphql` (recopiar), `utils/vida-goals.utils.ts` (`DEFAULT_GOAL_ACTIVE_DAYS`, filtro, `promptAllowed`), `pages/VidaHoyPage.tsx` (la rama de la pregunta), `utils/vida-goals.utils.test.ts`, `pages/VidaHoyPage.test.tsx` | 575, 576, 577, 578, 579, 580 | pending |
 | 4 | **Elegir los días (camino de escritura).** Mutación `vidaGoalDaysSet` y la fila de siete botones en Ajustes → Vida. | API: `graphql/modules/vida/vida.schema.ts` (input + mutación), `validators/schemas/vida.schemas.ts`, `graphql/modules/vida/vida.resolvers.ts`, `services/vida-goal.service.ts` (`setGoalDays`), `tests/unit/validators/vida.schemas.test.ts`, `tests/unit/services/vida-goal.service.test.ts`. Front **nuevos**: `graphql/vida-goals.graphql.ts`, `api/vida-goals.api.ts`, `hooks/useVidaGoals.ts`; **modificados**: `graphql/contracts.test.ts`, `pages/VidaAjustesPage.tsx` (+ `.module.scss`, `.test.tsx`) | 581, 582, 583 | pending |
 
@@ -1173,6 +1173,438 @@ ocupa **una sola línea de 18 px** a las dos anchuras.
 **Estado del árbol:** sin commitear. Siete archivos modificados, ninguno nuevo,
 ninguno borrado. El arnés temporal está borrado.
 
+### Tajada 2 — El semáforo (lectura B)
+
+**Resumen para quien revise:**
+1. El arco **se pinta de verde, naranja o rojo** mientras la meta no se ha
+   cruzado y hay reloj, según si lo que falta **cabe antes de que se acabe el
+   día** (`margen = (dayEnd − ahora) − lo que falta`), no según el porcentaje
+   de la meta. Fuera de esa ventana —meta cruzada, día pasado, día futuro— el
+   trazo sigue siendo el color de la meta y **no hay ningún atributo de color**.
+2. Está en `toArc()` (`missingMinutes`, `fitMinutes`, `fitLevel` y la constante
+   `GOAL_FIT_OK_MARGIN_MINUTES`), en un `dayEnd` nuevo en `BuildGoalArcsInput`
+   que la página ya tenía en el ámbito, y en un `data-fit` en el `<article>`
+   que el SCSS traduce a `--vida-fit-color`. `VidaGoalArc` sigue sin llamar a
+   ningún hook y la util sigue sin importar nada de presentación.
+3. **Lo que más probablemente rompí:** el color del trazo. `.valuePath` deja de
+   ser siempre `--vida-goal-color` y pasa a `var(--vida-fit-color, --vida-goal-color)`.
+   Si el revisor ve un arco de un color raro en un estado **sin** semáforo, eso
+   es un fallo mío. Y el segundo, que no es mío pero sale aquí: **el naranja de
+   Aura en claro es `#C93400` y el rojo `#BA1A1A` — a tamaño de trazo son casi
+   el mismo color** (medido en el navegador, captura en «Lo que descubrí»). El
+   semáforo funciona, pero en tema claro el escalón naranja→rojo casi no se ve.
+
+**Qué se construyó:**
+
+- `src/features/vida/utils/vida-goals.utils.ts`
+  - `GOAL_FIT_OK_MARGIN_MINUTES = 60`, **exportada** (D1 sigue abierta: cambiar
+    el umbral es esta línea y nada más).
+  - `BuildGoalArcsInput` gana **`dayEnd: string`** (`'HH:mm'`, obligatorio):
+    el mismo nombre y el mismo formato que ya reciben `getDayBudget` y
+    `buildDayExecution`. **No** se consume `budget.remainingMinutes`: está
+    topado en `max(0, …)` y después de la hora de fin diría que aún cabe.
+  - `VidaGoalArc` gana `missingMinutes`, `fitMinutes` (margen **con signo**) y
+    `fitLevel` (`'ok' | 'tight' | 'over' | null`).
+  - `toFitLevel()`, función nueva de cuatro líneas: `> 60` verde, `>= 0`
+    naranja, negativo rojo, y `null` entra y sale igual.
+  - El margen se calcula **una vez** (`fitCandidate`, detrás de `canProject`) y
+    solo se asigna en las **dos ramas de «te faltan»**. En las otras dos
+    `fitMinutes` se queda en `null` — que es como está inicializado.
+  - `toSessionSpans`, `passedAtOf`, `canProject`, `stopAtTime`, `share`,
+    `overMinutes`, `variant`, `line` y `arcCaption`: **sin tocar**. Ni una
+    palabra de texto cambia en esta tajada.
+- `src/features/vida/pages/VidaHoyPage.tsx` — **un solo toque**: `dayEnd:
+  dayHours.endTime` en la llamada a `buildGoalArcs` y su dependencia en el
+  `useMemo`. Anclado por el `useMemo` de `goalArcs`, no por número de línea.
+  Ninguna consulta nueva: `dayHours.endTime` ya viajaba a `getDayBudget` 70
+  líneas más arriba.
+- `src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx` — una línea:
+  `data-fit={arc.fitLevel ?? undefined}` en el `<article>` que ya existía. Con
+  `null` el atributo **no se escribe**.
+- `src/features/vida/components/VidaGoalArc/VidaGoalArc.module.scss` —
+  `.valuePath { stroke: var(--vida-fit-color, var(--vida-goal-color)) }` y tres
+  reglas `.card[data-fit='…']` que declaran `--vida-fit-color` con
+  `--color-success` / `--color-warning` / `--color-danger`.
+- `src/features/vida/utils/vida-goals.utils.test.ts` — `DAY_END = '23:00'` y
+  `dayEnd` en las 14 llamadas que ya había (el campo es obligatorio a
+  propósito: así ningún constructor futuro se lo salta). `describe('el
+  semáforo')` nuevo con 8 casos, entre ellos el **570** y los dos bordes.
+- `src/features/vida/pages/VidaHoyPage.test.tsx` — 5 casos nuevos: verde, rojo,
+  «en rojo el texto es el mismo y no hay ningún aviso» (572), pasada la meta
+  sin color (571) y día pasado sin color (573).
+
+**Por qué así, y qué se descartó:**
+
+- **Por qué el color va en el trazo y no en el número ni en la frase.** Es lo
+  que dibuja el render 20 (columna «lectura B»: el `stroke` del arco cambia, el
+  texto no). Colorear el número grande habría puesto el color **encima de la
+  información**, que es justo el paso de «marca visual» a «tono de voz» que el
+  criterio 572 prohíbe.
+- **Por qué `data-fit` ausente en vez de `data-fit="none"`.** El plan avisaba
+  de que si `fitLevel` es `null` en las otras ramas, los criterios 571, 573 y
+  562 «salen solos». **Comprobado, y es cierto**, pero solo porque el atributo
+  no se escribe: con un valor «neutro» habría una regla que acordarse de no
+  poner. Con `undefined`, React no emite el atributo y no hay ninguna regla de
+  color que pueda aplicar. Verificado en el DOM:
+  `arco.hasAttribute('data-fit') === false` en los dos estados.
+- **Por qué el cero de margen es naranja y no rojo.** Margen 0 = cabe, sin un
+  minuto de sobra. Es lo que dice el criterio 568 («entre 0 y 60, ambos
+  incluidos») y lo que hace que el rojo signifique siempre lo mismo: **hoy ya
+  no da**.
+- **Por qué `dayEnd` obligatorio y no opcional con respaldo `'23:00'`.** Un
+  respaldo escondido en la util habría dejado pasar en silencio a cualquier
+  llamador que no lo pase, y el color saldría de una hora inventada. Con el
+  campo obligatorio, `tsc` cazó las 16 llamadas del test y la de la página.
+- **Por qué no se toca `_theme-variables.scss`.** Ver «Lo que descubrí»: el
+  ámbar de Aura no está afinado. Arreglarlo es cambiar un color **de toda la
+  app** (lo usan avisos de hábitos, de ajustes y de Vida), y eso no es una
+  decisión de esta tajada.
+
+**Verificación** (líneas base de `docs/features/ENVIRONMENT.md`):
+
+| Qué | Línea base | Después |
+|---|---|---|
+| `pnpm typecheck` | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14 errores / 0 avisos | **`✖ 14 problems (14 errors, 0 warnings)`** |
+| `pnpm test` | 2 fallos de 1901 | **`Tests  2 failed \| 1918 passed (1920)`** — los dos de `SearchSelect`, los mismos. `IconPicker` no salió flaky. El total sube en 19: los casos nuevos. |
+| `pnpm build` | inicial 1.128,56 kB · `app-icons` 620,20 kB | **exit 0**, inicial **1.128,81 kB** (+0,25 kB: tres campos y una función de cuatro líneas) · `app-icons` **620,20 kB, sin mover** · `IconPicker` 4,64 kB |
+| `graphify update .` | — | **4237 nodos, 5025 aristas** |
+
+**En el navegador** (arnés temporal `harness-feat019-t2.html` +
+`src/harness-feat019-t2.tsx`, **borrados**, `git status` lo confirma): siete
+casos montados con `buildGoalArcs` + `VidaGoalArcRow`, a **375 px** y a
+**760 px**, en Aura claro y Aura oscuro. Medido con `getComputedStyle` sobre el
+`path` del trazo:
+
+| Caso | `data-fit` | Trazo (Aura claro) | Trazo (Aura oscuro) |
+|---|---|---|---|
+| lunes 9:15, 15 min de 480 | `ok` | `rgb(5,150,105)` = `--color-success` | `rgb(78,222,163)` |
+| 16:00, faltan 7 h, quedan 7 h | `tight` | `rgb(201,52,0)` = `--color-warning` | `rgb(255,149,0)` |
+| 17:00, faltan 7 h, quedan 6 h | `over` | `rgb(186,26,26)` = `--color-danger` | `rgb(255,180,171)` |
+| pasada la meta (18:00, 9 h) | *(sin atributo)* | `rgb(2,132,199)` = color de la meta | ídem |
+| día pasado (5 h registradas) | *(sin atributo)* | `rgb(2,132,199)` = color de la meta | ídem |
+
+`document.documentElement.scrollWidth === clientWidth` (375 y 760) en los siete
+casos, incluido el de la jornada de 24 h, y ningún `<article>` desborda.
+
+**Criterios que cierra, uno por uno:**
+
+- **566 — cerrado.** `fitLevel` se calcula **solo** en las dos ramas de «meta
+  sin cruzar, hay reloj, es hoy» (las mismas condiciones del 559), y sale de
+  `parseTimeToMinutes(dayEnd) − nowMinutes − missingMinutes`. Evidencia además
+  de que **manda el final del día y no el porcentaje**: el mismo momento (14:00,
+  1 h hecha de 8) es `ok` con `dayEnd = '23:00'`, `tight` con `'21:00'` y
+  `over` con `'20:00'` — test «el final del día manda».
+- **567 — cerrado.** `> GOAL_FIT_OK_MARGIN_MINUTES`. Borde medido: margen **61
+  → `'ok'`**, margen **60 → `'tight'`** (`it.each`, «el borde del umbral»).
+- **568 — cerrado.** Margen 30 → `tight`; margen 60 → `tight`; margen **0 →
+  `tight`** (test dedicado: a las 16:00 faltan 420 y quedan 420).
+- **569 — cerrado.** Margen **−1 → `over`** (16:01) y −30 → `over` (16:30).
+- **570 — cerrado, y es el caso que más miré.** Dos pruebas independientes:
+  - En la util (`it('un lunes a las 9:15 con 15 minutos de 480 el arco es
+    verde')`, fecha real de un lunes, `2026-09-21`): `missingMinutes === 465`,
+    `fitMinutes === 360`, `fitLevel === 'ok'`. El test **deja escrito en una
+    aserción el contraste con la lectura descartada**:
+    `expect(worked / target).toBeLessThan(0.9)` — por porcentaje esto es un 3 %
+    y sería rojo; por margen sobran 6 horas y es verde.
+  - En el navegador, el mismo caso montado en el arnés: trazo
+    `rgb(5,150,105)`, el verde de Aura, con el arco casi vacío (3 % de avance).
+    **Un arco casi vacío y verde es exactamente la lectura que el usuario
+    eligió**, y es lo que se ve.
+- **571 — cerrado.** Tres estados sin atributo, comprobados en el DOM de la
+  página (`hasAttribute('data-fit') === false`): pasada la meta, día pasado y
+  día futuro (`nowMinutes === null`, test de la util). El trazo vuelve al color
+  de la meta porque el respaldo de la variable CSS es `--vida-goal-color`.
+- **572 — cerrado, con la prueba hecha a propósito para que no se pueda
+  aprobar de vista.** Dos sitios:
+  - En la util, el mismo arco a dos horas distintas (9:00 → `ok`, 17:00 →
+    `over`): `rojo.arcCaption` **es igual** a `verde.arcCaption`, `rojo.arcValue`
+    **es igual** a `verde.arcValue`, `rojo.variant` igual, y las dos frases
+    pasan por la **misma** expresión regular `/^Llevas 1 h\. A este ritmo paras
+    a las \d\d:\d\d\.$/` — lo único que cambia entre el verde y el rojo es la
+    hora que dice.
+  - En la página, con el rojo puesto:
+    `expect(within(arco).queryAllByRole('alert')).toHaveLength(0)` y
+    `expect(arco.textContent).not.toMatch(/!|tarde|corre|no llegas|deberías|cuidado/i)`,
+    con la frase literal «Llevas 1 h. A este ritmo paras a las 23:59.» presente.
+    Ningún nodo del componente gana texto por llevar color: el `data-fit` vive
+    en el `<article>` y el CSS solo toca `stroke`.
+- **573 — cerrado.** Día pasado sin llegar a la meta y día pasado pasándose de
+  ella: `fitLevel === null` en la util, `data-fit` ausente en la página, y el
+  arco sigue sin decir «A este ritmo» (la red del 497 sigue verde).
+- **574 — cerrado.** Dos metas el mismo día a la misma hora, cada una con sus
+  minutos: «Trabajo» (480, faltan 450) sale **`over`** y «Estudiar» (60, faltan
+  30) sale **`ok`**, con `fitMinutes` distintos (−30 y 390). Visto también en el
+  navegador a 760 px, los dos arcos en la misma fila: uno rojo, uno verde.
+  El semáforo no se comparte porque se calcula **dentro de `toArc`**, una vez
+  por meta.
+- **584 (parcial, para esta tajada):** typecheck limpio, lint y tests no peores
+  que la línea base. El API no se toca en esta tajada, así que su línea base no
+  se movió (ningún archivo de `xavi-platform-node` modificado).
+
+**Pendiente de prueba manual (no lo marco como cumplido):** todo lo que hay
+detrás del login. Los agentes no entran con credenciales
+(`ENVIRONMENT.md`), así que **el arco real en `/app/vida/hoy`, con los datos del
+usuario y su hora de fin de día, lo confirma él**. Los pasos están abajo.
+
+**Riesgos:**
+
+- **El trazo del arco.** Es el único píxel que cambia. Si alguna rama dejara
+  `fitLevel` puesto donde no toca, el arco de un día pasado se pintaría de rojo
+  — que es exactamente el reproche que el módulo prohíbe. Por eso hay tres
+  tests para lo mismo (util, página, arnés).
+- **`dayEnd` obligatorio rompe a cualquier llamador nuevo.** Es deliberado, pero
+  quien añada una llamada a `buildGoalArcs` tiene que pasar el final del día.
+  Hoy hay **una** llamada en producción (`VidaHoyPage`) y ningún `vi.mock` de
+  este módulo en todo el repositorio (`grep -rn "vi.mock.*vida-goals" src` →
+  vacío; los únicos consumidores son `VidaHoyPage` y los dos componentes del
+  arco).
+- **La medianoche sigue sin arreglarse.** Con `dayEnd = '00:00'` el margen se
+  mediría contra el minuto cero y todo saldría rojo. Es el límite conocido del
+  módulo (`getDayBudget` hace la misma lectura), no una regresión de esta
+  tajada; queda dicho en el comentario del código.
+- **El ámbar de Aura.** Ver abajo: funciona, pero en claro casi no se distingue
+  del rojo.
+
+**Lo que descubrí y no estaba en el plan:**
+
+1. **`--color-warning` no está definido en los bloques de Aura, y el que hereda
+   no es naranja: es `#C93400`.** Los tres colores **existen** en el tema activo
+   —no hay ningún hueco, no hice falta inventarme nada—, pero
+   `[data-ds='aura']` (claro) y `[data-theme='dark'] [data-ds='aura']`
+   redefinen `--color-success` y `--color-danger` y **no** `--color-warning`,
+   que cae al `:root` (`$color-orange-600` = `#C93400`) y al bloque oscuro
+   (`#FF9500`). Medido en el navegador dentro del ámbito Aura. En **claro**, el
+   naranja `rgb(201,52,0)` y el rojo `rgb(186,26,26)` son, a 14 px de trazo,
+   **casi el mismo color**: el escalón «cabe justo» → «ya no da» prácticamente
+   no se ve. En **oscuro** sí se distinguen (`#FF9500` frente a `#FFB4AB`).
+   **No lo arreglo**: añadir `--color-warning` al bloque de Aura cambia el ámbar
+   de toda la app (avisos de hábitos, de ajustes, de la plantilla), y eso es una
+   decisión del sistema de diseño, no de esta tajada. Opciones, para quien la
+   tome: (a) añadir un ámbar Aura a los dos bloques del tema —una línea cada
+   uno, afecta a todo—; (b) dar al semáforo su propia variable local en
+   `VidaGoalArc.module.scss` —no toca a nadie más, pero estrena un color fuera
+   del tema—; (c) dejarlo, asumiendo que el naranja se lee como «rojo suave».
+2. **El 570 no se puede probar entero desde la util sin fijar la fecha.** Lo
+   dejé con un lunes real (`2026-09-21`) aunque `buildGoalArcs` **hoy no mira
+   el día de la semana** —eso llega en la tajada 3—, para que cuando llegue el
+   filtro por días laborables ese test siga diciendo lo que dice su nombre y no
+   empiece a pasar por casualidad un viernes.
+3. **El caso «cabe justo» casi no existe en la vida real.** Con `dayEnd` a las
+   23:00 y una meta de 8 h, la ventana naranja dura **exactamente 60 minutos**
+   de reloj (entre las 15:00 y las 16:00 si llevas 1 h hecha) y después ya es
+   rojo. No es un defecto —es lo que define el umbral— pero conviene que el
+   usuario lo sepa al probarlo: **para ver el naranja hay que mirar en una hora
+   muy concreta**, y por eso los pasos de abajo dicen cómo forzarlo.
+4. **`missingMinutes` era necesario y no solo cómodo.** `toArc` calculaba
+   `targetMinutes − workedMinutes` sin topar, y en la rama de meta cruzada eso
+   es negativo. Ahora es `Math.max(0, …)` y el mismo número alimenta el rótulo
+   y el semáforo: no hay dos restas que puedan dejar de coincidir.
+5. **Accesibilidad — el color no es el único portador, pero le falta medio
+   paso.** Quien no distinga rojo de verde puede leer lo mismo en texto: la
+   frase visible del criterio 560 dice **«A este ritmo paras a las 23:59.»** y
+   la línea de `VidaDayBudget`, justo encima del arco, dice **«te quedan Xh Ym
+   hasta las 23:00»**. Comparar las dos horas da exactamente lo que dice el
+   color. **Lo que le falta es que están en dos sitios**: la hora de fin del día
+   no se repite dentro de la tarjeta del arco. No añado nada porque cualquier
+   texto nuevo choca de frente con los criterios 572 y 564 (y con el 560, que
+   blinda `line` palabra por palabra). Si el usuario quiere cerrarlo del todo,
+   la vía barata es que `line` diga la hora de fin en el caso rojo —pero eso
+   **es** cambiar `line`, y es una decisión suya, no mía.
+
+**Estado del árbol:** sin commitear. Seis archivos de código modificados
+(`vida-goals.utils.ts`, `vida-goals.utils.test.ts`, `VidaGoalArc.tsx`,
+`VidaGoalArc.module.scss`, `VidaHoyPage.tsx`, `VidaHoyPage.test.tsx`) más este
+expediente; ninguno nuevo, ninguno borrado. El arnés temporal está
+borrado. **El API no se ha tocado.**
+
+**El recorrido a mano, para el usuario:**
+
+1. Abre `http://localhost:5173/app/vida/hoy` un día laborable, por la mañana,
+   con algo de Trabajo ya registrado. El arco debe estar **verde** aunque lleves
+   poco: eso es la lectura que elegiste — el color dice «te da tiempo», no «vas
+   bien de porcentaje».
+2. Mira la línea de debajo del arco («A este ritmo paras a las …») y la de
+   encima («te quedan … hasta las 23:00»). El verde significa que la primera
+   cae más de una hora antes de la segunda.
+3. **Para ver el naranja y el rojo sin esperar a la tarde**, cambia la hora de
+   fin del día en `Vida → Ajustes`: ponla de forma que a lo que te falta le
+   sobre menos de una hora (naranja) o no le quepa (rojo). El arco cambia de
+   color al instante, sin recargar.
+4. Comprueba lo que **no** debe pasar: pasada la meta, el arco vuelve al color
+   de «Trabajo» (azul) y dice la hora a la que cruzaste las 8 h; y un día
+   pasado de la tira de días **nunca** lleva color, hayas llegado o no.
+5. Y lo importante: en rojo, **lee la frase**. Tiene que decir exactamente lo
+   mismo que decía en verde, sin ningún «ya no llegas» ni exclamación. Si algo
+   ahí suena a reproche, devuélvelo.
+
+#### Tajada 2 · vuelta de la devolución — el cero, y un `*/` que faltaba
+
+**Resumen para quien revise:**
+1. **El caso devuelto está cerrado con un punto.** Con cero minutos no hay
+   `valuePath` que teñir, así que el color se apoyaba en algo que no se
+   dibujaba: ahora hay un `<circle>` de 14 px en el arranque del arco, del
+   color del semáforo, que se pinta **solo** cuando hay `fitLevel`. A las 20:00
+   sin nada registrado el arco ya se ve rojo.
+2. **Además encontré y arreglé algo peor, que no estaba en la devolución: el
+   bloque de comentario del color se quedó sin `*/`.** Se comía todo hasta la
+   línea 201 del SCSS. En el CSS emitido **no había ni una regla `[data-fit]`**
+   —el semáforo entero estaba apagado— **ni `.caption`, ni `.value`, ni
+   `.edge`**, que son de la tajada 1 y ya estaba aceptada.
+3. **Lo que más probablemente rompí:** el punto se solapa 1 px con la caja del
+   rótulo «0h» del borde izquierdo. Es el **mismo** espacio que ya ocupaba el
+   remate redondo del trazo (un círculo de `r=7` en `(22,106)`, idéntico), así
+   que no es un solape nuevo — pero si el revisor mira ahí y lo ve feo, es lo
+   que hay que mirar. Y el segundo: `dayEnd` ahora admite `null`, así que si
+   algún llamador futuro pasa `null` por descuido se quedará **sin color y sin
+   avisar**.
+
+**Qué se construyó en esta vuelta:**
+
+- `VidaGoalArc.module.scss` — **el `*/` que faltaba** (línea 163) y `.fitDot`,
+  que usa la **misma** `--vida-fit-color` que el trazo: un solo sitio donde
+  vive el color, dos formas de enseñarlo.
+- `VidaGoalArc.tsx` — `<circle className={styles.fitDot} cx="22" cy="106" r="7" />`,
+  dibujado **antes** del trazo y **solo** si `arc.fitLevel !== null`.
+- `vida-goals.utils.ts` — `dayEnd` pasa a `string | null`; `fitCandidate` exige
+  `day.dayEnd !== null`. Nada más cambia.
+- `VidaHoyPage.tsx` — `dayEnd: dayHours.isPending ? null : dayHours.endTime`,
+  con `dayHours.isPending` en las dependencias del `useMemo`.
+- Tests nuevos: dos en la util para el cero (9:00 verde, 20:00 rojo) y uno para
+  `dayEnd: null`; dos en la página (el cero pinta punto y **no** pinta trazo; y
+  fuera de la ventana no hay `<circle>`).
+
+**Por qué el punto, y no las otras dos salidas** (medido, no razonado a ojo):
+
+- **Un trazo mínimo** («pintar siempre un 1-2 % de avance») está descartado
+  porque **miente sobre el dato**: el arco es una proporción y el criterio 495
+  de FEAT-016 dice que con cero minutos el arco aparece **vacío**. Un semáforo
+  no puede pagarse falsificando el avance.
+- **Teñir la pista** (`.trackPath`) pinta el **semicírculo entero** de rojo
+  cuando no has hecho nada — que es exactamente la mañana de cualquiera. Es lo
+  más lejos del render 20 aprobado (que tiñe el avance, no la pista) y lo que
+  más se parece a un reproche a pantalla completa. Descartado por el 572 y por
+  el 493 de FEAT-016.
+- **El punto** es la marca que **el propio criterio 572 nombra** («el trazo del
+  arco, **un punto**») y la que menos se aleja del render: `r=7` es exactamente
+  la mitad de `strokeWidth=14`, y está en `(22,106)`, que es el punto de
+  arranque del `path`. **Consecuencia medida: con un solo minuto trabajado el
+  remate redondo del trazo lo tapa por completo** —misma posición, mismo radio,
+  mismo color—, así que en todos los estados que el revisor ya aceptó **no se
+  ve nada nuevo**. El único sitio donde aparece es el que no tenía nada.
+
+**Verificación** (todo remedido después del arreglo):
+
+| Qué | Línea base | Después |
+|---|---|---|
+| `pnpm typecheck` | limpio | **exit 0, limpio** |
+| `pnpm lint` | 14/0 | **`✖ 14 problems (14 errors, 0 warnings)`** |
+| `pnpm test` | 2 fallos de 1920 | **`Tests  2 failed \| 1923 passed (1925)`** — los dos de `SearchSelect`. +5 casos nuevos. |
+| `pnpm build` | inicial 1.128,81 kB · `app-icons` 620,20 kB | **exit 0**, inicial **1.128,98 kB** (+0,17: un `<circle>` y un `null`) · `app-icons` **620,20 kB, sin mover** · `IconPicker` 4,64 kB |
+| CSS emitido | 273,61 kB **con el semáforo apagado** | **274,32 kB** con las cuatro reglas `[data-fit]`, `.fitDot`, `.caption`, `.value` y `.edge` de vuelta |
+
+**La prueba del `*/`, para que nadie tenga que fiarse de mí.** En el `dist`
+anterior al arreglo, las clases del módulo del arco eran **16** y ninguna de
+ellas `caption`/`value`/`edge`, y `grep -c "data-fit"` daba **0**. Después son
+**20** y las cuatro reglas están:
+
+```
+[data-fit=ok]{--vida-fit-color:var(--color-success)}
+[data-fit=tight]{--vida-fit-color:var(--color-warning)}
+[data-fit=tight]{--vida-fit-color:#d97706}
+[data-fit=over]{--vida-fit-color:var(--color-danger)}
+```
+
+**En el navegador** (arnés temporal propio, **borrado**; diez casos a **375** y
+**760 px**, Aura claro y Aura oscuro), medido con `getComputedStyle`:
+
+| Caso | `data-fit` | punto | trazo |
+|---|---|---|---|
+| **cero** minutos, 9:00 | `ok` | `rgb(5,150,105)`, **14×14 px** | *(no existe)* |
+| **cero** minutos, 14:30 | `tight` | `rgb(217,119,6)`, 14×14 | *(no existe)* |
+| **cero** minutos, 20:00 | `over` | `rgb(186,26,26)`, 14×14 | *(no existe)* |
+| 60 min, 16:00 | `tight` | `rgb(217,119,6)` | `rgb(217,119,6)` |
+| ajustes cargando (`dayEnd: null`) | *(sin atributo)* | *(no hay punto)* | color de la meta |
+| pasada la meta / día pasado | *(sin atributo)* | *(no hay punto)* | color de la meta |
+
+En **oscuro**, los tres puntos: `ok rgb(78,222,163)`, `tight rgb(217,119,6)`,
+`over rgb(255,180,171)` — el ámbar propio aplica en los dos temas, como quedó
+decidido. `scrollWidth === clientWidth` a 375 y a 760, y ningún `<article>`
+desborda. Y la prueba de que el SCSS volvió a compilar entero:
+`getComputedStyle(<text class=caption>).textTransform === 'uppercase'` — antes
+del arreglo esa regla no existía.
+
+**Criterios, lo que cambia respecto a la vuelta anterior:**
+
+- **566 y 569 — ahora sí cerrados también en el cero.** «20:00, nada
+  registrado» → `data-fit="over"`, sin `valuePath` y **con** punto rojo. Es el
+  caso que el revisor puso como ejemplo.
+- **561 leído junto al 566 — cerrado.** El cero está dentro de la ventana: dos
+  casos en la util (9:00 `ok`, 20:00 `over`), con `share === 0` y
+  `missingMinutes === 480` afirmados en el mismo test.
+- **571 y 573 — siguen cerrados, y ahora hay que comprobarlos dos veces**
+  (atributo **y** punto): `arco.querySelector('svg circle')` es `null` pasada
+  la meta y en día pasado. Está en un test propio.
+- **572 — sigue cerrado.** El punto no añade texto: en el caso del cero en
+  rojo, `queryAllByRole('alert')` sigue dando 0 y el `textContent` sigue sin
+  `/!|tarde|corre|no llegas|deberías|cuidado/i`. La única frase visible sigue
+  siendo «Si arrancas ahora, acabarías a las 23:59.», la de FEAT-016.
+- **567, 568, 570, 574** — sin tocar; los dio por buenos el revisor y ninguno
+  de estos cambios los roza (el punto se alimenta del mismo `fitLevel`).
+
+**El hallazgo del respaldo de las 23:00: lo cierro aquí, no lo dejo anotado.**
+`useVidaDayHours` sirve `VIDA_DAY_END_FALLBACK` mientras carga
+`useUserSettingsQuery`, así que un usuario cuyo día acaba a las 18:00 veía el
+arco **verde y saltando a rojo** al llegar el dato. Lo cierro porque un rojo
+que aparece solo porque una consulta iba a medias es el peor de los rojos: no
+es información, es un susto, y es justo lo que el 572 quiere evitar. La forma
+—`dayEnd: null` mientras `isPending`— es la más barata que no miente: el resto
+de la pantalla **sigue** usando el respaldo (una agenda aproximada es mejor que
+un hueco), y lo único que se retiene es el color. **No se retiene con
+`isDefault`**: un usuario que nunca configuró su día tiene las 23:00 como hora
+real y su semáforo es tan válido como el de cualquiera; lo que no es real es un
+dato **a medio cargar**, y eso es `isPending`.
+
+**`probe.sh` no repite cifras viejas: no tiene ninguna.** Comprobado
+(`docs/features/probe.sh:36-38`): lee la tabla de `ENVIRONMENT.md` con `grep -E
+'^\| (Tipos|Linter|Tests|Paquete) \|'` y la imprime. Repite lo que diga ese
+archivo, así que no hay nada que arreglar aquí — cuando se actualice
+`ENVIRONMENT.md`, la sonda dice lo nuevo sola. Lo dejo escrito porque es la
+segunda vez que alguien va a buscar números dentro de la sonda.
+
+**Lo que descubrí en esta vuelta y no estaba en el plan:**
+
+1. **Un comentario sin cerrar en un `.module.scss` no rompe nada visible:
+   apaga reglas en silencio.** No lo caza `typecheck` (no es TS), no lo caza
+   `lint` (no mira SCSS), no lo cazan los tests (vitest no compila CSS) y **el
+   build pasa en verde**. La única señal era el tamaño del CSS: 273,61 kB en
+   vez de 274,18. La forma barata de cazarlo, para quien venga: contar
+   `grep -c -F '/*'` contra `grep -c -F '*/'` en el archivo tocado, o mirar que
+   las clases del módulo salgan en el `dist`. **Esto merece entrar en las
+   trampas del repositorio**, pero `ENVIRONMENT.md` no lo toco yo.
+2. **El punto pisa 1 px la caja del rótulo «0h»** (`dot.bottom 668` contra
+   `edge.top 667`, medido a 375 px). No es un solape nuevo —el remate del trazo
+   es un círculo idéntico en la misma posición— y a la vista el «0h» se lee
+   limpio en las capturas. Lo dejo dicho con el número, no con un «se ve bien».
+3. **Los tres «CERO minutos» no son un caso de borde: son tres estados
+   distintos a lo largo del día** (verde por la mañana, naranja entre las 14:00
+   y las 15:00 con la jornada de 8 h, rojo después). La ventana naranja del
+   cero dura, otra vez, exactamente 60 minutos de reloj.
+
+**Estado del árbol:** sin commitear. Los mismos seis archivos de código que la
+vuelta anterior (ninguno nuevo, ninguno borrado) más este expediente y el
+`BOARD.md`. El arnés temporal está borrado. **El API no se ha tocado.**
+
+**Lo que se añade al recorrido a mano** (el resto sigue igual):
+
+6. **Mira el arco antes de empezar a trabajar, con el día en cero.** Por la
+   mañana tiene que verse un **punto verde** en el arranque del arco, a la
+   izquierda; por la tarde, sin haber registrado nada, **rojo**. Ese punto es
+   todo el semáforo cuando aún no hay trazo — si ahí no hay nada, devuélvelo
+   otra vez.
+7. Y si entras con la conexión lenta: el arco **no** debe parpadear de verde a
+   rojo al cargar. Sale sin color hasta que se sabe a qué hora acaba tu día.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — Lo que falta, dentro del arco
@@ -1362,3 +1794,339 @@ con la sesión de trabajo a medias, mira dentro del arco (tiene que decir «TE
 FALTAN» y unas horas) y la línea de debajo (la hora de parada, dicha una sola
 vez); luego pasa las ocho horas y comprueba que dentro vuelve a haber una hora
 y que la línea de debajo desaparece.
+
+### Revisión de la tajada 2 — **devuelta**
+
+**Veredicto: `returned`.** Un criterio de los nueve no se cumple en un estado
+que se alcanza todos los días: **con cero minutos trabajados el semáforo se
+calcula pero no se pinta nada**. El resto de la tajada —la aritmética, los
+bordes, la independencia entre arcos, la neutralidad del texto— está bien
+hecha y verificada, y el token de color añadido por el usuario mide lo que dice
+que mide. Es una devolución corta y concreta: una condición de render.
+
+**El motivo, con el detalle exacto.** `VidaGoalArc.tsx` solo dibuja el trazo de
+avance cuando hay avance:
+
+```tsx
+{arc.share > 0 ? (
+  <path className={styles.valuePath} … />
+) : null}
+```
+
+y `--vida-fit-color` **lo consume únicamente `.valuePath`** (comprobado en el
+CSS emitido por `pnpm build`: las tres reglas `[data-fit=…]` solo declaran la
+variable, y el único `stroke:var(--vida-fit-color,…)` es el de `.valuePath`).
+Con `workedMinutes === 0`, `share` es `0`, el `<path>` no existe y **no hay ni
+un píxel de color**, aunque `toArc` sí haya puesto `fitLevel` (esa rama asigna
+`fitMinutes = fitCandidate`) y el `<article>` lleve el `data-fit` puesto.
+
+Eso choca de frente con el criterio 566: «con la meta **sin cruzar** y el día
+mostrado siendo **hoy** (mismas condiciones que el 559), el arco lleva un
+color», y el 561 mete explícitamente el caso de cero minutos dentro de esa
+ventana («con cero minutos trabajados hoy y la meta sin cruzar, el arco muestra
+igualmente "TE FALTAN"»). No es un estado raro: es **cada mañana antes de la
+primera sesión**, y es justamente donde el rojo tendría más valor —las 20:00,
+nada registrado, ocho horas de meta: `fitLevel` vale `'over'` y la pantalla se
+ve idéntica a un arco neutro—. Hoy el semáforo se enciende solo después del
+primer minuto registrado.
+
+No dictamino **cómo** arreglarlo (el trazo mínimo visible, el punto que el
+propio criterio 572 menciona como alternativa, o pintar la pista): es una
+decisión de forma y toca el render aprobado.
+
+**Criterios, uno a uno**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 566 | **no cumplido** | La fórmula y la ventana son correctas (`fitCandidate = parseTimeToMinutes(dayEnd) − nowMinutes − missingMinutes`, tras `canProject`), pero con `share === 0` no se pinta ningún color. Ver arriba. |
+| 567 | cumplido | `toFitLevel`: `> GOAL_FIT_OK_MARGIN_MINUTES` → `'ok'`. Test del borde 61 (`14:59`, faltan 420, fin 23:00 → 61 → `ok`). |
+| 568 | cumplido | `>= 0` → `'tight'`. Bordes **60** (`15:00`) y **0** (`16:00`) con test propio cada uno. |
+| 569 | cumplido | `< 0` → `'over'`. Borde **−1** (`16:01`) con test propio. Los cuatro bordes que pedía el encargo están, y ninguno pasa por casualidad: cada uno comprueba `fitMinutes` **y** `fitLevel`. |
+| 570 | cumplido | `vida-goals.utils.test.ts`: lunes `2026-09-21` (verificado con `date -d`: **Monday**), 9:15, 15 min de 480 → `fitMinutes` 360, `fitLevel` `'ok'`. El test afirma además que el porcentaje está por debajo de 0,9, así que la red falla si alguien reintroduce la lectura A. La prueba viva de la decisión del usuario está puesta y en verde. |
+| 571 | cumplido | `data-fit` no se escribe: `data-fit={arc.fitLevel ?? undefined}`. Las tres ramas: meta cruzada (`passedAtTime !== null`) y `isPastDay || stopAtTime === null` no tocan `fitMinutes`, que nace en `null`. Verificado renderizado en dos de los tres casos (`VidaHoyPage.test.tsx`: `hasAttribute('data-fit') === false` pasada la meta y en día pasado) y en la util en el tercero (día futuro sin reloj: `nowMinutes` es `null` porque `useVidaNowMinute(isToday)` solo cuenta hoy). |
+| 572 | cumplido | Lo verifiqué **en el rojo**, que es donde pedías: a las 17:00 con 1 h hecha el `<article>` lleva `data-fit="over"` y el texto es literalmente `Llevas 1 h. A este ritmo paras a las 23:59.` + `Te faltan`, sin `role="alert"` (`queryAllByRole('alert')` → 0) y sin ningún signo ni adjetivo (`textContent` contra `/!|tarde|corre|no llegas|deberías|cuidado/i`). En el código, `fitLevel` no entra en ninguna rama que componga `line` ni `arcCaption`: se calcula después y solo viaja al `data-` del `<article>`. El 493 de FEAT-016 sigue respetado. |
+| 573 | cumplido | Mismo mecanismo que el 571, con test de página propio sobre `?d=2026-09-17` y `isPastDay`, más el `it.each` de la util con el día pasado **que llegó a la meta** y el que **no llegó**. |
+| 574 | cumplido | `fitLevel` se calcula dentro de `toArc`, por arco, sobre `tally`; no hay estado de módulo, ni memo compartido, ni variable fuera de la función. El caso de colores opuestos existe y es real: a las 16:00, «Trabajo» (faltan 420, quedan 420) → `tight`, «Estudiar» (faltan 50) → `ok`. En el DOM tampoco pueden mezclarse: `--vida-fit-color` se declara en cada `.card`, así que cada `<article>` hereda el suyo. |
+
+**El cambio de color que metiste tú, revisado como cualquier otro: las cifras
+están bien.** Reimplementé tu ΔE con **el mismo código del proyecto** (`toOklab`
++ `100 * Math.hypot(...)` de `src/features/habits/data/habit-colors.test.ts:16-44`,
+la escala 0-100 que usa el validador de paletas) y sale exactamente lo que
+escribiste:
+
+| Par | ΔE |
+|---|---|
+| `#c93400` (ámbar heredado) vs `#ba1a1a` (rojo Aura claro) | **5,2** |
+| `#d97706` vs `#ba1a1a` | **18,8** |
+| `#d97706` vs `#059669` (verde Aura claro) | **23,7** |
+| `#ff9500` (ámbar heredado en oscuro) vs `#ffb4ab` (rojo Aura oscuro) | **13,7** |
+| `#ffd166` / `#f7c948` / `#fcd34d` / `#eab308` vs `#ffb4ab` | 12,5 / 13,5 / **14,7** / 14,6 |
+
+Y el diagnóstico de partida también: `[data-ds='aura']` (línea 155 de
+`_theme-variables.scss`) y `[data-theme='dark'] [data-ds='aura']` (línea 239)
+redefinen `--color-success` y `--color-danger` y **no** `--color-warning`.
+
+**La cascada gana en claro y pierde en oscuro de verdad.** No me fié de la
+especificidad sobre el papel: la leí en el CSS emitido por `pnpm build`
+(`dist/assets/index-B0DZBaPe.css`), donde las reglas salen **en este orden**:
+
+```
+._card_tc5xt_21[data-fit=tight]{--vida-fit-color:var(--color-warning)}
+[data-ds=aura] ._card_tc5xt_21[data-fit=tight]{--vida-fit-color:#d97706}
+[data-theme=dark] [data-ds=aura] ._card_tc5xt_21[data-fit=tight]{--vida-fit-color:var(--color-warning)}
+```
+
+0-2-0 < 0-3-0 < 0-4-0 y además en orden creciente, así que no depende del
+orden. Y el descendiente funciona porque **son dos elementos distintos**:
+`data-theme` vive en `<html>` (`theme.utils.ts:19`) y `data-ds` en el `<main>`
+de `AppLayout.tsx:196`; si alguna vez acabaran en el mismo nodo, la regla
+oscura dejaría de casar y el ámbar claro se colaría en oscuro. Queda dicho.
+
+**Dónde más muerde ese selector: en ningún sitio.** `.card` está hasheado por
+CSS Modules (`_card_tc5xt_21` en el bundle), así que `[data-ds='aura'] .card`
+no puede alcanzar ninguna otra tarjeta de la app; `--vida-fit-color` no aparece
+en ningún otro `.scss` ni `.tsx` (`grep -rn "data-fit\|vida-fit-color" src/`
+solo devuelve el componente del arco y sus tests); y `VidaGoalArc` solo se
+monta desde `VidaGoalArcRow`, que solo se monta en `VidaHoyPage`, que vive bajo
+`main[data-ds='aura']` (`contentDs` solo es `undefined` en `/app/settings`).
+
+**Un hueco en tu razonamiento del oscuro, que no bloquea nada.** El comentario
+dice «medí cinco candidatos y ninguno pasa de 14,7», pero lista cuatro
+(`#FFD166`, `#F7C948`, `#FCD34D`, `#EAB308`) y **el quinto no es el que uno
+esperaría**: `#D97706`, el que elegiste para claro, da en oscuro **ΔE 19,6
+contra `#FFB4AB` y 28,1 contra `#4EDEA3`** — pasa el listón de 15 con holgura.
+Es decir, «no hay mejora que ganar» no está demostrado; lo que probablemente
+haya es otra razón (un ámbar oscuro sobre un fondo oscuro pierde contraste
+contra la superficie, que es un criterio distinto del ΔE entre peldaños). Si la
+razón es esa, merece estar escrita, porque tal como está el comentario invita a
+que el siguiente repita la búsqueda.
+
+**Regresiones: cómo busqué y qué encontré.** Nada roto.
+
+- `graphify explain "buildGoalArcs"` y `graphify explain "VidaGoalArc"` sobre
+  el grafo (que refleja el estado **anterior** al cambio, que es justo lo que
+  quiero para «¿quién dependía de esto?»): `buildGoalArcs` solo lo contiene su
+  módulo y llama hacia abajo; `VidaGoalArc` solo tiene entrantes de
+  `VidaGoalArcRow.tsx` y del barril. Confirmado abriendo los archivos y con
+  `grep -rn "buildGoalArcs\|VidaGoalArc" src/`: **un único llamador de
+  producción**, `VidaHoyPage.tsx:380`.
+- El riesgo que tú mismo marcaste primero —«si alguna rama dejara `fitLevel`
+  puesto donde no toca»— es el que más miré: leí las cuatro ramas de `toArc` y
+  solo las dos de `variant === 'missing'` asignan `fitMinutes`. Correcto.
+- `dayEnd` obligatorio en `BuildGoalArcsInput`: `pnpm typecheck` limpio
+  (exit 0) cubre a todos los llamadores, y no hay ningún `vi.mock` de
+  `vida-goals` en el repositorio, así que no hay mock que caducara en
+  silencio. El `useMemo` de `VidaHoyPage` sí añadió `dayHours.endTime` a las
+  dependencias: sin eso el color se habría quedado congelado al cambiar las
+  horas del día.
+- Lo que convive en la misma pantalla: `VidaDayBudget` y `getDayBudget` reciben
+  el **mismo** `dayHours.endTime` y no se han tocado; el arco no toma
+  `budget.remainingMinutes` (que está topado en 0), y la razón está escrita en
+  el tipo. `VidaGoalPrompt` está en la misma rama del JSX y no cambió.
+- La red de los 18 caracteres del rótulo (`vida-goals.utils.test.ts:222-229`)
+  sigue intacta: el diff de ese archivo es +250/−1, y la única línea borrada es
+  el `import`, que ganó `GOAL_FIT_OK_MARGIN_MINUTES`.
+- Las dos garantías de FEAT-016 que pedías comprobar: `VidaGoalArc.tsx` importa
+  `CSSProperties`, el tipo del arco, `AppIcon` y sus estilos — **ni un hook**;
+  y `vida-goals.utils.ts` solo importa tipos y utilidades (`vida-time.utils`,
+  `vida-execution.utils`), **nada de presentación**. Las dos se mantienen.
+
+**Estados**
+
+- **Sin datos (cero minutos)** — es el fallo de arriba. El estado existe y está
+  pensado en la aritmética; lo que falta es que se vea.
+- **Cargando** — hay un hueco. El arco se pinta en cuanto llega el **catálogo**
+  (`categoriesLoading` es la única puerta, `VidaHoyPage.tsx:1208`), pero el
+  final del día viene de `useVidaDayHours`, que **mientras carga devuelve el
+  respaldo 23:00** y avisa con `isDefault`/`isPending`. Si los ajustes tardan
+  más que el catálogo y el usuario tiene el día acabando a las 18:00, el arco
+  se pinta **verde y luego salta a rojo**. El propio hook documenta que
+  `isPending` existe «para que nadie pinte un presupuesto con horas por defecto
+  que luego salte». No lo devuelvo por esto —ningún criterio lo pide y la
+  ventana es de milisegundos con caché caliente—, pero queda como hallazgo: es
+  el mismo argumento del criterio 50 aplicado al color.
+- **Error** — cubierto por lo que ya había: `failed.length === 0 &&
+  !categoriesFailed` esconde el bloque entero, así que no hay semáforo sobre
+  datos incompletos.
+- **Permisos** — no aplica: no hay roles en este módulo.
+- **Texto largo** — no aplica: esta tajada no añade ni una palabra (es
+  precisamente el criterio 572).
+- **Móvil (375 px)** — sin riesgo estructural y **no medido en el navegador**:
+  el cambio no añade ni un nodo al DOM ni toca una sola propiedad de
+  disposición; es un `stroke` y un atributo `data-`. La geometría del arco es
+  la de la tajada 1, ya medida y aceptada. Dicho sin disimular, como manda
+  `ENVIRONMENT.md`: **Hoy está detrás del login y yo no entro con
+  credenciales**, así que a 375 y a 760 px esto lo cierra el usuario.
+
+**Accesibilidad — mi dictamen: hay que subírselo al usuario, pero no bloquea
+esta tajada.** El criterio 572 obliga a que el color **no** añada texto, y está
+bien cumplido; ningún criterio de los nueve pide un portador alternativo, así
+que devolverlo por esto sería inventarme un criterio. Ahora, concretamente,
+esto es lo que **no** puede saber alguien que no distingue rojo de verde:
+
+1. **El escalón naranja es directamente indeducible.** «Cabe, pero con menos de
+   una hora de margen» no está escrito en ninguna parte: habría que restar la
+   hora de parada del arco de la hora de fin del día de `VidaDayBudget` y
+   compararla con 60. Los 60 minutos del umbral no aparecen en ningún texto.
+2. **El rojo sí es deducible, pero cruzando dos sitios** —la línea del arco
+   («paras a las 19:30») y la de `VidaDayBudget` («hasta las 18:00»)—, que es lo
+   que ya dijiste.
+3. **Y hay un caso donde ni cruzándolos se puede:** cuando lo que falta se
+   pasa de medianoche, `minutesToTime` **recorta a 23:59**, así que la frase
+   dice «A este ritmo paras a las 23:59» tanto si pararías a las 23:59 como a
+   las 3 de la mañana. Se ve en el propio test nuevo de la página (17:00 + 7 h
+   → «23:59»). Con el día acabando a las 23:00 todavía se nota que no cabe; con
+   un día que acaba a las 23:30 o más tarde, el rojo es **solo** color. Esto no
+   lo trae esta tajada (el recorte es de FEAT-016), pero el semáforo es lo que
+   lo convierte en información perdida.
+
+Lo que yo le llevaría al usuario, en una frase: *«¿quieres que el semáforo diga
+también con palabras cuánto margen te queda, aunque eso añada una línea al
+arco?»* — es la misma pregunta que ya dejaste abierta sobre partir `line` en
+dos campos, y conviene que se decidan juntas, no una en cada tajada.
+
+**Líneas base, repetidas enteras y después de tu cambio de color** (las cuatro
+en el árbol tal como está, sin commitear):
+
+| Qué | Resultado | Línea base | Veredicto |
+|---|---|---|---|
+| `pnpm typecheck` | limpio, exit 0 | limpio | igual |
+| `pnpm lint` | **14 errores / 0 warnings** | 14/0 | igual |
+| `pnpm test` | **2 fallos de 1920** (`SearchSelect` ×2, `1 failed / 117 passed` de 118 archivos, 109,8 s) | 2 de 1920 | igual, y el `IconPicker` flaky no apareció |
+| `pnpm build` | **exit 0**, inicial **1.128,81 kB**, `app-icons` **620,20 kB**, `IconPicker` 4,64 kB | 1.128,81 / 620,20 | **sin mover** |
+
+Tu cambio es CSS y no entra en esos dos números; el único sitio donde podría
+notarse es `index-….css`, que queda en **274,35 kB** (gzip 42,31) — no tengo
+cifra anterior con la que compararlo porque `ENVIRONMENT.md` no mide el CSS, y
+lo dejo apuntado como lo que es: un dato sin línea base.
+
+**Dos cosas de `ENVIRONMENT.md` que están desfasadas y que no toco** (no es mi
+archivo): la tabla dice `pnpm test → 2 fallos de **1901**` y `pnpm build →
+**1.128,56 kB**; hoy son 1920 y 1.128,81 kB. La `probe.sh` lee esas cifras y
+las repite, así que quien venga detrás las leerá mal.
+
+**Lo que no revisé:** no vi la pantalla real a 375 ni a 760 px (login), no
+ejecuté el arnés que dice el constructor haber usado y borrado, y no comprobé
+el render aprobado `20-vida-arco-lo-que-falta.html` contra el resultado píxel a
+píxel — me quedé en que la lectura implementada es la B y en el caso del
+criterio 570, que es lo que decide la discusión.
+
+**Para volver a mí:** basta con que el color se vea también con cero minutos
+trabajados. Todo lo demás de esta tajada me vale tal cual está.
+
+### Revisión de la tajada 2, segunda vuelta — **aceptada**
+
+**Veredicto: `accepted`.** El único criterio que faltaba —el 566 con cero
+minutos— está cerrado, el incidente del comentario SCSS no llegó a producción y
+el `dist` actual lo demuestra, y el respaldo de las 23:00 se resolvió mejor de
+lo que yo lo había anotado. Los nueve criterios (566–574) quedan cumplidos con
+evidencia. No es la última tajada: quedan la 3 y la 4, las del API.
+
+**1. El punto, y la afirmación que lo sostiene: verificada, y es más fuerte de
+lo que dice el constructor.** El orden de pintado dentro del `<svg>` es
+`trackPath` → `<circle class="fitDot">` → `valuePath`, y en SVG manda el orden
+del documento. De ahí salen las dos cosas que había que comprobar:
+
+- **Con cero minutos se ve**, porque el punto va **después** de la pista gris:
+  la tapa, no al revés. Si el `<circle>` estuviera antes del `trackPath` no se
+  vería nada y el arreglo sería aparente; no es el caso.
+- **Con un minuto desaparece**, y no «queda tapado casi del todo»: queda tapado
+  **exactamente**. `valuePath` arranca en el mismo `M22 106`, con
+  `strokeWidth="14"` y `strokeLinecap="round"`, así que su remate redondo es un
+  disco de radio 7 centrado en (22,106) — **el mismo disco** que
+  `cx="22" cy="106" r="7"`. Y vale para cualquier avance por pequeño que sea:
+  el `strokeDasharray` acorta el tramo, pero el remate redondo del arranque no
+  depende de su longitud. Ningún estado ya aceptado cambia de aspecto.
+
+**Y con eso contesto lo del solape de 1 px, que es un no-problema.** El
+`trackPath` se dibuja **siempre**, entero (no lleva `dasharray`), con los
+mismos `strokeWidth="14"` y `strokeLinecap="round"`: es decir, **ese disco de
+radio 7 sobre la caja del «0h» ya lo estaba pintando la pista gris desde
+FEAT-016**. El punto no ocupa un píxel nuevo, repinta los que ya estaban
+ocupados, solo que de color. No es «el mismo espacio, aproximadamente»: es la
+misma circunferencia, misma `cx`, misma `cy`, mismo radio. **Dictamen: se queda
+como está**, y no hay nada que subirle al usuario por esto. Lo digo desde la
+geometría del SVG y no desde el navegador, que sigue estando detrás del login.
+
+Las otras dos salidas están bien descartadas y por la razón correcta: el trazo
+mínimo **falsificaría el dato** (el 495 de FEAT-016 exige el arco vacío con
+cero) y teñir la pista pondría el semicírculo entero en rojo cada mañana. El
+punto es, además, literalmente la marca que nombra el criterio 572.
+
+**2. El comentario sin cerrar: confirmado sano, y lo he comprobado yo, no de
+oídas.**
+
+- **El commit desplegado `1a8423d` está limpio.** Quité todos los comentarios
+  del SCSS de ese commit con un `re.sub(r'/\*.*?\*/', '', …, re.S)` y comprobé
+  que **sobreviven** `.caption`, `.value`, `.edge`, `.valuePath`, `.trackPath`
+  y `.line`, y que no queda ningún `/*` huérfano. Nunca llegó a producción.
+- **El `dist` actual trae todo.** En `dist/assets/index-DXPH2KHF.css` están las
+  **cuatro** reglas del semáforo
+  (`._card_bvfr8_21[data-fit=ok|tight|over]` + `[data-ds=aura] …{#d97706}`) y
+  las veinte clases del módulo del arco, incluidas las tres que se habían
+  evaporado: `_caption_bvfr8_179`, `_value_bvfr8_119` y `_edge_bvfr8_194`, más
+  el `_fitDot_bvfr8_175` nuevo.
+
+Sobre el incidente en sí, y esto vale para quien venga detrás más que el
+propio arreglo: **ninguna de las cuatro puertas mira dentro de un `.scss`**. El
+SCSS mal cerrado compila sin error (un comentario abierto es CSS válido hasta
+el final del archivo), `tsc` no lo ve, el linter no lo mira, vitest no compila
+CSS y el build acaba en verde. La única señal fue el tamaño del CSS, que es
+justo lo que se ha añadido a la línea base. Es la respuesta correcta al
+incidente.
+
+**3. El respaldo de las 23:00: cerrado, y con la distinción que yo pedía.** El
+código hace exactamente lo que dice que hace: `dayEnd: dayHours.isPending ?
+null : dayHours.endTime` (`VidaHoyPage.tsx`), con `dayHours.isPending` en las
+dependencias del `useMemo`. Es `isPending`, **no** `isDefault`: quien nunca
+configuró su día tiene las 23:00 como hora real y ve su semáforo igual que
+todos. `BuildGoalArcsInput.dayEnd` pasa a `string | null` y la puerta en
+`toArc` es `canProject && day.dayEnd !== null`, así que el `null` sale por el
+mismo sitio que ya apagaba el color fuera de la ventana. **No queda ningún
+camino pintando con el respaldo**: hay una sola llamada a `buildGoalArcs` en
+producción y `typecheck` cubre al resto. Hay test de la util (`dayEnd: null` →
+`fitLevel` y `fitMinutes` nulos, y **todo lo demás igual**: `variant`,
+`missingMinutes` y `line` intactos). *Hallazgo menor, no bloquea:* no hay test
+de página que fije el cableado —que la página mande `null` cuando los ajustes
+cargan—, así que si alguien quita ese ternario, la util sigue en verde. Los
+tests nuevos de color sí fallarían si el ternario se invirtiera, que es media
+red.
+
+**4. Tu color, revisado otra vez porque cambió desde la primera vuelta.** Ahora
+hay **una sola** regla (`[data-ds='aura'] .card[data-fit='tight']` →
+`#d97706`), sin la excepción oscura que había antes: el ámbar propio manda en
+los dos temas. Es coherente con lo que medí en la primera vuelta —en oscuro
+`#D97706` da **ΔE 19,6** contra `#FFB4AB` y **28,1** contra `#4EDEA3`, los dos
+por encima del listón de 15—, así que el hueco que señalé queda cerrado por el
+camino de arriba. Lo comprobado en el CSS emitido: la regla existe una vez y no
+hay ninguna `[data-theme=dark]` que la deshaga. *Dato para la hucha, no
+defecto:* sobre la superficie oscura de Aura (≈ `#1a202d`), `#D97706` queda a
+**5,12:1** de contraste frente a 7,4-9,6 de los otros tres colores — muy por
+encima del 3:1 que pide un objeto gráfico, pero es el peldaño más apagado de
+los tres en oscuro. Si alguna vez se ve flojo en pantalla, ahí está el número.
+
+**Regresiones de esta vuelta: ninguna.** Volví a mirar lo que el cambio toca:
+el `<circle>` es el único nodo nuevo del DOM y vive dentro del `<svg>` que ya
+existía (no cambia la caja de nada: el `viewBox` manda); `VidaGoalArc` sigue sin
+un solo hook; `vida-goals.utils.ts` sigue sin importar presentación; el
+`useMemo` de la página ganó su dependencia. Los criterios que ya había aceptado
+en la primera vuelta (567-574) siguen con sus mismos tests y les he sumado los
+nuevos: el punto presente con cero minutos y `data-fit="over"` a las 20:00 (con
+`valuePath` **ausente**, que es lo que prueba que el arco sigue vacío como
+exige el 495), y el punto **ausente** fuera de la ventana.
+
+**Líneas base, repetidas enteras sobre el árbol de esta segunda vuelta:**
+
+| Qué | Resultado | Línea base nueva | Veredicto |
+|---|---|---|---|
+| `pnpm typecheck` | limpio, exit 0 | limpio | igual |
+| `pnpm lint` | **14 errores / 0 warnings** | 14/0 | igual |
+| `pnpm test` | **2 fallos de 1925** (1 archivo de 118). Comprobado que son los de siempre: `pnpm test src/shared/ui/SearchSelect` aislado da **2 fallos de 2** | 2 de 1925 | igual |
+| `pnpm build` | **exit 0**, inicial **1.128,98 kB**, `app-icons` **620,20 kB**, `IconPicker` 4,64 kB | 1.128,98 / 620,20 | sin mover |
+| CSS | **274,32 kB** (medido en el archivo, `dist/assets/index-DXPH2KHF.css`) | 274,32 kB | igual — y ahora **sí** hay línea base que mirar |
+
+**Lo que sigue sin revisarse, dicho como manda `ENVIRONMENT.md`:** no he visto
+la pantalla real a 375 ni a 760 px, porque Hoy está detrás del login y no entro
+con credenciales. El punto lo he dictaminado por geometría del SVG (que es
+determinista) y el color por el CSS emitido, pero **el recorrido a mano lo
+cierra el usuario**. Tampoco he cotejado píxel a píxel contra el render 20.

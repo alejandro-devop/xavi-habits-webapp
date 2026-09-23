@@ -46,6 +46,19 @@ const FALLBACK_GOAL_ICON = 'circle-dot'
  * Ese `<p>` **no lleva `role="alert"`** ni el ámbar o el rojo que el módulo
  * reserva para avisos, tampoco pasada la meta: el dato, sin reproche
  * (criterio 493).
+ *
+ * **El semáforo entra por `data-fit` y por ahí se queda** (FEAT-019, tajada 2,
+ * criterios 566–574). `arc.fitLevel` ya viene calculado de la util —el arco
+ * sigue sin saber qué hora es ni cuándo se acaba el día—, y aquí solo se
+ * cuelga del `<article>` para que el CSS tiña **el trazo**. Cuando vale `null`
+ * el atributo **no se escribe**, así que fuera de la ventana no hay ningún
+ * color ni ninguna regla que aplicar (criterios 571 y 573).
+ *
+ * **Ni una palabra cambia por llevar color** (criterio 572): `arc.line` y
+ * `arc.arcCaption` dicen exactamente lo mismo en rojo que en verde, y no hay
+ * `role="alert"` en ninguna parte. El color informa de si cabe; no reprocha
+ * nada, y por eso tampoco es lo único que lo dice: la frase visible del
+ * criterio 560 sigue diciendo a qué hora pararías.
  */
 export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
   /** El estado que estrena FEAT-019: dentro del arco va lo que falta. */
@@ -58,6 +71,7 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
     <article
       className={styles.card}
       data-past={isPastDay ? '' : undefined}
+      data-fit={arc.fitLevel ?? undefined}
       style={style}
       aria-labelledby={`vida-goal-${arc.goal.id}`}
     >
@@ -84,6 +98,23 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
             strokeLinecap="round"
             pathLength="100"
           />
+          {/* **El punto del semáforo, en el arranque del arco.**
+              Existe por un caso que el trazo no puede cubrir: con **cero
+              minutos** (criterio 561) no hay `valuePath` que teñir —`share`
+              es 0 y el `<path>` no se dibuja—, así que el color no se veía
+              justo cuando más falta hace: las ocho de la tarde sin nada
+              registrado son rojo de libro y se veían como un arco neutro.
+              El punto es la otra forma que el propio criterio 572 nombra
+              («el trazo del arco, **un punto**»), y es la que menos se aleja
+              del render 20: va **debajo** del trazo y con su mismo color y su
+              mismo grosor (`r=7` = la mitad de `strokeWidth=14`), así que en
+              cuanto hay un minuto trabajado queda **exactamente tapado** por
+              el remate redondo del trazo y no se ve nada nuevo.
+              Se dibuja **solo con `fitLevel`**, nunca fuera de la ventana
+              (criterio 571). */}
+          {arc.fitLevel !== null ? (
+            <circle className={styles.fitDot} cx="22" cy="106" r="7" />
+          ) : null}
           {arc.share > 0 ? (
             <path
               className={styles.valuePath}

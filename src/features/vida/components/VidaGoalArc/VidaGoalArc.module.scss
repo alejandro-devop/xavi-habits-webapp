@@ -114,8 +114,75 @@
   stroke: color-mix(in srgb, var(--color-text) 12%, transparent);
 }
 
+/* El trazo lleva el color de la meta… salvo cuando hay semáforo: entonces el
+   trazo **es** el semáforo (FEAT-019, criterios 566–569), que es lo que dibuja
+   el render 20 en su columna de la lectura B. La identidad de la meta no se
+   pierde —la siguen diciendo la cápsula del icono, el borde y el tinte de la
+   tarjeta—; lo que cambia es que el avance, mientras falta algo, dice también
+   si eso cabe hoy.
+
+   `--vida-fit-color` no se declara en `.card`: **sin `data-fit` no existe** y
+   el trazo cae en el color de la meta. Así el «sin ningún color» de los
+   criterios 571 y 573 no depende de acordarse de apagarlo en tres sitios, sino
+   de que el atributo no esté. */
 .valuePath {
-  stroke: var(--vida-goal-color);
+  stroke: var(--vida-fit-color, var(--vida-goal-color));
+}
+
+/* Los tres colores son **los de la app** (`_theme-variables.scss`), no un
+   naranja inventado: el mismo verde/ámbar/rojo que ya usan los avisos del
+   sistema de diseño, en claro y en oscuro.
+
+   **Con una excepción, y está medida.** El bloque `[data-ds='aura']` redefine
+   `--color-success` y `--color-danger` pero **no** `--color-warning`, que
+   hereda el `#C93400` del `:root`. Contra el rojo de Aura (`#BA1A1A`) eso da
+   **ΔE 5,2 en OKLab**: en un trazo de 14 px el escalón naranja→rojo no se ve,
+   y un semáforo cuyos dos peldaños de aviso se confunden no es un semáforo.
+   El listón de este proyecto para «distinguible» es **ΔE ≥ 15**, el mismo que
+   `color-palette.ts` le exige a los colores de categoría y que mide
+   `habit-colors.test.ts`.
+
+   Así que aquí, **y solo aquí**, el peldaño de en medio usa un ámbar propio,
+   `#D97706`, en los dos temas. No se toca `--color-warning`, que es el ámbar
+   de los avisos de toda la app: cambiarlo por un arco sería mover algo que
+   nadie ha pedido mover.
+
+   Los números, y el intercambio que aceptan:
+
+   | tema   | contra el rojo | contra el verde | contraste sobre su fondo |
+   |--------|----------------|-----------------|--------------------------|
+   | claro  | ΔE 18,8        | ΔE 23,7         | —                        |
+   | oscuro | ΔE 19,6        | ΔE 28,1         | 5,35:1 (el heredado 7,74)|
+
+   En oscuro **es más apagado que el ámbar de la app**, y se acepta a
+   propósito: el heredado se queda en ΔE 13,7 del rojo —por debajo del
+   listón—, y aquí lo que hay que poder hacer es **distinguir tres peldaños**,
+   no lucir. 5,35:1 pasa de sobra el 3:1 que un objeto gráfico necesita.
+   (Primera versión de esta nota decía que en oscuro «no había mejora que
+   ganar»: era falso, y lo cazó la revisión. Midan los números, no la prosa.) */
+.card[data-fit='ok'] {
+  --vida-fit-color: var(--color-success);
+}
+
+.card[data-fit='tight'] {
+  --vida-fit-color: var(--color-warning);
+}
+
+[data-ds='aura'] .card[data-fit='tight'] {
+  --vida-fit-color: #d97706;
+}
+
+.card[data-fit='over'] {
+  --vida-fit-color: var(--color-danger);
+}
+
+/* El punto del arranque: el **mismo** color que el trazo, porque es el mismo
+   dato. Sin `data-fit` el componente no lo dibuja, así que esta regla no puede
+   pintar nada fuera de la ventana del semáforo (criterio 571); el respaldo al
+   color de la meta está por si alguien lo dibujara alguna vez sin semáforo, no
+   para que quede un punto gris colgando. */
+.fitDot {
+  fill: var(--vida-fit-color, var(--vida-goal-color));
 }
 
 .caption {

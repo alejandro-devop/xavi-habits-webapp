@@ -1,5 +1,7 @@
 import { act, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { Route, Routes } from 'react-router'
+import { useVidaSessionUi } from '@/features/vida/hooks/useVidaSessionUi'
 import { VidaModuleLayout } from '@/features/vida/routes/VidaModuleLayout'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import { renderWithProviders } from '@/test/render'
@@ -506,5 +508,85 @@ describe('VidaModuleLayout — la nota de la sesión en marcha (FEAT-018)', () =
     renderWithProviders(<VidaModuleLayout />)
 
     expect(screen.queryByRole('button', { name: '¿Qué estás haciendo?' })).not.toBeInTheDocument()
+  })
+})
+
+/* ── Antes de empezar (FEAT-018, tajada 3) ──────────────────────────────────
+ *
+ * El editor es **el mismo** y se monta **una sola vez**: aquí se comprueba que
+ * también se abre cuando **todavía no hay sesión**, que la pregunta cambia de
+ * tiempo verbal y —lo importante— que guardar **no escribe nada en el API**:
+ * lo que devuelve va al borrador de quien va a empezar.
+ */
+describe('VidaModuleLayout — la nota de antes de empezar (FEAT-018, criterio 548)', () => {
+  function Pantalla({ onSave }: { onSave: (notes: string | null) => void }) {
+    const { openStartNoteSheet } = useVidaSessionUi()
+    return (
+      <button
+        type="button"
+        onClick={() =>
+          openStartNoteSheet({
+            activityId: 'a-1',
+            title: 'Trabajo en lululemon',
+            initialValue: '',
+            onSave,
+          })
+        }
+      >
+        lápiz
+      </button>
+    )
+  }
+
+  function renderConPantalla(onSave: (notes: string | null) => void) {
+    renderWithProviders(
+      <Routes>
+        <Route element={<VidaModuleLayout />}>
+          <Route index element={<Pantalla onSave={onSave} />} />
+        </Route>
+      </Routes>,
+    )
+  }
+
+  it('abre la misma hoja sin sesión, y la pregunta va en futuro', () => {
+    const onSave = vi.fn()
+    renderConPantalla(onSave)
+
+    fireEvent.click(screen.getByRole('button', { name: 'lápiz' }))
+
+    const hoja = screen.getByRole('dialog')
+    expect(within(hoja).getByRole('heading', { name: '¿Qué vas a hacer?' })).toBeInTheDocument()
+    // De qué hablamos, sin repetir la pregunta.
+    expect(within(hoja).getByText('Trabajo en lululemon')).toBeInTheDocument()
+  })
+
+  it('guardar deja el borrador y **no escribe en el API**', async () => {
+    const onSave = vi.fn()
+    renderConPantalla(onSave)
+
+    fireEvent.click(screen.getByRole('button', { name: 'lápiz' }))
+    fireEvent.change(screen.getByLabelText('¿Qué vas a hacer?'), {
+      target: { value: 'Revisando MRs' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    await act(async () => {})
+
+    expect(onSave).toHaveBeenCalledTimes(1)
+    expect(onSave).toHaveBeenCalledWith('Revisando MRs')
+    // Ni una escritura de sesión: aquí todavía no hay sesión que escribir.
+    expect(saveNote).not.toHaveBeenCalled()
+    expect(sessionActions.start).not.toHaveBeenCalled()
+  })
+
+  it('vaciarla y guardar devuelve «nada», sin error', async () => {
+    const onSave = vi.fn()
+    renderConPantalla(onSave)
+
+    fireEvent.click(screen.getByRole('button', { name: 'lápiz' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    await act(async () => {})
+
+    expect(onSave).toHaveBeenCalledWith(null)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

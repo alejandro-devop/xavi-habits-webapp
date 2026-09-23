@@ -15,6 +15,7 @@ import type {
 } from '@/features/vida/utils/vida-execution.utils'
 import {
   VIDA_NOTE_ADD_LABEL,
+  VIDA_NOTE_QUESTION_NEXT,
   VIDA_NOTE_QUESTION_RUNNING,
 } from '@/features/vida/utils/vida-notes.utils'
 import { describeOverPlan } from '@/features/vida/utils/vida-session.utils'
@@ -116,6 +117,29 @@ type VidaAgendaBlockProps = {
    * criterio 537 **nunca** aparece sobre una sesión en marcha.
    */
   onEditNote?: () => void
+
+  /* ── «Antes de empezar» (FEAT-018, tajada 3) ────────────────────────────
+   *
+   * Aditivo otra vez, y con una regla encima de todas: **el «▶ Empezar» no
+   * cambia de tamaño, ni de palabra, ni de comportamiento** (criterios 534,
+   * 548 y 550). El control es **otro botón**, pequeño y al lado; quien no lo
+   * toque arranca con un toque, exactamente como antes.
+   */
+
+  /** Lo que se escribió **antes** de arrancar este bloque; vive en la pantalla, no en el API. */
+  noteDraft?: string | null
+  /**
+   * Abre el editor de «¿Qué vas a hacer?». **Sin esto no se pinta el lápiz**:
+   * en un día pasado, en uno futuro y en un bloque que ya tiene sesión no hay
+   * nada que escribir por adelantado.
+   *
+   * Con el borrador **vacío no se pinta ninguna línea** en el cuerpo: un
+   * hueco gris en cada bloque del día sería el ruido diario que el render
+   * descarta para las sesiones sin nota. Basta el lápiz del final de la
+   * línea de la hora —**no al lado del botón**: medido, ahí le quitaba 43 px
+   * de sitio al «▶ Empezar» a 760 px, y el criterio 548 lo prohíbe—.
+   */
+  onEditStartNote?: () => void
 }
 
 /**
@@ -180,6 +204,8 @@ export function VidaAgendaBlock({
   onEditSession,
   note = null,
   onEditNote,
+  noteDraft = null,
+  onEditStartNote,
 }: VidaAgendaBlockProps) {
   const { confirm } = useConfirmDialog()
   const removeMutation = useRemoveDayPlanItemMutation()
@@ -190,6 +216,9 @@ export function VidaAgendaBlock({
   const removeSessionMutation = useDeleteActivityFollowUpMutation()
   // Solo tictaquea el bloque que está en marcha: los demás pasan `null` y el
   // hook no monta ningún intervalo (criterio 4).
+  /** Lo escrito antes de empezar, ya limpio: en blanco el control es el lápiz. */
+  const startDraft = noteDraft && noteDraft.trim() ? noteDraft.trim() : null
+
   const elapsed = useVidaElapsed(isRunning ? sessionStartInstant : null)
   const category = block.item.activity?.category ?? null
   const colorStyle = category?.color
@@ -350,17 +379,28 @@ export function VidaAgendaBlock({
           {/* Lo que hiciste dentro de este bloque (criterio 535), entre el
               nombre y la hora. Sin nota y sin poder escribirla, no deja
               hueco: una línea vacía en cada fila sería ruido diario. */}
-          <VidaNoteLine
-            text={note}
-            placeholder={
-              onEditNote
-                ? isRunning
-                  ? VIDA_NOTE_QUESTION_RUNNING
-                  : VIDA_NOTE_ADD_LABEL
-                : null
-            }
-            onEdit={onEditNote}
-          />
+          {onEditStartNote ? (
+            // Lo que se dijo **antes** de empezar (criterio 551): escrito, se
+            // lee aquí y se cambia tocándolo; en blanco, esta línea no existe
+            // y el control es el lápiz del final de la línea de la hora.
+            <VidaNoteLine
+              text={startDraft}
+              onEdit={onEditStartNote}
+              question={VIDA_NOTE_QUESTION_NEXT}
+            />
+          ) : (
+            <VidaNoteLine
+              text={note}
+              placeholder={
+                onEditNote
+                  ? isRunning
+                    ? VIDA_NOTE_QUESTION_RUNNING
+                    : VIDA_NOTE_ADD_LABEL
+                  : null
+              }
+              onEdit={onEditNote}
+            />
+          )}
           <p className={styles.meta}>
             {isRunning ? (
               <>
@@ -393,6 +433,24 @@ export function VidaAgendaBlock({
                 {isNext && soonLabel ? <span className={styles.soon}> · {soonLabel}</span> : null}
               </>
             )}
+            {/* **El control de «antes de empezar», aparte del botón y fuera de
+                su fila** (criterio 548). Aquí dentro no mueve nada: `.body` es
+                `flex: 1`, así que el «▶ Empezar» conserva su tamaño **y su
+                sitio** —medido a 375 px y a 760 px—. Al lado del botón le
+                quitaba 43 px de sitio en pantalla ancha.
+                En blanco es solo el lápiz, para no poner una línea gris en
+                cada bloque del día; escrito, el texto se lee arriba y este
+                lápiz desaparece. */}
+            {onEditStartNote && !startDraft ? (
+              <button
+                type="button"
+                className={styles.startNote}
+                onClick={onEditStartNote}
+                aria-label={`${VIDA_NOTE_QUESTION_NEXT} ${title}`}
+              >
+                <span aria-hidden>✎</span>
+              </button>
+            ) : null}
           </p>
           {/* «En su lugar, X» (criterio 42), con **la vía** a lo que sí pasó:
               un ancla a su fila de la agenda. Ni se borra el bloque ni se

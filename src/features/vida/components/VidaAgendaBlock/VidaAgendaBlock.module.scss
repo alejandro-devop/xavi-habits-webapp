@@ -312,3 +312,50 @@
 .reason {
   font-style: italic;
 }
+
+/* El lápiz de «antes de empezar» (FEAT-018, criterio 548). Vive **al final de
+   la línea de la hora**, dentro de `.body`: ahí no mueve el «▶ Empezar» ni un
+   píxel a ningún ancho, y es donde va a leerse la nota en cuanto se escriba.
+   Al lado del botón le quitaba 43 px de sitio en pantalla ancha (medido). */
+.startNote {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* **1 rem de caja, 2 rem de dedo.** La caja mide lo mismo que el renglón de
+     la hora, así que la fila **no crece ni un píxel** y el «▶ Empezar» se
+     queda exactamente donde estaba; el área táctil la pone el `::after`, que
+     no ocupa sitio (medido: fila 106 px con y sin lápiz, a 375 y a 760). */
+  width: 1rem;
+  height: 1rem;
+  margin-left: 0.4rem;
+  padding: 0;
+  /* `middle` y no `-0.15em`: medido, es el único que deja la fila en sus 106 px. */
+  vertical-align: middle;
+  border: 1px solid var(--aura-stroke-soft, rgb(148 163 184 / 24%));
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--aura-glass-1) 60%, transparent);
+  /* `--color-text-muted` se queda en ~2,4:1 en claro (ver la nota de `.meta`):
+     aquí el glifo **es** el control, así que va con la tinta normal. */
+  color: var(--color-text);
+  font-size: 0.6875rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* El dedo, no la caja: 2 rem de zona tocable sin ocupar sitio en la línea. */
+.startNote::after {
+  content: '';
+  position: absolute;
+  inset: -0.5rem;
+}
+
+.startNote:hover {
+  color: var(--color-text);
+  border-color: var(--aura-mint, #10b981);
+}
+
+.startNote:focus-visible {
+  outline: 2px solid var(--aura-mint, #10b981);
+  outline-offset: 2px;
+}

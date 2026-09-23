@@ -189,13 +189,53 @@ export function VidaHoyPage() {
   // por React Query (criterio 8). El cierre completo lo abre el layout, que es
   // quien monta el modal.
   const openSession = useVidaOpenSession()
-  const { openFinishModal, openNoteSheet } = useVidaSessionUi()
+  const { openFinishModal, openNoteSheet, openStartNoteSheet } = useVidaSessionUi()
   const sessionActions = useVidaSessionActions({ onAddNote: openFinishModal })
   // «▶ Empezar» solo en **hoy**: en un día futuro no ha llegado y en uno pasado
   // se registra, que es la tajada 3 (criterio 1, su mitad de días). La otra
   // mitad —esconderlo también en el bloque que **ya tiene** sesión— necesita el
   // cruce de D1 y llega en la tajada 2.
   const canStart = isToday && !openSession.isDisabled && !openSession.isFromAnotherDay
+
+  /**
+   * **Lo que se escribió antes de empezar** (FEAT-018, tajada 3), por bloque.
+   *
+   * La clave es `block.id` —el bloque, no la actividad— por el mismo motivo
+   * que ya manda en `isRunning`: dos bloques de la misma actividad el mismo
+   * día son dos cosas distintas. Y es **uno solo** para las dos puertas, así
+   * que escribir la nota en la fila y pulsar en «Lo que viene» usa la misma.
+   *
+   * Vive en la pantalla y no en el API a propósito: hasta que no se pulse
+   * «▶ Empezar» no hay ninguna sesión que escribir.
+   */
+  const [startNoteDrafts, setStartNoteDrafts] = useState<Record<string, string>>({})
+
+  /**
+   * **La única función que arranca** desde esta pantalla, para las dos puertas
+   * (criterios 549 y 550).
+   *
+   * Sin nota escrita la llamada es **literalmente la de siempre**:
+   * `start(activityId)`, un solo argumento. Con nota, **una sola** llamada a
+   * `activityFollowUpStart` que ya la lleva dentro — nunca un arranque más una
+   * edición aparte. El `null` del segundo hueco deja escrito que la hora de la
+   * plantilla no viaja: la pone el reloj de la mutación.
+   */
+  function startWithNote(blockId: string, activityId: string) {
+    const note = (startNoteDrafts[blockId] ?? '').trim()
+    if (!note) return void sessionActions.start(activityId)
+    void sessionActions.start(activityId, null, { notes: note })
+  }
+
+  /** Abrir el editor de «¿Qué vas a hacer?»: lo que guarde se queda en el borrador. */
+  function editStartNote(blockId: string, activityId: string, title: string) {
+    openStartNoteSheet({
+      activityId,
+      title,
+      initialValue: startNoteDrafts[blockId] ?? '',
+      onSave: (notes) =>
+        setStartNoteDrafts((drafts) => ({ ...drafts, [blockId]: notes ?? '' })),
+    })
+  }
   const runningActivityId = openSession.session?.activityId ?? null
   // **Registrar** se puede en cualquier día de la tira que ya haya ocurrido, sea
   // hoy o de atrás, aunque su **plan** no se pueda tocar (D10, criterios 32 y
@@ -902,7 +942,21 @@ export function VidaHoyPage() {
               // un bloque que **ya tiene** sesión, esté en marcha o cerrada.
               onStart={
                 canStart && !execution.byBlockId[entry.id] && entry.item.activityId !== runningActivityId
-                  ? (block) => void sessionActions.start(block.item.activityId)
+                  ? (block) => startWithNote(block.id, block.item.activityId)
+                  : undefined
+              }
+              // **Antes de empezar** (criterios 548 a 551). Se ofrece en los
+              // mismos bloques que el «▶ Empezar» y **por separado de él**:
+              // quien no toque el lápiz arranca con un toque, igual que ayer.
+              noteDraft={startNoteDrafts[entry.id] ?? null}
+              onEditStartNote={
+                canStart && !execution.byBlockId[entry.id] && entry.item.activityId !== runningActivityId
+                  ? () =>
+                      editStartNote(
+                        entry.id,
+                        entry.item.activityId,
+                        entry.item.activity?.title ?? 'Actividad',
+                      )
                   : undefined
               }
               onFinish={() => void sessionActions.finishNow()}
@@ -1024,7 +1078,12 @@ export function VidaHoyPage() {
       // **Un solo toque**: `start(activityId)` y nada más. Sin hoja, sin
       // elegir, sin confirmar (criterio 374), y **sin la duración planeada**:
       // la hora la pone el reloj de la mutación (criterios 188 y 196).
-      onStart={() => void sessionActions.start(upNext.activityId)}
+      onStart={() => startWithNote(upNext.blockId, upNext.activityId)}
+      // **El mismo borrador que la fila** (`upNext.blockId`): escribir la nota
+      // en el bloque y pulsar aquí usa lo que se escribió. La tarjeta sigue
+      // sin ver el `activityId`: recibe un texto y dos funciones.
+      noteDraft={startNoteDrafts[upNext.blockId] ?? null}
+      onEditNote={() => editStartNote(upNext.blockId, upNext.activityId, upNext.title)}
       // La **misma** hoja de siempre, no una segunda (criterio 187). Y «Ver
       // las otras N» abre esa misma hoja, que ya pone la plantilla del día
       // arriba del todo (D1, opción (c)): cero UI nueva.

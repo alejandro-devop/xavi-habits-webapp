@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef } from 'react'
 import type { CSSProperties, FocusEvent } from 'react'
 import type { UpNext } from '@/features/vida/utils/vida-up-next.utils'
+import { VidaNoteLine } from '@/features/vida/components/VidaNoteLine'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
+import { VIDA_NOTE_QUESTION_NEXT } from '@/features/vida/utils/vida-notes.utils'
 import { AppIcon } from '@/shared/ui/AppIcon'
 import styles from './VidaUpNextCard.module.scss'
 
@@ -15,6 +17,19 @@ type VidaUpNextCardProps = {
   onSeeOthers: () => void
   /** Hay una sesión en vuelo: dos toques no crean dos sesiones (criterio 188). */
   isSessionBusy?: boolean
+
+  /* ── «Antes de empezar» (FEAT-018, tajada 3) ────────────────────────────
+   *
+   * Aditivo: sin `onEditNote` la tarjeta se pinta **exactamente** como la
+   * entregó FEAT-010. Y no abre ninguna puerta nueva: sigue sin ver el
+   * `activityId`, la hora de la plantilla ni la duración planeada. Lo que
+   * entra es un texto y dos funciones.
+   */
+
+  /** Lo que ya se escribió para este arranque. Vive en la pantalla, no en el API. */
+  noteDraft?: string | null
+  /** Abre el editor de «¿Qué vas a hacer?». Sin esto, la línea no se pinta. */
+  onEditNote?: () => void
 }
 
 /**
@@ -49,6 +64,12 @@ type VidaUpNextCardProps = {
  *    `body`). Por eso la tarjeta se acuerda de qué llevaba el foco y se lo
  *    devuelve cuando cambia de ancla.
  *
+ * **FEAT-018 le añade la nota de antes de empezar**, y no cambia nada de lo de
+ * arriba: la línea entra **encima** del botón, el botón sigue ocupando la fila
+ * entera con el mismo tamaño y la misma palabra, y `onStart` sigue siendo
+ * `() => void` — la tarjeta no ve `activityId`, ni hora, ni duración, ni sabe
+ * dónde se guarda lo que se escribe.
+ *
  * Y el que manda sobre todos: **el botón manda `start(activityId)` y nada más**.
  * Ni la duración planeada ni la hora de la plantilla viajan a la sesión — el
  * cronómetro nace en el segundo del toque y se registra lo que dure de verdad.
@@ -59,7 +80,12 @@ export function VidaUpNextCard({
   onStartSomethingElse,
   onSeeOthers,
   isSessionBusy = false,
+  noteDraft = null,
+  onEditNote,
 }: VidaUpNextCardProps) {
+  /** Lo escrito, ya limpio: en blanco **no hay nota**, y el control es el lápiz. */
+  const draft = noteDraft && noteDraft.trim() ? noteDraft.trim() : null
+
   const colorStyle = upNext.color
     ? ({ '--vida-category-color': upNext.color } as CSSProperties)
     : undefined
@@ -139,6 +165,25 @@ export function VidaUpNextCard({
             nunca cambia no anuncia nada (criterio 207). */}
         <p className={styles.kicker}>{upNext.kicker}</p>
 
+        {/* **El lápiz, en la esquina y fuera del flujo** (criterio 548). El
+            rótulo «Lo que viene» ocupa 77 px de los 278 de la tarjeta y la
+            fila del nombre no empieza hasta 21 px más abajo: ahí cabe sin
+            empujar nada, así que **con el control vacío el «▶ Empezar» queda
+            exactamente donde estaba y con el tamaño que tenía**. Ni al lado
+            del botón —le quitaría 46 px de ancho— ni encima de él —lo bajaría
+            48 px—: las dos formas cambian el botón en el estado que se ve
+            todos los días. */}
+        {upNext.canStart && onEditNote && !draft ? (
+          <button
+            type="button"
+            className={styles.cornerNote}
+            onClick={onEditNote}
+            aria-label={`${VIDA_NOTE_QUESTION_NEXT} ${upNext.title}`}
+          >
+            <span aria-hidden>✎</span>
+          </button>
+        ) : null}
+
         <div className={styles.who}>
           <span className={styles.capsule} aria-hidden>
             <AppIcon name={upNext.icon ?? UNCATEGORIZED_GROUP_ICON} size="sm" decorative />
@@ -156,6 +201,19 @@ export function VidaUpNextCard({
             <p className={styles.meta}>{upNext.metaLine}</p>
           </div>
         </div>
+
+        {/* **Escrita, encima del botón** (criterio 551), tal como la dibuja el
+            render: la línea mint se lee y se cambia tocándola. Solo aparece
+            cuando hay algo escrito; en blanco el control es el lápiz de la
+            esquina, que no ocupa sitio. */}
+        {upNext.canStart && onEditNote && draft ? (
+          <VidaNoteLine
+            text={draft}
+            onEdit={onEditNote}
+            tone="running"
+            question={VIDA_NOTE_QUESTION_NEXT}
+          />
+        ) : null}
 
         {upNext.canStart ? (
           <button

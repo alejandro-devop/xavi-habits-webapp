@@ -12,6 +12,29 @@ export type VidaSessionUiValue = {
    * día, desde la barra y desde antes de empezar.
    */
   openNoteSheet: (session: ActivityFollowUp) => void
+  /**
+   * Abre el **mismo** editor **antes de que exista la sesión** (FEAT-018,
+   * criterio 548): lo que se guarda no va al API, va a un borrador que vive en
+   * la pantalla hasta que se pulse «▶ Empezar».
+   *
+   * Va por aquí, y no montando una segunda hoja en la página, porque el editor
+   * se monta **una sola vez** en el layout: dos montajes serían dos estados que
+   * se pueden contradecir. Y `onSave` viaja dentro de la petición porque quien
+   * sabe dónde guardar el borrador es la pantalla, no el layout.
+   */
+  openStartNoteSheet: (request: VidaStartNoteRequest) => void
+}
+
+/** Lo que el layout necesita para abrir el editor de «antes de empezar». */
+export type VidaStartNoteRequest = {
+  /** De qué actividad hablamos: de ahí salen las píldoras de «lo de otras veces». */
+  activityId: string
+  /** Cómo se llama, para el subtítulo: «Bañarme». */
+  title: string
+  /** Lo que ya hubiera en el borrador; en blanco, la hoja abre vacía. */
+  initialValue: string
+  /** Guardar **no** escribe en el API: deja el borrador donde lo espera quien empieza. */
+  onSave: (notes: string | null) => void
 }
 
 /**
@@ -37,6 +60,7 @@ export type VidaSessionUiValue = {
 export const VidaSessionUiContext = createContext<VidaSessionUiValue>({
   openFinishModal: () => {},
   openNoteSheet: () => {},
+  openStartNoteSheet: () => {},
 })
 
 export function useVidaSessionUi(): VidaSessionUiValue {

@@ -272,7 +272,7 @@ lo digo en el resumen de entrega, no lo decido yo.
 |---|---|---|
 | 1 | La nota que ya se escribe hoy al terminar se ve y se edita en la línea del día | aceptada |
 | 2 | Ver y editar la nota de la sesión en marcha, sin parar nada, con píldoras de lo de otras veces | aceptada |
-| 3 | Escribir la nota antes de empezar, sin tocar el botón de arrancar | pending |
+| 3 | Escribir la nota antes de empezar, sin tocar el botón de arrancar | aceptada |
 | 4 | La nota del ítem de plantilla se ve en su fila y en «Lo que viene», y se propone (sin imponerse) al empezar desde ahí | pending |
 
 Corte propuesto por mí, no del usuario: empiezo por lo que ya es útil con el
@@ -633,7 +633,7 @@ notas, tampoco. Nunca un error, nunca un vacío con explicación.
 |---|---|---|---|---|
 | 1 | La nota que ya se escribe hoy al terminar **se ve y se edita en la línea del día** | **Crea:** `components/VidaNoteLine/{VidaNoteLine.tsx,.module.scss,index.ts}`, `components/VidaNoteSheet/{VidaNoteSheet.tsx,.module.scss,index.ts,VidaNoteSheet.test.tsx}` (sin píldoras todavía), `hooks/useVidaSessionNote.ts`. **Modifica:** `hooks/useVidaSessionUi.ts` (+`openNoteSheet`), `routes/VidaModuleLayout.tsx` (monta la hoja una vez), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (+`note`,`onEditNote`, línea entre `name` y `meta`), `components/VidaAgendaSession/VidaAgendaSession.tsx` (ídem), `pages/VidaHoyPage.tsx` (cablea las dos; `onEditNote` solo con `canLogPast` y **no** sobre la sesión en marcha), `pages/VidaHoyPage.test.tsx` | 531, 532 (su mitad «¿Qué hiciste?»), 533, 535, 536, 537, 538, 539, 540, 541, 552 | aceptada |
 | 2 | **Durante, sin parar nada**: la barra y el bloque en marcha enseñan y editan la nota, con píldoras de «lo de otras veces» | **Crea:** `utils/vida-notes.utils.ts` + `.test.ts`, `hooks/useVidaActivityNoteHistory.ts`. **Modifica:** `shared/api/query-keys.ts` (+`followUps.byActivity`), `graphql/activity-followups.graphql.ts` (+`ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY`), `api/activity-followups.api.ts` (+`getActivityFollowUpsByActivity`), `components/VidaNoteSheet/VidaNoteSheet.tsx` (+píldoras), `components/VidaSessionBar/VidaSessionBar.tsx` (+`note`,`onEditNote`), `routes/VidaModuleLayout.tsx` (pasa las dos), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (la rama `isRunning` enseña la línea), `pages/VidaHoyPage.tsx`, `graphql/contracts.test.ts` (**correrlo**, no editarlo) | 542, 543, 544, 545, 546, 547, 532 (su mitad «¿Qué estás haciendo?»), 552 | aceptada |
-| 3 | **Antes de empezar**, sin tocar el botón de arrancar | **Modifica:** `hooks/useVidaSessionActions.ts` (`start(activityId, startTime?, { notes })`), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`noteDraft`,`onEditNote`; `onStart` intacto), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (lápiz junto al `▶ Empezar`), `pages/VidaHoyPage.tsx` (`startNoteDrafts` + `startWithNote`, una sola función para las dos puertas), `pages/VidaHoyPage.test.tsx` (los dos tests nuevos; **el de `toEqual(['a-b1'])` no se toca**) | 548, 549, 550, 551, 534, 552 | pending |
+| 3 | **Antes de empezar**, sin tocar el botón de arrancar | **Modifica:** `hooks/useVidaSessionActions.ts` (`start(activityId, startTime?, { notes })`), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`noteDraft`,`onEditNote`; `onStart` intacto), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (lápiz junto al `▶ Empezar`), `pages/VidaHoyPage.tsx` (`startNoteDrafts` + `startWithNote`, una sola función para las dos puertas), `pages/VidaHoyPage.test.tsx` (los dos tests nuevos; **el de `toEqual(['a-b1'])` no se toca**) | 548, 549, 550, 551, 534, 552 | aceptada |
 | 4 | **La plantilla propone, la sesión decide** | **Modifica:** `utils/vida-notes.utils.ts` (+`templateNoteForActivity` con su test), `components/VidaTemplateItemCard/VidaTemplateItemCard.tsx` (línea de solo lectura), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`templateNote`, línea aparte de `metaLine`), `pages/VidaHoyPage.tsx` (la propuesta como `initialValue` del editor, desde `suggestions[].item.notes`), `pages/VidaPlantillaPage.test.tsx` y `pages/VidaHoyPage.test.tsx` | 553, 554, 555, 556, 557, 558, 552 | pending |
 
 **Corte:** el de la sección 1, sin recortar. Cuatro tajadas verticales, cada una
@@ -1066,6 +1066,326 @@ credenciales no hay recorrido real):
 
 **Estado del árbol:** sin commitear.
 
+### Tajada 3 — antes de empezar, sin encarecer el toque
+
+**Resumen para el revisor:**
+1. Ahora se puede **escribir qué vas a hacer antes de arrancar**: un lápiz al
+   lado del «▶ Empezar» de la fila del plan y una línea encima del botón de «Lo
+   que viene» abren el **mismo** editor, y lo que se escriba nace **dentro de la
+   sesión**, en una sola llamada a `activityFollowUpStart`.
+2. Código nuevo: ninguno de cero. `start()` gana un tercer parámetro cerrado
+   (`{ notes }`), el contexto del módulo gana `openStartNoteSheet`, y
+   `VidaHoyPage` gana **un** borrador (`startNoteDrafts`, con clave `block.id`)
+   y **una** función de arranque (`startWithNote`) para las dos puertas.
+3. **Lo que más probablemente he roto:** el **alto de la tarjeta «Lo que
+   viene»**, que pasa de **212 px a 260 px** medidos a 375 px (la línea son 32
+   px + 16 de margen). El botón no se mueve en horizontal —279 × 42 px y
+   `x = 13` en los tres estados, medido— pero **baja 48 px**, y esa tarjeta es
+   la que se mueve sola por la lista cuando cambia el ancla (FEAT-010, criterio
+   379): si algo contaba con su alto para el foco o el scroll, es aquí. El
+   segundo sitio a mirar es la fila del plan: el lápiz entra **dentro de la fila
+   flex** de `.card`, así que a 375 px el nombre del bloque tiene ~2,6 rem menos
+   antes de recortarse, y con el cronómetro en marcha esa fila ya envolvía.
+
+**Qué se construyó:**
+
+- `src/features/vida/hooks/useVidaSessionActions.ts` — `start(activityId,
+  startTime?, options?: VidaStartOptions)`. `VidaStartOptions` es un tipo
+  **cerrado de un solo campo** (`notes?: string | null`) y se exporta: así
+  `durationMinutes` no existe ni escribiéndolo a mano. Dentro,
+  `startSessionInput()` **no se toca** y la nota se añade después, solo si trae
+  texto (`options?.notes?.trim()`). `finishNow()` sigue igual.
+- `src/features/vida/hooks/useVidaSessionUi.ts` — `openStartNoteSheet(request)`
+  y el tipo `VidaStartNoteRequest` (`activityId`, `title`, `initialValue`,
+  `onSave`). Es **la misma hoja**, abierta cuando todavía no hay sesión.
+- `src/features/vida/routes/VidaModuleLayout.tsx` — estado `startNote` al lado
+  de `noting`, compartiendo `noteOpen` y la `key` por apertura: abrir uno apaga
+  el otro, así que **no hay dos estados que se puedan contradecir**. Las
+  píldoras de «lo de otras veces» funcionan también aquí (misma consulta, misma
+  condición de «solo con el editor abierto»), y guardar **no escribe en el
+  API**: devuelve el texto a quien lo pidió.
+- `src/features/vida/components/VidaNoteLine/VidaNoteLine.tsx` — prop opcional
+  `question`, que es lo que oye un lector de pantalla delante del texto. Antes
+  decía siempre «¿Qué hiciste?»; antes de empezar eso sería mentira.
+- `src/features/vida/components/VidaAgendaBlock/` — props `noteDraft` y
+  `onEditStartNote`. El lápiz (`.startNote`, 2 × 2 rem) va **detrás del
+  «▶ Empezar»**, como en el render; con el borrador escrito, el texto se lee en
+  la línea que ya existe entre el nombre y la hora, y **en blanco no se pinta
+  ninguna línea**: un hueco gris en cada bloque del día sería el ruido diario
+  que el render descarta para las sesiones sin nota.
+- `src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx` — props
+  `noteDraft` y `onEditNote`. `onStart` **sigue siendo `() => void`**: la
+  tarjeta no ve `activityId`, ni hora, ni duración, ni sabe dónde se guarda lo
+  que se escribe. El `preventScroll` del foco y todo lo de FEAT-010 no se tocó.
+- `src/features/vida/pages/VidaHoyPage.tsx` — `startNoteDrafts: Record<string,
+  string>` con clave `block.id`, `startWithNote(blockId, activityId)` y
+  `editStartNote(...)`. **Ninguno de los dos componentes llama a
+  `sessionActions.start`.**
+- `src/features/vida/utils/vida-notes.utils.ts` — `VIDA_NOTE_QUESTION_NEXT`.
+- Tests: cinco casos nuevos en `VidaHoyPage.test.tsx` **pegados** al que ya
+  existía, y tres en `VidaModuleLayout.test.tsx`.
+
+**Por qué así, y qué se descartó:**
+
+- **La forma del control en «Lo que viene» se aparta del render, y a propósito.**
+  El render (punto 4) pone el lápiz **al lado** del botón cuando está vacío, y
+  el botón ahí es `flex: 1`: eso le quita ~44 px de ancho **en el estado que ve
+  todo el mundo todos los días**, y el criterio 548 dice literalmente que «el
+  botón grande no cambia de tamaño ni de posición cuando ese control está
+  vacío». Como el render y el criterio no pueden cumplirse a la vez ahí, mandó
+  el criterio: la línea va **encima** en los dos estados —vacía es la caja
+  punteada que el propio render ya aprobó para la sesión en marcha, escrita es
+  su `noteline filled`— y el botón **no cambia de ancho ni de alto ni de sitio
+  horizontal**, ni entre vacío y escrito, ni respecto de ayer. Medido abajo.
+  **Si el revisor prefiere el lápiz del render, es un cambio de diez líneas**,
+  pero entonces el 548 hay que releerlo.
+- **En la fila del plan sí es el lápiz del render**, y la razón es la contraria:
+  ahí no hay una tarjeta, hay N filas. Una línea «¿Qué vas a hacer?» en cada
+  bloque pendiente del día es exactamente el «ruido diario» que el render
+  descarta. El lápiz no cambia el tamaño del botón (es `size="sm"`, de ancho
+  intrínseco) pero **sí lo desplaza ~2,6 rem a la izquierda**; es lo único de
+  esta tajada que mueve el «▶ Empezar», y no había manera de añadir un control
+  a esa fila sin mover algo.
+- **El borrador vive en la pantalla, no en el API ni en `vida-device-notes.store`.**
+  Hasta que no se pulsa «▶ Empezar» no hay sesión que escribir, y la nota es
+  dato del servidor en cuanto la hay: guardarla en el aparato sería un tercer
+  sitio donde puede quedar desincronizada. Consecuencia dicha en alto: **irse de
+  Hoy y volver pierde el borrador.** Nadie lo pidió y añadirlo es inventar
+  alcance; si molesta, es una línea en `vida-device-notes.store.ts`.
+- **Un solo `VidaNoteSheet`.** Se descartó montar una segunda hoja en
+  `VidaHoyPage` (lo prohíbe la sección 2) y se descartó también meter el
+  borrador dentro de `useVidaSessionActions`: el hook no sabe de bloques, y
+  meterle un `Record` por `block.id` le daría estado de pantalla.
+- **La firma es `start(id, startTime?, { notes })` y no un `input`.** Lo pidió
+  la sección 2 y además es lo que convierte la garantía en un error de
+  compilación en vez de en un acuerdo entre caballeros.
+
+**Cómo se comprobó que el «▶ Empezar» no se encareció (criterio 550):**
+
+1. **El test que ya existía no se tocó** —`expect(startSession.mock.calls[0]).toEqual(['a-b1'])`,
+   `VidaHoyPage.test.tsx`, el caso «un solo toque arranca, y la duración
+   planeada no viaja»— y **sigue verde**. Compara el array entero: si el
+   borrador colara algo, se pondría rojo.
+2. **Tres casos nuevos con la misma comparación de array entero**, pegados al
+   anterior: con el control puesto y **sin tocarlo** → `['a-b1']`; con el
+   control abierto y **vaciado a propósito** → `['a-b1']`; con nota escrita →
+   `['a-b1', null, { notes: 'Revisando MRs' }]`.
+3. **El código de la rama sin nota es literalmente el de ayer**:
+   `if (!note) return void sessionActions.start(activityId)`, un solo argumento.
+4. **Ningún diálogo entre el clic y la mutación**: el caso nuevo lo afirma con
+   `expect(screen.queryByRole('dialog')).not.toBeInTheDocument()`.
+5. **El botón, medido en el navegador** (arnés temporal a 375 px, borrado
+   después): `279 × 42 px` y `x = 13` en los tres estados —como ayer, con el
+   control vacío y con el control escrito—. Lo único que cambia es la `y`
+   (86 → 134) y el alto de la tarjeta (212 → 260), y **entre vacío y escrito no
+   cambia nada**.
+
+**Verificación:**
+
+```
+npx vitest run src/features/vida
+  → Test Files 60 passed (60) · Tests 1451 passed (1451)
+
+pnpm lint
+  → ✖ 14 problems (14 errors, 0 warnings)          [línea base: 14/0]
+
+pnpm test
+  → Test Files 1 failed | 117 passed (118)
+    Tests 2 failed | 1872 passed (1874)            [línea base: 2 de 1866;
+    los dos fallos son los de `SearchSelect`. El `IconPicker` flaky no salió.]
+
+pnpm build
+  → ✓ built in 2.77s (exit 0)
+    index 1.127,81 kB  (línea base 1.126,44 → +1,37 kB)
+    app-icons 620,20 kB (sin mover)
+    IconPicker 4,64 kB
+
+npx tsc --noEmit -p tsconfig.app.json   → limpio
+graphify update .                        → 4191 nodos, 4974 aristas
+```
+
+Medida en el navegador (arnés temporal con la tarjeta tres veces: como ayer,
+con el control vacío y con el control escrito; `http://localhost:5173`, ancho
+375 px, **borrado antes de reportar**):
+
+```
+como ayer  play 279×42  x=13 y=86   tarjeta 212  línea —
+vacío      play 279×42  x=13 y=134  tarjeta 260  línea «＋ ¿Qué vas a hacer?» 279×32
+escrito    play 279×42  x=13 y=134  tarjeta 260  línea «✎ Revisando MRs…» 279×32
+           el texto de 60 caracteres se recorta: span scrollWidth 370 > clientWidth 246,
+           `text-overflow: ellipsis`, y la fila **no** desborda (scrollWidth == clientWidth)
+```
+
+**Criterios que cierra, uno a uno:**
+
+- **548** — *un control aparte, y el botón no cambia con el control vacío.* El
+  control es **otro botón** (test «criterio 548 — el botón grande no cambia:
+  misma palabra, y el lápiz es otro botón») y el botón grande mide lo mismo en
+  los tres estados (medida de arriba). **Con la salvedad escrita arriba**: en
+  «Lo que viene» la línea lo baja 48 px, y en la fila del plan el lápiz lo
+  desplaza ~2,6 rem. Ninguno de los dos cambia su tamaño.
+- **549** — *una sola llamada con `notes`.* Test «criterio 549 — con la nota
+  escrita antes, la sesión nace con ella en **una sola** llamada»:
+  `toHaveBeenCalledTimes(1)` y `calls[0]` igual a
+  `['a-b1', null, { notes: 'Revisando MRs' }]`. No hay ninguna llamada a
+  `activityFollowUpEdit` en ese camino (el test del layout afirma
+  `saveNote` no llamado al guardar el borrador).
+- **550** — *empezar sin tocar el control es lo de ayer.* Los cinco puntos de
+  arriba.
+- **551** — *escrita, el control deja de ser un lápiz vacío.* En «Lo que
+  viene», el test afirma que tras guardar se lee «Revisando MRs» dentro de la
+  tarjeta; en la fila del plan, el texto aparece en la línea entre el nombre y
+  la hora (mismo `VidaNoteLine` de la tajada 1). Medido también en el navegador.
+- **534** — *el botón de empezar no cambia de tamaño ni de comportamiento en
+  ningún estado.* Tamaño: medido, idéntico. Comportamiento: un toque, sin
+  diálogo, y la misma palabra («▶ Empezar ahora» / «▶ Empezar») — afirmado en
+  el test del 548.
+- **532** (la parte que toca) — la pregunta de antes de empezar es
+  **«¿Qué vas a hacer?»**: ni «nota» ni «descripción» en ningún sitio visible,
+  tampoco en el `aria-label` del lápiz ni en el de la línea.
+- **552** — las cuatro líneas base, arriba, ninguna peor.
+
+**Una palabra que puse yo y que el revisor puede tumbar en una línea:**
+`VIDA_NOTE_QUESTION_NEXT = '¿Qué vas a hacer?'`. El render dibuja este control
+como un lápiz **sin palabras**, así que la pregunta de su editor no venía
+escrita de casa, y el criterio 532 solo nombra las otras dos («¿Qué estás
+haciendo?» mientras corre, «¿Qué hiciste?» después). Es de la misma familia y
+en el único tiempo verbal que cabe aquí, pero **no es una palabra aprobada**:
+está en una constante, en `vida-notes.utils.ts`, y cambiarla es cambiar esa
+línea.
+
+**Lo que descubrí y no estaba en el plan:**
+
+1. **La sección 2 no dice cómo se abre el editor cuando todavía no hay sesión.**
+   La tajada 3 lista `useVidaSessionActions`, los dos componentes, la página y
+   su test — pero `openNoteSheet` recibe **una `ActivityFollowUp`**, y antes de
+   empezar no existe ninguna. Por eso toqué `useVidaSessionUi.ts` y
+   `VidaModuleLayout.tsx`, que no estaban en la lista: la alternativa era montar
+   una segunda hoja en `VidaHoyPage`, y eso sí está prohibido.
+2. **Las píldoras de «lo de otras veces» salen gratis antes de empezar.** Basta
+   con que `useVidaActivityNoteHistory` reciba el `activityId` de la petición.
+   Cuesta **+1 consulta, solo al abrir el editor**, la misma condición de la
+   tajada 2. Si el revisor lo considera alcance de más, se quita pasando
+   `activityId: noting?.activityId ?? null` y ya está.
+3. **El borrador no sobrevive a salir de Hoy** (ver arriba). Dicho, no
+   arreglado.
+4. **`VidaNoteLine` tenía la pregunta «¿Qué hiciste?» incrustada en el
+   `aria-label`.** No era un defecto mientras la línea solo hablara del pasado;
+   con esta tajada lo habría sido. Ahora es una prop con ese valor por defecto:
+   ninguna llamada existente cambia.
+5. **H8 empeora un poco y no lo toqué.** El hueco reservado de la barra sigue en
+   `7.5rem`; esta tajada no toca la barra, pero sí hace **más alta la tarjeta de
+   «Lo que viene»**, que es lo último de la lista cuando el ancla es la marca de
+   AHORA. No he medido si el margen de 3,4 px de H8 se come algo por ahí: queda
+   dicho.
+6. **H2 sigue igual**: no toqué `VidaAgendaSession`.
+
+**Pendiente de prueba a mano, detrás del login** (no se aprueba por simpatía):
+
+- **La ida y vuelta real**: en `/app/vida/hoy`, tocar el lápiz de un bloque que
+  todavía no ha empezado, escribir «Revisando MRs», guardar, pulsar
+  «▶ Empezar», y comprobar en la barra que la sesión **ya trae** la nota sin
+  haberla escrito dos veces.
+- **El lápiz de la fila del plan, con ojos**: es la única parte de esta tajada
+  que no pude ver renderizada (el arnés que monté era de la tarjeta). Está
+  escrito y sus tests pasan, pero **su tamaño y su contraste no están medidos**:
+  2 × 2 rem, tinta normal sobre vidrio, borde suave. A 375 px, en una fila con
+  el nombre largo, es lo primero que hay que mirar.
+- **Que el botón siga siendo cómodo con el pulgar** en la tarjeta, ahora 48 px
+  más abajo.
+
+**Estado del árbol:** sin commitear.
+
+### Tajada 3 (segunda vuelta) — el 548, resuelto midiendo
+
+**Resumen para el revisor:**
+1. El control de «antes de empezar» **ya no toca el botón de arrancar en
+   ninguna de las dos puertas**: en «Lo que viene» es un lápiz de 2 rem en la
+   esquina que deja libre el rótulo, **fuera del flujo**; en la fila del plan
+   es un lápiz de 1 rem **al final de la línea de la hora**, dentro de `.body`.
+   Con el control vacío, los dos botones quedan **idénticos a ayer**, medidos a
+   375 px y a 760 px.
+2. Lo demás de la tajada no se tocó: la firma de `start`, el borrador único,
+   `startWithNote`, el test intocable y los casos nuevos siguen como estaban.
+3. **Lo que más probablemente he roto:** el **lápiz de la fila es pequeño**
+   —1 rem de caja, con `::after` de 2 rem como área táctil— y va pegado al
+   «3 h» de la línea de la hora. Se ve discreto (captura mirada a 375 px) y
+   **puede pasar desapercibido**: es el precio de no mover el botón. El
+   segundo sitio a mirar es esa misma línea con el bloque **en marcha** o
+   **movido**, donde el texto es más largo («planeado 3 h · en marcha»): el
+   lápiz no se pinta ahí —solo se ofrece donde hay «▶ Empezar»— pero conviene
+   confirmarlo con ojos.
+
+**Qué cambió respecto de la primera entrega:**
+
+- `VidaUpNextCard.tsx` + `.module.scss` — nace `.cornerNote`: `position:
+  absolute; top: .25rem; right: .4rem`, 2 × 2 rem. **Solo con el borrador
+  vacío**; en cuanto hay texto, el control pasa a ser la `VidaNoteLine` de
+  encima del botón (el estado escrito del render) y el lápiz desaparece: dos
+  controles para lo mismo serían dos sitios que tocar. `top: .25rem` y no
+  `.4rem` porque el cuadrado acaba en `y = 36` y la caja del nombre empieza en
+  `y = 38`: medido, no estimado.
+- `VidaAgendaBlock.tsx` + `.module.scss` — el lápiz sale del pie de la tarjeta
+  y entra **al final de `<p className={styles.meta}>`**. Ahí dentro no mueve
+  nada (`.body` es `flex: 1`). Tres detalles que son medida, no gusto:
+  `width/height: 1rem` (el alto del renglón), `vertical-align: middle` —el
+  único valor de los ocho que probé que deja la fila en sus 106 px— y un
+  `::after { inset: -0.5rem }` que da **2 rem de zona tocable sin ocupar sitio
+  en la línea**.
+- `VidaHoyPage.test.tsx` — los lápices de la fila y de la tarjeta comparten
+  nombre accesible (es la misma pregunta sobre la misma actividad), así que los
+  casos dicen **en cuál** se toca: `within(upNextCard()!)` y
+  `within(filaDelPlan())`. Un caso nuevo afirma que, escrita la nota, el lápiz
+  de la esquina **ya no está**.
+
+**Por qué esta forma y no las dos anteriores** (las tres medidas, a 375 px):
+
+| | `.play` vacío | alto tarjeta | ▶ de la fila (375 / 760) |
+|---|---|---|---|
+| Como ayer | 279×42 · (13, 86) | 212 | 100×32 · (13, 62) / (537, 18) |
+| Render (lápiz al lado) | **206×42** · (13, 95) | 212 | — |
+| Mi 1.ª entrega (línea encima) | 279×42 · (13, **134**) | **260** | (13, 62) / (537, **494**←43 px) |
+| **Ésta** | **279×42 · (13, 86)** | **212** | **(13, 62) / (537, 18)** |
+
+El render le quita 46 px de ancho al botón; mi primera entrega lo bajaba 48 px
+y engordaba la tarjeta 48; el lápiz al lado del «▶ Empezar» de la fila lo
+desplazaba 43 px en pantalla ancha (en móvil no, porque ahí la fila ya
+envuelve). **La esquina y la línea de la hora no cambian nada**, que es lo que
+pide el 548 literalmente. El estado **escrito** sí crece —la tarjeta a 260 px,
+la fila a 127— y eso es correcto: lo paga quien decide escribir.
+
+**Verificación (esta vuelta, entera):**
+
+```
+medida en el navegador (arnés temporal, borrado; dos anchos)
+  375 px  tarjeta  ayer 279×42 (13,86) h=212 · vacío 279×42 (13,86) h=212 · escrito (13,134) h=260
+          fila     ayer 100×32 (13,62) h=106 · vacío 100×32 (13,62) h=106 · escrito (13,82) h=127
+  760 px  tarjeta  ayer 664×42 (13,86) · vacío 664×42 (13,86)
+          fila     ayer 100×32 (537,18) h=67 · vacío 100×32 (537,17) h=67
+  lápiz esquina 32×32 en (266, 5) de 305 · lápiz fila 16×16 con 32×32 de dedo
+
+npx vitest run src/features/vida  → 60 archivos, 1454 pasan
+pnpm lint                         → 14 errores / 0 warnings      [línea base]
+pnpm test                         → 2 fallos de 1874 (`SearchSelect`) [línea base]
+pnpm build                        → exit 0 · index 1.128,04 kB (+1,60 sobre 1.126,44)
+                                     app-icons 620,20 kB sin mover · IconPicker 4,64 kB
+npx tsc --noEmit                  → limpio
+graphify update .                 → hecho
+```
+
+**Criterio 548, ahora con la evidencia que faltaba:** con el control **vacío**,
+el botón de las dos puertas **no cambia de tamaño ni de posición** —mismas
+cuatro cifras que sin la feature, a los dos anchos— y el control es otro botón,
+aparte. Lo que crece es el estado escrito, que es el que el render dibuja así.
+
+**Lo que sigue sin verse y hay que mirar a mano:** el lápiz de la fila **es
+pequeño a propósito**; la captura a 375 px dice que se lee («3 h ✎») pero quien
+no sepa que está ahí puede no buscarlo. Si al probarlo se pierde, la salida sin
+mover el botón es subirle el contraste o el tamaño de caja hasta 1,25 rem
+—midiendo otra vez la fila—, no devolverlo al lado del «▶ Empezar».
+
+**Estado del árbol:** sin commitear.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — **aceptada** (2026-09-22)
@@ -1417,3 +1737,323 @@ Tal como lo dejó el constructor, y lo confirmo como pendiente:
 **Sin commitear y sin push.** El arnés que usé está borrado (`git status` solo
 muestra lo del constructor). El Vite del 5173 lo encontré vivo y lo dejo vivo:
 no arranqué ni paré nada. **`ENVIRONMENT.md` no lo toqué.**
+
+### Tajada 3 — **devuelta** (2026-09-22)
+
+**Motivo, en una línea:** el **criterio 548 no se cumple en «Lo que viene»**.
+Con el control **vacío** —el estado de todos los días— el botón grande **cambia
+de posición**: baja 48 px (`y` 86 → 134) y la tarjeta pasa de 212 a 260 px. El
+criterio dice «no cambia de tamaño **ni de posición** cuando ese control está
+vacío». El render rompe la mitad del tamaño; esta implementación rompe la mitad
+de la posición. **Ninguna de las dos lo cumple**, y hay una tercera forma que sí
+—medida abajo—, así que no es una contradicción irresoluble que haya que
+mandar al usuario todavía.
+
+#### La desviación del render, medida (no razonada)
+
+Medí el propio render servido por Vite
+(`http://localhost:5173/docs/vida/assets/19-vida-que-hice.html`, punto 4, las
+dos tarjetas `.next` de su teléfono de 278 px):
+
+```
+render, control vacío   .play 206×42  x=13 y=95    tarjeta 150   lápiz .addnote 39×42 al lado
+render, escrita         .play 252×40  x=13 y=140   tarjeta 193   .noteline filled 252×35 encima
+```
+
+Dos conclusiones, las dos de la medida:
+
+1. **El constructor tiene razón en el diagnóstico.** En el render, con el
+   control vacío el botón mide **206 px** y sin la feature mediría **252**: son
+   los ~46 px que dice, perdidos **en el estado que se ve todos los días**. El
+   render **sí** se contradice con el 548, literalmente, en el eje del tamaño.
+2. **Pero el remedio elegido rompe el mismo criterio en el mismo estado, por el
+   otro eje.** Con el control vacío la línea punteada ya está puesta y el botón
+   baja 48 px (medida del propio constructor, que acepto: `como ayer y=86` /
+   `vacío y=134`). Cambiar de posición con el control vacío es exactamente lo
+   que el 548 prohíbe. La justificación escrita en la sección 3 —«el render y el
+   criterio no pueden cumplirse a la vez, mandó el criterio»— **no se sostiene**:
+   el criterio tampoco se cumple.
+
+#### La tercera forma, con hueco medido
+
+Sobre el mismo render: la tarjeta tiene **sitio libre arriba a la derecha**. El
+rótulo «Lo que viene» (`.kicker`) mide **77 × 11 px** en `x=13, y=21` dentro de
+una tarjeta de **278** de ancho, y la fila del nombre (`.who`) no empieza hasta
+`y=42`. Un lápiz de 2 rem (32 px) en esa esquina —posicionado absoluto sobre el
+`padding` de 12 px, o como hermano derecho del rótulo— **no ocupa flujo**: no
+quita ancho al botón ni lo baja. Con eso:
+
+- **Vacío**: el botón queda `279 × 42`, `x = 13`, `y = 86`, tarjeta 212 —
+  **idéntico a ayer**, que es lo que pide el 548 al pie de la letra, y de paso
+  desaparece la duda de H8 en el estado diario.
+- **Escrito**: la línea entra encima del botón, **tal cual la dibuja el render**
+  para su segunda tarjeta (`noteline filled` + el botón ocupando la fila
+  entera). Ahí el control ya no está vacío y el 548 no dice nada.
+
+Es la única de las tres que cumple el criterio **y** deja el estado escrito
+igual que el render. Si al construirla aparece algo que no vi —que el lápiz en
+la esquina choque con el `kicker` a 375 px, por ejemplo—, entonces sí es una
+contradicción del render consigo mismo y **va al usuario como decisión suya**,
+no se resuelve en la sección 3. En este proyecto el render aprobado manda.
+
+**La fila del plan no es motivo de devolución.** Ahí el lápiz entra en la fila
+flex y desplaza el «▶ Empezar» ~2,6 rem a la izquierda, pero ese botón es el
+`size="sm"` de la fila, no «el botón grande» del 548, y el **534** —el que sí le
+aplica— habla de **tamaño y comportamiento**, que no cambian. Queda como
+hallazgo, no como falta.
+
+#### Criterios, uno a uno
+
+- **550 — cumplido, y es lo que mejor está.** Verificado por mí, no por el
+  resumen:
+  - **El test que ya existía no se tocó**: `git diff
+    src/features/vida/pages/VidaHoyPage.test.tsx` solo añade un bloque nuevo a
+    partir de la línea 2521 y una línea de `Provider` en 3248. El caso con
+    `expect(startSession.mock.calls[0]).toEqual(['a-b1'])` **no aparece en el
+    diff**: está intacto y verde.
+  - **Los tres casos nuevos no pasan por construcción del mock**: los dos
+    `vi.mock` de `useVidaSessionActions` (`VidaHoyPage.test.tsx:206` y
+    `VidaModuleLayout.test.tsx:50`) exponen `start` como un `vi.fn()` pelado,
+    que **no restringe la firma**: lo que se le pase llega entero a
+    `mock.calls[0]`. La comparación de array entero mide lo que dice.
+  - **La rama sin nota es literal**: `if (!note) return void
+    sessionActions.start(activityId)` (`VidaHoyPage.tsx`, `startWithNote`).
+  - **Ningún diálogo de por medio**: `startWithNote` llama a la mutación
+    directamente, y el caso nuevo lo afirma con `queryByRole('dialog')`.
+  - **`startSessionInput` intacto**: el diff de `useVidaSessionActions.ts` no lo
+    toca; `input.notes = notes` se añade **después** y solo con texto. Sus
+    tests siguen valiendo — `useVidaSessionActions.test.tsx` corre verde.
+  - *Salvedad honesta:* `toEqual(['a-b1'])` **no** distinguiría
+    `start('a-b1', undefined)` de `start('a-b1')` (Vitest ignora los `undefined`
+    de más). La red caza un valor real colado —la hora del plan, la duración—,
+    que es para lo que se puso, pero no un `undefined` de más. Hallazgo.
+  - La medida de navegador `279 × 42, x = 13` en los tres estados es **del
+    constructor**: el arnés ya estaba borrado y no la repetí.
+- **549 — cumplido.** Una sola llamada con `notes` dentro; ningún
+  `activityFollowUpEdit` en ese camino (la hoja de «antes de empezar» ni siquiera
+  recibe `saveNote`, ver abajo).
+- **551 — cumplido en código y test**, visto renderizado solo en la tarjeta.
+- **534 — cumplido.** Tamaño y palabra idénticos en los tres estados; un toque.
+- **548 — NO cumplido** en «Lo que viene» (arriba). Sí está cumplida su primera
+  mitad: el control **es otro botón**, aparte del de arrancar.
+- **532 (su parte) — cumplido.** «¿Qué vas a hacer?» es **una pregunta**, de la
+  misma familia que las otras dos, sin «nota» ni «descripción» en ningún texto
+  visible **ni en los `aria-label`** (los revisé: el del lápiz de la fila y el de
+  la línea usan la pregunta). Sin reproche. Es palabra nueva, en una constante:
+  queda anotada para que el usuario la vea, no la tumbo.
+- **552 — no re-verificado entero.** Corrí `VidaHoyPage.test.tsx`,
+  `VidaModuleLayout.test.tsx`, `useVidaSessionActions.test.tsx` y
+  `VidaUpNextCard`: **213 de 213 verdes**. Lint, suite completa y build son los
+  números del constructor; no los repetí.
+
+#### Lo que miré para ver si rompió algo al lado, y cómo
+
+- `graphify explain "useVidaSessionActions start"` → **sin nodo**: el grafo no
+  tiene ese token compuesto y no me inventé otros. Caí en `grep -rn
+  useVidaSessionActions src/`, que para «quién depende de esto» da la lista
+  entera.
+- **Los mocks que caducan en silencio.** Solo hay **dos** `vi.mock` de
+  `useVidaSessionActions` en todo `src/` (`VidaHoyPage.test.tsx:206`,
+  `VidaModuleLayout.test.tsx:50`) y **dos** consumidores reales
+  (`VidaHoyPage.tsx:193`, `VidaModuleLayout.tsx:96`). Abrí los dos mocks: ninguno
+  tipa la firma de `start`, así que el tercer parámetro no los deja obsoletos ni
+  en falso verde. Las dos suites, verdes.
+- **El contexto**, que ganó un campo obligatorio: `VidaSessionUiContext.Provider`
+  aparece en **un solo sitio de producto** (`VidaModuleLayout.tsx:151`) y en dos
+  del test de la página, los dos actualizados. No hay proveedor huérfano.
+- **Un solo montaje del editor** (lo prohibido por la sección 2): en
+  `VidaModuleLayout.tsx` hay dos ramas, `noting` y `startNote`, **mutuamente
+  excluyentes** —`openNote` hace `setStartNote(null)` y `openStartNote` hace
+  `setNoting(null)`—, comparten `noteOpen` y la `key`. Y la hoja sin sesión
+  detrás **no puede llamar a `saveNote` sobre nada**: `saveNote` solo está
+  cableado en la rama `noting`, que exige un `ActivityFollowUp`; la otra llama a
+  `startNote.onSave`, que devuelve `void`, y `VidaNoteSheet.handleSave` cierra
+  cuando el resultado es `undefined` (`if (result && !result.ok)`).
+- **`VidaNoteLine`**, compartida por cinco filas: el cambio es una prop
+  **opcional** con el valor de antes por defecto (`VIDA_NOTE_QUESTION_DONE`).
+  Ninguna llamada existente cambia de comportamiento.
+- **`VidaAgendaBlock`**: cuando hay `onEditStartNote` la línea de `note` se
+  sustituye por la del borrador. Solo ocurre en bloques **sin sesión**
+  (`!execution.byBlockId[entry.id]`), donde `note` es `null` por definición: no
+  tapa ninguna nota escrita.
+- **Las garantías de FEAT-010 en `VidaUpNextCard`**, una a una y no por
+  casualidad: `onStart` **sigue siendo `() => void`** (el diff no lo toca); las
+  props nuevas son un `string | null` y un `() => void`, así que la tarjeta
+  **sigue sin ver** `activityId`, hora ni duración —quien los conoce es
+  `editStartNote` en la página—; y el bloque del `useLayoutEffect` con
+  `preventScroll` **no aparece en el diff**: intacto.
+- **Lo que el constructor señaló como «lo que más probablemente he roto»** —el
+  alto de la tarjeta— es justo el motivo de la devolución.
+
+#### Estados
+
+- **Día pasado y día futuro:** cubiertos. El lápiz de la fila y la línea de la
+  tarjeta cuelgan de `canStart` (`isToday && !isDisabled && !isFromAnotherDay`);
+  la tarjeta además se gobierna con `upNext.canStart`, que recibe ese mismo
+  valor (`VidaHoyPage.tsx:525`).
+- **Bloque ya empezado:** cubierto por `!execution.byBlockId[entry.id]` y por
+  `entry.item.activityId !== runningActivityId`.
+- **Error de la mutación con nota escrita:** **no se pierde lo escrito.**
+  `startWithNote` ignora el resultado y **nunca limpia** `startNoteDrafts`, así
+  que el texto sigue en la línea y se puede volver a pulsar. Efecto lateral del
+  mismo hecho, menor: el borrador tampoco se limpia **tras un arranque bueno**;
+  hoy no se ve porque el bloque deja de ofrecer el control, pero si esa sesión se
+  borra o se corrige, reaparecería el texto viejo. Hallazgo.
+- **Sin datos / cargando / permisos:** no aplican — el control vive sobre un
+  bloque del plan que ya está pintado, y las píldoras ya tienen su criterio
+  (547) de la tajada 2.
+- **Texto largo:** medido por el constructor en la tarjeta (60 caracteres,
+  `scrollWidth 370 > clientWidth 246`, elipsis, sin desbordar). **La fila del
+  plan con nombre largo y lápiz, a 375 px, sigue sin mirarse con ojos** — ni el
+  constructor ni yo: mi presupuesto se fue en medir el render y la desviación, y
+  montar un arnés para `VidaAgendaBlock` (que pide `block`, `execution` y media
+  página de props) no cabía. **Queda expresamente sin revisar** y va en el mismo
+  viaje de vuelta: con el cambio del 548 hay que mirar las dos cosas juntas.
+- **375 px sin barra horizontal:** medido por el constructor en la tarjeta
+  (`scrollWidth == clientWidth`); en la fila del plan, sin medir.
+- **H8:** la reviso como **no afectada**, y por estructura, no por medida: el
+  hueco reservado es un `7.5rem` fijo del layout contra el **alto de la barra**,
+  y el alto de la tarjeta «Lo que viene» no entra en esa cuenta —hace la lista
+  más larga, no la barra más alta—. No pude medirlo en vivo porque la barra solo
+  existe con una sesión en marcha, detrás del login. Con la tercera forma, en el
+  estado diario la tarjeta ni siquiera crece.
+
+#### Hallazgos (anotados, no motivo de devolución)
+
+1. `toEqual` no distingue un `undefined` de más: la red del 550 es algo menos
+   estrecha de lo que dice la sección 2. `toStrictEqual` lo cerraría.
+2. El borrador **no sobrevive a salir de Hoy**. Lo doy por **aceptable**: se
+   pierde solo texto que el usuario acaba de escribir para arrancar *ahora* y
+   que no llegó a ser sesión, no hay ningún sitio donde parezca guardado, y el
+   camino normal es escribir y pulsar en el mismo gesto. No lo arreglaría sin
+   que alguien lo pida.
+3. El borrador no se limpia tras arrancar (arriba).
+4. «¿Qué vas a hacer?» es palabra nueva del constructor, no del render ni del
+   532. Encaja con la regla del módulo y la dejo, pero **es del usuario decidir
+   si se queda**: está en una constante de `vida-notes.utils.ts`.
+5. Las píldoras de «lo de otras veces» también aparecen antes de empezar. No
+   estaba en el plan, no cuesta nada al abrir Hoy y **lo apruebo tal cual**.
+
+#### Qué se pide para volver a presentarla
+
+Una sola cosa, más lo que arrastra: dejar el botón de «Lo que viene»
+**idéntico a ayer con el control vacío** (tamaño **y** posición), con el lápiz
+fuera del flujo —la esquina del rótulo tiene sitio medido—, y la línea encima
+solo cuando hay texto, como el render. Con eso puestos, mirar a 375 px **la fila
+del plan con el lápiz y un nombre largo**, que es lo único que nadie ha visto
+renderizado.
+
+### Tajada 3 — **aceptada** en segunda vuelta (2026-09-22)
+
+**Lo devuelto está resuelto, y lo comprobé midiendo yo, a los dos anchos.** Monté
+un arnés temporal (`harness-rev.html` + `src/harness-rev.tsx`, **borrado antes de
+reportar**) con la tarjeta y la fila **tres veces cada una** —como venían de
+FEAT-010/FEAT-003, con el control vacío y con el control escrito— y con una
+segunda fila de **nombre largo**. Mis números no son los suyos en absoluto porque
+mi contenedor no lleva el canalón de la página; lo que el 548 pide no es un
+número, es que **no cambie**, y eso es lo que comparo:
+
+```
+375 px    tarjeta            fila                     fila, nombre largo
+ayer      alto 248  botón (67,86) 295×42   alto 102  botón 100×32 x=261   alto 102
+vacío     alto 248  botón (67,86) 295×42   alto 102  botón 100×32 x=261   alto 102
+escrito   alto 296  botón (67,134) 295×42  alto 123  botón 100×32 x=261   alto 123
+
+760 px    tarjeta            fila
+ayer      alto 212  botón (67,86) 680×42   alto 67   botón (607,18) 100×32
+vacío     alto 212  botón (67,86) 680×42   alto 67   botón (607,18) 100×32
+escrito   alto 260  botón (67,134) 680×42  alto 87   botón (607,28) 100×32
+```
+
+- **Criterio 548, cumplido a los dos anchos.** Con el control **vacío** el botón
+  grande de «Lo que viene» es **idéntico** al de ayer —misma caja, mismo punto—
+  y la tarjeta **no crece** (248 = 248 a 375; 212 = 212 a 760). El lápiz de la
+  esquina mide 32 × 32 y está **fuera del flujo**: no empuja nada.
+- **El defecto que encontró él mismo, confirmado y resuelto.** A 760 px la fila
+  del plan con el lápiz y sin él da **exactamente** el mismo botón en el mismo
+  sitio `(607, 18) 100×32` y el mismo alto de fila (67). El sitio que perdía
+  antes ya no se pierde. A 375 px, igual: `100×32` en `x = 261` en los tres
+  estados y la fila clavada en su alto con y sin lápiz.
+- **El estado escrito sí mueve cosas, y está bien**: la tarjeta pasa a 260/296 y
+  el botón baja 48 px; la fila pasa a 123/87 y el botón baja 10 px a 760. El 548
+  habla del control **vacío**; escrito, el control **es** la línea y el lápiz
+  desaparece — hay caso nuevo que lo fija
+  (`queryByRole('button', { name: '¿Qué vas a hacer? Bañarme' })` no está tras
+  guardar).
+- **Nombre largo a 375 px, por fin visto.** El nombre se recorta con elipsis en
+  sus 137 px (`scrollWidth 410 > clientWidth 137`) **igual con lápiz que sin él**:
+  el lápiz no le quita sitio porque no vive en su renglón. Sin barra horizontal
+  (`document.scrollWidth == clientWidth`). La fila se lee «Bañarme / 3 h · en 30
+  min ✎».
+
+**El riesgo de juicio: el lápiz pequeño de la fila. Lo doy por aceptable, y el
+lever no es el que se propone.** Medí el color: el glifo va en `rgb(15,23,42)`
+sobre vidrio casi blanco —**~17:1**, más contraste que la propia línea de la hora
+(`rgb(71,85,105)`)—, así que **no es un problema de contraste**: es de tamaño y
+de anuncio. Y subirlo a 1,25 rem es justo lo que no se puede hacer sin arriesgar
+lo que se acaba de arreglar: la caja mide 1 rem porque ese es el renglón de la
+hora, y en cuanto lo pase, la fila crece. Lo dejo como está, por tres razones:
+la misma nota se puede escribir en **otros tres momentos** (en marcha, al
+terminar, y desde la línea del día), así que no encontrarlo no deja a nadie sin
+salida; la tarjeta «Lo que viene» —que es donde mira quien va a empezar— lleva un
+lápiz de 2 rem, no de 1; y el módulo entero descarta el ruido diario a propósito.
+**Si el usuario dice que no lo encuentra, el arreglo de coste cero en layout es
+el borde en reposo** (mint en vez del 24 % de pizarra), no la caja. Volverlo al
+lado del «▶ Empezar» no es salida, y con la medida de 760 px ahora está escrito
+por qué.
+
+**El dedo, medido, y un matiz:** con `elementFromPoint`, a ±12 px del centro
+todavía se toca el lápiz; a ±15 px ya no (cae en la línea de la hora). El área
+efectiva ronda los **28 px**, no los 32 que promete el comentario del `::after`.
+Es lo mismo que mide el «···» de la fila (28 × 28), así que no desentona, pero
+el comentario dice «2 rem de dedo» y son algo menos. Hallazgo.
+
+**Lo declarado como intacto, verificado con `git diff`, no de palabra:**
+
+- **El test intocable del 550 sigue sin tocar después de esta segunda vuelta.**
+  `git diff -U0 src/features/vida/pages/VidaHoyPage.test.tsx | grep "^-[^-]"`
+  devuelve **una sola línea**: la del `Provider` que necesitaba el campo nuevo
+  del contexto. El caso con `expect(startSession.mock.calls[0]).toEqual(['a-b1'])`
+  (línea 2518) no aparece en el diff.
+- `VidaUpNextCard.tsx` y su `.module.scss`: **cero líneas borradas** en los dos.
+  `onStart` sigue siendo `() => void`, el `useLayoutEffect` del foco con
+  `preventScroll` no se toca y las props nuevas siguen siendo un `string | null`
+  y dos `() => void`: la tarjeta **sigue sin ver** `activityId`, hora ni duración.
+- `useVidaSessionActions.ts`: una sola línea borrada, la firma de `start`.
+  `startSessionInput` intacto; `input.notes` se añade después y solo con texto.
+- `VidaHoyPage.tsx`: la rama sin nota sigue siendo literal —
+  `if (!note) return void sessionActions.start(activityId)` (línea 225)— y el
+  borrador sigue siendo **uno**, `Record<string, string>` por `block.id`.
+- «¿Qué vas a hacer?» sigue en su constante; el borrador sigue sin sobrevivir a
+  salir de Hoy (aceptable, ya razonado en la primera vuelta).
+
+**552, repetido entero por mí** (lo que no hice en la primera vuelta):
+
+```
+pnpm typecheck  → limpio, sin salida
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)     [línea base 14/0]
+pnpm test       → Tests 2 failed | 1872 passed (1874)       [los dos de SearchSelect]
+pnpm build      → ✓ built in 2,78 s, exit 0
+                  index 1.128,04 kB · app-icons 620,20 kB (sin mover) · IconPicker 4,64 kB
+```
+
+Coinciden **exactamente** con lo que declaró, cifra a cifra.
+
+**Criterios de la tajada:** 534, 548, 549, 550, 551 y la parte del 532,
+**cumplidos**; 552 cumplido y verificado por mí.
+
+**Hallazgos nuevos (anotados, no motivo de devolución):**
+
+1. **Tres comentarios desfasados** en `VidaAgendaBlock.tsx` (líneas 125, 138 y
+   383) siguen diciendo que el control es «el lápiz **de al lado del botón**».
+   Ya no lo es: vive al final de la línea de la hora. Es justo la clase de frase
+   que manda a alguien al sitio equivocado dentro de seis meses.
+2. El área táctil real del lápiz de la fila es ~28 px, no los 32 del comentario.
+3. A 375 px el lápiz queda pegado al «en 30 min» en verde del bloque siguiente y
+   puede leerse como parte de esa pastilla. No lo devuelvo: es cosmético y se ve
+   mejor con datos reales que en un arnés.
+
+**Pendiente de prueba a mano, detrás del login** (no se aprueba por simpatía):
+la ida y vuelta real —escribir antes, pulsar «▶ Empezar» y ver la nota ya en la
+barra sin escribirla dos veces— y el pulgar sobre el lápiz de la fila en un
+teléfono de verdad. Lo demás está medido.

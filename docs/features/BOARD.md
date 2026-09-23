@@ -26,7 +26,76 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
-| FEAT-018 | building | 2/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+| FEAT-018 | building | 3/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+| FEAT-019 | planned | 0/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+
+**FEAT-018 `building` 3/4** (2026-09-22, revisor). **Tajada 3 aceptada en
+segunda vuelta: ya se puede decir qué vas a hacer antes de arrancar, y el
+«▶ Empezar» no se encarece ni un píxel.** Lo medí yo con un arnés propio
+—borrado— **a 375 y a 760 px**: con el control **vacío**, el botón grande de «Lo
+que viene» es **idéntico** al de ayer (misma caja, mismo punto) y la tarjeta no
+crece (248 = 248 a 375; 212 = 212 a 760), y en la fila del plan el botón se queda
+clavado en `100×32` —`(607, 18)` a 760— con lápiz y sin él, que es el defecto de
+43 px que él mismo encontró y sacó de ahí. Escrita la nota, el lápiz desaparece y
+el control pasa a ser la línea; hay test que lo fija. **La fila con nombre largo,
+por fin vista a 375 px**: se recorta con elipsis igual con lápiz que sin él y no
+hay barra horizontal. El 550 sigue intacto —el test intocable no aparece en el
+diff ni en esta vuelta— y **repetí el 552 entero**: typecheck limpio, lint 14/0,
+2 fallos de 1874 (`SearchSelect`), build exit 0 con inicial 1.128,04 kB y
+`app-icons` 620,20 kB sin mover; coincide cifra a cifra con lo declarado. **El
+lápiz pequeño de la fila lo doy por aceptable**: el glifo va a ~17:1, así que no
+es contraste sino tamaño, y agrandarlo rompería lo que acaba de arreglarse; si
+alguna vez no se encuentra, el arreglo sin coste de layout es el borde en reposo.
+Hallazgos: tres comentarios de `VidaAgendaBlock` que siguen diciendo «el lápiz de
+al lado del botón», y un dedo real de ~28 px donde el comentario promete 32.
+**Falta la tajada 4** (la plantilla propone): esto no es cierre. Sin commitear.
+
+**FEAT-018 `in-review` 3/4** (2026-09-22, constructor, **segunda vuelta**).
+**El 548 resuelto midiendo, en las dos puertas.** El lápiz de «Lo que viene» se
+va a la esquina libre del rótulo, **fuera del flujo**; el de la fila del plan,
+al final de la línea de la hora, dentro del cuerpo (1 rem de caja, 2 rem de
+dedo con `::after`, `vertical-align: middle` —el único de ocho valores que deja
+la fila en sus 106 px—). Con el control **vacío**, los dos botones quedan
+**idénticos a ayer**: tarjeta `279×42 (13,86)`, alto 212; fila `100×32 (13,62)`,
+alto 106; y a 760 px igual. El estado **escrito** sí crece, que es lo que
+dibuja el render. Lo demás de la tajada no se tocó. Líneas base repetidas
+enteras: typecheck limpio, lint **14/0**, test **2 fallos de 1874**, build exit
+0 (1.128,04 kB, `app-icons` 620,20 sin mover). Queda a mano: **el lápiz de la
+fila es discreto a propósito** y hay que ver si se encuentra. Sin commitear.
+
+**FEAT-018 `returned` 2/4** (2026-09-22, revisor). **Tajada 3 devuelta: el
+criterio 548 no se cumple en «Lo que viene».** Con el control **vacío** —el
+estado diario— el botón grande **baja 48 px** (`y` 86 → 134, tarjeta 212 → 260),
+y el 548 prohíbe que cambie «de tamaño **ni de posición**». Medí el render
+servido por Vite: con el lápiz al lado el botón mide **206 px** donde mediría
+252, así que **el render sí se contradice con el criterio** —el constructor
+acierta en el diagnóstico— pero **el remedio rompe el mismo criterio por el otro
+eje**. Hay una **tercera forma con hueco medido**: el lápiz fuera del flujo, en
+la esquina del rótulo «Lo que viene» (el rótulo ocupa 77 × 11 px en una tarjeta
+de 278 y la fila del nombre no empieza hasta `y = 42`), que deja el botón
+idéntico a ayer con el control vacío y conserva el estado escrito tal cual lo
+dibuja el render. Lo demás está bien y verificado: **el 550 se sostiene** —el
+test intocable sigue intacto y verde (`git diff` solo añade), los dos `vi.mock`
+de `useVidaSessionActions` no tapan la firma nueva, `startSessionInput` sin
+tocar, 213/213 verdes en las cuatro suites que corrí—, 549, 551, 534 y la parte
+del 532 cumplidos, un solo montaje del editor y las garantías de FEAT-010
+intactas. **Sin revisar, y vuelve con la tajada:** la fila del plan con el lápiz
+y un nombre largo a 375 px, que nadie ha visto todavía con ojos. Sin commitear.
+
+**FEAT-018 `in-review` 3/4** (2026-09-22, constructor). **Tajada 3 construida:
+ya se puede decir qué vas a hacer *antes* de arrancar, sin encarecer el toque.**
+Un lápiz al lado del «▶ Empezar» de la fila del plan y una línea encima del
+botón de «Lo que viene» abren el **mismo** editor; lo escrito nace dentro de la
+sesión en **una sola** llamada a `activityFollowUpStart` con `notes`. La
+garantía del botón se fija en cuatro sitios: firma cerrada
+(`start(id, startTime?, { notes })`), rama sin nota literalmente igual
+(`start(activityId)`, un argumento), **el test que ya existía sin tocar** y tres
+casos nuevos que comparan el array entero. Medido en el navegador: el botón
+mide `279 × 42` y `x = 13` en los tres estados. **Un apartamiento del render,
+escrito**: en «Lo que viene» la línea va encima y no el lápiz al lado, porque el
+render le quitaba ~44 px de ancho al botón y el criterio 548 lo prohíbe. Líneas
+base: typecheck limpio, lint **14/0**, test **2 fallos de 1874** (los de
+`SearchSelect`), build exit 0 (1.127,81 kB, +1,37). Sin commitear.
 
 **FEAT-018 `building` 2/4** (2026-09-22, revisor). **Tajada 2 aceptada: con
 algo en marcha se puede decir qué estás haciendo sin parar el cronómetro.**

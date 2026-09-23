@@ -47,6 +47,19 @@ export type VidaSessionActionResult = {
   closed?: ActivityFollowUp
 }
 
+/**
+ * Lo **único** que se le puede añadir a un arranque (FEAT-018, criterio 549).
+ *
+ * Es un tipo cerrado con un solo campo, no un `Partial<ActivityFollowUpStartInput>`:
+ * la garantía del «▶ Empezar» —ni la duración planeada ni la hora de la
+ * plantilla viajan a la sesión— deja de depender de que alguien se acuerde y
+ * pasa a no compilar.
+ */
+export type VidaStartOptions = {
+  /** Lo que se escribió **antes** de pulsar. En blanco es como no traer nada. */
+  notes?: string | null
+}
+
 const OK: VidaSessionActionResult = { ok: true }
 
 /** El reloj de este momento como se lee en Vida: «10:08», sin cero delante. */
@@ -110,6 +123,14 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
    * `startTime` es `HH:mm` de **hoy**; sin él, el reloj, que es lo que sigue
    * haciendo el ▶ de un bloque.
    *
+   * **Desde FEAT-018 (criterio 549) admite un tercer parámetro**, y solo uno:
+   * `{ notes }`, lo que se escribió **antes** de pulsar. No es un `input`
+   * abierto ni un `Partial<ActivityFollowUpStartInput>` a propósito: así
+   * `durationMinutes` ni existe, la hora sigue viviendo en el segundo
+   * parámetro y **las dos puertas de «▶ Empezar» siguen sin poder colar nada
+   * del plan en la sesión**. Sin nota, la llamada es literalmente la de
+   * siempre: `start(activityId)`.
+   *
    * **D1 (criterio 339):** si hay algo en marcha, se cierra **a la hora de
    * inicio de lo nuevo**, no a este momento: así las dos no se pisan y el día
    * cuadra. Y si la hora elegida es **anterior o igual** al inicio de lo que ya
@@ -117,7 +138,11 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
    * se dice sin reproche.
    */
   const start = useCallback(
-    async (activityId: string, startTime?: string | null): Promise<VidaSessionActionResult> => {
+    async (
+      activityId: string,
+      startTime?: string | null,
+      options?: VidaStartOptions,
+    ): Promise<VidaSessionActionResult> => {
       // Con una sesión de otro día sin responder, el API no dejaría empezar
       // nada. Se dice aquí en vez de dejar que vuelva el 400 en inglés.
       if (session && isFromAnotherDay) {
@@ -131,6 +156,13 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
       try {
         const now = new Date()
         const input = startSessionInput(activityId, now, startTime)
+        // **Lo único** que el tercer parámetro puede añadir (FEAT-018,
+        // criterio 549): la sesión nace **ya** con lo que se escribió antes,
+        // en **una sola** llamada a `activityFollowUpStart`, nunca un arranque
+        // más una edición aparte. `startSessionInput` no se toca: quien no
+        // manda nota manda exactamente el mismo `input` de siempre.
+        const notes = options?.notes?.trim()
+        if (notes) input.notes = notes
         // El instante en que arranca lo nuevo: la hora elegida si la hay, y el
         // reloj si no. De aquí sale **todo** lo demás, para que el cierre de lo
         // anterior y el inicio de lo nuevo sean el mismo minuto exacto.

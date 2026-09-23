@@ -13,9 +13,11 @@ import { useVidaActivityNoteHistory } from '@/features/vida/hooks/useVidaActivit
 import { useVidaSessionActions } from '@/features/vida/hooks/useVidaSessionActions'
 import { useVidaSessionNote } from '@/features/vida/hooks/useVidaSessionNote'
 import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
+import type { VidaStartNoteRequest } from '@/features/vida/hooks/useVidaSessionUi'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import {
   VIDA_NOTE_QUESTION_DONE,
+  VIDA_NOTE_QUESTION_NEXT,
   VIDA_NOTE_QUESTION_RUNNING,
 } from '@/features/vida/utils/vida-notes.utils'
 import { formatTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
@@ -69,11 +71,24 @@ export function VidaModuleLayout() {
   // cualquier día pasado— y desde la barra, y una hoja por puerta serían dos
   // estados que se contradicen.
   const [noting, setNoting] = useState<ActivityFollowUp | null>(null)
+  // **Antes de empezar** (tajada 3): aquí no hay sesión todavía, así que lo
+  // que se guarda no va al API — vuelve a quien lo pidió, que lo deja en su
+  // borrador hasta que se pulse «▶ Empezar». Es **la misma** hoja: los dos
+  // estados no pueden estar puestos a la vez porque abrir uno apaga el otro.
+  const [startNote, setStartNote] = useState<VidaStartNoteRequest | null>(null)
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteSession, setNoteSession] = useState(0)
 
   function openNote(target: ActivityFollowUp) {
+    setStartNote(null)
     setNoting(target)
+    setNoteSession((value) => value + 1)
+    setNoteOpen(true)
+  }
+
+  function openStartNote(request: VidaStartNoteRequest) {
+    setNoting(null)
+    setStartNote(request)
     setNoteSession((value) => value + 1)
     setNoteOpen(true)
   }
@@ -86,14 +101,21 @@ export function VidaModuleLayout() {
    * cuesta exactamente lo mismo que antes de esta feature.
    */
   const noteHistory = useVidaActivityNoteHistory({
-    activityId: noting?.activityId ?? null,
-    enabled: noteOpen && noting !== null,
+    activityId: noting?.activityId ?? startNote?.activityId ?? null,
+    enabled: noteOpen && (noting !== null || startNote !== null),
     excludeId: noting?.id ?? null,
   })
   // Lo que el bloque en marcha de la agenda necesita del layout: abrir el
   // cierre completo y el editor de la nota. Va por contexto porque entre los
   // dos hay un `Outlet`.
-  const sessionUi = useMemo(() => ({ openFinishModal: openFinish, openNoteSheet: openNote }), [])
+  const sessionUi = useMemo(
+    () => ({
+      openFinishModal: openFinish,
+      openNoteSheet: openNote,
+      openStartNoteSheet: openStartNote,
+    }),
+    [],
+  )
 
   // Sin sesión de usuario no se pinta nada de esto (criterio 64): ni barra, ni
   // pregunta, ni hueco reservado.
@@ -171,6 +193,25 @@ export function VidaModuleLayout() {
           suggestions={noteHistory.suggestions}
           isSuggestionsPending={noteHistory.isPending}
           onSave={(notes) => saveNote(noting, notes)}
+        />
+      ) : null}
+
+      {/* La **misma** hoja, antes de que exista la sesión (criterio 548).
+          Guardar aquí no escribe en el API: deja el borrador en la pantalla
+          que empezará, y el «▶ Empezar» sigue siendo un toque. */}
+      {startNote ? (
+        <VidaNoteSheet
+          key={noteSession}
+          open={noteOpen}
+          onClose={() => setNoteOpen(false)}
+          title={VIDA_NOTE_QUESTION_NEXT}
+          subtitle={startNote.title}
+          initialValue={startNote.initialValue}
+          suggestions={noteHistory.suggestions}
+          isSuggestionsPending={noteHistory.isPending}
+          // Sin `Promise` y sin resultado: no hay nada que pueda fallar
+          // —esto no escribe en el API—, así que la hoja cierra sola.
+          onSave={(notes) => startNote.onSave(notes)}
         />
       ) : null}
     </div>

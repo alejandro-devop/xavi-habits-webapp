@@ -1,3 +1,4 @@
+import { VIDA_NOTE_QUESTION_DONE } from '@/features/vida/utils/vida-notes.utils'
 import styles from './VidaNoteLine.module.scss'
 
 type VidaNoteLineProps = {
@@ -13,6 +14,13 @@ type VidaNoteLineProps = {
   onEdit?: () => void
   /** `done` en la línea del día, `running` en la barra, `plan` en la plantilla. */
   tone?: 'done' | 'running' | 'plan'
+  /**
+   * La pregunta que oye un lector de pantalla delante del texto escrito. Por
+   * defecto «¿Qué hiciste?», que es la de la línea del día; **antes de
+   * empezar** es «¿Qué vas a hacer?» (criterio 532: siempre una pregunta,
+   * nunca «nota»).
+   */
+  question?: string
 }
 
 /**
@@ -36,6 +44,7 @@ export function VidaNoteLine({
   placeholder = null,
   onEdit,
   tone = 'done',
+  question = VIDA_NOTE_QUESTION_DONE,
 }: VidaNoteLineProps) {
   const value = text && text.trim() ? text.trim() : null
   const label = value ?? placeholder
@@ -69,7 +78,7 @@ export function VidaNoteLine({
       // Sin esto un lector de pantalla oiría la nota suelta y no sabría que se
       // puede cambiar. La palabra «nota» no aparece: es la misma pregunta que
       // se lee en la hoja (criterio 532).
-      aria-label={value ? `¿Qué hiciste? ${value}` : undefined}
+      aria-label={value ? `${question} ${value}` : undefined}
       onClick={onEdit}
     >
       {body}

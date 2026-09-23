@@ -43,6 +43,7 @@
 }
 
 .card {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -201,4 +202,41 @@
     color: var(--color-text);
     text-decoration: underline;
   }
+}
+
+
+/* El lápiz de «antes de empezar» (FEAT-018, criterio 548). **Fuera del flujo**,
+   en la esquina libre que deja el rótulo «Lo que viene»: así el botón grande
+   conserva su ancho, su alto y su sitio con el control vacío, que es el estado
+   que se ve todos los días. En cuanto hay algo escrito, el control pasa a ser
+   la línea de encima del botón y este lápiz desaparece. */
+.cornerNote {
+  position: absolute;
+  /* 0,25 rem arriba: así el cuadrado acaba en y=36 y **no pisa** la caja del
+     nombre, que empieza en y=38 (medido a 375 px). */
+  top: 0.25rem;
+  right: 0.4rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--aura-ring-from, var(--color-success)) 30%, transparent);
+  border-radius: 0.65rem;
+  background: color-mix(in srgb, var(--aura-glass-1) 70%, transparent);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cornerNote:hover {
+  border-color: var(--aura-ring-from, var(--color-success));
+}
+
+.cornerNote:focus-visible {
+  outline: 2px solid var(--aura-ring-from, var(--color-success));
+  outline-offset: 2px;
 }

@@ -15,6 +15,16 @@ export const VIDA_NOTE_QUESTION_RUNNING = '¿Qué estás haciendo?'
 /** La pregunta cuando ya terminó, o se añade después (criterio 532). */
 export const VIDA_NOTE_QUESTION_DONE = '¿Qué hiciste?'
 
+/**
+ * La pregunta **antes de empezar** (FEAT-018, tajada 3).
+ *
+ * El render 19 dibuja este control como un lápiz sin palabras, así que la
+ * pregunta de su editor no venía escrita de casa. Es la misma familia que las
+ * otras dos —una pregunta, nunca «nota» ni «descripción» (criterio 532)— y en
+ * el único tiempo verbal que cabe aquí: todavía no ha pasado nada.
+ */
+export const VIDA_NOTE_QUESTION_NEXT = '¿Qué vas a hacer?'
+
 /** El rótulo de las píldoras, tal cual el render 19. */
 export const VIDA_NOTE_SUGGESTIONS_LABEL = 'Lo de otras veces'
 

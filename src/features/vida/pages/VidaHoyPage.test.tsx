@@ -2,6 +2,7 @@ import { act, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
+import type { VidaStartNoteRequest } from '@/features/vida/hooks/useVidaSessionUi'
 import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
 import { useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
 import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
@@ -2520,6 +2521,121 @@ describe('VidaHoyPage — «Lo que viene»', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
+  /* ── Antes de empezar (FEAT-018, tajada 3) ────────────────────────────────
+   *
+   * Los dos casos van **pegados** al de arriba y comparan el **array entero**
+   * por el mismo motivo: si alguien colara la hora de la plantilla o la
+   * duración planeada por este camino, se pondrían rojos.
+   *
+   * Quien abre el editor es el layout, así que aquí se le pasa un contexto que
+   * hace lo que haría la hoja: llamar a `onSave` con lo que se escribió.
+   */
+  function renderConLapiz(texto: string | null) {
+    const openStartNoteSheet = vi.fn((request: VidaStartNoteRequest) => {
+      request.onSave(texto)
+    })
+    renderWithProviders(
+      <VidaSessionUiContext.Provider
+        value={{ openFinishModal: () => {}, openNoteSheet: () => {}, openStartNoteSheet }}
+      >
+        <VidaHoyPage />
+      </VidaSessionUiContext.Provider>,
+    )
+    return openStartNoteSheet
+  }
+
+  /**
+   * La fila del plan de «Bañarme», que **no** es la tarjeta: las dos ofrecen
+   * el mismo lápiz con el mismo nombre accesible —es la misma pregunta sobre
+   * la misma actividad— así que hay que decir en cuál se toca.
+   */
+  function filaDelPlan() {
+    return screen
+      .getAllByRole('listitem')
+      .find((row) => within(row).queryByRole('button', { name: '▶ Empezar' }))!
+  }
+
+  it('criterio 549 — con la nota escrita antes, la sesión nace con ella en **una sola** llamada', () => {
+    renderConLapiz('Revisando MRs')
+    const card = upNextCard()!
+
+    // El control va **aparte** del botón (criterio 548): es otro botón, en la
+    // esquina que deja libre el rótulo.
+    fireEvent.click(within(card).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }))
+    // Y una vez escrita se lee, en vez del lápiz vacío (criterio 551).
+    expect(within(upNextCard()!).getByText('Revisando MRs')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+
+    // **Una** llamada a `activityFollowUpStart` con la nota dentro: nunca un
+    // arranque más una edición aparte. Y el `null` del segundo hueco deja
+    // escrito que la hora de la plantilla sigue sin viajar.
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1', null, { notes: 'Revisando MRs' }])
+  })
+
+  it('criterio 550 — con el control puesto y sin tocarlo, se arranca igual que ayer', () => {
+    renderConLapiz('Revisando MRs')
+    const card = upNextCard()!
+    // El control está ahí…
+    expect(
+      within(card).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    ).toBeInTheDocument()
+
+    // …y nadie lo toca: un solo toque en el botón grande.
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+    // Ni diálogo de por medio, ni paso extra.
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('criterio 548 — el botón grande no cambia: misma palabra, y el lápiz es otro botón', () => {
+    renderConLapiz('Revisando MRs')
+    const card = upNextCard()!
+    const boton = within(card).getByRole('button', { name: 'Empezar Bañarme ahora' })
+    expect(boton).toHaveTextContent('▶ Empezar ahora')
+
+    fireEvent.click(within(card).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }))
+
+    // Con la nota escrita sigue siendo **el mismo** botón, con la misma
+    // palabra: la línea entra encima, no dentro.
+    const despues = within(upNextCard()!).getByRole('button', { name: 'Empezar Bañarme ahora' })
+    expect(despues).toHaveTextContent('▶ Empezar ahora')
+    expect(despues).not.toBe(within(upNextCard()!).getByRole('button', { name: /Revisando MRs/ }))
+    // Y el lápiz de la esquina ya no está: escrita la nota, el control es la
+    // línea. Dos controles para lo mismo serían dos sitios que tocar.
+    expect(
+      within(upNextCard()!).queryByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('el borrador es **uno solo**: escrito en la fila del plan, lo usa la tarjeta', () => {
+    renderConLapiz('Con agua fría')
+
+    // El lápiz de la **fila del bloque**, que no es el de la tarjeta.
+    fireEvent.click(
+      within(filaDelPlan()).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1', null, { notes: 'Con agua fría' }])
+  })
+
+  it('criterio 550 — vaciar la nota a propósito vuelve a la llamada de siempre', () => {
+    renderConLapiz(null)
+
+    fireEvent.click(
+      within(filaDelPlan()).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+  })
+
   it('con algo en marcha cuelga de su fila y dice qué se dará por terminada (criterios 370 y 378)', () => {
     openSession = {
       session: openFollowUp('a-fuera', '09:00'),
@@ -3155,7 +3271,9 @@ describe('VidaHoyPage — la nota de la sesión en la línea del día (FEAT-018)
     search = '',
   ) {
     renderWithProviders(
-      <VidaSessionUiContext.Provider value={{ openFinishModal: () => {}, openNoteSheet }}>
+      <VidaSessionUiContext.Provider
+        value={{ openFinishModal: () => {}, openNoteSheet, openStartNoteSheet: () => {} }}
+      >
         <VidaHoyPage />
       </VidaSessionUiContext.Provider>,
       search ? { routerProps: { initialEntries: [`/app/vida/hoy${search}`] } } : undefined,

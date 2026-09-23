@@ -136,6 +136,7 @@ function item(
     durationMinutes = null as number | null,
     title = 'Algo',
     isActive = true,
+    notes = null as string | null,
   } = {},
 ): VidaItem {
   return {
@@ -145,7 +146,7 @@ function item(
     days,
     startTime,
     durationMinutes,
-    notes: null,
+    notes,
     isActive,
     orderIndex: 0,
     createdAt: '2026-09-01T00:00:00.000Z',
@@ -1504,5 +1505,97 @@ describe('la línea del ítem sin duración tiene salida (criterios 163-165)', (
     )
     // Y donde no se puede afirmar nada **sigue sin pintarse** un hueco.
     expect(within(agenda()).queryByText(/^Libre 10:00/)).not.toBeInTheDocument()
+  })
+})
+
+/* ── Lo que sueles hacer ahí (FEAT-018, tajada 4) ───────────────────────────
+ *
+ * La nota del ítem **ya se escribe** desde su hoja desde FEAT-005; lo que
+ * faltaba era leerla sin abrir nada. Criterios 553 y 554.
+ */
+
+describe('la nota del ítem, en su fila (criterios 553 y 554)', () => {
+  function filaDe(titulo: string) {
+    const agenda = screen.getByRole('list', { name: /viernes, ordenado por hora/i })
+    return within(agenda)
+      .getAllByRole('listitem')
+      .find((fila) => (fila.textContent ?? '').includes(titulo))!
+  }
+
+  it('criterio 553 — la fila enseña la nota, en su propia línea debajo del nombre', () => {
+    itemsQuery = ready([
+      item('1', {
+        startTime: '09:00',
+        durationMinutes: 60,
+        title: 'Trabajo en lululemon',
+        notes: 'Revisando MRs',
+      }),
+    ])
+
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const fila = filaDe('Trabajo en lululemon')
+    const nombre = within(fila).getByText('Trabajo en lululemon')
+    const nota = within(fila).getByText('Revisando MRs')
+    const linea = nota.closest('[title]')!
+    // Misma caja que el nombre —es una línea de la tarjeta, no un bloque
+    // aparte— y **después** de él: se lee «Trabajo en lululemon · Revisando
+    // MRs», que es el ejemplo del usuario.
+    expect(linea.parentElement).toBe(nombre.parentElement)
+    expect(nombre.compareDocumentPosition(nota) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // El texto entero queda disponible aunque la línea lo recorte.
+    expect(linea).toHaveAttribute('title', 'Revisando MRs')
+  })
+
+  it('criterio 554 — un ítem sin nota no añade nada a su fila', () => {
+    itemsQuery = ready([
+      item('1', { startTime: '09:00', durationMinutes: 60, title: 'Trabajo en lululemon' }),
+    ])
+
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const fila = filaDe('Trabajo en lululemon')
+    // Ni el «＋ añadir qué hiciste» de la sesión, ni un lápiz, ni un hueco:
+    // esa nota se escribe en la hoja del ítem, no aquí.
+    expect(within(fila).queryByText(/añadir qué hiciste/i)).not.toBeInTheDocument()
+    expect(fila.textContent ?? '').not.toMatch(/[＋✎]/)
+  })
+
+  it('una nota en blanco se trata como ninguna nota', () => {
+    itemsQuery = ready([
+      item('1', {
+        startTime: '09:00',
+        durationMinutes: 60,
+        title: 'Trabajo en lululemon',
+        notes: '   ',
+      }),
+    ])
+
+    renderWithProviders(<VidaPlantillaPage />)
+
+    expect(filaDe('Trabajo en lululemon').textContent ?? '').not.toMatch(/[＋✎]/)
+  })
+
+  it('la fila sigue abriendo la hoja del ítem, y la nota no es un botón aparte', () => {
+    itemsQuery = ready([
+      item('1', {
+        startTime: '09:00',
+        durationMinutes: 60,
+        title: 'Trabajo en lululemon',
+        notes: 'Revisando MRs',
+      }),
+    ])
+
+    renderWithProviders(<VidaPlantillaPage />)
+
+    const fila = filaDe('Trabajo en lululemon')
+    // Un solo gesto en la tarjeta: el de siempre (criterio 16). La nota se lee
+    // dentro de él, no compite con él.
+    expect(within(fila).getAllByRole('button', { name: /^Abrir / })).toHaveLength(1)
+    const nota = within(fila).getByText('Revisando MRs')
+    expect(nota.tagName).toBe('SPAN')
+    expect(nota.closest('button')).toBe(
+      within(fila).getByRole('button', { name: 'Abrir Trabajo en lululemon' }),
+    )
   })
 })

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { VidaItem } from '@/features/vida/types/vida-item.types'
+import { VidaNoteLine } from '@/features/vida/components/VidaNoteLine'
 import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
 import {
   describeItemDays,
@@ -77,6 +78,13 @@ export function VidaTemplateItemCard({
       </span>
       <span className={styles.body}>
         <span className={styles.name}>{title}</span>
+        {/* **Lo que sueles hacer ahí** (criterio 553). Solo se lee: la nota del
+            ítem se escribe desde su hoja, que existe desde FEAT-005, y un ítem
+            **sin** nota no añade nada a la fila — ni hueco, ni «＋ añadir», que
+            es de la sesión y no de la plantilla (criterio 554).
+            `as="span"` porque con `onOpen` esta fila entera es un `<button>` y
+            un `<p>` dentro de un botón no es HTML válido. */}
+        <VidaNoteLine text={item.notes} tone="plan" as="span" />
         <span className={styles.meta}>
           {isInactive ? (
             <>

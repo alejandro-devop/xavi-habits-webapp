@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   recentNoteSuggestions,
+  templateNoteForActivity,
   VIDA_NOTE_ADD_LABEL,
   VIDA_NOTE_QUESTION_DONE,
   VIDA_NOTE_QUESTION_RUNNING,
@@ -86,5 +87,90 @@ describe('las palabras (criterio 532)', () => {
     }
     expect(VIDA_NOTE_QUESTION_RUNNING).toBe('¿Qué estás haciendo?')
     expect(VIDA_NOTE_QUESTION_DONE).toBe('¿Qué hiciste?')
+  })
+})
+
+/**
+ * **La plantilla propone** (FEAT-018, tajada 4). El plan del día no guarda de
+ * qué ítem de plantilla salió: el único vínculo es el `activityId`, y este
+ * cruce es la heurística entera, escrita y comprobable.
+ */
+
+function templateItem(activityId: string, startTime: string | null, notes: string | null) {
+  return { item: { activityId, startTime, notes } }
+}
+
+describe('templateNoteForActivity', () => {
+  it('criterio 556 — devuelve la nota del ítem de esa actividad', () => {
+    expect(
+      templateNoteForActivity(
+        [
+          templateItem('a-1', '07:00', 'Estiramientos'),
+          templateItem('a-2', '09:00', 'Revisando MRs'),
+        ],
+        'a-2',
+      ),
+    ).toBe('Revisando MRs')
+  })
+
+  it('criterio 558 — sin ítem de esa actividad no propone nada', () => {
+    expect(
+      templateNoteForActivity([templateItem('a-1', '07:00', 'Estiramientos')], 'a-9'),
+    ).toBeNull()
+    expect(templateNoteForActivity([], 'a-1')).toBeNull()
+    expect(templateNoteForActivity(null, 'a-1')).toBeNull()
+    expect(templateNoteForActivity([templateItem('a-1', '07:00', 'Algo')], null)).toBeNull()
+  })
+
+  it('un ítem sin nota, o con una nota en blanco, no propone nada', () => {
+    expect(templateNoteForActivity([templateItem('a-1', '07:00', null)], 'a-1')).toBeNull()
+    expect(templateNoteForActivity([templateItem('a-1', '07:00', '   ')], 'a-1')).toBeNull()
+  })
+
+  it('recorta los espacios de alrededor', () => {
+    expect(
+      templateNoteForActivity([templateItem('a-1', '07:00', '  Revisando MRs  ')], 'a-1'),
+    ).toBe('Revisando MRs')
+  })
+
+  it('con dos ítems de la misma actividad el mismo día gana el más temprano', () => {
+    const suggestions = [
+      templateItem('a-1', '15:00', 'Reuniones de la tarde'),
+      templateItem('a-1', '09:00', 'Revisando MRs'),
+    ]
+    expect(templateNoteForActivity(suggestions, 'a-1')).toBe('Revisando MRs')
+    // Y el mismo resultado con la lista al revés: manda la hora, no el orden.
+    expect(templateNoteForActivity([...suggestions].reverse(), 'a-1')).toBe('Revisando MRs')
+  })
+
+  it('el más temprano gana aunque no tenga nota, y entonces no se propone nada', () => {
+    // El desempate es por hora, **no por quién tenga algo escrito**: la regla
+    // es «la propuesta es la del primer rato del día», y eso incluye que el
+    // primer rato no diga nada. Buscar la nota más tardía «porque hay una»
+    // sería adivinar cuál de los dos ratos es el que vas a empezar.
+    const suggestions = [
+      templateItem('a-1', '15:00', 'Reuniones de la tarde'),
+      templateItem('a-1', '09:00', null),
+    ]
+    expect(templateNoteForActivity(suggestions, 'a-1')).toBeNull()
+    expect(templateNoteForActivity([...suggestions].reverse(), 'a-1')).toBeNull()
+  })
+
+  it('un ítem sin hora no le gana el desempate a uno que sí la tiene', () => {
+    expect(
+      templateNoteForActivity(
+        [templateItem('a-1', null, 'Sin hora'), templateItem('a-1', '09:00', 'Revisando MRs')],
+        'a-1',
+      ),
+    ).toBe('Revisando MRs')
+  })
+
+  it('con todos sin hora se queda con el primero que llega', () => {
+    expect(
+      templateNoteForActivity(
+        [templateItem('a-1', null, 'Primero'), templateItem('a-1', null, 'Segundo')],
+        'a-1',
+      ),
+    ).toBe('Primero')
   })
 })

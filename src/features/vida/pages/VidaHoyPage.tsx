@@ -49,6 +49,7 @@ import {
   getDayBudget,
   suggestionsForGap,
 } from '@/features/vida/utils/vida-agenda.utils'
+import { templateNoteForActivity } from '@/features/vida/utils/vida-notes.utils'
 import {
   buildDayClosingLine,
   buildDayExecution,
@@ -226,12 +227,26 @@ export function VidaHoyPage() {
     void sessionActions.start(activityId, null, { notes: note })
   }
 
-  /** Abrir el editor de «¿Qué vas a hacer?»: lo que guarde se queda en el borrador. */
+  /**
+   * Abrir el editor de «¿Qué vas a hacer?»: lo que guarde se queda en el
+   * borrador.
+   *
+   * **La plantilla propone aquí y solo aquí** (criterio 556): si este bloque
+   * sale de un ítem de plantilla con nota, el editor abre con ese texto ya
+   * escrito, editable y borrable como cualquier otro. Sin ítem detrás abre
+   * vacío (criterio 558).
+   *
+   * El `??` es el que sostiene el criterio 557 por partida doble: la propuesta
+   * solo se mira **al abrir el editor**, así que quien no lo abra arranca sin
+   * nota; y un borrador en `''` —lo vació a propósito— no es nulo, así que
+   * gana él y la plantilla no vuelve a colarse.
+   */
   function editStartNote(blockId: string, activityId: string, title: string) {
     openStartNoteSheet({
       activityId,
       title,
-      initialValue: startNoteDrafts[blockId] ?? '',
+      initialValue:
+        startNoteDrafts[blockId] ?? templateNoteForActivity(suggestions, activityId) ?? '',
       onSave: (notes) =>
         setStartNoteDrafts((drafts) => ({ ...drafts, [blockId]: notes ?? '' })),
     })
@@ -1084,6 +1099,12 @@ export function VidaHoyPage() {
       // sin ver el `activityId`: recibe un texto y dos funciones.
       noteDraft={startNoteDrafts[upNext.blockId] ?? null}
       onEditNote={() => editStartNote(upNext.blockId, upNext.activityId, upNext.title)}
+      // **Lo que sueles hacer ahí** (criterio 555): la nota del ítem de
+      // plantilla, en una línea aparte de la hora y la duración planeada. Es
+      // dato que ya está en memoria —`vidaSuggestionsForDate` selecciona
+      // `notes`—, así que no cuesta ninguna consulta. **No viaja al arranque**:
+      // el botón sigue mandando `start(activityId)` y nada más (criterio 557).
+      templateNote={templateNoteForActivity(suggestions, upNext.activityId)}
       // La **misma** hoja de siempre, no una segunda (criterio 187). Y «Ver
       // las otras N» abre esa misma hoja, que ya pone la plantilla del día
       // arriba del todo (D1, opción (c)): cero UI nueva.

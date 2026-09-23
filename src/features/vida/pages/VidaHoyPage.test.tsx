@@ -2636,6 +2636,132 @@ describe('VidaHoyPage — «Lo que viene»', () => {
     expect(startSession.mock.calls[0]).toEqual(['a-b1'])
   })
 
+  /* ── La plantilla propone, la sesión decide (FEAT-018, tajada 4) ──────────
+   *
+   * El plan del día no guarda de qué ítem de plantilla salió, así que el cruce
+   * es por `activityId`: el bloque «Bañarme» es `a-b1`, y un ítem de plantilla
+   * con ese mismo `activityId` es «el de detrás». Criterios 555 a 558.
+   */
+
+  /** La plantilla del día, con «Bañarme» y lo que sueles hacer ahí. */
+  function conNotaDePlantilla(notes: string) {
+    suggestionsQuery = ready([suggestion('b1', 'Bañarme', 45, { notes })])
+  }
+
+  it('criterio 555 — la tarjeta enseña lo que sueles hacer, **sin tocar** la hora ni la duración planeada', () => {
+    conNotaDePlantilla('Con agua fría y rápido')
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    expect(within(card).getByText('Con agua fría y rápido')).toBeInTheDocument()
+    // La línea de siempre sigue donde estaba y dice lo mismo: son dos datos,
+    // no uno que sustituye al otro.
+    expect(
+      within(card).getByText('En tu plantilla, a las 8:00 · suele durarte 45 min'),
+    ).toBeInTheDocument()
+    // Y no es un botón: lo que sueles hacer se escribe en la hoja del ítem.
+    expect(
+      within(card).queryByRole('button', { name: /Con agua fría y rápido/ }),
+    ).not.toBeInTheDocument()
+    // Una línea más que sin plantilla detrás, no una en lugar de otra.
+    expect(card.querySelectorAll('[title]')).toHaveLength(2)
+  })
+
+  it('sin ítem de plantilla detrás, la tarjeta no enseña ninguna línea de más (criterio 558)', () => {
+    // La plantilla de siempre: «Poner lavadora» y «Compra de la semana», que no
+    // son la actividad de este bloque.
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    // La única cosa con texto completo en reserva es el titular: no hay
+    // ninguna línea de nota debajo de la meta.
+    const conTitulo = card.querySelectorAll('[title]')
+    expect(conTitulo).toHaveLength(1)
+    expect(conTitulo[0]).toHaveTextContent('Bañarme')
+    expect(
+      within(card).getByText('En tu plantilla, a las 8:00 · suele durarte 45 min'),
+    ).toBeInTheDocument()
+  })
+
+  it('criterio 556 — el control de antes de empezar abre con lo que dice la plantilla', () => {
+    conNotaDePlantilla('Con agua fría y rápido')
+    const openStartNoteSheet = renderConLapiz('Con agua fría y rápido')
+
+    fireEvent.click(
+      within(upNextCard()!).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    )
+
+    expect(openStartNoteSheet).toHaveBeenCalledWith(
+      expect.objectContaining({ initialValue: 'Con agua fría y rápido' }),
+    )
+    // Y desde la otra puerta, la misma propuesta: es el mismo borrador.
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+    expect(startSession.mock.calls[0]).toEqual([
+      'a-b1',
+      null,
+      { notes: 'Con agua fría y rápido' },
+    ])
+  })
+
+  it('criterio 558 — sin ítem de plantilla detrás, el control abre vacío', () => {
+    const openStartNoteSheet = renderConLapiz(null)
+
+    fireEvent.click(
+      within(filaDelPlan()).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    )
+
+    expect(openStartNoteSheet).toHaveBeenCalledWith(expect.objectContaining({ initialValue: '' }))
+  })
+
+  it('criterio 557 — con nota en la plantilla y el control **sin abrir**, se arranca exactamente igual que hoy', () => {
+    conNotaDePlantilla('Con agua fría y rápido')
+    const openStartNoteSheet = renderConLapiz('esto no se debería usar nunca')
+
+    // Se lee en la tarjeta, sí…
+    expect(within(upNextCard()!).getByText('Con agua fría y rápido')).toBeInTheDocument()
+
+    // …y nadie abre nada: un solo toque en el botón grande.
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+
+    // **La línea roja de la feature**: la propuesta de la plantilla no se copia
+    // en silencio. Array entero, como el caso de FEAT-010 de más arriba.
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+    expect(openStartNoteSheet).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('criterio 557 — y por la otra puerta, la del «▶ Empezar» de la fila del plan, igual', () => {
+    conNotaDePlantilla('Con agua fría y rápido')
+    renderConLapiz('esto no se debería usar nunca')
+
+    fireEvent.click(within(filaDelPlan()).getByRole('button', { name: '▶ Empezar' }))
+
+    expect(startSession).toHaveBeenCalledTimes(1)
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+  })
+
+  it('borrar la propuesta y guardar no la vuelve a colar (criterios 550 y 557)', () => {
+    conNotaDePlantilla('Con agua fría y rápido')
+    const openStartNoteSheet = renderConLapiz(null)
+
+    // Se abre, se vacía y se guarda: el borrador queda en blanco a propósito.
+    fireEvent.click(
+      within(filaDelPlan()).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    )
+    // Al volver a abrirlo **no** reaparece la propuesta: manda lo que el
+    // usuario dejó, no lo que dice la plantilla.
+    fireEvent.click(
+      within(filaDelPlan()).getByRole('button', { name: '¿Qué vas a hacer? Bañarme' }),
+    )
+    expect(openStartNoteSheet).toHaveBeenLastCalledWith(
+      expect.objectContaining({ initialValue: '' }),
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Empezar Bañarme ahora' }))
+    expect(startSession.mock.calls[0]).toEqual(['a-b1'])
+  })
+
   it('con algo en marcha cuelga de su fila y dice qué se dará por terminada (criterios 370 y 378)', () => {
     openSession = {
       session: openFollowUp('a-fuera', '09:00'),

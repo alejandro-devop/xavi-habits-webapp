@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790126994.6617553,
-    "ast_hash": "7e4e021108d9b09285aa3f67a4f3a2dc",
+    "mtime": 1790129339.1702151,
+    "ast_hash": "26204a89384a2ec8add2ed4604da943e",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790129000.5824695,
-    "ast_hash": "473a45286a2f477699e52d608084dc7f",
+    "mtime": 1790130456.1985917,
+    "ast_hash": "02095500a5b71ad1402fc15dc94d0a23",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790129084.0716455,
-    "ast_hash": "33d59e8e2d270f4f6f7b236e6976107f",
+    "mtime": 1790130552.397793,
+    "ast_hash": "fba6a30baf9f3029e9e8122228458893",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790128455.496331,
-    "ast_hash": "2a971e5dc16327ee80f60d11bd27caa2",
+    "mtime": 1790129570.1617174,
+    "ast_hash": "2da3dc523c2f4516fcf3824b7fcad4ef",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3330,8 +3330,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateItemCard/VidaTemplateItemCard.tsx": {
-    "mtime": 1789953735.9032454,
-    "ast_hash": "b093fb135283f637f6cad9cc86a8599f",
+    "mtime": 1790129301.9621332,
+    "ast_hash": "74491025fbd7e669b263d1763e45c6ba",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateItemCard/index.ts": {
@@ -3350,8 +3350,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.test.tsx": {
-    "mtime": 1790116567.1165118,
-    "ast_hash": "0aa669be0b47571f8a7c78c7036b1111",
+    "mtime": 1790129498.1465619,
+    "ast_hash": "b4c73923927dc24945e90d9161ed9fac",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-template.utils.test.ts": {
@@ -3715,8 +3715,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateGapRow/VidaTemplateGapRow.tsx": {
-    "mtime": 1790107765.2325456,
-    "ast_hash": "df3e49e2d5c0d2d6d6b1cc98e7ad21db",
+    "mtime": 1790130526.7177393,
+    "ast_hash": "625005acf4b9228b0ef24d9e92d840ba",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaTemplateGapRow/index.ts": {
@@ -3810,8 +3810,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx": {
-    "mtime": 1790128037.3374286,
-    "ast_hash": "60221f8be48c925b266497cea3b32461",
+    "mtime": 1790129317.0261664,
+    "ast_hash": "b53af25d7af35954d793d2b4d3d31bc9",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaUpNextCard/index.ts": {
@@ -3900,8 +3900,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-018-vida-que-hice.md": {
-    "mtime": 1790128984.2144356,
-    "ast_hash": "5d3e1df63457cb99a84c91b710dd5579",
+    "mtime": 1790130437.8345532,
+    "ast_hash": "10aedb0319d98826f07b37468021da18",
     "semantic_hash": ""
   },
   "docs/vida/assets/19-vida-que-hice.html": {
@@ -3925,8 +3925,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaNoteLine/VidaNoteLine.tsx": {
-    "mtime": 1790126856.5725222,
-    "ast_hash": "cfb80346fd5e4f8c4288c0eb3b695436",
+    "mtime": 1790129284.667095,
+    "ast_hash": "86f0e5ac97c902fa9e90109684f57b89",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaNoteLine/index.ts": {
@@ -3965,13 +3965,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-notes.utils.test.ts": {
-    "mtime": 1790125501.6234872,
-    "ast_hash": "6f068a9c77c33fa53e3e98b4486e8f64",
+    "mtime": 1790130514.5277138,
+    "ast_hash": "647d43fd658c975776090cae6b3f137e",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-notes.utils.ts": {
-    "mtime": 1790126785.872406,
-    "ast_hash": "35f3f747d619d6a3de9c4080ea6282bf",
+    "mtime": 1790129257.7660356,
+    "ast_hash": "42fdcf12b965217b319c636fc8c015fa",
     "semantic_hash": ""
   },
   "docs/vida/assets/20-vida-arco-lo-que-falta.html": {

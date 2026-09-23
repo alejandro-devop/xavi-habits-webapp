@@ -90,3 +90,64 @@ export function recentNoteSuggestions(
 
   return out
 }
+
+/**
+ * Lo mínimo que hace falta de una sugerencia de plantilla para saber **qué
+ * sueles hacer** en esa actividad. Estructural a propósito: encaja un
+ * `VidaSuggestion` entero sin arrastrar aquí el tipo del módulo.
+ */
+export type VidaTemplateNoteSource = {
+  item: {
+    activityId: string
+    startTime: string | null
+    notes: string | null
+  } | null
+}
+
+/**
+ * ¿Es `a` más temprana que `b`? **Sin hora va después**: un ítem del cajón
+ * «Sin hora» no le gana el desempate a uno que sí la tiene.
+ */
+function isEarlierStartTime(a: string | null, b: string | null): boolean {
+  if (a === null) return false
+  if (b === null) return true
+  return a < b
+}
+
+/**
+ * **Lo que la plantilla propone** para una actividad (FEAT-018, tajada 4).
+ *
+ * El plan del día (`ActivityDayPlanItem`) **no guarda de qué ítem de plantilla
+ * salió** —no tiene `notes` ni ninguna referencia—, así que el único vínculo
+ * disponible sin tocar el API es el `activityId`. De ahí que el cruce viva
+ * aquí, fuera de los componentes y con sus pruebas: es una heurística, y las
+ * heurísticas se escriben donde se pueden leer.
+ *
+ * Con **dos ítems de la misma actividad el mismo día** —«Trabajo» a las 9:00 y
+ * otra vez a las 15:00— gana el de `startTime` más temprano. Es una regla
+ * arbitraria pero fija y comprobable, no el orden en que llegue la lista.
+ *
+ * Devuelve `null` cuando no hay ítem de esa actividad (criterio 558: una
+ * actividad suelta no tiene plantilla detrás que proponga nada) y también
+ * cuando lo hay pero su nota está vacía.
+ *
+ * **Esto no copia nada.** Lo que devuelve se usa como texto de partida del
+ * editor de «antes de empezar» **si alguien lo abre**; el «▶ Empezar» no lo
+ * mira nunca (criterio 557).
+ */
+export function templateNoteForActivity(
+  suggestions: readonly VidaTemplateNoteSource[] | undefined | null,
+  activityId: string | null | undefined,
+): string | null {
+  if (!suggestions || !activityId) return null
+
+  let best: NonNullable<VidaTemplateNoteSource['item']> | null = null
+  for (const suggestion of suggestions) {
+    const item = suggestion?.item
+    if (!item || item.activityId !== activityId) continue
+    if (best === null || isEarlierStartTime(item.startTime, best.startTime)) best = item
+  }
+
+  const note = (best?.notes ?? '').trim()
+  return note ? note : null
+}

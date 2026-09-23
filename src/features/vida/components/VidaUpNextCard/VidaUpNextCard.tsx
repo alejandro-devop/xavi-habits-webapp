@@ -30,6 +30,20 @@ type VidaUpNextCardProps = {
   noteDraft?: string | null
   /** Abre el editor de «¿Qué vas a hacer?». Sin esto, la línea no se pinta. */
   onEditNote?: () => void
+
+  /* ── «Lo que sueles hacer» (FEAT-018, tajada 4) ─────────────────────────── */
+
+  /**
+   * La nota del **ítem de plantilla** del que viene esto: lo que sueles hacer
+   * ahí, no lo de hoy. Se pinta en una línea **aparte** de `metaLine`, que no
+   * se toca ni se sustituye (criterio 555), y es de solo lectura: se escribe
+   * en la hoja del ítem, en Plantilla.
+   *
+   * **No es el texto con el que nace la sesión.** El «▶ Empezar» no lo mira:
+   * la propuesta solo llega al editor si alguien lo abre (criterio 557), y eso
+   * ocurre fuera de esta tarjeta, en la pantalla que la monta.
+   */
+  templateNote?: string | null
 }
 
 /**
@@ -82,6 +96,7 @@ export function VidaUpNextCard({
   isSessionBusy = false,
   noteDraft = null,
   onEditNote,
+  templateNote = null,
 }: VidaUpNextCardProps) {
   /** Lo escrito, ya limpio: en blanco **no hay nota**, y el control es el lápiz. */
   const draft = noteDraft && noteDraft.trim() ? noteDraft.trim() : null
@@ -199,6 +214,11 @@ export function VidaUpNextCard({
               {upNext.title}
             </p>
             <p className={styles.meta}>{upNext.metaLine}</p>
+            {/* **Lo que sueles hacer ahí** (criterio 555), debajo de la hora y
+                la duración planeada y **sin sustituirlas**: son dos datos
+                distintos de la misma plantilla. De solo lectura: esta nota se
+                escribe en la hoja del ítem. */}
+            <VidaNoteLine text={templateNote} tone="plan" />
           </div>
         </div>
 

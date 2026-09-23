@@ -1,7 +1,7 @@
 ---
 id: FEAT-018
 title: Qué hice — la nota de la sesión, antes, durante y en la línea del día
-status: building
+status: delivered
 architect: yes    # un editor de nota reutilizado en tres sitios distintos (fila del día, barra en marcha, antes de empezar) más una decisión sin resolver — de dónde salen las píldoras de "lo de otras veces" sin pagar una consulta nueva en Hoy — cruzan página, componente de sesión y capa de datos; no hay un único "cuelga de X" que lo resuelva todo, así que toca elegir el ancla.
 area: features/vida
 requested: 2026-09-22
@@ -273,7 +273,7 @@ lo digo en el resumen de entrega, no lo decido yo.
 | 1 | La nota que ya se escribe hoy al terminar se ve y se edita en la línea del día | aceptada |
 | 2 | Ver y editar la nota de la sesión en marcha, sin parar nada, con píldoras de lo de otras veces | aceptada |
 | 3 | Escribir la nota antes de empezar, sin tocar el botón de arrancar | aceptada |
-| 4 | La nota del ítem de plantilla se ve en su fila y en «Lo que viene», y se propone (sin imponerse) al empezar desde ahí | pending |
+| 4 | La nota del ítem de plantilla se ve en su fila y en «Lo que viene», y se propone (sin imponerse) al empezar desde ahí | aceptada |
 
 Corte propuesto por mí, no del usuario: empiezo por lo que ya es útil con el
 dato que **hoy ya se escribe** (tajada 1 no depende de resolver las píldoras
@@ -634,7 +634,7 @@ notas, tampoco. Nunca un error, nunca un vacío con explicación.
 | 1 | La nota que ya se escribe hoy al terminar **se ve y se edita en la línea del día** | **Crea:** `components/VidaNoteLine/{VidaNoteLine.tsx,.module.scss,index.ts}`, `components/VidaNoteSheet/{VidaNoteSheet.tsx,.module.scss,index.ts,VidaNoteSheet.test.tsx}` (sin píldoras todavía), `hooks/useVidaSessionNote.ts`. **Modifica:** `hooks/useVidaSessionUi.ts` (+`openNoteSheet`), `routes/VidaModuleLayout.tsx` (monta la hoja una vez), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (+`note`,`onEditNote`, línea entre `name` y `meta`), `components/VidaAgendaSession/VidaAgendaSession.tsx` (ídem), `pages/VidaHoyPage.tsx` (cablea las dos; `onEditNote` solo con `canLogPast` y **no** sobre la sesión en marcha), `pages/VidaHoyPage.test.tsx` | 531, 532 (su mitad «¿Qué hiciste?»), 533, 535, 536, 537, 538, 539, 540, 541, 552 | aceptada |
 | 2 | **Durante, sin parar nada**: la barra y el bloque en marcha enseñan y editan la nota, con píldoras de «lo de otras veces» | **Crea:** `utils/vida-notes.utils.ts` + `.test.ts`, `hooks/useVidaActivityNoteHistory.ts`. **Modifica:** `shared/api/query-keys.ts` (+`followUps.byActivity`), `graphql/activity-followups.graphql.ts` (+`ACTIVITY_FOLLOW_UPS_BY_ACTIVITY_QUERY`), `api/activity-followups.api.ts` (+`getActivityFollowUpsByActivity`), `components/VidaNoteSheet/VidaNoteSheet.tsx` (+píldoras), `components/VidaSessionBar/VidaSessionBar.tsx` (+`note`,`onEditNote`), `routes/VidaModuleLayout.tsx` (pasa las dos), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (la rama `isRunning` enseña la línea), `pages/VidaHoyPage.tsx`, `graphql/contracts.test.ts` (**correrlo**, no editarlo) | 542, 543, 544, 545, 546, 547, 532 (su mitad «¿Qué estás haciendo?»), 552 | aceptada |
 | 3 | **Antes de empezar**, sin tocar el botón de arrancar | **Modifica:** `hooks/useVidaSessionActions.ts` (`start(activityId, startTime?, { notes })`), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`noteDraft`,`onEditNote`; `onStart` intacto), `components/VidaAgendaBlock/VidaAgendaBlock.tsx` (lápiz junto al `▶ Empezar`), `pages/VidaHoyPage.tsx` (`startNoteDrafts` + `startWithNote`, una sola función para las dos puertas), `pages/VidaHoyPage.test.tsx` (los dos tests nuevos; **el de `toEqual(['a-b1'])` no se toca**) | 548, 549, 550, 551, 534, 552 | aceptada |
-| 4 | **La plantilla propone, la sesión decide** | **Modifica:** `utils/vida-notes.utils.ts` (+`templateNoteForActivity` con su test), `components/VidaTemplateItemCard/VidaTemplateItemCard.tsx` (línea de solo lectura), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`templateNote`, línea aparte de `metaLine`), `pages/VidaHoyPage.tsx` (la propuesta como `initialValue` del editor, desde `suggestions[].item.notes`), `pages/VidaPlantillaPage.test.tsx` y `pages/VidaHoyPage.test.tsx` | 553, 554, 555, 556, 557, 558, 552 | pending |
+| 4 | **La plantilla propone, la sesión decide** | **Modifica:** `utils/vida-notes.utils.ts` (+`templateNoteForActivity` con su test), `components/VidaTemplateItemCard/VidaTemplateItemCard.tsx` (línea de solo lectura), `components/VidaUpNextCard/VidaUpNextCard.tsx` (+`templateNote`, línea aparte de `metaLine`), `pages/VidaHoyPage.tsx` (la propuesta como `initialValue` del editor, desde `suggestions[].item.notes`), `pages/VidaPlantillaPage.test.tsx` y `pages/VidaHoyPage.test.tsx` | 553, 554, 555, 556, 557, 558, 552 | aceptada |
 
 **Corte:** el de la sección 1, sin recortar. Cuatro tajadas verticales, cada una
 usable sola, y el orden es el único posible: la 2 necesita la hoja de la 1, la 3
@@ -1386,6 +1386,246 @@ mover el botón es subirle el contraste o el tamaño de caja hasta 1,25 rem
 
 **Estado del árbol:** sin commitear.
 
+### Tajada 4 — la plantilla propone, la sesión decide
+
+**Resumen para el revisor:**
+
+1. La nota del **ítem de plantilla** se lee ahora sin abrir nada: en su fila de
+   Plantilla (y en el cajón «Sin hora», que usa la misma tarjeta) y en «Lo que
+   viene», en una línea aparte de la hora y la duración planeada. Y el control
+   de «antes de empezar» abre **proponiéndola** cuando el bloque sale de un ítem
+   de plantilla con nota.
+2. Todo es cableado: `templateNoteForActivity` (nuevo, puro, con test),
+   `templateNote` como prop aditiva en `VidaUpNextCard`, una `VidaNoteLine` de
+   solo lectura en `VidaTemplateItemCard` y un `??` en el `initialValue` de
+   `editStartNote`. Ni una mutación nueva, ni una consulta nueva, ni un campo
+   nuevo: `suggestions[].item.notes` ya estaba en memoria.
+3. **Lo que más probablemente rompí:** el alto de las dos filas. Un ítem de
+   plantilla con nota mide **87 px en vez de 67** (medido a 375 y a 760 px) y en
+   «Lo que viene» el «▶ Empezar» **baja 19 px** (mismo tamaño: 263×42). Si algo
+   se salió de sitio, es ahí. Lo segundo: toqué `VidaNoteLine`, que es de las
+   tres tajadas anteriores — le añadí una prop `as` con valor por defecto `p`,
+   así que las cuatro llamadas viejas pintan exactamente lo de antes, pero es un
+   archivo compartido y por eso lo digo primero.
+
+**Lo construido:**
+
+| Ruta | Qué se hizo |
+|---|---|
+| `src/features/vida/utils/vida-notes.utils.ts` | `templateNoteForActivity(suggestions, activityId)` y su tipo estructural `VidaTemplateNoteSource`. Cruce por `activityId` —el único vínculo que hay, porque `ActivityDayPlanItem` no guarda de qué ítem salió—, desempate por `startTime` más temprano, `null` cuando no hay ítem o su nota está en blanco. Nada de React, nada de red. |
+| `src/features/vida/utils/vida-notes.utils.test.ts` | Siete casos nuevos: la nota de esa actividad, sin ítem detrás, ítem sin nota, nota en blanco, recorte de espacios, el desempate por hora (y el mismo resultado con la lista al revés), y «sin hora no gana el desempate». |
+| `src/features/vida/components/VidaNoteLine/VidaNoteLine.tsx` | Prop `as?: 'p' \| 'span'`, por defecto `'p'`. **Es la única desviación del plan**, y va explicada abajo. |
+| `src/features/vida/components/VidaTemplateItemCard/VidaTemplateItemCard.tsx` | `<VidaNoteLine text={item.notes} tone="plan" as="span" />` entre `styles.name` y `styles.meta`, **sin `onEdit` y sin `placeholder`**. |
+| `src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx` | Prop aditiva `templateNote?: string \| null`, pintada como `<VidaNoteLine tone="plan">` **debajo** de `metaLine`, dentro de `styles.body`. `onStart` sigue siendo `() => void` y la tarjeta sigue sin ver `activityId`, hora ni duración. |
+| `src/features/vida/pages/VidaHoyPage.tsx` | `templateNote={templateNoteForActivity(suggestions, upNext.activityId)}` en la tarjeta, y en `editStartNote` el `initialValue` pasa a ser `startNoteDrafts[blockId] ?? templateNoteForActivity(suggestions, activityId) ?? ''`. **`startWithNote` no se tocó**: sigue sin mirar la plantilla. |
+| `src/features/vida/pages/VidaPlantillaPage.test.tsx` | `notes` como opción del helper `item()` (antes siempre `null`) y cuatro casos nuevos: la nota en su línea, el ítem sin nota, la nota en blanco, y que la fila siga teniendo **un solo** gesto («Abrir …»). |
+| `src/features/vida/pages/VidaHoyPage.test.tsx` | Siete casos nuevos, pegados a los de la tajada 3 y **sin tocar ninguno de ellos**. |
+
+**Por qué así, y qué descarté:**
+
+- **La única desviación del plan: `as="span"` en la fila de plantilla.** El plan
+  dice `<VidaNoteLine text={item.notes} />` y `VidaNoteLine` sin `onEdit` pinta
+  un `<p>`. Pero el cuerpo de `VidaTemplateItemCard` va **dentro de un
+  `<button>`** cuando llega `onOpen` (que es siempre, en Plantilla), y el
+  contenido de un botón es contenido de frase: un `<p>` ahí no es HTML válido.
+  Descarté las dos alternativas peores: sacar la nota fuera del botón (la
+  separaría del nombre y rompería la anatomía de la fila) y dejar el `<p>`
+  (React no avisa, pero queda HTML inválido en la pantalla que más filas pinta).
+  La prop tiene valor por defecto, así que **ninguna de las cuatro llamadas
+  anteriores cambia**, y el CSS es el mismo: `.line` ya trae su `display: flex`.
+- **La propuesta vive en `editStartNote` y en ningún otro sitio.** Es la razón
+  entera del criterio 557: `startWithNote` no importa `templateNoteForActivity`
+  ni lo ve; lo único que mira sigue siendo `startNoteDrafts[blockId]`, que solo
+  se escribe cuando alguien **guarda** el editor. Descarté precalcular la
+  propuesta en un `useMemo` y meterla en el borrador al montar: eso es
+  exactamente «copiarla en silencio».
+- **`??` y no `||`.** Un borrador en `''` —la vació a propósito— no es nulo, así
+  que gana él y la plantilla **no vuelve a colarse** al reabrir el editor. Con
+  `||` la propuesta reaparecería cada vez, que es el defecto que el plan describe
+  y que tiene test propio.
+- **Sin memoizar `templateNoteForActivity` en el render.** Es un bucle sobre la
+  plantilla del día (unidades, no miles) sobre datos que ya están en memoria; un
+  `useMemo` ahí cuesta más de leer que de ejecutar.
+- **`VidaAgendaBlock` no gana la línea de plantilla.** Ningún criterio de esta
+  tajada la pide ahí (553 es la fila de Plantilla, 555 es «Lo que viene») y la
+  fila del día ya tiene su propia línea, la de la **sesión**. Dos notas en la
+  misma fila serían dos cosas distintas con la misma pinta.
+
+**Verificación** (líneas base de `docs/features/ENVIRONMENT.md`, 2026-09-22):
+
+```
+pnpm typecheck
+  → limpio (tsc -b --noEmit, sin salida)                [línea base: limpio]
+
+pnpm lint
+  → ✖ 14 problems (14 errors, 0 warnings)               [línea base: 14/0]
+
+pnpm test
+  → Test Files  1 failed | 117 passed (118)
+    Tests  2 failed | 1890 passed (1892)
+    los dos fallos son los de `SearchSelect`; el `IconPicker` flaky no salió.
+    [línea base: 2 fallos de 1874 — +18 tests nuevos, mismos 2 fallos]
+
+pnpm build   (corrido **después** de borrar el arnés)
+  → ✓ built in 2,84 s (exit 0)
+    index       1.128,43 kB   (línea base 1.128,04 → +0,39 kB)
+    app-icons     620,20 kB   (sin mover)
+    IconPicker      4,64 kB
+
+graphify update .  → 4231 nodos, 5017 aristas
+```
+
+**Medido en el navegador**, arnés temporal (`t4-harness.html` + `src/t4-harness.tsx`,
+**ya borrados**; `git status` solo lista los nueve archivos de esta tajada) con
+las cuatro filas de plantilla y las tres tarjetas de «Lo que viene», **a los dos
+anchos**, tema claro:
+
+```
+                                   375 px            760 px
+fila de plantilla, sin nota        alto 67           alto 67
+fila de plantilla, nota corta      alto 87           alto 87
+fila de plantilla, nota de 420     alto 87           alto 87
+  el texto se recorta:             scroll 1587 > client 203     1587 > 588
+  ellipsis / nowrap                sí / sí           sí / sí
+  desborde de la fila              0                 0
+  desborde del documento           0 (375=375)       0 (760=760)
+  la línea va dentro del <button> de abrir, y es un <span>
+
+«Lo que viene», sin templateNote   tarjeta 228, play 263×42 y=102
+«Lo que viene», con templateNote   tarjeta 248, play 263×42 y=121
+«Lo que viene», nota de 420 + borrador escrito
+                                   tarjeta 296, play 263×42 y=170
+  «En tu plantilla, a las 8:00 · suele durarte 45 min» sigue presente
+  **una vez** en las tres tarjetas: la línea nueva se suma, no sustituye.
+  la nota de 420 se recorta a una línea (alto 16, scroll 1587 > client 591).
+```
+
+**Criterios que cierra, uno a uno:**
+
+- **553** — *la fila del ítem enseña su nota, debajo del nombre, con el recorte
+  del 541.* Test «criterio 553 — la fila enseña la nota, en su propia línea
+  debajo del nombre» (`VidaPlantillaPage.test.tsx`): la línea es hermana del
+  nombre (`linea.parentElement === nombre.parentElement`), va **después** de él
+  (`compareDocumentPosition`) y lleva el texto entero en `title`. El recorte,
+  medido arriba a los dos anchos: `scroll 1587 > client 203` (375 px) y
+  `> 588` (760 px), `text-overflow: ellipsis`, `white-space: nowrap`, y ni la
+  fila ni el documento desbordan.
+- **554** — *un ítem sin nota no añade nada.* Test «criterio 554 — un ítem sin
+  nota no añade nada a su fila»: no hay «añadir qué hiciste» y el texto de la
+  fila no contiene ni `＋` ni `✎`. Medido: la fila sin nota mide **67 px**, el
+  mismo alto que antes de esta tajada. Un caso más cubre la nota en blanco
+  (`'   '`), que se trata igual que ninguna.
+- **555** — *«Lo que viene» enseña la nota en línea aparte de `metaLine`.* Test
+  «criterio 555 — la tarjeta enseña lo que sueles hacer, **sin tocar** la hora ni
+  la duración planeada»: la nota está, `metaLine` sigue diciendo lo mismo, la
+  nota **no es un botón**, y la tarjeta pasa de uno a dos elementos con texto en
+  reserva (`[title]`) — una línea **más**, no una en lugar de otra. El caso
+  hermano comprueba que sin ítem de plantilla detrás no aparece ninguna línea de
+  más.
+- **556** — *el control de antes de empezar propone la nota de la plantilla.*
+  Test «criterio 556 — el control de antes de empezar abre con lo que dice la
+  plantilla»: `openStartNoteSheet` recibe
+  `objectContaining({ initialValue: 'Con agua fría y rápido' })`, y al guardarla
+  y pulsar, la llamada es `['a-b1', null, { notes: 'Con agua fría y rápido' }]`
+  — **editable y borrable con el mismo gesto**, que es lo que comprueba el caso
+  «borrar la propuesta y guardar no la vuelve a colar»: al reabrir, el
+  `initialValue` es `''`, no la propuesta.
+- **557** — *empezar sin abrir el control arranca exactamente igual que hoy.*
+  **Cómo lo demostré, que es lo que se me pidió:** tres afirmaciones y una que no
+  toqué.
+  1. Test «criterio 557 — con nota en la plantilla y el control **sin abrir**, se
+     arranca exactamente igual que hoy»: con un ítem de plantilla cuya nota **sí**
+     se lee en la tarjeta, un solo clic en «▶ Empezar» deja
+     `startSession` con `toHaveBeenCalledTimes(1)` y
+     `expect(startSession.mock.calls[0]).toEqual(['a-b1'])` — **array entero, un
+     solo argumento** — más `expect(openStartNoteSheet).not.toHaveBeenCalled()` y
+     `queryByRole('dialog')` ausente: no se abre nada por el camino.
+  2. El mismo caso **por la otra puerta**, el «▶ Empezar» de la fila del plan:
+     otra vez `toEqual(['a-b1'])`.
+  3. El test de FEAT-010 que vigila esto —el de «Lo que viene» con
+     `toEqual(['a-b1'])`— **sigue intocado y en verde**: no edité ni una línea de
+     él (`git diff` de `VidaHoyPage.test.tsx` solo añade, y los casos de la
+     tajada 3 están donde estaban).
+  4. Y por construcción: `startWithNote` **no importa ni llama** a
+     `templateNoteForActivity`. La propuesta solo existe dentro de
+     `editStartNote`, que únicamente corre cuando alguien pulsa el lápiz.
+- **558** — *sin ítem de plantilla detrás, no se propone nada.* Test «criterio
+  558 — el control abre vacío» (`initialValue: ''` con la plantilla de siempre,
+  que no contiene la actividad del bloque) y, en el util, «criterio 558 — sin
+  ítem de esa actividad no propone nada» (lista sin esa actividad, lista vacía,
+  `null`, y `activityId` nulo).
+- **552** — *typecheck, lint, tests y build no peores que la línea base.* Las
+  cuatro cifras de arriba: limpio · 14/0 · 2 fallos de 1892 (los mismos dos) ·
+  build exit 0 con `app-icons` sin mover y +0,39 kB en el chunk inicial.
+
+**Lo que descubrí y no estaba en el plan:**
+
+1. **`VidaTemplateNoTimeDrawer` también monta `VidaTemplateItemCard`**, así que
+   el cajón «Sin hora» ha ganado la línea de nota sin que el plan lo nombre. Es
+   la misma fila del mismo ítem y encaja con el 553; lo digo porque es una
+   pantalla más que revisar.
+2. **Estado que el render 19 no contempla, y que por la regla de la sección 1
+   no decido yo:** en «Lo que viene», `templateNote` y el borrador de «antes de
+   empezar» pueden verse **a la vez**, y si alguien abre el control y guarda la
+   propuesta tal cual, **el mismo texto se lee dos veces** (gris debajo de la
+   meta, y mint encima del botón). Medido y visto: las dos líneas se distinguen
+   por color y caja, pero dicen lo mismo. No lo he «arreglado» comparando textos
+   porque eso es inventar forma sin boceto. **Necesita un render o una decisión
+   del usuario**; mientras tanto se ve como está descrito.
+3. **La línea de solo lectura lleva la marca `✎`** (la trae `VidaNoteLine` desde
+   la tajada 1, donde ya se acepta en sesiones de días pasados que no se pueden
+   editar). En la fila de plantilla eso puede leerse como «tócame», y la fila
+   entera abre la hoja del ítem —donde **sí** se edita esa nota—, así que no
+   miente; pero en la tercera tarjeta de arriba conviven dos líneas con `✎`, una
+   pulsable y otra no. No lo cambié: el glifo es del componente compartido y
+   cambiarlo tocaría las tres tajadas ya aceptadas.
+4. **`templateNoteForActivity` aplica el desempate al pie de la letra**: con dos
+   ítems de la misma actividad el mismo día gana **el más temprano aunque sea el
+   que no tiene nota** (entonces no se propone nada). Es lo que dice el plan y
+   tiene test; si se prefiere «el más temprano **de los que tienen nota**», es un
+   cambio de una línea en el util.
+5. El alto de la fila de plantilla con nota sube de **67 a 87 px**. En una
+   plantilla larga con muchas notas, el día se hace más alto. No es un defecto,
+   pero es el efecto más visible de esta tajada.
+6. **No toqué** los tres hallazgos abiertos (H2, H8 y el lápiz pegado al «en
+   30 min» a 375 px): ninguna de mis filas es la de «fuera del plan» ni la barra
+   de sesión, y en «Lo que viene» el lápiz de la esquina **no se movió**
+   (x=320, y=5 a 375 px, igual que en la tajada 3).
+
+**Riesgos:**
+
+- `VidaNoteLine` es compartido por las cuatro tajadas. La prop `as` tiene valor
+  por defecto y no cambia el DOM de ninguna llamada anterior, pero si algo se ve
+  raro en la línea del día o en la barra de sesión, el primer sitio donde mirar
+  es ese archivo.
+- El cruce por `activityId` es una **heurística**: si el plan del día tiene un
+  bloque de una actividad que hoy **no** está en la plantilla (se añadió a mano),
+  no se propone nada, y es correcto. Si la plantilla cambia mientras Hoy está
+  abierto, la propuesta cambia con ella en el siguiente pintado; el borrador ya
+  escrito no.
+- Las tarjetas de «Lo que viene» y las filas de plantilla crecen de alto. Nada
+  desborda a 375 ni a 760 px (medido), pero no he podido verlo con datos reales
+  ni con la plantilla larga de verdad del usuario.
+
+**Pendiente de prueba a mano, detrás del login** (no lo marco como cumplido: los
+agentes no entran con credenciales):
+
+1. En `/app/vida/plantilla`, abrir un ítem, escribir su nota («Revisando MRs»),
+   guardar, y ver que la fila la muestra debajo del nombre y encima de «1 h · V».
+2. Dejar otro ítem **sin** nota y comprobar que su fila no gana nada.
+3. En `/app/vida/hoy`, con ese ítem propuesto en «Lo que viene»: ver la nota en
+   su línea, con «En tu plantilla, a las …» **intacta** encima.
+4. **El 557 con datos reales:** pulsar «▶ Empezar» sin tocar el lápiz y
+   comprobar, en la sesión que nace, que **no** tiene nota (la barra de sesión
+   dice «¿Qué estás haciendo?» en gris, no «Revisando MRs»).
+5. Pulsar el lápiz: debe abrirse con «Revisando MRs» ya escrito; cambiarlo a
+   «Revisando MRs del pago», guardar y empezar: la sesión nace con ese texto.
+6. «Empezar otra cosa» con una actividad que no esté en la plantilla: el control
+   abre vacío.
+
+**Estado del árbol:** sin commitear y sin push. Nueve archivos modificados,
+ninguno creado; el arnés está borrado.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — **aceptada** (2026-09-22)
@@ -2057,3 +2297,200 @@ Coinciden **exactamente** con lo que declaró, cifra a cifra.
 la ida y vuelta real —escribir antes, pulsar «▶ Empezar» y ver la nota ya en la
 barra sin escribirla dos veces— y el pulgar sobre el lápiz de la fila en un
 teléfono de verdad. Lo demás está medido.
+
+### Tajada 4 — **aceptada** (2026-09-22)
+
+**Veredicto: aceptada.** Los siete criterios (553-558 y 552) se cumplen con
+evidencia propia; el 557 —la línea roja— lo verifiqué por las cuatro vías que
+el constructor declaró, más una quinta que es la que de verdad cierra el
+asunto: **`startWithNote` no puede ver la plantilla porque no la recibe**. No
+encontré ninguna regresión. Lo que queda son tres hallazgos y un dictamen sobre
+el 548 que **no bloquean** y van escritos abajo.
+
+**El 557, comprobado a mano y no por el resumen** (`git diff` + lectura, en
+este orden):
+
+1. **Por construcción, que es la vía fuerte.** `VidaHoyPage.tsx:224-228`:
+   `startWithNote(blockId, activityId)` lee **solo** `startNoteDrafts[blockId]`
+   y sin texto hace `return void sessionActions.start(activityId)` — un
+   argumento. El `git diff` de esa función es **vacío**: no se tocó en esta
+   tajada. `grep` de `templateNoteForActivity` en todo `src/` da **tres**
+   apariciones fuera de tests: el `import`, el `initialValue` de
+   `editStartNote` (`:249`) y la prop `templateNote` de la tarjeta (`:1107`).
+   Ninguna está en el camino del arranque. Y `startNoteDrafts` solo se escribe
+   en el `onSave` del editor, que solo corre si alguien lo abre y guarda.
+2. **Los dos tests nuevos, con comparación de array entero, uno por puerta.**
+   Leídos en el diff: el de «Lo que viene» (`toHaveBeenCalledTimes(1)`,
+   `toEqual(['a-b1'])`, `openStartNoteSheet` `not.toHaveBeenCalled()`,
+   `queryByRole('dialog')` ausente) y el de la fila del plan (`toEqual(['a-b1'])`).
+3. **Ninguno pasa por construcción del mock.** Lo comprobé, que es donde estos
+   casos se mueren en silencio: `renderConLapiz(texto)` monta un
+   `openStartNoteSheet` que **llama a `request.onSave(texto)` en el acto**, y en
+   los dos casos del 557 ese texto es `'esto no se debería usar nunca'`. O sea:
+   si el código abriera el control por su cuenta, el borrador se llenaría con
+   ese texto y `toEqual(['a-b1'])` se pondría rojo. El caso no está blindado
+   por un mock inerte; está armado para explotar.
+   El cruce tampoco es de mentira: `conNotaDePlantilla` mete
+   `suggestion('b1', …)`, cuyo `item.activityId` es `'a-b1'`, que es el
+   `activityId` real del bloque — y el propio test afirma **antes** de pulsar
+   que la nota **sí** se lee en la tarjeta. Sin esa afirmación el caso valdría
+   cero (pasaría igual con la plantilla vacía); con ella, es la prueba.
+4. **El test de FEAT-010 intacto.** El `git diff` de `VidaHoyPage.test.tsx` es
+   un **único hunk de solo adiciones** (`@@ -2636,6 +2636,132 @@`): ni una línea
+   borrada ni modificada en todo el archivo. El `toEqual(['a-b1'])` de FEAT-010
+   y los casos de la tajada 3 están donde estaban.
+5. **El `??` frente al `||`.** Leído en `:249`:
+   `startNoteDrafts[blockId] ?? templateNoteForActivity(...) ?? ''`. Con `||`
+   un borrador vaciado a propósito (`''`) dejaría recolarse la propuesta al
+   reabrir. Tiene test propio («borrar la propuesta y guardar no la vuelve a
+   colar»), que además comprueba el arranque posterior: `toEqual(['a-b1'])`.
+
+**Criterios, uno a uno:**
+
+- **553 — cumplido.** Medido yo, arnés propio (borrado), **a 375 y a 760 px**:
+  la línea es un `<span>` hermano del nombre y anterior a la meta, con
+  `white-space: nowrap`, `text-overflow: ellipsis`, `overflow: hidden`; con una
+  nota de **420 caracteres** el texto interior mide `scroll 1492 > client 235`
+  (375 px) y `1492 > 620` (760 px), **16 px de alto, una sola línea**, y el
+  texto entero queda en `title`. Ni la fila ni el documento desbordan a ninguno
+  de los dos anchos (`scrollWidth - clientWidth = 0`; documento 375=375 y
+  760=760).
+- **554 — cumplido.** `VidaNoteLine` devuelve `null` sin `text` y sin
+  `placeholder`, y la fila de plantilla no le pasa ninguno de los dos. Medido:
+  la fila **sin nota mide 67 px a los dos anchos**, exactamente lo de antes de
+  esta tajada; con nota, 87. Una nota en blanco (`'   '`) se trata como
+  ninguna: 67 px, sin `＋`, sin `✎`, sin hueco. Los tres tests lo fijan.
+- **555 — cumplido.** Medido: la tarjeta con `templateNote` tiene **dos**
+  líneas de texto y «En tu plantilla, a las 8:00 · suele durarte 45 min» sigue
+  presente **una sola vez** (lo conté en el DOM, no en el test). La línea nueva
+  va **debajo** de `metaLine`, no la sustituye, y **no es un botón**.
+- **556 — cumplido.** `editStartNote` abre con
+  `initialValue: 'Con agua fría y rápido'`, y guardarla y pulsar da
+  `['a-b1', null, { notes: 'Con agua fría y rápido' }]`. Borrable con el mismo
+  gesto, con el caso que lo prueba.
+- **557 — cumplido.** Ver arriba.
+- **558 — cumplido.** Test de página (`initialValue: ''` con una plantilla que
+  no contiene esa actividad) y cuatro casos en el util (sin ítem, lista vacía,
+  `null`, `activityId` nulo).
+- **552 — cumplido, repetido entero por mí:** `pnpm typecheck` **limpio**
+  (exit 0) · `pnpm lint` **14 errores / 0 warnings** · `pnpm test` **2 fallos de
+  1892**, y son los dos de `SearchSelect` (`filters options by search query` y
+  `selects an option`), sin `IconPicker` flaky · `pnpm build` **exit 0**,
+  `index` **1.128,43 kB**, `app-icons` **620,20 kB sin mover**, `IconPicker`
+  4,64 kB. Las cuatro cifras coinciden con las declaradas.
+
+**Regresiones: buscadas y no encontradas. Dónde miré:**
+
+- **`graphify explain "VidaNoteLine"`** y `graphify query` sobre quién monta
+  `VidaTemplateItemCard` (el grafo refleja el estado **anterior** al cambio,
+  que es justo lo que sirve para «quién dependía de esto»), confirmado luego
+  abriendo los archivos.
+- **`VidaNoteLine`, el archivo compartido y el sitio que el constructor señaló
+  primero.** Las **cuatro** llamadas anteriores —`VidaAgendaBlock` ×2,
+  `VidaSessionBar`, `VidaAgendaSession`— **siguen idénticas**: ninguna pasa
+  `as`, el valor por defecto es `'p'`, y esos tres archivos **no aparecen en
+  `git status`**. El único cambio del componente es el nombre de la etiqueta:
+  `className`, `data-tone`, `data-filled`, `title` y el cuerpo son los mismos.
+- **HTML válido, comprobado renderizado, no razonado.** En la fila de
+  plantilla la línea es un `SPAN` y `closest('button')` devuelve el botón de
+  abrir: dentro de un `<button>` solo hay contenido de frase (`span`, `b`,
+  `time` fuera). Sin `onOpen` la tarjeta es un `<article>` y el `span` también
+  vale. Además el nombre accesible del botón **no se ensucia**: es
+  `aria-label="Abrir Nota corta"`, la nota no entra en él.
+- **`VidaTemplateNoTimeDrawer` («Sin hora»), que el plan no nombraba.**
+  Renderizado en el arnés: el ítem sin hora **con** nota mide 87 px y enseña
+  «✎ Estirar la espalda»; el que no la tiene, 67 px y no gana nada. Encaja con
+  el 553 y el 554; no rompe nada.
+- **Alturas de fila y saltos.** No hay ninguna altura fija en
+  `VidaTemplateItemCard.module.scss`, así que nada contaba con los 67 px.
+- **El salto de botón al cargar, que es el riesgo que nadie pidió.**
+  Comprobado: `useVidaDayData` mete `suggestionsQuery.isPending` en su
+  `isPending` combinado y `VidaHoyPage` devuelve esqueleto mientras tanto, así
+  que la tarjeta **no se pinta antes** de que la plantilla esté en memoria: la
+  línea no aparece después del primer pintado y el «▶ Empezar» **no se mueve
+  bajo el dedo**. Si la consulta de plantilla **falla**, `suggestions` es `[]`,
+  `templateNote` es `null` y simplemente no hay línea: sin dato, sin reproche,
+  sin hueco.
+- **Las garantías de FEAT-010 en `VidaUpNextCard`, por construcción:** el tipo
+  de props **no tiene** `activityId`, ni hora, ni duración —`templateNote` es
+  un `string | null` y nada más—, `onStart` sigue siendo `() => void`, y la
+  devolución de foco sigue en `target.focus({ preventScroll: true })`
+  (`:149`). Ninguna de las tres depende de que alguien se acuerde.
+- **`vida-notes.utils.ts`**: el diff **solo añade** al final;
+  `recentNoteSuggestions` y las constantes de palabras no se tocan.
+
+**Dictamen sobre el 548, que es lo que se me pidió zanjar:** **no está
+incumplido.** El 548 dice que el botón no cambia «cuando **ese control** está
+vacío», y ese control —el lápiz de la esquina— es `position: absolute`: fuera
+del flujo, no mueve nada, y eso sigue midiéndose igual que en la segunda vuelta
+de la tajada 3. Los 19 px que baja el botón los pone `templateNote`, que es
+**otro dato y lo exige el criterio 555**: no se puede pintar una línea más en
+la tarjeta y a la vez dejar el botón donde estaba. Leer el 548 como «el botón
+no se mueve nunca» lo pone en contradicción directa con el 555, y eso es un
+defecto de redacción, no una licencia para reescribirlo: lo dejo como hallazgo.
+El 534 —que es el que habla del botón en abstracto— sí se cumple al pie de la
+letra: **tamaño idéntico** (295×42 a 375 px, 680×42 a 760 px, con y sin
+`templateNote`) y **comportamiento idéntico** (un toque, sin pedir nada).
+Lo que el usuario ve moverse es real y es el precio de leer la plantilla antes
+de pulsar; no es un defecto y no lo devuelvo por ello.
+
+**La duplicación de «Lo que viene»: tolerable como estado de partida, pero
+merece boceto antes de pulirla.** Lo vi renderizado: con `templateNote` y
+borrador iguales, la tarjeta mide 280 px y el mismo texto se lee dos veces —gris
+suelto debajo de la meta, y mint dentro de una caja encima del botón—. **Se
+distinguen** (caja, color, y una es pulsable y la otra no) y **no mienten**:
+son dos datos distintos que hoy coinciden. Por eso no bloquea: el usuario que
+llega ahí es el que acaba de guardar la propuesta tal cual, y ver que «lo que
+sueles hacer» y «lo que vas a hacer» dicen lo mismo es coherente. Pero es un
+estado que ningún render dibuja, y **la salida no es comparar textos en el
+código**: es decidir la forma. Hizo bien en no inventarla. Recomiendo llevarlo
+al usuario como boceto pequeño, no como devolución.
+
+**Hallazgos (no bloquean, van escritos):**
+
+1. **La `✎` en la línea de solo lectura de la plantilla: sí merece arreglo,
+   pero no ahora.** Confirmado en pantalla: en la tarjeta con lápiz de esquina
+   conviven **dos `✎`**, una pulsable y otra no, y en la fila de plantilla la
+   marca invita a tocar **la línea** cuando lo que abre es la fila entera. No
+   miente (la fila lleva a la hoja donde esa nota se escribe), y el arreglo
+   —una prop `mark` en `VidaNoteLine`— toca un archivo que comparten las tres
+   tajadas ya aceptadas y empujadas. **No se arregla dentro de esta tajada**:
+   es trabajo con su propia línea base, y hacerlo aquí reabriría lo cerrado.
+   Candidato claro a una tajada de pulido o a la primera corrección que pida el
+   usuario después de probarlo con datos reales.
+2. **El desempate de `templateNoteForActivity`: no lo tocaría, pero la
+   documentación de entrega dice de más.** El comportamiento —gana el más
+   temprano aunque sea el que no tiene nota— es literalmente lo que el plan
+   escribió, y como regla fija y comprobable está bien: «la propuesta es la del
+   primer rato del día», no «la de cualquiera que tenga texto». Cambiarlo a «el
+   más temprano de los que tienen nota» es una línea, sí, pero es una decisión
+   de producto sin render detrás y con una plantilla real de por medio; que
+   decida el usuario si le molesta. **Lo que sí es inexacto:** el constructor
+   dice que ese caso «tiene test», y **no lo tiene** — los casos del desempate
+   son los dos con nota; ninguno cubre «el más temprano sin nota gana y por eso
+   no se propone nada». El comportamiento es correcto y está documentado; la
+   red no está puesta.
+3. **Referencia de línea envejecida.** `VidaTemplateGapRow.tsx:22` dice «Mismo
+   contrato que `VidaTemplateItemCard` (`:87-97`)»; con las ocho líneas nuevas
+   el `<li>` está ahora en `:104`. Una línea de comentario, sin efecto; se
+   arregla cuando alguien pase por ahí.
+
+**Estados comprobados:** plantilla con ítem sin nota (67 px, nada añadido) ·
+nota en blanco (igual que sin nota) · nota de 420 caracteres (una línea, con
+puntos suspensivos, a los dos anchos) · ítem sin hora (cajón «Sin hora») · fila
+sin `onOpen` (solo lectura, `<article>`) · «Lo que viene» sin plantilla detrás
+(ninguna línea de más) · **carga** (la tarjeta no se pinta hasta que la
+plantilla está, no hay salto) · **error de la consulta de plantilla** (sin
+línea, sin reproche) · **375 y 760 px sin barra horizontal**. *No comprobados:*
+permisos (no hay roles en este módulo) y el recorrido con datos reales detrás
+del login — los agentes no entran con credenciales, así que los seis pasos que
+el constructor dejó escritos **siguen pendientes de la mano del usuario**; no
+los doy por cumplidos.
+
+**Cómo verifiqué:** `git diff` de los nueve archivos, leídos enteros los que
+importaban; `graphify explain`/`query` para quién depende de lo tocado, y luego
+el archivo; arnés temporal propio (`rev-t4.html` + `src/rev-t4.tsx`, **ya
+borrados**, `git status` limpio de ellos) con las cinco filas de plantilla, el
+cajón «Sin hora» y las cinco tarjetas, medido con JS a **375 y 760 px**; y las
+cuatro puertas (`typecheck`, `lint`, `test`, `build`) corridas enteras. **No
+toqué código de producto, no commiteé y no toqué `ENVIRONMENT.md`.**

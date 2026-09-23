@@ -26,8 +26,70 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
-| FEAT-018 | building | 3/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
+| FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | planned | 0/4 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-22 |
+
+**FEAT-018 `delivered` 4/4** (2026-09-22, revisor). **Tajada 4 aceptada, y con
+ella la feature entera: la plantilla propone y la sesión decide.** El criterio
+557 —la línea roja— lo comprobé por las cuatro vías declaradas y por una quinta
+que es la que cierra el asunto: `startWithNote` **no puede** ver la plantilla
+porque no la recibe (`grep` de `templateNoteForActivity`: solo el `import`, el
+`initialValue` del editor y la prop de la tarjeta; su `git diff` es vacío). Los
+dos tests nuevos comparan **array entero** y **no pasan por construcción del
+mock**: el `openStartNoteSheet` falso guarda «esto no se debería usar nunca» en
+cuanto lo llaman, así que si el código abriera el control por su cuenta el caso
+se pondría rojo. El test de FEAT-010 sigue intacto: el diff del archivo de tests
+es **un único hunk de solo adiciones**. Medido yo, arnés propio borrado, **a 375
+y a 760 px**: fila de plantilla 67 px sin nota (lo de antes) y 87 con ella, nota
+de 420 caracteres recortada a **una línea** (`scroll 1492 > client 235` y
+`> 620`), cero desbordes de fila y de documento; el «▶ Empezar» de «Lo que
+viene» **mantiene el tamaño exacto** (295×42 y 680×42) y baja 19 px, que los
+pone `templateNote` —lo exige el 555— y no el control de nota, que es
+`position: absolute` y sigue sin mover nada: **el 548 no está incumplido**,
+leerlo como «el botón no se mueve nunca» lo enfrenta al 555 y eso es redacción,
+no defecto. Comprobado además el cajón «Sin hora» (`VidaTemplateNoTimeDrawer`,
+que el plan no nombraba) y que el `<span>` deja HTML válido dentro del botón sin
+ensuciar su nombre accesible; las cuatro llamadas viejas de `VidaNoteLine`
+quedan idénticas. Sin regresiones. Tres hallazgos escritos y ninguno bloquea: la
+`✎` de la línea de solo lectura (merece arreglo, pero toca un archivo de tres
+tajadas ya empujadas), el desempate del util —correcto, aunque el caso «gana el
+más temprano sin nota» **no tiene test**, al contrario de lo declarado— y la
+duplicación de texto en «Lo que viene», **tolerable como estado de partida** y
+candidata a un boceto pequeño, no a una devolución. typecheck limpio · lint 14/0
+· tests **2 fallos de 1892** (`SearchSelect`) · build exit 0, inicial
+**1.128,43 kB** y `app-icons` **620,20 kB sin mover**. **El recorrido con datos
+reales sigue pendiente del usuario**: los agentes no entran con credenciales.
+**Sin commitear y sin push.**
+
+**FEAT-018 `in-review` 4/4** (2026-09-22, constructor). **Tajada 4 construida,
+la última: la plantilla propone y la sesión decide.** La nota del ítem de
+plantilla se lee ya sin abrir nada —en su fila de Plantilla, en el cajón «Sin
+hora» que usa la misma tarjeta, y en «Lo que viene» en una línea aparte de «En
+tu plantilla, a las 8:00 · suele durarte 45 min», que sigue intacta— y el
+control de «antes de empezar» abre **proponiéndola** cuando el bloque sale de un
+ítem de plantilla con nota. **La línea roja, el criterio 557, demostrada por
+cuatro vías**: el test nuevo con la propuesta visible y el control sin abrir deja
+`startSession.mock.calls[0]` igual a `['a-b1']` —array entero, un solo
+argumento—, más `openStartNoteSheet` sin llamar y ningún diálogo; el mismo caso
+por la otra puerta, el «▶ Empezar» de la fila; el test de FEAT-010 que vigila
+esto **sin tocar una línea y en verde**; y por construcción, `startWithNote` ni
+importa ni llama al cruce de la plantilla, que solo existe dentro del editor.
+Ni consulta nueva ni mutación nueva: `suggestions[].item.notes` ya estaba en
+memoria. **Una desviación del plan, dicha**: la fila de plantilla es un
+`<button>` entero, así que `VidaNoteLine` recibe una prop `as` para pintarse como
+`<span>` ahí —un `<p>` dentro de un botón no es HTML válido—; por defecto sigue
+siendo `<p>` y las cuatro llamadas anteriores no cambian. Medido a **375 y
+760 px**: nada desborda, la nota de 420 caracteres se recorta a una línea
+(`scroll 1587 > client 203` y `> 588`), la fila con nota pasa de 67 a **87 px** y
+en «Lo que viene» el «▶ Empezar» **baja 19 px sin cambiar de tamaño** (263×42).
+**Dos cosas para el revisor**: en «Lo que viene» la nota de plantilla y el
+borrador pueden verse a la vez y decir **lo mismo** si alguien guarda la
+propuesta tal cual —estado que el render 19 no contempla y que, por la regla de
+la sección 1, no decido yo—, y la línea de solo lectura lleva la marca `✎` que
+trae el componente compartido. typecheck limpio · lint 14/0 · tests **2 fallos de
+1892** (los dos de `SearchSelect`; +18 tests nuevos) · build exit 0, chunk inicial
+**1.128,43 kB** (+0,39) y `app-icons` **620,20 kB sin mover**. Arnés borrado,
+grafo actualizado (4231 nodos). **Sin commitear y sin push.**
 
 **FEAT-018 `building` 3/4** (2026-09-22, revisor). **Tajada 3 aceptada en
 segunda vuelta: ya se puede decir qué vas a hacer antes de arrancar, y el

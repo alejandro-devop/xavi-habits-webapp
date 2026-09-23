@@ -19,7 +19,9 @@ type VidaTemplateGapRowProps = {
 
   /* ── Las salidas, **las dos opcionales** ──────────────────────────────────
    *
-   * Mismo contrato que `VidaTemplateItemCard` (`:87-97`), que es el `<li>`
+   * Mismo contrato que `VidaTemplateItemCard` —su `<li>`, anclado por el
+   * elemento y no por número de línea: esa referencia ya envejeció una vez—,
+   * que es el `<li>`
    * vecino en esta misma lista: **sin la prop de acción la fila es texto**;
    * con ella se pinta un `<button>` de verdad —no un `div` con `onClick`—
    * para que el teclado llegue gratis. En la tajada 1 nadie las pasa, y por

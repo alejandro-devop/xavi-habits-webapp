@@ -21,6 +21,15 @@ type VidaNoteLineProps = {
    * nunca «nota»).
    */
   question?: string
+  /**
+   * Con qué etiqueta se pinta la línea de **solo lectura**. `p` por defecto,
+   * que es lo que pide una fila de agenda; `span` donde la fila entera ya es
+   * un `<button>` —la del ítem de plantilla (tajada 4)— porque el contenido
+   * de un botón es contenido de frase y un `<p>` ahí dentro no es HTML
+   * válido. No cambia ni un píxel: la clase `.line` es la misma y ya trae su
+   * `display: flex`.
+   */
+  as?: 'p' | 'span'
 }
 
 /**
@@ -45,6 +54,7 @@ export function VidaNoteLine({
   onEdit,
   tone = 'done',
   question = VIDA_NOTE_QUESTION_DONE,
+  as: Tag = 'p',
 }: VidaNoteLineProps) {
   const value = text && text.trim() ? text.trim() : null
   const label = value ?? placeholder
@@ -62,9 +72,9 @@ export function VidaNoteLine({
 
   if (!onEdit) {
     return (
-      <p className={styles.line} data-tone={tone} data-filled={value ? '' : undefined} title={value ?? undefined}>
+      <Tag className={styles.line} data-tone={tone} data-filled={value ? '' : undefined} title={value ?? undefined}>
         {body}
-      </p>
+      </Tag>
     )
   }
 

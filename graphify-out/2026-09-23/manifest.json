@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790140350.706373,
-    "ast_hash": "92b6c347dba7576e5b9bac4ece9e85c4",
+    "mtime": 1790162991.5716274,
+    "ast_hash": "6a5174332f91fd7eccb863df9bbea8bc",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790140400.9404993,
-    "ast_hash": "07939689d28afab351a83ca053974f42",
+    "mtime": 1790162815.2399414,
+    "ast_hash": "406a0731bc52e9f50888ea946b6afc69",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3980,8 +3980,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-019-vida-arco-revisado.md": {
-    "mtime": 1790160978.6356285,
-    "ast_hash": "e12b435673de4c572fbac256233ed543",
+    "mtime": 1790162742.5309036,
+    "ast_hash": "b7707d4486c7d5051c84c8a92bfb560d",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260923_014157_se_hablan_hoy_getdaybudget_y_buildgoalarcs__el_pr.md": {
@@ -4002,6 +4002,11 @@
   "src/features/vida/hooks/useVidaGoals.ts": {
     "mtime": 1790161144.168302,
     "ast_hash": "ac3edb91908fcc9bd28726bbc4fc30cc",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-020-vidrio-sin-blur.md": {
+    "mtime": 1790162985.250041,
+    "ast_hash": "ded818681a0dd0f429f56dcb59d52ebb",
     "semantic_hash": ""
   }
 }

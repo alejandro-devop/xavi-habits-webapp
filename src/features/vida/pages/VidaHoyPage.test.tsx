@@ -2493,7 +2493,9 @@ describe('VidaHoyPage — «Lo que viene»', () => {
     renderWithProviders(<VidaHoyPage />)
     const card = upNextCard()!
 
-    expect(within(card).getByText('Lo que viene')).toBeInTheDocument()
+    // A las 9:24, «Bañarme» era de las 8:00: la hora **ya pasó**, así que el
+    // rótulo lo dice (criterio 193, tajada 2). Todo lo demás es idéntico.
+    expect(within(card).getByText('Lo que viene · se pasó de la hora')).toBeInTheDocument()
     expect(within(card).getByText('Bañarme')).toBeInTheDocument()
     expect(within(card).getByText('En tu plantilla, a las 8:00 · suele durarte 45 min')).toBeInTheDocument()
     expect(
@@ -2810,7 +2812,64 @@ describe('VidaHoyPage — «Lo que viene»', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
 
     expect(within(card).getByRole('button', { name: 'Empezar otra cosa' })).toBeInTheDocument()
-    // «Ya la hice» es de la tajada 2: aquí todavía no se escribe.
+    // **«Ya la hice», escrita** (criterio 197): la hora de «Bañarme» ya pasó.
+    // Las tres salidas están en la **misma línea**, debajo del botón, y
+    // ninguna vive en un menú.
+    const salidas = within(card).getByRole('button', { name: 'Ya la hice' })
+    expect(salidas).toBeInTheDocument()
+    expect(salidas.closest('p')).toBe(
+      within(card).getByRole('button', { name: 'Empezar otra cosa' }).closest('p'),
+    )
+    expect(within(card).queryByRole('menu')).not.toBeInTheDocument()
+  })
+
+  it('«Ya la hice» llama a la misma función de siempre, sin arrancar nada (criterio 197)', () => {
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    fireEvent.click(within(card).getByRole('button', { name: 'Ya la hice' }))
+
+    // **La misma aritmética que el «Lo hice» del bloque** (FEAT-004, criterio
+    // 41): la hora y la duración planeadas, no una segunda cuenta. Es
+    // literalmente lo que afirma el caso del criterio 41 unas líneas arriba.
+    expect(createFollowUpMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(createFollowUpMutation.mutate).toHaveBeenCalledWith({
+      activityId: 'a-b1',
+      date: '2026-09-18',
+      startTime: '08:00',
+      durationMinutes: 45,
+      notes: null,
+    })
+    // No arranca ninguna sesión y no abre ninguna hoja: es un registro.
+    expect(startSession).not.toHaveBeenCalled()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    // Y no toca el plan.
+    expect(removeMutation.mutate).not.toHaveBeenCalled()
+    expect(setMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('antes de su hora no hay «Ya la hice» (criterio 197)', () => {
+    // Con «Bañarme» ya registrado, la propuesta pasa a «Leer un rato», que a
+    // las 9:24 **todavía no ha llegado**.
+    dayFollowUpsQuery = ready([
+      {
+        ...openFollowUp('a-b1', '08:00'),
+        id: 'f-hecha',
+        durationMinutes: 45,
+        isOpen: false,
+        endTime: '08:45',
+        activity: {
+          id: 'a-b1',
+          title: 'Bañarme',
+          category: { id: 'c1', name: 'Cuidado', color: '#10B981', icon: 'heart' },
+        },
+      },
+    ])
+
+    renderWithProviders(<VidaHoyPage />)
+    const card = upNextCard()!
+
+    expect(within(card).getByText('Lo que viene')).toBeInTheDocument()
     expect(within(card).queryByRole('button', { name: 'Ya la hice' })).not.toBeInTheDocument()
   })
 
@@ -2839,25 +2898,44 @@ describe('VidaHoyPage — «Lo que viene»', () => {
   })
 
   it('en un día pasado o futuro no se pinta ningún nodo (criterio 180)', () => {
+    // **El día se elige con `initialEntries`, no con `history.pushState`**: la
+    // pantalla se monta dentro de un `MemoryRouter`, que no mira la barra de
+    // direcciones del `jsdom`. Escrito con `pushState`, este caso miraba **hoy
+    // con el plan vacío** y pasaba por la razón equivocada (visto en la tajada
+    // 2, cuando ese caso dejó de ser «ningún nodo» y empezó a ser la cara
+    // apagada del criterio 377).
     viewedDate = '2026-09-17'
-    window.history.pushState({}, '', '/app/vida/hoy?d=2026-09-17')
     plansByDate['2026-09-17'] = PLAN
 
-    renderWithProviders(<VidaHoyPage />)
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
 
+    expect(screen.getByText('Jueves 17')).toBeInTheDocument()
     expect(upNextCard()).toBeNull()
-    window.history.pushState({}, '', '/')
   })
 
-  it('con lo vivido en vuelo o caído no afirma nada (criterios 208 y 209)', () => {
+  it('con lo vivido en vuelo no afirma nada (criterio 208)', () => {
     dayFollowUpsQuery = { isPending: true, isError: false, fetchStatus: 'fetching', refetch: vi.fn() }
-    const { unmount } = renderWithProviders(<VidaHoyPage />)
-    expect(upNextCard()).toBeNull()
-    unmount()
+    renderWithProviders(<VidaHoyPage />)
 
+    expect(upNextCard()).toBeNull()
+  })
+
+  it('con lo vivido caído no propone y **tampoco dice que no queda nada** (criterio 209)', () => {
     dayFollowUpsQuery = { isPending: false, isError: true, fetchStatus: 'idle', refetch: vi.fn() }
     renderWithProviders(<VidaHoyPage />)
-    expect(upNextCard()).toBeNull()
+    const card = upNextCard()!
+
+    // Ni propone —no sabe qué está hecho— ni afirma que la plantilla se acabó.
+    expect(card).not.toHaveTextContent('Bañarme')
+    expect(card).not.toHaveTextContent(/no queda nada/i)
+    expect(card).toHaveTextContent(
+      'No pudimos cargar lo que llevas hecho hoy, así que no te proponemos nada.',
+    )
+    // Y deja la salida: «Empezar algo».
+    fireEvent.click(within(card).getByRole('button', { name: 'Empezar algo' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
   it('sin poder empezar no pinta un botón que no va a funcionar (criterio 189)', () => {
@@ -2878,13 +2956,16 @@ describe('VidaHoyPage — «Lo que viene»', () => {
     )
   })
 
-  it('cuesta cero: las mismas consultas con tarjeta y sin ella (criterio 204)', () => {
-    // Sin tarjeta: todo el plan resuelto en este aparato.
+  it('cuesta cero: las mismas consultas con propuesta y sin ella (criterio 204)', () => {
+    // **Sin propuesta**: todo el plan resuelto en este aparato. Desde la
+    // tajada 2 eso ya no deja la pantalla sin tarjeta —sale la cara apagada
+    // del criterio 377—, así que lo que se comparan son **los dos caminos del
+    // mismo `useMemo`**: ninguno de los dos estrena una consulta.
     useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b1', null)
     useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b2', null)
     useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b3', null)
     const { unmount } = renderWithProviders(<VidaHoyPage />)
-    expect(upNextCard()).toBeNull()
+    expect(upNextCard()).toHaveTextContent('Ya no queda nada en tu plantilla')
     const sinTarjeta = { ...queryCalls }
     unmount()
 
@@ -3012,6 +3093,96 @@ describe('VidaHoyPage — «Lo que viene»', () => {
 
     expect(card).not.toHaveTextContent('Libre')
     expect(within(card).queryByRole('button', { name: /Registrar lo que hice/ })).not.toBeInTheDocument()
+  })
+
+  /* ── Cuando ya no queda nada (tajada 2) ────────────────────────────────
+   *
+   * Criterios 192 y 377. El día de estas pruebas acaba a las 23:00 —el
+   * respaldo de `useVidaDayHours`— y el reloj marca las 9:24, así que a la
+   * barra le quedan **13h 36**.
+   */
+
+  /** Un día de hoy **sin nada que proponer**: el plan, vacío. */
+  function renderSinNadaQueProponer() {
+    planQuery = ready([])
+    renderWithProviders(<VidaHoyPage />)
+    return upNextCard()!
+  }
+
+  it('dice lo cierto y deja «Empezar algo», sin inventar ninguna sugerencia (criterio 377)', () => {
+    const card = renderSinNadaQueProponer()
+
+    expect(within(card).getByText('Ya no queda nada en tu plantilla')).toBeInTheDocument()
+    expect(card).toHaveTextContent('Tu viernes se acaba a las 23:00. Te quedan 13h 36.')
+    // No propone nada de la plantilla ni de las sugerencias del lateral.
+    expect(card).not.toHaveTextContent('Poner lavadora')
+    expect(card).not.toHaveTextContent('suele durarte')
+    // Y no se queda muda: la salida es la **misma hoja de siempre**.
+    fireEvent.click(within(card).getByRole('button', { name: 'Empezar algo' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('los números son **los mismos que la barra de arriba** (criterio 377)', () => {
+    const card = renderSinNadaQueProponer()
+
+    // La barra: «te quedan 13h 36 hasta las 23:00». La tarjeta no rehace la
+    // resta: consume el mismo `budget.remainingMinutes` y el mismo `dayEnd`.
+    const barra = document.getElementById('vida-budget-heading')!.parentElement!
+    expect(barra).toHaveTextContent('te quedan 13h 36 hasta las 23:00')
+    expect(card).toHaveTextContent('Te quedan 13h 36.')
+    expect(card).toHaveTextContent('se acaba a las 23:00')
+  })
+
+  it('el mismo sitio y la misma forma, sin hora en la canaleta (criterios 371 y 377)', () => {
+    const card = renderSinNadaQueProponer()
+    const row = card.closest('li')!
+
+    // Hija directa del `<ol>` y debajo de la línea de AHORA, igual que la
+    // propuesta: siempre se sabe dónde mirar.
+    expect(row.parentElement?.tagName).toBe('OL')
+    expect(row.previousElementSibling).toHaveTextContent('Ahora')
+    // La canaleta va **vacía**: ni «—» ni la hora actual.
+    expect(row.querySelector('time')).toBeNull()
+    expect(row).toHaveAttribute('data-variant', 'empty')
+  })
+
+  it('un día sin plan no repite el «aún no hay plan» ni suena a que falta algo (criterio 192)', () => {
+    const card = renderSinNadaQueProponer()
+
+    // El aviso de siempre se queda donde está…
+    expect(screen.getByText(/Aún no hay plan para hoy\./)).toBeInTheDocument()
+    // …y la tarjeta **no lo repite**.
+    expect(card).not.toHaveTextContent('Aún no hay plan')
+    for (const palabra of [
+      'tarde',
+      'te saltaste',
+      'perdiste',
+      'fallaste',
+      'deberías',
+      'desperdicio',
+      'vacío',
+      'todavía no has',
+    ]) {
+      expect((card.textContent ?? '').toLowerCase()).not.toContain(palabra)
+    }
+  })
+
+  it('al resolverse lo último, la propuesta pasa a la cara apagada sin remontar (criterios 205 y 377)', async () => {
+    // Un solo bloque, ya pasado: se propone y se puede decir «Ya la hice».
+    planQuery = ready([block('b1', 'Bañarme', '08:00', '08:45')])
+    renderWithProviders(<VidaHoyPage />)
+
+    const antes = upNextCard()!
+    expect(antes).toHaveTextContent('Bañarme')
+
+    await act(async () => {
+      useVidaDeviceNotesStore.getState().markBlockCouldNot('2026-09-18', 'b1', null)
+    })
+
+    const despues = upNextCard()!
+    expect(despues).toHaveTextContent('Ya no queda nada en tu plantilla')
+    // **La misma `<section>`**: la tarjeta se actualiza, no se desmonta.
+    expect(despues).toBe(antes)
   })
 })
 

@@ -11,10 +11,20 @@ type VidaUpNextCardProps = {
   upNext: UpNext
   /** **Un toque y ya**: arranca la sesión. Sin hoja, sin confirmar (criterio 374). */
   onStart: () => void
-  /** «Empezar otra cosa»: la **misma** hoja de siempre, `mode: 'start'` (187). */
-  onStartSomethingElse: () => void
+  /**
+   * «Empezar otra cosa»: la **misma** hoja de siempre, `mode: 'start'` (187).
+   * En la cara de «ya no queda nada» no hay salidas: el botón **es** esa hoja.
+   */
+  onStartSomethingElse?: () => void
   /** «Ver las otras N»: la misma hoja, que ya pone la plantilla del día arriba. */
-  onSeeOthers: () => void
+  onSeeOthers?: () => void
+  /**
+   * **«Ya la hice»** (criterio 197): la **misma** función que ya usan Hoy y
+   * Revisión (`logSessionInput` + `plannedSessionMinutes`), no una segunda
+   * aritmética. Solo se pinta cuando `upNext.exits.showDidIt`, es decir, cuando
+   * la hora del propuesto **ya pasó**.
+   */
+  onDidIt?: () => void
   /** Hay una sesión en vuelo: dos toques no crean dos sesiones (criterio 188). */
   isSessionBusy?: boolean
 
@@ -93,6 +103,7 @@ export function VidaUpNextCard({
   onStart,
   onStartSomethingElse,
   onSeeOthers,
+  onDidIt,
   isSessionBusy = false,
   noteDraft = null,
   onEditNote,
@@ -101,9 +112,10 @@ export function VidaUpNextCard({
   /** Lo escrito, ya limpio: en blanco **no hay nota**, y el control es el lápiz. */
   const draft = noteDraft && noteDraft.trim() ? noteDraft.trim() : null
 
-  const colorStyle = upNext.color
-    ? ({ '--vida-category-color': upNext.color } as CSSProperties)
-    : undefined
+  const colorStyle =
+    upNext.variant === 'proposal' && upNext.color
+      ? ({ '--vida-category-color': upNext.color } as CSSProperties)
+      : undefined
 
   /** Lo último que llevó el foco **dentro** de la tarjeta, para devolvérselo. */
   const focusedRef = useRef<HTMLElement | null>(null)
@@ -158,9 +170,65 @@ export function VidaUpNextCard({
     if (next !== null && !event.currentTarget.contains(next)) focusedRef.current = null
   }
 
+  /* ── Cuando no hay nada que proponer (criterios 377, 192 y 209) ─────────
+   *
+   * **El mismo sitio y la misma forma**, un `<li>` con la misma canaleta y el
+   * mismo nombre de región: quien lee la pantalla siempre sabe dónde mirar
+   * para saber qué sigue. Lo que cambia es el tono —apagado y punteado— y lo
+   * que se dice: un dato, no un reproche.
+   *
+   * Sale **después de los hooks y con el mismo componente y la misma `key`**,
+   * así que pasar de proponer a no proponer no desmonta la tarjeta: React la
+   * actualiza en su sitio (criterios 205 y 379).
+   *
+   * Aquí no hay salidas debajo: «Empezar algo» **es** la misma hoja a la que
+   * llevaría «Empezar otra cosa», y repetirla sería un toque de adorno.
+   */
+  if (upNext.variant === 'empty') {
+    return (
+      <li
+        className={styles.row}
+        data-variant="empty"
+        onFocus={rememberFocus}
+        onBlur={forgetFocusIfItLeft}
+      >
+        {/* La canaleta va **vacía** (criterio 371): no hay hora de plantilla
+            que enseñar, y un «—» o la hora actual serían un dato falso. */}
+        <span className={styles.gutter}>
+          <span className={styles.tick} aria-hidden />
+        </span>
+
+        <section className={styles.card} aria-label={upNext.regionLabel}>
+          <p className={styles.kicker}>{upNext.kicker}</p>
+          {/* Lo cierto y nada más: a qué hora se acaba tu día y cuánto te
+              queda, **con los números de la barra de arriba** (criterio 377).
+              Ni una sugerencia inventada para rellenar, ni una palabra que
+              suene a que falta algo (criterios 192 y 210). */}
+          <p className={styles.empty}>{upNext.emptyLine}</p>
+          {upNext.canStart ? (
+            <button
+              type="button"
+              className={`${styles.play} ${styles.playQuiet}`}
+              onClick={onStart}
+              aria-label={upNext.buttonSrLabel}
+            >
+              <span aria-hidden>▶</span> {upNext.buttonLabel}
+            </button>
+          ) : (
+            <p className={styles.blocked}>{upNext.blockedNote}</p>
+          )}
+        </section>
+      </li>
+    )
+  }
+
   return (
     <li
       className={styles.row}
+      // El trazo apagado y punteado de «ya no queda nada» (criterio 377) sale
+      // de aquí: **la misma forma**, un tono más bajo. Nada de esto cambia el
+      // sitio ni el nombre de la región.
+      data-variant={upNext.variant}
       style={colorStyle}
       onFocus={rememberFocus}
       onBlur={forgetFocusIfItLeft}
@@ -257,16 +325,28 @@ export function VidaUpNextCard({
         </p>
 
         {/* Las salidas, **debajo y en pequeño**, sin competir con el botón y
-            **ninguna en un menú** (criterio 376). */}
+         **ninguna en un menú** (criterio 376). */}
         <p className={styles.exits}>
-          {upNext.exits.othersCount > 0 ? (
+          {upNext.exits.othersCount > 0 && onSeeOthers ? (
             <button type="button" className={styles.exit} onClick={onSeeOthers}>
               Ver las otras {upNext.exits.othersCount}
             </button>
           ) : null}
-          <button type="button" className={styles.exit} onClick={onStartSomethingElse}>
-            Empezar otra cosa
-          </button>
+          {/* **«Ya la hice», escrita y no escondida en un menú** (criterio
+              197), y **solo cuando la hora ya pasó**. Va en la misma línea de
+              salidas, en el orden del render («Ya la hice · Empezar otra
+              cosa»): en pequeño, sin el peso del botón, para no quitarle ni un
+              toque ni un píxel al arranque. */}
+          {upNext.exits.showDidIt && onDidIt ? (
+            <button type="button" className={styles.exit} onClick={onDidIt}>
+              Ya la hice
+            </button>
+          ) : null}
+          {onStartSomethingElse ? (
+            <button type="button" className={styles.exit} onClick={onStartSomethingElse}>
+              Empezar otra cosa
+            </button>
+          ) : null}
         </p>
       </section>
     </li>

@@ -240,3 +240,45 @@
   outline: 2px solid var(--aura-ring-from, var(--color-success));
   outline-offset: 2px;
 }
+
+/* ── Cuando no hay nada que proponer (criterio 377) ───────────────────────────
+   **La misma forma, un tono más bajo**: mismo ancho, misma canaleta, mismo
+   radio. Lo que cambia es el trazo —punteado y en el borde neutro— y que el
+   fondo deja de tener el tinte mint: la tarjeta sigue siendo la tarjeta, pero
+   no está proponiendo nada. Sigue sin usar **nunca** el punteado violeta del
+   aviso de FEAT-007 (criterio 214), y el color sigue saliendo de tokens, que
+   es lo que la deja legible en tema oscuro. */
+.row[data-variant='empty'] {
+  .card {
+    border: 1.5px dashed var(--color-border);
+    background: color-mix(in srgb, var(--color-text) 3%, var(--color-surface));
+  }
+
+  .kicker {
+    color: var(--color-text-secondary);
+  }
+
+  .tick {
+    border-color: color-mix(in srgb, var(--color-text-secondary) 40%, transparent);
+  }
+}
+
+/* Lo cierto: a qué hora acaba tu día y cuánto te queda. Es una frase, no un
+   aviso: sin icono de alarma y sin negrita de titular. */
+.empty {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* «▶ Empezar algo»: el mismo botón, **en hueco**. No compite con el «Empezar
+   ahora» de la propuesta —no hay propuesta con la que competir— y se distingue
+   de él para que nadie lo lea como si hubiera algo que arrancar. */
+.playQuiet {
+  border: 1.5px solid color-mix(in srgb, var(--aura-ring-from, var(--color-success)) 45%, transparent);
+  background: transparent;
+  color: color-mix(in srgb, var(--aura-ring-from, var(--color-success)) 75%, var(--color-text));
+}

@@ -20,7 +20,12 @@
 import type { AgendaBlock } from '@/features/vida/utils/vida-agenda.utils'
 import type { BlockExecution } from '@/features/vida/utils/vida-execution.utils'
 import type { ExecutionEntry } from '@/features/vida/utils/vida-execution.utils'
-import { formatDurationMinutes, formatTimeForDisplay, minutesToTime } from '@/features/vida/utils/vida-time.utils'
+import {
+  formatDurationFromMinutes,
+  formatDurationMinutes,
+  formatTimeForDisplay,
+  minutesToTime,
+} from '@/features/vida/utils/vida-time.utils'
 
 /* ── 1. Qué está resuelto ─────────────────────────────────────────────────
  *
@@ -123,9 +128,7 @@ export type FindAnchorInput = {
  * que **no hay tarjeta** — que es la mitad del criterio 180.
  */
 export function findUpNextAnchorId({ entries, byBlockId }: FindAnchorInput): string | null {
-  const runningSession = entries.find(
-    (entry) => entry.kind === 'session' && entry.span.isRunning,
-  )
+  const runningSession = entries.find((entry) => entry.kind === 'session' && entry.span.isRunning)
   if (runningSession) return runningSession.id
 
   const runningBlock = entries.find(
@@ -148,7 +151,7 @@ export type UpNextExits = {
   showDidIt: boolean
 }
 
-export type UpNext = {
+export type UpNextProposal = {
   variant: 'proposal'
   /** La fila de la que cuelga: `findUpNextAnchorId`. */
   anchorId: string
@@ -182,6 +185,41 @@ export type UpNext = {
   blockedNote: string | null
 }
 
+/**
+ * **La cara de cuando no hay nada que proponer** (criterios 377, 192 y la
+ * segunda mitad del 209). El mismo sitio y la misma forma que la propuesta —la
+ * tarjeta cuelga del mismo ancla y se llama igual para quien la lee con
+ * lector—, en trazo apagado, **sin titular de actividad**: no se inventa una
+ * sugerencia para rellenar, no se propone algo ya hecho y no se queda muda.
+ *
+ * La canaleta va **vacía** (criterio 371): no hay hora de plantilla que
+ * enseñar, y un «—» o la hora actual serían un dato falso.
+ */
+export type UpNextEmpty = {
+  variant: 'empty'
+  anchorId: string
+  /**
+   * **Por qué no hay propuesta**, que es lo que decide qué se lee:
+   *
+   * - `template-done` — la plantilla se acabó: se dice cuánto queda de día.
+   * - `execution-unknown` — no se pudo cargar lo vivido: **no** se afirma que
+   *   no queda nada (criterio 209), se dice que falta ese dato.
+   */
+  reason: 'template-done' | 'execution-unknown'
+  /** Vacía siempre: aquí no hay hora de plantilla (criterio 371). */
+  gutterLabel: ''
+  kicker: string
+  /** «Tu martes se acaba a las 22:00. Te quedan 3h 8.» */
+  emptyLine: string
+  regionLabel: string
+  buttonLabel: string
+  buttonSrLabel: string
+  canStart: boolean
+  blockedNote: string | null
+}
+
+export type UpNext = UpNextProposal | UpNextEmpty
+
 export type BuildUpNextInput = {
   block: AgendaBlock
   anchorId: string
@@ -199,6 +237,15 @@ export type BuildUpNextInput = {
 }
 
 const UP_NEXT_KICKER = 'Lo que viene'
+/**
+ * **«se pasó de la hora» es un dato, no un reproche** (criterios 193 y 210).
+ * Va pegado al mismo rótulo de siempre porque **nada más cambia**: mismo sitio,
+ * mismo botón, misma frase de verdad. Sin color de alarma, sin exclamación y
+ * sin una segunda tarjeta.
+ */
+const UP_NEXT_KICKER_OVERDUE = 'Lo que viene · se pasó de la hora'
+/** El rótulo de la cara apagada: un dato, no un reproche (criterios 377, 210). */
+const UP_NEXT_EMPTY_KICKER = 'Ya no queda nada en tu plantilla'
 const UP_NEXT_REGION_LABEL = 'Lo que viene'
 
 /**
@@ -224,7 +271,7 @@ export function buildUpNext({
   openCount,
   canStart,
   blockedNote = null,
-}: BuildUpNextInput): UpNext {
+}: BuildUpNextInput): UpNextProposal {
   const title = block.item.activity?.title ?? 'Actividad'
   const category = block.item.activity?.category ?? null
   const startTime = minutesToTime(block.startMinutes)
@@ -254,7 +301,7 @@ export function buildUpNext({
     title,
     icon: category?.icon ?? null,
     color: category?.color ?? null,
-    kicker: UP_NEXT_KICKER,
+    kicker: isOverdue ? UP_NEXT_KICKER_OVERDUE : UP_NEXT_KICKER,
     metaLine: `En tu plantilla, a las ${startLabel} · suele durarte ${durationLabel}`,
     truthLine,
     isOverdue,
@@ -263,9 +310,85 @@ export function buildUpNext({
     buttonSrLabel: `Empezar ${title} ahora`,
     exits: {
       othersCount: Math.max(0, openCount - 1),
-      // La tajada 2 es la que la enciende con `isOverdue` (criterios 193 y 197).
-      showDidIt: false,
+      // **Solo cuando la hora ya pasó** (criterio 197). Antes de la hora no
+      // tiene sentido y le quitaría sitio al botón, que es lo único que se
+      // toca en el caso normal.
+      showDidIt: isOverdue,
     },
+    canStart,
+    blockedNote: canStart ? null : blockedNote,
+  }
+}
+
+/* ── 5. Cuando no hay nada que proponer ───────────────────────────────────── */
+
+export type BuildUpNextEmptyInput = {
+  anchorId: string
+  reason: 'template-done' | 'execution-unknown'
+  /** El día de la semana en minúsculas, tal como lo escribe `VIDA_DAY_LABELS`. */
+  dayLabel: string
+  /** `HH:mm` del fin del día: **el mismo `dayHours.endTime` que pinta la barra**. */
+  dayEndTime: string
+  /**
+   * Los minutos que le quedan al día, **los mismos que `getDayBudget` ya puso
+   * en la barra de arriba** (criterio 377). No se rehace la resta aquí: si la
+   * tarjeta dijera otra cosa que la línea que tiene tres dedos por encima,
+   * sería un defecto aunque la cuenta fuese correcta.
+   */
+  remainingMinutes: number | null
+  canStart: boolean
+  blockedNote?: string | null
+}
+
+/**
+ * **«Ya no queda nada en tu plantilla»** (criterio 377) y **«no se pudo cargar
+ * lo que llevas hecho»** (criterio 209, su segunda mitad): las dos caras que no
+ * proponen nada, con el mismo botón de salida.
+ *
+ * Tres cosas que no son de estilo:
+ *
+ * 1. **No es un fallo del usuario.** La plantilla se acabó y eso es un dato:
+ *    ni «vacío», ni «todavía no has», ni una cara de que falta algo (criterios
+ *    192 y 210). Se dice lo cierto —cuánto queda de día— y se deja el botón.
+ * 2. **Los números son los de la barra**, no una cuenta nueva: entran ya
+ *    calculados y se escriben con los **mismos formateadores** que usa
+ *    `VidaDayBudget` (`formatDurationFromMinutes` y `formatTimeForDisplay`).
+ *    Por eso «3h 8» y no «3 h 8»: el render dibuja lo segundo, pero lo que
+ *    manda es que las dos líneas de la pantalla digan lo mismo.
+ * 3. **Sin saber lo vivido no se afirma que no queda nada** (criterio 209): con
+ *    `execution-unknown` el rótulo sigue siendo «Lo que viene» y lo que se dice
+ *    es que falta ese dato.
+ */
+export function buildUpNextEmpty({
+  anchorId,
+  reason,
+  dayLabel,
+  dayEndTime,
+  remainingMinutes,
+  canStart,
+  blockedNote = null,
+}: BuildUpNextEmptyInput): UpNextEmpty {
+  const endLabel = formatTimeForDisplay(dayEndTime)
+  // Con el día ya cerrado no se escribe «te quedan 0m» —es el mismo hallazgo
+  // que la barra respeta desde FEAT-003—: se dice a qué hora acaba y se calla
+  // el resto.
+  const emptyLine =
+    reason === 'execution-unknown'
+      ? 'No pudimos cargar lo que llevas hecho hoy, así que no te proponemos nada.'
+      : remainingMinutes !== null && remainingMinutes > 0
+        ? `Tu ${dayLabel} se acaba a las ${endLabel}. Te quedan ${formatDurationFromMinutes(remainingMinutes)}.`
+        : `Tu ${dayLabel} se acaba a las ${endLabel}.`
+
+  return {
+    variant: 'empty',
+    anchorId,
+    reason,
+    gutterLabel: '',
+    kicker: reason === 'execution-unknown' ? UP_NEXT_KICKER : UP_NEXT_EMPTY_KICKER,
+    emptyLine,
+    regionLabel: UP_NEXT_REGION_LABEL,
+    buttonLabel: 'Empezar algo',
+    buttonSrLabel: 'Empezar algo',
     canStart,
     blockedNote: canStart ? null : blockedNote,
   }

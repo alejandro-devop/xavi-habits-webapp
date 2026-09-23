@@ -8,6 +8,7 @@ import type {
 } from '@/features/vida/utils/vida-execution.utils'
 import {
   buildUpNext,
+  buildUpNextEmpty,
   collectResolvedBlockIds,
   findUpNextAnchorId,
   pickUpNextBlock,
@@ -368,9 +369,24 @@ describe('buildUpNext — lo que se lee', () => {
     }
   })
 
-  it('marca que la hora ya pasó sin decirlo todavía en el rótulo (la tajada 2 lo escribe)', () => {
-    const upNext = buildUpNext({
-      block: block('work', 780, 240),
+  /* ── Los dos bordes (tajada 2) ──────────────────────────────────────────
+   *
+   * Criterios 192, 193, 197, 209 (segunda mitad) y 377.
+   */
+
+  it('con la hora pasada lo dice en el rótulo y **nada más cambia** (criterio 193)', () => {
+    const work = block('work', 780, 240)
+    const aTiempo = buildUpNext({
+      block: work,
+      anchorId: 'now',
+      usualMinutes: null,
+      runningTitle: null,
+      nowMinutes: 780,
+      openCount: 1,
+      canStart: true,
+    })
+    const pasada = buildUpNext({
+      block: work,
       anchorId: 'now',
       usualMinutes: null,
       runningTitle: null,
@@ -379,8 +395,111 @@ describe('buildUpNext — lo que se lee', () => {
       canStart: true,
     })
 
-    expect(upNext.isOverdue).toBe(true)
-    expect(upNext.kicker).toBe('Lo que viene')
-    expect(upNext.exits.showDidIt).toBe(false)
+    // A su hora en punto **todavía no ha pasado**: es el mismo instante en que
+    // la regla del criterio 375 la elige por primera vez.
+    expect(aTiempo.isOverdue).toBe(false)
+    expect(aTiempo.kicker).toBe('Lo que viene')
+
+    expect(pasada.isOverdue).toBe(true)
+    expect(pasada.kicker).toBe('Lo que viene · se pasó de la hora')
+    // **Nada más cambia**: mismo botón, misma frase de verdad, misma meta.
+    expect(pasada.buttonLabel).toBe(aTiempo.buttonLabel)
+    expect(pasada.buttonSrLabel).toBe(aTiempo.buttonSrLabel)
+    expect(pasada.truthLine).toBe(aTiempo.truthLine)
+    expect(pasada.metaLine).toBe(aTiempo.metaLine)
+    expect(pasada.gutterLabel).toBe(aTiempo.gutterLabel)
+    // Sin exclamaciones y sin adjetivos: es un dato.
+    expect(pasada.kicker).not.toMatch(/[!¡]/)
+  })
+
+  it('«Ya la hice» solo cuando la hora ya pasó (criterio 197)', () => {
+    const work = block('work', 780, 240)
+    const antes = buildUpNext({
+      block: work,
+      anchorId: 'now',
+      usualMinutes: null,
+      runningTitle: null,
+      nowMinutes: 700,
+      openCount: 1,
+      canStart: true,
+    })
+    const despues = buildUpNext({
+      block: work,
+      anchorId: 'now',
+      usualMinutes: null,
+      runningTitle: null,
+      nowMinutes: 820,
+      openCount: 1,
+      canStart: true,
+    })
+
+    expect(antes.exits.showDidIt).toBe(false)
+    expect(despues.exits.showDidIt).toBe(true)
+  })
+
+  describe('cuando no hay nada que proponer', () => {
+    const base = {
+      anchorId: 'now',
+      dayLabel: 'martes',
+      dayEndTime: '22:00',
+      remainingMinutes: 188,
+      canStart: true,
+    }
+
+    it('dice a qué hora acaba el día y cuánto queda, con los números de la barra (criterio 377)', () => {
+      const empty = buildUpNextEmpty({ ...base, reason: 'template-done' })
+
+      expect(empty.variant).toBe('empty')
+      expect(empty.kicker).toBe('Ya no queda nada en tu plantilla')
+      // 188 min se escriben **igual** que los escribe `VidaDayBudget`, que usa
+      // `formatDurationFromMinutes` sobre `budget.remainingMinutes`.
+      expect(empty.emptyLine).toBe('Tu martes se acaba a las 22:00. Te quedan 3h 8.')
+      expect(empty.buttonLabel).toBe('Empezar algo')
+      // La canaleta va vacía: no hay hora de plantilla que enseñar (371).
+      expect(empty.gutterLabel).toBe('')
+      // Ni una sugerencia inventada ni ninguna hora de fin estimada (373).
+      expect(empty.emptyLine).not.toMatch(/acabarías|podrías|te sugerimos/i)
+    })
+
+    it('ni reproche ni cara de que falta algo (criterios 192 y 210)', () => {
+      const empty = buildUpNextEmpty({ ...base, reason: 'template-done' })
+      const reproach =
+        /tarde|te saltaste|perdiste|fallaste|deberías|desperdicio|vacío|todavía no has/i
+
+      for (const text of [empty.kicker, empty.emptyLine, empty.buttonLabel, empty.regionLabel]) {
+        expect(text).not.toMatch(reproach)
+      }
+      // Se llama igual que siempre: el mismo sitio y la misma forma (377).
+      expect(empty.regionLabel).toBe('Lo que viene')
+    })
+
+    it('con el día ya terminado no escribe «te quedan 0m»', () => {
+      const empty = buildUpNextEmpty({ ...base, reason: 'template-done', remainingMinutes: 0 })
+
+      expect(empty.emptyLine).toBe('Tu martes se acaba a las 22:00.')
+    })
+
+    it('sin saber lo vivido no dice que no queda nada, y deja «Empezar algo» (criterio 209)', () => {
+      const empty = buildUpNextEmpty({ ...base, reason: 'execution-unknown' })
+
+      expect(empty.kicker).toBe('Lo que viene')
+      expect(empty.emptyLine).not.toMatch(/no queda nada/i)
+      expect(empty.emptyLine).toBe(
+        'No pudimos cargar lo que llevas hecho hoy, así que no te proponemos nada.',
+      )
+      expect(empty.buttonLabel).toBe('Empezar algo')
+    })
+
+    it('sin poder empezar, la línea de qué falta en vez de un botón muerto (criterio 189)', () => {
+      const empty = buildUpNextEmpty({
+        ...base,
+        reason: 'template-done',
+        canStart: false,
+        blockedNote: 'Para empezar algo necesitas tu sesión iniciada.',
+      })
+
+      expect(empty.canStart).toBe(false)
+      expect(empty.blockedNote).toBe('Para empezar algo necesitas tu sesión iniciada.')
+    })
   })
 })

@@ -71,6 +71,7 @@ import {
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
 import {
   buildUpNext,
+  buildUpNextEmpty,
   collectResolvedBlockIds,
   findUpNextAnchorId,
   pickUpNextBlock,
@@ -522,13 +523,41 @@ export function VidaHoyPage() {
     if (dayStartMinutes === null || dayEndMinutes === null) return null
     if (nowMinutes < dayStartMinutes || nowMinutes >= dayEndMinutes) return null
     if (isDisabled || isPending || isPlanError) return null
-    if (!executionKnown) return null
 
     const anchorId = findUpNextAnchorId({
       entries: execution.entries,
       byBlockId: execution.byBlockId,
     })
     if (anchorId === null) return null
+
+    // Qué falta para poder empezar (criterio 189). La pregunta de la sesión de
+    // otro día **ya está en la barra fija del módulo**, que sigue en todas las
+    // pantallas (criterio 203): la tarjeta lleva hasta ahí, no estrena un
+    // segundo sitio donde contestarla.
+    const blockedNote = openSession.isFromAnotherDay
+      ? 'Tienes una sesión de otro día sin cerrar. Contéstala en la barra de arriba y podrás empezar esto.'
+      : 'Para empezar algo necesitas tu sesión iniciada.'
+    // Los dos números de la cara apagada salen **de la barra de arriba**
+    // (criterio 377): `dayHours.endTime` y el `remainingMinutes` que ya calculó
+    // `getDayBudget`. Aquí no se rehace ninguna resta: si esta tarjeta dijera
+    // otra cosa que la línea que tiene tres dedos por encima, sería un defecto
+    // aunque la cuenta fuese correcta.
+    const emptyInput = {
+      anchorId,
+      dayLabel: VIDA_DAY_LABELS[getVidaDayOfWeek(date)],
+      dayEndTime: dayHours.endTime,
+      remainingMinutes: budget.remainingMinutes,
+      canStart,
+      blockedNote,
+    }
+
+    // **Sin saber lo vivido no se propone, y tampoco se dice que no queda
+    // nada** (criterio 209): proponer sería afirmar lo que no se sabe, y callar
+    // dejaría la pantalla sin salida. Se dice qué falta y se deja «Empezar
+    // algo».
+    if (!executionKnown) {
+      return buildUpNextEmpty({ ...emptyInput, reason: 'execution-unknown' })
+    }
 
     const resolvedBlockIds = collectResolvedBlockIds({
       blocks: agenda.blocks,
@@ -537,7 +566,11 @@ export function VidaHoyPage() {
       couldNotItemIds,
     })
     const block = pickUpNextBlock({ blocks: agenda.blocks, resolvedBlockIds, nowMinutes })
-    if (block === null) return null
+    // **Ya no queda nada en tu plantilla** (criterio 377), y es exactamente lo
+    // mismo en un día sin plan (criterio 192): el mismo sitio y la misma forma,
+    // en apagado, diciendo lo cierto. Sin inventar una sugerencia para rellenar
+    // y sin proponer algo ya hecho.
+    if (block === null) return buildUpNextEmpty({ ...emptyInput, reason: 'template-done' })
 
     // El nombre de lo que está corriendo, para la coletilla del criterio 378.
     // Sale del **ancla**, no de la sesión abierta a secas: si el ancla es la
@@ -558,13 +591,7 @@ export function VidaHoyPage() {
       nowMinutes,
       openCount: agenda.blocks.length - resolvedBlockIds.size,
       canStart,
-      // Qué falta para poder empezar (criterio 189). La pregunta de la sesión
-      // de otro día **ya está en la barra fija del módulo**, que sigue en
-      // todas las pantallas (criterio 203): la tarjeta lleva hasta ahí, no
-      // estrena un segundo sitio donde contestarla.
-      blockedNote: openSession.isFromAnotherDay
-        ? 'Tienes una sesión de otro día sin cerrar. Contéstala en la barra de arriba y podrás empezar esto.'
-        : 'Para empezar algo necesitas tu sesión iniciada.',
+      blockedNote,
     })
   }, [
     isToday,
@@ -583,6 +610,8 @@ export function VidaHoyPage() {
     usualDurationsByActivity,
     canStart,
     openSession.isFromAnotherDay,
+    date,
+    budget.remainingMinutes,
   ])
 
   // **Dos avisos como mucho, y nunca dos del mismo bloque** (criterio 88). La
@@ -1106,7 +1135,15 @@ export function VidaHoyPage() {
   // **Lo que viene**, ya construida antes de la lista: la lista solo decide
   // **dónde** entra (criterio 370). Sin propuesta no se pinta ningún nodo, ni
   // vacío ni escondido por CSS (criterio 180).
-  const upNextCard = upNext ? (
+  const upNextCard =
+    upNext === null ? null : upNext.variant === 'empty' ? (
+      // **La cara de cuando no queda nada** (criterios 377, 192 y la segunda
+      // mitad del 209). Mismo componente y misma `key` que la propuesta, así
+      // que pasar de una a otra **no desmonta** la tarjeta (criterios 205 y
+      // 379). Su botón es «▶ Empezar algo»: la **misma** hoja de siempre, no
+      // una segunda (criterio 187), y por eso no lleva salidas debajo.
+      <VidaUpNextCard key="up-next" upNext={upNext} onStart={() => openLogSheet({ mode: 'start' })} />
+    ) : (
     <VidaUpNextCard
       key="up-next"
       upNext={upNext}
@@ -1130,11 +1167,24 @@ export function VidaHoyPage() {
       // arriba del todo (D1, opción (c)): cero UI nueva.
       onStartSomethingElse={() => openLogSheet({ mode: 'start' })}
       onSeeOthers={() => openLogSheet({ mode: 'start' })}
+      // **«Ya la hice»: la misma función que ya usan Hoy y Revisión**
+      // (criterio 197). `markBlockDone` es la que registra la sesión con la
+      // hora y la duración planeadas, recortada a «ahora»; aquí no se copia
+      // esa aritmética, se llama. El bloque sale de la misma lista de la que
+      // salió la propuesta, por su `id`.
+      onDidIt={
+        upNext.exits.showDidIt
+          ? () => {
+              const block = agenda.blocks.find((candidate) => candidate.id === upNext.blockId)
+              if (block) markBlockDone(block)
+            }
+          : undefined
+      }
       // La misma variable que ya frena el «▶ Empezar» del bloque: dos toques
       // no crean dos sesiones (criterio 188).
       isSessionBusy={sessionActions.isBusy}
     />
-  ) : null
+    )
 
   // La marca de «Ahora» la coloca `buildDayAgenda`, dentro del tramo que
   // contiene al reloj: aquí solo se pinta. Antes se decidía en esta página

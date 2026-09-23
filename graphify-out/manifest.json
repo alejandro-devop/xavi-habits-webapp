@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790137540.0111482,
-    "ast_hash": "dc94a4fb5ba361ee0b1b1763c1facf92",
+    "mtime": 1790165188.4876173,
+    "ast_hash": "7518eca196249d2ef6ac2977efc341f6",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790162991.5716274,
-    "ast_hash": "6a5174332f91fd7eccb863df9bbea8bc",
+    "mtime": 1790164315.9327595,
+    "ast_hash": "e587e51c15781bd87da6a03f26856c38",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790162815.2399414,
-    "ast_hash": "406a0731bc52e9f50888ea946b6afc69",
+    "mtime": 1790164376.3558428,
+    "ast_hash": "30f94bf76b2c7b5f4325ce8f9acb6279",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790139373.5862565,
-    "ast_hash": "e3fdb782578023efd64ebda7d53b9c5b",
+    "mtime": 1790165018.5141163,
+    "ast_hash": "634637ab9b7f33660d7d69de28b06678",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3725,8 +3725,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-010-vida-hoy-que-toca-ahora.md": {
-    "mtime": 1790114454.6221066,
-    "ast_hash": "78fc35e1296464ef9383f225c4778021",
+    "mtime": 1790164550.1188126,
+    "ast_hash": "22efc150b50c5643acab8f3996858717",
     "semantic_hash": ""
   },
   "docs/features/FEAT-011-vida-hoy-registrar-en-hueco.md": {
@@ -3810,8 +3810,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx": {
-    "mtime": 1790129317.0261664,
-    "ast_hash": "b53af25d7af35954d793d2b4d3d31bc9",
+    "mtime": 1790164738.4178443,
+    "ast_hash": "460a2fcea45f56309b1e1785387678a6",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaUpNextCard/index.ts": {
@@ -3820,13 +3820,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-up-next.utils.test.ts": {
-    "mtime": 1790110759.5169888,
-    "ast_hash": "16b6fe1235e4e35344de65af6843d448",
+    "mtime": 1790164859.2467153,
+    "ast_hash": "cf61cd5ed37e44b2c0d0305390b9eea7",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-up-next.utils.ts": {
-    "mtime": 1790110232.2335556,
-    "ast_hash": "a7bf4818cc406209a1afbfd327b834e9",
+    "mtime": 1790164738.5038457,
+    "ast_hash": "55147d866827c89d79a32ac73fab1f82",
     "semantic_hash": ""
   },
   "docs/features/FEAT-016-vida-barra-de-trabajo.md": {
@@ -4005,8 +4005,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-020-vidrio-sin-blur.md": {
-    "mtime": 1790162985.250041,
-    "ast_hash": "ded818681a0dd0f429f56dcb59d52ebb",
+    "mtime": 1790164300.5494788,
+    "ast_hash": "95f727db532816514737bb0856d39e22",
     "semantic_hash": ""
   }
 }

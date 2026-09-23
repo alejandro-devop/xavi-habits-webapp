@@ -5,7 +5,7 @@ status: building
 architect: yes    # vive dentro de la lista de la agenda y se mueve con la sesión en marcha, y retira dos superficies de FEAT-003 derogando criterios entregados
 area: features/vida
 requested: 2026-09-22
-updated: 2026-09-22   # tajada 1 **aceptada** en segunda revisión (205, 207 y 213 cerrados; 212, 214 y 218 a mano por el usuario). Siguiente: tajada 2
+updated: 2026-09-23   # tajada 2 **aceptada** (192, 193, 197, 377 y la segunda mitad del 209). Las tajadas 1 y 2 aceptadas; la 3 sin empezar. 218 lo cierra el usuario
 ---
 
 # FEAT-010 — Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic
@@ -376,7 +376,7 @@ y, al explicarle qué hacían:
 | # | What it does | State |
 |---|---|---|
 | 1 | **«Lo que viene», dentro de la línea, con la promesa escrita y un clic.** Debajo de lo que está pasando (o en la línea de AHORA), la siguiente cosa de la plantilla con «suele durarte N», **la frase de verdad siempre**, «▶ Empezar ahora» de un solo toque, y las salidas pequeñas debajo. **Ya es útil sola, y es la feature entera en su caso normal:** el usuario pulsa. Criterios 180, 183, 184, 186, 187, 188, 189, 196, 203–217, 370–376, 378, 379. | aceptada |
-| 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo «· se pasó de la hora» con «Ya la hice» escrita, la mitad «ya llegó» de la regla de elección, y el momento en que la plantilla se acabó: cuánto te queda de día y «Empezar algo». Criterios 192, 193, 197, 375 (segunda mitad), 377. | pending |
+| 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo «· se pasó de la hora» con «Ya la hice» escrita, la mitad «ya llegó» de la regla de elección, y el momento en que la plantilla se acabó: cuánto te queda de día y «Empezar algo». Criterios 192, 193, 197, 375 (segunda mitad), 377. | aceptada |
 | 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con sus derogaciones escritas (FEAT-003 18, 19, 23 y la mitad del 48; FEAT-007 la mitad del 91), «+ otra cosa» y «Armar mañana» intactos, y los cuatro caminos comprobados uno a uno. Criterios 380–385. | pending |
 
 **Por qué este orden:** la 1 resuelve **lo que frenaba al usuario** y no depende
@@ -739,7 +739,7 @@ y se cierra en la tajada 2. Queda anotado, no reescrito.
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
 | 1 | **«Lo que viene» dentro de la línea, con la promesa y un clic.** La regla entera, el anclaje, la tarjeta y el arranque de un toque. Sin candidatos, no se pinta nada (eso es la tajada 2). | **crea** `utils/vida-up-next.utils.ts` + `.test.ts` · **crea** `components/VidaUpNextCard/{VidaUpNextCard.tsx,.module.scss,index.ts}` · `VidaHoyPage.tsx:8` (import), tras `:260` (el `useMemo`), tras `:321` (`usualByActivityId`), `:647` (`map`→`flatMap` + `renderEntry`), antes de `:642` (`upNextCard`) · `vida-patterns.utils.ts` tras `:981` + su test **solo si FEAT-011 t3 no ha llegado** · `VidaHoyPage.test.tsx` | 180, 183, 184, 186, 187, 188, 189, 196, 203, 204, 205, 206, 207, 208, 210, 211, 212, 213, 214, 215, 216, 217, 370, 371, 372, 373, 374, **375 entero**, 376, 378, 379 · 209 su primera mitad | aceptada |
-| 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo, «Ya la hice» y la cara apagada con lo que queda de día. | `utils/vida-up-next.utils.ts` (`variant: 'empty'`, `isOverdue`, `showDidIt`) + su test · `VidaUpNextCard.tsx` y su `.module.scss` (trazo apagado y punteado) · `VidaHoyPage.tsx` (pasar `budget`/`dayHours.endTime` y enganchar `markBlockDone` en `:474`) · `VidaHoyPage.test.tsx` (los números coinciden con `VidaDayBudget`) | 192, 193, 197, 377 · 209 su segunda mitad · 218 (el usuario) | pending |
+| 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo, «Ya la hice» y la cara apagada con lo que queda de día. | `utils/vida-up-next.utils.ts` (`variant: 'empty'`, `isOverdue`, `showDidIt`) + su test · `VidaUpNextCard.tsx` y su `.module.scss` (trazo apagado y punteado) · `VidaHoyPage.tsx` (pasar `budget`/`dayHours.endTime` y enganchar `markBlockDone` en `:474`) · `VidaHoyPage.test.tsx` (los números coinciden con `VidaDayBudget`) | 192, 193, 197, 377 · 209 su segunda mitad · 218 (el usuario) | aceptada |
 | 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con los cuatro caminos comprobados uno a uno. | ver el plan de retirada | 380, 381, 382, 383, 384, 385 | pending |
 
 ### El plan de retirada de la tajada 3, archivo a archivo
@@ -1187,6 +1187,206 @@ sigue con `showDidIt: false`.
 
 **Estado del árbol:** sin commitear.
 
+### Tajada 2 — los dos bordes: se pasó la hora, y ya no queda nada
+
+**Resumen para quien revisa:**
+
+1. La tarjeta ya tiene sus **dos bordes**: cuando la hora del ítem propuesto ya
+   pasó, el rótulo lo dice («Lo que viene · se pasó de la hora») y aparece **«Ya
+   la hice»** entre las salidas; cuando no hay nada que proponer, la misma
+   tarjeta se apaga y dice **cuánto te queda de día**, con «▶ Empezar algo».
+2. Está en `vida-up-next.utils.ts` (`UpNextEmpty` + `buildUpNextEmpty`, y
+   `kicker`/`showDidIt` en `buildUpNext`), en `VidaUpNextCard.tsx` + su
+   `.module.scss`, y en `VidaHoyPage.tsx` (el `useMemo` y el montaje).
+3. **Lo que más probablemente he roto:** el `UpNext` pasó de ser un objeto a ser
+   una **unión discriminada**, así que cualquier sitio que diera por hecho que
+   hay `title`/`blockId` deja de compilar —hoy solo lo monta `VidaHoyPage`, y
+   `pnpm typecheck` está limpio— y, sobre todo, **hay una pantalla más donde
+   antes no había ninguna**: en el día de hoy, con el plan resuelto o vacío,
+   ahora siempre hay una tarjeta. Si algo contaba `listitem`s o daba por hecho
+   «sin propuesta, sin nodo», ahí es donde se cae. El segundo sitio a mirar es
+   el rótulo: **tres pruebas de la tajada 1 esperaban «Lo que viene» a secas** y
+   las he cambiado (el día de las pruebas propone algo de las 8:00 a las 9:24,
+   o sea, siempre pasado de hora).
+
+**Qué se construyó:**
+
+- `src/features/vida/utils/vida-up-next.utils.ts`
+  - `UpNext` pasa a ser `UpNextProposal | UpNextEmpty`. `buildUpNext` devuelve
+    `UpNextProposal`; **nada de su aritmética cambia**.
+  - `kicker` dice «Lo que viene · se pasó de la hora» cuando `isOverdue`
+    (criterio 193), y `exits.showDidIt` pasa a ser `isOverdue` (criterio 197).
+  - **Nuevo** `buildUpNextEmpty({ anchorId, reason, dayLabel, dayEndTime,
+    remainingMinutes, canStart, blockedNote })`, con dos razones:
+    `template-done` («Ya no queda nada en tu plantilla» + «Tu martes se acaba a
+    las 22:00. Te quedan 3h 8.») y `execution-unknown` (criterio 209: el rótulo
+    **no** afirma que no queda nada, dice que falta lo vivido).
+- `src/features/vida/utils/vida-up-next.utils.test.ts` — siete casos nuevos; el
+  que decía «la tajada 2 lo escribe» pasa a afirmar lo que ahora se escribe.
+- `src/features/vida/components/VidaUpNextCard/VidaUpNextCard.tsx` — retorno
+  temprano para `variant: 'empty'` (mismo `<li>`, misma canaleta —**vacía**—,
+  mismo `aria-label` de región) y la salida «Ya la hice» en la misma línea de
+  las otras dos. `onStartSomethingElse`, `onSeeOthers` y el nuevo `onDidIt` son
+  opcionales: la cara apagada no los necesita.
+- `…/VidaUpNextCard.module.scss` — `.row[data-variant='empty']` (trazo
+  **punteado** sobre `--color-border`, fondo sin tinte mint, rótulo y punto en
+  gris), `.empty` y `.playQuiet` (el botón en hueco del render).
+- `src/features/vida/pages/VidaHoyPage.tsx` — el `useMemo` deja de devolver
+  `null` en dos ramas: sin saber lo vivido devuelve la cara `execution-unknown`,
+  y sin candidato la cara `template-done`, alimentada con **`dayHours.endTime` y
+  `budget.remainingMinutes`, los mismos que ya pinta `VidaDayBudget`**. El
+  montaje añade `onDidIt`, que llama a **`markBlockDone(block)`** —la función
+  que ya existía— buscando el bloque por `id` en `agenda.blocks`.
+- `src/features/vida/pages/VidaHoyPage.test.tsx` — nueve casos nuevos y cinco
+  tocados (ver «riesgos»).
+
+**Por qué así, y qué descarté:**
+
+- **Unión discriminada y no un objeto con campos opcionales.** Con campos
+  opcionales, el componente tendría que adivinar en qué cara está y el día que
+  alguien pinte `metaLine` en la cara apagada nadie se entera. Con la unión, el
+  compilador lo impide.
+- **Retorno temprano en el componente en vez de envolver el cuerpo en un
+  ternario.** Es lo que deja **el diff de la tajada 1 intacto** y, medido en el
+  navegador y en el test, React conserva el mismo `<section>` al pasar de
+  proponer a no proponer: no hay remonte y el criterio 205 sigue en pie.
+- **Los números de la cara apagada entran ya calculados.** Rehacer la resta en
+  el util habría sido más «puro», pero el criterio manda que digan lo mismo que
+  la barra: se consume `budget.remainingMinutes` y se escribe con
+  `formatDurationFromMinutes`, el mismo formateador.
+- **`showDidIt` no mira `canStart`.** «Ya la hice» es un registro, no un
+  arranque: la fila del bloque la ofrece con `executionKnown && canLogPast`, que
+  en el día de hoy y con la tarjeta pintada ya se cumple. Atarla a `canStart`
+  la habría escondido justo cuando hay una sesión de otro día sin cerrar.
+- **Dos desviaciones del render 14, dichas en voz alta:**
+  1. El render escribe «Te quedan **3 h 8**» y la tarjeta escribe «**3h 8**»,
+     porque es **literalmente lo que la barra de arriba imprime**
+     (`formatDurationFromMinutes`). Entre parecerse al render y cuadrar con el
+     número que está tres dedos más arriba, mandó el contexto de la tajada.
+  2. El render pone «Ya la hice · Empezar otra cosa»; la tarjeta pone «Ver las
+     otras N · Ya la hice · Empezar otra cosa». La `N` ya estaba de la tajada 1
+     y el criterio 376 la nombra primero.
+
+**Verificación:**
+
+```
+pnpm typecheck            → limpio
+pnpm lint                 → 14 errores / 0 warnings   (línea base: 14/0)
+pnpm test                 → 2 fallos de 1965          (línea base: 2 de 1951; +14 casos míos, los 2 fallos son los de SearchSelect)
+npx vitest run src/features/vida/utils/vida-up-next.utils.test.ts → 26 passed
+npx vitest run src/features/vida/pages/VidaHoyPage.test.tsx       → 205 passed
+pnpm build                → exit 0 · chunk inicial 1.133,58 kB (base 1.131,64) · CSS 275,91 kB (base 275,17)
+```
+
+El CSS **sube**, que es lo que tiene que pasar al añadir reglas. Comprobado
+además como pide `ENVIRONMENT.md`, comparando **la lista de selectores**
+compilada con `sass --style=compressed` sobre `HEAD` y sobre el árbol:
+perdidos **ninguno**; nuevos cinco (`.row[data-variant=empty] .card`,
+`… .kicker`, `… .tick`, `.empty`, `.playQuiet`).
+
+**En el navegador** (arnés temporal con `MemoryRouter`, ya borrado: no queda
+ningún `.html` ni `.tsx` de prueba en el árbol), midiendo el DOM en dos anchos
+dentro de un `iframe` del ancho exacto —el panel emula 568 px, así que medir la
+pestaña a pelo habría mentido—:
+
+| | 375 px | 760 px |
+|---|---|---|
+| `scrollWidth` del documento | 375 (sin scroll horizontal) | 760 |
+| `li` de la tarjeta | 343 ancho, `scrollWidth` 343 | 728 / 728 |
+| Las tres salidas | **en la misma fila** (80 + 52 + 103 px) | misma fila |
+| Nombre de ~60 caracteres | recortado con ellipsis, sin desbordar | igual |
+| Cara apagada | 142 px de alto, botón a ancho completo | 122 px |
+
+**En oscuro** (`[data-theme='dark']`, medido con `getComputedStyle`): la cara
+apagada usa `--color-border` **punteado** —nunca el punteado violeta de
+FEAT-007— y sus textos salen en `rgb(168,179,199)` sobre la superficie oscura;
+el «▶ Empezar algo» va en hueco con tinta mint clara. Se lee.
+
+**Criterios que cierra:**
+
+- **193** ✔ Con «Bañarme» de las 8:00 a las 9:24, el rótulo dice «Lo que viene ·
+  se pasó de la hora» y **nada más cambia**: el test compara botón, `truthLine`,
+  `metaLine` y canaleta contra la misma tarjeta a su hora, y son idénticos. Sin
+  color de alarma (el trazo sigue siendo el mint de siempre), sin exclamaciones
+  y sin segunda tarjeta.
+- **197** ✔ «Ya la hice» está **escrita**, en la línea de salidas y fuera de
+  todo menú, y **solo cuando la hora ya pasó** (hay un caso que lo comprueba
+  antes de la hora). Al pulsarla, `createFollowUpMutation.mutate` recibe
+  exactamente `{activityId:'a-b1', date:'2026-09-18', startTime:'08:00',
+  durationMinutes:45, notes:null}` —**lo mismo, literal, que el «Lo hice» del
+  bloque** en el caso del criterio 41— y no arranca ninguna sesión ni abre
+  ninguna hoja.
+- **377** ✔ Mismo sitio (hija directa del `<ol>`, justo tras la línea de AHORA),
+  misma forma, trazo apagado y punteado, canaleta **vacía** (`<time>` ausente).
+  Dice «Ya no queda nada en tu plantilla» y «Tu viernes se acaba a las 23:00. Te
+  quedan 13h 36.», y **un test afirma que la barra de arriba dice «te quedan 13h
+  36 hasta las 23:00»** en la misma pantalla. No propone nada ya hecho ni
+  inventa sugerencias («Poner lavadora», que está en las sugerencias del día, no
+  aparece).
+- **192** ✔ Con el plan vacío se ve **exactamente** esa cara. El «Aún no hay plan
+  para hoy.» sigue donde estaba y **la tarjeta no lo repite**; barrido de las
+  ocho palabras de reproche sobre su DOM, en verde.
+- **209 (segunda mitad)** ✔ Con `activityDayFollowUps` caído, la tarjeta no
+  propone («Bañarme» no aparece), **no dice «no queda nada»** y deja «Empezar
+  algo», que abre la hoja de siempre. La primera mitad sigue cumpliéndose.
+- **204** ✔ Se mantiene: el espía de consultas da los mismos números con la cara
+  apagada y con la propuesta (el caso se reescribió, porque en un día de hoy ya
+  no existe «sin tarjeta»).
+- **210** ✔ Barrido sobre los textos del util y sobre el DOM de la cara apagada.
+  «Se pasó de la hora» sí, que es lo que el render escribe.
+
+**Pendiente de prueba manual (el usuario, con la API despierta):**
+
+- **218** (criterio de fase). `/app/vida/hoy` está detrás del login y ahí no
+  entro. Pasos: (1) un día con algo de la plantilla cuya hora ya pasó → la
+  tarjeta debe ofrecerlo igual, con «· se pasó de la hora» y sin bronca; (2)
+  pulsar **«Ya la hice»** → el bloque pasa a hecho **sin recargar** y la tarjeta
+  pasa a proponer lo siguiente; (3) resolver todo lo del día → la tarjeta se
+  apaga y dice cuánto queda hasta el fin de tu día, **el mismo número que la
+  barra**; (4) con el día ya cerrado la barra deja de decir «te quedan» y la
+  tarjeta dice solo «Tu \<día\> se acaba a las \<hora\>.».
+- **214**, su mitad de oscuro **sobre la pantalla real**: aquí está medido en el
+  arnés, no en `/app/vida/hoy`.
+
+**Riesgos — qué puede haber roto esto:**
+
+1. **Hay tarjeta donde antes no había nada.** En el día de hoy, con lo vivido
+   caído o con el plan resuelto/vacío, ahora siempre se pinta un `<li>` más en
+   el `<ol>` de la agenda. Cualquier prueba o medida que contara filas se mueve.
+2. **Cinco casos de la tajada 1 tocados**, todos por consecuencia directa: el
+   rótulo (183), las salidas (376), el de 208/209 —partido en dos, porque el
+   caído ahora **sí** pinta—, el de 204 y el del criterio 180. **El test
+   intocable del arranque de un toque no se ha tocado**: sigue comparando el
+   array entero (`expect(startSession.mock.calls[0]).toEqual(['a-b1'])`).
+3. **El caso del criterio 180 estaba verde por la razón equivocada** y lo he
+   arreglado: usaba `window.history.pushState`, que el `MemoryRouter` de
+   `renderWithProviders` **no mira**, así que en realidad miraba *hoy con el
+   plan vacío*. Ahora usa `routerProps.initialEntries` y comprueba que la
+   cabecera dice «Jueves 17» antes de afirmar que no hay tarjeta. Es el tipo de
+   trampa que `ENVIRONMENT.md` ya documenta para los mocks: **había otras 20
+   llamadas con `initialEntries` en el mismo archivo y esta era la única con
+   `pushState`**.
+4. **Un cambio cosmético que no es mío**: `prettier` colapsó tres líneas de
+   `findUpNextAnchorId` en una al formatear el archivo. No cambia nada.
+5. Lo que **no** he tocado y podía tentar: `markBlockDone`, `getDayBudget`,
+   `VidaDayBudget`, el arco de FEAT-019 y el vidrio de FEAT-020. Nada del
+   presupuesto ni del arco entra en este diff.
+
+**Lo que descubrí y no estaba en el plan:**
+
+- El criterio 209 pedía «deja "Empezar algo"» para el caso de lo vivido caído, y
+  el plan lo mandaba a la cara del 377 — pero **esa cara afirma que no queda
+  nada**, que es justo lo que el 209 prohíbe. De ahí el campo `reason`: la misma
+  forma, dos textos. Lo resolví con el criterio del arquitecto por ser menor; si
+  la redacción («No pudimos cargar lo que llevas hecho hoy, así que no te
+  proponemos nada.») no gusta, es una línea.
+- El plan preveía `buildUpNext(… templateHasNothing)`; construí **una función
+  aparte** (`buildUpNextEmpty`) porque la firma de `buildUpNext` exige un
+  `block` que en esa rama no existe.
+
+**Estado del árbol:** sin commitear.
+
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — «Lo que viene», dentro de la línea, con la promesa y un clic
@@ -1498,3 +1698,209 @@ con lo declarado, al kilobyte.
 - **212 (375 px)**, **214 (oscuro y trazo)**, **la mitad visual del 213** y
   **218 (el criterio de fase)**: `/app/vida/hoy` está detrás del login y los
   agentes no entran con credenciales (`ENVIRONMENT.md`). Los pasos están abajo.
+
+### Tajada 2 — los dos bordes: se pasó la hora, y ya no queda nada
+
+**Veredicto: aceptada.** Los cinco criterios de la tajada se cumplen con
+evidencia propia, la línea base no empeora, el test intocable del arranque de un
+toque está **byte a byte igual**, y no encontré ninguna regresión en lo que se
+entregó esta semana. Queda el 218 para el usuario, como estaba previsto.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen):
+
+- **193** ✔ El rótulo pasa a «Lo que viene · se pasó de la hora» y **nada más
+  cambia**: leí el `.module.scss` entero y **no hay ninguna regla que dependa de
+  `isOverdue`** —no existe un `[data-overdue]`—, así que no puede haber color de
+  alarma ni ámbar; medido en el navegador, el trazo sigue siendo el mint de la
+  propuesta. Sin exclamaciones y sin segunda tarjeta (un solo `<li>` en el DOM).
+  Juzgando las palabras, no solo su existencia: «se pasó de la hora» es el
+  sujeto correcto —la hora, no la persona—, no lleva adjetivo ni adverbio de
+  juicio, y el resto de la tarjeta (botón, frase de verdad, meta) es idéntico
+  carácter a carácter al caso a su hora. Pasa.
+- **197** ✔ «Ya la hice» está escrita en la línea de salidas, fuera de todo menú,
+  y solo con `exits.showDidIt = isOverdue`. Y **es la misma función**: el
+  `onDidIt` de la página llama a `markBlockDone(block)`
+  (`VidaHoyPage.tsx:767`), que es literalmente la del «Lo hice» del bloque
+  (`logSessionInput` + `plannedSessionMinutes`). No hay una segunda aritmética;
+  lo verifiqué leyendo la función, no el test.
+- **377** ✔ Mismo `<li>`, misma región (`aria-label` «Lo que viene»), canaleta
+  **vacía** (medido: `li.querySelector('time') === null`), trazo **punteado y
+  neutro** (`getComputedStyle` sobre la tarjeta real: `dashed
+  rgba(28,28,30,0.12)` — nunca el punteado violeta de FEAT-007) y «▶ Empezar
+  algo» que abre `openLogSheet({ mode: 'start' })`. No inventa sugerencias.
+  **Y los números:** no «coinciden por test», **coinciden por construcción**.
+  La tarjeta recibe `budget.remainingMinutes` y `dayHours.endTime`, que son
+  exactamente los dos valores que `VidaDayBudget` imprime
+  (`VidaDayBudget.tsx:102-108`), y los escribe con los mismos formateadores
+  (`formatDurationFromMinutes`, `formatTimeForDisplay`). No hay una segunda
+  resta en ningún sitio: cualquier momento del día da el mismo número en las dos
+  líneas porque es **el mismo número**.
+- **192** ✔ Con el plan vacío, `pickUpNextBlock` devuelve `null` y se pinta
+  exactamente la cara del 377, sin una cara intermedia y sin repetir el «Aún no
+  hay plan para hoy.».
+- **209 (segunda mitad)** ✔ Con `activityDayFollowUps` caído no propone y **no
+  dice que no queda nada**: el `reason: 'execution-unknown'` cambia el texto a
+  «No pudimos cargar lo que llevas hecho hoy, así que no te proponemos nada.» y
+  deja «Empezar algo», que es literalmente lo que pide el criterio.
+- **218** — **pendiente del usuario**, y sigue pendiente: `/app/vida/hoy` está
+  tras el login y ahí no entro. No lo apruebo por simpatía.
+
+**Sobre el campo `reason` que el constructor se inventó:** la distinción es
+**real, no complejidad de más**. El criterio 377 manda afirmar «ya no queda nada
+en tu plantilla» y el 209 **prohíbe exactamente esa afirmación** cuando no se
+sabe qué se ha hecho. Sin un discriminador, una de las dos se incumple: no hay
+tercera opción. Los dos textos dicen la verdad en su rama. La única aspereza es
+que en la rama `execution-unknown` el rótulo sigue siendo «Lo que viene» encima
+de un texto que dice que no se propone nada; es raro de leer, pero es preferible
+a mentir, y el criterio no pide otra cosa. Se queda como hallazgo de redacción,
+no como defecto.
+
+**Las dos desviaciones del render 14: las dos aceptadas.**
+
+1. **«3h 8» en vez de «3 h 8».** Aceptada, y además creo que es la única
+   respuesta correcta: el propio criterio 377 exige que el número **coincida con
+   el de la barra de arriba**, y la barra usa `formatDurationFromMinutes`.
+   Elegir la tipografía del render habría significado un segundo formateador y
+   dos maneras de escribir el mismo minuto a tres dedos de distancia. Entre
+   parecerse al render y decir lo mismo que la línea de encima, manda lo
+   segundo.
+2. **El orden «Ver las otras N · Ya la hice · Empezar otra cosa».** Aceptada,
+   con una matización que el constructor no hizo: **no coincide con la
+   enumeración del criterio 376** (que nombra «Ver las otras N», «Empezar otra
+   cosa» y «Ya la hice», en ese orden) y **sí** con el render («Ya la hice ·
+   Empezar otra cosa»). Ninguna de las dos fuentes dice «en este orden», así que
+   no hay incumplimiento; seguir al render aprobado es la elección defendible.
+   Queda escrito para que nadie lo lea como un descuido.
+
+**El arranque de un toque — comprobado, no creído.** El test intocable
+(`VidaHoyPage.test.tsx:2511`, «un solo toque arranca, y la duración planeada no
+viaja») **no aparece en el diff**: filtré todas las líneas `-` del
+`git diff` del archivo y ninguna toca `startSession.mock.calls[0]`; el único
+cambio cercano está 15 líneas antes, en el caso del rótulo. La aserción sigue
+comparando el **array entero**: `expect(startSession.mock.calls[0]).toEqual(['a-b1'])`.
+Y «Ya la hice» **no le ha robado ni sitio ni toques al botón**: medido en el
+navegador con un `iframe` del ancho exacto (el panel emula 568 px y medir la
+pestaña a pelo miente), el «▶ Empezar ahora» mide **295 px de ancho y arranca en
+y=86** con «Ya la hice» en pantalla, igual que sin ella; las tres salidas viven
+en una línea aparte 130 px más abajo, en 18 px de alto. El botón sigue siendo un
+solo toque y no lo comparte con nadie.
+
+**Anchos, medidos** (`iframe` de ancho exacto sobre el 5173 del usuario, arnés
+temporal borrado antes de reportar — el árbol vuelve a tener solo los 8 archivos
+del constructor):
+
+| | 375 px | 760 px |
+|---|---|---|
+| `documentElement.scrollWidth` | **375** (sin scroll horizontal) | **760** |
+| `li` de la tarjeta | 375 / `scrollWidth` 375 | 760 / 760 |
+| «▶ Empezar ahora» | 295 px, y=86 | 680 px, y=86 |
+| Las tres salidas | misma fila (x 84 · 177 · 241, fin en 344) | misma fila |
+| Nombre de ~60 caracteres | no cambia la altura del `li` (248 px): se recorta | igual |
+| Cara apagada | 122 px de alto, botón a ancho completo | — |
+
+**Qué busqué alrededor, y cómo:**
+
+- `graphify explain "VidaUpNextCard"` y `graphify explain "buildUpNext"`: grado
+  2 y 4, sin más consumidores que su barril. Confirmado abriendo los archivos:
+  **`VidaUpNextCard` y `vida-up-next.utils` solo los monta `VidaHoyPage`**, así
+  que el cambio de `UpNext` a unión discriminada no puede romper a nadie más.
+- **`markBlockDone`**: dos llamadas, la del bloque (`:1040`) y la nueva
+  (`:1179`); `VidaRevisionPage` solo lo cita en comentarios. No se duplicó
+  aritmética.
+- **Lo que el constructor marcó como «lo que más probablemente he roto»** —«hay
+  tarjeta donde antes no había nada»—: **la suite completa está verde en la
+  línea base** (2 fallos de 1965, los dos `SearchSelect` preexistentes; la base
+  era 2 de 1951, y los 14 de más son suyos). Ningún caso que contara filas se
+  cayó.
+- **FEAT-019 y FEAT-020, lo de esta semana:** ni el arco, ni el semáforo, ni el
+  vidrio entran en el diff (8 archivos, todos de «Lo que viene»), y sus casos
+  pasan en la corrida completa. **Bajo el arco no ha vuelto ninguna frase con
+  hora:** `VidaGoalArc.module.scss` **sigue sin la regla `.line`** (la que se
+  quitó en la tajada 5 de FEAT-019) y el arco se pinta **fuera del `<ol>` de la
+  agenda** (`VidaGoalArcRow` en `:1285`; la lista es `agendaList`, `:1193`, y
+  se monta en `:1382`). La tarjeta nueva es **hija del `<ol>`** y cuelga del
+  ancla —sesión viva o marca de AHORA—, así que no puede aterrizar debajo del
+  arco.
+- **CSS, por lista de selectores y no por tamaño**, como manda
+  `ENVIRONMENT.md`: compilé con `sass --style=compressed` el
+  `VidaUpNextCard.module.scss` de `HEAD` y el del árbol (es el **único** `.scss`
+  del diff). **Perdidos: ninguno.** Nuevos: cinco
+  (`.empty`, `.playQuiet`, `.row[data-variant=empty] .card`, `… .kicker`,
+  `… .tick`). No hay ningún comentario abierto.
+- **Línea base:** `pnpm lint` → **14 errores / 0 warnings**; `pnpm test` → **2
+  fallos de 1965**; `pnpm build` → exit 0, chunk inicial **1.133,58 kB** (base
+  1.131,64: +1,94 kB de código propio, **nada de iconos**) y CSS **275,91 kB**
+  (sube, que es lo que tiene que pasar al añadir reglas).
+
+**El test verde por la razón equivocada: el arreglo es correcto, y no hay más.**
+El caso del criterio 180 ahora elige el día con
+`routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] }`, además pone
+`viewedDate = '2026-09-17'` y `plansByDate['2026-09-17'] = PLAN` —o sea, el día
+pasado **tiene plan**, que es lo que hace el caso significativo— y **afirma
+primero que la cabecera dice «Jueves 17»** antes de comprobar que no hay
+tarjeta. Es exactamente el arreglo que hacía falta. **Busqué el mismo vicio en
+el resto:** `grep -rn "pushState"` sobre **todos** los `.test.ts(x)` de `src/`
+devuelve **solo las dos líneas de comentario** del arreglo; no queda ni una
+llamada. Las otras 26 elecciones de día del archivo usan `initialEntries`.
+
+**Estados que nadie construye:**
+
+- **Sin datos** ✔ es justo esta tajada (el 377/192).
+- **Cargando** ✔ el criterio 208 sigue: con lo vivido en vuelo, **ningún nodo**
+  (y hay caso propio, separado del de error).
+- **Error** ✔ el 209, con su rama `execution-unknown`.
+- **Sin permisos** ✔ con `canStart === false` la cara apagada **no pinta el
+  botón**: enseña el `blockedNote` y lleva a la barra. Hallazgo menor: el
+  criterio 377 dice «deja «▶ Empezar algo»» sin condición, y aquí no lo deja;
+  manda el 189, que es la regla explícita y más fuerte. No lo devuelvo por esto,
+  pero queda dicho.
+- **Texto largo** ✔ medido: un nombre de ~60 caracteres no cambia la altura ni
+  produce scroll.
+- **Móvil (375 px)** ✔ medido arriba.
+
+**Hallazgos que no devuelven la tajada:**
+
+1. **Rama muerta.** En `buildUpNextEmpty`, el caso
+   `remainingMinutes === null || <= 0` («Tu viernes se acaba a las 23:00.», sin
+   «Te quedan») **es inalcanzable**: la tarjeta solo se construye con
+   `nowMinutes < dayEndMinutes`, así que `remainingMinutes` siempre es > 0. En
+   consecuencia, **el paso (4) de las pruebas manuales del constructor describe
+   una pantalla que no puede existir**: con el día ya cerrado no hay tarjeta, ni
+   apagada ni de ninguna clase. Es defensa barata, no un defecto; pero el paso
+   manual hay que corregirlo o el usuario buscará algo que no está.
+2. **La cifra se dice dos veces.** «te quedan 13h 36 hasta las 23:00» en la
+   barra y «Tu viernes se acaba a las 23:00. Te quedan 13h 36.» en la tarjeta,
+   en la misma pantalla. Lo exige el criterio 377, así que no es incumplimiento;
+   vale la pena que el usuario lo vea una vez en la pantalla real y decida.
+3. **Orden de las salidas** (arriba), y **rótulo «Lo que viene» sobre un texto
+   que no propone nada** en la rama `execution-unknown`.
+4. **`ENVIRONMENT.md`** —que no toco— está al día en todo lo que usé, salvo una
+   cosa que el constructor descubrió y que se paga cada vez: **el panel del
+   navegador emula 568 px, así que medir anchos en la pestaña a pelo miente; hay
+   que meter la pantalla en un `iframe` del ancho exacto**, y ojo con que un
+   contenedor `flex` encoge el `iframe` e ignora su atributo `width` (me pasó y
+   costó una medición). Eso merece una línea en «Trampas de este repositorio».
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: «Ya la hice» reusa
+`markBlockDone`, no una copia; «Empezar algo» reusa `openLogSheet({ mode:
+'start' })`, no una segunda hoja; los números de la cara apagada **consumen**
+`getDayBudget` y `formatDurationFromMinutes` en vez de rehacer la resta; y no
+hay ningún documento GraphQL nuevo ni consulta nueva (el caso del criterio 204
+compara los dos caminos del mismo `useMemo` y da los mismos espías). Lo único
+nuevo de verdad es `buildUpNextEmpty`, y el plan preveía una firma que no era
+construible.
+
+**Qué queda para prueba manual (el usuario, con sesión y la API despierta):**
+
+1. Abre `/app/vida/hoy` en un día con algo de la plantilla **cuya hora ya pasó**.
+   La tarjeta debe proponerlo igual, con «Lo que viene · se pasó de la hora» y
+   sin ninguna bronca.
+2. Pulsa **«Ya la hice»**. El bloque pasa a hecho **sin recargar** y la tarjeta
+   pasa a proponer lo siguiente.
+3. Resuelve todo lo que te quede del día. La tarjeta se apaga y dice cuánto te
+   queda hasta el fin de tu día: **comprueba que es el mismo número que la barra
+   de arriba**.
+4. Mírala en **oscuro** sobre la pantalla real (aquí está medido en un arnés, no
+   en `/app/vida/hoy`).
+5. Y lo que de verdad cierra la feature (**218**): con la hora pasada delante,
+   **¿pulsas sin miedo a que te registre horas que no vas a pasar?**

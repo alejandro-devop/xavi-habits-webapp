@@ -86,9 +86,21 @@ export function VidaGoalArc({ arc, isPastDay }: VidaGoalArcProps) {
               strokeDasharray={`${arc.share * 100} 100`}
             />
           ) : null}
-          <text className={styles.caption} x="110" y="70" textAnchor="middle" fontSize="9.5">
-            {arc.arcCaption}
-          </text>
+          {/* El rótulo baja hacia el número cuando es de una sola línea, para
+              que el hueco de dentro del arco quede igual de repartido en los
+              dos casos: con dos líneas se apoya en 58 y 71, con una en 70. */}
+          {arc.arcCaption.map((caption, index) => (
+            <text
+              key={caption}
+              className={styles.caption}
+              x="110"
+              y={arc.arcCaption.length > 1 ? 58 + index * 13 : 70}
+              textAnchor="middle"
+              fontSize="9.5"
+            >
+              {caption}
+            </text>
+          ))}
           <text className={styles.value} x="110" y="101" textAnchor="middle" fontSize="32">
             {arc.arcValue}
           </text>

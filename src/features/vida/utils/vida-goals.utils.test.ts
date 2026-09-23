@@ -150,10 +150,48 @@ describe('buildGoalArcs', () => {
 
     expect(arcs[0].stopAtTime).toBe('16:05')
     expect(arcs[0].arcValue).toBe('16:05')
-    expect(arcs[0].arcCaption).toBe('A este ritmo paras a las')
+    expect(arcs[0].arcCaption).toEqual(['A este ritmo', 'paras a las'])
     expect(arcs[0].line).toBe('Llevas 3 h 40 min. A este ritmo paras a las 16:05.')
     expect(arcs[0].passedAtTime).toBeNull()
   })
+
+  it.each([
+    ['a este ritmo', 11 * 60 + 45, 220, false],
+    ['sin nada trabajado', 11 * 60 + 45, 0, false],
+    ['pasada la meta', 18 * 60, 560, false],
+    ['un dia que ya termino', 11 * 60 + 45, 300, true],
+  ])(
+    'ninguna linea del rotulo se sale del arco: %s',
+    (_caso, nowMinutes, workedMinutes, isPastDay) => {
+      const { arcs } = buildGoalArcs({
+        followUps: workedMinutes
+          ? [
+              session({
+                id: 's1',
+                startTime: '08:00',
+                durationMinutes: workedMinutes,
+                categoryId: 'trabajo',
+              }),
+            ]
+          : [],
+        date: DATE,
+        nowMinutes,
+        categories: [category('trabajo', 'Trabajo', WORK)],
+        isPastDay,
+      })
+
+      // 18 caracteres es lo que el render aprobado metia dentro del arco
+      // («A ESTE RITMO PARAS», 18 · panel 1 de `18-vida-arcos-familia.html`).
+      // A 9,5 px con `letter-spacing: 0.06em` eso ocupa ~112 de las ~147
+      // unidades que caben a esa altura; 24 caracteres ocupaban ~149 y el
+      // trazo se comia las puntas. Esta prueba existe porque eso llego a
+      // produccion y el usuario leyo un fragmento.
+      for (const linea of arcs[0].arcCaption) {
+        expect(linea.length).toBeLessThanOrEqual(18)
+      }
+      expect(arcs[0].arcCaption.length).toBeLessThanOrEqual(2)
+    },
+  )
 
   it('pasada la jornada dice el dato y ni un adjetivo (criterio 493)', () => {
     const { arcs } = buildGoalArcs({

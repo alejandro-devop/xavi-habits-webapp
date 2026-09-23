@@ -60,8 +60,22 @@ export type VidaGoalArc = {
   runningSince: string | null
   /** Lo grande de dentro del arco: una hora, o los minutos en un día pasado. */
   arcValue: string
-  /** El rótulo de encima, en versales: «A ESTE RITMO PARAS». */
-  arcCaption: string
+  /**
+   * El rótulo de encima, en versales, **partido en las líneas que caben dentro
+   * del arco**: `['A ESTE RITMO', 'PARAS A LAS']`.
+   *
+   * Es una lista y no una frase por una razón medida: dentro del semicírculo
+   * (radio interior 81) a la altura del rótulo caben ~147 unidades, y
+   * «A ESTE RITMO PARAS A LAS» ocupa ~149 a 9,5 px con `letter-spacing: 0.06em`.
+   * En una sola línea el trazo se comía las puntas y el usuario leía un
+   * fragmento: no entendía si el número grande era una hora o el tiempo que le
+   * faltaba. Partirlo cabe, y deja decir **«a las»**, que es la palabra que
+   * convierte «20:25» en una hora del reloj y no en una cuenta atrás.
+   *
+   * La única entrada de una sola línea es la del día pasado sin meta cruzada
+   * («REGISTRASTE»), donde el valor **no** es una hora sino una duración.
+   */
+  arcCaption: string[]
   /**
    * La misma frase, entera y en texto de verdad, para el `<p>` de fuera del
    * SVG. **Sin adjetivos, sin exclamaciones y sin reproche**, también pasada la
@@ -226,28 +240,29 @@ function toArc(tally: GoalTally, day: { nowMinutes: number | null; isPastDay: bo
       : ''
 
   let arcValue: string
-  let arcCaption: string
+  let arcCaption: string[]
   let line: string
   if (day.isPastDay || stopAtTime === null) {
     arcValue = passedAtTime !== null ? formatTimeForDisplay(passedAtTime) : workedLabel
-    arcCaption = passedAtTime !== null ? `Pasaste las ${targetLabel} a las` : 'Registraste'
+    arcCaption =
+      passedAtTime !== null ? [`Pasaste las ${targetLabel}`, 'a las'] : ['Registraste']
     line =
       workedMinutes > 0
         ? `Registraste ${workedSentence} de ${goal.name}.${passedSentence}`
         : `No hay nada registrado de ${goal.name} ese día.`
   } else if (passedAtTime !== null) {
     arcValue = formatTimeForDisplay(passedAtTime)
-    arcCaption = `Pasaste las ${targetLabel} a las`
+    arcCaption = [`Pasaste las ${targetLabel}`, 'a las']
     line = `Llevas ${workedSentence}.${passedSentence}`
   } else if (workedMinutes === 0) {
     // Con cero trabajado la fórmula sigue siendo exacta, solo que en
     // condicional: si arrancas ahora y no paras, esa es la hora (D-C).
     arcValue = formatTimeForDisplay(stopAtTime)
-    arcCaption = 'Si arrancas ahora'
+    arcCaption = ['Si arrancas ahora', 'acabas a las']
     line = `Si arrancas ahora, acabarías a las ${formatTimeForDisplay(stopAtTime)}.`
   } else {
     arcValue = formatTimeForDisplay(stopAtTime)
-    arcCaption = 'A este ritmo paras a las'
+    arcCaption = ['A este ritmo', 'paras a las']
     line = `Llevas ${workedSentence}. A este ritmo paras a las ${formatTimeForDisplay(stopAtTime)}.`
   }
 

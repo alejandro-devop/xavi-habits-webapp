@@ -3,6 +3,7 @@ import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.t
 import {
   VIDA_UNKNOWN_SESSION_MINUTES,
   closeSessionInput,
+  correctStartInput,
   describeOverPlan,
   editSessionInput,
   elapsedMinutes,
@@ -18,6 +19,7 @@ import {
   sessionStartInstant,
   startSessionInput,
   translateSessionError,
+  validateCorrectedStart,
   validateLogPast,
   validateStartTime,
 } from '@/features/vida/utils/vida-session.utils'
@@ -504,5 +506,100 @@ describe('proposeLogDuration — el orden de la caída (criterios 238 y 239)', (
     expect(
       proposeLogDuration({ usualMinutes: 35, templateMinutes: 20, maxMinutes: 0 }),
     ).toEqual({ durationMinutes: null, fromUsual: null })
+  })
+})
+
+describe('correctStartInput — corregir la hora de lo que sigue en marcha (criterio 343)', () => {
+  it('manda **solo `id` y `startTime`**: sin duración, la sesión sigue abierta', () => {
+    expect(correctStartInput({ id: 'f1', startTime: '08:07' })).toEqual({
+      id: 'f1',
+      startTime: '08:07',
+    })
+  })
+
+  it('la hora viaja por `normalizeTimeForApi`, como todas (criterio 341)', () => {
+    expect(correctStartInput({ id: 'f1', startTime: '8:07' }).startTime).toBe('08:07')
+  })
+
+  it('no hay forma de colar una duración ni unas notas por aquí', () => {
+    const input = correctStartInput({ id: 'f1', startTime: '08:07' })
+    expect(Object.keys(input).sort()).toEqual(['id', 'startTime'])
+  })
+})
+
+describe('validateCorrectedStart — la hora nueva de una sesión en marcha (criterio 346)', () => {
+  const enMarcha = session({ id: 'f1', date: HOY, startTime: '09:00' })
+
+  it('una hora de hoy que ya pasó vale', () => {
+    expect(
+      validateCorrectedStart({ session: enMarcha, startTime: '08:07', now: AHORA }),
+    ).toEqual({ valid: true, message: null })
+  })
+
+  it('**las mismas frases** que al empezar: nada del futuro, y una hora de verdad', () => {
+    expect(validateCorrectedStart({ session: enMarcha, startTime: '16:00', now: AHORA }).message)
+      .toBe(validateStartTime({ date: HOY, startTime: '16:00', now: AHORA }).message)
+    expect(validateCorrectedStart({ session: enMarcha, startTime: '', now: AHORA }).message).toBe(
+      validateStartTime({ date: HOY, startTime: '', now: AHORA }).message,
+    )
+  })
+
+  it('criterio 336 — **antes del comienzo del día se admite**: hay gente que empieza antes', () => {
+    expect(
+      validateCorrectedStart({ session: enMarcha, startTime: '05:40', now: AHORA }).valid,
+    ).toBe(true)
+  })
+
+  it('un rato que ya tiene dueño **no se pisa**, y se dice de quién es', () => {
+    const desayuno = session({
+      id: 'f2',
+      date: HOY,
+      startTime: '08:00',
+      durationMinutes: 30,
+      isOpen: false,
+      activity: { id: 'a2', title: 'Desayunar' },
+    })
+    const result = validateCorrectedStart({
+      session: enMarcha,
+      startTime: '08:10',
+      now: AHORA,
+      daySessions: [desayuno, enMarcha],
+    })
+    expect(result.valid).toBe(false)
+    expect(result.message).toBe(
+      'Ese rato ya lo tiene «Desayunar», hasta las 8:30. Elige una hora desde esa.',
+    )
+    // Sin reproche: describe de quién es el rato, no lo que hizo mal nadie.
+    expect(result.message).not.toMatch(/olvid|tarde|deberías|fallaste|mal\b/i)
+  })
+
+  it('justo cuando la otra acaba **sí**: son consecutivas, no solapadas', () => {
+    const desayuno = session({
+      id: 'f2',
+      date: HOY,
+      startTime: '08:00',
+      durationMinutes: 30,
+      isOpen: false,
+      activity: { id: 'a2', title: 'Desayunar' },
+    })
+    expect(
+      validateCorrectedStart({
+        session: enMarcha,
+        startTime: '08:30',
+        now: AHORA,
+        daySessions: [desayuno],
+      }).valid,
+    ).toBe(true)
+  })
+
+  it('la propia sesión que se corrige no se estorba a sí misma', () => {
+    expect(
+      validateCorrectedStart({
+        session: enMarcha,
+        startTime: '08:07',
+        now: AHORA,
+        daySessions: [enMarcha],
+      }).valid,
+    ).toBe(true)
   })
 })

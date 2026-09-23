@@ -191,7 +191,8 @@ export function VidaHoyPage() {
   // por React Query (criterio 8). El cierre completo lo abre el layout, que es
   // quien monta el modal.
   const openSession = useVidaOpenSession()
-  const { openFinishModal, openNoteSheet, openStartNoteSheet } = useVidaSessionUi()
+  const { openFinishModal, openNoteSheet, openStartNoteSheet, openStartTimeSheet } =
+    useVidaSessionUi()
   const sessionActions = useVidaSessionActions({ onAddNote: openFinishModal })
   // «▶ Empezar» solo en **hoy**: en un día futuro no ha llegado y en uno pasado
   // se registra, que es la tajada 3 (criterio 1, su mitad de días). La otra
@@ -969,9 +970,16 @@ export function VidaHoyPage() {
             // Corregir y «Quitar del registro» (criterio 35). Se ofrece en
             // los mismos días en que se registra —hoy y pasados—, y **no**
             // en uno futuro, donde no hay nada que corregir.
+            // **En marcha, corregir es otra hoja** (FEAT-013, criterio 343):
+            // la de `edit` pide duración y mandarla cerraría la sesión, que es
+            // lo contrario de lo que se viene a hacer. Ya cerrada, la de
+            // siempre (criterio 349).
             onEdit={
               canLogPast
-                ? (session) => openLogSheet({ mode: 'edit', session })
+                ? (session) =>
+                    session.durationMinutes === null
+                      ? openStartTimeSheet(session)
+                      : openLogSheet({ mode: 'edit', session })
                 : undefined
             }
             // **Qué hiciste / qué estás haciendo** (FEAT-018, criterios 535 a
@@ -1026,6 +1034,15 @@ export function VidaHoyPage() {
               onFinish={() => void sessionActions.finishNow()}
               onOpenFinishModal={
                 openSession.session ? () => openFinishModal(openSession.session!) : undefined
+              }
+              // **«Empecé antes»** (FEAT-013, criterio 342): el bloque en
+              // marcha también se corrige, y corregir la hora **no** lo
+              // termina. La sesión es la que el cruce de D1 asignó a **este**
+              // bloque, la misma que enseña el cronómetro.
+              onCorrectStart={
+                canLogPast && execution.byBlockId[entry.id]?.isRunning
+                  ? () => openStartTimeSheet(execution.byBlockId[entry.id]!.span.session)
+                  : undefined
               }
               isSessionBusy={sessionActions.isBusy}
               // **Lo que falta** (tajada 4). Con lo vivido caído no se pasa

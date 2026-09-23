@@ -5,7 +5,7 @@ status: building
 architect: no    # un campo más en una hoja que ya existe y una condición que se levanta; el API ya lo admite tal cual (ver sección 1)
 area: features/vida
 requested: 2026-09-22
-updated: 2026-09-22
+updated: 2026-09-23
 ---
 
 # FEAT-013 — Empezar algo que ya empezó
@@ -292,7 +292,7 @@ la hoja sigue siendo **una** con sus modos.
 | # | What it does | State |
 |---|---|---|
 | 1 | **«Empezar algo» pregunta a qué hora empezó.** Un campo más en la hoja que ya existe (modo `start`), con «ahora» por defecto, y `start()` aceptando esa hora. Criterios 330–341 (incluido el **331b**). **Es lo más corto que resuelve el problema de hoy del usuario**, y es una sola acción: lo que lleva desde las 8:07 queda **en marcha** y contando desde las 8:07. | aceptada |
-| 2 | **Corregir la hora de una sesión en marcha.** *Secundaria: el pedido no la necesita.* Se levanta la condición de `VidaAgendaBlock.tsx:203`, y desde el «···» del bloque en marcha y la barra de sesión se manda `activityFollowUpEdit` con solo `startTime`. Cubre a **quien pulsó Empezar tarde y se da cuenta después**, que es otro caso. Criterios 342–349. | pending |
+| 2 | **Corregir la hora de una sesión en marcha.** *Secundaria: el pedido no la necesita.* Se levanta la condición de `VidaAgendaBlock.tsx:203`, y desde el «···» del bloque en marcha y la barra de sesión se manda `activityFollowUpEdit` con solo `startTime`. Cubre a **quien pulsó Empezar tarde y se da cuenta después**, que es otro caso. Criterios 342–349. | in-review (2026-09-23, retoque sobre la aceptada: la línea de la hora sube a 24,8 px —WCAG 2.2 AA— y la reserva del layout a 8rem; el revisor mira solo esto) |
 | 3 | **Empezar desde la hora planeada, en un toque.** El atajo «empecé a las 8:00, lo que tenías planeado» junto al play, sin encarecer el gesto de empezar ahora. Criterios 350–354. | pending |
 
 **Por qué este orden:** la 1 es **literalmente el pedido, y el pedido entero**
@@ -588,6 +588,431 @@ dev server del usuario en el 5173, no se arrancó ninguno:
 **Tree state:** sin commitear. Diez archivos tocados, nueve de `src/features/vida`
 y este dossier. El arnés del navegador está borrado.
 
+### Tajada 2 — «Empecé antes»: corregir la hora de una sesión en marcha
+
+**Summary for the reviewer:**
+1. Lo que está **en marcha** ya se puede corregir: «Empecé antes» aparece en el
+   «···» del bloque en marcha y en el de la barra de sesión, abre una hoja de
+   **una sola pregunta** y manda `activityFollowUpEdit` con **`{ id, startTime }`
+   y nada más**, así que la sesión sigue abierta y el cronómetro recuenta en el
+   acto.
+2. Cuelga de lo que ya había: hoja nueva con el molde de `VidaNoteSheet`, montada
+   **una sola vez** en `VidaModuleLayout` y abierta por contexto
+   (`openStartTimeSheet`), como el cierre completo y el editor de notas.
+3. **Lo que más probablemente rompí:** el **«···» de la barra de sesión**, que
+   deja de ser un botón de un toque al cierre completo y pasa a ser un menú con
+   dos entradas —«Terminar y añadir una nota» cuesta ahora un toque más—.
+   Segundo sospechoso, y más silencioso: `useUpdateActivityFollowUpMutation`
+   ahora **parchea** la sesión abierta de la caché cuando la respuesta sigue
+   `isOpen`; eso lo usan también el guardado de notas y todos los cierres, y es
+   código que antes no existía en ese camino. Tercero: en Hoy, «Corregir» de una
+   **fila suelta en marcha** ya no abre la hoja de `edit`.
+
+**What was built:**
+
+- `src/features/vida/utils/vida-session.utils.ts`
+  - `correctStartInput({ id, startTime })` — **solo esos dos campos**, con la
+    hora por `normalizeTimeForApi`. Un test comprueba las claves con `toEqual` y
+    `Object.keys(...).sort()`: por aquí no se puede colar una duración.
+  - `findSessionCovering(...)` y `validateCorrectedStart(...)` — la hora nueva,
+    comprobada **antes** de llamar al API. Reutiliza `validateStartTime` (y por
+    tanto **sus frases**, criterio 333) y añade lo único que faltaba: **no meter
+    el inicio dentro de un rato ya registrado**.
+- `src/features/vida/components/VidaStartTimeSheet/` — **la hoja nueva** (`.tsx`,
+  `.module.scss`, `index.ts`, test). Una pregunta —«¿A qué hora empezaste?»—, el
+  mismo `Input type="time"` de la hoja de siempre, un pie que dice qué va a pasar
+  («Sigue en marcha y llevarías 2 h 1 min.») y «Volver» / «Guardar». **No muta
+  nada**: recibe `onSave`, igual que `VidaNoteSheet`. Exporta también el rótulo
+  `VIDA_START_TIME_LABEL` («Empecé antes»), que es lo que leen los dos menús: la
+  palabra se escribe una sola vez.
+- `src/features/vida/hooks/useVidaSessionActions.ts` — `correctStart(startTime)`:
+  una mutación callada, el toast **«Contamos desde las 8:07»** (criterio 347) y
+  el mismo cerrojo `lock()` que el resto de acciones. Si falla, devuelve
+  `{ ok: false }` con «Sigue en marcha como estaba».
+- `src/features/vida/hooks/useActivityFollowUps.ts` — con la respuesta todavía
+  `isOpen`, la sesión abierta de la caché se **parchea** (no se sustituye):
+  `activityFollowUpEdit` **no devuelve `activity` ni las subtareas**, así que
+  sustituirla dejaría la barra sin nombre ni color. Con el parche, el cronómetro
+  recuenta desde la hora nueva sin esperar a la consulta (criterio 344).
+- `src/features/vida/components/VidaAgendaBlock/VidaAgendaBlock.tsx` — prop
+  `onCorrectStart` y la entrada «Empecé antes» **debajo** de «Terminar y añadir
+  una nota», solo con `isRunning`. Sin la prop, el «···» es exactamente el de
+  antes.
+- `src/features/vida/components/VidaSessionBar/VidaSessionBar.tsx` (+ `.scss`) —
+  el «···» pasa a ser un `Popover` con las dos salidas, **calcado del menú del
+  bloque**. Sin `onCorrectStart` sigue siendo el `IconButton` de un toque de
+  antes (es lo que se prueba en el tercer test de la barra).
+- `src/features/vida/routes/VidaModuleLayout.tsx` y `hooks/useVidaSessionUi.ts` —
+  la hoja se monta **una sola vez** y se abre por contexto
+  (`openStartTimeSheet`), como el cierre completo y la nota.
+- `src/features/vida/pages/VidaHoyPage.tsx` — el bloque en marcha pasa
+  `onCorrectStart`; y «Corregir» de una **fila suelta** en marcha
+  (`VidaAgendaSession`) va ahora a esta hoja en vez de a la de `edit`. Ver
+  «Lo que descubrí».
+- Tests: `vida-session.utils.test.ts` (+9), `useVidaSessionActions.test.tsx`
+  (+4), `VidaStartTimeSheet.test.tsx` (7, nuevo), `VidaSessionBar.test.tsx` (3,
+  nuevo), `VidaAgendaBlock.test.tsx` (3, nuevo). **Ni un documento GraphQL
+  nuevo**: `contracts.test.ts` no se tocó.
+
+**Why this way:**
+
+- **Una hoja propia y no un cuarto modo de `VidaLogSessionSheet`.** El modo
+  `edit` pregunta hora **y duración** y manda las dos (`editSessionInput`), y una
+  duración **cierra** la sesión: usarlo aquí sería incumplir el criterio 343 por
+  construcción. Tampoco es «un modo más» disfrazado: es el molde de
+  `VidaNoteSheet` —una pregunta, un campo, montada en el layout, dos puertas—, y
+  esa hoja ya existe y ya se aceptó con esa forma. **Es la desviación de lo que
+  apuntaba la sección 1** (que solo nombraba `VidaAgendaBlock` y la barra con
+  `useUpdateActivityFollowUpMutation`), y queda dicha aquí.
+- **El «···» de la barra pasa a menú.** El criterio 342 pide la entrada **en la
+  barra**, y la barra solo tenía un botón que abría el cierre completo. Las
+  alternativas eran un tercer control en una fila que a 375 px ya lleva nombre,
+  cronómetro, «Terminar» y «···» (más estrecho y más ruido), o colgar la
+  corrección de la línea «desde las 9:00», que vive **dentro del `Link`** a Hoy
+  (un botón dentro de un enlace). El menú deja los dos «···» del módulo
+  idénticos. **Su coste, dicho:** «Terminar y añadir una nota» pasa de un toque a
+  dos. «Terminar» —el gesto que sí es diario— **no se toca**.
+- **La comprobación del solape la hace el cliente porque el servidor no la hace.**
+  `updateFollowUp` construye el `UPDATE` campo a campo y no compara con nada
+  (`xavi-platform-node/src/services/activity-follow-up.service.ts:347-389`): sin
+  esto, correr el inicio hasta dentro de «Desayunar» se guardaría en silencio y
+  el día contaría dos veces el mismo minuto.
+- **Descartado:** tocar `validateLogPast` o el modo `edit` para que supieran de
+  sesiones abiertas. Eso es el camino de corregir **lo ya cerrado**, que está
+  entregado y revisado; meterle una rama nueva por esto sería pagar en el sitio
+  más transitado un caso que ocurre una vez.
+
+**Las tres horas imposibles, y qué hace cada una** (el encargo lo pedía escrito):
+
+| La hora nueva | Qué pasa | Por qué |
+|---|---|---|
+| **Posterior a ahora** | No se guarda. Se lee *«Esa hora todavía no ha llegado.»* | Lo fija el criterio 346, y es **la frase que ya existía** (criterio 333). Igual a este minuto **sí** vale. |
+| **Anterior al comienzo de tu día** | **Se admite.** | Lo fija el criterio 336: hay gente que empieza antes. La sesión se sigue viendo en la barra (lo verificó el revisor de la tajada 1); que la agenda de Hoy no la enseñe es su **hallazgo 1**, abierto y ajeno a esta tajada. |
+| **Dentro de un rato ya registrado** | No se guarda. Se lee *«Ese rato ya lo tiene «Desayunar», hasta las 8:30. Elige una hora desde esa.»* | **El dossier no lo fijaba.** Regla escrita aquí: el inicio no puede caer **dentro** de otra sesión cerrada del mismo día; **justo cuando la otra acaba sí** —son consecutivas, no solapadas—. Evita el doble conteo que ya evitó el criterio 26 de FEAT-004, y lo dice el cliente porque el servidor no lo comprueba. |
+
+**Verification:**
+
+Línea base entera (`docs/features/ENVIRONMENT.md`), corrida al terminar:
+
+```
+pnpm typecheck  → limpio (exit 0, sin salida)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   [los mismos archivos de siempre;
+                  ninguno es de esta tajada]
+pnpm test       → Test Files 1 failed | 120 passed (121)
+                  Tests 2 failed | 1989 passed (1991)     [los 2 de SearchSelect, preexistentes]
+pnpm build      → exit 0 · index 1.137,93 kB (gzip 341,60) · app-icons 620,20 kB sin tocar
+                  · CSS 276,96 kB
+```
+
+El paquete sube de **1.133,58** a **1.137,93 kB** (**+4,35 kB**: la hoja nueva y
+los dos menús) y el CSS de **275,91** a **276,96 kB** (**+1,05 kB**). El CSS
+**sube**, que es lo que tiene que pasar al añadir reglas; aun así se compiló el
+SCSS tocado y se comparó la **lista de selectores**, no el tamaño:
+
+```
+VidaSessionBar.module.scss   → .bar .capsule .identity .menu .menuItem .meta .name .root .row .text .timer
+                               (los 9 de antes + .menu y .menuItem)
+VidaStartTimeSheet.module.scss → .error .field .footer .form .hint
+```
+
+Ningún comentario se comió nada.
+
+**En el navegador** (arnés temporal `arnes-013b.html` + `src/arnes-013b.tsx` +
+`arnes-013b-frames.html`, con `MemoryRouter` y datos sintéticos; **borrados antes
+de escribir esto** — `git status` solo lista `src/features/vida` y este dossier).
+Se usó el dev server del usuario en el **5173**; no se arrancó ni se paró nada.
+Medido **dentro de un `iframe` del ancho exacto** y con los `iframe` en
+`position: absolute` para que ningún `flex` los encogiera:
+
+- **375 px, con un título de 60 caracteres:** `scrollWidth === clientWidth === 375`,
+  **0 nodos desbordados**. El menú de la barra se abre **hacia arriba**
+  (`top: 570`, la barra en `643`), ocupa de 143 a 352 px y sus dos entradas se
+  leen enteras.
+- **760 px:** lo mismo, `scrollWidth === 760`, 0 desbordados, menú de 527 a 707.
+- **De punta a punta:** pulsar «Empecé antes» en el menú de la barra **abre la
+  hoja**, con «¿A qué hora empezaste?», el subtítulo «… · en marcha desde las
+  9:00», el campo a **09:00** y el pie. El título de 60 caracteres no rompe nada.
+- **La hoja a 375 px:** el diálogo ocupa los 375 y el campo de hora mide
+  **309 × 46 px** (por encima de los 44 que usa este repositorio); a 760, 446 px.
+- **Tema oscuro:** la pregunta **14,89:1**, el pie **7,88:1** sobre
+  `rgb(22,30,47)`, y el texto del campo es el mismo `rgb(238,242,255)` del control
+  que ya existía. Sin scroll horizontal.
+
+**Criteria it closes:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 342 | ✅ | Las dos puertas, probadas y vistas: `VidaAgendaBlock.test.tsx` («Más opciones de Trabajar» → «Empecé antes» llama a `onCorrectStart`) y `VidaSessionBar.test.tsx` (lo mismo desde la barra), más el recorrido en el navegador. El rótulo es **«Empecé antes»**, sin culpa. |
+| 343 | ✅ | Espía sobre el API: `updateActivityFollowUp` llamado **una vez** con `toEqual({ id: 'f1', startTime: '08:07' })`, y `Object.keys(input)` **sin** `durationMinutes` ni `notes`. `correctStartInput` lo sujeta también en puro. |
+| 344 | ✅ | Con la consulta de vuelta dejada **en vuelo** a propósito, la sesión abierta de la caché queda en `startTime: '08:07'`, `durationMinutes: null` y **con su actividad**: el cronómetro (que cuenta contra `startTime`) recuenta sin recargar y la barra no se queda sin nombre. La invalidación de siempre confirma después. |
+| 345 | ✅ por construcción | No se tocó `closeSessionInput` ni `finishNow`: los minutos salen de `followUpStartInstant(session)`, que lee el `startTime` ya corregido. **No hay aritmética nueva** y por eso no hay test nuevo; el de «Terminar» de FEAT-004 sigue en verde. Lo comprueba de verdad el criterio 361 (usuario). |
+| 346 | ✅ | `validateCorrectedStart` delega en `validateStartTime`, y hay test que compara **mensaje a mensaje**. La fecha es siempre `session.date`: corregir no cambia de día. |
+| 347 | ✅ | Toast único: **«Contamos desde las 8:07»**, lanzado por `useVidaSessionActions` con la mutación en `silent` (el genérico habría dicho «Registro actualizado»). Comprobado además que no contiene «olvid», «tarde», «deberías», «error» ni «mal». |
+| 348 | ✅ | Con el API fallando: `{ ok: false }`, la hoja **no se cierra**, conserva `08:07` escrito, el `role="alert"` dice «Sigue en marcha», y la sesión de la caché conserva `09:30`. Sin escritura optimista. |
+| 349 | ✅ | Test del orden del menú del bloque: «Terminar y añadir una nota» sigue primero y sigue llamando a `onOpenFinishModal`; lo nuevo va detrás. En una sesión **cerrada** el menú es el de siempre («Corregir», «Quitar del registro»): el bloque sin `isRunning` no ofrece «Empecé antes». |
+| 355–357 (los del estado, en lo que toca a esta hoja) | ✅ | 375 y 760 px medidos en el DOM, título de 60 caracteres, oscuro con sus ratios. Arriba. |
+| 358 | ✅ | Nada se afirma hasta que `onSave` resuelve `ok`; con la consulta del día caída se puede guardar igual y se dice («No pudimos mirar el resto del día»). |
+| 359 | ✅ | Los textos nuevos son descripciones: «Empecé antes», «Sigue en marcha y llevarías 2 h 1 min.», «Contamos desde las 8:07», «Ese rato ya lo tiene «Desayunar», hasta las 8:30». Ni un «olvidaste», ni un «tarde», ni un «deberías». |
+| 360 | ✅ | Tabla de arriba. Salvedad: paquete **+4,35 kB** y CSS **+1,05 kB**. |
+| 361 | ⏳ **solo el usuario** | Detrás del login. Pasos: con algo **en marcha**, abrir el «···» del bloque (o el de la barra) → «Empecé antes» → poner 8:07 → «Guardar». Comprobar que el toast dice «Contamos desde las 8:07», que **la barra sigue ahí** y su cronómetro salta al tiempo real **sin recargar**, que la sesión **no se cierra**, y que al pulsar «Terminar» se guardan los minutos desde las 8:07 (criterio 345). Probar también a poner una hora del futuro y una dentro de otro rato ya registrado. |
+
+**Lo que descubrí y no estaba en el plan:**
+
+1. **«Corregir» de una sesión **en marcha** suelta abría la hoja de `edit`**, que
+   **obliga a elegir una duración** y por tanto **habría cerrado la sesión**
+   (`VidaHoyPage.tsx`, `entry.kind === 'session'`, con el comentario «también
+   mientras corre» que puso FEAT-018). Es la misma puerta de esta tajada por un
+   tercer sitio, así que la enruté a la hoja nueva cuando
+   `durationMinutes === null`. **Si el revisor lo considera fuera de alcance, se
+   revierte con tres líneas**, pero dejarla habría sido dejar una salida que
+   termina lo que el usuario venía a corregir.
+2. **El «···» de la barra y el del bloque no eran el mismo control**: uno era un
+   menú y el otro un botón directo. Ahora los dos son menú. Es un cambio de
+   interacción en una barra ya aceptada y lo señalo como lo primero que mirar.
+3. **Las entradas de menú miden 28 px de alto** (`.menuItem`, padding
+   `0.45rem`), por debajo de los 44 px de objetivo táctil. **No lo toqué**: es el
+   estilo del menú del bloque, que lleva aceptado desde FEAT-004, y cambiarlo
+   afecta a todos los «···» del módulo. Deuda del sistema de diseño, anotada.
+4. **`ENVIRONMENT.md` se ha vuelto a quedar corto**: hoy son **1991 tests**,
+   **1.137,93 kB** de chunk y **276,96 kB** de CSS. **No lo he tocado** — es del
+   usuario.
+5. **El hallazgo 2 del revisor de la tajada 1 ya se puede cerrar y no lo hice**:
+   ahora que «Empecé antes» existe, el mensaje de D1 («…Termina «X» y empieza de
+   nuevo…») **podría ofrecer corregir la hora de lo que corre**, que es lo que
+   pide el criterio 339 con todas las letras. Es una frase y un botón de toast, y
+   **es de la tajada 1**: lo dejo escrito en vez de ampliarme.
+
+**Risks:**
+
+- **El «···» de la barra cuesta un toque más** para «Terminar y añadir una nota».
+  Es el precio de la puerta que pide el criterio 342 en ese sitio; si el usuario
+  lo prefiere de otra forma, lo que cambia es la barra, no nada de lo de debajo.
+- **El parche de la caché de la sesión abierta** (`useUpdateActivityFollowUpMutation`)
+  corre ahora en **todos** los `activityFollowUpEdit` cuya respuesta siga abierta:
+  el guardado de notas de una sesión en marcha pasa por ahí. Se preserva
+  `activity` y `sessionSubtasks` explícitamente, y la invalidación de siempre
+  sigue detrás; aun así es código nuevo en un camino muy transitado.
+- **La hoja consulta el día de la sesión** (`useActivityDayFollowUpsQuery`) para
+  saber qué ratos tienen dueño. Desde Hoy está cacheada; desde otra pantalla del
+  módulo es **una consulta más al abrir la hoja** —no al entrar en la pantalla—.
+- **La comprobación del solape mira solo el instante de inicio**, no el rato
+  entero: como la sesión sigue abierta, no hay final que comparar. Una sesión ya
+  registrada **después** de la hora nueva no lo impide, y eso es correcto (la que
+  corre la terminará el usuario), pero el día puede acabar con dos cosas que se
+  pisan si se termina más tarde. Eso ya pasaba antes de esta tajada.
+- **Tres archivos de test nuevos** (`VidaAgendaBlock`, `VidaSessionBar`,
+  `VidaStartTimeSheet`): los dos primeros **no existían** y solo cubren lo que
+  estrena esta tajada. No sustituyen a `VidaHoyPage.test.tsx`.
+
+**Tree state:** sin commitear. Trece archivos modificados y cinco nuevos (la
+carpeta `VidaStartTimeSheet/` y dos tests de componente), todos bajo
+`src/features/vida` salvo este dossier. El arnés del navegador está borrado.
+
+### Tajada 2 — segunda vuelta: la hora de la barra es la puerta
+
+**Summary for the reviewer:**
+1. El «···» de la barra **vuelve a ser exactamente el de `384526a`**: un
+   `IconButton` con `onClick={onOpenFinishModal}`. «Terminar y añadir una nota»
+   desde la barra **vuelve a costar 1 toque**; el menú que añadí ya no existe.
+2. La puerta de «Empecé antes» en la barra es ahora **la línea «desde las 9:00»**,
+   tocable —**1 toque**, menos que los 2 del menú—, con el molde de
+   `VidaNoteLine`: el `Link` a Hoy se queda sobre el nombre y la línea de la hora
+   es un botón hermano.
+3. **Lo que más probablemente rompí en esta vuelta:** la **estructura de la
+   identidad de la barra**. El `Link` envolvía cápsula + nombre + hora y ahora
+   envuelve **solo el nombre**: tocar la cápsula ya no navega a Hoy (el criterio
+   7 habla del nombre, y el nombre sigue siendo el enlace, pero el área tocable
+   del enlace se reduce). Segundo: quien tenga la costumbre de tocar «desde las
+   9:00» sin querer ahora abre una hoja.
+
+**Qué cambió respecto de la primera vuelta:**
+
+- `components/VidaSessionBar/VidaSessionBar.tsx`
+  - **Revertido** el `Popover` y sus dos entradas. El «···» es el de HEAD, con su
+    `aria-label` de siempre («Terminar «X» con duración, notas y subtareas»).
+  - La identidad se reparte: `<span class="identity">` con la cápsula y una
+    columna donde el **nombre es el `Link`** y la **hora es un `button`** cuando
+    llega `onCorrectStart`; sin esa prop, la hora es el mismo `<span>` de
+    siempre y la barra se pinta **exactamente como antes de FEAT-013**.
+  - El nombre accesible del botón **contiene el texto visible**
+    («desde las 9:00 — corregir a qué hora empezaste «Trabajar»»), para que quien
+    dicta por voz acierte el control.
+  - `metaLabel` sale a una constante: el «llevas 52 min · planeado 45» del
+    criterio 9 sigue siendo lo que se lee cuando te pasas del plan, y **también
+    se puede tocar** (un test lo fija).
+- `components/VidaSessionBar/VidaSessionBar.module.scss`
+  - **Fuera `.menu` y `.menuItem`**: la duplicación que señalaste desaparece sola,
+    no queda deuda escrita. La lista de selectores vuelve a ser **la de HEAD**:
+    `.bar .capsule .identity .meta .name .root .row .text .timer`.
+  - `.identity` deja de ser el enlace (pierde su `:focus-visible`, que se va al
+    nombre); `.name` gana estilos de enlace; `button.meta` es el molde de
+    `button.line` de `VidaNoteLine` —subrayado punteado, sólido al pasar por
+    encima, sin disfrazarse de botón— con `align-self: flex-start` para que
+    **no recoja toques en el vacío** de la derecha (a 760 px la columna mide 440
+    y el texto 69).
+- `components/VidaStartTimeSheet/VidaStartTimeSheet.tsx` — **el hallazgo del
+  estado de carga, resuelto**: `resolveDaySessions()` **espera** a la consulta
+  del día si está en vuelo (`fetchStatus !== 'idle'` → `await refetch()`) antes
+  de comprobar el solape. Si está parada —sin sesión de usuario, o ya falló— no
+  espera a nada y se guarda igual, que es lo que pide el criterio 358.
+- Tests: `VidaSessionBar.test.tsx` **reescrito** (5 tests: el toque único en la
+  hora, el «···» intacto **y** «Terminar» intacto, el enlace del nombre a Hoy, la
+  barra sin la prop, y la línea de «te pasaste del plan» tocable) y
+  `VidaStartTimeSheet.test.tsx` **+1** (con los ratos del día en vuelo, guardar
+  **espera** y el solape se caza; sin el arreglo, ese test falla en su primera
+  aserción).
+
+**Los toques, contados otra vez sobre el árbol nuevo:**
+
+| Gesto | HEAD (`384526a`) | Ahora | Δ |
+|---|---|---|---|
+| **Terminar**, desde la barra | 1 | 1 | **0** |
+| **Terminar y añadir una nota**, desde la **barra** | 1 | **1** | **0** |
+| **Terminar y añadir una nota**, desde el **bloque** | 2 | 2 | **0** |
+| **Empezar** (el ▶ y la hoja) | 1 / el gesto de FEAT-013 t1 | igual | **0** |
+| **Corregir la hora** desde la **barra** | no existía | **1** + escribir + «Guardar» | — |
+| **Corregir la hora** desde el **bloque** | no existía | 2 + escribir + «Guardar» | — |
+
+**Verification (segunda vuelta):**
+
+```
+pnpm typecheck → limpio (exit 0)
+pnpm lint      → ✖ 14 problems (14 errors, 0 warnings)   [los mismos nueve archivos ajenos]
+pnpm test      → Tests 2 failed | 1992 passed (1994)     [SearchSelect ×2, preexistentes]
+pnpm build     → exit 0 · index 1.137,69 kB · CSS 276,97 kB · app-icons 620,20 kB sin tocar
+```
+
+Paquete **+4,11 kB** sobre la base (1.133,58) y CSS **+1,06 kB** (base 275,91).
+El CSS **sube** aunque se hayan quitado `.menu`/`.menuItem`: entran la hoja nueva
+y los estilos del nombre y de la línea tocable. Selectores comparados con `sass
+--style=compressed`, no tamaños:
+
+```
+VidaSessionBar      → .bar .capsule .identity .meta .name .root .row .text .timer   (los nueve de HEAD, ni uno más)
+VidaStartTimeSheet  → .error .field .footer .form .hint
+```
+
+**En el navegador, medido por mí en esta vuelta** (arnés temporal borrado; dev
+server del usuario en el 5173, no se arrancó ni se paró nada). Dos `iframe` de
+**375** y **760 px** exactos, en `position: absolute` para que ningún `flex` los
+encogiera:
+
+| Qué | 375 px (título de 60 caracteres) | 760 px |
+|---|---|---|
+| Documento | `scrollWidth === clientWidth === 375`, **0 nodos desbordados** | `scrollWidth === 760`, **0 desbordados** |
+| La línea de la hora | botón de **69 × 18 px**, subrayado punteado, texto «desde las 9:00» | **69 × 18 px** (no se estira con la columna de 440) |
+| El nombre | enlace a `/app/vida/hoy?d=2026-09-23`, recortado con puntos suspensivos (93 px) | enlace, 440 px |
+| El «···» | 28 × 28 px con su `aria-label` de siempre | igual |
+| Un toque en la hora | **abre la hoja**, que ocupa los 375 px | — |
+| Oscuro | la hora **7,88:1**, el nombre **14,89:1** sobre `rgb(22,30,47)` | igual |
+
+**Criterios que esto mueve:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 342 | ✅ | Las dos puertas siguen: el «···» del bloque en marcha (test de `VidaAgendaBlock`) y **la barra** —ahora por su línea de la hora, que es lo que pide el criterio: «desde la barra de sesión»—. Visto además en el navegador. |
+| 349 | ✅ **ahora sí** | El «···» de la barra es literalmente el de HEAD: mismo elemento, mismo `aria-label`, mismo `onClick`, un toque. Un test lo fija y además comprueba que **no existe** ninguna entrada «Terminar y añadir una nota» en la barra. El menú del bloque tampoco se movió. |
+| 7 (FEAT-004) | ✅ **con matiz** | El nombre sigue llevando a Hoy, al día de la sesión (test con el `href`). **El matiz:** la cápsula ya no es parte del enlace. |
+| 358 | ✅ | Con la consulta del día **caída** se puede guardar igual y se dice; con la consulta **en vuelo** ahora se espera en vez de saltarse la comprobación. |
+
+**Lo que dejo dicho y no toco:**
+
+- **La línea tocable mide 18 px de alto.** Es un renglón de texto, como
+  `VidaNoteLine`, no un botón: el objetivo táctil queda por debajo de 44 px.
+  Subirlo con `padding` **engorda la barra**, que es cromo permanente en todas
+  las pantallas del módulo. Lo dejo igual que el idioma ya aceptado y lo anoto:
+  si el usuario lo encuentra difícil de acertar en el móvil, la salida barata es
+  el `padding` vertical, no otro control.
+- **El hallazgo 2 del revisor de la tajada 1 sigue abierto** (el mensaje de D1
+  podría ofrecer ahora «Empecé antes»): es de la tajada 1 y no me amplío.
+- **`ENVIRONMENT.md` sigue corto** (1994 tests, 1.137,69 kB, 276,97 kB). No lo
+  toco: es del usuario.
+
+**Tree state:** sin commitear. Catorce archivos modificados y cinco nuevos; el
+arnés del navegador, borrado.
+
+### Tajada 2 — retoque: la línea de la hora pasa de 18,4 a 24,8 px
+
+**Summary for the reviewer:** (solo esto; nada de lo aceptado se ha tocado)
+1. `button.meta` sube a `padding: 0.4rem 0`: la línea tocable mide **24,8 px**
+   de alto a 375 **y** a 760 px, por encima del mínimo de 24 px de WCAG 2.2 AA.
+   Sigue midiendo **69,5 px** de ancho: el `align-self: flex-start` se queda.
+2. **El hueco reservado de abajo se quedaba corto y lo he subido a `8rem`**: con
+   la línea tocable la barra crece **8,3 px** y su huella pasa de 116,6 a
+   **124,9 px**, por encima de los **120** que reservaba `7.5rem`. Es el fallo
+   que avisa el propio comentario de `VidaModuleLayout.module.scss` (criterio
+   60), y lo medí porque me lo pediste.
+3. **Lo que más probablemente rompí:** el `padding-bottom` del módulo. Afecta a
+   **todas** las pantallas de Vida con algo en marcha —Hoy, Plantilla, Revisión,
+   Actividades—: media línea más de aire bajo el contenido. Segundo sospechoso,
+   menor: la barra **sin** `onCorrectStart` tenía que seguir midiendo lo de
+   siempre y por eso el `padding` vive solo en `button.meta`, no en `.meta`.
+
+**Qué cambió, archivo por archivo:**
+
+- `components/VidaSessionBar/VidaSessionBar.module.scss` — `button.meta` gana
+  `margin: 0; padding: 0.4rem 0`, y `.meta` (el `<span>` de cuando no hay
+  puerta) **los pierde**: así la barra sin `onCorrectStart` mide exactamente lo
+  que medía antes de FEAT-013. Lo comprobé montando las dos variantes a la vez.
+  La lista de selectores sigue siendo la de HEAD: `.bar .capsule .identity .meta
+  .name .root .row .text .timer`.
+- `routes/VidaModuleLayout.module.scss` — la reserva pasa de
+  `calc(7.5rem + env(...))` a `calc(8rem + env(...))`, con la medida escrita al
+  lado para quien la lea dentro de un año. Selectores intactos: `.errorText
+  .root`.
+- `components/VidaSessionBar/VidaSessionBar.test.tsx` — **el docblock de
+  cabecera corregido**: describía el menú de la primera vuelta, que ya no
+  existe. Ahora dice lo que hay: la línea de la hora es la puerta de un toque y
+  el «···» no cambió. Ni una aserción tocada.
+
+**Las medidas, hechas por mí en `iframe` de ancho exacto** (dev server del
+usuario en el 5173; arnés temporal borrado; la pestaña emula 568 px y por eso no
+se mide en ella):
+
+| Qué | 375 px | 760 px |
+|---|---|---|
+| La línea, **antes** del retoque | 69,5 × **18,4** px | 69,5 × 18,4 px |
+| La línea, **ahora** | 69,5 × **24,8** px | 69,5 × **24,8** px |
+| La barra **con** la puerta | **112,9** px de alto | 105,7 px |
+| La barra **sin** la puerta (= como antes de FEAT-013) | **104,6** px | — |
+| Huella hasta el borde (lo que hay que reservar) | **124,9** px con puerta · 116,6 sin ella | 117,7 px |
+| Reserva | `7.5rem` = 120 px → **corta por 4,9 px** · `8rem` = **128 px** → sobran 3,1 | igual |
+| Desbordes | 0 nodos, `scrollWidth === clientWidth === 375` | 0 nodos, 760 |
+
+**Y la discrepancia, dicha en vez de tragada:** calculaste **~6 px** de
+crecimiento y son **8,3**. El motivo es que el `<span>` de la hora heredaba la
+`line-height` de la barra (16,5 px de caja) y el `<button>` usa `normal`
+(12 px + 12,8 de `padding`): 24,8 − 16,5 = 8,3. No cambia la decisión —la línea
+supera los 24 px y la barra sigue entrando de sobra a 375—, pero **sí obligaba a
+mover la reserva**, que con tus 6 px habría quedado justa en 122,9 contra 120 y
+habría tapado el último bloque igual.
+
+**Verification:**
+
+```
+pnpm typecheck → limpio (exit 0)
+pnpm lint      → ✖ 14 problems (14 errors, 0 warnings)   [los de siempre, ninguno de aquí]
+pnpm test      → Tests 2 failed | 1992 passed (1994)     [SearchSelect ×2, preexistentes]
+pnpm build     → exit 0 · index 1.137,69 kB · CSS 276,97 kB · app-icons 620,20 kB sin tocar
+```
+
+Ni el paquete ni el CSS se mueven respecto de la segunda vuelta (**1.137,69 kB**
+y **276,97 kB**): lo que cambia son tres declaraciones, no reglas nuevas.
+`VidaSessionBar` (15 archivos de componentes y rutas, 213 tests) en verde.
+
+**Criterios que esto mueve:** ninguno cambia de estado. El 342 sigue cumplido y
+ahora su control **se acierta con el dedo**; el 60 de FEAT-004 —«la barra no tapa
+el último bloque ni los botones de una hoja»— sigue cumplido **porque se movió la
+reserva**: con `7.5rem` habría dejado de estarlo, y eso no lo pedía ningún
+criterio nuevo, lo pedía el que ya existía.
+
+**Lo único que queda para prueba manual sigue siendo el 361** (detrás del login),
+con un paso más que añadir a la lista del revisor: **mirar que bajo el último
+bloque de la agenda sigue habiendo aire** con algo en marcha, en Hoy y en
+Revisión.
+
+**Tree state:** sin commitear.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — «Empezar algo» pregunta a qué hora empezó
@@ -760,3 +1185,500 @@ pregunta con su hora y el pie, «Volver»/«Empezar») es correcto y legible.
 a mano—: elegir «Empezar algo», escribir **8:07** y ver el cronómetro contando
 desde ahí, y que al terminar se guarden los minutos correctos. Es el límite de
 siempre, y esta vez es justo lo que él estaba esperando poder hacer.
+
+### Tajada 2 — «Empecé antes»: corregir la hora de una sesión en marcha
+
+**Veredicto: devuelta** — porque el «···» de la barra de sesión deja de ser un
+botón de un toque y «Terminar y añadir una nota» pasa a costar **dos**, y eso es
+el criterio 349 leído literal («no se mueve ni cambia») y es la premisa del
+módulo pagada por una tajada que el propio dossier llama **secundaria**. Todo lo
+demás está bien y medido: no devuelvo nada más.
+
+**Los toques, contados sobre el código de HEAD y sobre el árbol:**
+
+| Gesto | Antes (`384526a`) | Ahora | Δ |
+|---|---|---|---|
+| **Terminar**, desde la barra | 1 (`Button` «Terminar») | 1 | **0** |
+| **Terminar**, desde el bloque | 1 | 1 | **0** |
+| **Terminar y añadir una nota**, desde el **bloque** | 2 («···» → entrada) | 2 | **0** |
+| **Terminar y añadir una nota**, desde la **barra** | **1** (`IconButton` con `onClick={onOpenFinishModal}`, `VidaSessionBar.tsx:108-114` de HEAD) | **2** («···» → entrada) | **+1** |
+| **Corregir la hora** de lo que corre | no existía (ver abajo la puerta rota) | 2 + escribir + «Guardar» | — |
+
+El único gesto que se encarece es ese, y es un gesto de todos los días: es el
+camino del criterio 6 de FEAT-004 desde la barra, que es **el control que está
+siempre en pantalla** en todo el módulo.
+
+**¿Hay forma de tenerlo sin encarecer nada? Sí, y es más barata todavía.** La
+línea **«desde las 9:00»** de la barra es, literalmente, el dato que se viene a
+corregir; hoy no hace nada. Tocarla para corregir la hora sería **un** toque —
+menos que los dos del menú— y dejaría el «···» exactamente como estaba. La
+objeción del constructor es que esa línea vive dentro del `Link` a Hoy
+(`VidaSessionBar.tsx:96-108`) y un botón dentro de un enlace no se hace: cierto,
+pero el remedio no es renunciar, es **sacar la línea del `Link`** y dejar el
+enlace sobre la cápsula y el nombre. Que eso se puede hacer en esta misma tarjeta
+ya está demostrado: **`VidaNoteLine` es justo eso** —una línea tocable, hermana
+del `Link`, dentro de la misma tarjeta (`VidaSessionBar.tsx:163-170`), aceptada
+en FEAT-018—. El criterio 342 pide la puerta «desde la barra de sesión», **no
+desde su «···»**: se cumple igual, y sin subir el precio de nada.
+
+Si el constructor prefiere defender el menú, que lo defienda con el número: hoy
+el argumento escrito es «un tercer control sería más estrecho y más ruido», y la
+alternativa de la línea tocable **no añade ningún control**.
+
+**Criterios, uno a uno** (contra la sección 1, literal):
+
+| # | Estado | Cómo lo comprobé |
+|---|---|---|
+| 342 | ✅ | Las dos puertas existen en el árbol: `VidaAgendaBlock.tsx:300-308` (entrada solo con `isRunning && onCorrectStart`) y `VidaSessionBar.tsx:124-158`. `VidaHoyPage.tsx:1038-1044` y `VidaModuleLayout.tsx:182` las cablean. El rótulo, `VIDA_START_TIME_LABEL = 'Empecé antes'`, escrito una sola vez. |
+| 343 | ✅ | `correctStartInput` devuelve **`{ id, startTime }`** y nada más (`vida-session.utils.ts:425-430`). Y lo confirmé **en el backend**, no de oídas: `updateFollowUp` arma el `UPDATE` columna a columna con `if (input.durationMinutes !== undefined)` (`xavi-platform-node/src/services/activity-follow-up.service.ts:347-389`), así que sin ese campo la fila conserva `duration_minutes = NULL` y la sesión sigue abierta. |
+| 344 | ✅ | El parche de caché de `useUpdateActivityFollowUpMutation` deja la sesión abierta con el `startTime` nuevo **preservando `activity` y `sessionSubtasks`**, que la mutación no devuelve (`FOLLOW_UP_FIELDS` de `activity-followups.graphql.ts` no incluye `FOLLOW_UP_ACTIVITY_FIELDS`; lo verifiqué abriendo el documento). El cronómetro cuenta contra `startTime`, así que recuenta sin recargar. |
+| 345 | ✅ por construcción | `closeSessionInput` y `finishNow` no aparecen en el diff. Queda sujeto de verdad por el 361. |
+| 346 | ✅ | `validateCorrectedStart` delega en `validateStartTime` con `date: session.date`: mismas frases, y la fecha no se toca. Además la barra **no se pinta** para una sesión de otro día (`VidaModuleLayout.tsx:138`, `hasBar` exige `!isFromAnotherDay`), así que «ayer» sigue fuera de alcance como decía el dossier. |
+| 347 | ✅ | `useVidaSessionActions.correctStart` usa la mutación en `silent` y lanza **«Contamos desde las {hora}»**. Sin «cancelar» ni «eliminar». |
+| 348 | ✅ | `VidaStartTimeSheet.handleSave` solo llama a `onClose()` si `saved.ok`; si no, pinta el mensaje en un `role="alert"` y conserva lo escrito. No hay escritura optimista en ninguna parte del camino. |
+| 349 | ❌ **no cumplido, y es la devolución** | En el **bloque** sí se cumple: la entrada nueva va debajo y la de siempre no se movió (`VidaAgendaBlock.tsx:297-308`), y una sesión cerrada sigue con «Corregir» / «Quitar del registro». En la **barra** no: lo que ese «···» hacía —abrir el cierre completo— **cambió**, pasó de ser la acción del botón a ser una entrada de menú, y cuesta un toque más. El propio constructor lo declara; el criterio dice «no se mueve ni cambia». |
+| 361 | ⏳ **sigue pendiente del usuario** | Detrás del login. Los pasos, abajo. No lo apruebo por simpatía: sin él, el 345 solo está sujeto por lectura de código. |
+
+**Qué rompí cerca, y cómo lo busqué** (no solo el resultado):
+
+- **`graphify explain "useUpdateActivityFollowUpMutation"`** — el sospechoso más
+  silencioso, el del parche de caché. El grafo (que refleja **antes** del cambio,
+  que es lo que quiero para «quién dependía de esto») da tres llamadores:
+  `VidaLogSessionSheet`, `useVidaSessionActions` y **`useVidaSessionNote`**. Abrí
+  los tres. El de notas (FEAT-018) es el que me preocupaba: manda
+  `{ id, notes }`, la respuesta sigue `isOpen`, así que **ahora pasa por el
+  parche**. No rompe nada y de hecho mejora: no hay escritura optimista con la
+  que chocar (`useVidaSessionNote.ts:31-40`), el parche solo cambia la identidad
+  del objeto en caché —no desmonta la barra, y `useVidaElapsed` cuenta contra
+  `Date.now()`, no contra el montaje: criterio 543 de FEAT-018 intacto— y la nota
+  aparece sin esperar a la consulta. El guardia `if (open.id !== data.id) return
+  current` cubre editar un rato cerrado con otra sesión viva.
+- **`graphify explain "VidaSessionBar"`** — solo la monta `VidaModuleLayout`. El
+  `aria-label` viejo («Terminar «X» con duración, notas y subtareas») lo busqué a
+  mano en todo `src/`: solo vive en el propio componente y en el test nuevo, así
+  que ninguna suite ajena lo consultaba.
+- **Lo de esta semana, por intersección de ficheros** (`git show --stat` de
+  `384526a`, `68dac8b`, `d892e50`, `371c190`, `17e69be`): FEAT-010 tajada 2 vive
+  en `VidaUpNextCard.{tsx,module.scss}`; FEAT-020 en `AppLayout`, `RetryNotice` y
+  `Toast` `.module.scss`; FEAT-019 en `vida-goals.*`, `VidaAjustesPage` y un
+  trozo de `VidaHoyPage.tsx`. **Ninguno de esos ficheros está en el diff** salvo
+  `VidaHoyPage.tsx`, y ahí el cambio son dos props del bloque y el `onEdit` de la
+  fila suelta: no roza el arco, ni el semáforo, ni los días laborables.
+- **El test intocable del arranque de un toque**: lo comprobé **en el diff**, no
+  por lo que él dice. `VidaHoyPage.test.tsx` tiene exactamente **dos hunks**, los
+  dos añadiendo `openStartTimeSheet: () => {}` al `VidaSessionUiContext.Provider`
+  de dos helpers. `it('un solo toque arranca, y **la duración planeada no
+  viaja**…', línea 2511)` y `it('criterio 5 — «Terminar» es un solo toque…',
+  línea 1147)` **no aparecen en el diff**: ni una línea tocada, y los dos en
+  verde.
+- **La puerta rota que arregló de paso, verificada**: en `HEAD`,
+  `VidaHoyPage.tsx` enrutaba el «Corregir» de una fila suelta **en marcha** a
+  `openLogSheet({ mode: 'edit', session })` sin condición (`git show
+  HEAD:…:970-975`). Esa hoja llama a `validateLogPast`, que con
+  `durationMinutes === null` devuelve **«Elige cuánto duró.»**
+  (`vida-session.utils.ts:349-351`), y en cuanto se elige una,
+  `editSessionInput` manda `durationMinutes` (`VidaLogSessionSheet.tsx:297-300`),
+  que en el backend escribe `duration_minutes` y **cierra la sesión**. El
+  diagnóstico del constructor es **cierto**: era un callejón que terminaba lo que
+  el usuario venía a corregir. **Es un defecto preexistente arreglado de paso y
+  hay que contarlo como tal**, no como cambio de comportamiento sin pedir. La
+  nota de esa sesión no se pierde por el desvío: tiene su propia puerta
+  (`onEditNote`, FEAT-018).
+
+**La regla que se inventó, juzgada:** el backend **no comprueba nada** —lo leí
+entero: `updateFollowUp` no consulta solapes, solo `getOwnedFollowUpOrThrow` y un
+`UPDATE` por columnas—, así que la comprobación en cliente es **necesaria** y
+está bien puesta (mira solo el instante de inicio, admite ser consecutivas, y
+excluye la propia sesión). Las palabras, *«Ese rato ya lo tiene «Desayunar»,
+hasta las 8:30. Elige una hora desde esa.»*, dicen **qué pasa** y **qué hacer**,
+sin reproche: correctas. Único reparo, de estilo: comillas angulares dentro de
+comillas angulares.
+
+**Que no regañe:** revisado texto a texto. «Empecé antes», «¿A qué hora
+empezaste?», «Sigue en marcha y llevarías 2 h 1 min.», «Contamos desde las 8:07»,
+«Sigue en marcha como estaba; inténtalo otra vez». Ni «olvidaste», ni «tarde», ni
+«deberías», ni «error». Criterio 359 cumplido: corregir una hora no se presenta
+como admitir un error.
+
+**El cronómetro al guardar:** no puede parpadear ni saltar a un imposible, porque
+no hay escritura optimista (nada se pinta hasta que el API responde) y el parche
+escribe el `startTime` **que devolvió el servidor**. La barra no desaparece: el
+parche nunca pone `null` mientras `data.isOpen`, y conserva `activity`. Queda
+confirmado a ojo por el usuario en el 361.
+
+**Línea base, medida yo** (no copiada de la sección 3):
+
+```
+pnpm lint   → ✖ 14 problems (14 errors, 0 warnings)      = base
+pnpm build  → dist/assets/index-*.css  276,96 kB         (base 275,91 → +1,05)
+              dist/assets/index-*.js 1.137,96 kB         (base 1.133,58 → +4,38)
+pnpm test   → 1ª corrida: 4 fallos de 1991 (2 ficheros)
+              2ª corrida: 2 fallos de 1991 — SearchSelect ×2, preexistentes
+```
+
+Los dos fallos extra de la primera corrida **no se reprodujeron**; es el patrón
+flaky que describe `ENVIRONMENT.md`. **Reconozco el agujero**: filtré mal la
+salida de la primera corrida y no capturé sus nombres, así que no puedo jurar que
+fueran los de `IconPicker`. La segunda corrida, limpia, es la que cuenta.
+
+**El CSS, comparado como manda `ENVIRONMENT.md`** —lista de selectores, no
+tamaño—, compilando `HEAD` y el árbol con `sass --style=compressed`:
+
+```
+VidaSessionBar HEAD  → .bar .capsule .identity .meta .name .root .row .text .timer
+VidaSessionBar árbol → los mismos nueve + .menu .menuItem
+VidaStartTimeSheet   → .error .field .footer .form .hint
+```
+
+Ninguna regla comida: la subida es legítima. Y ningún otro `.scss` aparece en el
+diff, así que el riesgo de comentario abierto está acotado a esos dos.
+
+**Estados que nadie construye:**
+
+- **Sin datos** — no aplica: la hoja siempre tiene una sesión.
+- **Cargando** — **flojo, y es hallazgo**: mientras `useActivityDayFollowUpsQuery`
+  está en vuelo, `daySessions` es `[]`, así que la comprobación de solape
+  **no se hace** y se puede guardar una hora que pisa otro rato. Se cierra solo
+  en cuanto la consulta vuelve (desde Hoy ya está cacheada), pero desde otra
+  pantalla del módulo hay una ventana real. No lo pedía ningún criterio: queda
+  anotado, no devuelve la tajada.
+- **Error** — cubierto y bien: fallo del API (criterio 348) y consulta del día
+  caída (el `Alert` que deja guardar igual, criterio 358).
+- **Sin permisos** — no aplica: no hay roles en este producto.
+- **Texto largo** — cubierto por el constructor a 60 caracteres; el `description`
+  de la hoja no trunca, pero `SteppedModal` ya lo envuelve.
+- **Móvil** — **no lo medí yo**: me quedé sin turnos para montar el arnés a 375 y
+  760 px. Lo dice arriba en «lo que no revisé». Los números del constructor
+  (`scrollWidth === clientWidth`, 0 desbordados, menú hacia arriba) son
+  plausibles y coherentes con `.menu { min-width: 8rem; white-space: nowrap }`
+  más `placement="top-end"`, pero **no son míos**.
+
+**Los 28 px del menú, y de quién es la deuda:** `.menuItem` del árbol es **copia
+literal** de `VidaAgendaBlock.module.scss:132-144` (mismo `padding: 0.45rem
+0.55rem`, mismo `font-size: 0.8125rem`) — lo comparé línea a línea. Así que el
+estilo **se hereda**, tiene razón en eso. Pero la respuesta honesta a la pregunta
+es que **esta tajada lo extiende a un sitio nuevo**: hasta ahora los 28 px vivían
+dentro de un menú que se abre desde una tarjeta de la agenda; ahora gobiernan la
+única salida del control que **está siempre en pantalla**. La deuda es del
+sistema de diseño y no se arregla aquí; pero si la barra acaba teniendo menú, el
+menú de la barra es el primer sitio donde 28 px duelen.
+
+**¿Duplica algo que ya existía?** No hay sección 2 (`architect: no`), así que esta
+pregunta pesa más. La hoja nueva **no** duplica `VidaLogSessionSheet`: el motivo
+—`edit` manda duración y la duración cierra— es correcto y lo verifiqué en el
+código. Sí hay **duplicación menor y evitable**: `.menu` / `.menuItem` son ahora
+el mismo bloque de SCSS copiado en dos módulos, y el `<ul><li><button>` del menú
+está escrito dos veces. Un `VidaMenuList` compartido habría evitado las dos. Es
+un hallazgo de estilo, no motivo de devolución.
+
+**Lo que NO revisé** (turnos): la medición propia en el navegador a 375 y 760 px,
+y el recorrido de punta a punta de la hoja. Me apoyé en el código, en los tests y
+en las mediciones del constructor para esa parte, y lo digo aquí en vez de
+taparlo.
+
+**Para el usuario — lo que falta probar a mano** (detrás del login, cuando la
+tajada vuelva arreglada):
+
+1. Con algo **en marcha**, abre el «···» del bloque en la agenda de Hoy →
+   «Empecé antes».
+2. Pon **8:07** y «Guardar». Debe leerse «Contamos desde las 8:07».
+3. Comprueba que **la barra de abajo sigue ahí**, que su cronómetro salta al
+   tiempo real **sin recargar** y que la sesión **no se ha cerrado**.
+4. Pulsa «Terminar» y mira que los minutos guardados son los de **desde las
+   8:07**.
+5. Prueba una hora **del futuro** (debe decir que todavía no ha llegado) y una
+   **dentro de otro rato ya registrado** (debe nombrarlo).
+6. Y lo que motiva la devolución: mira cuántos toques te cuesta ahora «Terminar
+   y añadir una nota» **desde la barra**, y di si lo aceptas.
+
+### Tajada 2 — segunda vuelta
+
+**Veredicto: aceptada** — la fila que devolvió la tajada vuelve a **1 toque**,
+medido por mí sobre el árbol y sobre `384526a`, y no ha vuelto nada de lo que ya
+estaba bien. Quedan **tres hallazgos escritos** —la superficie del enlace, los
+18 px de la línea nueva y el borde de «sin red»— y ninguno es motivo de
+devolución: ningún criterio los pide y son la clase de cosa que se anota, no la
+que se rechaza. El criterio **361 sigue siendo del usuario**.
+
+**1 · Los toques, medidos otra vez** (código de `HEAD` contra el árbol):
+
+| Gesto | HEAD (`384526a`) | 1ª vuelta | Ahora | Δ sobre HEAD |
+|---|---|---|---|---|
+| **Terminar**, barra | 1 | 1 | 1 | **0** |
+| **Terminar y añadir una nota**, **barra** | 1 | 2 ❌ | **1** | **0** ✅ |
+| **Terminar y añadir una nota**, **bloque** | 2 | 2 | 2 | **0** |
+| **Corregir la hora**, barra | no existía | 2 | **1** + escribir + «Guardar» | — |
+| **Corregir la hora**, bloque | no existía | 2 | 2 + escribir + «Guardar» | — |
+
+El `IconButton` del «···» es el de `HEAD` **sin una línea de diferencia**: el
+diff de `VidaSessionBar.tsx` solo le añade comentario encima; mismo
+`aria-label`, mismo `onClick={onOpenFinishModal}`. Y el test lo sujeta por los
+dos lados: pulsa el «···» y además comprueba que **no existe** ninguna entrada
+«Terminar y añadir una nota» en la barra.
+
+**2 · La superficie del enlace a Hoy, medida antes y después.** Arnés temporal
+propio (iframes de 375 y 760 px en `position: absolute`, sobre el 5173 del
+usuario; borrado antes de escribir esto — `git status` no lo lista):
+
+| Ancho | Enlace **antes** (`Link` = `.identity`: cápsula + nombre + hora) | Enlace **ahora** (`Link` = `.name`) | Pérdida |
+|---|---|---|---|
+| 375 px | 133,8 × 39,4 px = **5.269 px²** | 93 × 21 px = **1.954 px²** | **−63 %** |
+| 760 px | 480,7 × 39,4 px = 18.928 px² | 439,9 × 21 px = 9.238 px² | −51 % |
+
+(El «antes» es la caja de `.identity`, que no ha cambiado de tamaño: solo dejó de
+ser el enlace. La cápsula, 32 × 32 = 1.024 px², es la parte que se pierde entera.)
+
+**Mi juicio: es una pérdida real, pero no rompe el criterio 7 ni devuelve la
+tajada.** El criterio dice, literal, «un toque **en el nombre** lleva a Hoy»
+(FEAT-004:150-154): la cápsula nunca estuvo prometida, y el nombre sigue siendo
+el enlace y sigue apuntando a `/app/vida/hoy?d=<fecha de la sesión>` (medido en el
+DOM y fijado por un test). Además volver a Hoy tiene otro camino: la píldora del
+módulo. **Lo que sí anoto** es que el enlace se queda en **21 px de alto**, que
+para un dedo es poco: si alguna vez se toca esto, el arreglo barato es
+`padding` vertical en `.name`, no rehacer la estructura. Y que la estructura
+nueva es **necesaria**: un `<button>` no cabe dentro de un `<a>`, así que sacar
+la hora del enlace no era opcional una vez elegida la línea como puerta.
+
+**3 · Los 18 px, medidos — y el molde que se invoca no es el que se usó.**
+El botón de la hora mide **69,5 × 18,4 px** (padding `3,2 px 0`, fuente 11 px),
+a 375 y a 760 igual: confirma su cifra. Pero medí también los vecinos, y ahí la
+justificación se cae:
+
+| Control de la barra | Tamaño medido |
+|---|---|
+| **`VidaNoteLine`** —el molde que él invoca— | **330,6 × 32,3 px** |
+| «Terminar» | 88 × 32 px |
+| El «···» | 28 × 28 px |
+| **La hora, nueva** | **69,5 × 18,4 px** |
+
+`VidaNoteLine` es un renglón tocable, sí, pero ocupa **el ancho entero y 32 px de
+alto**: 10.678 px² contra los 1.279 px² de la hora, **ocho veces más**. El molde
+se heredó en lo visual (texto subrayado punteado, hermano del enlace) y **no** en
+lo que aquí importa, que es el objetivo táctil. Con lo medido, la línea de la hora
+es **el control más pequeño de toda la barra** y el único por debajo de los 24 px
+que pide WCAG 2.2 AA como mínimo — los 28 px del menú que anoté en la primera
+vuelta sí lo pasaban.
+
+**Aun así no devuelvo, y digo por qué:** ningún criterio de esta feature fija un
+tamaño de objetivo táctil (355 pide «sin scroll horizontal», 357 el contraste), y
+en la primera vuelta traté los 28 px como hallazgo, no como devolución: cambiar de
+vara ahora sería arbitrario. Que sea una acción de reparación y no diaria **baja
+la frecuencia del error, no su tamaño**: quien falla el toque en un teléfono
+falla igual. Y el remedio que él mismo nombra cuesta una línea: subir el padding
+de `0.2rem` a `0.4rem` deja la línea en ~25 px. Conviene saber que **la barra ya
+ha engordado**: `.identity` pasa de 33 px (nombre 21 + hora 12 sin padding) a
+**39,4 px** medidos, o sea +6,4 px de cromo permanente que ya se gastaron sin
+decirlo. Gastar seis más y quedar por encima del mínimo parece mejor trato que
+quedarse a mitad de camino. **Decisión del usuario, no mía**; queda escrito.
+
+**4 · El estado de carga, verificado en el código.** `handleSave` hace
+`setIsSaving(true)` **antes** del `await`, así que mientras se espera el botón
+dice «Guardando…» y está inhabilitado: no queda mudo ni parece que no pasa nada.
+`refetch()` resuelve también cuando la consulta falla (devuelve el resultado con
+su error), así que la hoja no se cuelga. Y el caso «falló la consulta» **no acaba
+en solape silencioso**: tras el fallo `fetchStatus` vuelve a `idle`, se devuelve
+`[]` y se guarda igual —criterio 358—, pero la hoja está enseñando el `Alert`
+«No pudimos mirar el resto del día. Puedes guardar igual: solo cambia desde
+cuándo contamos esto.» Se dice. ✅
+
+**Hallazgo del borde:** hay un tercer `fetchStatus`, **`paused`**, que es el del
+dispositivo sin red. Ahí `await refetch()` no resuelve hasta que vuelva la
+conexión y el botón se queda en «Guardando…». **No lo cuento como regresión**
+porque sin red la mutación de guardar también queda en pausa —el usuario no iba a
+guardar de todos modos—, pero si alguna vez se toca, tratar `paused` como `idle`
+es la misma línea.
+
+**5 · Nada de lo ya aceptado ha vuelto atrás.** Comprobado fichero a fichero en
+el diff, no por lo que dice el resumen:
+
+- **El arreglo del `edit` que cerraba la sesión**: `VidaHoyPage.tsx:980` sigue con
+  `session.durationMinutes === null ? openStartTimeSheet(session) : openLogSheet(...)`.
+- **El parche de caché**: las mismas 16 líneas en `useActivityFollowUps.ts:100-115`,
+  con `activity` y `sessionSubtasks` preservados. (El segundo `setQueryData` sobre
+  `followUps.open()` que aparece en el fichero, línea 129, es el de
+  `useDeleteActivityFollowUpMutation` y es **preexistente**: lo abrí para
+  descartarlo.)
+- **La regla del solape y sus palabras**: una sola aparición de «Ese rato ya lo
+  tiene», sin tocar.
+- **El test intocable del arranque**: `VidaHoyPage.test.tsx` sigue teniendo
+  **exactamente dos hunks** (`git diff -U0` → `@@ -2541` y `@@ -3869`), los dos
+  añadiendo `openStartTimeSheet: () => {}` a un `Provider`. `it('un solo toque
+  arranca…')` (2511) y `it('criterio 5 — «Terminar» es un solo toque…')` (1147)
+  no aparecen en el diff.
+- **Criterio 9**: la línea sigue diciendo «llevas 52 min · planeado N» cuando te
+  pasas del plan, y ahora además se toca. Hay test.
+
+**6 · La lista de selectores, compilada por mí** (`sass --style=compressed` sobre
+`HEAD` y sobre el árbol):
+
+```
+VidaSessionBar HEAD  → .bar .capsule .identity .meta .name .root .row .text .timer
+VidaSessionBar árbol → .bar .capsule .identity .meta .name .root .row .text .timer
+```
+
+**Idénticas, los nueve**: `.menu` y `.menuItem` se han ido de verdad y no se ha
+comido nada ningún comentario. La duplicación de SCSS que señalé en la primera
+vuelta desaparece con ellos.
+
+**7 · Mis propias medidas** (esta vez sí, era la laguna de la primera vuelta):
+
+| Qué | 375 px | 760 px |
+|---|---|---|
+| Documento | `scrollWidth === clientWidth === 375`, **0 nodos desbordados** | `scrollWidth === 760`, **0 desbordados** |
+| La línea de la hora | 69,5 × 18,4 px | 69,5 × 18,4 px (no se estira: el `align-self: flex-start` cumple) |
+| El nombre | enlace de 93 × 21 px, `/app/vida/hoy?d=2026-09-23` | 439,9 × 21 px |
+| Nombre de 60 caracteres | recortado con puntos suspensivos, sin desbordar | igual |
+| Contraste de la hora, oscuro | `rgb(168,179,199)` sobre el vidrio → **8,86:1** | igual |
+
+Su 7,88:1 es más conservador que mi 8,86:1 (mido sobre un fondo de arnés más
+oscuro que el de la app); los dos están muy por encima de 4,5:1, así que el
+criterio 357 no corre peligro por ningún lado. De paso queda comprobado que el
+**vidrio de FEAT-020 sigue al 92 %**: medí `background-color` de la barra y sale
+`srgb(0.043 0.071 0.125 / 0.92)`.
+
+**Línea base, corrida por mí, exacta:**
+
+```
+pnpm test  → Tests 2 failed | 1992 passed (1994)   [SearchSelect ×2, preexistentes]
+pnpm lint  → ✖ 14 problems (14 errors, 0 warnings)
+pnpm build → CSS 276,97 kB · index 1.137,69 kB
+```
+
+Cuadra al kilobyte con lo que declara la sección 3.
+
+**Hallazgos menores:** el docblock de cabecera de `VidaSessionBar.test.tsx`
+sigue describiendo el menú de la primera vuelta («el «···» pasa a ser un menú con
+las dos salidas»), que ya no existe: los tests son correctos, el comentario
+miente. Y el `aria-label` del botón de la hora incrusta el título entero, así que
+con un nombre de 60 caracteres se lee muy largo en voz alta; no es un defecto,
+es un gusto.
+
+**Lo que queda para el usuario, a mano** (detrás del login; la API en Render
+tarda ~1 min en despertar):
+
+1. Con algo **en marcha**, toca la línea **«desde las 9:00»** de la barra de
+   abajo: debe abrirse «¿A qué hora empezaste?» de un solo toque.
+2. Pon **8:07** y «Guardar». Debe leerse «Contamos desde las 8:07».
+3. Comprueba que **la barra sigue ahí**, que el cronómetro salta al tiempo de
+   verdad **sin recargar** y que la sesión **no se ha cerrado**.
+4. Pulsa «Terminar» y mira que los minutos guardados son los de desde las 8:07
+   (criterio 345, que solo se cierra aquí).
+5. Prueba una hora **del futuro** y otra **dentro de un rato ya registrado**.
+6. Comprueba que el **«···» de la barra sigue costando un toque** para terminar
+   con nota, y que el **nombre** sigue llevando a Hoy.
+7. Y lo único que no puedo medir por ti: **acierta la línea de la hora con el
+   dedo** en tu teléfono. Mide 18 px de alto. Si se te escapa, dilo: son seis
+   píxeles de `padding` y está arreglado.
+
+### Tajada 2 — retoque de la línea tocable y la reserva de abajo
+
+**Veredicto: sigue aceptada, y el retoque queda verificado.** Miré solo lo que se
+pidió. Las cinco cosas están, con mis números, y **los suyos cuadran uno a uno**
+—incluidos los dos que yo no había medido bien—. La tajada se puede commitear.
+
+**1 · La línea llega a 24 px, y se puede tocar.** Arnés propio, `iframe` de ancho
+exacto en `position: absolute` (dev server del usuario en el 5173; borrado antes
+de escribir esto — `git status` no lo lista):
+
+| | 375 px | 760 px |
+|---|---|---|
+| La línea de la hora | **69,5 × 24,8 px** | **69,5 × 24,8 px** |
+| `padding` computado | `6.4px 0px` | igual |
+| Desbordes | 0 nodos, `scrollWidth === clientWidth === 375` | 0 nodos, 760 |
+
+Supera los **24 px** del mínimo AA de WCAG 2.2, que era exactamente lo que
+faltaba. Y que **se toca de verdad** lo comprobé sin fiarme del render:
+`elementFromPoint` en el centro **y** en la esquina superior izquierda del botón
+devuelve el propio botón —nada lo tapa—, con `pointer-events: auto` y sin
+`disabled`. Que ese toque abre la hoja lo fija además el test de
+`VidaSessionBar.test.tsx` («un toque en «desde las 9:00» corrige la hora»), que
+sigue en verde.
+
+**2 · La barra sin la puerta no ha engordado. Confirmado montando las dos.**
+
+| Variante | La línea | Alto de la barra | Huella hasta el borde |
+|---|---|---|---|
+| **Sin** `onCorrectStart` (como antes de FEAT-013) | `<span>` de 93 × **16,5** px, `padding: 0px` | **104,6 px** | **116,6 px** |
+| **Con** la puerta | `<button>` de 69,5 × **24,8** px | **112,9 px** | **124,9 px** |
+
+El `padding` vive solo en `button.meta`: el `<span>` lo tiene en `0px`, medido.
+Su afirmación central se sostiene: **quien no tenga esta puerta paga cero**.
+
+**Y aquí corrijo un número mío, que es lo que hay que hacer con los propios
+errores.** En la segunda vuelta escribí que la barra «ya había engordado
++6,4 px». **Era falso**, y lo era porque lo deduje restando el `padding` en vez
+de medir: di por hecho que el `<span>` de HEAD medía 12 px. Mide **16,5**, porque
+hereda la `line-height` de la barra mientras que el `<button>` usa `normal`. Las
+cifras buenas: HEAD 104,6 → segunda vuelta 106,5 (**+1,9 px**, no 6,4) → ahora
+112,9 (**+8,3 px sobre HEAD**). Su explicación de la discrepancia es correcta y
+además **encaja con lo que yo mismo medí en la segunda vuelta** (106,5 px de
+barra), así que las tres medidas cuentan la misma historia.
+
+**3 · La reserva de `8rem`: suficiente, y no sobra.** `8rem` = **128 px** contra
+una huella de **124,9 px** con la puerta a 375 px: quedan **3,1 px** de aire —
+justo, pero por encima—. Con `7.5rem` (120 px) faltaban **4,9 px** y el último
+bloque quedaba tapado, que es lo que el criterio 60 evita: **la subida era
+necesaria, no un margen de seguridad inventado**. Y no es excesiva: a 760 px
+sobran 10,3 px, que es medio renglón y nadie lo lee como un salto. De paso queda
+claro que en la segunda vuelta **todavía cabía** (huella ~118,5 < 120): lo que
+rompió la reserva fue este retoque, no lo anterior.
+
+**Sobre las demás pantallas**, que es lo que preguntabas: la reserva vive en **un
+solo sitio**, `.root[data-session-bar='on']` de `VidaModuleLayout.module.scss`,
+el contenedor que envuelve el `<Outlet/>` de **todo** el módulo. Así que Hoy,
+Plantilla, **Revisión** y Actividades reciben los mismos **+8 px**, y solo
+**cuando hay algo en marcha**: sin sesión el selector no aplica y ninguna pantalla
+cambia ni un píxel. Más aire por debajo no puede tapar nada —solo podría sobrar—,
+y 8 px no se ven. **Lo que no puedo hacer es mirar Revisión con datos**: está tras
+el login. Va a los pasos manuales.
+
+**4 · Los toques, sin moverse.** Verificado en el código, no en el resumen: no
+queda **ni una** mención de `Popover` en `VidaSessionBar.tsx` (0 coincidencias), y
+los tres manejadores cuelgan directos de su control —`onFinish` del `Button`
+(línea 138), `onOpenFinishModal` del `IconButton` (151), `onCorrectStart` del
+botón de la hora (123)—:
+
+| Gesto | HEAD | Ahora | Δ |
+|---|---|---|---|
+| **Terminar**, barra | 1 | **1** | **0** |
+| **Terminar y añadir una nota**, barra | 1 | **1** | **0** |
+| Terminar y añadir una nota, bloque | 2 | 2 | **0** |
+| Corregir la hora, barra | no existía | **1** + escribir + «Guardar» | — |
+
+**5 · Las listas de selectores, compiladas por mí** (`sass --style=compressed`,
+`HEAD` contra el árbol, en los dos `.scss` tocados):
+
+```
+VidaSessionBar   HEAD → .bar .capsule .identity .meta .name .root .row .text .timer
+VidaSessionBar  árbol → .bar .capsule .identity .meta .name .root .row .text .timer
+VidaModuleLayout HEAD → .errorText .root
+VidaModuleLayout árbol → .errorText .root
+```
+
+**Idénticas las dos.** Ningún comentario se ha comido nada, y encaja con que el
+CSS no se mueva: son declaraciones, no reglas.
+
+**Línea base, corrida por mí:**
+
+```
+pnpm test  → Tests 2 failed | 1992 passed (1994)   [SearchSelect ×2, preexistentes]
+pnpm lint  → ✖ 14 problems (14 errors, 0 warnings)
+pnpm build → CSS 276,97 kB · index 1.137,69 kB
+```
+
+**Ni un byte de diferencia** con la segunda vuelta, como decía.
+
+**Un hallazgo nuevo, pequeño y del retoque:** el borde superior del botón de la
+hora **toca el borde inferior del enlace del nombre** —`gap` medido: **0 px**—,
+así que los 6,4 px de `padding` de arriba quedan pegados bajo un enlace de 21 px.
+Un dedo que apunte bajo del nombre abre la hoja en vez de ir a Hoy. No es
+regresión (antes esa zona era texto muerto) ni lo pide ningún criterio, y separar
+los dos costaría subir otra vez la barra: queda escrito, y si el usuario lo nota
+al probar, ya sabemos dónde está.
+
+**Para el usuario, un paso más en la prueba manual** (los seis anteriores siguen
+igual):
+
+8. Con algo en marcha, baja del todo en **Hoy** y en **Revisión**: bajo el último
+   bloque tiene que quedar **aire**, sin que la barra tape nada. Y en tu teléfono,
+   **acierta la línea de la hora**: ahora mide 24,8 px, un tercio más alta.

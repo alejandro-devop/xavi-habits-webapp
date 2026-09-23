@@ -18,6 +18,7 @@ import {
   VIDA_NOTE_QUESTION_NEXT,
   VIDA_NOTE_QUESTION_RUNNING,
 } from '@/features/vida/utils/vida-notes.utils'
+import { VIDA_START_TIME_LABEL } from '@/features/vida/components/VidaStartTimeSheet'
 import { describeOverPlan } from '@/features/vida/utils/vida-session.utils'
 import {
   formatDurationMinutes,
@@ -63,6 +64,12 @@ type VidaAgendaBlockProps = {
   onFinish?: () => void
   /** El cierre completo: duración, notas y subtareas (criterio 6). */
   onOpenFinishModal?: () => void
+  /**
+   * **«Empecé antes»** (FEAT-013, criterio 342): corregir **desde cuándo**
+   * cuenta lo que está en marcha, sin terminarlo. Solo se pinta en el bloque en
+   * marcha y solo si llega: sin esto, el «···» es exactamente el de antes.
+   */
+  onCorrectStart?: () => void
   /** Una mutación de sesión en vuelo: los botones se inhabilitan (criterio 13). */
   isSessionBusy?: boolean
 
@@ -195,6 +202,7 @@ export function VidaAgendaBlock({
   sessionStartInstant = null,
   onFinish,
   onOpenFinishModal,
+  onCorrectStart,
   isSessionBusy = false,
   execution = null,
   missing = null,
@@ -286,6 +294,17 @@ export function VidaAgendaBlock({
         <li>
           <button type="button" className={styles.menuItem} onClick={onOpenFinishModal}>
             Terminar y añadir una nota
+          </button>
+        </li>
+      ) : null}
+      {/* **«Empecé antes»** (FEAT-013, criterio 342): lo que está en marcha
+          también se corrige, y corregir la hora **no** lo termina. Va debajo de
+          lo que ya había: «Terminar y añadir una nota» no se mueve de su sitio
+          (criterio 349). */}
+      {isRunning && onCorrectStart ? (
+        <li>
+          <button type="button" className={styles.menuItem} onClick={onCorrectStart}>
+            {VIDA_START_TIME_LABEL}
           </button>
         </li>
       ) : null}
@@ -542,7 +561,7 @@ export function VidaAgendaBlock({
             (solo donde se planea) o los de la sesión de este bloque, que
             existen también en un día pasado, donde se registra y no se planea
             (criterios 41 y 46). Un menú que no puede hacer nada no se pinta. */}
-        {date || canManageSession || (isRunning && onOpenFinishModal) ? (
+        {date || canManageSession || (isRunning && (onOpenFinishModal || onCorrectStart)) ? (
           <div className={styles.more}>
             <Popover
               triggerLabel={`Más opciones de ${title}`}

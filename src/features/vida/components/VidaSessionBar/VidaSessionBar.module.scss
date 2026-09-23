@@ -51,6 +51,9 @@
   min-width: 0;
 }
 
+/* Deja de ser el enlace entero (FEAT-013, tajada 2): el enlace es **el
+   nombre** y la línea de la hora es un botón hermano, porque un botón dentro de
+   un enlace no se puede escribir. La caja y su reparto no cambian. */
 .identity {
   display: flex;
   flex: 1;
@@ -59,12 +62,6 @@
   min-width: 0;
   color: inherit;
   text-decoration: none;
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus-ring);
-    outline-offset: 2px;
-    border-radius: var(--radius-md);
-  }
 }
 
 .capsule {
@@ -94,19 +91,73 @@
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+  text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 0.4rem);
+  }
 }
 
 /* «desde las 9:00» o «llevas 52 min · planeado 45». Dato, no alarma: mismo tono
    que cualquier otro `meta` del módulo, sin rojo y sin negrita (criterio 9). */
 .meta {
+  max-width: 100%;
   overflow: hidden;
+  border: none;
+  background: none;
   color: var(--color-text-secondary);
+  font-family: inherit;
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
+  text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Como botón se comporta como botón, pero **no se disfraza de botón**: es la
+   misma línea de siempre, que ahora se puede tocar (molde: `VidaNoteLine`). El
+   `padding` de arriba es lo que le da altura de dedo sin mover el texto. */
+button.meta {
+  /* **El `padding` vive solo aquí**, no en `.meta`: sin la puerta la hora es un
+     `<span>` sin padding y la barra mide exactamente lo que medía antes de
+     FEAT-013. Y es **0,4rem y no 0,2** porque con 0,2 la línea medía 18,4 px y
+     era el único control de la barra por debajo del mínimo de **24 px** de
+     WCAG 2.2 AA (medido por el revisor, decidido por el usuario): cuesta ~6 px
+     de barra y compra una puerta que se acierta con el dedo. */
+  margin: 0;
+  padding: 0.4rem 0;
+  /* Solo lo que ocupa su texto: un botón que se estirara con la columna
+     recogería toques en el vacío de la derecha (medido a 760 px, donde la
+     columna mide 440). */
+  align-self: flex-start;
+  max-width: 100%;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2rem;
+
+  &:hover:not(:disabled) {
+    color: var(--color-text);
+    text-decoration-style: solid;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 0.4rem);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    text-decoration: none;
+  }
 }
 
 .timer {

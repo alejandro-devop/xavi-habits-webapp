@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as followUpsApi from '@/features/vida/api/activity-followups.api'
 import { useVidaQueryGuard } from '@/features/vida/hooks/useVidaQueryGuard'
 import type {
+  ActivityFollowUp,
   ActivityFollowUpEditInput,
   ActivityFollowUpInput,
   ActivityFollowUpStartInput,
@@ -96,6 +97,21 @@ export function useUpdateActivityFollowUpMutation(options: VidaMutationOptions =
     onSuccess: (data) => {
       if (!data.isOpen) {
         queryClient.setQueryData(vidaKeys.followUps.open(), null)
+      } else {
+        // Sigue abierta: la caché se **parchea** con lo que acaba de cambiar
+        // —la hora de inicio de FEAT-013, las notas— en vez de sustituirse por
+        // la respuesta. `activityFollowUpEdit` **no devuelve `activity` ni las
+        // subtareas** (`activity-followups.graphql.ts`, `FOLLOW_UP_FIELDS` sin
+        // `FOLLOW_UP_ACTIVITY_FIELDS`), así que sustituirla dejaría la barra
+        // sin nombre ni color hasta que volviera la consulta. Con el parche, el
+        // cronómetro recuenta desde la hora nueva **en el acto** y nada
+        // parpadea (criterio 344).
+        queryClient.setQueryData(vidaKeys.followUps.open(), (current: unknown) => {
+          if (!current || typeof current !== 'object' || !('id' in current)) return current
+          const open = current as ActivityFollowUp
+          if (open.id !== data.id) return current
+          return { ...open, ...data, activity: data.activity ?? open.activity, sessionSubtasks: data.sessionSubtasks ?? open.sessionSubtasks }
+        })
       }
       invalidateFollowUpQueries(queryClient, { date: data.date, activityId: data.activityId })
       if (!options.silent) toast.success(data.isOpen ? 'Registro actualizado' : 'Tiempo registrado')

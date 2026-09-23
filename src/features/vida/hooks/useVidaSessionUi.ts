@@ -23,6 +23,13 @@ export type VidaSessionUiValue = {
    * sabe dónde guardar el borrador es la pantalla, no el layout.
    */
   openStartNoteSheet: (request: VidaStartNoteRequest) => void
+  /**
+   * Abre **«Empecé antes»** sobre la sesión en marcha (FEAT-013, criterio 342):
+   * corregir desde cuándo cuenta, sin terminarla. Va por aquí y se monta una
+   * sola vez, en el layout, por lo mismo que las otras dos: se llega desde el
+   * «···» del bloque de la agenda y desde el de la barra.
+   */
+  openStartTimeSheet: (session: ActivityFollowUp) => void
 }
 
 /** Lo que el layout necesita para abrir el editor de «antes de empezar». */
@@ -61,6 +68,7 @@ export const VidaSessionUiContext = createContext<VidaSessionUiValue>({
   openFinishModal: () => {},
   openNoteSheet: () => {},
   openStartNoteSheet: () => {},
+  openStartTimeSheet: () => {},
 })
 
 export function useVidaSessionUi(): VidaSessionUiValue {

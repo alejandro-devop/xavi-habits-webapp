@@ -359,3 +359,87 @@ describe('useVidaSessionActions — la de otro día (criterio 16)', () => {
     expect(toastCalls[0]?.message).not.toMatch(/cancel/i)
   })
 })
+
+describe('useVidaSessionActions — corregir la hora de lo que está en marcha (FEAT-013, tajada 2)', () => {
+  it('criterio 343 — manda **solo `{ id, startTime }`**: sin duración, la sesión sigue abierta', async () => {
+    seedOpen(openFollowUp())
+    vi.mocked(followUpsApi.updateActivityFollowUp).mockResolvedValue(
+      openFollowUp({ startTime: '08:07' }),
+    )
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).not.toBeNull())
+
+    await act(async () => {
+      await result.current.correctStart('08:07')
+    })
+
+    expect(followUpsApi.updateActivityFollowUp).toHaveBeenCalledTimes(1)
+    const input = vi.mocked(followUpsApi.updateActivityFollowUp).mock.calls[0]![0]
+    expect(input).toEqual({ id: 'f1', startTime: '08:07' })
+    expect(Object.keys(input)).not.toContain('durationMinutes')
+    expect(Object.keys(input)).not.toContain('notes')
+    // Ni se empieza nada nuevo ni se registra un rato aparte.
+    expect(followUpsApi.startActivityFollowUp).not.toHaveBeenCalled()
+    expect(followUpsApi.createActivityFollowUp).not.toHaveBeenCalled()
+  })
+
+  it('criterio 344 — la sesión abierta de la caché **recuenta desde la hora nueva** y no pierde su actividad', async () => {
+    seedOpen(openFollowUp())
+    // El API **no devuelve `activity`** en `activityFollowUpEdit`: si la caché
+    // se sustituyera por la respuesta, la barra se quedaría sin nombre.
+    vi.mocked(followUpsApi.updateActivityFollowUp).mockResolvedValue(
+      openFollowUp({ startTime: '08:07', activity: undefined }),
+    )
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).not.toBeNull())
+    // La consulta que vuelve **se queda en vuelo** a propósito: así lo que se
+    // mide es el parche de la caché —lo que hace que el cronómetro recuente en
+    // el acto— y no lo que traiga después el servidor.
+    vi.mocked(followUpsApi.getActivityOpenFollowUp).mockReturnValue(new Promise(() => {}))
+
+    await act(async () => {
+      await result.current.correctStart('08:07')
+    })
+
+    const cached = queryClient.getQueryData<ActivityFollowUp>(vidaKeys.followUps.open())
+    expect(cached?.startTime).toBe('08:07')
+    expect(cached?.durationMinutes).toBeNull()
+    expect(cached?.activity?.title).toBe('Organizar la casa')
+  })
+
+  it('criterio 347 — **dice lo que pasó**, y un solo mensaje', async () => {
+    seedOpen(openFollowUp())
+    vi.mocked(followUpsApi.updateActivityFollowUp).mockResolvedValue(
+      openFollowUp({ startTime: '08:07' }),
+    )
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).not.toBeNull())
+
+    await act(async () => {
+      await result.current.correctStart('08:07')
+    })
+
+    expect(toastCalls).toHaveLength(1)
+    expect(toastCalls[0]?.message).toBe('Contamos desde las 8:07')
+    expect(toastCalls[0]?.message).not.toMatch(/olvid|tarde|deberías|error|mal\b/i)
+  })
+
+  it('criterio 348 — si falla, **no se afirma nada** y se puede reintentar', async () => {
+    seedOpen(openFollowUp())
+    vi.mocked(followUpsApi.updateActivityFollowUp).mockRejectedValue(new Error('boom'))
+    const { result } = renderHook(() => useVidaSessionActions(), { wrapper })
+    await waitFor(() => expect(result.current.session).not.toBeNull())
+
+    let outcome: { ok: boolean; message?: string } | undefined
+    await act(async () => {
+      outcome = await result.current.correctStart('08:07')
+    })
+
+    expect(outcome?.ok).toBe(false)
+    expect(outcome?.message).toContain('Sigue en marcha')
+    // La sesión de la caché conserva su hora de antes.
+    expect(queryClient.getQueryData<ActivityFollowUp>(vidaKeys.followUps.open())?.startTime).toBe(
+      '09:30',
+    )
+  })
+})

@@ -23,6 +23,13 @@ type VidaSessionBarProps = {
   onFinish: () => void
   /** El «···»: el cierre completo —duración, notas, subtareas— (criterio 6). */
   onOpenFinishModal: () => void
+  /**
+   * **«Empecé antes»** (FEAT-013, criterio 342): corregir desde cuándo cuenta
+   * esto, **sin terminarlo**. La puerta es **la línea de la hora**, un toque.
+   * Sin esta prop esa línea es el texto de siempre y la barra se pinta
+   * exactamente como antes de FEAT-013.
+   */
+  onCorrectStart?: () => void
   /** Mientras una mutación está en vuelo (criterio 13). */
   isBusy?: boolean
 
@@ -68,6 +75,7 @@ export function VidaSessionBar({
   plannedMinutes = null,
   onFinish,
   onOpenFinishModal,
+  onCorrectStart,
   isBusy = false,
   note = null,
   onEditNote,
@@ -79,23 +87,49 @@ export function VidaSessionBar({
     ? ({ '--vida-category-color': category.color } as CSSProperties)
     : undefined
   const overPlan = describeOverPlan(minutes, plannedMinutes)
+  // Lo que se lee bajo el nombre: «llevas 52 min · planeado 45» cuando te pasas
+  // del plan (criterio 9), y «desde las 9:00» el resto del tiempo.
+  const metaLabel = overPlan ?? `desde las ${formatTimeForDisplay(session.startTime)}`
 
   return (
     <div className={styles.root} style={colorStyle}>
       <div className={styles.bar}>
         <div className={styles.row}>
-          {/* Un toque en el nombre lleva a Hoy, al día de la sesión (criterio 7). */}
-          <Link className={styles.identity} to={vidaPaths.hoyForDate(session.date)}>
+          <span className={styles.identity}>
             <span className={styles.capsule} aria-hidden>
               <AppIcon name={category?.icon ?? UNCATEGORIZED_GROUP_ICON} size="sm" decorative />
             </span>
             <span className={styles.text}>
-              <span className={styles.name}>{title}</span>
-              <span className={styles.meta}>
-                {overPlan ?? `desde las ${formatTimeForDisplay(session.startTime)}`}
-              </span>
+              {/* Un toque en el nombre lleva a Hoy, al día de la sesión
+                  (criterio 7). El enlace envuelve **el nombre**, no la línea de
+                  debajo: un botón dentro de un enlace no se puede escribir. */}
+              <Link className={styles.name} to={vidaPaths.hoyForDate(session.date)}>
+                {title}
+              </Link>
+              {/* **La hora es la puerta de «Empecé antes»** (FEAT-013, criterio
+                  342, en la forma que pidió el revisor): la línea que ya dice
+                  «desde las 9:00» es literalmente el dato que se viene a
+                  corregir, así que tocarla es **un** toque y el «···» se queda
+                  como estaba. Molde: `VidaNoteLine` —texto que se puede tocar,
+                  hermano del enlace, dentro de la misma tarjeta—. Sin
+                  `onCorrectStart` es el mismo texto de siempre. */}
+              {onCorrectStart ? (
+                <button
+                  type="button"
+                  className={styles.meta}
+                  // El texto visible va **dentro** del nombre accesible: quien
+                  // dicta «desde las 9:00» acierta el control.
+                  aria-label={`${metaLabel} — corregir a qué hora empezaste «${title}»`}
+                  onClick={onCorrectStart}
+                  disabled={isBusy}
+                >
+                  {metaLabel}
+                </button>
+              ) : (
+                <span className={styles.meta}>{metaLabel}</span>
+              )}
             </span>
-          </Link>
+          </span>
 
           <span className={styles.timer} aria-live="polite" aria-label={`Llevas ${label}`}>
             {label}
@@ -105,6 +139,11 @@ export function VidaSessionBar({
             Terminar
           </Button>
 
+          {/* **El «···» sigue siendo un toque** al cierre completo, como antes
+              de esta feature: la puerta de «Empecé antes» es la línea de la
+              hora de aquí arriba, no una entrada de menú (FEAT-013, tajada 2,
+              devolución del revisor). «Terminar y añadir una nota» no cambia
+              ni de sitio ni de precio (criterio 349). */}
           <IconButton
             icon="ellipsis"
             size="sm"

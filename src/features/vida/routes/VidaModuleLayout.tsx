@@ -4,6 +4,7 @@ import { VidaFinishSessionModal } from '@/features/vida/components/VidaFinishSes
 import { VidaNoteSheet } from '@/features/vida/components/VidaNoteSheet'
 import { VidaSessionBar } from '@/features/vida/components/VidaSessionBar'
 import { VidaStaleSessionPrompt } from '@/features/vida/components/VidaStaleSessionPrompt'
+import { VidaStartTimeSheet } from '@/features/vida/components/VidaStartTimeSheet'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
 import {
   useVidaOpenSession,
@@ -93,6 +94,20 @@ export function VidaModuleLayout() {
     setNoteOpen(true)
   }
 
+  // **Corregir desde cuándo cuenta lo que está en marcha** (FEAT-013, tajada
+  // 2). Vive aquí por lo mismo que el cierre completo y la nota: se llega desde
+  // el «···» del bloque de la agenda y desde el de la barra, y montarla una vez
+  // por puerta serían dos hojas con dos estados que se pueden contradecir.
+  const [correcting, setCorrecting] = useState<ActivityFollowUp | null>(null)
+  const [correctOpen, setCorrectOpen] = useState(false)
+  const [correctSession, setCorrectSession] = useState(0)
+
+  function openStartTime(target: ActivityFollowUp) {
+    setCorrecting(target)
+    setCorrectSession((value) => value + 1)
+    setCorrectOpen(true)
+  }
+
   const actions = useVidaSessionActions({ onAddNote: openFinish })
   const { saveNote } = useVidaSessionNote()
   /**
@@ -113,6 +128,7 @@ export function VidaModuleLayout() {
       openFinishModal: openFinish,
       openNoteSheet: openNote,
       openStartNoteSheet: openStartNote,
+      openStartTimeSheet: openStartTime,
     }),
     [],
   )
@@ -160,6 +176,10 @@ export function VidaModuleLayout() {
           isBusy={actions.isBusy}
           onFinish={() => void actions.finishNow()}
           onOpenFinishModal={() => openFinish(session)}
+          // **«Empecé antes»** (FEAT-013, criterio 342): la misma hoja que
+          // abre el «···» del bloque en marcha. Corregir la hora **no** la
+          // termina y el cronómetro sigue corriendo mientras se corrige.
+          onCorrectStart={() => openStartTime(session)}
           // **Qué estás haciendo** (FEAT-018, criterios 542 a 545). Abrir el
           // editor es solo abrir una hoja: ni pausa, ni termina, ni desmonta
           // la barra (criterio 543).
@@ -176,6 +196,19 @@ export function VidaModuleLayout() {
           session={finishing}
           onSave={actions.finishWith}
           onDiscard={actions.discard}
+        />
+      ) : null}
+
+      {/* Corregir desde cuándo cuenta lo que está en marcha (FEAT-013,
+          criterios 342 a 348). Manda **solo `{ id, startTime }`**: la sesión
+          sigue abierta y el cronómetro recuenta desde la hora nueva. */}
+      {correcting ? (
+        <VidaStartTimeSheet
+          key={correctSession}
+          open={correctOpen}
+          onClose={() => setCorrectOpen(false)}
+          session={correcting}
+          onSave={(startTime) => actions.correctStart(startTime)}
         />
       ) : null}
 

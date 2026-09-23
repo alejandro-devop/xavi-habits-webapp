@@ -33,6 +33,7 @@ import type {
 import { formatDateToYmd } from '@/features/vida/utils/vida-date.utils'
 import {
   DEFAULT_BLOCK_MINUTES,
+  formatTimeForDisplay,
   isValidHhMm,
   normalizeTimeForApi,
   normalizeTimeForDisplay,
@@ -408,6 +409,101 @@ export function editSessionInput(params: {
     durationMinutes: Math.max(1, Math.round(params.durationMinutes)),
     notes: params.notes?.trim() ? params.notes.trim() : null,
   }
+}
+
+/**
+ * **Corregir la hora de inicio de una sesión que sigue en marcha** (FEAT-013,
+ * criterio 343): `activityFollowUpEdit` con **`id` y `startTime`, nada más**.
+ *
+ * Que no viaje `durationMinutes` no es un descuido: el backend arma el `UPDATE`
+ * **solo con las columnas presentes**
+ * (`xavi-platform-node/src/services/activity-follow-up.service.ts:347-389`), y
+ * `isOpen` es `duration_minutes === null`. Mandar la duración aquí cerraría la
+ * sesión, que es justo lo contrario de lo que se viene a hacer. Las notas
+ * tampoco viajan: quien corrige la hora no está escribiendo una nota.
+ */
+export function correctStartInput(params: { id: string; startTime: string }): ActivityFollowUpEditInput {
+  return {
+    id: params.id,
+    startTime: normalizeTimeForApi(params.startTime),
+  }
+}
+
+/**
+ * **La sesión ya registrada que se lleva ese minuto**, si la hay (FEAT-013,
+ * tajada 2). Sirve para no correr el inicio de lo que está en marcha hasta
+ * dentro de un rato que ya tiene dueño: el día contaría dos veces el mismo
+ * minuto, que es lo que evita el criterio 26 de FEAT-004.
+ *
+ * Se mira **solo el instante de inicio**: empezar justo cuando la otra acaba
+ * (`8:30` con una que va de 8:00 a 8:30) **sí** vale — son consecutivas, no
+ * solapadas. Las sesiones abiertas no cuentan: la que corre es la que se está
+ * corrigiendo, y dos abiertas no puede haberlas.
+ */
+export function findSessionCovering(params: {
+  startTime: string
+  date: string
+  sessions: ActivityFollowUp[]
+  exceptId: string
+}): ActivityFollowUp | null {
+  const time = readHhMm(params.startTime)
+  if (!time) return null
+  const instant = sessionStartInstant(params.date, time)
+  if (!instant) return null
+  for (const other of params.sessions) {
+    if (other.id === params.exceptId) continue
+    if (other.durationMinutes === null || other.durationMinutes === undefined) continue
+    const start = followUpStartInstant(other)
+    if (!start) continue
+    const end = new Date(start.getTime() + other.durationMinutes * MS_PER_MINUTE)
+    if (instant.getTime() >= start.getTime() && instant.getTime() < end.getTime()) return other
+  }
+  return null
+}
+
+/**
+ * **La hora nueva de una sesión en marcha, comprobada antes de llamar al API**
+ * (criterio 346 y el encargo de esta tajada).
+ *
+ * Tres cosas pueden hacerla imposible, y las tres se dicen aquí y no en el 400
+ * del servidor —que además **no comprueba ninguna**: el `UPDATE` de
+ * `activity-follow-up.service.ts` acepta lo que le llegue—:
+ *
+ * 1. **No es una hora**, o es del futuro: las frases de siempre, compartidas con
+ *    `validateLogPast` y con `validateStartTime` (criterio 333). La fecha es
+ *    **la de la sesión**: corregir la hora no cambia de día.
+ * 2. **Cae dentro de un rato ya registrado**: se nombra el vecino y hasta qué
+ *    hora llega. Es una descripción, no un reproche (criterio 359).
+ * 3. **Antes del comienzo de tu día**: eso **se admite** —hay gente que empieza
+ *    antes (criterio 336)— y por eso no está en esta lista.
+ */
+export function validateCorrectedStart(params: {
+  session: ActivityFollowUp
+  startTime: string
+  now: Date
+  /** Las del día de la sesión, para no pisar un rato que ya tiene dueño. */
+  daySessions?: ActivityFollowUp[]
+}): LogPastValidation {
+  const { session, startTime, now, daySessions = [] } = params
+  const basic = validateStartTime({ date: session.date, startTime, now })
+  if (!basic.valid) return basic
+  const taken = findSessionCovering({
+    startTime,
+    date: session.date,
+    sessions: daySessions,
+    exceptId: session.id,
+  })
+  if (taken) {
+    const title = taken.activity?.title ?? 'otro rato'
+    const start = followUpStartInstant(taken)!
+    const end = new Date(start.getTime() + (taken.durationMinutes ?? 0) * MS_PER_MINUTE)
+    const endLabel = formatTimeForDisplay(`${pad2(end.getHours())}:${pad2(end.getMinutes())}`)
+    return {
+      valid: false,
+      message: `Ese rato ya lo tiene «${title}», hasta las ${endLabel}. Elige una hora desde esa.`,
+    }
+  }
+  return { valid: true, message: null }
 }
 
 /* ── Lo que dice el API cuando algo sale mal ────────────────────────────── */

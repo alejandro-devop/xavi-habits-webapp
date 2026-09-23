@@ -2538,7 +2538,12 @@ describe('VidaHoyPage — «Lo que viene»', () => {
     })
     renderWithProviders(
       <VidaSessionUiContext.Provider
-        value={{ openFinishModal: () => {}, openNoteSheet: () => {}, openStartNoteSheet }}
+        value={{
+          openFinishModal: () => {},
+          openNoteSheet: () => {},
+          openStartNoteSheet,
+          openStartTimeSheet: () => {},
+        }}
       >
         <VidaHoyPage />
       </VidaSessionUiContext.Provider>,
@@ -3866,7 +3871,12 @@ describe('VidaHoyPage — la nota de la sesión en la línea del día (FEAT-018)
   ) {
     renderWithProviders(
       <VidaSessionUiContext.Provider
-        value={{ openFinishModal: () => {}, openNoteSheet, openStartNoteSheet: () => {} }}
+        value={{
+          openFinishModal: () => {},
+          openNoteSheet,
+          openStartNoteSheet: () => {},
+          openStartTimeSheet: () => {},
+        }}
       >
         <VidaHoyPage />
       </VidaSessionUiContext.Provider>,

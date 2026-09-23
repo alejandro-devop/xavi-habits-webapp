@@ -9,6 +9,7 @@ import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.t
 import { formatTimeForDisplay } from '@/features/vida/utils/vida-time.utils'
 import {
   closeSessionInput,
+  correctStartInput,
   elapsedMinutes,
   followUpStartInstant,
   sessionStartInstant,
@@ -87,6 +88,9 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
   // un hook genérico no puede conocer.
   const startMutation = useStartActivityFollowUpMutation({ silent: true })
   const closeMutation = useUpdateActivityFollowUpMutation({ silent: true })
+  // Corregir la hora de lo que corre: también callada, porque el mensaje que
+  // cuenta lo que pasó —«Contamos desde las 8:07»— lo pone `correctStart`.
+  const correctMutation = useUpdateActivityFollowUpMutation({ silent: true })
   // El de descartar **sí** habla: «No la guardamos» ya es el mensaje correcto.
   const discardMutation = useDeleteActivityFollowUpMutation()
 
@@ -258,6 +262,44 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
   }, [closeMutation, lock, onAddNote, session, toast, unlock])
 
   /**
+   * **Corregir desde cuándo cuenta lo que está en marcha** (FEAT-013, tajada 2,
+   * criterios 343, 344 y 347).
+   *
+   * Manda **`{ id, startTime }` y nada más**: el backend arma el `UPDATE` solo
+   * con las columnas presentes, así que no se toca la duración —la sesión sigue
+   * abierta— ni las notas. El cronómetro recuenta solo porque cuenta contra
+   * `startTime`, y la sesión abierta de la caché se parchea aquí mismo para que
+   * la barra no enseñe ni un segundo la hora vieja mientras vuelve la consulta.
+   *
+   * El mensaje lo pone **este** hook y no el de la mutación: el genérico diría
+   * «Registro actualizado», que no cuenta lo que pasó (criterio 347).
+   */
+  const correctStart = useCallback(
+    async (startTime: string): Promise<VidaSessionActionResult> => {
+      if (!session) return { ok: false, message: 'No hay nada en marcha.' }
+      if (!lock()) return { ok: false, message: 'Espera a que termine lo anterior.' }
+      try {
+        const saved = await correctMutation.mutateAsync(
+          correctStartInput({ id: session.id, startTime }),
+        )
+        toast.success(`Contamos desde las ${formatTimeForDisplay(saved.startTime)}`)
+        return OK
+      } catch (error) {
+        // La sesión **sigue en marcha con su hora de antes**: aquí no se ha
+        // pintado nada como guardado (criterio 348).
+        const message = translateSessionError(
+          error,
+          'No pudimos cambiar la hora. Sigue en marcha como estaba; inténtalo otra vez.',
+        )
+        return { ok: false, message }
+      } finally {
+        unlock()
+      }
+    },
+    [correctMutation, lock, session, toast, unlock],
+  )
+
+  /**
    * El cierre completo (criterio 6): duración ajustada, notas en texto plano.
    * No lanza ni cierra nada por su cuenta: quien tiene el modal decide.
    */
@@ -345,6 +387,7 @@ export function useVidaSessionActions(options: UseVidaSessionActionsOptions = {}
     isFromAnotherDay,
     isBusy: isBusy || discardMutation.isPending,
     start,
+    correctStart,
     finishNow,
     finishWith,
     discard,

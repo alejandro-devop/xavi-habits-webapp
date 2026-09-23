@@ -1,0 +1,41 @@
+/* Mismos tonos y mismo ritmo que `VidaNoteSheet.module.scss`: es la otra hoja
+   corta de la sesión —una pregunta, un campo— y dos hojas que se parecen se
+   leen peor que dos idénticas. El campo es el mismo `Input type="time"` de
+   `VidaLogSessionSheet`, así que aquí no se estiliza ningún control nuevo
+   (criterio 357). */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.field {
+  display: block;
+  min-width: 0;
+}
+
+/* Lo que va a pasar al guardar, dicho antes de guardarlo. Dato, no aviso:
+   el mismo tono secundario que el pie de la hoja de empezar. */
+.hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: 100%;
+}

@@ -11,8 +11,15 @@
   /* 4,5rem era la barra de una sola fila. Desde FEAT-018 lleva debajo la línea
      de «qué estás haciendo»: medido en el navegador a 375 px, la barra pasa de
      **69 px a 117 px**, exactamente 3rem más. Sin ampliar el hueco taparía el
-     último bloque de la agenda, que es justo lo que el criterio 60 evita. */
-  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+     último bloque de la agenda, que es justo lo que el criterio 60 evita.
+
+     **8rem desde FEAT-013 tajada 2**, y con la medida delante: la línea de la
+     hora pasa a ser tocable y sube a 24,8 px de alto (el mínimo de WCAG 2.2
+     AA), así que la barra crece **8,3 px** y su huella hasta el borde pasa de
+     **116,6 px a 124,9 px** a 375 px — por encima de los 120 de 7,5rem—. Con
+     8rem (128 px) vuelve a sobrar. Medido en un `iframe` de 375 px exactos, que
+     es la única forma de medir esto (la pestaña emula 568). */
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* El aviso de que no se pudo saber si hay algo en marcha (hallazgo 1 de la

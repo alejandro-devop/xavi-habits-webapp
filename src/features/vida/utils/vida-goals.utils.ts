@@ -92,6 +92,19 @@ export const DEFAULT_GOAL_ACTIVE_DAYS: readonly VidaDayOfWeek[] = VIDA_DAY_ORDER
  * un arco vacío.
  */
 function countsOn(activeDays: readonly VidaDayOfWeek[], date: string): boolean {
+  // **El tipo dice que siempre hay lista; la caché del teléfono dice que no.**
+  // La caché de consultas se persiste en `localStorage` y se rehidrata al
+  // abrir, así que tras un despliegue que añade un campo conviven en la misma
+  // pantalla objetos con la forma nueva y objetos guardados con la vieja. El
+  // 2026-09-23 eso tumbó Hoy entero en producción —«undefined is not an object
+  // (evaluating 'e.includes')»— en cuanto esta línea tocó una meta guardada
+  // antes de la migración 070.
+  //
+  // El respaldo es el mismo `DEFAULT` de la columna, así que una meta vieja se
+  // comporta como antes de la feature —de lunes a viernes— hasta que la
+  // consulta responde con lo bueno. Lo que **no** es aceptable es que un campo
+  // que falta se lleve por delante la pantalla entera.
+  if (!Array.isArray(activeDays)) return DEFAULT_GOAL_ACTIVE_DAYS.includes(getVidaDayOfWeek(date))
   return activeDays.includes(getVidaDayOfWeek(date))
 }
 

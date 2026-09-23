@@ -123,6 +123,35 @@ const AT_9 = 9 * 60
 const DAY_END = '23:00'
 
 describe('buildGoalArcs', () => {
+  it('una meta guardada en la caché del teléfono, sin días, no tumba la pantalla', () => {
+    // **Regresión de producción, 2026-09-23.** La caché de consultas se
+    // persiste en `localStorage`, así que al abrir la app después de un
+    // despliegue se rehidratan metas guardadas **antes** de que existiera
+    // `activeDays`. Hoy entero se caía con «undefined is not an object
+    // (evaluating 'e.includes')» antes de pintar nada. El tipo promete la
+    // lista; la caché del teléfono no la tiene.
+    const stale = { ...WORK, activeDays: undefined } as unknown as typeof WORK
+
+    const { arcs, promptAllowed } = buildGoalArcs({
+      followUps: [
+        session({ id: 's1', startTime: '08:00', durationMinutes: 60, categoryId: 'trabajo' }),
+      ],
+      date: DATE,
+      nowMinutes: 12 * 60,
+      categories: [category('trabajo', 'Trabajo', stale)],
+      isPastDay: false,
+      dayEnd: DAY_END,
+    })
+
+    // Se comporta como antes de la feature —de lunes a viernes, y el 18 es
+    // viernes— hasta que la consulta responda con el dato bueno.
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0].workedMinutes).toBe(60)
+    // Y el viernes la meta cuenta, así que la pregunta sigue permitida: el
+    // respaldo no apaga nada, solo evita que falte el dato se lleve la pantalla.
+    expect(promptAllowed).toBe(true)
+  })
+
   it('suma solo las sesiones de las categorías que apuntan a la meta (criterio 490)', () => {
     const { arcs } = buildGoalArcs({
       followUps: [

@@ -17,7 +17,7 @@ import { VidaTemplateRemoveDialog } from '@/features/vida/components/VidaTemplat
 import { VidaWeekGrid } from '@/features/vida/components/VidaWeekGrid'
 import { useActivitiesQuery } from '@/features/vida/hooks/useActivities'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
-import { useVidaNight } from '@/features/vida/hooks/useVidaNight'
+import { useVidaWeekdayWindow } from '@/features/vida/hooks/useVidaDayWindow'
 import { VidaNightBand } from '@/features/vida/components/VidaNightBand'
 import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
 import {
@@ -33,7 +33,6 @@ import {
   getCurrentLocalDate,
   getVidaDayOfWeek,
 } from '@/features/vida/utils/vida-date.utils'
-import { nightBandsForWeekday } from '@/features/vida/utils/vida-night.utils'
 import {
   buildTemplateDay,
   buildTemplateGuidance,
@@ -106,15 +105,21 @@ export function VidaPlantillaPage() {
   const itemsQuery = useVidaItemsQuery(true)
   const dayHours = useVidaDayHours()
   /**
-   * **La noche** (FEAT-012, tajada 1). Sale de `mySettings`, que esta pantalla
-   * ya pide a través de `useVidaDayHours`: ni una consulta más (criterio 318).
+   * **La ventana de este día, con la noche puesta** (FEAT-012, tajada 2).
    *
-   * En esta tajada la noche **solo se pinta**: no mueve `dayHours`, no entra en
-   * `buildTemplateDay` y no toca ninguna cuenta, así que «2h puestas de 17h» es
-   * exactamente la misma cifra con noche y sin ella (criterio 273). La ventana
-   * derivada es la tajada 2.
+   * Sale de `mySettings`, que esta pantalla ya pide a través de
+   * `useVidaDayHours`: ni una consulta más (criterio 318). Devuelve lo mismo
+   * que `dayHours` más las dos franjas y, si la noche marca este día, **una
+   * ventana más corta**: el día empieza cuando te levantas y acaba cuando te
+   * acuestas (criterios 277 y 279).
+   *
+   * Eso mueve el «puestas de 17h» de la cabecera, y es deliberado: decisión del
+   * usuario del 2026-09-24 —«sí, sale del presupuesto del día»—, que deja el
+   * criterio 273 superado. Lo que **no** cambia es que dormir no sea tiempo
+   * puesto: los minutos de sueño no entran en ningún tramo ni en la leyenda
+   * (criterio 284); lo único que cambia es contra qué se miden.
    */
-  const nightState = useVidaNight()
+  const dayWindow = useVidaWeekdayWindow(day)
   const updateItem = useUpdateVidaItemMutation()
   const deleteItem = useDeleteVidaItemMutation()
 
@@ -404,8 +409,8 @@ export function VidaPlantillaPage() {
   const templateDay = buildTemplateDay({
     items,
     day,
-    dayStart: dayHours.startTime,
-    dayEnd: dayHours.endTime,
+    dayStart: dayWindow.startTime,
+    dayEnd: dayWindow.endTime,
   })
   // La cuadrícula y su total salen de **una sola ventana para los siete días**
   // (A5): `buildTemplateDay` estira la ventana de *su* día, y siete escalas
@@ -421,8 +426,12 @@ export function VidaPlantillaPage() {
   // Qué noche **acaba** en este día (la de arriba) y cuál **empieza** (la de
   // abajo). No son la misma pregunta: una noche que no cruza la medianoche se
   // pinta arriba de su propio día y abajo no anuncia nada (criterio 276).
-  const usableNight = nightState.isPending || nightState.isError ? null : nightState.night
-  const { dawn: dawnNight, dusk: duskNight } = nightBandsForWeekday(usableNight, day)
+  // Las dos franjas salen de **la misma** resolución que la ventana
+  // (`useVidaWeekdayWindow` llama por dentro a `nightBandsForWeekday`), así que
+  // lo que se pinta y lo que se cuenta no pueden decir cosas distintas: si hay
+  // franja de abajo, el día acaba ahí.
+  const dawnNight = dayWindow.nightEnding
+  const duskNight = dayWindow.nightStarting
   const guidance = buildTemplateGuidance(templateDay, dayLabel)
   const isDayEmpty = templateDay.timed.length === 0 && templateDay.untimed.length === 0
 
@@ -471,9 +480,11 @@ export function VidaPlantillaPage() {
           <VidaTemplateDaySummary
             day={templateDay}
             guidance={guidance}
-            dayStart={dayHours.startTime}
-            dayEnd={dayHours.endTime}
-            isDefaultSchedule={dayHours.isDefault}
+            dayStart={dayWindow.startTime}
+            dayEnd={dayWindow.endTime}
+            isDefaultSchedule={dayWindow.isDefault}
+            defaultScheduleNote={dayWindow.defaultScheduleNote ?? undefined}
+            sleepLabel={dayWindow.sleepLabel}
             actions={
               <>
                 <Button variant="secondary" size="sm" onClick={() => setCopyOpen(true)}>

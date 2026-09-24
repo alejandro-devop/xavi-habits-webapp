@@ -26,6 +26,7 @@ import {
 } from '@/features/vida/hooks/useActivityFollowUps'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
+import { useVidaDayWindow } from '@/features/vida/hooks/useVidaDayWindow'
 import { useVidaItemsQuery, useUpdateVidaItemMutation } from '@/features/vida/hooks/useVidaItems'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
 import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
@@ -177,11 +178,16 @@ export function VidaRevisionPage() {
   // El horario del día es la **misma** consulta de ajustes que lee
   // `useVidaDayData`: React Query la deduplica, no es una consulta más.
   const hours = useVidaDayHours()
+  // **Qué día se abre** se decide con la ventana de **hoy**, no con la del día
+  // abierto: «el último día cerrado» depende de si hoy ya pasó su hora de fin,
+  // y con noche puesta esa hora es la de acostarse (FEAT-012, D1). Sin noche es
+  // exactamente `hours.endTime`, como hasta ahora.
+  const todayWindow = useVidaDayWindow(today)
   const date = clampToReviewWindow(
     resolveReviewDate({
       param: searchParams.get('d'),
       today,
-      dayEnd: hours.endTime,
+      dayEnd: todayWindow.endTime,
       nowMinutes: now.minutes ?? 0,
     }),
     today,
@@ -221,6 +227,19 @@ export function VidaRevisionPage() {
     refetch,
   } = useVidaDayData(date)
 
+  /**
+   * **La ventana del día abierto, con la noche puesta** (FEAT-012, criterio
+   * 285). Es **la misma** que usa Hoy, y esa es toda la gracia: si la revisión
+   * contara sobre 24 horas y Hoy sobre 18, «Sin registrar · de las Xh de tu
+   * día» seguiría metiendo dentro las horas de sueño y llamaría «sin registrar»
+   * a un rato en el que estabas durmiendo. La cifra baja, se sigue llamando
+   * igual y sigue sin una palabra de reproche.
+   *
+   * `dayHours` se queda para lo de la **semana**, que mira siete días a la vez:
+   * una sola escala para los siete, o las filas no se pueden comparar.
+   */
+  const dayWindow = useVidaDayWindow(date)
+
   // La tira: la misma de Hoy, con **la ventana de mirar atrás** (A3) y
   // llevando a la revisión de cada día en vez de a Hoy. Los puntos salen de
   // `vidaKeys.dayPlan.byDate`, la misma clave: el día abierto no se pide dos
@@ -250,11 +269,11 @@ export function VidaRevisionPage() {
     () =>
       buildDayAgenda({
         planItems,
-        dayStart: dayHours.startTime,
-        dayEnd: dayHours.endTime,
+        dayStart: dayWindow.startTime,
+        dayEnd: dayWindow.endTime,
         nowMinutes,
       }),
-    [planItems, dayHours.startTime, dayHours.endTime, nowMinutes],
+    [planItems, dayWindow.startTime, dayWindow.endTime, nowMinutes],
   )
   // Con lo vivido caído no entra ni una sesión: sin esto, un parpadeo de red se
   // leería como un día sin registros (criterio 23).
@@ -269,10 +288,10 @@ export function VidaRevisionPage() {
         followUps: dayFollowUps,
         date,
         nowMinutes,
-        dayEnd: dayHours.endTime,
+        dayEnd: dayWindow.endTime,
         isPastDay: isPast,
       }),
-    [agenda, dayFollowUps, date, nowMinutes, dayHours.endTime, isPast],
+    [agenda, dayFollowUps, date, nowMinutes, dayWindow.endTime, isPast],
   )
 
   // Las razones de «No se pudo» viven en **este aparato** (FEAT-004, D7) y
@@ -423,7 +442,7 @@ export function VidaRevisionPage() {
    * abre por su primera hora y la duración la pone quien contesta.
    */
   function askAboutWholeDay() {
-    openLogSheet({ initial: { startTime: dayHours.startTime } })
+    openLogSheet({ initial: { startTime: dayWindow.startTime } })
   }
 
   const showsReasons = review.rows.some(
@@ -969,7 +988,7 @@ export function VidaRevisionPage() {
           date={date}
           dayLabel={dayLabel}
           suggestions={suggestions}
-          defaultStartTime={defaultLogStartTime(dayHours.startTime, nowMinutes)}
+          defaultStartTime={defaultLogStartTime(dayWindow.startTime, nowMinutes)}
           initial={logSheet.initial}
         />
       ) : null}

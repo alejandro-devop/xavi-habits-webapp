@@ -1657,14 +1657,27 @@ describe('la noche en la plantilla', () => {
     )
   })
 
-  it('el presupuesto es EXACTAMENTE el mismo con noche y sin ella (criterio 273)', () => {
+  /**
+   * **El criterio 273, tal como quedó tras la decisión D9 del usuario**
+   * (2026-09-24, «sí, sale del presupuesto del día»). La prueba de la tajada 1
+   * afirmaba que la cifra entera no se movía; ahora afirma las **dos mitades
+   * por separado**, que es lo que de verdad se decidió:
+   *
+   * - **Lo puesto no cambia ni un minuto**: dormir no es tiempo puesto y la
+   *   noche no es una entrada de ninguna cuenta (criterio 284).
+   * - **El «de …» sí cambia**: el día se mide contra el rato que estás
+   *   despierto (criterios 277 y 279).
+   */
+  it('con noche, lo puesto es el mismo y el «de …» se encoge (criterio 273, D9)', () => {
     itemsQuery = ready([
       item('1', { startTime: '07:00', durationMinutes: 60 }),
       item('2', { startTime: '13:00', durationMinutes: 30 }),
     ])
     const { unmount } = renderWithProviders(<VidaPlantillaPage />)
     const sinNoche = screen.getByText(/puestas de/).textContent
-    const puestasSinNoche = screen.getByText('1h 30').textContent
+    // Sin noche: el día por defecto, de 06:30 a 23:00 → 16h 30.
+    expect(sinNoche).toContain('16h 30')
+    expect(screen.getByText('1h 30')).toBeInTheDocument()
     unmount()
 
     withNight({
@@ -1674,9 +1687,17 @@ describe('la noche en la plantilla', () => {
     })
     renderWithProviders(<VidaPlantillaPage />)
 
-    expect(screen.getByText(/puestas de/).textContent).toBe(sinNoche)
-    expect(screen.getByText('1h 30').textContent).toBe(puestasSinNoche)
-    // Y las franjas sí están: la cifra no cambia **aunque** se pinten.
+    // Lo **puesto** es exactamente lo mismo: la noche no suma ni resta minutos
+    // planeados (criterio 284).
+    expect(screen.getByText('1h 30')).toBeInTheDocument()
+    // El denominador baja a las 18 h que estás despierto (5:00 → 23:00).
+    expect(screen.getByText(/puestas de/).textContent).toContain('18h')
+    expect(screen.getByText(/puestas de/).textContent).not.toBe(sinNoche)
+    // Y el cambio **se puede explicar mirando la pantalla**: la línea del
+    // horario dice la ventana y cuánto duermes (criterio 277).
+    expect(screen.getByText(/Tu día ·/).textContent).toContain('5:00 → 23:00')
+    expect(screen.getByText(/Tu día ·/).textContent).toContain('duermes 6 h')
+    // Y las franjas siguen ahí.
     expect(bands()).toHaveLength(2)
   })
 

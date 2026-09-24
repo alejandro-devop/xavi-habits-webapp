@@ -95,6 +95,24 @@ vi.mock('@/features/vida/hooks/useVidaDayHours', () => ({
     refetch: vi.fn(),
   }),
 }))
+/**
+ * **La noche** (FEAT-012, tajada 2). Desde que el aviso de sesión vieja usa la
+ * ventana de hoy —y no `vidaDayEndTime` a pelo—, este componente lee también la
+ * noche. Sale de `useUserSettingsQuery`, que exige `AuthBootstrapProvider`, y
+ * esta suite monta el layout suelto: se mockea igual que su hermana de arriba.
+ * Sin noche, la ventana es exactamente la de antes y estas 22 pruebas no
+ * cambian de resultado.
+ */
+vi.mock('@/features/vida/hooks/useVidaNight', () => ({
+  useVidaNight: () => ({
+    night: null,
+    saved: { bedTime: null, wakeTime: null, days: null },
+    isPending: false,
+    isError: false,
+    isDisabled: false,
+    refetch: vi.fn(),
+  }),
+}))
 
 function followUp(overrides: Partial<ActivityFollowUp> = {}): ActivityFollowUp {
   return {

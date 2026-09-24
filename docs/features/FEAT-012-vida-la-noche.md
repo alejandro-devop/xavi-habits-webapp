@@ -5,7 +5,7 @@ status: building
 architect: yes
 area: features/vida, features/settings, **API (xavi-platform-node)**
 requested: 2026-09-22
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # FEAT-012 — La noche: dormir deja de ser un agujero y pasa a ser el borde del día
@@ -231,6 +231,19 @@ La numeración del módulo la dejó FEAT-011 en el 251 y el usuario reserva hast
 - [ ] 273. **No entran en el presupuesto.** La cifra «2h puestas de 17h» es
   **exactamente la misma** con noche y sin ella: afirmado en test con los dos
   casos y el mismo número.
+
+  > **SUPERADO EN PARTE por decisión del usuario del 2026-09-24 (tajada 2).**
+  > No se borra —se cumplió, se revisó y se aceptó en la tajada 1, donde la
+  > ventana no se movía—, pero desde la tajada 2 **el denominador sí cambia**:
+  > el usuario contestó «**sí, sale del presupuesto del día**» (D9), así que con
+  > noche puesta el día se mide de la hora de levantarse a la de acostarse y el
+  > «de 17h» pasa a decir otro número. Lo que **sigue vigente del 273, y es su
+  > mitad de fondo**: los minutos de sueño **no son tiempo puesto**. No aparecen
+  > como «puesto», ni como «libre», ni como ningún tramo de la barra, y
+  > `plannedMinutes` —el «2h puestas»— **es exactamente el mismo** con noche y
+  > sin ella. Lo que cambia es contra qué se mide, no qué se cuenta. La parte
+  > afirmable en test a partir de aquí es `plannedMinutes`; el «de 17h» es la
+  > ventana y la dicta la noche (criterios 277 y 279).
 - [ ] 274. El color de las franjas **no es el de ninguna categoría ni el de ningún
   estado de bloque**: es propio de la noche y sale de los tokens del proyecto (no
   un violeta fijo escrito a mano).
@@ -389,7 +402,7 @@ La numeración del módulo la dejó FEAT-011 en el 251 y el usuario reserva hast
 | # | Qué hace | Estado |
 |---|---|---|
 | 1 | **Tu noche existe y se ve en la plantilla.** «Tu noche» en Ajustes (las dos horas + qué noches, guardadas en el API) y las dos franjas en la plantilla, fuera de la lista y fuera del presupuesto. Criterios 260–268 y 270–276 (el **269 pasa a la tajada 2**, con el 277) y los transversales que apliquen. | **aceptada** (2026-09-23, revisor) |
-| 2 | **Hoy cuenta bien.** Las franjas en Hoy y la ventana del día derivada de la noche: huecos que no ofrecen ratos de sueño y presupuesto que cuenta hasta la hora de acostarse. Criterios 278–287. | pendiente (tras la 1) |
+| 2 | **Hoy cuenta bien.** Las franjas en Hoy y la ventana del día derivada de la noche: huecos que no ofrecen ratos de sueño y presupuesto que cuenta hasta la hora de acostarse. Criterios 278–287. | **aceptada** (2026-09-24, revisor) |
 | 3 | **Lo real encima de lo planeado.** La pregunta de la mañana una vez al día, «Sí, así fue» en un toque, «Fue distinto» con su hoja, y «sin confirmar» si se ignora. Criterios 288–299. | pendiente |
 | 4 | **Lo real manda y lo que no se sabe se dice.** La ventana desde la hora real de levantarse, «No sé a qué hora» → sin dato, y los días pasados confirmables a posteriori. Criterios 300–309. | pendiente |
 
@@ -446,6 +459,32 @@ con la 3 la noche se vuelve flexible; con la 4 deja de mentir cuando no se sabe.
   presupuesto que ya existe desde FEAT-003, contando hasta la hora de acostarse.
   La franja de abajo dice la hora y la duración; el «quedan 15 h 50» lo pone quien
   ya lo ponía.
+- **D9 · El presupuesto del día se mide contra la ventana de la noche**
+  (**resuelta por el usuario el 2026-09-24**, y era la que bloqueaba la tajada
+  2). Sus palabras, literales:
+
+  > «sí, sale del presupuesto del día»
+
+  O sea: **el día se encoge**. Con una noche de 23:00 a 5:00 el día se mide de
+  5:00 a 23:00 y el presupuesto se calcula sobre esas **18 horas**, no sobre 24.
+  Lo que planeas se mide contra el tiempo que **realmente tienes despierto**.
+  Esto resuelve la contradicción que dejaron avisada la sección 2 y la tajada 1:
+  el criterio **273 leído literal decía lo contrario** y queda **superado en su
+  mitad del denominador** (ver la nota bajo el propio criterio); los criterios
+  **277 y 279 mandan**.
+
+  Consecuencia que hay que cuidar, y es la razón de que esto se preguntara: la
+  cifra del presupuesto es algo que el usuario **ya conoce y mira a diario**
+  («puestas de 16h 30») y **va a cambiar de valor** en cuanto tenga noche
+  configurada. Por eso el cambio tiene que poder explicarse mirando la pantalla:
+  la línea del horario dice «**Tu día · 5:00 → 23:00 · duermes 6 h**» (criterio
+  277) y Ajustes lo dice con palabras antes de que pase. Y **sin noche
+  configurada no se mueve nada** respecto de hoy (criterio 310).
+
+  Lo que esta decisión **no** dice: que dormir sea tiempo puesto. No lo es, y no
+  aparece en ningún tramo ni en ninguna leyenda (criterio 284). El módulo no
+  juzga cuánto duermes.
+
 - **D8 · El sueño real se queda en este aparato en esta versión** (resuelta por
   mí; **el usuario puede revertirla, y cuesta un segundo cambio de API**). Va al
   store que ya existe, con el precedente de FEAT-004, FEAT-006 y FEAT-007. Si el
@@ -831,7 +870,7 @@ Moldes secundarios, uno por pieza, para no buscarlos:
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **Tu noche existe y se ve en la plantilla.** Los tres campos en la capa de datos, `useVidaNight`, la aritmética pura, la sección «Tu noche» en Ajustes y las dos franjas en la plantilla — sin mover ninguna ventana ni ninguna cuenta. | `settings/types/user-settings.types.ts`, `settings/graphql/user-settings.graphql.ts`, `settings/graphql/schema/user-settings.schema.graphql` (recopiar), **nuevos** `vida/utils/vida-night.utils.ts`(+test), `vida/hooks/useVidaNight.ts`(+test), `vida/components/VidaNightBand/`; `vida/pages/VidaAjustesPage.tsx`(+`.module.scss`,+test), `vida/pages/VidaPlantillaPage.tsx:506`, `app/styles/_theme-variables.scss:155,239` | 260–268 y 270–276 (el 269 pasa a la tajada 2); y de los transversales 310, 311, 312, 313, 314, 315, 316, 317, 318 en lo que aplique a Ajustes y a la plantilla | **aceptada** (2026-09-23; 313, 314 y 315 medidos por el revisor) |
-| 2 | **Hoy cuenta bien.** La ventana del día sale de la noche, en Hoy, en la plantilla y en la revisión; las franjas en Hoy; huecos y presupuesto ciertos. | **nuevo** `vida/hooks/useVidaDayWindow.ts`(+test); `vida/pages/VidaHoyPage.tsx:331-337,397,429,436-437,551-554,578,1261,1296-1297,1418-1419`, `vida/pages/VidaRevisionPage.tsx`, `vida/components/VidaDayBudget/VidaDayBudget.tsx:108,210`, `vida/components/VidaTemplateDaySummary/VidaTemplateDaySummary.tsx:99`, `vida/routes/VidaModuleLayout.tsx:53,162` | 269 y 277 (movidos de la 1), 278–287 | pendiente |
+| 2 | **Hoy cuenta bien.** La ventana del día sale de la noche, en Hoy, en la plantilla y en la revisión; las franjas en Hoy; huecos y presupuesto ciertos. | **nuevo** `vida/hooks/useVidaDayWindow.ts`(+test); `vida/pages/VidaHoyPage.tsx:331-337,397,429,436-437,551-554,578,1261,1296-1297,1418-1419`, `vida/pages/VidaRevisionPage.tsx`, `vida/components/VidaDayBudget/VidaDayBudget.tsx:108,210`, `vida/components/VidaTemplateDaySummary/VidaTemplateDaySummary.tsx:99`, `vida/routes/VidaModuleLayout.tsx:53,162` | 269 y 277 (movidos de la 1), 278–287 | **aceptada** (2026-09-24, revisor) |
 | 3 | **Lo real encima de lo planeado.** La pregunta de la mañana, «Sí, así fue» en un toque, la hoja «¿Cómo dormiste?» y «sin confirmar» si se ignora. | `vida/store/vida-device-notes.store.ts:154-221`, **nuevos** `vida/components/VidaNightPrompt/`, `vida/components/VidaNightSheet/`; `vida/pages/VidaHoyPage.tsx:1340` y el montaje de la hoja; `vida/components/VidaNightBand/` (estado confirmado) | 288–299 | pendiente |
 | 4 | **Lo real manda y lo que no se sabe se dice.** La ventana desde la hora real, «No sé a qué hora» → sin dato, y los días pasados confirmables. | `vida/hooks/useVidaDayWindow.ts`, `vida/utils/vida-night.utils.ts`, `vida/components/VidaNightSheet/`, `vida/components/VidaNightBand/`, `vida/pages/VidaHoyPage.tsx`, `vida/pages/VidaRevisionPage.tsx` | 300–309 | pendiente |
 
@@ -1106,6 +1145,251 @@ y no los sustituyo por el razonamiento sobre el CSS. Quien los cierre:
 
 **Estado del árbol:** sin commitear.
 
+### Tajada 2 — Hoy cuenta bien: la ventana del día sale de la noche
+
+**Resumen para el revisor:**
+1. Con noche puesta, **el día se encoge**: Hoy, la plantilla y la revisión miden
+   de la hora de levantarse a la de acostarse. Los huecos ya no ofrecen ratos de
+   sueño, el presupuesto cuenta hasta que te acuestas y las dos franjas están
+   también en Hoy. Todo entra por un hook nuevo, `useVidaDayWindow`.
+2. Lo nuevo es un archivo (`hooks/useVidaDayWindow.ts` + test) y una función en
+   `vida-night.utils.ts`; el resto son cambios de una línea en cinco pantallas y
+   dos props opcionales en dos componentes de pintar. **`vida-time.utils.ts` no
+   se ha tocado** (criterio 287) y **`useVidaDayHours` tampoco**.
+3. **Lo que más probablemente he roto: la cifra del presupuesto cambia de valor
+   para quien tenga noche configurada.** Es la decisión D9 del usuario y está
+   escrita, pero es el efecto de mayor alcance: «puestas de 16h 30» pasa a decir
+   «de 18h», y con ello se mueven `dayMinutes`, `freeMinutes`,
+   `remainingMinutes`, el semáforo de los arcos de FEAT-019 (que mide contra el
+   final del día) y la cifra «de las Xh de tu día» de la revisión. Lo segundo:
+   **`VidaModuleLayout` monta ahora `useVidaNight`**, y eso puso 22 pruebas en
+   rojo por un `vi.mock` que faltaba —lo he completado, pero cualquier suite que
+   monte ese layout suelto necesita el mismo mock—. Lo tercero: la línea de
+   Ajustes del criterio 269 **cambió de futuro a presente**.
+
+**Qué se construyó**
+
+*La aritmética que faltaba*
+
+- `src/features/vida/utils/vida-night.utils.ts` — **una función nueva**,
+  `nightWindowForWeekday`, y `nightWindowForDate` pasa a delegar en ella. Además
+  la ventana se saca ahora de `nightBandsForWeekday`, o sea **de las mismas dos
+  franjas que se pintan**: antes `nightWindowForDate` repetía la regla del
+  criterio 283 por su cuenta, y dos copias de la misma regla es como se acaba
+  pintando una franja abajo y cerrando el día en otro sitio. Nada más cambió en
+  ese archivo; sus 24 casos siguen verdes sin tocarse.
+
+*El hook, que es donde vive toda la decisión*
+
+- `src/features/vida/hooks/useVidaDayWindow.ts` (+ test, 13 casos) — **nuevo**.
+  `resolveVidaDayWindow(hours, night, day)` es puro y es lo que se prueba;
+  encima van `useVidaDayWindow(fecha)` y `useVidaWeekdayWindow(día)`. Devuelve
+  **la misma forma que `VidaDayHours`** —por eso `buildDayAgenda`,
+  `getDayBudget` y `VidaDayBudget` no se enteran de que existe la noche— más
+  `night`, `nightEnding`, `nightStarting`, `startSource`, `endSource`,
+  `sleepLabel` y `defaultScheduleNote`.
+
+  Tres guardas, y ninguna es adorno: **en vuelo o con error no hay noche** (286,
+  311, 312); **una ventana que no avanza se cae entera a los ajustes** (ver los
+  desvíos); y **las franjas y la ventana salen de la misma llamada**, así que lo
+  que se pinta y lo que se cuenta no pueden discrepar.
+
+*Las cinco pantallas*
+
+- `src/features/vida/pages/VidaHoyPage.tsx` — `dayWindow` sustituye a
+  `dayHours` en los 23 sitios de geometría (agenda, presupuesto, ejecución,
+  arcos, guía, marca de «ahora», tarjeta de «lo que viene», armar desde la
+  plantilla y la hora de arranque de la hoja). Las **dos franjas** van alrededor
+  del `<ol>`, en un fragmento: la de arriba antes, la de abajo después.
+  `dayHours` **sigue vivo** y solo alimenta a `useVidaPatterns`, que mira **hoy**
+  y no el día abierto.
+- `src/features/vida/pages/VidaPlantillaPage.tsx` — `useVidaWeekdayWindow(day)`
+  alimenta `buildTemplateDay` y el resumen. `useVidaNight` y
+  `nightBandsForWeekday` desaparecen de la página: las franjas salen ya del
+  hook. **La cuadrícula de la semana (`buildTemplateWeekGrid`) se queda con
+  `dayHours`** a propósito: es una sola escala para los siete días (A5), y siete
+  ventanas distintas no se pueden comparar.
+- `src/features/vida/pages/VidaRevisionPage.tsx` — la vista de **día** usa la
+  ventana del día abierto (285); la de **semana** se queda con `dayHours`, por
+  lo mismo que la cuadrícula. Y **qué día se abre** se decide con la ventana de
+  **hoy**, no con la del día abierto: si no, habría circularidad.
+- `src/features/vida/routes/VidaModuleLayout.tsx` — el aviso de sesión vieja
+  recibe el final de **hoy** (la recomendación de la sección 2, D1): dos
+  pantallas no pueden decir dos finales de día distintos.
+- `src/features/vida/pages/VidaAjustesPage.tsx` — la línea del criterio 269
+  pasa a **presente** («tu día empieza cuando te levantas y acaba cuando te
+  acuestas»), que es cuando se ha vuelto cierta, y se le añade **una segunda
+  línea** que anuncia la consecuencia antes de que ocurra: «Como el día es más
+  corto, el tiempo que puedes repartir también».
+
+*Los dos componentes de pintar (props opcionales, nada obligatorio)*
+
+- `VidaDayBudget.tsx` y `VidaTemplateDaySummary.tsx` — `sleepLabel` («duermes
+  6 h», criterio 277) y `defaultScheduleNote`. Sin esas props el componente es
+  **exactamente** el de antes. Más `.scheduleSleep` en los dos `.module.scss`,
+  con el token `--aura-night-text` y su respaldo: ni un color escrito a mano
+  (274) y cambia con el tema (315).
+
+**Por qué así, y qué se descartó**
+
+- **Un hook nuevo y `useVidaDayHours` intacto.** Lo llaman siete sitios y dos no
+  tienen fecha (`VidaTemplateAside`, `VidaSemanaPage`): meterle la dependencia
+  del día habría convertido un lector de ajustes en un hook con parámetro
+  obligatorio y roto a todos. Es lo que mandaba la sección 2.
+- **No componer la ventana dentro de `useVidaDayData`**, que era lo más corto de
+  escribir. Ese hook devuelve `dayHours` **y lo consume `useVidaPatterns`**, que
+  mira hoy y no el día abierto: la misma costumbre habría tenido un número
+  distinto en cada pantalla. El hook nuevo se monta al lado y `dayHours` se
+  queda para lo que de verdad es de los ajustes.
+- **La semana no se encoge por día.** Ni la cuadrícula de la plantilla ni las
+  filas de la revisión: una sola escala para los siete días. Encogerlas por día
+  no lo pide ningún criterio y rompería la comparación, que es su razón de ser.
+- **`sleepLabel` es una cadena y no la noche entera.** Los dos componentes son
+  de pintar y no llaman hooks (lo dice la sección 2); pasarles `VidaNight` les
+  obligaría a saber de aritmética.
+
+**Desvíos de lo que dejó escrito el arquitecto** (dos, los dos de forma)
+
+1. **`source` se partió en `startSource` y `endSource`.** La sección 2 pedía un
+   `source: 'night' | 'settings' | 'fallback'`, y **no cabe en uno**: el caso
+   del criterio 283 (`1:00 → 6:40`) tiene el inicio en la noche y el final en
+   `vidaDayEndTime`. Con un solo campo habría que mentir en uno de los dos
+   bordes, y de ahí sale `defaultScheduleNote`: «el final es el horario por
+   defecto» en vez de «el horario por defecto», que es lo que pide el 283
+   cuando dice «dicho como tal».
+2. **Una guarda que no estaba en el plan: la ventana que no avanza.** Con
+   configuraciones raras —levantarse a las 23:30 y «Tu día» acabando a las
+   23:00, o una noche marcada solo el martes que cierre a la 1:00— la ventana
+   compuesta saldría del revés y dejaría la agenda sin geometría. En ese caso
+   se cae **entera** a los ajustes, igual que `useVidaDayHours` hace con un dato
+   roto, y la noche no mueve nada. Salió de pensar el caso, no de un test en
+   rojo; tiene el suyo.
+
+**Verificación**
+
+| Qué | Antes (línea base) | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos archivos. Ninguno mío. |
+| `pnpm test` | 2 fallos de 2165 | **2 fallos de 2186** (`SearchSelect` ×2, preexistentes). +21 tests, todos verdes. |
+| `pnpm build` — chunk | 1.149,14 kB | **1.150,90 kB** (+1,76) |
+| `pnpm build` — CSS | 279,35 kB | **279,51 kB** (+0,16 — **sube**, que es lo que tiene que hacer una regla nueva) |
+
+**Comprobación del SCSS por lista de selectores** (no por tamaño):
+
+```
+VidaDayBudget.module.scss          HEAD=18 ARBOL=19   > .scheduleSleep
+VidaTemplateDaySummary.module.scss HEAD=14 ARBOL=15   > .scheduleSleep
+```
+
+Nada perdido. Y en el CSS del build las dos reglas usan el token, no un color:
+
+```
+scheduleSleep_1ov66_241{color:var(--aura-night-text,var(--color-text-secondary))}
+scheduleSleep_za1ox_139{color:var(--aura-night-text,var(--color-text-secondary))}
+```
+
+**Medido en el navegador** (arnés temporal, ya borrado: `src/__harness/` +
+`public/__harness-window.html`, `git status` no los lista). Iframes de **375** y
+**760** px exactos colgando de un `div` normal, con el caso largo `8:55 → 20:05`
++ «duermes 12 h 50» + la nota del respaldo + «Cambiarlo»:
+
+| Ancho / tema | `scrollWidth` / `clientWidth` | Nodos desbordados | La línea |
+|---|---|---|---|
+| 375, claro | 375 / 375 (body 375) | **0** | «Tu día · 5:00 → 23:00 · duermes 6 h» en **una sola línea**; la larga envuelve en tres, sin cortar palabra |
+| 760, claro | 760 / 760 | **0** | la larga envuelve en dos |
+| 375, oscuro | 375 / 375 | **0** | el color del «duermes …» pasa de `rgb(55,48,163)` a `rgb(199,210,254)` |
+
+**Un aviso que hay que dar en voz alta: el dev server del 5173 estaba apagado**
+cuando empecé (la sonda: «APAGADO, nadie escucha»). Arranqué uno propio con
+`preview_start {name}` —que cayó en el 5173— solo para el arnés, y lo paro al
+terminar. No maté ni reinicié nada del usuario porque no había nada que matar.
+
+**Criterios, uno por uno**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 269 | cumplido | La línea ya no promete: dice «los días que marques, **tu día empieza** cuando te levantas y acaba cuando te acuestas», y eso es lo que la app hace desde esta tajada (279). Se le suma la línea que anuncia el cambio de la cifra. |
+| 277 | cumplido | `VidaHoyPage.test.tsx`: la línea dice «5:00 → 23:00» y «duermes 6 h». En la plantilla, el mismo test del 273 lo afirma. Y medido en pantalla en los dos anchos. |
+| 278 | cumplido | Test: dos franjas, `dawn` primero y `dusk` después, **fuera** del `<ol>` (`agenda.contains(band) === false`), sin `<li>` antecesor y sin `<button>`; y la de arriba precede a la lista y la de abajo la sigue (`compareDocumentPosition`). Mismo componente y mismos textos que en la plantilla. |
+| 279 | cumplido | `useVidaDayWindow.test.tsx`: con `23:00 → 5:00` la ventana es `5:00 → 23:00` aunque `vidaDayStartTime/EndTime` digan `06:30 / 22:00`, y **esos dos siguen en `saved`, sin borrar**. |
+| 280 | cumplido | Sin noche, `07:00 / 22:00` tal cual y `isDefault: false`; sin ajustes, `06:30 / 23:00` con `isDefault: true` y «el horario por defecto». El criterio 9 de FEAT-003 sigue verde sin tocarse (su test no cambió). |
+| 281 | cumplido | Test en el hook (`agenda.gaps[0].startMinutes === 300`, o sea las 5:00, y **ninguno** antes) y en la pantalla: con noche y un bloque a las 9:00, la primera fila de la agenda empieza a las 5:00 y **en ninguna fila aparecen las 6:30**. |
+| 282 | cumplido | Con noche `23:00 → 5:00` y `vidaDayEndTime: '22:00'`, el presupuesto dice «hasta las **23:00**» y **no** «hasta las 22:00». No hay cuenta atrás nueva: es la línea de FEAT-003. |
+| 283 | cumplido | Con `1:00 → 6:40`: ventana `6:40 → 22:00`, `endSource: 'fallback'`, la nota dice «**el final** es el horario por defecto» y se pinta **una sola** franja, arriba. Afirmado en el hook y en Hoy. |
+| 284 | cumplido | Con noche y una hora puesta, la barra dice «planeado 1h» y «libre 17h» —18 h de ventana menos 1 h— y **las 6 h de sueño no aparecen en ningún tramo ni en la leyenda**: barrido literal sobre el texto entero de la sección del presupuesto. La noche no es una entrada de `buildDayAgenda`. |
+| 285 | cumplido | `VidaRevisionPage.test.tsx`: con la noche puesta, «de las **18h** de tu día» y ya **no** «de las 16h 30». La cifra baja, la frase es la misma palabra por palabra y sigue sin reproche. |
+| 286 | cumplido | Con los ajustes en vuelo: `night`, `nightEnding`, `nightStarting` y `sleepLabel` en `null`, y la ventana es la de siempre. La guarda está en el hook, así que vale para las tres pantallas a la vez. |
+| 287 | cumplido | `vida-time.utils.ts` **no aparece en `git status`**. `calculateEndTime` y `minutesToTime` siguen recortando a 23:59 y sus tests siguen verdes sin tocarse. |
+| 273 (superado) | ver la nota del criterio | `plannedMinutes` es **el mismo** con noche y sin ella (afirmado en Hoy y en la plantilla); el denominador cambia de `16h 30` a `18h`, que es lo que decidió el usuario (D9). El test de la tajada 1 se reescribió para afirmar **las dos mitades por separado**, no se borró. |
+| 310–312, 315 | cumplidos | Sin noche: cero franjas y la ventana intacta («6:30 → 23:00», sin «duermes»). En vuelo y con error, la guarda del hook. Oscuro: medido, el color del «duermes …» cambia. |
+| 313, 314 | cumplidos (medidos) | La tabla de arriba: 375 y 760 px, cero nodos desbordados, `scrollWidth === clientWidth`, ninguna palabra cortada con la noche de 12 h 50. |
+| 316 | cumplido | Lo único que se estrena en texto es «duermes 6 h», «el final es el horario por defecto» y las dos líneas de Ajustes. Ni «poco», ni «mal», ni «deberías», ni «apenas», ni «desperdicio», ni «tarde», ni «¿por qué». |
+| 317 | cumplido | `sleepLabel` sale de `formatNightDuration`, que da «—» sin dato; y sin noche usable no hay etiqueta, no una cifra por defecto. |
+| 318 | cumplido | `useVidaDayWindow` son **dos envoltorios de lectura sobre la misma `useUserSettingsQuery`**, deduplicada por React Query. En los tests un único `settingsQuery` alimenta a los dos. Ninguna clave nueva, ninguna consulta nueva. |
+| 319 | **del usuario** | `/app/*` está tras el login y ahí no entro. Pasos abajo. |
+
+**Lo que queda para prueba manual del usuario**
+
+1. `/app/vida/ajustes` con una noche `23:00 / 5:00` y todas las noches marcadas.
+2. `/app/vida/hoy`: la franja de arriba y la de abajo, **el primer hueco a las
+   5:00** (ya no a las 6:30) y «te quedan … **hasta las 23:00**».
+3. La línea de abajo: «Tu día · 5:00 → 23:00 · **duermes 6 h**». **Aquí es donde
+   hay que mirar si el cambio de la cifra se entiende**: el «puestas de …» de la
+   plantilla habrá cambiado de número y esta línea es su explicación.
+4. `/app/vida/plantilla` en un día marcado, y `/app/vida/revision` del mismo
+   día: la cifra «de las Xh de tu día» tiene que haber bajado.
+5. Poner `1:00 / 6:40` y comprobar que ese día pinta **una sola** franja, arriba,
+   y que la tarde sigue cerrando donde dice «Tu día».
+6. **Quitar la noche** y comprobar que todo vuelve exactamente a como estaba.
+
+**Riesgos**
+
+- **La cifra del presupuesto cambia de valor** para quien tenga noche. Es lo
+  decidido (D9) y está anunciado en Ajustes y explicado en la línea del horario,
+  pero es lo primero que hay que mirar: si el usuario abre y no entiende de
+  dónde sale el número nuevo, el problema es de esta tajada.
+- **El semáforo de los arcos de FEAT-019 mide contra el final del día** y ese
+  final ahora puede ser otro (la hora de acostarse). Con `vidaDayEndTime` a las
+  22:00 y acostándose a las 23:00, una meta que salía en rojo puede pasar a
+  ámbar. Es coherente —el día de verdad acaba a las 23:00— pero no lo pedía
+  ningún criterio de esta feature.
+- **`VidaModuleLayout` lee la noche.** Su suite necesitó un `vi.mock` de
+  `useVidaNight` (22 pruebas en rojo por `useAuthBootstrap must be used within
+  AuthBootstrapProvider`). Cualquier suite futura que monte ese layout suelto
+  necesitará el mismo mock: es la trampa de siempre, ahora en otro hook.
+- **Ninguna clave ni documento GraphQL nuevo**, así que el `buster` de la caché
+  **no cambia en esta tajada**: `vite/cache-shape.ts` coge `graphql/*.graphql.ts`
+  y la capa `api`, y aquí no se tocó ninguno. **Nadie pierde la caché por esta
+  tajada** (la de la tajada 1 sigue pendiente de desplegar, y esa sí). Y cuidado
+  con lo de siempre: ningún comentario mío menciona `setQueryData`; lo comprobé
+  y la suite de `cache-shape` sigue en 32 fuentes y sin `/pages/`.
+- **Lo que NO toqué y conviene confirmar de un vistazo:** `vida-time.utils.ts`
+  (287), `useVidaDayHours.ts`, `vida-agenda.utils.ts`, `vida-template.utils.ts`
+  y `query-cache-guards.ts`. `git status` no lista ninguno.
+
+**Lo que descubrí y no estaba en el plan** (anotado, no tocado)
+
+- **`nightWindowForDate` repetía la regla del 283 por su cuenta.** Ahora delega
+  en `nightBandsForWeekday`. Era una segunda copia de la misma verdad y es
+  exactamente la forma en que, dos tajadas más adelante, la franja de abajo y el
+  final del día acaban diciendo cosas distintas.
+- **El hallazgo 1 del revisor sigue en pie y esta tajada lo respeta:** todo
+  entra por `useVidaNight` (a través de `useVidaDayWindow`), nunca por el
+  `utils` a pelo, así que las horas iguales se siguen descartando antes de
+  llegar a la aritmética. El servidor sigue sin validarlo.
+- **Tres expedientes ajenos aparecen modificados en el árbol**
+  (`FEAT-015`, `FEAT-017` y un `graphify-out/memory/…` de FEAT-017): **no son
+  míos**. Hay otra sesión trabajando sobre el mismo árbol, y eso contamina las
+  medidas de `pnpm build` (`ENVIRONMENT.md` lo avisa). Las mías salieron
+  estables y reproducibles, pero conviene saberlo.
+- **La ventana de planeación de la hoja de registrar** (`gapWindow`,
+  `defaultStartNowTime`) ya hereda la ventana nueva porque sale de la misma
+  variable. No lo pedía ningún criterio; se apunta porque es un efecto de
+  arrastre real y deseable.
+
+**Estado del árbol:** sin commitear.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 1 — Tu noche existe y se ve en la plantilla
@@ -1206,3 +1490,198 @@ todo lo que vive dentro de `/app/*` con sesión real y API real — guardar la
 noche y verla al volver, verla en la plantilla, y comprobar que `1:00 → 6:40`
 pinta **una sola** franja, arriba.
 
+
+### Tajada 2 — Hoy cuenta bien: la ventana del día sale de la noche
+
+**Veredicto: aceptada.** Los diez criterios de la tajada (269, 277, 278–287) se
+cumplen, los transversales que aplican también, y la cifra que cambia —«de 18h»
+en vez de «de 16h 30»— se explica en la misma pantalla. No encontré ninguna
+regresión. Lo que sí hay son cuatro hallazgos, uno de ellos sobre el semáforo,
+y van escritos abajo con números.
+
+**Cómo verifiqué** (no leyendo su suite): monté un banco de pruebas temporal en
+la raíz (`__review_feat012_slice2.test.ts`, **ya borrado**) que llama a
+`resolveVidaDayWindow`, `buildDayAgenda`, `getDayBudget` y `buildGoalArcs`
+**directamente**, con datos sembrados por mí y los mismos fixtures que usan las
+suites del módulo. Salida literal:
+
+```
+SIN NOCHE              06:30 23:00  isDefault=true   sleepLabel=null  «el horario por defecto»
+NOCHE CRUZA 23:00→5:00 05:00 23:00  «duermes 6 h»    saved={"startTime":"06:30","endTime":"22:00"}
+NO CRUZA    1:00→6:40  06:40 23:00  «duermes 5 h 40» «el final es el horario por defecto»  dusk=null
+NO AVANZA   23:00→23:30 06:30 23:00 sleepLabel=null  dawn=null dusk=null
+EN VUELO               06:30 23:00  sin noche, sin franjas
+ERROR                  06:30 23:00  sin noche, sin franjas
+SOLO MARTES / miércoles 05:00 23:00 «duermes 6 h» «el final es el horario por defecto»
+SOLO MARTES / martes    06:30 23:00 «duermes 6 h» «el comienzo es el horario por defecto»
+huecos  sin noche [[390,540],[600,1380]]   con noche [[300,540],[600,1380]]
+plannedMinutes sin/con = 60 / 60 · dayMinutes 990 → 1080 · free 930 → 1020
+```
+
+**Criterios, uno por uno**
+
+| # | Veredicto | Evidencia mía |
+|---|---|---|
+| 269 | **cumplido** | La línea de Ajustes está en presente y dice cuál manda; se le suma «Como el día es más corto, el tiempo que puedes repartir también». Es cierto desde esta tajada (279), así que ya no promete. |
+| 277 | **cumplido** | `VidaDayBudget.tsx:223-229`: «Tu día · 5:00 → 23:00» + `sleepLabel` como tercer segmento. Con `23:00 → 5:00` mi banco devuelve exactamente `05:00`, `23:00` y «duermes 6 h». |
+| 278 | **cumplido** | `VidaHoyPage.tsx`: las dos `VidaNightBand` van **fuera** del `<ol>`, `dawn` antes y `dusk` después, mismo componente que la plantilla. Leído en el diff, no solo en su test. |
+| 279 | **cumplido** | La ventana sale `5:00 → 23:00` con `vidaDayStartTime/EndTime = 06:30 / 22:00`, y esos dos **siguen intactos en `saved`** (línea `NOCHE CRUZA` de arriba). No se borran. |
+| 280 | **cumplido** | Sin noche la ventana es carácter por carácter la de antes: `06:30 / 23:00`, `isDefault: true`, «el horario por defecto», y los huecos idénticos (`[[390,540],[600,1380]]`). |
+| 281 | **cumplido** | Con noche y un bloque a las 9:00, el primer hueco empieza en el minuto **300** (5:00) y **no hay ninguno antes**. Sin noche empezaba en 390 (6:30). |
+| 282 | **cumplido** | `getDayBudget` recibe `dayWindow.endTime`; con `vidaDayEndTime: 22:00` y acostarse a las 23:00, el final es 23:00. Ninguna cuenta atrás nueva: es la línea de FEAT-003. |
+| 283 | **cumplido** | `1:00 → 6:40` → ventana `6:40 → 23:00`, **una sola franja** (`dusk = null`) y la nota dice «**el final** es el horario por defecto», no «el horario por defecto». |
+| 284 | **cumplido** | `plannedMinutes = 60` con noche y sin ella. Los 360 min de sueño no aparecen en ningún tramo: lo que cambia es `dayMinutes` (990 → 1080) y `freeMinutes` (930 → 1020), que es el denominador, no un tramo nuevo. |
+| 285 | **cumplido** | `VidaRevisionPage.tsx`: la vista de día pasa `dayWindow.startTime/endTime` a `buildDayAgenda` y a la revisión. Misma ventana que Hoy, por el mismo hook. |
+| 286 | **cumplido** | En vuelo y con error: `night`, `nightEnding`, `nightStarting` y `sleepLabel` en `null` y la ventana es la de siempre (líneas `EN VUELO` y `ERROR`). La guarda está en el hook, así que vale para las tres pantallas. |
+| 287 | **cumplido** | `vida-time.utils.ts` no aparece en `git status`. Confirmado contra `HEAD`. |
+| 273 (mitad vigente) | **cumplido** | `plannedMinutes` **no cambia ni un minuto**. Medido arriba: 60 y 60. |
+| 310 | **cumplido** | Sin noche no se mueve absolutamente nada: misma ventana, mismos huecos, mismo `isDefault`, cero franjas, `sleepLabel` nulo. |
+| 311, 312 | **cumplidos** | Ver 286. El «Reintentar» es el de FEAT-003, que sigue colgando del mismo `refetch`. |
+| 313, 314, 315 | **no re-medidos por mí** | Los midió el constructor a 375 y 760 px, claro y oscuro, con el caso largo «8:55 → 20:05 · duermes 12 h 50». El cambio de esta tajada en pintado es **un `<span>` más en una línea que ya existía** y una regla de color; acepto su medición y lo digo así en vez de fingir que la repetí. |
+| 316 | **cumplido** | Barrido sobre el texto nuevo: «duermes …», «el final/comienzo es el horario por defecto» y las dos frases de Ajustes. Ni «poco», ni «mal», ni «deberías», ni «apenas», ni «tarde». |
+| 317 | **cumplido** | Sin noche usable no hay etiqueta; la duración sale de `formatNightDuration`. |
+| 318 | **cumplido** | `useVidaDayWindow` compone `useVidaDayHours` + `useVidaNight`, los dos sobre `useUserSettingsQuery`. Ninguna clave ni documento nuevo — y el `buster` lo confirma (abajo). |
+| 319 | **del usuario** | `/app/*` está tras el login. Pasos abajo. |
+
+**El número nuevo: ¿se explica solo?** Sí, y por poco. En Hoy, «planeado 1h **de
+18h**» y «Tu día · 5:00 → 23:00 · **duermes 6 h**» están en la misma tarjeta, a
+tres líneas: quien vea el 18 tiene delante de dónde sale (de 5:00 a 23:00) y por
+qué cambió (duermes 6 h). Lo mismo en la plantilla. Y en Ajustes la segunda
+frase lo anuncia **antes** de que pase. Lo que **no** se explica solo es el día
+en que el usuario ve el número por primera vez sin haber pasado por Ajustes
+—porque la noche se guarda una vez y el número cambia para siempre—; ahí la
+línea de abajo es toda la explicación que hay, y me parece suficiente porque es
+literal y está pegada al número. Queda como cosa a mirar en la prueba manual.
+
+**Qué busqué alrededor (y cómo)**
+
+- **`graphify explain "useVidaDayWindow"`** dio los tres llamantes y las dos
+  dependencias: `VidaHoyPage`, `VidaRevisionPage`, `VidaModuleLayout` →
+  `useVidaDayHours` + `useVidaNight` + `resolveVidaDayWindow`. Confirmado
+  abriendo los cuatro ficheros; **no hay ningún cuarto llamante** ni queda
+  ningún sitio que mezcle las dos fuentes.
+- **Quién más usa lo tocado.** `VidaDayBudget` y `VidaTemplateDaySummary`
+  ganaron dos props **opcionales** con valor por defecto igual al literal de
+  antes (`'el horario por defecto'`, `null`): cualquier otro llamante que no las
+  pase sigue pintando exactamente lo mismo. Verificado en el diff, no supuesto.
+- **`useVidaDayHours` no se tocó** y sigue alimentando a `useVidaPatterns`, a
+  `VidaTemplateAside`, a la cuadrícula de la semana y a las filas de la
+  revisión: los siete llamantes siguen vivos.
+- **Lo que el constructor señaló como «lo que más probablemente he roto»**: la
+  cifra del presupuesto. Ahí fui primero, con el banco de pruebas, y está
+  medido arriba.
+- **El `vi.mock` de `VidaModuleLayout`**: el mock nuevo lista `night`, `saved`,
+  `isPending`, `isError`, `isDisabled` y `refetch` — **la forma entera** de
+  `VidaNightState` (`useVidaNight.ts:6-19`), ni un campo de menos. No deja la
+  suite verde por casualidad **en lo que hoy usa la página**; ver el hallazgo 2.
+- **El `buster`**: ejecutado, no razonado. `collectShapeSources` +
+  `computeCacheShapeId` sobre el árbol y sobre un `git archive` de `HEAD`:
+  **32 fuentes y `f8edc4f3becd` en los dos**. Idéntico. **Nadie pierde la caché
+  por esta tajada.** (La de la tajada 1 sí la cambió y sigue sin desplegar.)
+- **Lo entregado esta semana**: `pnpm test` completo, **2 fallos de 2186**
+  (`SearchSelect` ×2, los de la línea base) — o sea las suites de FEAT-019,
+  FEAT-020, FEAT-013, FEAT-010/2, FEAT-021, FEAT-023 y la tajada 1 en verde.
+  Una primera corrida dio 5 fallos; era **mía**: tenía dos procesos de vitest a
+  la vez (el banco y la suite completa) y tres pruebas se fueron por tiempo. La
+  corrida limpia, con el banco ya borrado, da la línea base exacta.
+
+**El desvío de `source` → `startSource` / `endSource`: necesario.** Con
+`1:00 → 6:40` el inicio lo pone la noche y el final los ajustes: un solo campo
+tendría que mentir en un borde, y de ese campo cuelga la frase que el criterio
+283 exige «dicha como tal». La partición **no es cosmética**, y de hecho
+descubre un cuarto caso que con un campo único no se podía nombrar: una noche
+marcada **solo el martes** deja el miércoles con «el final es el horario por
+defecto» y el martes con «el comienzo es el horario por defecto». Verificado en
+el banco (las dos últimas líneas de `SOLO MARTES`). Bien resuelto.
+
+**Estados**
+
+- **Sin dato / sin noche** (310): comprobado, no se mueve nada.
+- **Cargando** (311) y **error** (312): comprobados en el hook, con salida
+  literal.
+- **Sin permisos:** no aplica (un solo usuario, tras login).
+- **Texto largo** (313) y **móvil 375 px / 760 px** (314) y **oscuro** (315):
+  medidos por el constructor; yo no los repetí y lo digo arriba.
+- **El borde declarado** (ventana que no avanza, levantarse a las 23:30): lo
+  sembré y **se cae entera a los ajustes**, sin franjas y sin etiqueta. Tal como
+  lo describió.
+
+**¿Duplica algo que ya existía?** No. La sección 2 pedía no tocar
+`useVidaDayHours` ni `vida-time.utils.ts` y no se tocaron; la aritmética de la
+noche sigue en su archivo y `nightWindowForDate` **dejó de tener una segunda
+copia** de la regla del 283 (ahora delega en `nightBandsForWeekday`), que es lo
+contrario de duplicar. No hay hook, consulta, clave de caché ni componente
+nuevos más allá de `useVidaDayWindow`, que la sección 2 pedía por su nombre.
+
+**Hallazgos (no devuelven la tajada; se escriben)**
+
+5. **El semáforo de los arcos: juzgado con casos, y no es un defecto.** Es el
+   hallazgo que más miré. El color sale de `toFitLevel`
+   (`vida-goals.utils.ts:433-444`) y depende **solo del final del día**, que es
+   justo lo que esta tajada puede mover. Medido con meta de 8 h, 4 h/5 h 30/6 h
+   30 hechas y «ahora» a las 19:00 y 20:00:
+
+   ```
+   final 23:00 (era el de antes)  →  tight 0 · ok 90 · ok 150 · ok 120
+   final 22:00                    →  tight −60 · tight 30 · ok 90 · tight 60
+   final 21:30                    →  tight −90 · tight 0 · tight 60 · tight 30
+   ```
+
+   Tres cosas que se leen ahí. **(a) En el caso canónico no se mueve nada:**
+   acostarse a las 23:00 con el respaldo de las 23:00 da exactamente el mismo
+   color que ayer — y el inicio del día no entra en esta cuenta, así que
+   levantarse antes no la toca. **(b) Cuando la noche cierra el día *antes* de
+   lo que decía «Tu día», el ámbar llega antes, y el rojo también puede**: con
+   4 h de 8 h a las 19:00, lo mejor posible pasa de 480 a 390 min; si la noche
+   cerrase a las 21:00 caería a 360, por debajo del 80 % de 8 h (384), y sería
+   **rojo sin que el usuario haya trabajado menos**. **(c) Y aun así el rojo
+   sigue siendo cierto**, que es la regla que ese semáforo protege: si estás en
+   la cama a las 21:00, el día de verdad **va** a acabar por debajo del 80 %, y
+   decirlo a las 19:00 es cuando todavía hay algo que decidir. El semáforo
+   antiguo no era más amable: era menos cierto, porque proyectaba sobre dos
+   horas en las que el usuario ya había dicho que estaría durmiendo. **No lo
+   devuelvo.** Lo que sí conviene es que el usuario lo sepa antes de verlo: la
+   frase de Ajustes anuncia el cambio del presupuesto, no el del color.
+6. **`VidaModuleLayout` no tiene ninguna prueba con noche puesta.** Su `vi.mock`
+   está completo, pero devuelve `night: null` siempre, así que las 22 pruebas
+   verifican el criterio 310 y nada más: que el aviso de sesión vieja diga «hasta
+   las 23:00» en vez de «hasta las 22:00» cuando hay noche **no lo afirma
+   ninguna prueba**. Es la recomendación D1 de la sección 2, no un criterio, y el
+   código es de una línea — pero es exactamente la forma de trampa que
+   `ENVIRONMENT.md` describe: verde porque no recorre el camino nuevo.
+7. **La semana y el día miden con escalas distintas, a propósito.** En la
+   revisión, la vista de día usa la ventana (18 h) y las filas de la semana
+   siguen con `dayHours` (16 h 30). Está razonado —siete ventanas no se
+   comparan— y no lo pide ningún criterio, pero un usuario que mire las dos
+   pestañas verá dos denominadores. Si alguna vez chirría, se decide entonces;
+   no ahora.
+8. **Una ventana degenerada sigue siendo posible.** La guarda 2 caza el inicio
+   posterior al fin, pero no un día de 20 minutos: `wakeTime 00:10` y
+   `bedTime 00:30` dan una ventana `00:10 → 00:30` que pasa `isEndAfterStart`.
+   Es una noche de 23 h 50 que nadie va a configurar y el servidor la admite
+   (solo prohíbe las dos horas iguales). Se apunta junto al hallazgo 1 de la
+   tajada 1: la aritmética confía en que alguien filtre antes.
+
+**Lo que queda para prueba manual** (criterio 319; `/app/*` está tras el login y
+ahí no entro):
+
+1. En `/app/vida/ajustes`, poner la noche `23:00 / 5:00` con todas las noches
+   marcadas y guardar.
+2. Abrir `/app/vida/hoy`: mirar **primero** el número de «planeado … de 18h» y
+   luego la línea de abajo. La pregunta que hay que contestar es si el 18 se
+   entiende sin pensar.
+3. En esa misma pantalla: la franja de arriba, la de abajo, el primer hueco a
+   las **5:00** (ya no a las 6:30) y «te quedan … **hasta las 23:00**».
+4. `/app/vida/plantilla` en un día marcado y `/app/vida/revision` del mismo día:
+   la cifra «de las Xh de tu día» tiene que haber **bajado**.
+5. Si hay metas con arco: mirar el color antes y después de guardar la noche.
+   Debería no moverse si te acuestas a las 23:00; si te acuestas antes, el ámbar
+   llega antes y eso es correcto.
+6. Poner `1:00 / 6:40`: ese día pinta **una sola** franja, arriba, y la tarde
+   cierra donde diga «Tu día».
+7. Quitar la noche: todo vuelve exactamente a como estaba.
+
+**Veredicto: aceptada** — los criterios 269, 277, 278–287 y los transversales
+que aplican se cumplen con evidencia sembrada por mí; `plannedMinutes` no se
+mueve; el `buster` es idéntico al de `HEAD`; la suite vuelve a la línea base
+exacta (2 de 2186) y no encontré ninguna regresión en lo entregado esta semana.

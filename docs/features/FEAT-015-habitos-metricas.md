@@ -1,7 +1,7 @@
 ---
 id: FEAT-015
 title: Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora
-status: planned
+status: in-review
 architect: yes    # solo para las tajadas 3 y 4; la 1 y la 2 cuelgan del panel que ya existe
 area: features/habits, **API (xavi-platform-node)** en las tajadas 3–4
 requested: 2026-09-22
@@ -935,7 +935,7 @@ dos**, porque el corte cae justo donde cae un despliegue:
 |---|---|---|---|---|
 | 1 | **Las cifras que faltan.** Récord como ficha propia y distinguido del mejor episodio del tramo, salvavidas usados, dificultad media. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitPanelTiles.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.module.scss`, `HabitPanel/HabitStreakEpisodesChart.tsx` (revisión del rótulo), `HabitPanel/HabitPanel.test.tsx` | 430–439 + 473–480 | pendiente (**render D5 primero**) |
 | 2 | **Dónde se falla, contado como fallos.** El día se elige por fallos, el umbral se dice en voz alta, muere «Vas peor». | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitWeekdayChart.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.test.tsx` | 440–452 + 473–480 | pendiente (**render D5 primero**) |
-| 3a | **El API aprende la hora.** Columna, mapeo, SDL, validadores. **Nada visible; se cierra con el push del usuario y el job de migración.** | `xavi-platform-node`: `migrations/071_habit_logs_time_of_day.sql`, `src/services/habit.service.ts`, `src/types/services/habit.types.ts`, `src/graphql/modules/habit/habit.schema.ts`, `src/validators/schemas/habit.schemas.ts` | ninguno por sí sola (habilita 453–462) | pendiente (**D3: despliegue del usuario**) |
+| 3a | **El API aprende la hora.** Columna, mapeo, SDL, validadores. **Nada visible; se cierra con el push del usuario y el job de migración.** | `xavi-platform-node`: `migrations/071_habit_logs_time_of_day.sql`, `src/services/habit.service.ts`, `src/types/services/habit.types.ts`, `src/graphql/modules/habit/habit.schema.ts`, `src/validators/schemas/habit.schemas.ts` | ninguno por sí sola (habilita 453–462) | in-review (aceptada el 2026-09-24; reabierta por la corrección del `null`, que decidió el usuario) |
 | 3b | **La hora se guarda y se corrige**, en el mismo toque, en los cuatro sitios a la vez. | `hooks/useHabitFollowUps.ts`, `utils/habit-time.utils.ts` (+ suite, nuevo), `types/habit.types.ts`, `graphql/habit-follow-ups.graphql.ts`, `graphql/habits.graphql.ts`, `utils/habit-stats.utils.ts`, `components/HabitFollowUpForm/HabitFollowUpForm.tsx`, `app/providers/query-cache-guards.ts`, los `vi.mock` de `HabitDayRow.test.tsx` | 453–462 | pendiente (**bloqueada por 3a**) |
 | 4 | **A qué hora.** Bandas horarias en la rejilla del panel. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitHourBandsChart.tsx` (nuevo), `HabitPanel/HabitPanel.tsx`, `HabitPanel/charts.module.scss`, `HabitPanel/HabitPanel.test.tsx` | 463–472 | pendiente (**depende de 3b y de que pasen semanas**) |
 
@@ -975,8 +975,493 @@ inmediatamente; la 4 sigue sin poder construirse el mismo día que la 3b.
 
 ## 3. Construcción — feature-builder
 
-*(pendiente)*
+### Tajada 3a — el API aprende la hora
+
+**Resumen para el revisor:** el API ya sabe guardar y devolver la hora de reloj
+de un seguimiento (`timeOfDay`, «HH:mm» local, **anulable, sin `DEFAULT` y sin
+backfill**), en `xavi-platform-node` y **nada más**: no hay un solo cambio
+visible ni un solo archivo del front tocado (solo este expediente y mi fila del
+`BOARD.md`). Se entrega **sin desplegar**: el push y el job de migración son del
+usuario (D3), y hasta que corran, el campo no existe en la base.
+**Lo que más probablemente he roto:** la escritura de seguimientos de hábitos —
+los tres `INSERT`/`UPDATE` de `addHabitLog` y el `UPDATE` de
+`updateHabitFollowUp` cambiaron de número de parámetros ($9→$10, $11→$12), y
+**las suites de hábitos del API no compilan desde antes, así que ahí no hay red**.
+Si algo se ha desalineado, se verá al marcar un hábito, no al compilar.
+
+**Lo que construí** (todo en `/home/jako/Developer/xavi-platform-node`):
+
+- `migrations/071_habit_logs_time_of_day.sql` — **nuevo**. `ALTER TABLE
+  habit_logs ADD COLUMN IF NOT EXISTS time_of_day TIME;` calcado de la 068: sin
+  `DEFAULT`, sin `NOT NULL`, sin backfill, con el porqué dentro (el pico falso
+  de medianoche y el falso amigo `time`). `DOWN` comentado, como la 068.
+- `src/services/habit.service.ts` — `HabitLogRow` gana `time_of_day: string |
+  Date | null`; `LOG_RETURNING` gana la columna; `formatTime` local copiado de
+  `user-settings.service.ts:26-30`; `mapHabitLog` gana
+  `timeOfDay: formatTime(row.time_of_day ?? null)`. Escriben la columna los tres
+  caminos de `addHabitLog` (INSERT de salvavidas, UPDATE de fusión del día con
+  `time_of_day = COALESCE($9, time_of_day)` —la forma de `notes`, `story` y
+  `difficulty` de al lado—, INSERT normal) y el UPDATE de `updateHabitFollowUp`,
+  también con `COALESCE`. Y el único sitio escrito a mano, `getHabitMyDay`: su
+  tipo de fila, su `SELECT` (`hl.time_of_day`) y su mapeo manual.
+- `src/types/services/habit.types.ts` — `HabitLog.timeOfDay: string | null`,
+  `AddHabitLogInput.timeOfDay?` y `UpdateHabitFollowUpInput.timeOfDay?`.
+- `src/graphql/modules/habit/habit.schema.ts` — `timeOfDay: String` (nulo en los
+  tres) en `type HabitFollowUp`, `HabitFollowUpAddInput` y
+  `HabitFollowUpEditInput`. **`time: Int!` intacto.**
+- `src/validators/schemas/habit.schemas.ts` — `timeOfDaySchema` local, `timeOfDay`
+  en el add, en el edit **y en la lista del `.refine`** (la trampa nombrada).
+- `src/graphql/modules/habit/habit.resolvers.ts` — **no estaba en el plan y hacía
+  falta** (ver «desvíos»): `habitFollowUpAdd` desestructura el input campo a
+  campo, así que sin añadir `timeOfDay` ahí la hora se perdía entre el validador
+  y el servicio, en silencio. `habitFollowUpEdit` ya pasa `...fields` y no
+  necesitó nada.
+- `tests/unit/validators/habit.schemas.test.ts` — **nuevo** (ver «desvíos»).
+
+**Por qué así, y qué descarté:**
+
+- **`COALESCE` también en el edit**, no asignación directa. Consecuencia que el
+  revisor debe conocer: **por el edit se puede poner y corregir la hora, pero no
+  borrarla** (mandar `timeOfDay: null` deja la que había). Lo elegí por
+  consistencia con las cuatro columnas de la misma sentencia; ningún criterio
+  pide borrarla. Si alguna vez se quiere un «quitar la hora», es un cambio de
+  esa línea y hay que decidirlo aparte.
+- **`?? null` en `formatTime(row.time_of_day ?? null)`**: hay `SELECT`s de
+  `habit_logs` con `*` y con `hl.*` (`:649`, `:733`, `:803`, `:835`) que sí
+  traerán la columna, pero con el `?? null` un resultado sin ella devuelve `null`
+  en vez de reventar. Es la diferencia entre una ventana de despliegue tranquila
+  y una pantalla en blanco.
+- **No toqué `type HabitLog` del SDL** (el de `Habit.logs`), solo
+  `HabitFollowUp`: es lo que pedía el plan y lo que consume el cliente. El objeto
+  que devuelve el servicio sí lleva el campo; GraphQL simplemente no lo expone
+  por ahí.
+- **No arreglé las seis suites rotas** (`habit-streak` y compañía), como manda el
+  plan.
+
+**Desvíos del plan, dichos en voz alta:**
+
+1. **`habit.resolvers.ts` no estaba en la lista de archivos de la tajada.** La
+   sección 2 dice «los resolvers pasan el objeto entero: no hay lista de campos
+   que tocar ahí» y **eso es cierto para `habitFollowUpEdit` pero falso para
+   `habitFollowUpAdd`** (`:361`), que desestructura once campos a mano. Sin ese
+   cambio, el criterio 454 fallaría con todo lo demás en verde.
+2. **El validador es más estricto que su molde.** `timeSchema` de
+   `user-settings.schemas.ts:6-9` acepta `99:99`; el mío exige
+   `^([01]\d|2[0-3]):[0-5]\d(:\d{2})?$`, que es literalmente lo que pide la
+   regla 4 de la sección (3) («entre 00:00 y 23:59»). Con el molde tal cual, un
+   `99:99` pasaría el 400 y moriría como error de Postgres, o sea un 500.
+3. **Añadí `tests/unit/validators/habit.schemas.test.ts`** (6 casos), que no
+   estaba planificado. El plan renuncia a tests porque las suites de hábitos no
+   compilan — cierto del **servicio**, no de los validadores: `tests/unit/validators/`
+   está entero en verde y tiene vecinos que imitar. Cubre la trampa del `.refine`
+   y el formato. **No arregla la falta de red del servicio**, que sigue intacta.
+4. **Las tres descripciones nuevas del SDL van en `"""` de tres líneas**, no en
+   una sola como sus vecinas: en una sola línea, prettier marcaba un error nuevo
+   por descripción y la regla de este repo es no empeorar el lint de los archivos
+   que tocas. Verificado: 6 errores antes y 6 después en `habit.schema.ts`.
+
+**Verificación** (ejecutada en `xavi-platform-node`):
+
+- `npx tsc --noEmit` → `EXIT=0`. **Esta es la puerta real de la tajada**, tal y
+  como la dejó escrita el arquitecto.
+- `npm test` → `Test Suites: 6 failed, 48 passed, 54 total` / `Tests: 3 failed,
+  599 passed, 602 total`. Línea base: 6 de 53 y 3 de 596. **Mismas seis suites y
+  los mismos tres fallos** (`syncHabitStreakFromLogs`, `HabitService > addHabitLog
+  > creates log when date is available`, `walletExpenseUpdate`); el total sube
+  en 6 por la suite nueva. No he empeorado nada y no he arreglado nada.
+- `npx eslint` sobre los cinco archivos tocados de `src/`: `habit.service.ts` 5,
+  `habit.types.ts` 0, `habit.schema.ts` 6, `habit.schemas.ts` 7,
+  `habit.resolvers.ts` 9 — **todos los avisos caen en líneas preexistentes**,
+  ninguno en una línea mía (comprobado línea a línea con `-f json`). Sin
+  `lint:fix`, ni en un archivo ni a lo ancho. El test nuevo queda fuera de
+  `npm run lint`, que solo mira `src`.
+- **Sonda propia con `tsx`** (borrada al terminar) sobre el SDL ya compilado y
+  los validadores:
+  - `HabitFollowUp | timeOfDay: String | time: Int!`
+  - `HabitFollowUpAddInput | timeOfDay: String | time: Int`
+  - `HabitFollowUpEditInput | timeOfDay: String | time: Int`
+  - edit `{id, timeOfDay}` → OK; edit `{id}` → «At least one field is required to
+    update»; `99:99`, `24:00`, `7:5` → «Invalid time format (HH:MM)»; add sin
+    `timeOfDay` → OK.
+  Los mismos casos viven ahora en la suite nueva (6/6 en verde).
+- **Sin base de datos.** No sembré ni borré ningún dato: no hay acceso a Neon
+  desde aquí y la migración **no se ha ejecutado**.
+
+**Criterios que cierra:** **ninguno por sí sola**, como dice el plan. Habilita
+los 453–462, que son de la 3b. Lo que sí deja comprobado del lado del servidor:
+
+- **459 (mitad servidor):** un solo `mapHabitLog` y un solo `LOG_RETURNING` →
+  `habitFollowUps`, `habitFollowUpsInDates`, `habitWeekView` y las mutaciones
+  devuelven el campo a la vez. El único `SELECT` a mano, `getHabitMyDay`,
+  también. **Las tres formas del cliente siguen siendo trabajo de la 3b.**
+- **460:** `time: Int!` intacto en el SDL y en el servicio; el `grep` del diff
+  solo muestra `time_of_day`, nunca `time` a secas, salvo en las listas de
+  columnas donde ya estaba.
+- **461 (mitad servidor):** el campo es anulable en los tres sitios; un cliente
+  viejo que no lo mande sigue funcionando igual (caso probado en la suite nueva).
+
+**Pendiente de prueba manual (del usuario, y no marcables desde aquí):**
+
+1. **El despliegue (D3).** `git push` a `main` del repo del API → el job
+   `xavi-migrate` de Cloud Run corre la 071 contra Neon y solo después despliega.
+   Mientras eso no pase, **el campo no existe en la base** y cualquier consulta
+   que lo pida dará error de columna.
+2. **El ida y vuelta real**, una vez arriba: una mutación `habitFollowUpAdd` con
+   `timeOfDay: "22:15"` debe devolver `"22:15"` (no `"22:15:00"`, no
+   `"03:15"`), y un `habitFollowUpEdit` con `{id, timeOfDay}` debe devolver 200
+   y no 400. **Nada compara el documento del cliente con este SDL**, así que esta
+   comprobación no la hace ningún test, ni aquí ni en el front.
+3. **Que marcar un hábito sigue funcionando** (Mi Día, el cajón, el salvavidas):
+   es lo que tocan los `INSERT`/`UPDATE` renumerados y lo que no cubre ninguna
+   suite.
+
+**Riesgos:**
+
+- **El grande: el servicio se despliega sin red de tests.** `habit.service.test.ts`
+  es una de las seis suites rotas de antes, así que `addHabitLog` y
+  `updateHabitFollowUp` no tienen ninguna prueba que corra. Lo único que sostiene
+  los cuatro cambios de SQL es `tsc` (que no mira dentro de una cadena) y la
+  lectura. **Asumido y nombrado por el arquitecto; lo repito aquí porque es lo
+  que hay que mirar primero.**
+- **La fusión del día guarda la hora del último toque que llevaba hora**
+  (`COALESCE`). En un hábito de cantidad con varias sumas, esa es la hora que
+  queda. Decisión del plan, escrita también en el código.
+- **`getHabitMyDay` es el único sitio con columnas y mapeo a mano**: si alguien
+  añade otro campo mañana y se olvida de él, saldrá por todas partes menos por
+  «Mi Día». Ya pasa hoy; no es mío, pero ahora hay un campo más que mantener.
+- **La columna es `TIME` de SQL**, así que Postgres devuelve `"22:15:00"`;
+  `formatTime` recorta a cinco caracteres. Si un día alguien lee `time_of_day`
+  sin pasar por `mapHabitLog`, verá los segundos.
+
+**Estado del árbol:** **sin commitear**, en dos repositorios:
+
+- `xavi-platform-node`: 5 archivos modificados + 2 nuevos
+  (`migrations/071_habit_logs_time_of_day.sql`,
+  `tests/unit/validators/habit.schemas.test.ts`). También cambió
+  `graphify-out/` por el `graphify update .` obligatorio.
+- `xavi-habits-webapp`: **solo este expediente y mi fila del `BOARD.md`**. Lo
+  demás que aparezca en `git status` del front es de la sesión que está
+  construyendo FEAT-012 en paralelo; **no lo he tocado**.
+
+### Tajada 3a · corrección tras la revisión — `null` ya borra la hora
+
+**Resumen para el revisor:** el API ya no dice que sí y luego no lo hace. En las
+dos sentencias que escribían la hora con `COALESCE`, «no vino el campo» y «vino
+vacío» eran indistinguibles; ahora se distinguen, con la misma forma que
+`durationMinutes` en `activity-follow-up.service.ts:377` (FEAT-022): **ausente =
+no la toques, `null` = bórrala**. Lo demás de la tajada —migración 071,
+`timeSchema` original, los cuatro SQL ya revisados, el resolver del add— **no se
+ha tocado**. **Lo que más probablemente he roto:** la escritura de seguimientos
+otra vez, porque los dos `UPDATE` vuelven a renumerarse (ahora `$9` bandera,
+`$10` hora, `$11` el `WHERE id`) — pero esta vez **sí hay red**: una suite nueva
+de servicio que lee los parámetros de las dos sentencias.
+
+**Lo que cambié** (decisión del usuario, no mía; el revisor la dejó abierta):
+
+- `src/services/habit.service.ts` — en el UPDATE de fusión del día de
+  `addHabitLog` y en el de `updateHabitFollowUp`, la columna pasa de
+  `time_of_day = COALESCE($9, time_of_day)` a
+  `time_of_day = CASE WHEN $9::boolean THEN $10::time ELSE time_of_day END`, con
+  `input.timeOfDay !== undefined` como bandera y `input.timeOfDay ?? null` como
+  valor. Las dos llevan el porqué escrito encima.
+- **Elegí `CASE WHEN` y no una lista de `SET` dinámica** como la del precedente:
+  el precedente construye la sentencia entera a trozos y aquí eso obligaba a
+  reescribir dos `UPDATE` de nueve columnas que el revisor ya había leído
+  parámetro a parámetro. Con `CASE WHEN`, la sentencia sigue siendo fija y el
+  cambio se lee en una línea. Misma semántica, menos superficie.
+- `src/types/services/habit.types.ts` y la descripción del SDL en
+  `habit.schema.ts` — dicen ahora la regla en palabras, para que no haya que
+  deducirla del SQL.
+- **Los dos `INSERT` no cambian**, y es correcto: en una fila que nace no hay
+  hora anterior que conservar, así que ausente y `null` significan lo mismo
+  («sin hora», que no es medianoche). Cubierto con dos casos.
+
+**Repaso de las demás columnas del mismo `UPDATE`** (punto 3 del encargo):
+`notes`, `story`, `archived`, `difficulty` y `client_id` **se quedan con
+`COALESCE` a propósito**. En esas, `null` ha significado siempre «no lo mando»
+—el resolver y el servicio las pasan como `?? null` sin que nadie pueda decir
+«bórralo»— y cambiarlas sería cambiar un contrato que ya usan el cajón de
+registro y la idempotencia por `clientId`. **No las he tocado**, y hay un caso de
+test que fija esa asimetría para que se vea que es deliberada y no un olvido.
+
+**Verificación:**
+
+- `npx tsc --noEmit` → `EXIT=0`.
+- `npm test` → **3 fallos de 614 en 55 suites**, las mismas seis rotas de
+  siempre y los mismos tres fallos. Antes de esta corrección: 3 de 602 en 54. Las
+  12 pruebas de más son las mías.
+- **Suite nueva `tests/unit/services/habit-follow-up-time-of-day.service.test.ts`
+  (10 casos, en verde)** — mockea el pool y lee la sentencia y sus parámetros:
+  - edit con `'07:05'` → bandera `true`, valor `'07:05'`;
+  - edit **sin** el campo (solo `notes`) → bandera `false`, valor `null`: la hora
+    guardada no se toca;
+  - edit con `null` → bandera `true`, valor `null`: se borra;
+  - `notes`, `story`, `archived` y `difficulty` siguen en `COALESCE`;
+  - la vuelta es `'22:15'` y no `'22:15:00'`;
+  - y los mismos tres casos en el **add** que fusiona el día, más los dos del
+    INSERT del primer seguimiento (`$12` con la hora, o `null`).
+  **Es la primera red de tests que corre sobre `addHabitLog`/`updateHabitFollowUp`**
+  desde que las suites de hábitos dejaron de compilar; no las arregla ni las toca.
+- `tests/unit/validators/habit.schemas.test.ts` → **8 casos**, con los nombres
+  corregidos: el de `null` en el add dice «no hay hora anterior que conservar» y
+  hay uno nuevo que fija «no vino» frente a «vino vacío» en el edit. El título
+  viejo («accepts null as "no time"») decía algo que en el edit era falso.
+- `npx eslint` en los ficheros de `src/` tocados: `habit.service.ts` 5,
+  `habit.schema.ts` 6, `habit.types.ts` 0 — **los mismos números y las mismas
+  líneas preexistentes** que antes de la corrección. Sin `lint:fix`.
+- **Sigue sin haber base de datos por medio**: la migración 071 no se ha
+  ejecutado y el `CASE WHEN ... ::time` no se ha probado contra Postgres. Es lo
+  que hay que mirar en la comprobación a mano de después del push.
+
+**Lo que el revisor encontró y no estaba en mi lista, para la 3b** (no lo he
+tocado): **`habitLogAdd` (`habit.resolvers.ts:341`) tiene la misma forma que me
+mordió** — ocho campos desestructurados a mano contra el mismo `addHabitLog`.
+Hoy no muerde porque `HabitLogAddInput` no tiene `timeOfDay` en el SDL y el
+cliente no usa esa mutación, pero **si alguna pantalla acaba marcando por ahí, la
+hora se perderá sin error y sin rastro**, igual que habría pasado en
+`habitFollowUpAdd`. Si la 3b necesita esa mutación, hay que añadir el campo en
+los tres sitios (SDL, validador y resolver) a la vez.
+
+**Riesgo que queda:** el `::time` del `CASE WHEN` obliga a Postgres a castear la
+cadena; con una hora válida («07:05», «22:15:00») es lo mismo que hacía antes el
+parámetro suelto, pero eso solo lo confirma el primer `habitFollowUpEdit` real
+contra la API desplegada.
+
+**Estado del árbol:** **sin commitear**. En `xavi-platform-node`, sobre lo ya
+revisado, cambian `src/services/habit.service.ts`,
+`src/types/services/habit.types.ts`, `src/graphql/modules/habit/habit.schema.ts`
+y `tests/unit/validators/habit.schemas.test.ts`, y aparece
+`tests/unit/services/habit-follow-up-time-of-day.service.test.ts`. En el front,
+solo este expediente.
 
 ## 4. Revisión — feature-reviewer
 
-*(pendiente)*
+### Tajada 3a — el API aprende la hora
+
+**Veredicto: aceptada.** No cierra ningún criterio —no le tocaba— y habilita los
+453–462 sin dejar deuda de forma. Todo lo comprobado abajo es del repositorio
+`xavi-platform-node`; del front esta tajada solo tocó este expediente y su fila
+del `BOARD.md`, y eso es exactamente lo que hay en el árbol.
+
+**Criterios, uno a uno.** Los 430–452 son de las tajadas 1 y 2 y siguen
+pendientes. De los 453–462 esta tajada **no cierra ninguno** (así estaba escrito
+en el plan); lo que sí deja comprobado del lado del servidor:
+
+- **459 (mitad servidor) — cumplido y verificado por mi cuenta, no por el
+  resumen.** Todos los caminos de lectura de `habit_logs` que alimentan un
+  seguimiento traen ya la columna: `LOG_RETURNING` (que ahora la lista) se usa en
+  la idempotencia por `clientId` (`habit.service.ts:603`) y en la semana
+  (`:1003`), y los demás son `SELECT *` / `SELECT hl.*` (`:649`, `:733`, `:803`,
+  `:835`). El único escrito a mano, `getHabitMyDay`, lista `hl.time_of_day` y lo
+  mapea. Y hay una red de tipos real: `HabitLog.timeOfDay` es **obligatorio** en
+  la interfaz, así que cualquier sitio que construya un seguimiento a mano sin él
+  lo caza `tsc` — y `tsc` está en 0.
+- **460 — cumplido.** Compilé el SDL con `tsx` y leí los tipos ya impresos:
+  `HabitFollowUp` → `time: Int!` + `timeOfDay: String`; los dos inputs →
+  `time: Int` + `timeOfDay: String`; **`HabitLogAddInput` y `type HabitLog` sin
+  tocar**. En el servicio, `time`/`mergedTime` no cambian de sitio ni de sentido.
+- **461 (mitad servidor) — cumplido.** Anulable en los tres sitios del SDL,
+  opcional en los dos validadores, y `input.timeOfDay ?? null` en las cuatro
+  sentencias: un cliente que no lo mande se comporta igual que hoy.
+- **453–458 y 462: siguen pendientes y son de la 3b** (y el 462, del usuario, con
+  el API ya desplegado). No los doy por buenos por simpatía.
+
+**El hallazgo que corrige al arquitecto: confirmado, y era de verdad.**
+`habitFollowUpAdd` (`habit.resolvers.ts:359`) desestructura el input campo a
+campo y reconstruye el objeto que pasa al servicio; sin añadir `timeOfDay` en las
+dos listas, la hora moría entre el validador y el servicio **sin error y sin
+rastro**. `habitFollowUpEdit` (`:394`) sí hace `const { id, difficulty,
+...fields }`, así que el plan era cierto solo para la mitad que miró.
+
+**Busqué si hay más resolvers con esa forma, y hay uno:** `habitLogAdd`
+(`habit.resolvers.ts:341`) desestructura ocho campos a mano y llama al mismo
+`addHabitLog`. Hoy **no muerde**: `HabitLogAddInput` no tiene `timeOfDay` en el
+SDL y el cliente **no usa esa mutación en ningún sitio** (`grep -rn "habitLogAdd"
+src/` en el front: cero). Queda escrito para la 3b: si alguna pantalla acaba
+marcando por ahí, la hora se perderá igual de callada. Los demás
+(`habitEdit:322`, `habitCategoryEdit:424`, `habitMeasureEdit:452`) usan
+`...fields` y no son de este dato.
+
+**Qué busqué alrededor, y cómo:**
+
+- `graphify query` en el repo del API sobre los resolvers de seguimiento y el
+  mapeo (`toFollowUp`), y luego abrí los ficheros: `toFollowUp` hace `...log`, o
+  sea que el campo sale por las mutaciones sin tocar nada más.
+- **Quién más escribe en `habit_logs`: nadie.** `grep -rln "habit_logs" src/`
+  devuelve **solo** `habit.service.ts`, y `INSERT/UPDATE INTO habit_logs` fuera de
+  ese fichero, cero. El radio de la tajada está contenido.
+- **Los cuatro SQL renumerados, leídos parámetro a parámetro** (que es lo que el
+  constructor señaló como lo más probable de romper y lo que ninguna suite cubre):
+  INSERT de salvavidas 13 columnas / 13 valores con `time_of_day = $8` y
+  `input.timeOfDay` en octava posición; UPDATE de fusión con `$9` en el `SET` y
+  `$10` en el `WHERE`, array de 10 en ese orden; INSERT normal 13/13 con `$12`
+  último; UPDATE de `updateHabitFollowUp` con `$9`/`$10` y su array explícito de
+  10. **Los cuatro cuadran.** Es lectura, no ejecución: sin base de datos no hay
+  forma de ejecutarlos desde aquí.
+- **Línea base del API, medida entera por mí:** `npx tsc --noEmit` → `EXIT=0`;
+  `npm test` → **6 suites falladas de 54, 3 tests fallados de 602**, y los tres
+  con nombre son los mismos de siempre (`syncHabitStreakFromLogs`, `HabitService >
+  addHabitLog > creates log when date is available`, `walletExpenseUpdate`). La
+  suite nueva de validadores, aislada: **6/6 en verde**. Lint sobre los cinco
+  ficheros tocados: 9/6/5/0/7 avisos, y crucé los números de línea con los rangos
+  del `git diff -U0`: **ninguno cae en una línea nueva**. No se ha empeorado nada.
+- **Del front no se ha tocado una línea de código.** `git diff --stat` del front
+  da solo `docs/`; lo que hay en `src/features/vida/` (VidaDayBudget,
+  VidaTemplateDaySummary, las páginas de Vida, `useVidaDayWindow`) es de la sesión
+  que construye FEAT-012 en paralelo y **no es de esta tajada**.
+
+**Estados que nadie construye.** Esta tajada no tiene pantalla: vacío, cargando,
+texto largo y móvil **no aplican**. Los que sí:
+
+- **Sin dato:** una fila sin hora devuelve `null` —no medianoche— por
+  `formatTime(row.time_of_day ?? null)`, y el validador acepta que el campo no
+  venga. Probado en la suite nueva.
+- **Error:** formato imposible (`99:99`, `24:00`, `7:5`) → 400 del validador con
+  «Invalid time format (HH:MM)», no un 500 de Postgres. Probado.
+- **Permisos:** `requireAuth` en las dos mutaciones, sin cambios.
+
+**¿Duplica algo que ya existía?** No. `formatTime` es una copia deliberada de la
+de `user-settings.service.ts:26` —el constructor lo dice en el comentario— y
+factorizarlas es otra tarea; no hay una tercera. `timeOfDaySchema` es local y
+**no toca `timeSchema` de `user-settings.schemas.ts`, que sigue intacto**
+(comprobado: ese fichero no aparece en el diff, y su regex sigue siendo
+`^\d{2}:\d{2}(:\d{2})?$`, el que acepta `99:99`). La versión acotada cubre
+**los dos únicos sitios por los que la hora puede entrar** hoy: el add y el edit
+de seguimiento. No hay REST de hábitos ni otra ruta de escritura.
+
+**La migración 071.** Formato correcto para `scripts/migrate.ts` (parte por `--
+DOWN`, y no hay ningún «down» suelto en los comentarios que lo parta antes);
+número libre, va detrás de la 070. `ADD COLUMN IF NOT EXISTS time_of_day TIME`
+**sin `NOT NULL` y sin `DEFAULT`**: contra las filas que ya existen es un
+`ALTER TABLE` que no las toca —se quedan en `NULL`— y por eso no puede repetir lo
+que tumbó Hoy el 23. `DOWN` comentado, igual que la 068. El precedente juega a
+favor: la 068 creó `vida_night_bed_time TIME` y ese ida y vuelta lleva
+funcionando desde FEAT-012.
+
+**Hallazgos (no devuelven la tajada, pero se escriben):**
+
+1. **`timeOfDay: null` se acepta y se ignora en silencio.** El validador declara
+   el campo `.nullable()` —y la suite nueva lo afirma: «accepts null as "no time"»—
+   pero el `UPDATE` hace `time_of_day = COALESCE($9, time_of_day)`: mandar `null`
+   devuelve 200 y **deja la hora que había**. Aceptar un valor y no hacer nada con
+   él es la peor de las tres opciones (honrarlo, rechazarlo o ignorarlo).
+   **Mi juicio sobre si es defecto de producto:** hoy **no** lo es, y por eso no
+   devuelvo. Ningún criterio pide borrar la hora; quien se equivoque de hora la
+   **corrige** poniendo otra (455), y un seguimiento entero que sobre se quita con
+   `habitFollowUpRemove`, que se lleva la fila y su hora. Nadie queda atrapado con
+   un dato falso **sin salida**. Pasa a ser defecto el día que la 3b enseñe un
+   «quitar la hora»: ese control haría un no-op silencioso. **Recomendación: que
+   el usuario decida antes del push**, porque después el contrato ya es público —
+   arreglarlo es distinguir «no vino» de «vino null» (zod ya lo permite) y cambiar
+   esa línea a una asignación condicionada.
+2. **La ventana entre despliegues es más estrecha de lo que parece, y el `?? null`
+   no la cubre.** `LOG_RETURNING` nombra la columna y la usan las cuatro
+   escrituras, la idempotencia por `clientId` y la vista de semana; `getHabitMyDay`
+   la nombra en su `SELECT`. Si **Render** termina su auto-despliegue antes de que
+   el job `xavi-migrate` de Cloud Run corra la 071 contra la misma base de Neon,
+   durante esos minutos **marcar un hábito y «Mi Día» dan error de columna
+   inexistente**. Se cura solo en cuanto la migración entra, y es inherente a
+   cualquier columna aditiva de este repo (la 068 tuvo la misma ventana), pero
+   conviene saberlo antes de pulsar y mirar «Mi Día» un par de minutos después.
+3. **Una imprecisión del parte de construcción, para que no se herede.**
+   `tests/unit/services/habit.service.test.ts` **no** es una de las seis suites
+   rotas: compila, corre y da **6 en verde y 1 en rojo** (el `addHabitLog` de la
+   línea base, que revienta dentro de `syncHabitStreakFromLogs` por mocks
+   agotados). El fondo del riesgo sigue siendo cierto y lo comprobé: ese test
+   **no afirma nada sobre los parámetros del SQL** —el mock de `db.query`
+   devuelve lo encolado mire lo que mire— así que **la renumeración no tiene red
+   de tests ni tendría por qué haberla fallado**. Lo único que la sostiene es la
+   lectura línea a línea de arriba.
+4. **`getHabitMyDay` sigue siendo el único sitio con columnas y mapeo a mano.**
+   Un campo más que mantener ahí. No es de esta tajada, pero ya son dos avisos.
+
+**Lo que queda sin probar, y no se puede probar desde aquí:**
+
+- **El ida y vuelta real `"22:15"` → `"22:15"`.** Sin base de datos no hay forma
+  de ejecutarlo: no hay acceso a Neon desde aquí y **abrir una conexión a la base
+  de producción no es algo que yo haga**. Lo que sí puedo decir es por qué debería
+  salir bien: la columna es `TIME` (sin zona), **no hay ningún
+  `pg.types.setTypeParser` en todo `src/`** (lo busqué), así que `pg` devuelve la
+  cadena cruda `"22:15:00"` y `formatTime` recorta a cinco; el desplazamiento por
+  zona horaria solo aparecería con `TIMETZ` o `TIMESTAMP`, que no se usan. Y el
+  precedente de la 068 con `vida_night_bed_time` ya lleva días funcionando así.
+  **Queda como comprobación manual del usuario, la primera después del push.**
+- **Que marcar un hábito sigue funcionando** (Mi Día, el cajón, el salvavidas y la
+  fusión del día en un hábito de cantidad). Es lo que tocan los cuatro SQL y lo
+  que ninguna suite ejecuta.
+- **La migración, hasta que el usuario empuje** (D3).
+
+### Tajada 3a · revisión de la corrección — `null` ya borra la hora
+
+**Veredicto: aceptada** (la tajada sigue aceptada; esto no la reabre). Miré solo
+la corrección, no rehíce la revisión.
+
+**1 · La distinción funciona en los dos caminos, y la numeración que verifiqué no
+se ha movido.** Leí las dos sentencias enteras otra vez:
+
+- Fusión del día (`habit.service.ts:673-695`): `SET` con `$1..$8` **idénticos a
+  los que verifiqué** (count, time, notes, story, is_accomplished, is_failed,
+  difficulty, client_id), `time_of_day = CASE WHEN $9::boolean THEN $10::time
+  ELSE time_of_day END`, `WHERE id = $11`; array de **11** en ese mismo orden,
+  con `input.timeOfDay !== undefined` en novena posición y `input.timeOfDay ??
+  null` en décima.
+- `updateHabitFollowUp` (`:757-779`): igual, con `$1..$8` (count, time, notes,
+  story, is_accomplished, is_failed, archived, difficulty), `$9`/`$10` y
+  `WHERE id = $11`; array de 11 en ese orden.
+
+**2 · Los dos `INSERT` están intactos**, byte a byte como los leí (`$8` en el del
+salvavidas, `$12` en el normal, con `input.timeOfDay ?? null`), y el argumento es
+correcto: en una fila que nace no hay hora anterior, así que ausente y `null` son
+lo mismo. Nada que discutir ahí.
+
+**3 · La asimetría de las demás columnas: aceptable, porque está escrita.**
+`notes`, `story`, `archived`, `difficulty` y `client_id` se quedan con `COALESCE`
+y el porqué está en dos sitios: el comentario encima de cada sentencia y un caso
+de test que afirma los cuatro `COALESCE` por su número de parámetro. Eso es
+exactamente lo que separa una asimetría deliberada de una trampa: quien llegue
+mañana y vea `CASE WHEN` en una columna y `COALESCE` en las de al lado encuentra
+la razón sin tener que adivinarla.
+
+**4 · La suite nueva: es red de verdad, pero tiene un hueco justo donde más
+importa.** `tests/unit/services/habit-follow-up-time-of-day.service.test.ts`
+(10 casos, verdes) mockea el pool y **lee la sentencia y sus parámetros**, así
+que sí es la primera prueba que corre sobre `addHabitLog`/`updateHabitFollowUp`.
+Cubre las tres posiciones de la bandera en los dos `UPDATE`, el `INSERT` del
+primer seguimiento del día (`params[11]`), el `null` que no es medianoche, la
+asimetría del `COALESCE` y la vuelta `'22:15:00'` → `'22:15'`. Y fija el texto
+exacto del `CASE WHEN` con sus `$9`/`$10`, que es lo que ata numeración y array.
+
+Lo que **no** cubre, dicho para que no se lea como más red de la que es:
+
+- **El `WHERE id = $11` no está afirmado en ninguna parte**, ni la longitud del
+  array. El mock devuelve la misma fila mire los parámetros que mire, así que un
+  `id` en la posición equivocada —que es precisamente lo que puede romper una
+  renumeración— pasaría en verde. Dos líneas lo cierran:
+  `expect(params).toHaveLength(11)` y `expect(params[10]).toBe(LOG_ID)`.
+- **El `INSERT` del salvavidas** (`$8`) sigue sin ningún caso, y era uno de los
+  cuatro caminos que marqué.
+- La racha, la fusión de cantidades y el resto de `addHabitLog` siguen fuera:
+  esta suite mira la hora, no el servicio entero. No es reproche —no era su
+  encargo— pero «la primera red sobre `addHabitLog`» es una red de un hilo.
+
+**No toca las seis rotas**: es un fichero nuevo, con su `jest.mock` del pool
+acotado a él. Línea base medida por mí después de la corrección: `npx tsc
+--noEmit` **EXIT=0**; `npm test` **3 fallos de 614 en 55 suites**, las mismas
+seis y los mismos tres nombres. Lint en los ficheros tocados: `habit.service.ts`
+5, `habit.schema.ts` 6, `habit.types.ts` 0 — crucé los números de línea con los
+rangos de `git diff -U0` y **ninguno cae en línea nueva**.
+
+**5 · El `::time` es la forma correcta.** Un parámetro suelto dentro de un `CASE`
+no tiene tipo que Postgres pueda inferir; el cast explícito se lo da, igual que
+`$9::boolean`. No cambia el ida y vuelta: sigue siendo una columna `TIME` sin
+zona, sin `setTypeParser` en el repo, devuelta como `"22:15:00"` y recortada por
+`formatTime`. Un matiz para el cuaderno: el cast fija el tipo del parámetro **en
+el `parse`, no en la rama**, así que una cadena inválida en `$10` daría error
+aunque la bandera fuera `false`; hoy no puede pasar porque ahí solo llega lo que
+aprobó el validador (`HH:mm`) o `null`.
+
+**Lo que sigue pendiente es lo mismo de antes, más una línea:** la 071 no se ha
+ejecutado, y el `CASE WHEN ... ::time` **no se ha ejecutado nunca contra
+Postgres**. La primera comprobación después del push ya no es una sino dos: que
+`"22:15"` vuelve `"22:15"`, y que un `habitFollowUpEdit` con `timeOfDay: null`
+devuelve 200 y el seguimiento vuelve **sin hora**.

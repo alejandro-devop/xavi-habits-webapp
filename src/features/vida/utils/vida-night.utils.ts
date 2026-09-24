@@ -191,18 +191,28 @@ export function nightBandsForWeekday(
  * `vidaDayEndTime` (criterios 280 y 283). En particular, una noche que no cruza
  * (`1:00 → 6:40`) **no cierra la tarde**: solo abre la mañana.
  */
+export function nightWindowForWeekday(
+  night: VidaNight | null,
+  day: VidaDayOfWeek,
+): { startTime: string | null; endTime: string | null } {
+  const { dawn, dusk } = nightBandsForWeekday(night, day)
+  return {
+    startTime: dawn ? dawn.wakeTime : null,
+    // Una noche que no cruza acaba antes de que empiece la tarde: no es el
+    // final del día, así que no cierra nada. Esa regla ya la aplica
+    // `nightBandsForWeekday`, y por eso la ventana se saca de las **mismas**
+    // dos franjas que se pintan: si la franja de abajo no existe, tampoco
+    // existe la hora de acostarse que cierra el día (criterio 283).
+    endTime: dusk ? dusk.bedTime : null,
+  }
+}
+
+/** Lo mismo, por fecha `YYYY-MM-DD`. */
 export function nightWindowForDate(
   night: VidaNight | null,
   ymd: string,
 ): { startTime: string | null; endTime: string | null } {
-  const ending = nightEndingOn(night, ymd)
-  const starting = nightStartingOn(night, ymd)
-  return {
-    startTime: ending ? ending.wakeTime : null,
-    // Una noche que no cruza acaba antes de que empiece la tarde: no es el
-    // final del día, así que no cierra nada.
-    endTime: starting && crossesMidnight(starting) ? starting.bedTime : null,
-  }
+  return nightWindowForWeekday(night, getVidaDayOfWeek(ymd))
 }
 
 /**

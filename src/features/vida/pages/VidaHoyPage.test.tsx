@@ -4273,3 +4273,156 @@ describe('VidaHoyPage — el atajo de la hora planeada (FEAT-013, criterios 350 
     ).not.toBeInTheDocument()
   })
 })
+
+/**
+ * **La noche en Hoy** (FEAT-012, tajada 2): las dos franjas y, sobre todo, la
+ * ventana del día saliendo de la noche.
+ *
+ * El día de estas pruebas es **viernes 18/9/2026** a las 9:24, así que una
+ * noche marcada jueves y viernes le llega por los dos lados: la del jueves
+ * termina aquí (franja de arriba) y la del viernes empieza aquí (la de abajo).
+ */
+describe('VidaHoyPage — la noche es el borde del día (FEAT-012)', () => {
+  function conNoche(overrides: Partial<UserSettings> = {}) {
+    settingsQuery = ready({
+      ...SETTINGS,
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: ['thursday', 'friday'],
+      ...overrides,
+    } as UserSettings)
+  }
+
+  // `data-variant` no basta aquí: en Hoy lo llevan también la tarjeta de «lo
+  // que viene» y las filas de sesión. Las franjas son las dos únicas con
+  // `dawn` / `dusk`.
+  /** El texto entero del presupuesto: la barra reparte sus cifras en varios nodos. */
+  function budgetText(): string {
+    return (
+      document.querySelector('section[aria-labelledby="vida-budget-heading"]')?.textContent ?? ''
+    )
+  }
+
+  /**
+   * El `<ol>` de la agenda, que en Hoy **no lleva nombre accesible** y convive
+   * con otras listas (la leyenda del presupuesto, la tira). Se busca por su
+   * clase de módulo, que conserva el nombre delante del hash.
+   */
+  function agendaList(): HTMLElement {
+    return document.querySelector<HTMLElement>('ol[class*="agenda"]')!
+  }
+
+  function bands(): HTMLElement[] {
+    return [
+      ...document.querySelectorAll<HTMLElement>('[data-variant="dawn"], [data-variant="dusk"]'),
+    ]
+  }
+
+  // Criterio 278: las dos franjas, con el mismo aspecto que en la plantilla y
+  // en el mismo sitio relativo — lo primero y lo último de la agenda.
+  it('pinta la franja de arriba y la de abajo, fuera de la lista (criterios 278 y 272)', () => {
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+
+    const pintadas = bands()
+    expect(pintadas).toHaveLength(2)
+    expect(pintadas[0]!.dataset.variant).toBe('dawn')
+    expect(pintadas[0]!.textContent).toContain('Duermes hasta las 5:00')
+    expect(pintadas[1]!.dataset.variant).toBe('dusk')
+    expect(pintadas[1]!.textContent).toContain('23:00 · te acuestas')
+
+    // Ni dentro del `<ol>`, ni una fila, ni nada que se pueda abrir.
+    const agenda = agendaList()
+    for (const band of pintadas) {
+      expect(agenda.contains(band)).toBe(false)
+      expect(band.closest('li')).toBeNull()
+      expect(band.querySelector('button')).toBeNull()
+    }
+    // Y la de arriba va **antes** que la lista; la de abajo, después.
+    expect(pintadas[0]!.compareDocumentPosition(agenda) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(pintadas[1]!.compareDocumentPosition(agenda) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
+  })
+
+  // Criterio 275/310: sin noche, ni una franja y nada se mueve.
+  it('sin noche no pinta ninguna franja y la ventana es la de siempre', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(bands()).toHaveLength(0)
+    expect(screen.getByText(/Tu día ·/).textContent).toContain('6:30 → 23:00')
+    expect(screen.getByText(/Tu día ·/).textContent).not.toContain('duermes')
+  })
+
+  // Criterio 277: la línea dice la ventana **y** cuánto duermes, que es lo que
+  // hace explicable el número del presupuesto (D9).
+  it('la línea del horario dice «Tu día · 5:00 → 23:00 · duermes 6 h» (criterio 277)', () => {
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+
+    const linea = screen.getByText(/Tu día ·/).textContent ?? ''
+    expect(linea).toContain('5:00 → 23:00')
+    expect(linea).toContain('duermes 6 h')
+  })
+
+  // Criterio 281: ningún hueco ofrece un rato en el que estabas durmiendo.
+  it('el primer hueco empieza a las 5:00 y ninguno es de madrugada (criterio 281)', () => {
+    conNoche()
+    planQuery = ready([block('b1', 'Leer un rato', '09:00', '10:00')])
+    renderWithProviders(<VidaHoyPage />)
+
+    const filas = within(agendaList())
+      .getAllByRole('listitem')
+      .map((row) => row.textContent ?? '')
+    // El primer tramo del día es un hueco y **empieza cuando te levantas**:
+    // con la ventana vieja habría empezado a las 6:30, en pleno sueño.
+    expect(filas.length).toBeGreaterThan(0)
+    expect(filas[0]).toContain('5:00')
+    expect(filas[0]).not.toContain('6:30')
+    expect(filas.join(' | ')).not.toContain('6:30')
+  })
+
+  // Criterio 282: el presupuesto cuenta hasta la hora de acostarse, y lo dice
+  // con esa hora. No es un número nuevo: es el de FEAT-003, ahora cierto.
+  it('«te quedan … hasta las 23:00» es la hora de acostarse, no vidaDayEndTime (criterio 282)', () => {
+    conNoche({ vidaDayStartTime: '06:30', vidaDayEndTime: '22:00' })
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(budgetText()).toContain('hasta las 23:00')
+    expect(budgetText()).not.toContain('hasta las 22:00')
+  })
+
+  // Criterio 283: una noche que no cruza no cierra la tarde.
+  it('con 1:00 → 6:40 el día empieza a las 6:40 y acaba en «Tu día» (criterio 283)', () => {
+    conNoche({
+      vidaNightBedTime: '01:00',
+      vidaNightWakeTime: '06:40',
+      vidaNightDays: ['friday'],
+      vidaDayEndTime: '22:00',
+      vidaDayStartTime: '06:30',
+    })
+    renderWithProviders(<VidaHoyPage />)
+
+    const linea = screen.getByText(/Tu día ·/).textContent ?? ''
+    expect(linea).toContain('6:40 → 22:00')
+    // Una sola franja, y arriba.
+    const pintadas = bands()
+    expect(pintadas).toHaveLength(1)
+    expect(pintadas[0]!.dataset.variant).toBe('dawn')
+  })
+
+  // Criterio 284: dormir no es tiempo del día. No aparece en ningún tramo ni
+  // en la leyenda, ni como planeado, ni como libre, ni como sin dato.
+  it('los minutos de sueño no entran en la leyenda del presupuesto (criterio 284)', () => {
+    conNoche()
+    planQuery = ready([block('b1', 'Leer un rato', '09:00', '10:00')])
+    renderWithProviders(<VidaHoyPage />)
+
+    // 18 h de ventana menos 1 h puesta = 17 h libres. Si el sueño contara como
+    // algo, este número sería otro.
+    // 18 h de ventana menos 1 h puesta = 17 h libres. Si el sueño contara como
+    // algo —planeado, libre o sin dato— este número sería otro.
+    expect(budgetText()).toContain('libre 17h')
+    expect(budgetText()).toContain('planeado 1h')
+    // Y las 6 h de sueño no aparecen en ninguna parte de la barra.
+    expect(budgetText()).not.toContain('6h')
+  })
+})

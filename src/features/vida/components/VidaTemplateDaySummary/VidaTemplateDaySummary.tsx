@@ -21,6 +21,18 @@ type VidaTemplateDaySummaryProps = {
   /** El horario es el respaldo del cliente, no una elección del usuario. */
   isDefaultSchedule: boolean
   /**
+   * Cómo nombrar ese respaldo. Con la noche puesta puede serlo **solo un
+   * borde** (criterio 283), y decir «el horario por defecto» de los dos sería
+   * falso.
+   */
+  defaultScheduleNote?: string
+  /**
+   * «duermes 6 h» (FEAT-012, criterio 277). Es lo que hace que el «puestas de
+   * 17h» de arriba se pueda explicar sin salir de la pantalla: el día es más
+   * corto porque esas horas las pasas durmiendo. `null` los días sin noche.
+   */
+  sleepLabel?: string | null
+  /**
    * Los atajos del día, **opcionales y aditivos** (tajada 4): «Copiar este día
    * a otros» y «Ver la semana entera», que en el render viven justo debajo de
    * la frase de guía (marco A). Sin ellos el resumen es exactamente el de la
@@ -48,6 +60,8 @@ export function VidaTemplateDaySummary({
   dayStart,
   dayEnd,
   isDefaultSchedule,
+  defaultScheduleNote = 'el horario por defecto',
+  sleepLabel = null,
   actions,
 }: VidaTemplateDaySummaryProps) {
   const label = VIDA_DAY_LABELS[day.day]
@@ -97,10 +111,14 @@ export function VidaTemplateDaySummary({
 
       <p className={styles.schedule}>
         Tu día · {formatTimeForDisplay(dayStart)} → {formatTimeForDisplay(dayEnd)}
+        {/* Dormir no es una franja de la barra ni una entrada de la leyenda:
+            aquí solo se dice cuánto dura la noche, que es lo que explica el
+            «puestas de …» de arriba (criterios 277 y 284). */}
+        {sleepLabel ? <span className={styles.scheduleSleep}> · {sleepLabel}</span> : null}
         {isDefaultSchedule ? (
           <>
             {' '}
-            <span className={styles.scheduleNote}>(el horario por defecto)</span>{' '}
+            <span className={styles.scheduleNote}>({defaultScheduleNote})</span>{' '}
             <Button variant="ghost" size="sm" to={vidaPaths.ajustes}>
               Cambiarlo
             </Button>

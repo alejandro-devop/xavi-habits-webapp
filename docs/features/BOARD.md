@@ -20,12 +20,12 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | building | 2/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-23 |
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
-| FEAT-012 | building | 1/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-23 |
+| FEAT-012 | building | 2/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-24 |
 | FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
-| FEAT-015 | planned | 0/5 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
+| FEAT-015 | building | 3a de 5 aceptada (con su corrección) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
-| FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
+| FEAT-017 | planned | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
@@ -77,6 +77,38 @@ Hallazgos anotados, no devueltos: el botón «Empezar» se va **17 px** por
 debajo del borde **solo** cuando una de las cinco fichas ocupa fila entera
 (arreglarlo toca `SteppedModal`, el molde de todos los modales), y a media
 tarde la lista no ofrece el bloque en curso. Queda la tajada 2 (24 h).
+
+**FEAT-012 `building` 2/4** (2026-09-24, revisor). **Tajada 2 aceptada**, sin
+commitear. Con noche puesta **el día se encoge** y Hoy, la plantilla y la
+revisión miden de la hora de levantarse a la de acostarse: comprobado sembrando
+datos, no leyendo su suite — primer hueco a las **5:00** y ninguno antes,
+presupuesto hasta las **23:00** con `vidaDayEndTime` en 22:00, `1:00 → 6:40` con
+**una sola** franja, y sin noche **no se mueve nada** (misma ventana, mismos
+huecos, mismo `isDefault`). **`plannedMinutes` no cambia ni un minuto** (60 y
+60): lo que cambia es el denominador (990 → 1080). El **`buster` es idéntico al
+de `HEAD`** (`f8edc4f3becd`, 32 fuentes, ejecutado contra los dos árboles):
+**nadie pierde la caché por esta tajada** — la de la tajada 1 sí, y sigue sin
+desplegar. `pnpm test` vuelve a la línea base exacta: **2 de 2186**. Cuatro
+hallazgos escritos, el grueso sobre **el semáforo de FEAT-019**: mide contra el
+final del día y ese final ahora puede ser otro; medido con casos, en el caso
+canónico (acostarse a las 23:00) **no se mueve**, y cuando la noche cierra antes
+el ámbar —y el rojo— llegan antes, pero **siguen siendo ciertos**, que es la
+regla que ese semáforo protege. Falta la prueba manual del usuario dentro de
+`/app/*`: sobre todo **si el número nuevo se entiende al abrir la app**.
+
+**FEAT-012 `in-review` 1/4** (2026-09-24, constructor). **Tajada 2 construida**,
+sin commitear. La decisión que la bloqueaba está tomada y escrita (**D9**, del
+usuario: «sí, sale del presupuesto del día»): con noche puesta **el día se
+encoge** y el presupuesto se mide contra las horas que pasas despierto —el
+criterio **273 queda superado en su mitad del denominador**, no borrado; los
+**269 y 277** se cierran aquí—. Todo entra por un hook nuevo,
+`useVidaDayWindow`, que Hoy, la plantilla, la revisión y la barra del módulo
+usan en una línea cada una. **Ninguna consulta ni clave nuevas: el `buster` no
+cambia en esta tajada.** Suite **2/2186** (los dos de `SearchSelect`), lint
+**14/0**, chunk 1.150,90 kB, CSS 279,51 kB (sube). Medido a **375 y 760 px** y
+en oscuro: cero desbordes. Lo de `/app/*` con sesión real sigue siendo del
+usuario (criterio 319). **El 5173 estaba apagado al empezar**: arranqué uno
+propio solo para el arnés y lo paré.
 
 **FEAT-012 `building` 1/4** (2026-09-23, revisor). **Tajada 1 aceptada**, sin
 commitear todavía. Medí yo los tres que quedaban pendientes —**313, 314 y 315**—

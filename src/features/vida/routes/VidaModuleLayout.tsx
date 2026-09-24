@@ -5,7 +5,8 @@ import { VidaNoteSheet } from '@/features/vida/components/VidaNoteSheet'
 import { VidaSessionBar } from '@/features/vida/components/VidaSessionBar'
 import { VidaStaleSessionPrompt } from '@/features/vida/components/VidaStaleSessionPrompt'
 import { VidaStartTimeSheet } from '@/features/vida/components/VidaStartTimeSheet'
-import { useVidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
+import { useVidaDayWindow } from '@/features/vida/hooks/useVidaDayWindow'
+import { getCurrentLocalDate } from '@/features/vida/utils/vida-date.utils'
 import {
   useVidaOpenSession,
   useVidaSessionPlannedMinutes,
@@ -50,7 +51,11 @@ export function VidaModuleLayout() {
   const { session, startInstant, isFromAnotherDay, isDisabled, isError, refetch } =
     useVidaOpenSession()
   const plannedMinutes = useVidaSessionPlannedMinutes(session)
-  const dayHours = useVidaDayHours()
+  // **La ventana de hoy**, no las horas crudas de los ajustes: con noche puesta
+  // el día acaba a la hora de acostarse (FEAT-012, D1), y este aviso y el
+  // presupuesto de Hoy no pueden decir dos finales de día distintos. Es la
+  // misma consulta de ajustes, deduplicada: ninguna más (criterio 318).
+  const dayWindow = useVidaDayWindow(getCurrentLocalDate())
 
   // La sesión que se está cerrando con detalle. Puede ser la abierta (desde el
   // «···») o una **recién cerrada** (desde el «añadir una nota» del toast), y
@@ -159,7 +164,7 @@ export function VidaModuleLayout() {
         <VidaStaleSessionPrompt
           session={session}
           plannedMinutes={plannedMinutes}
-          dayEndTime={dayHours.endTime}
+          dayEndTime={dayWindow.endTime}
           onResolve={actions.resolveStale}
         />
       ) : null}

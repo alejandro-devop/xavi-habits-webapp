@@ -250,3 +250,11 @@
 .scheduleNote {
   color: var(--color-text-secondary);
 }
+
+/* La coletilla «· duermes 6 h» de la línea del horario (FEAT-012, criterio
+   277). Lleva el color de la noche —el mismo token de las franjas, no un
+   violeta escrito a mano (criterio 274)— para que se lea como lo que es: el
+   borde del día, no un tramo de la barra. */
+.scheduleSleep {
+  color: var(--aura-night-text, var(--color-text-secondary));
+}

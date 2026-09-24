@@ -28,6 +28,8 @@ import {
 import { useCreateActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
 import { useBuildDayFromTemplate } from '@/features/vida/hooks/useBuildDayFromTemplate'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
+import { useVidaDayWindow } from '@/features/vida/hooks/useVidaDayWindow'
+import { VidaNightBand } from '@/features/vida/components/VidaNightBand'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
 import { useVidaOpenSession } from '@/features/vida/hooks/useVidaOpenSession'
 import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
@@ -313,6 +315,29 @@ export function VidaHoyPage() {
     refetch,
   } = useVidaDayData(date)
 
+  /**
+   * **La ventana de este día, con la noche puesta** (FEAT-012, tajada 2).
+   *
+   * Compone `dayHours` con la noche de los ajustes —la **misma**
+   * `useUserSettingsQuery`, deduplicada: ni una consulta más (criterio 318)— y
+   * devuelve la misma forma, así que `buildDayAgenda`, `getDayBudget` y
+   * `VidaDayBudget` siguen recibiendo dos `HH:mm` y no se enteran de que existe
+   * la noche (criterio 279).
+   *
+   * Qué cambia de verdad: **el día se encoge**. Con `23:00 → 5:00` el día va de
+   * 5:00 a 23:00, así que ningún hueco ofrece un rato en el que estabas
+   * durmiendo (criterio 281) y el presupuesto cuenta hasta la hora de acostarte
+   * (criterio 282). El denominador baja con él —decisión del usuario del
+   * 2026-09-24, «sí, sale del presupuesto del día»—, y por eso la línea de
+   * abajo dice «duermes 6 h»: para que ese número se pueda explicar sin salir
+   * de la pantalla.
+   *
+   * **`dayHours` sigue vivo** y no es un resto: `useVidaPatterns` mira **hoy**
+   * y no el día abierto, así que darle una ventana de otro día haría que la
+   * misma costumbre tuviera un número distinto en cada pantalla.
+   */
+  const dayWindow = useVidaDayWindow(date)
+
   // La tira: siete días desde dos antes del que se mira, con un punto por día.
   // Cada punto es **la misma consulta** que la agenda de ese día
   // (`vidaKeys.dayPlan.byDate`), así que el día abierto no se pide dos veces y
@@ -329,13 +354,13 @@ export function VidaHoyPage() {
     () =>
       buildDayAgenda({
         planItems,
-        dayStart: dayHours.startTime,
-        dayEnd: dayHours.endTime,
+        dayStart: dayWindow.startTime,
+        dayEnd: dayWindow.endTime,
         nowMinutes,
       }),
-    [planItems, dayHours.startTime, dayHours.endTime, nowMinutes],
+    [planItems, dayWindow.startTime, dayWindow.endTime, nowMinutes],
   )
-  const budget = getDayBudget({ agenda, dayEnd: dayHours.endTime, nowMinutes })
+  const budget = getDayBudget({ agenda, dayEnd: dayWindow.endTime, nowMinutes })
   // Lo real encima de lo planeado (FEAT-004, tajada 2). Es un **segundo pase
   // puro** sobre la agenda: los bloques se quedan en su hora y enseñan lo que
   // pasó, lo que no es de ningún bloque se cuela en la suya, y el presupuesto
@@ -395,10 +420,10 @@ export function VidaHoyPage() {
         followUps: dayFollowUps,
         date,
         nowMinutes,
-        dayEnd: dayHours.endTime,
+        dayEnd: dayWindow.endTime,
         isPastDay: isPast,
       }),
-    [agenda, dayFollowUps, date, nowMinutes, dayHours.endTime, isPast],
+    [agenda, dayFollowUps, date, nowMinutes, dayWindow.endTime, isPast],
   )
   /**
    * **Los arcos de las metas** (FEAT-016, criterios 489–497). Las mismas
@@ -427,15 +452,15 @@ export function VidaHoyPage() {
         // el respaldo —es mejor una agenda aproximada que un hueco—, pero un
         // color de alarma que aparece solo porque una consulta iba a medias no
         // lo es.
-        dayEnd: dayHours.isPending ? null : dayHours.endTime,
+        dayEnd: dayWindow.isPending ? null : dayWindow.endTime,
       }),
-    [dayFollowUps, date, nowMinutes, categories, isPast, dayHours.endTime, dayHours.isPending],
+    [dayFollowUps, date, nowMinutes, categories, isPast, dayWindow.endTime, dayWindow.isPending],
   )
   const guidance = buildGuidanceLine({
     agenda,
     nowMinutes,
-    dayStart: dayHours.startTime,
-    dayEnd: dayHours.endTime,
+    dayStart: dayWindow.startTime,
+    dayEnd: dayWindow.endTime,
   })
   const nextBlockId = findNextBlockId(agenda.blocks, nowMinutes)
   // El aviso de «tu plantilla está vacía» se da **una vez**, en el primer hueco
@@ -549,8 +574,8 @@ export function VidaHoyPage() {
    */
   const upNext = useMemo(() => {
     if (!isToday || nowMinutes === null) return null
-    const dayStartMinutes = parseTimeToMinutes(dayHours.startTime)
-    const dayEndMinutes = parseTimeToMinutes(dayHours.endTime)
+    const dayStartMinutes = parseTimeToMinutes(dayWindow.startTime)
+    const dayEndMinutes = parseTimeToMinutes(dayWindow.endTime)
     if (dayStartMinutes === null || dayEndMinutes === null) return null
     if (nowMinutes < dayStartMinutes || nowMinutes >= dayEndMinutes) return null
     if (isDisabled || isPending || isPlanError) return null
@@ -569,14 +594,14 @@ export function VidaHoyPage() {
       ? 'Tienes una sesión de otro día sin cerrar. Contéstala en la barra de arriba y podrás empezar esto.'
       : 'Para empezar algo necesitas tu sesión iniciada.'
     // Los dos números de la cara apagada salen **de la barra de arriba**
-    // (criterio 377): `dayHours.endTime` y el `remainingMinutes` que ya calculó
+    // (criterio 377): `dayWindow.endTime` y el `remainingMinutes` que ya calculó
     // `getDayBudget`. Aquí no se rehace ninguna resta: si esta tarjeta dijera
     // otra cosa que la línea que tiene tres dedos por encima, sería un defecto
     // aunque la cuenta fuese correcta.
     const emptyInput = {
       anchorId,
       dayLabel: VIDA_DAY_LABELS[getVidaDayOfWeek(date)],
-      dayEndTime: dayHours.endTime,
+      dayEndTime: dayWindow.endTime,
       remainingMinutes: budget.remainingMinutes,
       canStart,
       blockedNote,
@@ -627,8 +652,8 @@ export function VidaHoyPage() {
   }, [
     isToday,
     nowMinutes,
-    dayHours.startTime,
-    dayHours.endTime,
+    dayWindow.startTime,
+    dayWindow.endTime,
     isDisabled,
     isPending,
     isPlanError,
@@ -1256,20 +1281,37 @@ export function VidaHoyPage() {
   // —«la primera entrada que empieza después de ahora»— y por eso desaparecía
   // media jornada; es el defecto por el que volvió la tajada.
   const agendaList = (
-    // En un día que no es hoy la agenda va en **trazo más suave** (criterio
-    // 33): es un plan, no lo que está pasando. Se apagan los bordes, no el
-    // texto: el contraste de lo que se lee no se toca (criterio 55).
-    <ol className={styles.agenda} data-tone={isToday ? undefined : 'plan'}>
-      {execution.entries.flatMap((entry) =>
-        // **La tarjeta cuelga de la fila del ancla, como hija directa del
-        //  `<ol>` y con una `key` constante.** Es lo que hace que React la
-        //  **mueva** cuando cambia de sitio en vez de desmontarla y remontarla:
-        //  metida dentro del `<Fragment key={entry.id}>` de la fila, cambiar de
-        //  ancla cambiaría de padre, el foco se iría a `body` y los criterios
-        //  205 y 379 se caerían.
-        entry.id === upNext?.anchorId ? [renderEntry(entry), upNextCard] : [renderEntry(entry)],
-      )}
-    </ol>
+    // **Las dos franjas de la noche, alrededor del `<ol>` y nunca dentro**
+    // (criterios 272 y 278): lo primero y lo último de la agenda, con el mismo
+    // aspecto y en el mismo sitio relativo que en la plantilla. Dentro de la
+    // lista serían una fila, y una fila se cuenta.
+    //
+    // Cargando o con error no se pinta ninguna (criterios 286, 311 y 312): esa
+    // guarda vive en `useVidaDayWindow`, que devuelve `nightEnding` y
+    // `nightStarting` en `null` mientras los ajustes están en vuelo. Así lo que
+    // se pinta y lo que se cuenta no pueden discrepar.
+    <>
+      {dayWindow.nightEnding ? (
+        <VidaNightBand variant="dawn" night={dayWindow.nightEnding} day={getVidaDayOfWeek(date)} />
+      ) : null}
+      {/* En un día que no es hoy la agenda va en **trazo más suave** (criterio
+          33): es un plan, no lo que está pasando. Se apagan los bordes, no el
+          texto: el contraste de lo que se lee no se toca (criterio 55). */}
+      <ol className={styles.agenda} data-tone={isToday ? undefined : 'plan'}>
+        {execution.entries.flatMap((entry) =>
+          // **La tarjeta cuelga de la fila del ancla, como hija directa del
+          //  `<ol>` y con una `key` constante.** Es lo que hace que React la
+          //  **mueva** cuando cambia de sitio en vez de desmontarla y remontarla:
+          //  metida dentro del `<Fragment key={entry.id}>` de la fila, cambiar de
+          //  ancla cambiaría de padre, el foco se iría a `body` y los criterios
+          //  205 y 379 se caerían.
+          entry.id === upNext?.anchorId ? [renderEntry(entry), upNextCard] : [renderEntry(entry)],
+        )}
+      </ol>
+      {dayWindow.nightStarting ? (
+        <VidaNightBand variant="dusk" night={dayWindow.nightStarting} day={getVidaDayOfWeek(date)} />
+      ) : null}
+    </>
   )
 
   return (
@@ -1294,9 +1336,13 @@ export function VidaHoyPage() {
         <div className={styles.main}>
           <VidaDayBudget
             date={date}
-            dayStart={dayHours.startTime}
-            dayEnd={dayHours.endTime}
-            isDefaultSchedule={dayHours.isDefault}
+            dayStart={dayWindow.startTime}
+            dayEnd={dayWindow.endTime}
+            isDefaultSchedule={dayWindow.isDefault}
+            defaultScheduleNote={dayWindow.defaultScheduleNote ?? undefined}
+            // «duermes 6 h» (criterio 277): lo que explica que el día empiece a
+            // las 5:00 y acabe a las 23:00 sin que haya que ir a Ajustes.
+            sleepLabel={dayWindow.sleepLabel}
             agenda={agenda}
             budget={budget}
             executed={execution.budget}
@@ -1416,8 +1462,8 @@ export function VidaHoyPage() {
                   buildDay.build({
                     date,
                     templateItems: buildableTemplate,
-                    dayStart: dayHours.startTime,
-                    dayEnd: dayHours.endTime,
+                    dayStart: dayWindow.startTime,
+                    dayEnd: dayWindow.endTime,
                   })
                 }
               >
@@ -1503,8 +1549,8 @@ export function VidaHoyPage() {
           // pasado», de media hora atrás. La misma hoja, dos puntos de partida.
           defaultStartTime={
             logSheet.mode === 'start'
-              ? defaultStartNowTime(dayHours.startTime, nowMinutes)
-              : defaultLogStartTime(dayHours.startTime, nowMinutes)
+              ? defaultStartNowTime(dayWindow.startTime, nowMinutes)
+              : defaultLogStartTime(dayWindow.startTime, nowMinutes)
           }
           session={logSheet.mode === 'edit' ? logSheet.session : null}
           initial={logSheet.mode === 'edit' ? null : (logSheet.initial ?? null)}

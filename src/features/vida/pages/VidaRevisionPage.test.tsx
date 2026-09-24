@@ -714,6 +714,42 @@ describe('en qué se repartió el día (criterios 26, 27, 28, 29, 32 y 33)', () 
     expect(screen.getByText(/de las 16h 30 de tu día\./)).toBeInTheDocument()
   })
 
+  /**
+   * **Criterio 285** (FEAT-012, tajada 2): la revisión usa **la misma ventana**
+   * que Hoy. Con noche puesta, «de las Xh de tu día» deja de meter dentro las
+   * horas de sueño: la cifra baja, se sigue llamando igual y sigue sin una
+   * palabra de reproche. Si no, la revisión llamaría «sin registrar» a un rato
+   * en el que estabas durmiendo, que es una mentira nueva.
+   */
+  it('con noche puesta, «de tu día» ya no incluye las horas de sueño (criterio 285)', () => {
+    withCategories()
+    settingsQuery = ready({
+      ...SETTINGS,
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+      ],
+    } as unknown as UserSettings)
+    renderPage()
+
+    // 5:00 → 23:00 son 18 h, no las 16h 30 de «Tu día»… ni las 24 del reloj.
+    expect(screen.getByText(/de las 18h de tu día\./)).toBeInTheDocument()
+    expect(screen.queryByText(/de las 16h 30 de tu día\./)).not.toBeInTheDocument()
+    // Y la frase sigue siendo la misma, sin una palabra de más.
+    expect(
+      screen.getByText(
+        /No se reparte entre categorías ni se adivina: si quieres, se rellena registrando/,
+      ),
+    ).toBeInTheDocument()
+  })
+
   it('ni un porcentaje, ni la palabra «cumplimiento» en toda la pantalla (criterio 29)', () => {
     withCategories()
     const { container } = renderPage()

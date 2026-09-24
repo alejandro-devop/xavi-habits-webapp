@@ -423,10 +423,21 @@ export function VidaAjustesPage() {
         </div>
 
         {/* Criterio 269: «Tu día» y «Tu noche» conviven, y en una línea se dice
-            cuál manda (D1). */}
+            cuál manda (D1).
+
+            **En presente desde la tajada 2**, que es cuando pasó a ser cierto:
+            hasta entonces la frase prometía una ventana que la app todavía no
+            derivaba, y el revisor la movió aquí por eso. La segunda frase es la
+            consecuencia que el usuario va a notar primero —su «puestas de 16h
+            30» cambia de número— y se dice aquí para que no haya que
+            deducirla. */}
         <p className={styles.hint}>
-          Manda tu noche: los días que marques, el día empezará y acabará donde diga ella. «Tu día»
-          se queda para los días sin noche.
+          Manda tu noche: los días que marques, tu día empieza cuando te levantas y acaba cuando te
+          acuestas. «Tu día» se queda para los días sin noche.
+        </p>
+        <p className={styles.hint}>
+          Como el día es más corto, el tiempo que puedes repartir también: se mide contra las horas
+          que pasas despierto.
         </p>
 
         {nightError ? (

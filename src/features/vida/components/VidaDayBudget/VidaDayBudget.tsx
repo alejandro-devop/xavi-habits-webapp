@@ -16,6 +16,18 @@ type VidaDayBudgetProps = {
   dayEnd: string
   /** El horario es el respaldo del cliente, no una elección (criterio 9). */
   isDefaultSchedule: boolean
+  /**
+   * Cómo nombrar ese respaldo. Con la noche puesta puede serlo **solo un
+   * borde** —la noche abre la mañana y «Tu día» cierra la tarde (criterio
+   * 283)—, y decir «el horario por defecto» de los dos sería falso.
+   */
+  defaultScheduleNote?: string
+  /**
+   * «duermes 6 h», la coletilla de la línea «Tu día · 5:00 → 23:00 · duermes
+   * 6 h» (FEAT-012, criterio 277). `null` los días sin noche: entonces la línea
+   * es **exactamente** la de FEAT-003.
+   */
+  sleepLabel?: string | null
   agenda: DayAgenda
   budget: DayBudget
   /** La línea de guía ya compuesta (criterio 15). */
@@ -79,6 +91,8 @@ export function VidaDayBudget({
   dayStart,
   dayEnd,
   isDefaultSchedule,
+  defaultScheduleNote = 'el horario por defecto',
+  sleepLabel = null,
   agenda,
   budget,
   guidance,
@@ -208,10 +222,15 @@ export function VidaDayBudget({
 
       <p className={styles.schedule}>
         Tu día · {formatTimeForDisplay(dayStart)} → {formatTimeForDisplay(dayEnd)}
+        {/* La noche no es un tramo de la barra ni una entrada de la leyenda:
+            es **el borde** del día, y aquí solo se dice cuánto dura para que el
+            número de la izquierda («puestas de 17h») se pueda explicar mirando
+            la pantalla (criterios 277 y 284). */}
+        {sleepLabel ? <span className={styles.scheduleSleep}> · {sleepLabel}</span> : null}
         {isDefaultSchedule ? (
           <>
             {' '}
-            <span className={styles.scheduleNote}>(el horario por defecto)</span>{' '}
+            <span className={styles.scheduleNote}>({defaultScheduleNote})</span>{' '}
             <Button variant="ghost" size="sm" to={vidaPaths.ajustes}>
               Cambiarlo
             </Button>

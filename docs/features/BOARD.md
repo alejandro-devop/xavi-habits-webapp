@@ -23,7 +23,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-012 | building | 1/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-23 |
 | FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
-| FEAT-015 | specified | 0/4 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-22 |
+| FEAT-015 | planned | 0/5 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | specified | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
@@ -31,7 +31,40 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
 | FEAT-021 | delivered | 2/2 | app/providers, shared/api | La caché guardada caduca cuando cambia la forma de los datos | 2026-09-23 |
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
-| FEAT-023 | building | 1/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-23 |
+| FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
+
+**FEAT-023 `delivered` 2/2** (2026-09-24, revisor). **Tajada 2 aceptada y con
+ella la feature.** **Confirmado con arnés propio (borrado): `lang="es-ES"` no
+toma ni en Chromium** —con el navegador en `en-US`, un `type="time"` pinta
+«03:54 PM» con `lang`, sin `lang`, anidado y en el clon del campo real—, así
+que **quien cumple el criterio 631 es la frase del módulo**, no el atributo.
+Hallazgo anotado, no bloqueante: **el atributo no hace nada y un test lo fija**
+— o se quita con su aserción, o se re-justifica como semántica de idioma y
+entonces va en los tres modos. **Medido por mí a 375 y 760 px** con un título
+de 59 caracteres: la frase se queda en **una línea** (18 px) y deja el botón
+«Empezar» **donde estaba con la frase vieja**; la redacción del plan sí lo
+bajaba 18 px. Sin regresiones: solo `start` lleva `lang` y frase (tests que lo
+fijan en `log` y `edit`), `VidaHoyPage.test.tsx` **no se ha tocado**, el `key`
+nuevo es único en los dos consumidores del picker y **React sí avisa de claves
+repetidas** (comprobado: el test nuevo habría fallado con la clave vieja).
+Puertas: **2 fallos de 2165**, lint **14/0**, chunk **1.149,18 kB**, CSS
+**279,35 kB idéntico**, buster **`f8edc4f3becd`** sin cambio —**nadie pierde la
+caché**—. **La prueba final es del usuario en su iPhone**: es el único sitio
+donde se ve si el campo obedece.
+
+**FEAT-023 `in-review` 2/2** (2026-09-24, constructor). **Tajada 2 lista, la
+última.** «Empezar algo» le pide 24 h al navegador (`lang="es-ES"`, **solo en
+modo `start`**) y, sobre todo, **dice la hora en la voz del módulo debajo del
+campo** («Ahora mismo, las 15:54…», «…desde las 21:00…»). **Medido y contra lo
+que suponía el plan: el atributo no toma ni en Chromium** —con el navegador en
+`en-US` sigue pintando «03:54 PM»—, así que **la red es lo que cumple el
+criterio 631**; el control nativo se conserva a propósito. La frase se acortó
+dos palabras porque con la redacción del plan pasaba a dos líneas y empujaba
+el pie 18 px (medido a 375 px). De regalo, el `key` del picker deja de
+colisionar. Lint 14/0, 2 fallos de 2165 (los de siempre), CSS idéntico,
+**nadie pierde la caché** (buster `f8edc4f3becd`, sin cambio). **La prueba
+final es del usuario en su iPhone**: si el campo sigue en «03:54 PM», con eso
+se decide si el 12/24 h del resto del módulo merece feature aparte.
 
 **FEAT-023 `building` 1/2** (2026-09-23, revisor). **Tajada 1 aceptada.** Los
 ocho criterios medidos en un `iframe` de 375 px: cinco fichas, una por

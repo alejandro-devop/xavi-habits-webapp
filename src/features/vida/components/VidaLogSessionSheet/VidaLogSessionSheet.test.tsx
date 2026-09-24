@@ -111,8 +111,49 @@ describe('VidaLogSessionSheet — «Empezar algo» (criterios 30, 330 a 334)', (
     expect(screen.getByRole('heading', { name: '¿A qué hora empezaste?' })).toBeInTheDocument()
     // «Ahora» ya puesto: `defaultStartTime` es el reloj en este modo.
     expect(screen.getByLabelText('Hora a la que empezaste')).toHaveValue('08:54')
-    expect(screen.getByText('Ahora mismo. Cámbialo si llevas un rato con ello.'))
-      .toBeInTheDocument()
+    // La frase dice además **qué hora es esa** (criterio 631, tajada 2).
+    expect(
+      screen.getByText('Ahora mismo, las 8:54. Cámbialo si llevas un rato.'),
+    ).toBeInTheDocument()
+  })
+
+  // Aquí vivía una aserción sobre `lang="es-ES"`. Se borró con el atributo:
+  // medido en Chromium, no movía el formato, así que el test fijaba como
+  // promesa algo que no ocurría. Lo que se fija es que **sigue siendo el
+  // control nativo**, que es lo que hace que poner la hora cueste un gesto.
+  it('criterio 631 — la hora se pone con el selector nativo del teléfono', () => {
+    renderSheet({ mode: 'start', onStart: vi.fn().mockResolvedValue({ ok: true }) })
+
+    const field = screen.getByLabelText('Hora a la que empezaste')
+    expect(field).toHaveAttribute('type', 'time')
+    expect(field).not.toHaveAttribute('lang')
+  })
+
+  it('criterio 631 — la frase escribe la hora en 24 h, pinte lo que pinte el sistema', () => {
+    renderSheet({ mode: 'start', onStart: vi.fn().mockResolvedValue({ ok: true }) })
+
+    fireEvent.change(screen.getByLabelText('Hora a la que empezaste'), {
+      target: { value: '15:40' },
+    })
+
+    // La red: aunque el navegador pinte «03:40 PM» en el campo (jsdom no
+    // pinta formatos locales y un iPhone ignora el `lang`), el módulo dice
+    // «las 15:40» con su propia voz.
+    expect(
+      screen.getByText('Empieza contando desde las 15:40 y sigue en marcha.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/PM/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 631 — con el campo vacío la frase no se inventa ninguna hora', () => {
+    renderSheet({ mode: 'start', onStart: vi.fn().mockResolvedValue({ ok: true }) })
+
+    fireEvent.change(screen.getByLabelText('Hora a la que empezaste'), { target: { value: '' } })
+
+    expect(
+      screen.getByText('Empieza contando desde esa hora y sigue en marcha.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/las 0:00/)).not.toBeInTheDocument()
   })
 
   it('criterio 625 — la ficha no promete una duración que no se va a usar', () => {
@@ -253,6 +294,16 @@ describe('VidaLogSessionSheet — «Registrar tiempo pasado» (criterios 31, 32 
     expect(screen.getByText(/Poner lavadora · 8:54 · 20m/)).toBeInTheDocument()
   })
 
+  it('el campo de hora de este modo **no se toca**: sigue con el formato del sistema', () => {
+    renderSheet()
+
+    // La tajada 2 de FEAT-023 solo entra en «Empezar algo». Aquí el 12/24 h
+    // se decide aparte (sección 2, «Where it does NOT go», punto 6) y este
+    // modo es de FEAT-004/FEAT-011.
+    expect(screen.getByLabelText('Hora a la que empezó')).not.toHaveAttribute('lang')
+    expect(screen.queryByText(/Cámbialo si llevas un rato con ello/)).not.toBeInTheDocument()
+  })
+
   it('una hora que todavía no ha llegado no se registra (criterio 32)', () => {
     const onClose = renderSheet()
 
@@ -361,6 +412,8 @@ describe('VidaLogSessionSheet — corregir lo registrado (criterio 35)', () => {
     expect(screen.getByText('Llamada con el banco')).toBeInTheDocument()
     expect(screen.getByLabelText('Hora a la que empezó')).toHaveValue('08:10')
     expect(screen.getByLabelText('Notas de esta sesión')).toHaveValue('lo de siempre')
+    // Corregir es de FEAT-013 y tampoco cambia: sin `lang` y sin frase.
+    expect(screen.getByLabelText('Hora a la que empezó')).not.toHaveAttribute('lang')
   })
 
   it('guardar manda el `id` con los tres campos', () => {

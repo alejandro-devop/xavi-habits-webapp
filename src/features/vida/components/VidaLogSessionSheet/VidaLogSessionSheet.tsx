@@ -32,6 +32,7 @@ import {
 import {
   formatDurationFromMinutes,
   formatTimeForDisplay,
+  isValidHhMm,
   minutesToTime,
   normalizeTimeForDisplay,
 } from '@/features/vida/utils/vida-time.utils'
@@ -315,6 +316,39 @@ export function VidaLogSessionSheet({
       ? normalizeTimeForDisplay(defaultStartTime)
       : startTime
 
+  /**
+   * **La hora, dicha por el módulo y en 24 h** (criterio 631).
+   *
+   * El campo de abajo es un `<input type="time">` nativo y **su formato no es
+   * nuestro**: Chromium lo elige por el idioma computado del elemento (de ahí
+   * el `lang` que lleva), pero Firefox y Safari/iOS siguen al sistema
+   * operativo y ahí puede seguir leyéndose «03:54 PM». Esta frase no depende
+   * de nadie: la escribe el módulo con `formatTimeForDisplay`, la misma voz
+   * que dice «22:00» en la agenda y «a las 8:07» en la ficha de sesión.
+   *
+   * Por eso **no afirma de qué formato es el campo** —eso no se sabe desde
+   * aquí—: solo repite la misma hora en la voz de la casa, así que las dos
+   * cosas no se contradicen aunque el navegador pinte «PM».
+   *
+   * El campo se puede **vaciar** (`value === ''`): sin hora válida no se
+   * inventa ninguna —«las 0:00» sería mentir— y la frase vuelve a ser la de
+   * antes, sin hora.
+   */
+  const startHintTime = isValidHhMm(displayedStartTime)
+    ? formatTimeForDisplay(displayedStartTime)
+    : null
+  // «…si llevas un rato», no «…si llevas un rato con ello»: **medido**, con la
+  // hora dentro la frase entera pasaba de una línea a dos en el ancho real de
+  // la hoja en móvil (325 px de contenido a 375 px de pantalla), y el pie de
+  // esta hoja ya roza el borde. Dos palabras menos y vuelve a caber en una.
+  const startHintNow = startHintTime
+    ? `Ahora mismo, las ${startHintTime}. Cámbialo si llevas un rato.`
+    : 'Ahora mismo. Cámbialo si llevas un rato con ello.'
+  const startHintTouched = startHintTime
+    ? `Empieza contando desde las ${startHintTime} y sigue en marcha.`
+    : 'Empieza contando desde esa hora y sigue en marcha.'
+  const startHint = startTimeTouched ? startHintTouched : startHintNow
+
   const title =
     mode === 'start'
       ? 'Empezar algo'
@@ -417,6 +451,20 @@ export function VidaLogSessionSheet({
               id="vida-log-start"
               type="time"
               value={displayedStartTime}
+              // **El formato de este campo no lo decidimos nosotros**
+              // (criterio 631). Aquí hubo un `lang="es-ES"` y se quitó tras
+              // medirlo: en Chromium con el navegador en `en-US` y
+              // `<html lang="es">`, un `type="time"` con `lang="es-ES"`
+              // —suelto, anidado o heredando— **sigue pintando «03:54 PM»**.
+              // El formato lo elige el idioma del navegador, no el del
+              // elemento, y Firefox y Safari/iOS siguen al sistema. Un
+              // atributo que finge hacer algo engaña a quien venga después.
+              //
+              // La alternativa sería un control propio, y está descartada:
+              // perder el selector de hora del teléfono en una hoja que
+              // existe para que registrar cueste poco es peor que el
+              // formato. **Quien cumple el criterio es la frase de abajo**,
+              // que la escribe el módulo y va siempre en 24 h.
               // El rótulo de la sección ya lo dice; esto es lo que lee un
               // lector de pantalla al llegar al campo, y no puede repetir
               // la misma cadena o habría dos cosas con el mismo nombre.
@@ -429,13 +477,7 @@ export function VidaLogSessionSheet({
               }}
             />
           </label>
-          {mode === 'start' ? (
-            <p className={styles.hint}>
-              {startTimeTouched
-                ? 'Empieza contando desde esa hora y sigue en marcha.'
-                : 'Ahora mismo. Cámbialo si llevas un rato con ello.'}
-            </p>
-          ) : null}
+          {mode === 'start' ? <p className={styles.hint}>{startHint}</p> : null}
         </section>
 
         {mode !== 'start' ? (

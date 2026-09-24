@@ -97,6 +97,25 @@ describe('VidaActivityPicker — el «qué», una sola vez (criterio 38)', () =>
     expect(screen.getByRole('button', { name: 'Pasear' })).toBeInTheDocument()
   })
 
+  it('dos bloques de la misma actividad son dos fichas, y sin clave repetida (FEAT-023)', () => {
+    const first = suggestion('s1', 'Working at lululemon', 60)
+    const second = suggestion('s2', 'Working at lululemon', 120)
+    // La misma actividad en dos ítems de plantilla: lo que sigue pasando en
+    // `log`, `edit` y «Poner en el hueco», donde la lista no se deduplica.
+    second.item.activityId = first.item.activityId
+    second.item.activity = first.item.activity
+
+    const logged: string[] = []
+    const spy = vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      logged.push(args.map(String).join(' '))
+    })
+    renderPicker({ suggestions: [first, second] })
+    spy.mockRestore()
+
+    expect(screen.getAllByRole('button', { name: /Working at lululemon/ })).toHaveLength(2)
+    expect(logged.join('\n')).not.toMatch(/same key/i)
+  })
+
   it('con `showTemplateDuration={false}` la ficha no lleva duración (FEAT-023)', () => {
     const onChange = renderPicker({ showTemplateDuration: false })
 

@@ -106,6 +106,11 @@ export function VidaActivityPicker({
     .filter((suggestion) => suggestion.item.isActive !== false)
     .filter((suggestion) => !excluded.has(suggestion.item.activityId))
     .map((suggestion) => ({
+      // **La clave es la del ítem de plantilla, no la de la actividad.** En
+      // «Empezar algo» la lista llega deduplicada, pero en `log`, `edit` y
+      // «Poner en el hueco» siguen saliendo varias fichas de la misma
+      // actividad: con `activity.id` dos `<li>` compartían clave.
+      key: suggestion.item.id,
       activity: toPicked(suggestion),
       durationMinutes: suggestion.item.durationMinutes,
     }))
@@ -125,8 +130,8 @@ export function VidaActivityPicker({
 
       {templateOptions.length > 0 ? (
         <ul className={styles.options}>
-          {templateOptions.map(({ activity, durationMinutes: templateMinutes }) => (
-            <li key={activity.id}>
+          {templateOptions.map(({ key, activity, durationMinutes: templateMinutes }) => (
+            <li key={key}>
               <button
                 type="button"
                 className={[styles.option, value?.id === activity.id ? styles.optionOn : '']

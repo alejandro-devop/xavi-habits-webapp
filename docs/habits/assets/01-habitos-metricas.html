@@ -1,0 +1,261 @@
+<title>Métricas de un hábito</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --hab:#a78bfa; --hab-2:#8b5cf6;
+    --ok:#10b981; --mid:#f59e0b; --bad:#f43f5e;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 70px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:900px;margin:0 0 4px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:40px 0 12px}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:14px 0 0;line-height:1.65;max-width:900px}
+  .note b{color:#e2e8f0}
+  .ask{margin:12px 0 0;padding:11px 13px;border-radius:12px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.26);font-size:12.5px;line-height:1.6;color:#ddd6fe;max-width:900px}
+  .ask b{color:#f5f3ff}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .ctitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#c4b5fd}
+  .ctitle.now{color:var(--ink-dim)}
+  .ctitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:3px;font-size:11.5px;line-height:1.5}
+
+  .phone{width:100%;max-width:340px;border-radius:32px;padding:8px;background:#020617;box-shadow:0 22px 52px -22px rgba(0,0,0,.9)}
+  .screen{border-radius:26px;background:var(--bg);padding:12px 11px 14px}
+  .hhead{display:flex;align-items:center;gap:8px;margin:2px 2px 11px}
+  .hdot{width:26px;height:26px;border-radius:9px;background:linear-gradient(140deg,var(--hab),var(--hab-2));flex:none}
+  .hname{font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+  .hrange{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:1px}
+
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tile{padding:9px 10px 10px;border-radius:14px;background:var(--card);border:1px solid var(--edge);min-width:0}
+  .tile.hl{background:linear-gradient(180deg,rgba(167,139,250,.10),var(--card-2));border-color:rgba(167,139,250,.30)}
+  .tl{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim);line-height:1.3}
+  .tv{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-top:4px;font-variant-numeric:tabular-nums}
+  .tv small{font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-left:2px}
+  .tf{font-family:'Inter',sans-serif;font-size:9.5px;color:var(--ink-dim);margin-top:3px;line-height:1.45}
+  .tf.up{color:var(--ok)} .tf.dn{color:var(--bad)}
+  .tile.same .tv{color:#c4b5fd}
+
+  .block{margin-top:9px;padding:11px 11px 12px;border-radius:16px;background:var(--card-2);border:1px solid var(--edge)}
+  .btitle{font-size:12.5px;font-weight:700;letter-spacing:-.01em}
+  .bsub{font-family:'Inter',sans-serif;font-size:10px;color:var(--ink-dim);margin-top:2px;line-height:1.45}
+  .bars{display:flex;align-items:flex-end;gap:5px;height:82px;margin:12px 0 0}
+  .bar{flex:1 1 0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0;height:100%}
+  .bar i{display:block;width:100%;border-radius:5px 5px 3px 3px;background:rgba(167,139,250,.42)}
+  .bar.worst i{background:var(--bad)}
+  .bar.dim i{background:rgba(148,163,184,.18)}
+  .bday{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;letter-spacing:.04em;color:var(--ink-dim)}
+  .bar.worst .bday{color:#fda4af}
+  .bnum{font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-family:'Inter',sans-serif;font-size:9.5px;color:var(--ink-dim)}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .sw{width:9px;height:9px;border-radius:3px;background:rgba(167,139,250,.42);flex:none}
+  .sw.bad{background:var(--bad)}
+  .sentence{margin:11px 0 0;font-family:'Inter',sans-serif;font-size:11px;line-height:1.55;color:var(--ink-soft)}
+  .sentence b{color:#f1f5f9;font-weight:700}
+  .quiet{margin:12px 0 2px;padding:10px 11px;border-radius:12px;background:rgba(148,163,184,.07);border:1px dashed rgba(148,163,184,.22);font-family:'Inter',sans-serif;font-size:11px;line-height:1.55;color:var(--ink-soft)}
+  .quiet b{color:#e2e8f0}
+
+  .bands{display:flex;flex-direction:column;gap:6px;margin-top:11px}
+  .band{display:grid;grid-template-columns:52px 1fr 26px;align-items:center;gap:8px}
+  .bl{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;color:var(--ink-dim);letter-spacing:.03em}
+  .btrack{height:9px;border-radius:999px;background:rgba(148,163,184,.12);overflow:hidden}
+  .btrack i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,rgba(167,139,250,.55),var(--hab))}
+  .bc{font-family:'Inter',sans-serif;font-size:9.5px;font-weight:700;color:var(--ink-soft);text-align:right;font-variant-numeric:tabular-nums}
+
+  .strike{color:var(--ink-dim);text-decoration:line-through;text-decoration-color:rgba(244,63,94,.6)}
+  .kill{display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#fda4af;background:rgba(244,63,94,.10);border:1px solid rgba(244,63,94,.28);border-radius:999px;padding:4px 9px;margin-top:10px}
+
+  @media (max-width:420px){
+    body{padding:20px 14px 56px}
+    .phone{max-width:100%}
+  }
+</style>
+
+<div class="page">
+
+  <h1>Las métricas de un hábito</h1>
+  <p class="lede">Tres decisiones, y ninguna es de aritmética: son de <b>qué se dice y qué se calla</b>. El panel de un hábito hoy enseña cuatro cifras y un gráfico que reparte por día de la semana. Lo que falta es tu <b>récord</b>, cuántos <b>salvavidas</b> gastaste, y —sobre todo— dejar de decirte «vas peor» cuando el sistema no tiene datos para afirmarlo.</p>
+
+  <p class="caption">1 · Las cifras que faltan</p>
+  <div class="row">
+
+    <div class="col">
+      <p class="ctitle now">Hoy<small>Cuatro fichas. Tu récord no aparece por ningún lado: si tu mejor racha fueron 21 días, el panel no lo sabe decir.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="hhead"><div class="hdot"></div><div><div class="hname">Meditar</div><div class="hrange">Últimos 90 días</div></div></div>
+        <div class="tiles">
+          <div class="tile"><div class="tl">Racha actual</div><div class="tv">6<small>días</small></div></div>
+          <div class="tile"><div class="tl">Cumplimiento 90 d</div><div class="tv">68<small>%</small></div><div class="tf up">▲ 7 pts vs. periodo anterior</div></div>
+          <div class="tile"><div class="tl">Días totales</div><div class="tv">142</div></div>
+          <div class="tile"><div class="tl">Veces que volviste</div><div class="tv">9</div></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Propuesto<small>Seis fichas, dos columnas, mismo molde. «Tu récord» entra con el mismo peso que la racha actual, y los salvavidas dejan de ser invisibles.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="hhead"><div class="hdot"></div><div><div class="hname">Meditar</div><div class="hrange">Últimos 90 días</div></div></div>
+        <div class="tiles">
+          <div class="tile"><div class="tl">Racha actual</div><div class="tv">6<small>días</small></div></div>
+          <div class="tile hl"><div class="tl">Tu récord</div><div class="tv">21<small>días</small></div></div>
+          <div class="tile"><div class="tl">Cumplimiento 90 d</div><div class="tv">68<small>%</small></div><div class="tf up">▲ 7 pts vs. periodo anterior</div></div>
+          <div class="tile"><div class="tl">Días totales</div><div class="tv">142</div></div>
+          <div class="tile"><div class="tl">Veces que volviste</div><div class="tv">9</div></div>
+          <div class="tile hl"><div class="tl">Salvavidas usados</div><div class="tv">2</div><div class="tf">en los últimos 90 días</div></div>
+        </div>
+        <div class="block">
+          <div class="btitle">Mejor tramo de estos 90 días</div>
+          <div class="bsub">6 días seguidos, del 2 al 7 de septiembre</div>
+          <p class="sentence">Tu récord de <b>21 días</b> es de antes de este tramo. No se dice cuándo fue: <b>ese dato no existe</b>.</p>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Dos casos borde<small>La séptima ficha solo existe si hay dificultad registrada. Y si tu racha actual <em>es</em> tu récord, no se dice dos veces.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="hhead"><div class="hdot"></div><div><div class="hname">Ir al gym</div><div class="hrange">Últimos 90 días</div></div></div>
+        <div class="tiles">
+          <div class="tile"><div class="tl">Racha actual</div><div class="tv">21<small>días</small></div></div>
+          <div class="tile same"><div class="tl">Tu récord</div><div class="tv">21<small>días</small></div><div class="tf">es la racha que llevas ahora</div></div>
+          <div class="tile"><div class="tl">Cumplimiento 90 d</div><div class="tv">91<small>%</small></div><div class="tf dn">▼ 2 pts vs. periodo anterior</div></div>
+          <div class="tile"><div class="tl">Días totales</div><div class="tv">1 204</div></div>
+          <div class="tile"><div class="tl">Veces que volviste</div><div class="tv">3</div></div>
+          <div class="tile hl"><div class="tl">Salvavidas usados</div><div class="tv">0</div><div class="tf">en los últimos 90 días</div></div>
+          <div class="tile hl"><div class="tl">Dificultad media</div><div class="tv">2,4<small>/5</small></div><div class="tf">media de 12 días con dificultad</div></div>
+        </div>
+        <p class="sentence" style="margin-top:10px">Sin ningún día con dificultad anotada, esa última ficha <b>no aparece</b> — no se imprime un cero que no significa nada.</p>
+      </div></div>
+    </div>
+
+  </div>
+  <p class="note"><b>Lo que decide este panel:</b> seis fichas en dos columnas caben a 375 px con los números más largos posibles (récord de tres cifras, días totales de cuatro). La séptima aparece y desaparece sin mover las demás porque entra al final. <b>Un cero sí se imprime</b> en «Salvavidas usados» —cero salvavidas es una noticia buena y cierta—, pero <b>no</b> en dificultad, donde cero significaría «no lo sé».</p>
+
+  <p class="caption">2 · Dónde se falla, contado como fallos</p>
+  <div class="row">
+
+    <div class="col">
+      <p class="ctitle now">Hoy<small>Reparte por porcentaje de cumplimiento y señala un «peor día» aunque ese día solo haya aparecido dos veces en el tramo.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="block" style="margin-top:0">
+          <div class="btitle">Dónde se te cae</div>
+          <div class="bsub">Cumplimiento por día de la semana, últimos 90 días</div>
+          <div class="bars">
+            <div class="bar"><i style="height:74%"></i><div class="bday">L</div></div>
+            <div class="bar"><i style="height:81%"></i><div class="bday">M</div></div>
+            <div class="bar"><i style="height:69%"></i><div class="bday">X</div></div>
+            <div class="bar"><i style="height:77%"></i><div class="bday">J</div></div>
+            <div class="bar worst"><i style="height:50%"></i><div class="bday">V</div></div>
+            <div class="bar"><i style="height:62%"></i><div class="bday">S</div></div>
+            <div class="bar"><i style="height:66%"></i><div class="bday">D</div></div>
+          </div>
+          <div class="legend"><span><i class="sw"></i>Cumplimiento</span><span><i class="sw bad"></i>Peor día: viernes</span></div>
+          <p class="sentence"><span class="strike">Vas peor que el periodo anterior.</span></p>
+        </div>
+      </div></div>
+      <div class="kill">◆ Muere «vas peor»</div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Propuesto<small>Cuenta <em>fallos</em>, no porcentajes, y dice en voz alta sobre cuántas veces está hablando. El dato deja de ser una nota y pasa a ser una frase.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="block" style="margin-top:0">
+          <div class="btitle">Dónde se te cae</div>
+          <div class="bsub">Días que fallaste, por día de la semana · últimos 90 días</div>
+          <div class="bars">
+            <div class="bar"><i style="height:23%"></i><div class="bnum">3</div><div class="bday">L</div></div>
+            <div class="bar"><i style="height:15%"></i><div class="bnum">2</div><div class="bday">M</div></div>
+            <div class="bar"><i style="height:31%"></i><div class="bnum">4</div><div class="bday">X</div></div>
+            <div class="bar"><i style="height:23%"></i><div class="bnum">3</div><div class="bday">J</div></div>
+            <div class="bar worst"><i style="height:70%"></i><div class="bnum">9</div><div class="bday">V</div></div>
+            <div class="bar"><i style="height:46%"></i><div class="bnum">6</div><div class="bday">S</div></div>
+            <div class="bar"><i style="height:38%"></i><div class="bnum">5</div><div class="bday">D</div></div>
+          </div>
+          <div class="legend"><span><i class="sw"></i>Días que fallaste</span><span><i class="sw bad"></i>Viernes</span></div>
+          <p class="sentence">Los viernes fallas <b>9 de 13 veces</b>. Es el día donde más se te cae, de largo.</p>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Cuando no hay bastante<small>El caso que este módulo tiene que aprender: con pocas apariciones, el panel <em>calla</em> en vez de inventar un peor día.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="block" style="margin-top:0">
+          <div class="btitle">Dónde se te cae</div>
+          <div class="bsub">Días que fallaste, por día de la semana · últimos 30 días</div>
+          <div class="bars">
+            <div class="bar dim"><i style="height:22%"></i><div class="bnum">1</div><div class="bday">L</div></div>
+            <div class="bar dim"><i style="height:0%"></i><div class="bnum">0</div><div class="bday">M</div></div>
+            <div class="bar dim"><i style="height:44%"></i><div class="bnum">2</div><div class="bday">X</div></div>
+            <div class="bar dim"><i style="height:22%"></i><div class="bnum">1</div><div class="bday">J</div></div>
+            <div class="bar dim"><i style="height:44%"></i><div class="bnum">2</div><div class="bday">V</div></div>
+            <div class="bar dim"><i style="height:0%"></i><div class="bnum">0</div><div class="bday">S</div></div>
+            <div class="bar dim"><i style="height:22%"></i><div class="bnum">1</div><div class="bday">D</div></div>
+          </div>
+          <div class="quiet">Cada día ha aparecido <b>4 veces o menos</b> en este tramo. Todavía no hay bastante para decir dónde se te cae.</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+  <p class="note"><b>Por qué contar fallos y no porcentajes:</b> el porcentaje esconde el tamaño. «50 % los viernes» son cinco fallos de diez o uno de dos, y el panel las pintaba igual. Contando fallos, el número es el número, y el umbral —<b>4 apariciones por día</b>— es lo que decide si se habla o se calla, no un adorno.</p>
+  <div class="ask"><b>Tu decisión:</b> ese umbral de 4. Si al usarlo el panel calla demasiado, se baja a 3 en una línea; si te señala días con dos datos, se sube. Dime si empezamos en 4 o prefieres otro.</div>
+
+  <p class="caption">3 · A qué hora — y por qué nace vacío</p>
+  <div class="row">
+
+    <div class="col">
+      <p class="ctitle">Al principio<small>Lo que verás las primeras semanas. Nadie rellena las horas de lo que ya registraste: una hora inventada envenenaría justo la métrica que queremos.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="block" style="margin-top:0">
+          <div class="btitle">A qué hora lo haces</div>
+          <div class="bsub">Últimos 90 días</div>
+          <div class="quiet">Llevamos <b>2 registros con hora</b>. Con 5 empezamos a contarte a qué hora se te da mejor.</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Semanas después<small>Con datos de verdad, y sin adjetivos: son bandas y cuentas, no un juicio sobre a qué hora deberías hacerlo.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="block" style="margin-top:0">
+          <div class="btitle">A qué hora lo haces</div>
+          <div class="bsub">31 registros con hora · últimos 90 días</div>
+          <div class="bands">
+            <div class="band"><div class="bl">6–9 h</div><div class="btrack"><i style="width:74%"></i></div><div class="bc">17</div></div>
+            <div class="band"><div class="bl">9–12 h</div><div class="btrack"><i style="width:26%"></i></div><div class="bc">6</div></div>
+            <div class="band"><div class="bl">12–15 h</div><div class="btrack"><i style="width:9%"></i></div><div class="bc">2</div></div>
+            <div class="band"><div class="bl">15–18 h</div><div class="btrack"><i style="width:13%"></i></div><div class="bc">3</div></div>
+            <div class="band"><div class="bl">18–21 h</div><div class="btrack"><i style="width:13%"></i></div><div class="bc">3</div></div>
+            <div class="band"><div class="bl">21–24 h</div><div class="btrack"><i style="width:0%"></i></div><div class="bc">0</div></div>
+          </div>
+          <p class="sentence">Cuando lo haces <b>antes de las 9</b>, lo haces. Más tarde, se cae.</p>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">La hora se guarda sola<small>Al marcar el día, la hora es la del toque. No hay un paso más: si te equivocaste, se corrige después, donde ya se corrige lo demás.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="block" style="margin-top:0">
+          <div class="btitle">Hoy · Meditar</div>
+          <div class="bsub">Miércoles 24 de septiembre</div>
+          <p class="sentence" style="margin-top:12px">✓ Hecho <b>a las 7:10</b> · <span style="color:#c4b5fd">cambiar hora</span></p>
+          <div class="quiet" style="margin-top:12px">Los días que registraste antes de esto <b>se quedan sin hora</b>, y se quedan así. No se adivinan.</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+  <p class="note"><b>Lo que esto cuesta:</b> la métrica de horas <b>nace vacía</b> y tarda dos o tres semanas en decir algo. Es el precio de no inventar. La alternativa —rellenar las horas viejas con una estimación— daría un gráfico bonito el primer día y falso para siempre.</p>
+  <div class="ask"><b>Tu decisión:</b> ¿aceptas que esa parte del panel esté callada las primeras semanas? Y el segundo umbral: <b>5 registros con hora</b> antes de dibujar nada.</div>
+
+</div>

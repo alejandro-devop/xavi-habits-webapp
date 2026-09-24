@@ -1,11 +1,11 @@
 ---
 id: FEAT-023
 title: Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas
-status: building
+status: delivered
 architect: yes    # toca VidaActivityPicker y el modo `start` de VidaLogSessionSheet, compartidos por FEAT-003, FEAT-004, FEAT-011 y FEAT-018 (ya entregadas) y por el modo `edit` de FEAT-013; el propio encargo pide que alguien con Bash mire el terreno antes de construir
 area: features/vida
 requested: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # FEAT-023 — Empezar algo, sin la pared de fichas
@@ -593,7 +593,7 @@ pasa a ser la 2, intacta.
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
 | 1 | «Qué» ofrece **cinco fichas como mucho, una por actividad y sin duración**, ordenadas por lo que toca ahora: el buscador y el campo de hora se ven sin scroll | **Crea** `src/features/vida/utils/vida-start-suggestions.utils.ts` y `…utils.test.ts`. **Modifica** `src/features/vida/pages/VidaHoyPage.tsx` (~:509 `useMemo`, ~:1487 `suggestions=`), `src/features/vida/components/VidaActivityPicker/VidaActivityPicker.tsx` (:30-52 prop, :80-90, :131-135), `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` (:390-399). **Tests**: `VidaActivityPicker.test.tsx`, `VidaLogSessionSheet.test.tsx`, `VidaHoyPage.test.tsx` (:1409) | 622, 623, 624, 625, 626, 627, 629, 630 — y **628 se comprueba sin tocar nada** | accepted |
-| 2 | El campo «¿A qué hora empezaste?» se lee en 24 h, sin depender del sistema | **Modifica** `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` (:411-425 `lang`, :426-432 la frase). **Test**: `VidaLogSessionSheet.test.tsx` (`describe` de :104) | 631 | pending |
+| 2 | El campo «¿A qué hora empezaste?» se lee en 24 h, sin depender del sistema | **Modifica** `src/features/vida/components/VidaLogSessionSheet/VidaLogSessionSheet.tsx` (:411-425 `lang`, :426-432 la frase). **Test**: `VidaLogSessionSheet.test.tsx` (`describe` de :104) | 631 | accepted |
 
 **Lo que no se toca, dicho para que nadie lo dude:**
 
@@ -813,6 +813,181 @@ panel: scrollHeight−clientHeight = 39 px con la regla · 251 px sin ella
 código y test, más `BOARD.md` y este dossier—. Nada del arnés queda en el
 árbol.
 
+### Tajada 2 — el campo «¿A qué hora empezaste?» y las 24 horas
+
+**Summary for the reviewer:**
+1. «Empezar algo» le **pide** 24 h al navegador (`lang="es-ES"` en el
+   `<input type="time">`, solo en modo `start`) y, sobre todo, **dice la hora
+   en la voz del módulo debajo del campo**: «Ahora mismo, las 15:54. Cámbialo
+   si llevas un rato.» y, al tocarla, «Empieza contando desde las 21:00 y
+   sigue en marcha.»
+2. **Medido, y contradice al plan: el atributo no basta ni en Chromium.** Con
+   el navegador en `en-US` y `lang="es-ES"` en el campo, sigue pintando
+   «03:54 PM» (captura en el arnés, ya borrado). **La red es lo único que de
+   verdad cumple el criterio**, y por eso está cuidada al milímetro.
+3. **Lo que más probablemente he roto:** el alto de la hoja. La frase lleva
+   ahora una hora dentro y a 375 px el pie de esta hoja ya rozaba el borde
+   (hallazgo 1 del revisor en la tajada 1). Con la redacción del plan —«…si
+   llevas un rato **con ello**»— la frase pasaba de una línea a dos y el botón
+   «Empezar» se iba 18 px más abajo; **medido y evitado** quitando dos
+   palabras. Si alguien alarga esa frase, el pie se va. Segundo sitio donde
+   miraría: el `key` del picker, que aprovecho para arreglar y que toca
+   `log`, `edit` y «Poner en el hueco» —solo en cómo React reconcilia, no en
+   lo que se pinta—.
+
+**What was built:**
+
+- **`VidaLogSessionSheet.tsx`**, tres cambios y **solo en el modo `start`**:
+  - `lang={mode === 'start' ? 'es-ES' : undefined}` en el
+    `<Input id="vida-log-start" type="time">`. **Condicionado al modo**, que es
+    un desvío del plan: la línea del plan lo ponía suelto y ese `<Input>` es el
+    mismo elemento para los tres modos, así que sin la condición cambiaba
+    también `log` (FEAT-004/FEAT-011) y `edit` (FEAT-013), justo lo que la
+    sección 1 y el punto 6 de «Where it does NOT go» dejan **fuera de alcance**.
+    Ponerlo para todos es borrar `mode === 'start' ? … : undefined`.
+  - **La frase de ayuda escribe la hora con `formatTimeForDisplay`**, la misma
+    que dice «22:00» en la agenda: `Ahora mismo, las 15:54. Cámbialo si llevas
+    un rato.` sin tocar, y `Empieza contando desde las 21:00 y sigue en
+    marcha.` al tocarla. **Con el campo vacío no se inventa ninguna hora**
+    (`isValidHhMm`): vuelven las frases de siempre, porque «las 0:00» sería
+    mentir.
+  - El comentario del campo dice **lo que se midió**, no lo que se esperaba.
+- **`VidaActivityPicker.tsx`** — el `key` que el revisor dejó anotado: el
+  `map` lleva ahora `key: suggestion.item.id` (el ítem de plantilla) y el
+  `<li>` usa esa. **Dos líneas y nada que se vea**: las fichas se pintan
+  igual; lo único que cambia es que dos bloques de la misma actividad dejan de
+  compartir clave en `log`, `edit` y `VidaPlaceInGapSheet`.
+- **Tests** (`VidaLogSessionSheet.test.tsx`, `VidaActivityPicker.test.tsx`):
+  el campo lleva `lang="es-ES"` y **sigue siendo `type="time"`** (el control
+  nativo, que es lo que no se podía perder); la frase dice «las 15:40» con el
+  campo en «15:40» y **no aparece ningún «PM»**; con el campo vacío no sale
+  «las 0:00»; en `log` y en `edit` el campo **no lleva `lang`** y no hay frase;
+  y dos bloques de la misma actividad dan dos fichas **sin el aviso de clave
+  repetida** de React.
+- **Un test existente cambia de literal**: el del criterio 330 comparaba la
+  frase entera. Ahora espera «Ahora mismo, las 8:54. …». Es el texto que esta
+  tajada cambia a propósito; el test intocable del «▶ Empezar»
+  (`VidaHoyPage.test.tsx`) **no se ha abierto siquiera**.
+
+**Why this way (y qué se descartó):**
+
+- **Un control de hora propio: no.** Es lo único que garantizaría 24 h en
+  todos los navegadores y **pierde el selector nativo del teléfono**; en una
+  hoja que existe para que registrar cueste un gesto, eso es peor que el
+  formato. Estaba descartado en la sección 2 y el encargo lo repitió.
+- **La frase no afirma nada del campo.** No dice «el campo está en 24 h» —eso
+  no se sabe desde aquí—: dice **la misma hora** en la voz de la casa. Por eso
+  no se pelean en pantalla aunque el campo pinte «03:54 PM»: se lee «03:54 PM»
+  y, justo debajo, «Ahora mismo, las 15:54».
+- **La redacción se acortó por una medida, no por gusto** («…si llevas un
+  rato», sin «con ello»). Ver el número abajo.
+
+**Verification:**
+
+| Comprobación | Línea base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0**, los mismos ficheros |
+| `pnpm test` | 2 fallos de 2160 (`SearchSelect` ×2) | **2 fallos de 2165** — los mismos dos; +5 tests. Sin `IconPicker` flaky |
+| `pnpm build` | chunk 1.148,97 kB · CSS 279,35 kB | chunk **1.149,18 kB** (+0,21 kB) · CSS **279,35 kB** *(idéntico: ni un `.scss` tocado)* |
+| Caché (FEAT-021) | buster `f8edc4f3becd` | **nadie la pierde**: `collectShapeSources('.')` da 32 ficheros y **ninguno de los tocados está**; `isShapeSourceByPath` y `writesCacheByHand` dan `false` en los cuatro. Buster **idéntico**. `pnpm vitest run vite/` → 18/18 |
+
+**Medido en el navegador, no razonado.** Arnés temporal
+(`harness-feat023b.html` + `src/harness-feat023b.tsx`) con la hoja en modo
+`start`, «ahora» a las 15:54 y cinco fichas, **dentro de un `iframe` del ancho
+exacto** (la pestaña emula 568 px). **Los dos ficheros están borrados**
+(`git status` no los muestra).
+
+```
+El atributo, en Chromium (navegador en en-US, <html lang="es">):
+  input sin lang              → 03:54 PM
+  input lang="es-ES"          → 03:54 PM   ← NO TOMA
+  input lang="en-US"          → 03:54 PM
+  input lang="es-ES" dentro de div lang="en-US" → 03:54 PM
+  (o sea: el formato lo elige el idioma del navegador, no el del elemento)
+
+La hoja a 375×667, contenido de 292 px de ancho:
+  campo «03:54 PM»  ·  frase «Ahora mismo, las 15:54. Cámbialo si llevas un rato.»
+  frase = 18 px (UNA línea)      · botón «Empezar» 606–647 · desborde del panel 13 px
+  con la frase de antes          → 18 px · 606–647 · 13 px   (idéntico: no empeora)
+  con la redacción del plan      → 35 px · 624–664 · 31 px   (DOS líneas, 18 px peor)
+  tocada: campo «09:00 PM» · «Empieza contando desde las 21:00 y sigue en marcha.»
+          35 px, igual que la frase de antes (también dos líneas): no empeora
+  568 y 760 px → la frase cabe en una línea en los dos estados, sin desborde,
+                 botón «Empezar» dentro, scroll horizontal 0
+```
+
+**Criteria it closes:**
+
+- **631 — «El campo de hora de esta hoja se lee siempre en formato 24 horas,
+  sin depender del formato del sistema operativo».** **Cumplido en la hoja,
+  NO en el control nativo.** Lo digo separado porque el criterio dice «el
+  campo» y no quiero darlo por bueno de más:
+  - **La hora se lee en 24 h sin depender del sistema: SÍ.** La escribe el
+    módulo con `formatTimeForDisplay`, pegada debajo del campo, en los dos
+    estados (sin tocar y tocada), y se mueve con el campo. Medido en el
+    navegador y fijado con tres tests.
+  - **El `<input type="time">` en sí: NO se puede garantizar.** Medido: con
+    `lang="es-ES"` este Chromium **sigue pintando «03:54 PM»**, y el
+    arquitecto ya dejó dicho que Firefox y Safari/iOS tampoco hacen caso. La
+    única forma de garantizarlo era un control propio, **descartado por el
+    usuario y por la sección 2** (se perdería el selector del teléfono). El
+    atributo se deja puesto porque no cuesta nada y hay Chromium que sí lo
+    honra.
+  - **Prueba final: del usuario, en su iPhone.** Ahí es donde se ve si el
+    campo obedece o no; lo que no depende del teléfono es la frase.
+
+**Lo que queda para prueba manual** (`/app/*` está tras el login y los agentes
+no entran; **la prueba final es suya en su iPhone**):
+
+1. Abrir Hoy, pulsar «Empezar algo» y mirar **debajo del campo**: tiene que
+   leerse «Ahora mismo, las HH:MM. Cámbialo si llevas un rato.» en 24 h, aunque
+   el campo ponga «PM».
+2. Tocar el campo, elegir una hora de la tarde con el selector del teléfono
+   —**que tiene que seguir siendo el de siempre**— y comprobar que la frase
+   pasa a «Empieza contando desde las 21:00 y sigue en marcha.», con la misma
+   hora que se eligió.
+3. Borrar la hora: la frase no debe decir ninguna («…desde esa hora…»).
+4. Abrir «Registrar tiempo pasado» y «Corregir»: **ahí no cambia nada**, ni el
+   formato del campo ni la frase (no la hay).
+5. Decir si el campo del iPhone sigue en «03:54 PM» o no: es el dato que
+   ningún agente puede medir, y con él se decide si el 12/24 h del resto del
+   módulo (`VidaStartTimeSheet`, `log`, `edit`) merece una feature aparte.
+
+**Risks:**
+
+- **El alto de la hoja.** La frase con hora es más larga; a 375 px está **a
+  dos palabras** de saltar a dos líneas y empujar el pie, que ya rozaba el
+  borde antes de esta tajada. Medido que hoy no lo hace; quien la reescriba
+  tiene que volver a medirla.
+- **El literal del test del criterio 330** cambió con la copia. Si alguien
+  vuelve a la frase vieja, ese test lo dice.
+- **El `key` del picker** toca los tres modos y «Poner en el hueco». No cambia
+  lo que se pinta (mismas fichas, mismo orden, mismo `onChange`), pero sí cómo
+  React reconcilia la lista: si algún día una ficha guardara estado propio,
+  ahí se notaría. Suites de los tres sitios en verde.
+- **`lang` condicionado al modo** deja la hoja con dos comportamientos según
+  el modo. Es deliberado (los otros dos están fuera de alcance), pero es una
+  inconsistencia que conviene cerrar cuando se decida el resto del módulo.
+
+**Lo que encontré y no estaba en el plan:**
+
+- **El `lang` no toma en Chromium** (arriba). El plan lo daba por bueno; está
+  medido que no. No cambia el criterio, cambia quién lo cumple.
+- **El desborde del panel a 375×667 sigue ahí** (13 px sin tocar la hora, 31 px
+  con la frase de dos líneas del estado tocado). Es el hallazgo 1 del revisor
+  de la tajada 1 y **sigue fuera de alcance**: lo limita
+  `SteppedModal.module.scss:46` (`max-height: 92vh`) y tocarlo cambia el molde
+  de todos los modales.
+- **El mismo `type="time"` sin envoltorio está en `VidaStartTimeSheet` y en los
+  modos `log`/`edit`** — un `git grep 'type="time"'` los enseña. Anotado, **no
+  tocado**.
+
+**Tree state:** sin commitear. Cuatro ficheros de código y test modificados,
+más `BOARD.md` y este dossier. Del arnés no queda nada. En el árbol hay además
+cambios de otra sesión (`docs/features/FEAT-015-habitos-metricas.md` y un
+fichero de `graphify-out/memory/`) que **no son míos y no he tocado**.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — revisión
@@ -937,3 +1112,122 @@ confirmar las cinco fichas sin minutos, con el buscador y la hora a la vista;
 mirar a media tarde y de noche si las cinco son las que espera; escribir
 «lulu» y comprobar que sigue apareciendo; y abrir «Registrar tiempo pasado»
 para ver que ahí sigue la plantilla entera con sus duraciones.
+
+### Tajada 2 — revisión
+
+**Verdicto: aceptada.** El criterio 631 se cumple **por la frase**, que es lo
+que el constructor dice y lo que yo he vuelto a medir por mi cuenta. Ninguna
+regresión. Dos hallazgos, ninguno bloqueante.
+
+**El hallazgo que desmonta el plan: confirmado, medido por mí.** Arnés propio
+(`harness-feat023r.html` + `src/harness-feat023r.tsx` + una página de
+`iframe`s de ancho exacto; **los tres borrados**, `git status` limpio de
+ellos), servido por el 5173 del usuario, Chromium con `navigator.language =
+en-US` y `<html lang="es">`, campo en `15:54`:
+
+```
+input type="time" sin lang                        → 03:54 PM
+input type="time" lang="es-ES"                    → 03:54 PM   ← NO TOMA
+input type="time" lang="es-ES" dentro de div lang="en-US" → 03:54 PM
+clon del campo real de la hoja (lang="es-ES")     → 03:54 PM
+```
+
+El formato lo elige el idioma del navegador, no el del elemento. El plan daba
+por bueno que Chromium honraba `lang` y **no es cierto en este Chromium**.
+Hallazgo 1 (no bloqueante): **el atributo no hace nada y un test lo fija**
+(`criterio 631 — el campo pide 24 h al navegador`). Mi juicio: **quitarlo**, y
+con él esa aserción, o re-justificarlo como semántica de idioma (`lang` sobre
+contenido en español) y ponerlo **en los tres modos** — hoy solo va en `start`,
+que es justo lo que delata que está ahí por el formato y no por semántica. Se
+queda como deuda anotada porque el comentario del código dice la verdad
+medida, no la esperada: quien venga detrás no se engaña.
+
+**Criterios, uno a uno:**
+
+| # | Estado | Evidencia |
+|---|---|---|
+| 631 — el campo se lee siempre en 24 h sin depender del sistema | **cumple por la frase; el `<input>` nativo NO se puede garantizar** | La frase la escribe el módulo con `formatTimeForDisplay` y se lee «Ahora mismo, las 15:54. Cámbialo si llevas un rato.» en el arnés, con el campo pintando «03:54 PM» justo encima. Tocada: «Empieza contando desde las 21:00…». Vacía: ninguna hora inventada (test verde). El control sigue siendo `type="time"` nativo |
+| 631, en el `<input>` | **pendiente de prueba manual** | Medido que `lang` no toma en Chromium; Firefox y Safari/iOS tampoco lo honran. **La prueba final es del usuario en su iPhone.** No lo apruebo por simpatía: lo que acepto es el criterio cumplido por el texto del módulo |
+| 622–630 (tajada 1) | sin tocar | `VidaHoyPage.test.tsx` no aparece en `git status`; la suite entera pasa |
+
+**La frase, juzgada con la regla del módulo.** No afirma lo que no sabe: no
+dice que el campo esté en 24 h, dice **qué hora es** la que el campo lleva —lo
+único que el módulo sí sabe—. No regaña: «Cámbialo si llevas un rato» invita,
+no reprocha. Con el campo vacío calla en vez de inventar «las 0:00». **El
+riesgo de que se pelee con el campo es real y queda acotado:** «03:54 PM» y
+«las 15:54» son el mismo instante en dos notaciones, y cada frase se ancla
+explícitamente a lo que el campo tiene («Ahora mismo…», «Empieza contando
+desde…»), así que se leen como una aclaración, no como dos horas. Es la mejor
+red posible sin perder el selector nativo, que estaba descartado por el usuario
+y por la sección 2. Quien lo cierra es el iPhone.
+
+**Lo medido por mí (no el resumen del constructor).** Mismo arnés, `iframe` de
+ancho exacto (la pestaña emula 568 px), cinco fichas, una de 53 caracteres:
+
+```
+375 px (contenido 294 px):
+  frase nueva sin tocar   18 px (UNA línea) · botón «Empezar» 598–639 · desborde 3 px
+  frase vieja sin tocar   18 px             · 598–639 · 3 px   ← IDÉNTICO: no empuja el pie
+  redacción del plan      35 px (DOS líneas)· 616–656 · 21 px  ← +18 px, confirmado
+  frase nueva tocada      35 px             · 616–656 · 21 px
+  frase vieja tocada      35 px             · 616–656 · 21 px  ← IDÉNTICO
+760 px: todas en una línea, sin desborde, botón dentro, scroll horizontal 0
+Título sintético de 59 caracteres en las cinco fichas: la frase sigue en 18 px,
+  `scrollWidth − clientWidth = 0` en las cinco, scroll horizontal 0; el alto que
+  crece lo aportan las fichas, no esta tajada (desborde del panel, hallazgo 1 de
+  la tajada 1, sigue fuera de alcance)
+```
+
+Mis cifras absolutas no coinciden con las suyas (598–639 y 3 px frente a
+606–647 y 13 px) porque el arnés no es el mismo; **las diferencias sí**, que
+es lo que se estaba afirmando: la frase nueva deja la hoja igual que la vieja
+y la del plan la empeoraba 18 px. Hallazgo 2 (no bloqueante): el comentario
+del código dice «325 px de contenido a 375 px de pantalla» y el dossier dice
+292 px; yo mido 294. El número del comentario está mal.
+
+**What broke nearby (cómo busqué).** `graphify query` sobre la caché y
+`graphify explain "VidaActivityPicker"`, y después abriendo los ficheros:
+- **Solo dos consumidores del picker**, `VidaLogSessionSheet.tsx:426` y
+  `VidaPlaceInGapSheet.tsx:193`. El `key` nuevo (`suggestion.item.id`) es
+  único en los dos: las sugerencias son ítems de plantilla reales, y el
+  deduplicador de la tajada 1 (`vida-start-suggestions.utils.ts`) **devuelve
+  los objetos originales**, no clones, así que no puede repetir `item.id`.
+- **El `lang` y la frase solo entran en `start`**: el diff los condiciona a
+  `mode === 'start'` y hay tests nuevos que fijan que en `log` y en `edit` el
+  campo **no** lleva `lang` y no hay frase. `VidaStartTimeSheet` no aparece en
+  el diff.
+- **El test intocable del «▶ Empezar»**: `VidaHoyPage.test.tsx` no está en
+  `git status`, ni modificado ni tocado. Verificado en el diff, no de oídas.
+- **El `key`, comprobado de verdad**: monté un test temporal (ya borrado) con
+  dos `<li>` de la misma clave y **React sí deja un `console.error` con «same
+  key»** que el espía del test nuevo captura. Con la clave vieja los dos
+  bloques de la misma actividad la compartían, así que el test nuevo **habría
+  fallado**. No cambia nada visible (mismas fichas, mismo orden, mismo
+  `onChange`) y el foco solo puede mejorar: claves repetidas son precisamente
+  el caso en que React puede destruir y recrear el nodo enfocado.
+- **Nadie pierde la caché, ejecutado y no grepeado**: `collectShapeSources('.')`
+  → 32 ficheros, **ninguno de los cuatro tocados**; `isShapeSourceByPath` y
+  `writesCacheByHand` dan `false` en los cuatro; `computeCacheShapeId('.')` =
+  **`f8edc4f3becd`**, el mismo de siempre.
+- **Líneas base, corridas enteras por mí**: `pnpm test` **2 fallos de 2165**
+  (los dos de `SearchSelect`, sin `IconPicker` flaky); `pnpm lint` **14/0**;
+  `pnpm build` chunk **1.149,18 kB** (+0,21) y CSS **279,35 kB** *idéntico*
+  —no baja, así que no hay comentario SCSS abierto—.
+- **Lo de esta semana**: FEAT-019, FEAT-020, FEAT-013, FEAT-010/2, FEAT-021,
+  FEAT-022, FEAT-012/1 y FEAT-023/1 viven en suites que entran en esos 2165 y
+  ninguna se ha puesto roja; el diff no sale de cuatro ficheros de Vida.
+
+**States left unbuilt:** «sin datos» (plantilla vacía) y «texto largo» los
+cubre la tajada 1 y siguen verdes; **vacío del propio campo**, cubierto y
+medido (la frase no inventa hora). **Móvil 375 px**, medido arriba, sin scroll
+horizontal. **Carga, error y permisos no aplican**: la frase es texto local, no
+pide nada a nadie, y la hoja entera vive tras el login.
+
+**¿Duplica algo que ya existía?** No. Reusa `formatTimeForDisplay` e
+`isValidHhMm` de `vida-time.utils`, no crea control de hora propio (lo que la
+sección 2 prohíbe explícitamente) y no añade ni un `.scss`.
+
+**Verdict: accepted** — el criterio 631 está cumplido por la frase, con la
+parte del `<input>` nativo declarada como pendiente del iPhone del usuario en
+vez de dada por buena; no hay regresión en las cuatro puertas ni en los
+vecinos del picker.

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { WeekdayStat } from '@/features/habits/utils/habit-panel.utils'
+import { MIN_TRACKED_PER_WEEKDAY } from '@/features/habits/utils/habit-panel.utils'
 import { ChartLegend, ChartPanel } from './ChartPanel'
 import styles from './charts.module.scss'
 
@@ -11,47 +12,60 @@ const BAR_WIDTH = 30
 
 type Props = {
   stats: WeekdayStat[]
-  worst: WeekdayStat | null
+  /** El día con más fallos del tramo, o `null` cuando el panel calla. */
+  most: WeekdayStat | null
+  /** La frase de debajo, ya compuesta: el hecho o lo que falta para decirlo. */
+  note: string | null
   rangeLabel: string
 }
 
 /**
- * La pregunta es «¿cuál es el peor?», así que son barras y el color es una
- * rampa de un solo tono. El peor día se marca con color de estado **y** con su
- * etiqueta: nunca solo con el color.
+ * La pregunta es «¿dónde se falla?», así que las barras cuentan **fallos**, no
+ * porcentaje de cumplimiento: el porcentaje esconde el tamaño y pintaba igual
+ * cinco fallos de diez que uno de dos. Cada barra lleva su cuenta encima.
+ *
+ * El día señalado se marca con color de estado **y** con su etiqueta: nunca
+ * solo con el color. Los días que no llegan al umbral se dibujan apagados, y
+ * la frase de debajo dice por qué.
  */
-export function HabitWeekdayChart({ stats, worst, rangeLabel }: Props) {
+export function HabitWeekdayChart({ stats, most, note, rangeLabel }: Props) {
   const [hovered, setHovered] = useState<number | null>(null)
 
   const slot = WIDTH / stats.length
   const centerOf = (index: number) => slot * index + slot / 2
   const hoveredStat = hovered === null ? null : stats[hovered]
+  // La escala es la del máximo dibujado; con cero fallos no se divide por cero.
+  const maxFailed = stats.reduce((top, stat) => Math.max(top, stat.failed), 0)
+  const heightOf = (failed: number) =>
+    maxFailed === 0 ? 0 : (failed / maxFailed) * (BASELINE - TOP)
 
   return (
     <ChartPanel
       title="Dónde se te cae"
-      subtitle={`Cumplimiento por día de la semana, ${rangeLabel}`}
+      subtitle={`Días fallados, por día de la semana · ${rangeLabel}`}
       legend={
-        worst
-          ? <ChartLegend
-              items={[
-                { label: 'Cumplimiento', variant: 'swatchSeries' },
-                { label: `Peor día: ${worst.longLabel}`, variant: 'swatchAlert' },
-              ]}
-            />
-          : <ChartLegend items={[{ label: 'Cumplimiento', variant: 'swatchSeries' }]} />
+        most ? (
+          <ChartLegend
+            items={[
+              { label: 'Días fallados', variant: 'swatchSeries' },
+              { label: most.longLabel, variant: 'swatchAlert' },
+            ]}
+          />
+        ) : (
+          <ChartLegend items={[{ label: 'Días fallados', variant: 'swatchSeries' }]} />
+        )
       }
       table={{
-        caption: 'Cumplimiento por día de la semana',
-        columns: ['Día', 'Días cumplidos', 'Fallados', 'Sin registro', 'Cumplimiento'],
+        caption: 'Días fallados, cumplidos y sin registro por día de la semana',
+        columns: ['Día', 'Fallados', 'Cumplidos', 'Sin registro', 'Apariciones con registro'],
         rows: stats.map((stat) => ({
           key: stat.longLabel,
           cells: [
             stat.longLabel,
-            `${stat.covered} de ${stat.total}`,
             String(stat.failed),
+            String(stat.covered),
             String(stat.untracked),
-            stat.total > 0 ? `${stat.percent}%` : 'sin datos',
+            String(stat.tracked),
           ],
         })),
       }}
@@ -61,21 +75,22 @@ export function HabitWeekdayChart({ stats, worst, rangeLabel }: Props) {
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         role="img"
         aria-label={
-          worst
-            ? `Cumplimiento por día de la semana. El peor es ${worst.longLabel}, al ${worst.percent}%.`
-            : 'Cumplimiento por día de la semana.'
+          most
+            ? `Días fallados por día de la semana. Donde más se falla es ${most.longLabel}: ${most.failed} de ${most.tracked} apariciones con registro.`
+            : 'Días fallados por día de la semana.'
         }
         onMouseLeave={() => setHovered(null)}
       >
         {stats.map((stat, index) => {
-          if (stat.total === 0) return null
-          const isWorst = worst?.weekday === stat.weekday
-          const height = Math.max(2, (stat.percent / 100) * (BASELINE - TOP))
+          if (stat.tracked === 0 || stat.failed === 0) return null
+          const isMost = most?.weekday === stat.weekday
+          const isComparable = stat.tracked >= MIN_TRACKED_PER_WEEKDAY
+          const height = Math.max(2, heightOf(stat.failed))
           return (
             <rect
               key={stat.longLabel}
-              className={isWorst ? styles.barAlert : styles.bar}
-              opacity={isWorst ? 0.9 : 0.4 + (stat.percent / 100) * 0.5}
+              className={isMost ? styles.barAlert : styles.bar}
+              opacity={isMost ? 0.9 : isComparable ? 0.6 : 0.3}
               x={centerOf(index) - BAR_WIDTH / 2}
               y={BASELINE - height}
               width={BAR_WIDTH}
@@ -88,17 +103,17 @@ export function HabitWeekdayChart({ stats, worst, rangeLabel }: Props) {
         <line className={styles.baseline} x1={0} y1={BASELINE} x2={WIDTH} y2={BASELINE} />
 
         {stats.map((stat, index) => {
-          const isWorst = worst?.weekday === stat.weekday
-          const height = stat.total === 0 ? 0 : Math.max(2, (stat.percent / 100) * (BASELINE - TOP))
+          const isMost = most?.weekday === stat.weekday
+          const height = stat.failed === 0 ? 0 : Math.max(2, heightOf(stat.failed))
           return (
             <g key={stat.longLabel}>
               <text
-                className={`${styles.valueText} ${isWorst ? styles.valueTextAlert : ''}`}
+                className={`${styles.valueText} ${isMost ? styles.valueTextAlert : ''}`}
                 x={centerOf(index)}
                 y={BASELINE - height - 6}
                 textAnchor="middle"
               >
-                {stat.total > 0 ? `${stat.percent}%` : '—'}
+                {stat.tracked > 0 ? String(stat.failed) : '—'}
               </text>
               <text
                 className={styles.axisText}
@@ -108,14 +123,14 @@ export function HabitWeekdayChart({ stats, worst, rangeLabel }: Props) {
               >
                 {stat.label}
               </text>
-              {isWorst ? (
+              {isMost ? (
                 <text
                   className={`${styles.tagText} ${styles.valueTextAlert}`}
                   x={centerOf(index)}
                   y={BASELINE + 30}
                   textAnchor="middle"
                 >
-                  peor día
+                  más fallos
                 </text>
               ) : null}
               <rect
@@ -131,19 +146,21 @@ export function HabitWeekdayChart({ stats, worst, rangeLabel }: Props) {
         })}
       </svg>
 
+      {note ? <p className={styles.subtitle}>{note}</p> : null}
+
       {hoveredStat ? (
         <div
           className={styles.tooltip}
           style={{
             left: `${(centerOf(hovered!) / WIDTH) * 100}%`,
-            top: `${((BASELINE - (hoveredStat.percent / 100) * (BASELINE - TOP)) / HEIGHT) * 100}%`,
+            top: `${((BASELINE - heightOf(hoveredStat.failed)) / HEIGHT) * 100}%`,
           }}
         >
           <span className={styles.tooltipTitle}>{hoveredStat.longLabel}</span>
-          {hoveredStat.total > 0
-            ? `${hoveredStat.covered} de ${hoveredStat.total} días · ${hoveredStat.percent}%`
-            : 'Sin días en este rango'}
-          {hoveredStat.failed > 0 ? ` · ${hoveredStat.failed} fallados` : ''}
+          {hoveredStat.tracked > 0
+            ? `${hoveredStat.failed} fallados de ${hoveredStat.tracked} con registro`
+            : 'Sin ningún registro en este rango'}
+          {hoveredStat.untracked > 0 ? ` · ${hoveredStat.untracked} sin registro` : ''}
         </div>
       ) : null}
     </ChartPanel>

@@ -43,8 +43,27 @@ export const MIN_DAYS_FOR_TREND = 14
 /** Un periodo previo más corto que esto es ruido, no comparación. */
 export const MIN_DAYS_FOR_PREVIOUS = 7
 
-/** Diferencia en puntos a partir de la cual decimos «mejor» o «peor». */
+/** Diferencia en puntos a partir de la cual las dos cifras se dicen seguidas. */
 export const MEANINGFUL_DELTA_POINTS = 3
+
+/**
+ * **El umbral de esta pantalla, y vive solo aquí.** Cuántas veces tiene que
+ * haber aparecido un día de la semana **con registro** dentro del tramo para
+ * poder nombrarlo. Por debajo, el panel calla: dos martes no son un patrón.
+ * Se cambia en esta línea y en ninguna otra.
+ */
+export const MIN_TRACKED_PER_WEEKDAY = 4
+
+/** Y cuántos días tienen que llegar a ese umbral para que comparar signifique algo. */
+export const MIN_WEEKDAYS_COMPARABLE = 2
+
+/**
+ * Para decir «de largo» hace falta una ventaja de verdad: al menos vez y media
+ * los fallos del siguiente **y** dos fallos más. Sin las dos, la frase afirma
+ * una distancia que no existe.
+ */
+const BY_FAR_RATIO = 1.5
+const BY_FAR_MARGIN = 2
 
 /** Cuántos días de detalle enseña «Cuánto, frente a tu objetivo». */
 export const GOAL_SERIES_DAYS = 21
@@ -64,7 +83,7 @@ export const WEEKDAY_LONG_LABELS = [
   'domingo',
 ] as const
 
-/** Para la frase de lectura: «Donde se te cae: los domingos». */
+/** Para la frase del reparto: «Los domingos fallas 3 de 9 veces». */
 export const WEEKDAY_PLURAL_LABELS = [
   'los lunes',
   'los martes',
@@ -260,6 +279,14 @@ export type WeekdayStat = {
   failed: number
   untracked: number
   percent: number
+  /**
+   * Días de ese día de la semana **con registro**: cubiertos + fallados. Es el
+   * conjunto contra el que se mide el umbral y el que nombra cada frase; los
+   * días sin registrar viven aparte, en `untracked`, y no entran en ningún
+   * denominador. Aquí hubo una `failRate` que nadie leía: se borró antes de
+   * que alguien la confundiera con una tasa sobre `total`.
+   */
+  tracked: number
 }
 
 /** Siempre siete entradas, aunque alguna no tenga ni un día en el tramo. */
@@ -281,27 +308,105 @@ export function buildWeekdayBreakdown(days: HabitDayEntry[]): WeekdayStat[] {
       failed: summary.failed,
       untracked: summary.untracked,
       percent: summary.percent,
+      tracked: summary.covered + summary.failed,
     }
   })
 }
 
 /**
- * El día más flojo. `null` si no hay días medidos o si todos van igual: sin
- * diferencia no hay «punto flaco» que señalar.
+ * Los días de la semana que se pueden comparar: los que han aparecido con
+ * registro al menos `MIN_TRACKED_PER_WEEKDAY` veces en el tramo. Un día sin
+ * registrar **no entra en el denominador** de nada.
  */
-export function getWorstWeekday(stats: WeekdayStat[]): WeekdayStat | null {
-  const measured = stats.filter((stat) => stat.total > 0)
-  if (measured.length < 2) return null
+export function getComparableWeekdays(stats: WeekdayStat[]): WeekdayStat[] {
+  return stats.filter((stat) => stat.tracked >= MIN_TRACKED_PER_WEEKDAY)
+}
 
-  const percents = measured.map((stat) => stat.percent)
-  if (Math.min(...percents) === Math.max(...percents)) return null
+/**
+ * El día donde más veces se ha fallado. **Se cuenta por fallos, no por
+ * porcentaje de cumplimiento**: el porcentaje esconde el tamaño —«50 %» son
+ * cinco de diez o uno de dos— y pintaba igual los dos casos.
+ *
+ * Devuelve `null`, y entonces el panel calla, en tres situaciones distintas:
+ * no hay bastantes días comparables, ningún fallo en el tramo, o empate en la
+ * cabeza. **No se desempata en silencio.** El texto de cada caso lo compone
+ * `composeWeekdayFailNote`.
+ */
+export function getMostFailedWeekday(stats: WeekdayStat[]): WeekdayStat | null {
+  const comparable = getComparableWeekdays(stats)
+  if (comparable.length < MIN_WEEKDAYS_COMPARABLE) return null
 
-  return measured.reduce((worst, stat) => {
-    if (stat.percent < worst.percent) return stat
-    // Empate: manda el que tiene más días medidos detrás.
-    if (stat.percent === worst.percent && stat.total > worst.total) return stat
-    return worst
-  })
+  const most = comparable.reduce((top, stat) => (stat.failed > top.failed ? stat : top))
+  if (most.failed === 0) return null
+  if (comparable.filter((stat) => stat.failed === most.failed).length > 1) return null
+  return most
+}
+
+/** Si el día señalado lo está «de largo» o solo por delante. */
+export function leadsByFar(stats: WeekdayStat[], most: WeekdayStat): boolean {
+  const rest = getComparableWeekdays(stats).filter((stat) => stat.weekday !== most.weekday)
+  const second = rest.reduce((top, stat) => Math.max(top, stat.failed), 0)
+  return most.failed >= second * BY_FAR_RATIO && most.failed - second >= BY_FAR_MARGIN
+}
+
+function pluralTimes(count: number): string {
+  return count === 1 ? '1 vez' : `${count} veces`
+}
+
+/**
+ * Lo que se cuenta son **registros**, no apariciones en el calendario: en un
+ * tramo de 63 días los martes aparecen nueve veces aunque solo tres estén
+ * registrados. Llamarlos «apariciones» decía algo falso justo en la frase que
+ * existe para decir la verdad sobre lo que falta.
+ */
+function pluralRecords(count: number): string {
+  return count === 1 ? '1 registro' : `${count} registros`
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/**
+ * La frase de debajo del reparto por día de la semana. **El umbral se dice en
+ * voz alta**: cuando el panel calla, dice con qué cifra se está callando y qué
+ * le falta para hablar.
+ *
+ * Ni veredictos ni consejos: el número delante y el hecho detrás. El verbo es
+ * «fallar», que es el que ya usa el resto del módulo y **se lee igual en un
+ * hábito a evitar** (allí `isFailed` sigue significando «se falló el hábito»,
+ * o sea que se hizo lo que se quería evitar): no hay nada que invertir.
+ */
+export function composeWeekdayFailNote(
+  stats: WeekdayStat[],
+  most: WeekdayStat | null,
+): string | null {
+  if (most) {
+    const fact = `${capitalize(most.pluralLabel)} fallas ${most.failed} de ${pluralTimes(most.tracked)}.`
+    return leadsByFar(stats, most)
+      ? `${fact} Es el día donde más se te cae, de largo.`
+      : `${fact} Es el día donde más se te cae.`
+  }
+
+  const comparable = getComparableWeekdays(stats)
+  const maxTracked = stats.reduce((top, stat) => Math.max(top, stat.tracked), 0)
+  if (maxTracked === 0) return null
+
+  if (comparable.length === 0) {
+    return `De cada día de la semana hay ${pluralRecords(maxTracked)} o menos en este tramo. Con ${MIN_TRACKED_PER_WEEKDAY} ya se puede comparar: todavía no hay bastante para decir dónde se te cae.`
+  }
+
+  if (comparable.length < MIN_WEEKDAYS_COMPARABLE) {
+    return `Solo ${comparable[0].pluralLabel} llegan a ${MIN_TRACKED_PER_WEEKDAY} registros en este tramo. Con ${MIN_WEEKDAYS_COMPARABLE} días ya se puede comparar.`
+  }
+
+  const top = comparable.reduce((best, stat) => Math.max(best, stat.failed), 0)
+  if (top === 0) {
+    return 'En este tramo no hay ningún día fallado.'
+  }
+
+  const tied = comparable.filter((stat) => stat.failed === top).length
+  return `Ningún día destaca en este tramo: ${tied} días empatan a ${top} ${top === 1 ? 'fallo' : 'fallos'}.`
 }
 
 export type StreakEpisode = {
@@ -401,32 +506,33 @@ export function countComebacks(days: HabitDayEntry[]): {
 }
 
 /**
- * La frase de arriba del panel, compuesta con reglas. Devuelve `null` cuando no
- * hay periodo anterior con el que comparar: sin comparación no hay lectura.
- * La segunda mitad —el punto flaco— solo se escribe si hay un día peor que la
- * media del tramo.
+ * La frase de arriba del panel: **las dos cifras, sin veredicto**. Devuelve
+ * `null` cuando no hay periodo anterior con el que comparar.
+ *
+ * Aquí vivían tres veredictos del tipo «vas + adjetivo». Murieron a propósito
+ * (FEAT-015, tajada 2) y no vuelven por otra puerta: eran una nota de
+ * conducta sobre el usuario a partir de una comparación que muchas veces no
+ * tiene detrás datos para sostenerse. Las dos cifras son el dato, y el dato
+ * se dice entero. `MEANINGFUL_DELTA_POINTS` sigue decidiendo
+ * una cosa —si la diferencia merece nombrarse— pero lo que se nombra es la
+ * diferencia en puntos, no a quien la produjo.
+ *
+ * **Dónde se falla ya no se cuenta aquí**: es el reparto por día de la semana
+ * y su frase (`composeWeekdayFailNote`), que cuenta fallos y no porcentajes.
  */
 export function composeReading(
   current: RangeSummary,
   previous: RangeSummary | null,
-  worst: WeekdayStat | null,
 ): string | null {
   if (!previous || previous.total <= 0 || current.total <= 0) return null
 
   const delta = current.percent - previous.percent
-  let sentence: string
-  if (delta >= MEANINGFUL_DELTA_POINTS) {
-    sentence = `Vas mejor que en el periodo anterior: cumpliste el ${current.percent}% de los días frente al ${previous.percent}%.`
-  } else if (delta <= -MEANINGFUL_DELTA_POINTS) {
-    sentence = `Vas peor que en el periodo anterior: cumpliste el ${current.percent}% de los días frente al ${previous.percent}%.`
-  } else {
-    sentence = `Vas parecido al periodo anterior: ${current.percent}% frente a ${previous.percent}%.`
-  }
+  const sentence = `Cumpliste el ${current.percent}% de los días de este tramo; en el tramo anterior, el ${previous.percent}%.`
+  if (Math.abs(delta) < MEANINGFUL_DELTA_POINTS) return sentence
 
-  if (worst && worst.total > 0 && worst.percent < current.percent) {
-    return `${sentence} Donde se te cae: ${worst.pluralLabel}, al ${worst.percent}%.`
-  }
-  return sentence
+  const points = Math.abs(delta)
+  const direction = delta > 0 ? 'más' : 'menos'
+  return `${sentence} Son ${points} ${points === 1 ? 'punto' : 'puntos'} ${direction}.`
 }
 
 export type DifficultyPoint = {

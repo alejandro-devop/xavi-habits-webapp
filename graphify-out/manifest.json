@@ -2335,13 +2335,13 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/HabitPanel.test.tsx": {
-    "mtime": 1790260115.5128827,
-    "ast_hash": "48ef23764395ec28ba105fe4bba03e1a",
+    "mtime": 1790262888.1202407,
+    "ast_hash": "17938fd516e39f3bbb30c154ef910d65",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/HabitPanel.tsx": {
-    "mtime": 1790258864.161326,
-    "ast_hash": "a492f7aa81d0150cf831c02e33ee8489",
+    "mtime": 1790261405.0104976,
+    "ast_hash": "fd16676ad33f807bb171b93f97fc1c9d",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/HabitPanelTiles.tsx": {
@@ -2350,13 +2350,13 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/HabitStreakEpisodesChart.tsx": {
-    "mtime": 1790260133.5648384,
+    "mtime": 1790260655.1667523,
     "ast_hash": "73948fe80267c52508e04ba377b6c072",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/HabitWeekdayChart.tsx": {
-    "mtime": 1789746787.7512898,
-    "ast_hash": "13437bcf12850d80b06e621640828014",
+    "mtime": 1790261396.500511,
+    "ast_hash": "beaf56871234735ce500a2bb9c268fe3",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/HabitWeeklyComplianceChart.tsx": {
@@ -2370,13 +2370,13 @@
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-panel.utils.test.ts": {
-    "mtime": 1790258910.3383245,
-    "ast_hash": "053b59e13be853d2e3d5249967da3cef",
+    "mtime": 1790262879.4692535,
+    "ast_hash": "b2bcf7a30c7c21e4b60a0ee7401d9a96",
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-panel.utils.ts": {
-    "mtime": 1790258837.7723267,
-    "ast_hash": "19b06582070e0382eaac48485761324f",
+    "mtime": 1790262910.9172065,
+    "ast_hash": "692dab79cf4333b126b80c020902b0a9",
     "semantic_hash": ""
   },
   "docs/remodel/09-panel-habito.spec.md": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790259905.2004492,
-    "ast_hash": "f5fc12e89307d479230385566409e5d6",
+    "mtime": 1790262889.3002388,
+    "ast_hash": "f2a11049c2f4d8585c005347a4a4c1f4",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790249487.1355777,
-    "ast_hash": "7d9520be8b4c15a757efb4074b540f15",
+    "mtime": 1790262974.9121103,
+    "ast_hash": "4103a146e1cd9711157e94f0f951aa9f",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3795,8 +3795,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-015-habitos-metricas.md": {
-    "mtime": 1790259912.9304264,
-    "ast_hash": "999d53fa319b52f09131fec1166759e0",
+    "mtime": 1790262742.2364597,
+    "ast_hash": "bf81defb38c628b253076d2903842caa",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260922_193727_d\u00f3nde_se_pinta_la_lista_de_la_agenda_de_hoy_y_qu\u00e9.md": {
@@ -4157,6 +4157,11 @@
   "graphify-out/memory/query_20260924_110203_feat_017__que_existe_ya_para_buscar_iconos__para_l.md": {
     "mtime": 1790247723.4697614,
     "ast_hash": "56ade9e9b19ae25b4c4be878758dd915",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-024-suites-que-no-compilan.md": {
+    "mtime": 1790262871.4642656,
+    "ast_hash": "ba2b88c2bb8ea99751a3e5bd0df58aaf",
     "semantic_hash": ""
   }
 }

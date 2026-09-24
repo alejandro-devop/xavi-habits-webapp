@@ -14,9 +14,10 @@ import {
   buildWeekdayBreakdown,
   buildWeeklyCompliance,
   composeReading,
+  composeWeekdayFailNote,
   countComebacks,
   formatShortDate,
-  getWorstWeekday,
+  getMostFailedWeekday,
   hasAnyDifficulty,
   resolvePreviousWindow,
   resolveRangeWindow,
@@ -102,7 +103,11 @@ export function HabitPanel({ habit, range, onRangeChange }: Props) {
   )
   const weekly = useMemo(() => buildWeeklyCompliance(days), [days])
   const weekdays = useMemo(() => buildWeekdayBreakdown(days), [days])
-  const worstWeekday = useMemo(() => getWorstWeekday(weekdays), [weekdays])
+  const mostFailedWeekday = useMemo(() => getMostFailedWeekday(weekdays), [weekdays])
+  const weekdayNote = useMemo(
+    () => composeWeekdayFailNote(weekdays, mostFailedWeekday),
+    [weekdays, mostFailedWeekday],
+  )
   const episodes = useMemo(() => buildStreakEpisodes(days), [days])
   const comebacks = useMemo(() => countComebacks(days), [days])
   const difficulty = useMemo(() => buildDifficultySeries(days), [days])
@@ -114,7 +119,7 @@ export function HabitPanel({ habit, range, onRangeChange }: Props) {
 
   // Sin dos semanas de vida no hay tendencia ni con qué comparar.
   const showTrend = window.days >= MIN_DAYS_FOR_TREND && weekly.length >= 2
-  const reading = showTrend ? composeReading(summary, previousSummary, worstWeekday) : null
+  const reading = showTrend ? composeReading(summary, previousSummary) : null
 
   const rangeSelector = (
     <div className={styles.toolbar}>
@@ -212,7 +217,12 @@ export function HabitPanel({ habit, range, onRangeChange }: Props) {
         {showTrend ? (
           <HabitWeeklyComplianceChart points={weekly} rangeLabel={rangeLabel} />
         ) : null}
-        <HabitWeekdayChart stats={weekdays} worst={worstWeekday} rangeLabel={rangeLabel} />
+        <HabitWeekdayChart
+          stats={weekdays}
+          most={mostFailedWeekday}
+          note={weekdayNote}
+          rangeLabel={rangeLabel}
+        />
       </div>
 
       {episodes.length > 0 || showDifficulty ? (

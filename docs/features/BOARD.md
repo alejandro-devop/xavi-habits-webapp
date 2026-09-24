@@ -23,7 +23,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-012 | building | 2/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-24 |
 | FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
-| FEAT-015 | building | 3a y **1 aceptadas**, de 5 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
+| FEAT-015 | building | 3a, **1 y 2 aceptadas**, de 5 (3b bloqueada por el API; 4 detrás) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | planned | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
@@ -32,6 +32,58 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-021 | delivered | 2/2 | app/providers, shared/api | La caché guardada caduca cuando cambia la forma de los datos | 2026-09-23 |
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
+| FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
+
+**FEAT-024 `delivered` 1/1** (2026-09-24, revisor). **Tajada única aceptada y
+con ella la feature.** Verificado por mí, no leído del reporte: corrí `npm test`
+del API (**1 fallo / 645 pasan / 646 en 55 suites, 54 en verde**, `Test suite
+failed to run` **0 veces**), conté `expect(` fichero a fichero contra `HEAD`
+(10→12, 1→8, 12→15, 5→5, 43→43), y `git diff --name-only -- src` devuelve **0
+ficheros**: sin `skip`, sin `only`, sin aserciones borradas, sin tocar producto.
+Para saber qué pasaba antes **sin revertir nada** materialicé las cinco
+versiones de `HEAD` como copias temporales, las corrí y las borré: confirma los
+cuatro puntos del mapa —**tres** suites sin compilar (no cuatro), `habit-streak`
+**no arrastraba a nadie**, las causas eran `UserSettings` (campos de la noche) y
+`Activity.isWorkout`, y el `tsconfig.json` del API **excluye `tests`**, así que
+`npx tsc --noEmit` nunca fue puerta para ellos—. Los tests resucitados **dicen
+la verdad de hoy**: contrastado contra `habit-streak.ts` (`period_days`, no
+`days`) y contra `syncHabitStreakFromLogs` (tres consultas en SQL, UPDATE con
+`[streak, max_streak, habitId]`); el caso nuevo de back-fill **no es vacuo**
+(control negativo repetido por mí: falla). **El rojo que queda es un defecto
+real y está roto en producción**, reproducido con `tsx` fuera del test:
+`walletExpenseUpdate` acaba llamando a `updateExpense(undefined, userId,
+undefined)` porque `withValidation` sustituye los args por
+`expenseUpdateSchema.parse(args)` y ese esquema no declara `id` ni `input`
+(zod los descarta en modo `strip` y devuelve `{}`). **Ningún gasto se puede
+editar**; es el único de los cuatro resolvers «id + input» que pasan por
+`withValidation` con ese defecto —los otros tres que reciben `id + input` usan
+`withErrorHandling` y están a salvo—: **material para una feature propia**.
+Hallazgos anotados: tres aserciones comparan **texto literal de SQL** y son
+demasiado rígidas para FEAT-015 tajada 3b (las de orden, número y parámetros sí
+están a la altura correcta). **Sin commit en ninguno de los dos repositorios**;
+el push del API despliega **y migra**: es del usuario.
+
+**FEAT-024 `in-review` 1/1** (2026-09-24, constructor). **Tajada única lista,
+todo en `xavi-platform-node` salvo el tablero y su dossier.** `npm test` del API
+pasa de **3 fallos / 6 suites rojas / 614 tests** a **1 fallo / 1 suite roja /
+646 tests**, con **cero** «Test suite failed to run», sin un `skip` ni una
+aserción borrada (los `expect(` suben 10→12, 1→8 y 12→15 en los tres ficheros
+reescritos) y **sin tocar una línea de `src/`**. **El mapa de `ENVIRONMENT.md`
+había envejecido y hay que corregirlo** (es del usuario, no lo he editado): las
+suites que no compilaban eran **tres, no cuatro**, y la causa **no era solo
+`HabitStreakFields`** —`sleep-follow-up-sync` y `standup` reventaban por
+`UserSettings`, que ganó `vidaNightBedTime/WakeTime/Days` con FEAT-012, y la
+primera además por `Activity.isWorkout`—; `habit-streak` **no arrastraba** a las
+de hábitos, que fallaban por sus propios mocks. Y **`npx tsc --noEmit` no es
+puerta para los tests**: `tsconfig.json` los excluye, por eso los tipos estaban
+limpios con tres suites sin compilar. De los 3 fallos, dos eran **tests
+desfasados** (describían una racha calculada en JavaScript que hoy es SQL) y el
+tercero es un **defecto real del API que se queda rojo a propósito**:
+`walletExpenseUpdate` llama a `updateExpense(undefined, userId, undefined)`
+porque `expenseUpdateSchema` no declara `{ id, input }` y zod los descarta
+—demostrado con `tsx`—; es el único de los cuatro esquemas de «id + input» del
+repo que no lo declara. **Sin commit en ninguno de los dos repositorios.**
+Siguiente: el `feature-reviewer`.
 
 **FEAT-023 `delivered` 2/2** (2026-09-24, revisor). **Tajada 2 aceptada y con
 ella la feature.** **Confirmado con arnés propio (borrado): `lang="es-ES"` no

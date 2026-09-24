@@ -421,7 +421,7 @@ de dos pasos para el registro de la falla **devuelve la tajada**.
 | # | Qué hace | Estado |
 |---|---|---|
 | 1 | **Las cifras que faltan.** Tu récord como cifra propia y distinguido del mejor episodio del tramo, salvavidas usados y dificultad media — todo ya calculado, nada nuevo que consultar. Criterios 430–439 y los transversales que apliquen. | pendiente |
-| 2 | **Dónde se falla, contado como fallos.** El día de la semana se elige por fallos reales y no por cumplimiento, un día sin registrar deja de parecer un fallo, el umbral se dice en voz alta y desaparece «Vas peor». Criterios 440–452. | pendiente |
+| 2 | **Dónde se falla, contado como fallos.** El día de la semana se elige por fallos reales y no por cumplimiento, un día sin registrar deja de parecer un fallo, el umbral se dice en voz alta y desaparece «Vas peor». Criterios 440–452. | in-review |
 | 3 | **La hora se guarda**, en el mismo toque con el que hoy se marca, y se puede corregir. Criterios 453–462. **Bloqueada por el API.** | pendiente (**bloqueada por el API**) |
 | 4 | **A qué hora.** La lectura de horas en el panel, cuando ya hay registros con hora. Criterios 463–472. | pendiente (depende de la 3 **y de que pase el tiempo**) |
 
@@ -934,7 +934,7 @@ dos**, porque el corte cae justo donde cae un despliegue:
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
 | 1 | **Las cifras que faltan.** Récord como ficha propia y distinguido del mejor episodio del tramo, salvavidas usados, dificultad media. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitPanelTiles.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.module.scss`, `HabitPanel/HabitStreakEpisodesChart.tsx` (revisión del rótulo), `HabitPanel/HabitPanel.test.tsx` | 430–439 + 473–480 | **aceptada** (2026-09-24, en segunda vuelta: frase del récord corregida y escritorio remedido) |
-| 2 | **Dónde se falla, contado como fallos.** El día se elige por fallos, el umbral se dice en voz alta, muere «Vas peor». | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitWeekdayChart.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.test.tsx` | 440–452 + 473–480 | pendiente (**render D5 primero**) |
+| 2 | **Dónde se falla, contado como fallos.** El día se elige por fallos, el umbral se dice en voz alta, muere «Vas peor». | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitWeekdayChart.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.test.tsx` | 440–452 + 473–480 | **aceptada** (2026-09-24, en segunda vuelta: la frase del caso de callar ya cuenta registros y lo dice; mutación y anchos remedidos por el revisor. Pendiente solo el 480 del usuario, y dentro de él la frase en un hábito de los de «evitar») |
 | 3a | **El API aprende la hora.** Columna, mapeo, SDL, validadores. **Nada visible; se cierra con el push del usuario y el job de migración.** | `xavi-platform-node`: `migrations/071_habit_logs_time_of_day.sql`, `src/services/habit.service.ts`, `src/types/services/habit.types.ts`, `src/graphql/modules/habit/habit.schema.ts`, `src/validators/schemas/habit.schemas.ts` | ninguno por sí sola (habilita 453–462) | in-review (aceptada el 2026-09-24; reabierta por la corrección del `null`, que decidió el usuario) |
 | 3b | **La hora se guarda y se corrige**, en el mismo toque, en los cuatro sitios a la vez. | `hooks/useHabitFollowUps.ts`, `utils/habit-time.utils.ts` (+ suite, nuevo), `types/habit.types.ts`, `graphql/habit-follow-ups.graphql.ts`, `graphql/habits.graphql.ts`, `utils/habit-stats.utils.ts`, `components/HabitFollowUpForm/HabitFollowUpForm.tsx`, `app/providers/query-cache-guards.ts`, los `vi.mock` de `HabitDayRow.test.tsx` | 453–462 | pendiente (**bloqueada por 3a**) |
 | 4 | **A qué hora.** Bandas horarias en la rejilla del panel. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitHourBandsChart.tsx` (nuevo), `HabitPanel/HabitPanel.tsx`, `HabitPanel/charts.module.scss`, `HabitPanel/HabitPanel.test.tsx` | 463–472 | pendiente (**depende de 3b y de que pasen semanas**) |
@@ -1578,6 +1578,426 @@ baja de unos 106 px.
 antes más `HabitPanel.module.scss`), ninguno nuevo. Arnés de medición borrado
 (`git status` no lo lista). `graphify update .` corrido.
 
+### Tajada 2 — dónde se falla, contado como fallos
+
+**Resumen para el revisor:** el reparto por día de la semana **cuenta fallos y
+ya no porcentajes de cumplimiento**, cada barra lleva su cuenta encima y debajo
+del gráfico hay una frase que **dice el umbral en voz alta** (4 apariciones con
+registro por día) tanto cuando señala un día como cuando calla. **«Vas peor»,
+«Vas mejor» y «Vas parecido» han muerto**: la lectura de arriba dice las dos
+cifras y la diferencia en puntos, sin adjetivo. Ni `graphql/`, ni `api/`, ni
+`src/shared/api/`, ni un `.scss`: `git diff --stat` son cuatro archivos de
+`features/habits`.
+
+**Lo que más probablemente rompí:** la firma de `composeReading`, que **pierde
+su tercer parámetro** (`worst: WeekdayStat | null`). Cualquier llamada de fuera
+del panel se rompería en compilación —no la hay, `tsc -b` está limpio—, pero es
+el cambio con más alcance. Detrás va la desaparición de `getWorstWeekday`
+(ahora `getMostFailedWeekday`, con otra semántica): quien buscara esa función
+por nombre ya no la encuentra, y **la tabla oculta del gráfico cambió de
+título, de columnas y de orden** (`Día · Fallados · Cumplidos · Sin registro ·
+Apariciones con registro`), así que cualquier consulta por el nombre viejo
+—«Cumplimiento por día de la semana»— falla. Tercer candidato: los tooltips del
+gráfico ahora hablan de fallos y de huecos, no de porcentaje.
+
+**Lo que se construyó:**
+
+- `src/features/habits/utils/habit-panel.utils.ts` — **modificado**:
+  - **El umbral vive aquí y solo aquí**: `MIN_TRACKED_PER_WEEKDAY = 4` y
+    `MIN_WEEKDAYS_COMPARABLE = 2`, exportadas junto a `MIN_DAYS_FOR_TREND`.
+    Bajarlo a 3 es cambiar una línea. Con ellas, `BY_FAR_RATIO` y
+    `BY_FAR_MARGIN` (privadas), que deciden si se puede decir «de largo».
+  - `WeekdayStat` gana `tracked` (cubiertos + fallados) y `failRate`.
+    `buildWeekdayBreakdown` las rellena. **Un día sin registrar no entra en el
+    denominador de nada.**
+  - `getWorstWeekday` → **`getMostFailedWeekday`**, reescrita: filtra por
+    `tracked >= MIN_TRACKED_PER_WEEKDAY` (con `getComparableWeekdays`, también
+    exportada), coge el de más `failed` y devuelve `null` si no hay dos días
+    comparables, si no hay ningún fallo o si hay empate en la cabeza. **No
+    desempata en silencio.**
+  - **Nueva `composeWeekdayFailNote(stats, most)`**: la frase de debajo del
+    gráfico, con un texto distinto por estado —el hecho con su cuenta cruda, el
+    umbral que falta, el único día comparable, el empate, el tramo sin fallos— y
+    `null` cuando no hay ni una aparición con registro. `leadsByFar` decide el
+    «, de largo».
+  - `composeReading` **pierde el tercer parámetro** y los tres veredictos.
+    Ahora: «Cumpliste el 80% de los días de este tramo; en el tramo anterior, el
+    40%. Son 40 puntos más.» `MEANINGFUL_DELTA_POINTS` sigue decidiendo si la
+    diferencia se nombra, pero lo que se nombra es la diferencia, no quien la
+    produjo.
+- `src/features/habits/components/HabitPanel/HabitWeekdayChart.tsx` —
+  **modificado** (criterio 452: es el mismo gráfico, no nace otro). Barras de
+  **fallos** con la cuenta encima, escala sobre el máximo de fallos, subtítulo
+  «Días fallados, por día de la semana · …», etiqueta «más fallos» en el día
+  señalado, días por debajo del umbral **apagados** (opacidad 0,3 frente a 0,6),
+  la frase debajo del dibujo y la tabla oculta con las cinco columnas nuevas.
+  `Props` pasa de `{stats, worst, rangeLabel}` a `{stats, most, note, rangeLabel}`.
+- `src/features/habits/components/HabitPanel/HabitPanel.tsx` — **modificado**:
+  dos `useMemo` (`mostFailedWeekday`, `weekdayNote`) donde había uno, y la
+  llamada a `composeReading` con dos argumentos. **Ni una consulta nueva.**
+- `habit-panel.utils.test.ts` y `HabitPanel.test.tsx` — **modificados**: +14
+  tests netos (2203 → 2217 con los mismos 2 fallos de siempre).
+
+**Por qué así, y qué descarté:**
+
+- **El denominador de la frase es `tracked`, no `total`.** «Los viernes fallas 9
+  de 13 veces» cuenta **apariciones con registro**, que es lo mismo que mide el
+  umbral. Si se usara `total`, un tramo con viernes sin registrar diría «9 de
+  13» teniendo solo 10 registrados: el vicio de la tajada 1 —decir una cosa y
+  contar otra— con otro disfraz. Por eso **la tabla oculta enseña las dos
+  columnas**, `Sin registro` y `Apariciones con registro`, y el test las compara
+  celda a celda.
+- **«De largo» es condicional.** El render lo dibuja en el caso 9 frente a 6,
+  pero escrito fijo sería falso cuando el primero gana por uno. Se dice solo con
+  ventaja de **al menos vez y media y dos fallos más** (9 ≥ 6×1,5 y 9−6 = 3: el
+  caso del render sale «de largo», como está aprobado). Descartado dejarlo fijo:
+  es una afirmación de distancia y el criterio 473 manda.
+- **Dos desviaciones del render, las dos por el criterio 444** (grep de frases
+  prohibidas = cero) **y las dos declaradas aquí para que el usuario las
+  confirme o las rechace**:
+  1. El render rotula «Días **que fallaste**, por día de la semana» y lo repite
+     en la leyenda. «fallaste» está **literalmente** en la lista de frases
+     prohibidas de la sección 1. Se escribe **«Días fallados»**. Es lo único que
+     cambia de esos dos rótulos.
+  2. La frase del tercer estado. El render dice «Cada día ha aparecido **4 veces
+     o menos**… todavía no hay bastante», pero con el umbral en 4 un día de
+     exactamente 4 **sí** basta: la frase sería falsa en el borde. Se escribe la
+     cifra real del tramo y el objetivo: «Cada día ha aparecido **3 veces o
+     menos** en este tramo. Con 4 ya se puede comparar: todavía no hay bastante
+     para decir dónde se te cae.» La segunda mitad es literal del render.
+  La frase del caso bueno **sí es literal**: «Los martes fallas 4 de 6 veces. Es
+  el día donde más se te cae, de largo.»
+- **`composeReading` se quedó arriba y la frase del día bajó al gráfico**, como
+  en el render. Descartado dejar la coletilla «Donde se te cae: …» en la lectura
+  de arriba: repetía en porcentaje lo que el gráfico dice en fallos, que es
+  justo la confusión que esta tajada mata.
+- **`shouldAvoid` (criterio 449): sigue sin leerse al revés, y ahora hay una
+  razón escrita.** El verbo de todas las cadenas nuevas es «fallar», que es el
+  que ya usa el módulo y significa lo mismo en los dos tipos (`isFailed` = se
+  falló el hábito; en uno a evitar, que se hizo lo que se quería evitar). La
+  aritmética es simétrica y **no hay nada que invertir**; queda dicho en el
+  comentario de `composeWeekdayFailNote`. No se partió la frase en dos.
+- **Ningún `.scss` tocado**, así que la comprobación de selectores compilados no
+  aplica: el CSS del build es **279,61 kB, idéntico a la línea base**, que es la
+  forma más fuerte de decirlo.
+
+**Verificación:**
+
+*Los tests nuevos prueban algo* (uno que pasa con y sin el arreglo no prueba
+nada). Volviendo `getMostFailedWeekday` a la selección por `percent` y
+`getComparableWeekdays` a `total > 0`, o sea **el comportamiento de `HEAD`**:
+
+```
+× señala el día de más fallos, no el de menos cumplimiento (criterio 441)
+× con menos de 4 apariciones no señala nada y dice cuánto falta (criterio 442)
+× con un solo día comparable tampoco compara, y lo dice (criterio 442)
+× «de largo» solo se dice cuando la ventaja es de verdad
+× marca el día de más fallos con una etiqueta, no solo con el color
+× dice el umbral en voz alta debajo del gráfico
+× con pocas apariciones, calla y dice cuántas hay
+× señala el día de más fallos aunque otro día esté entero sin registrar
+× con pocas apariciones por día el panel calla y dice qué le falta
+      Tests  9 failed | 68 passed (77)
+```
+
+Con la fuente restaurada, `77 passed (77)`.
+
+*Línea base, entera:*
+
+| Qué | Línea base | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 errores / 0 warnings | **14 errores / 0 warnings** (los mismos archivos) |
+| `pnpm test` | 2 fallos de 2203 | **2 fallos de 2217** (`SearchSelect` ×2, los de siempre; `IconPicker` **no** salió) |
+| `pnpm build` | chunk 1.151,90 kB · CSS 279,61 kB | **1.153,05 kB** (+1,15, las cadenas nuevas) · **CSS 279,61 kB, sin mover un byte** |
+
+*Frases prohibidas*, `grep -rniE` de la lista entera sobre
+`src/features/habits/` sin los tests: los únicos aciertos son
+`intentarlo`/`Reintentar` en ocho errores de red **preexistentes y ajenos al
+panel** («intenta» como subcadena). `vas peor`, `vas mejor`, `peor día`,
+`fallaste`, `punto flaco`: **cero**, ni en código ni en comentarios —el
+comentario que explicaba la muerte de los veredictos está escrito sin citarlos.
+
+*En pantalla*, arnés temporal (`harness-weekday.html` + `src/harness-weekday.tsx`,
+**ya borrados**, `git status` limpio de ellos) con los tres estados del render y
+el viewport emulado de verdad:
+
+| Ancho | `scrollWidth` / `clientWidth` del documento | Nodos desbordados |
+|---|---|---|
+| **375 px** | 375 = 375 | **0** (excluida `.srOnly`, que recorta a propósito) |
+| **768 px** | 753 = 753 | **0** |
+| **1024 px** | 1009 = 1009 | **0** |
+
+La etiqueta «más fallos» es más larga que la «peor día» que sustituye, así que
+se midió su caja en unidades del `viewBox` (42,7 de ancho): puesta en el lunes
+ocupa de 2,95 a 45,6 y puesta en el domingo de 294,4 a 337,0, dentro de
+`0 … 340`. **No se recorta en ninguno de los siete días.**
+
+*Oscuro* (criterio 451), contraste sobre el fondo **compuesto** del panel
+(`rgb(19,27,43)`, el `rgba` del vidrio sobre el fondo de página):
+
+| Texto | Color | Ratio |
+|---|---|---|
+| La frase de debajo y el subtítulo | `rgb(124,138,165)` | **4,97:1** |
+| Las cuentas encima de las barras | `rgb(168,179,199)` | **8,18:1** |
+| La cuenta del día señalado | `rgb(255,180,171)` | **10,17:1** |
+| La leyenda | `rgb(168,179,199)` | **7,88:1** |
+
+**Criterios, uno a uno:**
+
+- **440 · cumplidos / fallados / sin registro, y el hueco no se pinta como
+  fallo.** Cumplido. Los tres están en la tabla oculta (`Fallados`,
+  `Cumplidos`, `Sin registro`) y en el tooltip; el dibujo solo pinta barra si
+  `tracked > 0 && failed > 0`. Test: *un día sin registrar no entra en el
+  denominador* (6 viernes → `total 6, tracked 4, covered 2, failed 2,
+  untracked 2`) y, en el panel entero, la fila del domingo con `0 · 0 · 13 · 0`.
+- **441 · el día que se señala es el de más fallos.** Cumplido, con el caso
+  obligatorio montado **dos veces**: en el util (6 domingos sin registrar y 6
+  martes con 4 fallados → señala **martes**, y se afirma de paso que el domingo
+  está al 0 %, que es por lo que ganaba antes) y **en el panel entero**
+  (`HabitPanel` con `range={90}`, 84 días sembrados, domingos sin registro:
+  «Los martes fallas 4 de 12 veces»). Los dos tests **fallan** con el código de
+  `HEAD`, arriba está la salida.
+- **442 · ≥ 4 apariciones con registro y ≥ 2 días comparables, o se dice qué
+  falta con la cifra.** Cumplido, y los dos sub-casos tienen test propio: sin
+  ningún día comparable («Cada día ha aparecido 3 veces o menos…; con 4 ya se
+  puede comparar») y con uno solo («Solo los lunes llegan a 4 apariciones en
+  este tramo. Con 2 días ya se puede comparar»). También en el panel entero.
+- **443 · si ninguno destaca, no se elige el primero.** Cumplido. Empate arriba
+  → `null` + «Ningún día destaca en este tramo: 2 días empatan a 3 fallos».
+  Tramo sin fallos → `null` + «En este tramo no hay ningún día fallado».
+- **444 · cuenta cruda y cero frases prohibidas.** Cumplido: «4 de 6 veces», «9
+  de 13 veces». El `grep` está arriba. Además hay un test que pasa los cinco
+  estados de la frase por la lista de prohibidas **y** por «sueles / siempre /
+  nunca / otra vez / ya van».
+- **445 · «Vas peor» desaparece.** Cumplido. `grep -rn "Vas peor\|Vas mejor"
+  src/features/habits/` (fuente) = **cero**, y `composeReading` compara con las
+  dos cifras. Test en el panel entero: el texto del `body` entero no casa
+  `/vas (peor|mejor|parecido)/i` y sí aparece «Cumpliste el N% de los días de
+  este tramo».
+- **446 · ni imperativos ni consejos.** Cumplido, mismo test.
+- **447 · hábito recién creado.** Cumplido **sin tocar nada**: `HabitPanel`
+  corta antes con su `EmptyState` («Todavía no hay nada que medir aquí») cuando
+  no hay ni un seguimiento, y el gráfico no llega a montarse. No aparece ningún
+  0 %.
+- **448 · con un solo día registrado, nada comparativo y ningún «0» por «sin
+  dato».** Cumplido: con 1 registro ningún día llega a 4 apariciones →
+  `getMostFailedWeekday` es `null` y la frase dice la cifra que hay. El día sin
+  ninguna aparición dibuja **«—»**, no «0» (test *cuenta fallos, no
+  porcentajes*, que comprueba que «—» está y que no hay ningún «%»).
+- **449 · `shouldAvoid` no se lee al revés.** Cumplido y **declarado dónde**:
+  `getHabitDayStatus` (`habit-progress.utils.ts:106-116`) no mira `shouldAvoid`,
+  y el verbo elegido («fallar») significa lo mismo en los dos tipos. Queda
+  escrito en el comentario de `composeWeekdayFailNote`. **Sin test de un hábito
+  a evitar**: la aritmética no se bifurca, así que un test sería una copia del
+  anterior con otro `habit` que no toca ninguna rama nueva. Dicho, no disimulado.
+- **450 · recalcula al cambiar de rango sin consultas nuevas.** Cumplido: los
+  dos derivados son `useMemo` sobre `days`; `git diff --stat` no toca ningún
+  hook ni ninguna clave.
+- **451 · ≥ 4,5:1 en oscuro.** Cumplido, tabla de contraste arriba, mínimo
+  **4,97:1**.
+- **452 · se modifica `HabitWeekdayChart`.** Cumplido: un solo archivo de
+  gráfico tocado, ninguno nuevo.
+- **473 · todo lo que se enseña es cierto.** Cumplido, y es lo que gobernó las
+  dos desviaciones del render de arriba: el denominador es el que se mide, el
+  «de largo» solo con ventaja real, y el «—» donde no hay dato.
+- **474 · ni una palabra de reproche.** Cumplido (444 y 446).
+- **475 · vacío / cargando / error / texto largo.** Vacío y error: los cortes
+  tempranos de `HabitPanel` **no se tocaron** (`Spinner`, `Alert`,
+  `EmptyState`), y los tests que ya los cubrían siguen verdes. Texto largo: el
+  gráfico **no imprime el nombre del hábito** en ningún sitio, así que un nombre
+  de 60 caracteres no le llega.
+- **476 · a 375 px, `scrollWidth === clientWidth` y cero desbordados.**
+  Cumplido, medido (375 = 375, cero nodos), y además a 768 y 1024.
+- **477 · línea base no peor.** Cumplido, tabla arriba.
+- **478 · la tajada no toca `graphql/` ni `api/`.** Cumplido:
+  `git diff --stat` son `habit-panel.utils.ts`, `habit-panel.utils.test.ts`,
+  `HabitWeekdayChart.tsx`, `HabitPanel.tsx`, `HabitPanel.test.tsx` y este
+  expediente. **Tampoco `src/shared/api/`**, así que el `buster` de
+  `vite/cache-shape.ts` no se mueve y **nadie pierde la caché**.
+- **479 · ninguna ruta, página ni entrada de menú.** Cumplido.
+- **480 · del usuario.** `/app/habits/:id` está tras el login: **pendiente de
+  prueba manual**, pasos abajo.
+
+**Pendiente de prueba manual (criterio 480):** entrar en `/app/habits/:id`, ficha
+Panel, de un hábito con al menos tres meses de registros. (1) Con el rango en
+**90 d**, comprobar que el gráfico «Dónde se te cae» dibuja **cuentas de fallos**
+(números enteros, no porcentajes) y que la frase de debajo nombra el día con su
+cuenta cruda. (2) Bajar a **30 d** en un hábito poco registrado: el panel debe
+**callar** y decir cuántas apariciones hay. (3) Comprobar que en ningún sitio del
+panel aparece «Vas peor», «Vas mejor» ni «peor día». (4) En un hábito de los de
+**evitar** (`shouldAvoid`), leer la frase y confirmar que no dice lo contrario de
+lo que pasó — es el único punto donde la redacción puede chirriar y no lo puedo
+comprobar desde aquí.
+
+**Lo que descubrí y no estaba en el plan:**
+
+- **El render y el criterio 444 se contradicen en dos cadenas.** Está resuelto
+  arriba a favor del criterio (que es literal y comprobable con `grep`), pero es
+  una decisión de redacción sobre un render que el usuario aprobó hoy: **si
+  prefiere las palabras del render, se cambian en dos líneas y el criterio 444
+  hay que reescribirlo** — y eso no lo hago yo.
+- **El umbral del render tiene un borde mal contado** («4 veces o menos» cuando
+  4 ya basta). No es un fallo del umbral, es de la frase.
+- **`MEANINGFUL_DELTA_POINTS` ya no significa lo que su nombre dice.** Decidía
+  si el veredicto era «mejor», «peor» o «parecido»; ahora decide si la
+  diferencia en puntos se nombra. El nombre aguanta, pero está a un paso de
+  mentir. **No lo toqué**: renombrar una constante exportada no es de esta
+  tajada.
+- **`failRate` nace sin ningún consumidor.** Lo pedía el plan del arquitecto y
+  lo dejé porque la tabla oculta y un futuro orden por tasa lo van a querer,
+  pero hoy **solo lo lee un test**. Si el revisor prefiere que no exista hasta
+  que alguien lo use, se borra en una línea.
+- **El gráfico de «Cumplimiento semana a semana» sigue diciendo «▼ el bajón»**
+  con una flecha y un color de alerta. No es una frase prohibida y no es de esta
+  tajada, pero es el sitio del panel que más se parece a un juicio de los que
+  acaban de morir. **No lo toqué**; queda apuntado.
+
+**Estado del árbol:** sin commitear. Seis archivos modificados, cero creados,
+cero borrados. El arnés temporal se borró antes de escribir esto.
+
+### Tajada 2 · corrección tras la revisión — la frase que calla ya cuenta lo que dice
+
+**Resumen para el revisor:** las **dos cadenas del caso de callar** dicen ahora
+«**registros**» donde decían «apariciones», que es lo que de verdad se cuenta;
+hay **dos tests nuevos** sembrados sobre el tramo largo con días sin registrar
+—63 días, martes que aparecen nueve veces y están registrados tres— que es donde
+la mentira se veía; y **`failRate` se ha borrado**. Nada más de la tajada se ha
+tocado.
+
+**Lo que más probablemente rompí esta vez:** nada de código, y lo digo con la
+medida delante: el diff de fuente son **cuatro líneas de cadena y el borrado de
+un campo de `WeekdayStat` que no leía nadie** (`git grep failRate` en `HEAD` y
+en el árbol: solo su propia definición y una aserción). Si algo se rompe será
+**una expectativa de texto en otra suite**, y la corrida entera (2219) dice que
+no. El segundo candidato, y este sí es de mirar: la frase larga **pasa de dos a
+tres líneas a 375 px** (de 141 a 143 caracteres), así que el gráfico del caso de
+callar es unos 20 px más alto en móvil. Está medido abajo; no desborda.
+
+**Lo que se construyó:**
+
+- `habit-panel.utils.ts` — `composeWeekdayFailNote`, dos cadenas:
+  - «Cada día ha aparecido **3 veces o menos**…» → «**De cada día de la semana
+    hay 3 registros o menos** en este tramo. Con 4 ya se puede comparar:
+    todavía no hay bastante para decir dónde se te cae.» La segunda mitad sigue
+    siendo literal del render.
+  - «Solo los lunes llegan a 4 **apariciones**…» → «Solo los lunes llegan a 4
+    **registros** en este tramo. Con 2 días ya se puede comparar.»
+  - Nace `pluralRecords(count)` al lado de `pluralTimes`, con el porqué escrito
+    encima: en 63 días los martes aparecen nueve veces aunque solo tres estén
+    registrados.
+- `habit-panel.utils.ts` — **`failRate` borrado** de `WeekdayStat` y de
+  `buildWeekdayBreakdown`. En su hueco queda un comentario en `tracked` que dice
+  qué era y por qué se fue: **una tasa sobre `tracked` que alguien iba a leer
+  como si fuera sobre `total`**. Si vuelve, vuelve con un consumidor.
+- `habit-panel.utils.test.ts` — **dos casos nuevos**, los dos sobre nueve semanas
+  con días sin registrar, y los dos afirman **dos cosas**: la frase exacta y que
+  **no aparece la palabra «aparic/aparec» ni el 9** (el número de apariciones
+  reales, que es la cifra con la que se confundía).
+- `habit-panel.utils.test.ts` — **el guardián que se fue sin relevo, devuelto**:
+  `expect(note).not.toMatch(/propósito|identidad|recaíd/i)` entra en el test que
+  recorre los cinco estados de `composeWeekdayFailNote`. Es la regla de producto
+  del módulo, no la lista de frases prohibidas, y ahora vigila la frase que
+  heredó el papel de la que la llevaba. (La aserción original sigue viva sobre
+  `composeReading`, en `habit-panel.utils.test.ts:466`; el relevo era para la
+  frase del día.)
+- `HabitPanel.test.tsx` — la cadena esperada del caso de callar, actualizada.
+
+**Lo que NO se tocó**, porque el revisor lo dio por bueno y porque el
+coordinador lo dejó decidido: «Días fallados»; el conteo compartido por barra,
+frase y umbral; los casos de empate, sin fallos y un solo día comparable; el «,
+de largo» condicional; `MEANINGFUL_DELTA_POINTS`; `composeReading` sin el tercer
+parámetro. **Y la frase del caso bueno** —«Los viernes fallas 9 de 13 veces… donde
+más se te cae»— **se queda tal cual**: el revisor tiene razón en que pone el
+sujeto en la persona, pero la aprobó el usuario en el render y dice un dato
+concreto. Queda como **inconsistencia conocida, anotada y no arreglada por mi
+cuenta**. El `aria-label` del SVG y la columna oculta siguen diciendo
+«apariciones **con registro**», que es correcto y era la forma que ya estaba
+bien.
+
+**Verificación:**
+
+*Que los dos tests nuevos prueban algo.* Devolviendo las dos cadenas a las de la
+primera vuelta —o sea, **al texto que devolvió la tajada**:
+
+```
+× con menos de 4 apariciones no señala nada y dice cuánto falta (criterio 442)
+× con un solo día comparable tampoco compara, y lo dice (criterio 442)
+× al callar cuenta registros, no apariciones en el calendario
+× con un solo día comparable tampoco llama apariciones a los registros
+× con pocas apariciones, calla y dice cuántas hay
+× con pocas apariciones por día el panel calla y dice qué le falta
+      Tests  6 failed | 73 passed (79)
+```
+
+Con la corrección puesta, `79 passed (79)`. La fuente quedó restaurada.
+
+*El caso que lo destapó, sembrado igual que lo sembró el revisor.* Nueve semanas
+(63 días), solo tres martes registrados:
+
+```
+stats[1] → { longLabel: 'martes', total: 9, tracked: 3, untracked: 6 }
+frase    → «De cada día de la semana hay 3 registros o menos en este tramo.
+            Con 4 ya se puede comparar: todavía no hay bastante para decir
+            dónde se te cae.»
+```
+
+El 9 —las apariciones de verdad— **ya no puede colarse**: el test afirma que la
+frase no lo contiene. Y el segundo caso, lunes 6 registros / martes 3 sobre los
+mismos 63 días: «Solo los lunes llegan a 4 registros en este tramo. Con 2 días ya
+se puede comparar.»
+
+*Anchos, remedidos porque la frase cambió* (arnés temporal con los cuatro
+estados, viewport emulado de verdad, ya borrado):
+
+| Ancho | `scrollWidth` / `clientWidth` | Nodos desbordados | La frase larga |
+|---|---|---|---|
+| **375 px** | 375 = 375 | **0** | 305 px de ancho, **3 líneas** (eran 2) |
+| **768 px** | 753 = 753 | **0** | 683 px de ancho, **2 líneas** (era 1) |
+
+Las otras tres frases no cambian de altura en ninguno de los dos anchos (2 y 1
+líneas). **Ni un `.scss` tocado**, y la frase reusa la clase `.subtitle` que ya
+estaba en pantalla, así que el contraste de oscuro medido en la primera vuelta
+(**4,97:1**) sigue valiendo: no hay color nuevo.
+
+*Línea base:*
+
+| Qué | Al devolver | Ahora |
+|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** |
+| `pnpm lint` | 14 / 0 | **14 / 0** |
+| `pnpm test` | 2 fallos de 2217 | **2 fallos de 2219** (+2 tests; `SearchSelect` ×2, `IconPicker` no salió) |
+| `pnpm build` | chunk 1.153,05 kB · CSS 279,61 kB | **1.153,07 kB** (+0,02) · **CSS 279,61 kB, idéntico** |
+
+**Criterios que esta vuelta cierra:**
+
+- **473 · todo lo que se enseña es cierto.** Cumplido. La cifra que se dice y el
+  conjunto que se cuenta son el mismo —registros— en las cinco frases, en el
+  `aria-label` y en la tabla oculta. Los dos tests nuevos lo fijan **por el lado
+  negativo** (ni «aparic», ni el número de apariciones reales), que es la forma
+  de que no vuelva.
+- **442 · se dice qué falta, con la cifra.** Cumplido con la forma que el propio
+  criterio trae escrita: «De los martes hay 2 **registrados**».
+- El resto de los criterios de la tajada siguen como el revisor los dejó; esta
+  vuelta no toca su aritmética.
+
+**Lo que dejo anotado y no arreglo:**
+
+- **La frase del caso bueno pone el sujeto en la persona** («fallas», «se te
+  cae»), igual que la «fallaste» que se rechazó por la lista de frases
+  prohibidas. Es una inconsistencia real del módulo entre lo aprobado en el
+  render y la regla escrita en la sección 1. **Decisión del coordinador: se
+  queda.** Si el usuario quiere coherencia, se arregla cambiando la frase **o**
+  el criterio 444, y eso es una conversación, no un arreglo.
+- **El criterio 444 no es comprobable en su literalidad** («grep de esa lista,
+  cero resultados»): «intenta» es subcadena de `Reintentar` e `intentarlo`, que
+  están en ocho errores de red preexistentes. El revisor lo nombró; lo repito
+  aquí para que no se pierda. **No reescribo el criterio.**
+
+**Estado del árbol:** sin commitear. Los mismos cinco archivos de
+`src/features/habits` de la primera vuelta —ninguno nuevo—, más este expediente.
+El arnés temporal se borró antes de escribir esto.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 3a — el API aprende la hora
@@ -2115,3 +2535,388 @@ Todo igual a la línea base que él declara.
 el espía de red del criterio 435; las siete fichas en un hábito con historia; y
 mirar el panel en una tablet de verdad alrededor de 768 px, que es la banda que
 esta corrección mueve.
+
+### Tajada 2 — dónde se falla, contado como fallos
+
+**Veredicto: devuelta.** Un solo motivo, y es del criterio 473 (y del 442 tal y
+como está escrito): **cuando el panel calla, la frase cuenta apariciones *con
+registro* y las llama «apariciones» a secas**, así que dice algo falso en el
+caso más normal —un tramo largo con días sin registrar—. Es el mismo vicio de
+la tajada 1 (decidir una frase contra un conjunto y nombrar otro) con otro
+disfraz, y el propio expediente del constructor lo nombra como la razón por la
+que el denominador de la frase buena es `tracked`. Todo lo demás de la tajada
+está bien y comprobado: el día se elige por fallos, el umbral se dice, los tres
+veredictos han muerto y las puertas están en la línea base.
+
+**Cómo lo comprobé (sembrando datos, sin leer su test):** arnés de vitest
+propio (`zz-reviewer-slice2.test.ts`, ya borrado) que construye `HabitDayEntry[]`
+sobre tramos de 42 y 63 días y pasa cada escenario por
+`buildWeekdayBreakdown` → `getMostFailedWeekday` → `composeWeekdayFailNote`,
+imprimiendo la frase, el día señalado y las siete barras (`failed`) juntos, que
+es la única forma de ver si los tres cuentan lo mismo.
+
+**Las dos cifras falsas, con el dato que las desmiente:**
+
+- Tramo de 63 días, **solo 3 martes registrados** (los martes aparecen **9
+  veces** en el tramo; el resto de días, cero registros). La frase sale:
+  «**Cada día ha aparecido 3 veces o menos en este tramo.** Con 4 ya se puede
+  comparar: todavía no hay bastante para decir dónde se te cae.» Los martes
+  aparecieron nueve veces, no tres. Lo que vale 3 son las **apariciones con
+  registro**.
+- Tramo de 63 días, lunes con 6 registrados (1 fallo) y martes con 3
+  registrados: «**Solo los lunes llegan a 4 apariciones en este tramo.** Con 2
+  días ya se puede comparar.» Falso igual: los martes aparecieron nueve veces.
+- El criterio 442 trae escrita la forma correcta y el constructor no la siguió:
+  «De los martes hay **2 registrados**; con 4 ya se puede comparar». Y el propio
+  componente ya sabe decirlo bien en los otros dos sitios donde lo dice: la
+  columna de la tabla oculta se llama «**Apariciones con registro**» y el
+  `aria-label` del SVG dice «4 de 12 **apariciones con registro**». **La única
+  cadena visible que se come el matiz es la del caso de callar**, que es
+  justamente la que existe para decir la verdad sobre lo que falta.
+
+**Qué hay que cambiar:** dos frases de `composeWeekdayFailNote`
+(`habit-panel.utils.ts`), añadiendo el matiz que el resto del componente ya usa
+—«con registro» / «registrados»—. Nada más de la tajada se toca. No lo arreglo
+yo.
+
+**Criterios, uno a uno** (contra la sección 1, literal):
+
+- **440 · cumplidos / fallados / sin registro y el hueco no se pinta como
+  fallo. Cumplido.** Medido: en el escenario de 6 viernes con 2 fallados y 2 sin
+  registro, `tracked=4, failed=2, covered=2, untracked=2`; el `<rect>` solo se
+  dibuja con `tracked > 0 && failed > 0` y la tabla oculta enseña las tres
+  columnas por separado. Un día entero sin registro no dibuja barra y su cuenta
+  sale «—», no «0».
+- **441 · el día señalado es el de más fallos. Cumplido**, y con el caso
+  obligatorio sembrado por mí: 42 días, domingos **sin un solo registro**,
+  martes 4 fallos de 6, resto de días registrados → **señala martes**
+  («Los martes fallas 4 de 6 veces…»). En `HEAD` ese mismo reparto señalaba el
+  domingo (percent 0). Aviso de redacción del criterio, no del código: si el
+  tramo **solo** tiene domingos y martes, el 441 y el 442 se contradicen —con un
+  único día comparable el panel calla, que es lo que manda el 442—. El código
+  hace lo correcto; el criterio 441 está escrito sin su contexto.
+- **442 · ≥ 4 apariciones con registro y ≥ 2 días comparables. Cumplido en la
+  aritmética, incumplido en la frase.** Borde medido uno a uno con el resto del
+  tramo fijo: `tracked = 3` → calla; `tracked = 4` → **habla** («Los martes
+  fallas 4 de 4 veces»); `tracked = 5` → habla. El umbral es `>= 4` de verdad.
+  Un solo día comparable → calla y lo dice. **Pero la cifra que dice al callar
+  está mal nombrada** (arriba).
+- **443 · si ninguno destaca, no se elige el primero. Cumplido.** Empate arriba
+  → `null` y «Ningún día destaca en este tramo: 2 días empatan a 3 fallos».
+  Tramo sin ningún fallo → `null` y «En este tramo no hay ningún día fallado».
+  Ningún desempate silencioso: comprobado con dos días idénticos.
+- **444 · cuenta cruda y cero frases prohibidas. Cumplido.**
+  `grep -rniE` de la lista entera sobre `src/features/habits` sin tests:
+  **cero** para «sueles fallar», «tu punto flaco», «tu peor día», «peor día»,
+  «incumpliste», «fallaste», «no lo lograste», «deberías», «ánimo», «llevas N
+  días sin», «vas peor», «vas mejor», «vas parecido». Lo único que aparece de la
+  lista es «intenta» como subcadena de `Reintentar`/`intentarlo` en errores de
+  red preexistentes y ajenos al panel: **el criterio, tal y como está escrito
+  («cero resultados»), es incomprobable en su literalidad**; queda como hallazgo,
+  no como devolución.
+- **445 · «Vas peor» desaparece. Cumplido**, y también «Vas mejor» y «Vas
+  parecido». `composeReading` sembrada por mí devuelve «Cumpliste el 13% de los
+  días de este tramo; en el tramo anterior, el 0%. Son 13 puntos más.», con la
+  segunda mitad solo cuando la diferencia llega a `MEANINGFUL_DELTA_POINTS`, y
+  `null` sin periodo anterior.
+- **446 · ni imperativos ni consejos. Cumplido**: leídas las cinco cadenas de
+  `composeWeekdayFailNote` y las dos de `composeReading`, ninguna propone nada.
+- **447 · hábito recién creado. Cumplido.** Con cero registros la frase es
+  `null` y `HabitPanel` corta antes con su `EmptyState`. Ningún 0 %.
+- **448 · con un solo día registrado, nada comparativo y ningún «0» por «sin
+  dato». Cumplido en la aritmética** (un registro → ningún día llega a 4 → calla)
+  **y en el dibujo** («—» donde `tracked = 0`, «0» solo donde de verdad hubo
+  registros y cero fallos). Pero la frase de ese caso es la que devuelve esta
+  tajada: «Cada día ha aparecido 1 vez o menos en este tramo».
+- **449 · `shouldAvoid` no se lee al revés. Aceptado como está declarado, y
+  sigue pendiente de ojo humano.** La aritmética no se bifurca —comprobado:
+  `getHabitDayStatus` no mira `shouldAvoid`— así que no hay nada que invertir en
+  el código. Lo que no se puede comprobar desde aquí es si «Los martes fallas 4
+  de 6 veces» **se lee** bien en un hábito de los de evitar. Va a la prueba
+  manual, como él dijo.
+- **450 · recalcula al cambiar de rango sin consultas nuevas. Cumplido**: los
+  dos derivados son `useMemo` sobre `days`; el diff no toca ningún hook, ninguna
+  clave de `habitKeys` ni ningún `.graphql.ts`.
+- **451 · ≥ 4,5:1 en oscuro. Cumplido por construcción, no remedido por mí**:
+  todas las cadenas nuevas reutilizan clases que ya existían
+  (`.subtitle` → `--color-text-muted`, `.valueText`, `.valueTextAlert`,
+  `.tagText`); **no se introduce ni un color nuevo** y no se tocó un solo
+  `.scss`. Los ratios de su tabla son los de textos que ya estaban en pantalla.
+- **452 · se modifica `HabitWeekdayChart`. Cumplido**: `git status` no lista
+  ningún archivo nuevo; no hay un segundo gráfico de días de la semana.
+- **473 · todo lo que se enseña es cierto. INCUMPLIDO**, por lo de arriba.
+- **474 · ni una palabra de reproche. Cumplido.**
+- **475 · vacío / cargando / error / texto largo. Cumplido**: los cortes
+  tempranos de `HabitPanel` (`Spinner`, `Alert`, `EmptyState`) no aparecen en el
+  diff y el gráfico no imprime el nombre del hábito, así que el texto largo no le
+  llega.
+- **476 · a 375 px, `scrollWidth === clientWidth`. No remedido por mí**, y lo
+  digo en vez de firmarlo: acepto su medición (375 = 375, 768, 1024, cero nodos)
+  porque el único nodo de bloque nuevo es un `<p>` con la clase `.subtitle` que
+  ya se usa en todos los gráficos del panel y el resto vive dentro de un
+  `viewBox` fijo; la etiqueta «más fallos» la verifiqué en aritmética de
+  `viewBox` (centros 24,29 y 315,71 ± 21,35 → 2,9…337,1 dentro de 0…340). Si la
+  segunda vuelta toca la frase, **hay que remedir a 375 y a 768**.
+- **477 · línea base no peor. Cumplido, corrido entero por mí**: `pnpm
+  typecheck` exit 0 · `pnpm lint` `✖ 14 problems (14 errors, 0 warnings)` ·
+  `pnpm test` `Tests 2 failed | 2215 passed (2217)` (los dos de `SearchSelect`;
+  el flaky de `IconPicker` no salió) · `pnpm build` exit 0, chunk **1.153,05 kB**
+  (+1,15 sobre 1.151,90) y **CSS 279,61 kB, idéntico**. Como el CSS no baja, no
+  hay comentario sin cerrar que buscar.
+- **478 · ni `graphql/` ni `api/`. Cumplido, ejecutado**: `git diff --stat` sobre
+  el árbol da exactamente cinco archivos de `src/features/habits` (utils, su
+  suite, `HabitWeekdayChart.tsx`, `HabitPanel.tsx`, `HabitPanel.test.tsx`) más
+  documentación y `graphify-out/`. Cero en `graphql/`, cero en `**/api/`, cero en
+  `src/shared/api/`, cero `.scss`. **La promesa de la caché se sostiene**: nada
+  de lo que firma `vite/cache-shape.ts` se mueve, así que nadie pierde la caché.
+- **479 · ninguna ruta, página ni menú. Cumplido.**
+- **480 · del usuario. Pendiente**, como debe estar.
+
+**Qué rompió al lado, y cómo lo busqué.** El grafo **no sirvió para esta
+pregunta**: el constructor corrió `graphify update .` después de su cambio, así
+que `explain "getWorstWeekday"` responde «no node matching» —la función ya no
+existe en el grafo— y `query "composeReading"` devuelve la firma nueva. Para
+saber **quién dependía de esto antes** hay que preguntarle a `HEAD`, y eso fue
+`git grep` contra `HEAD`:
+
+- `getWorstWeekday`, `composeReading`, `buildWeekdayBreakdown`,
+  `HabitWeekdayChart`: en `HEAD` **solo** los usan `HabitPanel.tsx` y
+  `HabitPanel.test.tsx`. Ningún consumidor fuera del panel, así que la pérdida
+  del tercer parámetro de `composeReading` no puede romper a nadie más — y
+  `tsc -b` en verde lo confirma.
+- `WeekdayStat` **existe también en Vida** (`vida-patterns.utils.ts:523`), pero
+  es un tipo **local y propio**, no importado de hábitos: no hay acoplamiento.
+  `vida-review.utils.ts:639` solo nombra `composeReading` en un comentario.
+- **Lo de la tajada 1, que acaba de entrar:** el diff **no toca**
+  `HabitPanelTiles.tsx` ni `HabitStreakEpisodesChart.tsx` ni
+  `HabitPanel.module.scss`; las siete fichas, «Tu récord» sin fecha y «mejor
+  tramo» siguen donde estaban (comprobado en el código y con la suite entera en
+  verde). Lo único que `HabitPanel.tsx` cambia son dos `useMemo` y dos props.
+- **Aserciones borradas en las suites:** 13 líneas de `expect`, todas de
+  comportamiento que esta tajada mata a propósito («peor día», «Vas peor», el
+  `getWorstWeekday`, el tercer argumento de `composeReading`). **Una se fue sin
+  relevo y la apunto**: `expect(reading).not.toMatch(/propósito|identidad|recaíd/i)`
+  era un guardián de la regla de producto, no del veredicto. Los guardianes
+  nuevos (`HabitPanel.test.tsx:222` y `:574`, `habit-panel.utils.test.ts:350`)
+  cubren las frases prohibidas pero ya no «propósito» ni «identidad».
+
+**Estados.** Vacío: resuelto (frase `null` + `EmptyState`). Cargando y error: no
+se tocaron y siguen en `HabitPanel`. Texto largo: no aplica, el gráfico no
+imprime el nombre del hábito. Sin permisos: no aplica, todo el panel ya está tras
+el login. Móvil: **no remedido por mí** (ver 476). **El estado que esta tajada
+estrena y que sigue cojeando es «no hay bastante dato»**: existe, se dibuja y
+dice el umbral —eso está bien construido— pero miente en la cifra.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: la aritmética entró en
+`habit-panel.utils.ts`, no nació ningún `habit-metrics.utils.ts`, no nació un
+segundo gráfico de días de la semana y no se copió nada de
+`vida-patterns.utils.ts` (que tiene su propio `findOutlierDay` con otro umbral y
+otro dato). `getWorstWeekday` **se sustituyó**, no se dejó viva al lado de
+`getMostFailedWeekday`: comprobado, no queda ninguna función muerta.
+
+**Las dos desviaciones del render, juzgadas de forma independiente:**
+
+1. **«Días que fallaste» → «Días fallados»: bien sustituida.** «fallaste» está
+   literalmente en la lista del expediente, y «fallados» es el vocabulario que el
+   módulo ya usaba (el tooltip de `HEAD` decía «3 fallados» y la tabla decía
+   «Fallados»). Dice la verdad: la barra cuenta `failed`. **Pero deja el módulo
+   con dos varas de medir**, y esto es para el usuario, no para el constructor:
+   la frase aprobada del render —«Los viernes **fallas** 9 de 13 veces… donde más
+   **se te cae**»— pone el sujeto en la persona exactamente igual que «fallaste».
+   Si la regla es la que dice la sección 1, sobrevive por ser literal del render
+   y por no estar en la lista; si lo que importa es el espíritu, la frase buena
+   también habría que repensarla. **No es cosa de esta tajada decidirlo**, y el
+   constructor hizo lo correcto al no tocar la frase aprobada.
+2. **«4 veces o menos» → la cifra real del tramo: bien vista la contradicción,
+   mal rematada.** Comprobado en el render (`01-habitos-metricas.html:203`): dice
+   «Cada día ha aparecido **4 veces o menos**… Todavía no hay bastante para decir
+   dónde se te cae», y con el umbral en `>= 4` un día de exactamente 4 ya habla,
+   así que la frase del render es falsa en el borde: **el constructor tiene
+   razón**. Su sustitución arregla el borde y **conserva el otro error del
+   render**, el de llamar «apariciones» a las apariciones con registro; y ahí es
+   donde se le fue. La segunda mitad **sí es literal** del render, comprobado
+   carácter a carácter salvo la minúscula inicial. Y la frase del caso bueno
+   **también es literal** en su forma: el render dice «Los viernes fallas 9 de 13
+   veces. Es el día donde más se te cae, de largo.» y el código produce «Los
+   martes fallas 4 de 6 veces. Es el día donde más se te cae, de largo.»; el «, de
+   largo» condicional (`>= 1,5×` y `+2` fallos) es un acierto, porque escrito fijo
+   afirmaría una distancia inexistente.
+
+**Las tres cosas que declaró y no arregló, juzgadas:**
+
+- **`MEANINGFUL_DELTA_POINTS`: bien dejada escrita, no se cierra ahora.** Sigue
+  decidiendo un umbral de «cuándo se nombra la diferencia»; el nombre aguanta y
+  renombrar una constante exportada en la misma tajada que mata tres veredictos
+  mezcla dos cambios. Que se renombre cuando alguien la toque.
+- **`failRate` sin consumidor: hallazgo, y me inclino por borrarla.** Hoy solo la
+  lee un test, o sea que **el test prueba que existe, no que sirva**. El plan la
+  pedía para ordenar por tasa y eso no ha llegado. No devuelvo la tajada por
+  esto, pero si la segunda vuelta la borra, mejor: una cifra pública sin usuario
+  es la que acaba usándose mal (contando sobre `tracked` donde alguien esperará
+  `total`).
+- **`composeReading` pierde un parámetro: correcto y sin riesgo.** El tercer
+  argumento era el «punto flaco» y esa lectura se mudó al gráfico. Verificado que
+  no hay ningún consumidor fuera del panel ni en `HEAD` ni en el árbol.
+
+**«▼ el bajón»: queda fuera de esta tajada, y con razón.**
+`HabitWeeklyComplianceChart.tsx:134` no está en el diff, la cadena no es nueva ni
+modificada (el 474 habla de cadenas nuevas o modificadas), el 444 habla de **la
+frase que señala el día** —que es la del reparto por día de la semana— y «el
+bajón» no está en la lista de prohibidas. Además no es el mismo tipo de frase:
+«Vas peor» era un veredicto **sobre la persona**; «▼ el bajón · 40%» rotula **un
+punto del dato**. Dicho eso, el constructor tiene razón en que es lo que más se
+le parece en ese panel, y **el sitio donde eso se decide es un criterio nuevo,
+no esta revisión**: si el usuario lo quiere muerto, pide una tajada 5 o lo mete
+en la 4.
+
+**Lo que queda para prueba manual del usuario** (`/app/habits/:id` está tras el
+login y desde aquí no se entra): los cuatro pasos que él dejó escritos, y de esos
+el que **nadie ha podido ver**, ni él ni yo, es el (4): **la frase en un hábito de
+los de «evitar»**. La aritmética está comprobada y no se bifurca; lo que no se
+puede comprobar sin ojos es si «Los martes fallas 4 de 6 veces» se entiende al
+derecho cuando fallar significa «hiciste lo que querías evitar». Añado uno: mirar
+el panel de un hábito **poco registrado** en un rango de 90 días y leer la frase
+del caso de callar — es justo la que devuelve esta tajada.
+
+**Lo que no revisé:** no remedí los anchos (376/768) ni el contraste en oscuro;
+razoné por qué el riesgo es bajo y lo dejo dicho arriba en vez de firmarlo. No
+abrí el navegador en ningún momento: no hacía falta para lo que se devuelve, y no
+se tocó ningún estilo.
+
+### Tajada 2 · revisión de la corrección — la frase que calla ya cuenta lo que dice
+
+**Veredicto: aceptada.** El defecto por el que devolví la tajada está cerrado y
+lo comprobé sembrando yo el mismo caso, no leyendo su test; los dos añadidos que
+pidió el coordinador (`failRate` fuera, guardián de producto) están donde dice; y
+nada de lo que ya di por bueno se ha movido. Queda **una prueba manual real** —el
+hábito de los de «evitar»— y **tres hallazgos escritos**, ninguno de los cuales
+justifica una tercera vuelta.
+
+**1 · El defecto devuelto, cerrado.** Sembrado de nuevo por mí (arnés vitest
+propio, borrado), 63 días con **martes que aparecen nueve veces y están
+registrados tres**, el resto sin un solo registro:
+
+```
+martes → total 9 · tracked 3 · untracked 6
+frase  → «De cada día de la semana hay 3 registros o menos en este tramo.
+          Con 4 ya se puede comparar: todavía no hay bastante para decir
+          dónde se te cae.»   (143 caracteres)
+contiene «9»: false · contiene «aparic/aparec»: false
+```
+
+Y el segundo, lunes 6 registros / martes 3 sobre los mismos 63 días: «**Solo los
+lunes llegan a 4 registros en este tramo.** Con 2 días ya se puede comparar.» —
+cierto: los lunes tienen 6 registros y ningún otro día llega a 4. **Las dos
+frases dicen ahora exactamente lo que cuentan**, y el 9 no se cuela por ningún
+lado: lo comprobé sobre la cadena, no sobre su aserción.
+
+**Mutación, hecha por mí** (devolví las dos cadenas al texto que devolvió la
+tajada, corrí las dos suites y restauré el archivo, verificado con `md5sum`):
+
+```
+× con menos de 4 apariciones no señala nada y dice cuánto falta (criterio 442)
+× con un solo día comparable tampoco compara, y lo dice (criterio 442)
+× al callar cuenta registros, no apariciones en el calendario
+× con un solo día comparable tampoco llama apariciones a los registros
+× con pocas apariciones, calla y dice cuántas hay
+× con pocas apariciones por día el panel calla y dice qué le falta
+      Tests  6 failed | 73 passed (79)
+```
+
+Seis casos, los seis que él declaró. **Los tests nuevos prueban algo.**
+
+**2 · El vocabulario del gráfico, mirando los tres a la vez.** Ahora conviven
+cuatro nombres para el mismo conjunto: la frase dice «**registros**», el
+`aria-label` dice «**apariciones con registro**», la columna oculta dice
+«**Apariciones con registro**», el tooltip dice «**con registro**» y la frase del
+caso bueno dice «**veces**». **Ninguno miente** —eso es lo que importaba y es lo
+que se arregló—, pero un lector de pantalla oye una palabra y el que mira lee
+otra para la misma cifra. **Hallazgo, no devolución**: si alguien vuelve a tocar
+este gráfico, que unifique en «registros», que es el más corto y el menos
+ambiguo. Y ahí es donde cae la única esquina que queda floja: «Los martes fallas
+4 de 6 **veces**» sigue nombrando `tracked` como «veces» aunque los martes hayan
+aparecido trece. **No lo devuelvo y no cambio de criterio a mitad**: es literal
+del render que aprobó el usuario y ya lo di por bueno en la primera vuelta. Si
+algún día el usuario quiere la frase exacta, «4 de 6 registros» la arregla y de
+paso unifica.
+
+**3 · `failRate`, borrada y sin huérfanos.** `git grep failRate HEAD` → **cero**
+(nació en esta tajada, nunca llegó a `HEAD`). En el árbol solo queda el
+comentario de `tracked`, que dice qué era y por qué se fue —una tasa sobre
+`tracked` que alguien iba a leer como si fuera sobre `total`—. Y lo confirmé en
+el dato: `Object.keys` de un `WeekdayStat` real son `weekday, label, longLabel,
+pluralLabel, total, covered, failed, untracked, percent, tracked`. Ningún
+consumidor, ninguna aserción huérfana.
+
+**4 · El guardián: su lectura es correcta y la mía de la primera vuelta era
+imprecisa. Lo escribo aquí para que no quede a medias.** En `HEAD` había **una
+sola** aserción `not.toMatch(/propósito|identidad|recaíd/i)`,
+`habit-panel.utils.test.ts:348`, sobre `composeReading`. Su diff la borraba de un
+sitio y la reponía en otro: hoy vive en `:504`, sobre `composeReading`, dentro
+del test reescrito. **Nunca estuvo desprotegido `composeReading`**; lo que faltaba
+era el relevo sobre la frase que heredó el papel, y eso es exactamente lo que
+entra ahora en `:400`, dentro del recorrido de los cinco estados de
+`composeWeekdayFailNote`. Quedan **dos** guardianes donde antes había uno.
+
+**5 · Anchos, remedidos por mí** con `iframe` del ancho exacto (no dentro de un
+`flex`), el gráfico dentro de la rejilla real `.charts` del panel, los cuatro
+estados a la vez:
+
+| Ancho | `scrollWidth` / `clientWidth` | Desbordados fuera de `.srOnly` | La frase larga (143 car) |
+|---|---|---|---|
+| **375 px** | 360 = 360 | **0** (de 80 nodos desbordados, los 80 dentro de `.srOnly`, que recorta a propósito) | 290 px, **3 líneas**, 50 px de alto |
+| **768 px** | 753 = 753 | **0** | 393 px, **3 líneas**, 50 px de alto |
+
+Dos apuntes sobre sus cifras, ninguno grave: el ancho útil a 375 es **360**, no
+375, porque el `iframe` se queda la barra de scroll vertical —lo que importa,
+`scrollWidth === clientWidth`, se cumple igual—; y a **768 px me salen 3 líneas,
+no 2**, porque en la rejilla real la frase tiene 393 px y no los 683 que él midió
+(su arnés ponía el gráfico a todo lo ancho; en el panel comparte fila con
+«Cumplimiento semana a semana»). Es una línea más de la que él reporta, no una
+menos.
+
+**¿Empujan algo que importe las tres líneas a 375?** No. La frase es el último
+nodo del cuerpo del gráfico, el panel entero es una columna a ese ancho y lo
+único que pasa es que la tarjeta mide **358 px en vez de 341** y el gráfico
+siguiente baja 17 px. Nada se solapa y nada se recorta. **Lo que sí encontré
+midiendo, y va como hallazgo:** el tooltip se coloca con un `top` en **porcentaje
+de `.plot`**, y `.plot` ahora incluye la frase —224 px con tres líneas, 208 con
+dos, frente a los 162 del `svg`—, así que **el globo aparece más abajo del
+extremo de la barra cuanto más larga sea la frase**. Es de ratón, o sea de
+escritorio, no rompe nada y ya pasaba antes en pequeño; se arregla el día que
+alguien saque la frase de `.plot` o le dé al tooltip un ancla en unidades del
+`viewBox`.
+
+**6 · Nada de lo aceptado se ha movido.** Comprobado en el código y en el dato:
+«Días fallados» en subtítulo, leyenda, tabla y `aria-label`; la barra sigue sin
+dibujarse con `tracked === 0 || failed === 0` y el apagado por umbral sigue en
+0,3 / 0,6 / 0,9; `MIN_TRACKED_PER_WEEKDAY = 4`, `MIN_WEEKDAYS_COMPARABLE = 2`,
+`BY_FAR_RATIO = 1.5`, `BY_FAR_MARGIN = 2`. Resembrados los bordes: `tracked = 3`
+calla, `= 4` habla («Los martes fallas 4 de 4 veces»), `= 5` habla; el caso
+obligatorio del 441 sigue señalando **martes** con domingos sin registro; empate
+→ «Ningún día destaca…»; sin fallos → «En este tramo no hay ningún día fallado»;
+cero registros → `null`. De la tajada 1 no se toca un archivo:
+`HabitPanelTiles.tsx`, `HabitStreakEpisodesChart.tsx` y los `.scss` **no aparecen
+en `git status`**, así que las siete fichas, «Tu récord» sin fecha y «mejor
+tramo» siguen intactos.
+
+**Puertas, corridas enteras por mí:** `pnpm typecheck` exit 0 · `pnpm lint`
+`✖ 14 problems (14 errors, 0 warnings)` · `pnpm test` `Tests 2 failed | 2217
+passed (2219)` (los dos de `SearchSelect`; `IconPicker` no salió) · `pnpm build`
+exit 0, chunk **1.153,07 kB**, **CSS 279,61 kB idéntico** (no baja: nada que
+investigar). Igual a la línea base que declara el coordinador. `git diff --stat`
+sigue siendo cinco archivos de `src/features/habits`: **cero en `graphql/`, cero
+en `**/api/`, cero en `src/shared/api/`, cero `.scss`** — la caché de nadie se
+tira.
+
+**Criterios que quedan pendientes y de quién son:** el **480** (del usuario,
+`/app/*` tras el login) y, dentro de él, el punto que nadie ha podido ver todavía
+—**la frase en un hábito de los de «evitar»**—. La aritmética no se bifurca y
+está comprobada; lo que falta es leerla con ojos. Añado el que estrena esta
+vuelta: **mirar un hábito poco registrado a 90 días** y comprobar que la frase
+dice «hay N registros o menos», que es la que se corrigió.
+
+**Nota de entorno (no la toco, la digo):** la fila de `pnpm test` de
+`ENVIRONMENT.md` sigue diciendo «2 fallos de **2203**»; con esta tajada dentro
+son **2219**. El número de fallos es el mismo y el que manda; el total lleva dos
+tajadas desfasado.

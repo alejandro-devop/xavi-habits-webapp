@@ -15,10 +15,13 @@ import {
   buildWeekdayBreakdown,
   buildWeeklyCompliance,
   composeReading,
+  composeWeekdayFailNote,
   countComebacks,
   countDaysInclusive,
   getWeekdayIndex,
-  getWorstWeekday,
+  getComparableWeekdays,
+  getMostFailedWeekday,
+  leadsByFar,
   hasAnyDifficulty,
   resolvePreviousWindow,
   resolveRangeWindow,
@@ -250,14 +253,152 @@ describe('habit-panel.utils · buildWeekdayBreakdown', () => {
     expect(sunday).toMatchObject({ total: 2, covered: 0, failed: 1, untracked: 1, percent: 0 })
   })
 
-  it('getWorstWeekday señala el día más flojo', () => {
-    const stats = buildWeekdayBreakdown(daysFrom('2026-09-07', 'aaaaaafaaaaaaf'))
-    expect(getWorstWeekday(stats)?.longLabel).toBe('domingo')
+  it('cuenta las apariciones con registro aparte del total', () => {
+    // Dos domingos: uno fallado, otro sin registro. Solo uno cuenta como aparición.
+    const sunday = buildWeekdayBreakdown(daysFrom('2026-09-07', 'aaaaaafaaaaaa.'))[6]
+    expect(sunday).toMatchObject({ total: 2, tracked: 1, failed: 1, untracked: 1 })
+  })
+})
+
+/**
+ * El umbral (`MIN_TRACKED_PER_WEEKDAY = 4`) manda sobre todo lo de aquí: decide
+ * si el panel habla o calla, y por eso cada caso de abajo es un estado distinto
+ * del panel, no una variante del mismo.
+ */
+describe('habit-panel.utils · dónde se falla, contado como fallos', () => {
+  /** `pattern` son los siete días de una semana, repetidos `count` veces. */
+  function weeks(pattern: string, count: number): HabitDayEntry[] {
+    return daysFrom('2026-09-07', pattern.repeat(count))
+  }
+
+  it('señala el día de más fallos, no el de menos cumplimiento (criterio 441)', () => {
+    // Seis domingos SIN REGISTRAR y 0 fallados; seis martes con 4 fallados.
+    // Por porcentaje de cumplimiento ganaba el domingo (0%); por fallos, el martes.
+    const days = [...weeks('afaaaa.', 4), ...weeks('aaaaaa.', 2)]
+    const stats = buildWeekdayBreakdown(days)
+
+    expect(stats[6]).toMatchObject({ longLabel: 'domingo', tracked: 0, failed: 0, untracked: 6 })
+    expect(stats[1]).toMatchObject({ longLabel: 'martes', tracked: 6, failed: 4 })
+    expect(stats[6].percent).toBe(0)
+
+    expect(getMostFailedWeekday(stats)?.longLabel).toBe('martes')
+    expect(composeWeekdayFailNote(stats, getMostFailedWeekday(stats))).toBe(
+      'Los martes fallas 4 de 6 veces. Es el día donde más se te cae, de largo.',
+    )
   })
 
-  it('getWorstWeekday devuelve null si todos van igual o no hay nada medido', () => {
-    expect(getWorstWeekday(buildWeekdayBreakdown([]))).toBeNull()
-    expect(getWorstWeekday(buildWeekdayBreakdown(daysFrom('2026-09-07', 'aaaaaaa')))).toBeNull()
+  it('un día sin registrar no entra en el denominador (criterio 440)', () => {
+    // Seis viernes: dos fallados, dos cumplidos y dos sin registrar.
+    const days = [...weeks('aaaafa.', 2), ...weeks('aaaaaa.', 2), ...weeks('aaaa.a.', 2)]
+    const friday = buildWeekdayBreakdown(days)[4]
+    expect(friday).toMatchObject({ total: 6, tracked: 4, covered: 2, failed: 2, untracked: 2 })
+  })
+
+  it('con menos de 4 apariciones no señala nada y dice cuánto falta (criterio 442)', () => {
+    const stats = buildWeekdayBreakdown(weeks('afaaaa.', 3))
+    expect(getComparableWeekdays(stats)).toHaveLength(0)
+    expect(getMostFailedWeekday(stats)).toBeNull()
+    expect(composeWeekdayFailNote(stats, null)).toBe(
+      'De cada día de la semana hay 3 registros o menos en este tramo. Con 4 ya se puede comparar: todavía no hay bastante para decir dónde se te cae.',
+    )
+  })
+
+  it('con un solo día comparable tampoco compara, y lo dice (criterio 442)', () => {
+    const stats = buildWeekdayBreakdown(weeks('f......', 4))
+    expect(getComparableWeekdays(stats)).toHaveLength(1)
+    expect(getMostFailedWeekday(stats)).toBeNull()
+    expect(composeWeekdayFailNote(stats, null)).toBe(
+      'Solo los lunes llegan a 4 registros en este tramo. Con 2 días ya se puede comparar.',
+    )
+  })
+
+  it('al callar cuenta registros, no apariciones en el calendario', () => {
+    // Nueve semanas (63 días): los martes aparecen NUEVE veces en el tramo,
+    // pero solo tres están registrados. La frase tiene que hablar de los tres
+    // registros y no decir que el martes «apareció» tres veces.
+    const days = [...weeks('.f.....', 3), ...weeks('.......', 6)]
+    const stats = buildWeekdayBreakdown(days)
+    expect(stats[1]).toMatchObject({ longLabel: 'martes', total: 9, tracked: 3, untracked: 6 })
+
+    const note = composeWeekdayFailNote(stats, getMostFailedWeekday(stats))
+    expect(note).toBe(
+      'De cada día de la semana hay 3 registros o menos en este tramo. Con 4 ya se puede comparar: todavía no hay bastante para decir dónde se te cae.',
+    )
+    // La cifra que se dice es la de registros; la de apariciones sería 9.
+    expect(note).not.toMatch(/aparec/i)
+    expect(note).not.toContain('9')
+  })
+
+  it('con un solo día comparable tampoco llama apariciones a los registros', () => {
+    // Nueve semanas: lunes con 6 registros, martes con 3; los martes siguen
+    // apareciendo nueve veces en el tramo.
+    const stats = buildWeekdayBreakdown([
+      ...weeks('ff.....', 3),
+      ...weeks('a......', 3),
+      ...weeks('.......', 3),
+    ])
+    expect(stats[0]).toMatchObject({ longLabel: 'lunes', total: 9, tracked: 6 })
+    expect(stats[1]).toMatchObject({ longLabel: 'martes', total: 9, tracked: 3 })
+
+    const note = composeWeekdayFailNote(stats, getMostFailedWeekday(stats))
+    expect(note).toBe(
+      'Solo los lunes llegan a 4 registros en este tramo. Con 2 días ya se puede comparar.',
+    )
+    expect(note).not.toMatch(/aparic|aparec/i)
+  })
+
+  it('no desempata en silencio cuando dos días empatan arriba (criterio 443)', () => {
+    const stats = buildWeekdayBreakdown([...weeks('ffaaaa.', 3), ...weeks('aaaaaa.', 3)])
+    expect(getMostFailedWeekday(stats)).toBeNull()
+    expect(composeWeekdayFailNote(stats, null)).toBe(
+      'Ningún día destaca en este tramo: 2 días empatan a 3 fallos.',
+    )
+  })
+
+  it('sin ningún fallo no inventa un día flojo (criterio 443)', () => {
+    const stats = buildWeekdayBreakdown(weeks('aaaaaaa', 4))
+    expect(getMostFailedWeekday(stats)).toBeNull()
+    expect(composeWeekdayFailNote(stats, null)).toBe('En este tramo no hay ningún día fallado.')
+  })
+
+  it('«de largo» solo se dice cuando la ventaja es de verdad', () => {
+    // Lunes 3 fallos de 4, martes 2 de 4: va por delante, pero no de largo.
+    const close = buildWeekdayBreakdown([
+      ...weeks('ffaaaa.', 2),
+      ...weeks('faaaaa.', 1),
+      ...weeks('aaaaaa.', 1),
+    ])
+    const closeTop = getMostFailedWeekday(close)
+    expect(closeTop?.longLabel).toBe('lunes')
+    expect(leadsByFar(close, closeTop!)).toBe(false)
+    expect(composeWeekdayFailNote(close, closeTop)).toBe(
+      'Los lunes fallas 3 de 4 veces. Es el día donde más se te cae.',
+    )
+  })
+
+  it('sin ninguna aparición con registro no escribe nada', () => {
+    expect(composeWeekdayFailNote(buildWeekdayBreakdown([]), null)).toBeNull()
+    expect(composeWeekdayFailNote(buildWeekdayBreakdown(weeks('.......', 4)), null)).toBeNull()
+  })
+
+  it('ni la frase ni sus estados contienen reproche (criterios 444 y 446)', () => {
+    const prohibidas =
+      /sueles fallar|tu punto flaco|tu peor día|incumpliste|fallaste|no lo lograste|deberías|intenta|ánimo|llevas \d+ días sin|vas peor|vas mejor/i
+    const stats = [
+      buildWeekdayBreakdown([...weeks('afaaaa.', 4), ...weeks('aaaaaa.', 2)]),
+      buildWeekdayBreakdown(weeks('afaaaa.', 3)),
+      buildWeekdayBreakdown(weeks('f......', 4)),
+      buildWeekdayBreakdown([...weeks('ffaaaa.', 3), ...weeks('aaaaaa.', 3)]),
+      buildWeekdayBreakdown(weeks('aaaaaaa', 4)),
+    ]
+    for (const stat of stats) {
+      const note = composeWeekdayFailNote(stat, getMostFailedWeekday(stat)) ?? ''
+      expect(note).not.toMatch(prohibidas)
+      expect(note).not.toMatch(/sueles|siempre|nunca|otra vez|ya van/i)
+      // El guardián que heredó esta frase de `composeReading`: la regla de
+      // producto del módulo, que no es la lista de frases prohibidas.
+      expect(note).not.toMatch(/propósito|identidad|recaíd/i)
+    }
   })
 })
 
@@ -320,32 +461,48 @@ describe('habit-panel.utils · composeReading', () => {
   const worse = buildRangeSummary(daysFrom('2026-09-07', 'aaaaffffff'))
 
   it('no escribe nada sin periodo anterior con el que comparar', () => {
-    expect(composeReading(current, null, null)).toBeNull()
+    expect(composeReading(current, null)).toBeNull()
   })
 
   it('no escribe nada si el periodo anterior está vacío', () => {
-    expect(composeReading(current, buildRangeSummary([]), null)).toBeNull()
+    expect(composeReading(current, buildRangeSummary([]))).toBeNull()
   })
 
-  it('dice que vas mejor cuando el porcentaje sube', () => {
-    const reading = composeReading(current, worse, null)
-    expect(reading).toBe(
-      'Vas mejor que en el periodo anterior: cumpliste el 80% de los días frente al 40%.',
+  it('dice las dos cifras y la diferencia, sin veredicto, cuando sube', () => {
+    expect(composeReading(current, worse)).toBe(
+      'Cumpliste el 80% de los días de este tramo; en el tramo anterior, el 40%. Son 40 puntos más.',
     )
   })
 
-  it('dice que vas peor cuando el porcentaje baja', () => {
-    expect(composeReading(worse, current, null)).toContain('Vas peor que en el periodo anterior')
+  it('dice las dos cifras y la diferencia, sin veredicto, cuando baja', () => {
+    expect(composeReading(worse, current)).toBe(
+      'Cumpliste el 40% de los días de este tramo; en el tramo anterior, el 80%. Son 40 puntos menos.',
+    )
   })
 
-  it('añade el punto flaco solo cuando hay un día por debajo de la media', () => {
-    const worst = getWorstWeekday(buildWeekdayBreakdown(daysFrom('2026-09-07', 'aaaaaafaaaaaaf')))
-    expect(composeReading(current, worse, worst)).toContain('Donde se te cae: los domingos, al 0%.')
+  it('con una diferencia pequeña se queda en las dos cifras', () => {
+    // 40 de 50 (80%) frente a 41 de 50 (82%): dos puntos no se nombran.
+    const fifty = buildRangeSummary(daysFrom('2026-09-07', 'a'.repeat(40) + '.'.repeat(10)))
+    const almost = buildRangeSummary(daysFrom('2026-09-07', 'a'.repeat(41) + '.'.repeat(9)))
+    expect(composeReading(fifty, almost)).toBe(
+      'Cumpliste el 80% de los días de este tramo; en el tramo anterior, el 82%.',
+    )
   })
 
-  it('nunca habla de propósito ni de identidad', () => {
-    const reading = composeReading(current, worse, null) ?? ''
-    expect(reading).not.toMatch(/propósito|identidad|recaíd/i)
+  it('no emite ningún veredicto sobre el usuario (criterios 445 y 446)', () => {
+    const readings = [
+      composeReading(current, worse) ?? '',
+      composeReading(worse, current) ?? '',
+      composeReading(
+        buildRangeSummary(daysFrom('2026-09-07', 'a'.repeat(40) + '.'.repeat(10))),
+        buildRangeSummary(daysFrom('2026-09-07', 'a'.repeat(41) + '.'.repeat(9))),
+      ) ?? '',
+    ]
+    for (const reading of readings) {
+      expect(reading).not.toMatch(/vas (peor|mejor|parecido)/i)
+      expect(reading).not.toMatch(/deberías|intenta|ánimo|sueles/i)
+      expect(reading).not.toMatch(/propósito|identidad|recaíd/i)
+    }
   })
 })
 

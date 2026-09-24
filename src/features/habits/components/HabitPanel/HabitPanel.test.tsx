@@ -1,9 +1,15 @@
 import { screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Habit } from '@/features/habits/types/habit.types'
+import type {
+  Habit,
+  HabitDayEntry,
+  HabitDayStatus,
+} from '@/features/habits/types/habit.types'
 import {
   buildWeekdayBreakdown,
-  getWorstWeekday,
+  composeWeekdayFailNote,
+  getMostFailedWeekday,
+  getWeekdayIndex,
   type RangeSummary,
   type StreakEpisode,
 } from '@/features/habits/utils/habit-panel.utils'
@@ -235,36 +241,105 @@ describe('HabitPanelTiles', () => {
 })
 
 describe('HabitWeekdayChart', () => {
-  // Dos semanas completas con los dos domingos fallados.
-  const days = [...'aaaaaafaaaaaaf'].map((token, index) => {
-    const date = `2026-09-${String(7 + index).padStart(2, '0')}`
-    return {
-      date,
-      status: token === 'a' ? ('accomplished' as const) : ('failed' as const),
+  /** `pattern` son los siete días de una semana (L…D), repetidos `count` veces. */
+  function weekdayDays(pattern: string, count: number): HabitDayEntry[] {
+    return [...pattern.repeat(count)].map((token, index) => ({
+      date: addDaysToString('2026-09-07', index),
+      status:
+        token === '.' ? 'empty' : token === 'a' ? 'accomplished' : ('failed' as HabitDayStatus),
       followUp: null,
-    }
-  })
-  const stats = buildWeekdayBreakdown(days)
-  const worst = getWorstWeekday(stats)
+    }))
+  }
 
-  it('marca el peor día con una etiqueta, no solo con el color', () => {
+  // Seis semanas: los domingos sin registrar, los martes fallados cuatro veces.
+  const stats = buildWeekdayBreakdown([
+    ...weekdayDays('afaaaa.', 4),
+    ...weekdayDays('aaaaaa.', 2),
+  ])
+  const most = getMostFailedWeekday(stats)
+  const note = composeWeekdayFailNote(stats, most)
+
+  it('marca el día de más fallos con una etiqueta, no solo con el color', () => {
     renderWithProviders(
-      <HabitWeekdayChart stats={stats} worst={worst} rangeLabel="90 días" />,
+      <HabitWeekdayChart stats={stats} most={most} note={note} rangeLabel="90 días" />,
     )
 
-    expect(screen.getByText('peor día')).toBeInTheDocument()
-    expect(screen.getByText('Peor día: domingo')).toBeInTheDocument()
+    expect(screen.getByText('más fallos')).toBeInTheDocument()
+    // La leyenda nombra el día; no lo califica.
+    const legend = screen.getByText('Días fallados').closest('ul')!
+    expect(within(legend).getByText('martes')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/peor día/i)
   })
 
-  it('lleva una tabla con los mismos números que dibuja', () => {
-    renderWithProviders(
-      <HabitWeekdayChart stats={stats} worst={worst} rangeLabel="90 días" />,
+  it('cuenta fallos, no porcentajes: cada barra lleva su cuenta encima', () => {
+    const { container } = renderWithProviders(
+      <HabitWeekdayChart stats={stats} most={most} note={note} rangeLabel="90 días" />,
     )
 
-    const table = screen.getByRole('table', { name: 'Cumplimiento por día de la semana' })
+    const svg = container.querySelector('svg')!
+    const values = [...svg.querySelectorAll('text')].map((node) => node.textContent)
+    // Los fallos del martes, y el domingo sin ninguna aparición con registro.
+    expect(values).toContain('4')
+    expect(values).toContain('—')
+    // Ningún porcentaje dibujado.
+    expect(values.some((value) => value?.includes('%'))).toBe(false)
+  })
+
+  it('dice el umbral en voz alta debajo del gráfico', () => {
+    renderWithProviders(
+      <HabitWeekdayChart stats={stats} most={most} note={note} rangeLabel="90 días" />,
+    )
+
+    expect(
+      screen.getByText('Los martes fallas 4 de 6 veces. Es el día donde más se te cae, de largo.'),
+    ).toBeInTheDocument()
+  })
+
+  it('con pocas apariciones, calla y dice cuántas hay', () => {
+    const few = buildWeekdayBreakdown(weekdayDays('afaaaa.', 3))
+    const fewMost = getMostFailedWeekday(few)
+    expect(fewMost).toBeNull()
+
+    renderWithProviders(
+      <HabitWeekdayChart
+        stats={few}
+        most={fewMost}
+        note={composeWeekdayFailNote(few, fewMost)}
+        rangeLabel="30 días"
+      />,
+    )
+
+    expect(screen.queryByText('más fallos')).not.toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'De cada día de la semana hay 3 registros o menos en este tramo. Con 4 ya se puede comparar: todavía no hay bastante para decir dónde se te cae.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('lleva una tabla con los mismos números que dibuja, y el hueco aparte', () => {
+    renderWithProviders(
+      <HabitWeekdayChart stats={stats} most={most} note={note} rangeLabel="90 días" />,
+    )
+
+    const table = screen.getByRole('table', {
+      name: 'Días fallados, cumplidos y sin registro por día de la semana',
+    })
+    const tuesday = within(table).getByRole('row', { name: /martes/ })
+    expect(within(tuesday).getAllByRole('cell').map((cell) => cell.textContent)).toEqual([
+      '4',
+      '2',
+      '0',
+      '6',
+    ])
     const sunday = within(table).getByRole('row', { name: /domingo/ })
-    expect(within(sunday).getByText('0 de 2')).toBeInTheDocument()
-    expect(within(sunday).getByText('0%')).toBeInTheDocument()
+    // Seis domingos sin registro: cero fallados, y el hueco dicho como hueco.
+    expect(within(sunday).getAllByRole('cell').map((cell) => cell.textContent)).toEqual([
+      '0',
+      '0',
+      '6',
+      '0',
+    ])
   })
 })
 
@@ -421,5 +496,108 @@ describe('HabitPanel · el tramo entero, con el rango en 1 año', () => {
     expect(card).not.toBeNull()
     expect(within(card!).getByText('En el último año')).toBeInTheDocument()
     expect(within(card!).queryByText(/365 d\b/)).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * El panel entero, con el caso obligatorio del criterio 441 montado de punta a
+ * punta: lo que se cuenta tiene que ser lo que se dice. La lección de la tajada
+ * 1 era justo esta —una frase decidida contra lo que cabía en el dibujo—, así
+ * que aquí se comprueba sobre el panel, no sobre el gráfico suelto.
+ */
+describe('HabitPanel · dónde se falla', () => {
+  const today = getTodayString()
+  const dayAgo = (n: number) => addDaysToString(today, -n)
+
+  const panelHabit: Habit = {
+    ...habit,
+    streak: 1,
+    maxStreak: 4,
+    startDate: addDaysToString(today, -200),
+  }
+
+  /** Los últimos 84 días (12 semanas): todo cumplido salvo lo que diga `mark`. */
+  function seed(mark: (weekday: number, weekIndex: number) => 'a' | 'f' | '.') {
+    const groups: unknown[] = []
+    for (let i = 83; i >= 0; i -= 1) {
+      const date = dayAgo(i)
+      const token = mark(getWeekdayIndex(date), Math.floor((83 - i) / 7))
+      if (token === '.') continue
+      groups.push({
+        date,
+        followUps: [
+          {
+            id: `fu-${date}`,
+            date,
+            habitId: habit.id,
+            isAccomplished: token === 'a',
+            isFailed: token === 'f',
+            isLifeline: false,
+            difficulty: null,
+            count: null,
+            time: null,
+            notes: null,
+          },
+        ],
+      })
+    }
+    followUpGroups.value = groups
+  }
+
+  it('señala el día de más fallos aunque otro día esté entero sin registrar', () => {
+    // Domingos sin registrar (0 fallos, 0% de cumplimiento) y martes fallados
+    // cuatro de doce veces. Por porcentaje ganaba el domingo; por fallos, el martes.
+    seed((weekday, week) => {
+      if (weekday === 6) return '.'
+      if (weekday === 1 && week < 4) return 'f'
+      return 'a'
+    })
+
+    renderWithProviders(<HabitPanel habit={panelHabit} range={90} onRangeChange={() => {}} />)
+
+    expect(screen.getByText(/^Los martes fallas 4 de 12 veces\./)).toBeInTheDocument()
+    expect(screen.getByText('más fallos')).toBeInTheDocument()
+    // El domingo, sin un solo registro, solo aparece en la tabla oculta y con
+    // sus ceros y su hueco: no se señala ni se pinta como fallo en el dibujo.
+    const chart = screen.getByRole('img', { name: /Días fallados por día de la semana/ })
+    expect(chart.getAttribute('aria-label')).not.toMatch(/domingo/i)
+    const sunday = within(screen.getByRole('table', { name: /Días fallados, cumplidos/ }))
+      .getByRole('row', { name: /domingo/ })
+    expect(within(sunday).getAllByRole('cell').map((cell) => cell.textContent)).toEqual([
+      '0',
+      '0',
+      '13',
+      '0',
+    ])
+  })
+
+  it('no queda ni un veredicto en el panel: ni «vas peor» ni «peor día»', () => {
+    seed((weekday, week) => (weekday === 1 && week < 4 ? 'f' : 'a'))
+
+    renderWithProviders(<HabitPanel habit={panelHabit} range={90} onRangeChange={() => {}} />)
+
+    const text = document.body.textContent ?? ''
+    expect(text).not.toMatch(/vas (peor|mejor|parecido)/i)
+    expect(text).not.toMatch(/peor día|punto flaco|fallaste|deber[ií]as|intenta|ánimo/i)
+    // La comparación sigue existiendo: las dos cifras, sin juicio.
+    expect(screen.getByText(/Cumpliste el \d+% de los días de este tramo/)).toBeInTheDocument()
+  })
+
+  it('con pocas apariciones por día el panel calla y dice qué le falta', () => {
+    // Solo las tres últimas semanas registradas: tres apariciones por día.
+    seed((weekday, week) => {
+      if (week < 9) return '.'
+      if (weekday === 1) return 'f'
+      return 'a'
+    })
+
+    renderWithProviders(<HabitPanel habit={panelHabit} range={90} onRangeChange={() => {}} />)
+
+    expect(screen.queryByText('más fallos')).not.toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'De cada día de la semana hay 3 registros o menos en este tramo. Con 4 ya se puede comparar: todavía no hay bastante para decir dónde se te cae.',
+      ),
+    ).toBeInTheDocument()
   })
 })

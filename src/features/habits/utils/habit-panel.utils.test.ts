@@ -6,6 +6,7 @@ import type {
   HabitFollowUp,
 } from '@/features/habits/types/habit.types'
 import {
+  buildAverageDifficulty,
   buildDayEntries,
   buildDifficultySeries,
   buildGoalSeries,
@@ -385,5 +386,36 @@ describe('habit-panel.utils · cantidad y dificultad', () => {
     expect(buildDifficultySeries(days)).toEqual([
       { weekStart: '2026-09-07', label: expect.any(String), average: 0, samples: 1 },
     ])
+  })
+})
+
+describe('habit-panel.utils · buildAverageDifficulty', () => {
+  it('sin ningún día con dificultad devuelve null: un cero aquí sería mentira', () => {
+    expect(buildAverageDifficulty(daysFrom('2026-09-07', 'aaff'))).toBeNull()
+    expect(buildAverageDifficulty([])).toBeNull()
+  })
+
+  it('promedia solo los días CON dificultad y dice sobre cuántos', () => {
+    const days = daysFrom('2026-09-07', 'aaaa')
+    days[0].followUp!.difficulty = 4
+    days[1].followUp!.difficulty = 1
+    // days[2] y days[3] se quedan sin anotar: no entran en el denominador.
+
+    expect(buildAverageDifficulty(days)).toEqual({ average: 2.5, daysWithDifficulty: 2 })
+  })
+
+  it('un cero anotado sí cuenta: «muy fácil» es un dato, no un hueco', () => {
+    const days = daysFrom('2026-09-07', 'aa')
+    days[0].followUp!.difficulty = 0
+
+    expect(buildAverageDifficulty(days)).toEqual({ average: 0, daysWithDifficulty: 1 })
+  })
+
+  it('también cuenta la dificultad de un día fallado o de salvavidas', () => {
+    const days = daysFrom('2026-09-07', 'fl')
+    days[0].followUp!.difficulty = 4
+    days[1].followUp!.difficulty = 2
+
+    expect(buildAverageDifficulty(days)).toEqual({ average: 3, daysWithDifficulty: 2 })
   })
 })

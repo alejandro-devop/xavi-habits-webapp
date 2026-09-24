@@ -12,6 +12,14 @@ const MAX_BAR_WIDTH = 70
 
 type Props = {
   episodes: StreakEpisode[]
+  /**
+   * `habit.maxStreak`: el récord de **toda la vida** del hábito. Se usa solo
+   * para decir que el mejor tramo de aquí no es el récord — nunca para
+   * rotularlo, y nunca con una fecha, que es un dato que no existe.
+   */
+  lifetimeRecordDays?: number
+  /** El récord es la racha que sigue viva: entonces no es «de antes». */
+  recordIsOngoing?: boolean
 }
 
 function plural(length: number): string {
@@ -20,9 +28,15 @@ function plural(length: number): string {
 
 /**
  * Cada barra es un episodio con principio y fin; los huecos entre barras son
- * las roturas. El récord se distingue en violeta **y** va rotulado.
+ * las roturas. El mejor tramo **del rango** se distingue en violeta y va
+ * rotulado — y se llama «mejor tramo», no «récord»: el récord es
+ * `habit.maxStreak` y vive en su propia ficha, arriba.
  */
-export function HabitStreakEpisodesChart({ episodes }: Props) {
+export function HabitStreakEpisodesChart({
+  episodes,
+  lifetimeRecordDays,
+  recordIsOngoing = false,
+}: Props) {
   const [hovered, setHovered] = useState<number | null>(null)
 
   const truncated = episodes.length > MAX_STREAK_EPISODES
@@ -34,6 +48,18 @@ export function HabitStreakEpisodesChart({ episodes }: Props) {
   const centerOf = (index: number) => slot * index + slot / 2
   const heightOf = (length: number) => Math.max(3, (length / longest) * (BASELINE - TOP))
   const hoveredEpisode = hovered === null ? null : visible[hovered]
+  // Ojo: `longest` es el de las barras **dibujadas** y sirve para la escala. La
+  // frase de abajo habla del **tramo entero**, así que mide sobre `episodes`:
+  // con el truncado, la racha récord puede estar dentro del tramo y solo no
+  // dibujarse, y decir que es «de antes» sería falso.
+  const longestInRange = episodes.reduce((max, episode) => Math.max(max, episode.length), 0)
+  // El récord de toda la vida no cabe en este tramo: se dice, sin fecha.
+  const olderRecordDays =
+    typeof lifetimeRecordDays === 'number' &&
+    !recordIsOngoing &&
+    lifetimeRecordDays > longestInRange
+      ? lifetimeRecordDays
+      : null
 
   return (
     <ChartPanel
@@ -47,7 +73,7 @@ export function HabitStreakEpisodesChart({ episodes }: Props) {
         <ChartLegend
           items={[
             { label: 'Racha', variant: 'swatchSeries' },
-            { label: 'Récord del rango', variant: 'swatchAccent' },
+            { label: 'Mejor tramo del rango', variant: 'swatchAccent' },
           ]}
         />
       }
@@ -61,7 +87,7 @@ export function HabitStreakEpisodesChart({ episodes }: Props) {
             episode.startDate,
             episode.endDate,
             plural(episode.length),
-            [episode.isRecord ? 'récord' : '', episode.isCurrent ? 'en curso' : '']
+            [episode.isRecord ? 'mejor tramo' : '', episode.isCurrent ? 'en curso' : '']
               .filter(Boolean)
               .join(' · ') || '—',
           ],
@@ -80,7 +106,7 @@ export function HabitStreakEpisodesChart({ episodes }: Props) {
         {visible.map((episode, index) => {
           const height = heightOf(episode.length)
           const top = BASELINE - height
-          const tag = episode.isRecord ? 'récord' : episode.isCurrent ? 'en curso' : null
+          const tag = episode.isRecord ? 'mejor tramo' : episode.isCurrent ? 'en curso' : null
           return (
             <g key={episode.startDate}>
               <rect
@@ -131,6 +157,12 @@ export function HabitStreakEpisodesChart({ episodes }: Props) {
         })}
       </svg>
 
+      {olderRecordDays !== null ? (
+        <p className={styles.subtitle}>
+          Tu récord de {plural(olderRecordDays)} es de antes de este tramo.
+        </p>
+      ) : null}
+
       {hoveredEpisode ? (
         <div
           className={styles.tooltip}
@@ -141,7 +173,7 @@ export function HabitStreakEpisodesChart({ episodes }: Props) {
         >
           <span className={styles.tooltipTitle}>{plural(hoveredEpisode.length)} seguidos</span>
           Del {hoveredEpisode.startDate} al {hoveredEpisode.endDate}
-          {hoveredEpisode.isRecord ? ' · récord' : ''}
+          {hoveredEpisode.isRecord ? ' · mejor tramo' : ''}
           {hoveredEpisode.isCurrent ? ' · en curso' : ''}
         </div>
       ) : null}

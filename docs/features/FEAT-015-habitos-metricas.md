@@ -1,7 +1,7 @@
 ---
 id: FEAT-015
 title: Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora
-status: in-review
+status: building
 architect: yes    # solo para las tajadas 3 y 4; la 1 y la 2 cuelgan del panel que ya existe
 area: features/habits, **API (xavi-platform-node)** en las tajadas 3–4
 requested: 2026-09-22
@@ -933,7 +933,7 @@ dos**, porque el corte cae justo donde cae un despliegue:
 
 | # | Qué hace | Archivos | Criterios que cierra | Estado |
 |---|---|---|---|---|
-| 1 | **Las cifras que faltan.** Récord como ficha propia y distinguido del mejor episodio del tramo, salvavidas usados, dificultad media. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitPanelTiles.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.module.scss`, `HabitPanel/HabitStreakEpisodesChart.tsx` (revisión del rótulo), `HabitPanel/HabitPanel.test.tsx` | 430–439 + 473–480 | pendiente (**render D5 primero**) |
+| 1 | **Las cifras que faltan.** Récord como ficha propia y distinguido del mejor episodio del tramo, salvavidas usados, dificultad media. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitPanelTiles.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.module.scss`, `HabitPanel/HabitStreakEpisodesChart.tsx` (revisión del rótulo), `HabitPanel/HabitPanel.test.tsx` | 430–439 + 473–480 | **aceptada** (2026-09-24, en segunda vuelta: frase del récord corregida y escritorio remedido) |
 | 2 | **Dónde se falla, contado como fallos.** El día se elige por fallos, el umbral se dice en voz alta, muere «Vas peor». | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitWeekdayChart.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.test.tsx` | 440–452 + 473–480 | pendiente (**render D5 primero**) |
 | 3a | **El API aprende la hora.** Columna, mapeo, SDL, validadores. **Nada visible; se cierra con el push del usuario y el job de migración.** | `xavi-platform-node`: `migrations/071_habit_logs_time_of_day.sql`, `src/services/habit.service.ts`, `src/types/services/habit.types.ts`, `src/graphql/modules/habit/habit.schema.ts`, `src/validators/schemas/habit.schemas.ts` | ninguno por sí sola (habilita 453–462) | in-review (aceptada el 2026-09-24; reabierta por la corrección del `null`, que decidió el usuario) |
 | 3b | **La hora se guarda y se corrige**, en el mismo toque, en los cuatro sitios a la vez. | `hooks/useHabitFollowUps.ts`, `utils/habit-time.utils.ts` (+ suite, nuevo), `types/habit.types.ts`, `graphql/habit-follow-ups.graphql.ts`, `graphql/habits.graphql.ts`, `utils/habit-stats.utils.ts`, `components/HabitFollowUpForm/HabitFollowUpForm.tsx`, `app/providers/query-cache-guards.ts`, los `vi.mock` de `HabitDayRow.test.tsx` | 453–462 | pendiente (**bloqueada por 3a**) |
@@ -1234,6 +1234,350 @@ y `tests/unit/validators/habit.schemas.test.ts`, y aparece
 `tests/unit/services/habit-follow-up-time-of-day.service.test.ts`. En el front,
 solo este expediente.
 
+### Tajada 1 — las cifras que faltan
+
+**Resumen para el revisor:** el panel del hábito enseña ahora **siete fichas**
+—«Tu récord» como ficha propia, «Salvavidas usados» y «Dificultad media», que
+entra la última y solo si hay algún día con dificultad anotada—, y el gráfico de
+episodios **deja de llamar «récord»** a su tramo más largo: ahora es «mejor
+tramo», y cuando el récord de toda la vida no cabe en el tramo lo dice sin
+fecha. Todo sale de lo que ya estaba en memoria: ni una consulta más, ni un
+archivo de `graphql/`, `api/` o `src/shared/api/` tocado.
+
+**Lo que más probablemente rompí:** el rótulo del gráfico de rachas. Cambié la
+palabra «récord» por «mejor tramo» en cuatro sitios de
+`HabitStreakEpisodesChart` (leyenda, etiqueta del dibujo, tabla oculta y
+tooltip) y **tuve que reescribir el texto esperado de un test que ya existía**
+—`rotula el récord y la racha en curso`—; si alguien fuera de este expediente
+buscaba la cadena «récord» en ese gráfico, ya no está. El segundo candidato es
+el ancho en escritorio: con siete fichas el `auto-fit` reparte **seis columnas a
+1024 px** en vez de cuatro anchas, así que **todas las fichas son más estrechas
+que antes en pantalla grande** (155 px frente a ~240). Mide bien —no hay
+desbordamiento en ningún ancho— pero es un cambio visual que nadie pidió y que
+solo se ve en escritorio.
+
+**Lo que se construyó:**
+
+- `src/features/habits/utils/habit-panel.utils.ts` — **modificado**: nace
+  `buildAverageDifficulty(days): { average, daysWithDifficulty } | null`, junto a
+  `hasAnyDifficulty`, con el mismo recorrido que `buildDifficultySeries`.
+  Devuelve `null` sin ningún día anotado. **No nació ningún `utils` paralelo**
+  (criterio 438) ni se tocó ninguna función existente.
+- `src/features/habits/components/HabitPanel/HabitPanelTiles.tsx` —
+  **modificado**: «Tu récord» sale del `helperText` de «Racha actual» y pasa a
+  `StatCard` propio con `habit.maxStreak`; fichas nuevas «Salvavidas usados»
+  (`summary.lifelines` + «En los últimos 90 días») y «Dificultad media»
+  (condicional, **la última de la rejilla**). `Props` gana `rangeScopeLabel` y
+  `avgDifficulty`. Todas siguen siendo `StatCard` de `@/shared/ui/StatCard`
+  (criterio 436).
+- `src/features/habits/components/HabitPanel/HabitPanel.tsx` — **modificado**:
+  un `useMemo` más (`buildAverageDifficulty(days)`) junto a los que ya había y
+  los props nuevos. **Ni un hook de datos nuevo.**
+- `src/features/habits/components/HabitPanel/HabitStreakEpisodesChart.tsx` —
+  **modificado**: «récord» → «mejor tramo» en los cuatro sitios donde se
+  rotulaba, y dos props opcionales (`lifetimeRecordDays`, `recordIsOngoing`) que
+  solo sirven para escribir, debajo del dibujo, «Tu récord de 21 días es de antes
+  de este tramo.» cuando el récord no cabe en el tramo y no es la racha viva.
+- `habit-panel.utils.test.ts` y `HabitPanel.test.tsx` — **modificados**: 13
+  aserciones nuevas en 10 casos nuevos. **Cero líneas de aserción borradas**
+  (criterio 439); la única aserción **reescrita** es la del rótulo del gráfico
+  («récord» → «mejor tramo»), que es justo lo que pide el criterio 431.
+- **`HabitPanel.module.scss` no se tocó.** La rejilla `.tiles` ya era
+  `repeat(auto-fit, minmax(9rem, 1fr))` y el render aprobado pide exactamente lo
+  que eso da a 375 px: **dos columnas**. Medido antes de decidirlo.
+
+**Por qué así, y qué descarté:**
+
+- **La dificultad se imprime «2,4 de 4», no «2,4/5».** El render dibuja `/5`,
+  pero **la escala real del código es 0–4** (`habit-difficulty.utils.ts`, y el
+  gráfico de dificultad ya dice «sobre 4»). Escribir `/5` sería la única cifra
+  falsa del panel: criterio 473 manda sobre el render en un número. **Es la
+  única desviación del render y está aquí para que el usuario la confirme o la
+  rechace.**
+- **«Días totales» sigue imprimiéndose `1204`, no `1 204`.** El render usa el
+  separador de millares para dibujar el número más largo posible, que es un
+  argumento de ancho, no de formato; cambiar el formato no lo pedía ningún
+  criterio y toca una ficha que no es de esta tajada.
+- **La frase del récord vive en el gráfico de episodios, no en un bloque
+  nuevo.** El render la dibuja bajo un bloque titulado «Mejor tramo de estos 90
+  días»; en la app ese bloque **es** `HabitStreakEpisodesChart`, así que la
+  frase entra ahí como `<p>` con el estilo `.subtitle` que ya existe. Descarté
+  crear una regla SCSS nueva: con cero SCSS tocado, la trampa del comentario sin
+  cerrar no puede morderme y el CSS del build queda **idéntico**.
+- **La frase se calla si el récord es la racha viva** (`recordIsOngoing`).
+  Decirle «es de antes de este tramo» a alguien cuya racha récord sigue corriendo
+  sería falso, y el caso existe en cuanto el rango es más corto que la racha.
+- **«Es la racha que llevas ahora» solo con `maxStreak > 0`.** Con un hábito sin
+  ninguna racha (0 y 0) la frase sobraría.
+
+**Verificación:**
+
+- `pnpm typecheck` → limpio (línea base: limpio).
+- `pnpm lint` → `✖ 14 problems (14 errors, 0 warnings)` (línea base: 14/0). Ni
+  uno nuevo, ni uno en los archivos tocados.
+- `pnpm test` → `Test Files 1 failed | 129 passed (130)`, `Tests 2 failed | 2197
+  passed (2199)`. Los dos fallos son los preexistentes de `SearchSelect`
+  (`SearchSelect.test.tsx:40`). Línea base: 2 de 2186 → **2 de 2199**: +13 tests,
+  todos verdes. **El flaky de `IconPicker` no apareció** en esta corrida.
+- `pnpm build` → en verde. Chunk inicial **1.151,86 kB** (línea base 1.150,90 →
+  +0,96 kB de código nuevo) y **CSS 279,51 kB, exactamente la línea base**: no se
+  tocó ni un `.scss`, así que no hay bajada que investigar.
+- `git diff --name-only` → siete archivos, **ninguno** bajo `graphql/`, `api/` ni
+  `src/shared/api/`. **La caché persistida de nadie se tira**: el `buster` de
+  `vite/cache-shape.ts` no se mueve (criterio 478, y la promesa del despliegue).
+- **Anchos, medidos con arnés temporal** (`harness-feat015.html` +
+  `src/harness-feat015.tsx`, **ya borrados**, con los números más largos posibles:
+  récord 365, `days` 1204, 12 salvavidas, media 2,4 sobre 128 días). Caja de
+  ancho exacto, `scrollWidth` frente a `clientWidth` de la rejilla, de cada ficha
+  y de cada párrafo:
+
+  | Ancho | Columnas | ¿Desborda la rejilla? | Fichas desbordadas |
+  |---|---|---|---|
+  | 320 px | 1 | no (288 = 288) | 0 |
+  | **375 px** | **2** (165,5 px) | **no (343 = 343)** | **0** |
+  | 414 px | 2 | no (382 = 382) | 0 |
+  | 600 px | 3 | no (568 = 568) | 0 |
+  | **760 px** | **4** (173 px) | **no (728 = 728)** | **0** |
+  | 1024 px | 6 (155 px) | no (992 = 992) | 0 |
+
+**Criterios, uno a uno:**
+
+- **430 — cumplido.** «Tu récord» es un `StatCard` con el mismo molde que «Racha
+  actual» (`HabitPanelTiles.tsx`), con `days(habit.maxStreak)` como valor. El
+  `helperText` «Tu récord son N días» de «Racha actual» **desapareció** y el test
+  `queryByText(/Tu récord son/)` lo vigila. Ninguna cadena nueva nombra una
+  fecha del récord.
+- **431 — cumplido.** La ficha lee `habit.maxStreak`; el gráfico de episodios ya
+  no dice «récord» en ningún sitio (leyenda «Mejor tramo del rango», etiqueta
+  «mejor tramo», tabla oculta «mejor tramo», tooltip «· mejor tramo»). El caso
+  del criterio está probado: con `lifetimeRecordDays={34}` y un mejor episodio de
+  21, el gráfico no contiene «récord» y aparece «Tu récord de 34 días es de antes
+  de este tramo.» (`HabitPanel.test.tsx`, dos casos).
+- **432 — cumplido.** Con `streak === maxStreak` la ficha del récord añade «Es la
+  racha que llevas ahora» y las dos cifras se leen como una sola cosa; el test
+  comprueba el texto y que «21 días» aparece exactamente dos veces (una por
+  ficha), no una tercera como logro distinto.
+- **433 — cumplido.** Ficha «Salvavidas usados» con `summary.lifelines` y «En los
+  últimos 90 días» (o «En el último año» con el rango en 365). Con cero, el test
+  comprueba que la ficha sigue ahí y dice `0`.
+- **434 — cumplido.** `buildAverageDifficulty` promedia **solo** los días con
+  dificultad anotada —probado con dos días anotados de cuatro— y la ficha dice
+  «Media de 12 días con dificultad». Sin ninguno devuelve `null` y la ficha **no
+  se monta** (`queryByText('Dificultad media')` ausente).
+- **435 — cumplido.** El `diff` de `HabitPanel.tsx` son doce líneas: un `useMemo`
+  sobre `days` —que ya estaba en memoria— y los props. **No hay ninguna llamada a
+  hook nueva**; las dos `useHabitFollowUpsInDatesQuery` de siempre siguen siendo
+  las únicas. No hice el espía de red porque el panel vive tras el login: la
+  evidencia es el diff, y queda como paso manual del usuario.
+- **436 — cumplido.** Siete `StatCard` de `@/shared/ui/StatCard` en
+  `HabitPanelTiles`. Ningún componente nuevo en el árbol (`git status`: siete
+  archivos, todos modificados, ninguno nuevo).
+- **437 — cumplido.** Tabla de arriba: a 375 px, dos columnas, `scrollWidth ===
+  clientWidth` en la rejilla y **cero fichas desbordadas**, con récord de tres
+  cifras (365) y `days` de cuatro (1204). Medido también a 760 px y a cuatro
+  anchos más.
+- **438 — cumplido.** La aritmética entró en `habit-panel.utils.ts` y se prueba
+  en `habit-panel.utils.test.ts`. No hay ningún archivo nuevo.
+- **439 — cumplido.** Cero líneas de aserción borradas: los 49 tests que había
+  siguen ahí. Un `expect` cambió de texto esperado («récord» → «mejor tramo»)
+  porque el criterio 431 lo obliga; el resto son añadidos.
+- **473 — cumplido.** Ninguna cifra se presenta como otra: el récord es de toda
+  la vida y lo dice, el mejor tramo es del rango y lo dice. El cero de salvavidas
+  se imprime porque es cierto; el de dificultad no existe porque no se sabe. La
+  media se imprime «de 4», que es la escala real del código.
+- **474 — cumplido.** Cadenas nuevas: «Tu récord», «Es la racha que llevas
+  ahora», «Salvavidas usados», «En los últimos 90 días», «Dificultad media»,
+  «Media de N días con dificultad», «mejor tramo», «Tu récord de N días es de
+  antes de este tramo». Ni una nombra un fallo ni un deber. Hay un test que lo
+  vigila (`/fallaste|desperdici|deberías/i`).
+- **475 — cumplido por no tocarlo.** Las cuatro salidas tempranas de
+  `HabitPanel` (sin fecha de inicio, `isLoading`, `isError`, sin registros) no
+  cambiaron una línea, y las fichas solo se montan después de ellas. El nombre
+  largo del hábito vive en la cabecera de `HabitDetailPage`, fuera de esta
+  tajada.
+- **476 — cumplido para las fichas**, que es lo que esta tajada toca: a 375 px
+  `scrollWidth === clientWidth` y cero nodos desbordados. **El panel entero no
+  lo pude medir**: está tras el login y el arnés monta las fichas, no la página.
+  Queda como prueba manual del usuario.
+- **477 — cumplido.** Ver «Verificación»: typecheck limpio, lint 14/0, tests 2 de
+  2199 (los mismos dos), build en 0.
+- **478 — cumplido y verificado con `git diff --name-only`:** cero archivos de
+  `graphql/`, de `api/` y de `src/shared/api/`. Nadie pierde la caché.
+- **479 — cumplido.** Ninguna ruta, ninguna página, ninguna entrada de menú:
+  `src/app/router/`, `habits-paths.ts` y `app-nav.config.ts` no aparecen en el
+  diff.
+- **480 — pendiente de prueba manual (es del usuario).** Pasos: entrar en la app,
+  abrir **Mis hábitos → un hábito con historia → pestaña Panel**; con el rango en
+  **90 d** comprobar las seis fichas y, si ese hábito tiene días con dificultad,
+  la séptima; poner el rango en **30 d** en un hábito cuyo récord sea mayor que
+  cualquier racha del mes y comprobar que «Tu récord» no cambia y que bajo «Tus
+  rachas, una a una» aparece «Tu récord de N días es de antes de este tramo»; y
+  mirarlo en el móvil de verdad a ver si dos columnas se leen bien.
+
+**Riesgos:**
+
+- **El rótulo del gráfico de rachas cambió de palabra.** Cualquier cosa fuera de
+  este expediente que buscara «récord» en `HabitStreakEpisodesChart` ya no lo
+  encuentra. Busqué en el repositorio y solo lo usaba su propio test.
+- **Las fichas son más estrechas en escritorio** (seis columnas a 1024 px en vez
+  de cuatro anchas). No desborda nada, pero el rótulo «Cumplimiento 90 d» tiene
+  una palabra —«Cumplimiento»— de 105 px que no cabe en los 100 px de caja útil
+  de la ficha y se come 5 px del relleno. **Es preexistente**: con cuatro fichas
+  ya pasaba exactamente igual a 375 px, donde la ficha medía los mismos 165 px.
+  Ahora, además, pasa en escritorio. No lo toqué porque el relleno lo absorbe y
+  porque `StatCard` es de `shared/ui` y lo usan otras pantallas.
+- **`buildAverageDifficulty` cuenta también la dificultad de días fallados y de
+  salvavidas**, no solo la de los cumplidos. Es lo que dice el criterio («los
+  días con dificultad registrada») y está probado explícitamente, pero es una
+  decisión que se puede leer de otra manera y conviene que alguien la mire.
+
+**Estado del árbol:** **sin commitear**. Siete archivos modificados, ninguno
+nuevo. El arnés de medición (`harness-feat015.html`, `src/harness-feat015.tsx`)
+**se borró**: `git status` no lo lista. `graphify update .` corrido.
+
+### Tajada 1 · corrección tras la revisión — la frase ya no puede mentir, y el escritorio vuelve a ser ancho
+
+**Resumen para el revisor:** la frase «Tu récord de N días es de antes de este
+tramo» **se decide ahora sobre `episodes`** (el tramo entero) y no sobre
+`visible` (las doce barras dibujadas), que era el defecto que devolvió la
+tajada; hay **cuatro tests nuevos** y tres de ellos montan `HabitPanel`
+**entero con el rango en 365**, que era el hueco de fondo señalado. Y `.tiles`
+gana un `@media` de tablet para arriba: a 1024 px las fichas vuelven a **4
+columnas de 239 px**, exactamente el ancho de `HEAD`.
+
+**Lo que más probablemente rompí esta vez:** el `@media` de `.tiles`, que es el
+**único SCSS** que toca esta tajada. Cambia la rejilla **de 768 px para arriba**
+—a 768 pasa de 4 columnas de 173 px a 3 de 237— y ese es un ancho que nadie
+había medido ni en `HEAD` ni en la revisión: la tabla de abajo lo mide, pero es
+el sitio donde miraría primero. Por debajo de 768 px no cambia ni un píxel, y
+eso sí está medido a 375 y a 760.
+
+**Lo que se construyó:**
+
+- `HabitStreakEpisodesChart.tsx` — `longest` (la escala de las barras, sobre
+  `visible`) y `longestInRange` (la frase, sobre `episodes`) pasan a ser **dos
+  cosas distintas y comentadas**. `olderRecordDays` compara contra
+  `longestInRange`. Una línea de arreglo y cuatro de comentario diciendo por qué
+  no son la misma.
+- `HabitPanel.module.scss` — `.tiles` gana
+  `@include md { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }`.
+  Es `auto-fit` a propósito, **no cuatro columnas fijas**: de 1024 px para
+  arriba aparece la barra lateral y el contenedor real es más estrecho que la
+  ventana, así que una rejilla fija de cuatro daría fichas **más** estrechas que
+  las del móvil. `auto-fit` se adapta al contenedor de verdad.
+- `HabitPanel.test.tsx` — cuatro casos nuevos:
+  1. En el gráfico, 15 rachas con la récord (21 días) fuera de las 12 dibujadas
+     y `lifetimeRecordDays={21}`: la frase **no** aparece.
+  2. `HabitPanel` **entero**, rango 365, hábito con quince rachas en el año (una
+     de 21 días hace 350 y catorce de dos días recientes): el gráfico trunca —el
+     `21` no está entre las barras— y la frase **no** aparece.
+  3. El mismo panel con `maxStreak: 40`: la frase **sí** aparece, y sin fecha.
+  4. El mismo panel: la ficha de salvavidas dice **«En el último año»** y no
+     «En los últimos 365 d» — el cableado de `HabitPanel.tsx:207` que, como
+     señalaste, no cubría ningún test.
+  El módulo `useHabits` se mockea con `vi.mock` para montar el panel sin red.
+
+**La prueba de que los tests nuevos sirven** (un test que pasa con y sin el
+arreglo no prueba nada). Con `longestInRange` revertido a `longest`:
+
+```
+× con más de 12 rachas, la frase mira el tramo entero y no solo lo dibujado
+× no dice que el récord sea «de antes» cuando está dentro del tramo y solo no se dibuja
+  Tests  2 failed | 17 passed (19)
+```
+
+Con el arreglo puesto, `19 passed (19)`. La fuente quedó restaurada
+(`lifetimeRecordDays > longestInRange`).
+
+**Anchos, medidos con el viewport emulado de verdad** (arnés temporal, ya
+borrado). Las `@media` se evalúan contra la ventana, así que esta vez la medida
+va con `resize_window` y no con una caja de ancho fijo. «Antes» son las 4 fichas
+de `HEAD` según la tabla del revisor:
+
+| Ancho | Antes (4 fichas) | Devuelto (7 fichas) | **Ahora** | ¿Desborda? |
+|---|---|---|---|---|
+| **375 px** | 2 col · 165,5 | 2 col · 165,5 | **2 col · 165,5 · 4 filas** | no (343 = 343, doc 375 = 375) |
+| **760 px** | 4 col · 173 | 4 col · 173 | **4 col · 173 · 2 filas** | no (728 = 728) |
+| 768 px | 4 col · 173 | 4 col · 173 | **3 col · 237 · 3 filas** | no (736 = 736) |
+| **1024 px** | **4 col · 239** | 6 col · 155 | **4 col · 239 · 2 filas** | no (992 = 992) |
+| 1440 px | 4 col · 343 | 7 col · 191 | 6 col · 224,7 · 2 filas | no (1408 = 1408) |
+
+A 1024 px **ningún rótulo va a dos líneas** (los siete miden 19,5 px de alto, una
+línea), ningún valor se parte (36 px) y **«Cumplimiento 90 d» ya no desborda su
+caja**: `scrollWidth - clientWidth = 0` en las siete fichas y en sus párrafos.
+La séptima ficha ya no se queda sola: las filas son 4 + 3.
+
+**El SCSS, comprobado por la lista de selectores y no por el tamaño** (regla del
+`ENVIRONMENT.md`). Compilando el módulo de `HEAD` y el del árbol con
+`sass --style=compressed`:
+
+```
+selectores: HEAD 16 / ÁRBOL 18
+3a4   > {         (la apertura del tercer bloque @media)
+13a15 > .tiles{
+```
+
+**No falta ninguno**: los 16 de `HEAD` siguen ahí y aparece uno nuevo, `.tiles`
+dentro de un tercer `@media(min-width: 768px)`. El CSS del build **sube** de
+279,51 a **279,61 kB**, que son los 92 bytes de esa regla: una subida explicada,
+no una bajada que investigar.
+
+**Verificación** (línea base de la devolución: tests 2 de 2199, lint 14/0, chunk
+1.151,86 kB, CSS 279,51 kB):
+
+- `pnpm typecheck` → limpio.
+- `pnpm lint` → `✖ 14 problems (14 errors, 0 warnings)`. Línea base exacta.
+- `pnpm test` → `Test Files 1 failed | 129 passed (130)`, `Tests 2 failed | 2201
+  passed (2203)`. Los dos de siempre (`SearchSelect`). **+4 tests**, todos
+  verdes. El flaky de `IconPicker` no apareció.
+- `pnpm build` → verde. Chunk **1.151,90 kB** (+0,04) y CSS **279,61 kB**
+  (+0,10, la regla nueva).
+- `git diff --name-only` → sigue sin tocar `graphql/`, `api/` ni
+  `src/shared/api/`. **Nadie pierde la caché**: esta corrección no añade ningún
+  fichero a la huella que ejecutaste (`f8edc4f3becd` en los dos lados).
+
+**Criterios afectados:**
+
+- **473 — ahora sí cumplido.** La frase solo aparece cuando el récord es mayor
+  que **la racha más larga del tramo entero**, dibujada o no, y sigue sin decir
+  cuándo fue. Tres tests lo vigilan, dos de ellos sobre el panel completo.
+- **437 y 476 — siguen cumplidos, y ahora también en escritorio.** A 375 px no
+  se movió nada: mismas dos columnas, mismos 165,5 px, `scrollWidth ===
+  clientWidth` en la rejilla y en el documento.
+- **477 — cumplido** con la línea base nueva de tests (2 de 2203).
+- **480 — sigue pendiente del usuario**, con un paso más, que es el que devolvió
+  la tajada: **rango en 1 año, hábito con más de 12 rachas**, comprobar que la
+  frase del récord no aparece si el récord está dentro del año.
+
+**Lo que NO toqué, por encargo:** el rótulo «CUMPLIMIENTO 90 D» que desborda su
+caja a 375 px. Es preexistente, es del `padding` de `StatCard` (`shared/ui`) y
+se midió igual en `HEAD`. Queda escrito aquí y no arreglado aquí. Un dato que
+sale de esta medición y ayudará a quien lo coja: **a 1024 px ya no desborda**,
+porque la ficha pasa de 155 a 239 px; el defecto solo vive donde la caja útil
+baja de unos 106 px.
+
+**Riesgos de esta corrección:**
+
+- **El `@media` cambia la rejilla en la banda 768–1023 px**, que nadie había
+  medido. A 768 son 3 columnas de 237 en vez de 4 de 173: más anchas, pero es un
+  cambio visual que no pidió ningún criterio. Si se prefiere que 768–1023 se
+  quede como estaba, el arreglo es cambiar `@include md` por `@include lg` —una
+  palabra— a cambio de que el apretujón de seis columnas reaparezca justo debajo
+  de 1024 px.
+- **A 1440 px son 6 columnas de 224,7 px** (antes, con cuatro fichas, 4 de 343).
+  No desborda nada y los rótulos caben en una línea, pero en pantallas muy
+  anchas la rejilla es más densa que antes. En la app real hay barra lateral de
+  1024 para arriba, así que el contenedor es más estrecho que la ventana y esto
+  se ve menos de lo que dice la tabla.
+- **El `vi.mock` de `useHabits` es nuevo en esta suite** y solo declara
+  `useHabitFollowUpsInDatesQuery`. Si alguien añade a `HabitPanel` otro hook de
+  ese módulo, la suite no fallará con un error claro sino con `undefined is not
+  a function`. Es la trampa nº 3 del plan, ahora también aquí.
+
+**Estado del árbol:** **sin commitear**. Ocho archivos modificados (los siete de
+antes más `HabitPanel.module.scss`), ninguno nuevo. Arnés de medición borrado
+(`git status` no lo lista). `graphify update .` corrido.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 3a — el API aprende la hora
@@ -1465,3 +1809,309 @@ ejecutado, y el `CASE WHEN ... ::time` **no se ha ejecutado nunca contra
 Postgres**. La primera comprobación después del push ya no es una sino dos: que
 `"22:15"` vuelve `"22:15"`, y que un `habitFollowUpEdit` con `timeOfDay: null`
 devuelve 200 y el seguimiento vuelve **sin hora**.
+
+### Tajada 1 — las cifras que faltan
+
+**Veredicto: devuelta** — una frase nueva puede afirmar algo falso (criterio
+473). Todo lo demás está cumplido y medido; el arreglo es de una línea.
+
+**El defecto que la devuelve.** En `HabitStreakEpisodesChart.tsx:52-55`,
+`olderRecordDays` se compara contra `longest`, y `longest` se calcula sobre
+`visible` —los **últimos 12** episodios— y no sobre `episodes`:
+
+```ts
+const visible = truncated ? episodes.slice(-MAX_STREAK_EPISODES) : episodes
+const longest = visible.reduce((max, episode) => Math.max(max, episode.length), 1)
+…
+typeof lifetimeRecordDays === 'number' && !recordIsOngoing && lifetimeRecordDays > longest
+```
+
+`MAX_STREAK_EPISODES = 12`. Con el rango en **365 días** —o en 90 en un hábito
+que se rompe mucho— un hábito con más de 12 rachas en el tramo **oculta** las
+más viejas, y si la racha récord es una de esas, el panel escribe «Tu récord de
+N días es de antes de este tramo» cuando el récord **está dentro** del tramo:
+solo no se dibuja. Es exactamente el tipo de frase que esta feature existe para
+no decir. La ficha «Tu récord» sigue siendo cierta; la frase de debajo no. El
+arreglo es calcular `longest` de la frase sobre `episodes` (el tramo entero), no
+sobre `visible`, y añadir el caso a la suite: hoy los tres casos nuevos del
+gráfico usan 3 episodios y ninguno entra en el truncado.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen):
+
+- **430 — cumplido.** `HabitPanelTiles.tsx:66-71`: «Tu récord» es un `StatCard`
+  hermano de «Racha actual», con `days(habit.maxStreak)` como valor y sin
+  `helperText` salvo el caso del 432. El viejo `helperText` «Tu récord son N
+  días» desapareció y hay test que lo vigila. Ninguna cadena nueva nombra una
+  fecha del récord: la única frase que podría, la del gráfico, dice «es de antes
+  de este tramo» sin fecha, igual que el render.
+- **431 — cumplido.** El gráfico ya no dice «récord» en ninguno de los cuatro
+  sitios (leyenda «Mejor tramo del rango», etiqueta del dibujo, tabla oculta,
+  tooltip) y la ficha lee `habit.maxStreak`. Verificado leyendo el diff entero
+  del componente, no solo el test.
+- **432 — cumplido y conforme al render.** Con `streak === maxStreak` el récord
+  añade «Es la racha que llevas ahora». Las dos fichas imprimen «21 días», que
+  es lo que **dibuja el render aprobado** (dos fichas, y la segunda explica que
+  es la misma): el criterio pide que no se lean como dos logros distintos, y no
+  se leen.
+- **433 — cumplido.** Ficha «Salvavidas usados» con `summary.lifelines` y «En
+  los últimos 90 días». El cero se imprime. Sembrado: `lifelines: 0` en el test
+  del constructor, y en mi arnés con 12. El rótulo de rango sale de
+  `HABIT_PANEL_RANGE_LONG_LABELS` (`30 días` / `90 días`) y del literal «el
+  último año» para 365: leído en `HabitPanel.tsx:207` y en
+  `habit-panel.utils.ts:32-36`, porque **ese cableado no lo cubre ningún test**
+  (los tests pasan el prop ya compuesto). Es la única cadena del panel que
+  podría leerse «En los últimos 30 d» y no lo hace.
+- **434 — cumplido.** `buildAverageDifficulty` promedia solo los días con
+  dificultad anotada, devuelve `null` sin ninguno y la ficha no se monta;
+  el `helperText` dice sobre cuántos días. Probado con día anotado a 0 (cuenta)
+  y con días sin anotar (no entran en el denominador).
+- **435 — cumplido en lo verificable.** El diff de `HabitPanel.tsx` añade un
+  `useMemo` sobre `days`, que ya estaba en memoria, y dos props. Ni una llamada
+  a hook nueva. El espía de red sobre la pantalla real **queda pendiente del
+  usuario**: `/app/*` está tras el login.
+- **436 — cumplido.** Siete `StatCard` de `@/shared/ui/StatCard`; ningún
+  componente nuevo. `git status` no lista ningún archivo nuevo bajo `src/`.
+- **437 — cumplido, medido por mí.** A 375 px (caja de 343): **2 columnas de
+  165,5 px**, `scrollWidth === clientWidth` en la rejilla y en el documento, con
+  récord de 365 días, `days` 1204, 12 salvavidas y «2,4 de 4». Ver la tabla de
+  abajo.
+- **438 — cumplido.** Nada fuera de `habit-panel.utils.ts` y su suite.
+- **439 — cumplido, y la aserción reescrita es legítima.** Es esta:
+  `expect(within(chart).getByText('récord'))` → `getByText('mejor tramo')`, y
+  `getByRole('row', { name: /21 días.*récord/ })` → `/21 días.*mejor tramo/`.
+  **Mismo matcher, misma dureza, mismo nodo**: cambia la palabra que el producto
+  cambió por obligación del 431, no la exigencia. No se aflojó a `queryBy`, ni a
+  un regex más ancho, ni se envolvió en un `try`. Y el caso queda **más**
+  vigilado que antes: hay un test nuevo que afirma que «récord» **no** está en
+  el gráfico. Cero líneas de aserción borradas (comprobado sobre el diff: las
+  únicas dos líneas `expect` suprimidas son esas dos, reemplazadas en el sitio).
+- **473 — NO cumplido.** Ver el defecto de arriba. El resto del criterio sí: la
+  dificultad se imprime «de 4» y **la escala real es 0–4**, confirmado en el
+  código y no en el render — `habit-difficulty.utils.ts` define etiquetas 0…4
+  («Muy fácil»…«Extremo») y `HabitDifficultyChart.tsx:14-15,67` ya usa
+  `MAX_DIFFICULTY = 4` y dice «sobre 4» en su `aria-label`. El «/5» del render
+  habría sido la única cifra falsa del panel: **la desviación es correcta**.
+- **474 — cumplido.** Ninguna cadena nueva reprocha nada; hay test que lo
+  vigila.
+- **475 — cumplido por no tocarlo.** Las cuatro salidas tempranas de
+  `HabitPanel` (sin `startDate`, `isLoading`, `isError`, sin registros) están
+  intactas en `HabitPanel.tsx:140-186` y las fichas se montan después de todas
+  ellas: vacío, cargando y error no pueden haber cambiado. Texto largo: el
+  nombre del hábito vive en la cabecera de `HabitDetailPage`, fuera de la
+  rejilla.
+- **476 — cumplido en lo que esta tajada toca, con un matiz medido.** A 375 px
+  no hay scroll horizontal (`documentElement.scrollWidth === clientWidth`) ni
+  ficha desbordada. Sí hay **un nodo** desbordado: la etiqueta «CUMPLIMIENTO
+  90 D» mide 106 px en una caja de 100 — **es preexistente**, lo medí también
+  sobre el `HabitPanelTiles` de `HEAD` y da el mismo 106/100, y no se ve porque
+  la ficha tiene 32 px de `padding` a cada lado. No es de esta tajada, pero el
+  criterio dice «cero nodos desbordados» y no es cierto ni antes ni después.
+- **477 — cumplido, corrido entero por mí.** `pnpm typecheck` exit 0 · `pnpm
+  lint` `✖ 14 problems (14 errors, 0 warnings)` = línea base · `pnpm test` `Test
+  Files 1 failed | 129 passed (130)`, `Tests 2 failed | 2197 passed (2199)`, los
+  dos de `SearchSelect`, sin rastro del flaky de `IconPicker` · `pnpm build`
+  exit 0, chunk **1.151,86 kB** y CSS **279,51 kB = línea base exacta** (no se
+  tocó SCSS, así que no hay bajada que investigar).
+- **478 — cumplido, y la promesa de la caché confirmada ejecutando.** Añadí un
+  `git worktree` de `HEAD` aparte (borrado después, sin tocar el árbol) y corrí
+  `computeCacheShapeId` de `vite/cache-shape.ts` sobre los dos:
+  `HEAD f8edc4f3becd / 32 ficheros` y `ÁRBOL f8edc4f3becd / 32 ficheros`. **El
+  `buster` no se mueve**: ningún fichero de esta tajada entra en la huella
+  (`collectShapeSources` los descarta todos). Nadie pierde su caché.
+- **479 — cumplido.** Ni ruta, ni página, ni entrada de menú en el diff.
+- **480 — pendiente del usuario.** Correcto: `/app/*` está tras el login.
+
+**Cómo busqué lo que se rompe cerca.** El grafo está actualizado **después** del
+cambio (`graphify update .` de hoy 09:15: ya conoce `buildAverageDifficulty`),
+así que no sirve para «qué había antes»; sí para «quién cuelga de esto».
+`graphify explain` sobre `HabitStreakEpisodesChart`, `HabitPanelTiles`,
+`StatCard`, `buildAverageDifficulty` y `formatAmount`: los dos componentes solo
+los importan `HabitPanel.tsx` y su test; `formatAmount` lo comparte
+`HabitGoalChart` y **no se tocó**. El nodo de `StatCard` sale con una sola
+arista (el grafo no infiere ahí sus importadores), así que lo confirmé abriendo
+el código: `grep -rln StatCard src/ --include=*.tsx` devuelve **un único
+consumidor fuera de su carpeta, `HabitPanelTiles`** — el estrechamiento de las
+fichas no puede tocar ninguna otra pantalla. Busqué también la palabra que
+cambió: `récord` fuera de `HabitPanel/` solo vive en `habit-identity.utils.ts`
+(Mi Persona), con su propia frase y sin relación con el gráfico. Lo que el
+constructor señaló como «lo que más probablemente rompí» es justo lo que revisé
+primero, y su diagnóstico es correcto en los dos puntos.
+
+**Anchos, medidos yo (no razonados).** Arnés en `iframe` de ancho exacto con
+`flex:none`, con el CSS real de `HabitPanel.module.scss` y `StatCard.module.scss`
+servido por Vite, tokens de la app y los números más largos posibles. Comparando
+**las 4 fichas de `HEAD`** con **las 7 de ahora**:
+
+| Ancho | Antes (4 fichas) | Ahora (7 fichas) | ¿Desborda? |
+|---|---|---|---|
+| 320 px | 1 col · 288 px | 1 col · 288 px | no |
+| **375 px** | 2 col · 165,5 px · 2 filas | **2 col · 165,5 px · 4 filas** | no (343 = 343) |
+| 414 px | 2 col · 185 px | 2 col · 185 px | no |
+| **760 px** | 4 col · 173 px · 1 fila | **4 col · 173 px · 2 filas** | no (728 = 728) |
+| **1024 px** | **4 col · 239 px · 1 fila** | **6 col · 155 px · 2 filas** | no (992 = 992) |
+| 1440 px | 4 col · 343 px | 7 col · 191 px · 1 fila | no |
+
+**Mi juicio sobre el escritorio: el panel queda peor que antes a 1024 px**, y no
+por poco. Las fichas pasan de 239 px a 155 px, los rótulos («RACHA ACTUAL»,
+«CUMPLIMIENTO 90 D») pasan a dos líneas, con números largos el valor también
+parte («2,4 de 4» en dos líneas), la etiqueta de «Cumplimiento» pasa de caber a
+desbordar 17 px sobre su padding, y **la séptima ficha se queda sola en una
+segunda fila** con cinco huecos al lado. Nada se recorta ni se pisa —el `padding`
+de 32 px se come el desbordamiento—, así que **no rompe ningún criterio**: el
+430–439 solo legisla 375 px y el render aprobado solo decidió el móvil. Queda
+como hallazgo, no como motivo de devolución. Un matiz sobre lo que el
+constructor supuso: **arreglarlo NO obliga a tocar `shared/ui`**. Quien decide
+las columnas es `.tiles` en `HabitPanel.module.scss`, que es de esta feature; lo
+que no se puede arreglar desde aquí es el rótulo que desborda (padding de
+`StatCard`), que además es preexistente. Un `@media` en `.tiles` que pida
+`minmax(12rem, 1fr)` de tablet para arriba devuelve las fichas anchas sin tocar
+los 375 px, y cabe en esta tajada o en una nota de deuda: es decisión del
+usuario, no mía.
+
+**Estados que nadie construye.** Vacío, cargando y error: **siguen resueltos**,
+por las cuatro salidas tempranas intactas. Sin permisos: no aplica (el panel no
+tiene permisos propios; la puerta es el login). Texto largo: **no aplica a la
+rejilla** —ninguna ficha imprime texto libre del usuario; lo más largo que puede
+entrar son los números, y los medí en el peor caso—. Móvil 375: medido, sin
+scroll horizontal. **Lo que falta, y va como hallazgo:** el «sin dato» de la
+dificultad está probado (la ficha no aparece), pero **no hay ningún test que
+monte `HabitPanel` entero** con el rango en 365 para comprobar «En el último
+año» ni el truncado del gráfico — el mismo hueco por el que se cuela el defecto
+que devuelve la tajada.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: no nació
+`habit-metrics.utils.ts` ni ningún `utils` paralelo, no nació ningún componente
+de ficha —`StatCard` de `@/shared/ui/StatCard` es el que ya estaba y sigue
+teniendo un solo consumidor—, y `buildAverageDifficulty` no repite a
+`buildDifficultySeries` ni a `hasAnyDifficulty`: recorre lo mismo para otra
+cosa y vive a su lado, como pedía el criterio 438. El `git status` confirma que
+los seis archivos del diff son **todos modificados**, ninguno nuevo.
+
+**Lo que queda para prueba manual del usuario** (todo `/app/*` está tras el
+login, y ahí no entro): abrir **Mis hábitos → un hábito con historia → Panel**;
+con el rango en 90 d, ver las seis fichas y la séptima solo si hay dificultad
+anotada; con el rango en 30 d en un hábito cuyo récord sea mayor que cualquier
+racha del mes, comprobar que «Tu récord» no cambia y que bajo «Tus rachas, una a
+una» aparece la frase del récord viejo; y —esto es lo que devuelve la tajada—
+**poner el rango en 1 año en un hábito con más de 12 rachas** y comprobar que la
+frase no aparece si el récord está dentro de ese año. El espía de red del
+criterio 435 también es suyo.
+
+### Tajada 1 · revisión de la corrección — la frase ya no puede mentir, y el escritorio vuelve a ser ancho
+
+**Veredicto: aceptada.** Miré solo lo que cambió desde la devolución: el defecto
+del 473, los tests que lo tapan, el `@media` de `.tiles`, el SCSS compilado y
+que no se haya movido nada de lo ya dado por bueno. La revisión de la primera
+vuelta sigue en pie tal cual.
+
+**1 · El defecto del 473, cerrado, y la red muerde de verdad.** Son dos
+cantidades separadas y comentadas: `longest` sobre `visible` (la escala de las
+barras, que debe seguir siendo la de lo dibujado) y `longestInRange` sobre
+`episodes`, que es contra la que compara la frase. **Lo muté yo**: cambié
+`lifetimeRecordDays > longestInRange` por `> longest` y corrí la suite del
+panel:
+
+```
+× con más de 12 rachas, la frase mira el tramo entero y no solo lo dibujado
+× no dice que el récord sea «de antes» cuando está dentro del tramo y solo no se dibuja
+Tests  2 failed | 17 passed (19)
+```
+
+Y **el segundo de esos dos es el que monta `HabitPanel` entero**, no el gráfico
+suelto: la red cubre el camino real por el que se coló la frase falsa, no una
+maqueta del componente. Fichero restaurado desde copia y verificado por `md5sum`
+(`73948fe8…` antes y después); el árbol quedó exactamente como estaba.
+
+**2 · El hueco que señalé, tapado.** Tres casos nuevos montan `HabitPanel` con
+`range={365}` y datos sembrados (21 días seguidos hace 350, más catorce rachas
+de dos días más recientes, que es justo lo que fuerza el truncado a 12): el que
+comprueba que la frase **no** aparece con el récord dentro del año, el que
+comprueba que **sí** aparece —y sin fecha— con `maxStreak: 40`, y el que fija
+«En el último año» en la ficha de salvavidas, que era cableado vivo sin un solo
+test (`HabitPanel.tsx:207`). Bien visto por su parte: ese rótulo lo verifiqué yo
+a mano en la primera vuelta precisamente porque nada lo sujetaba.
+
+**3 · El escritorio. Remedido, y con un matiz de método que importa.** Su
+afirmación de que «las media queries miran la ventana, así que el `iframe` no
+habría servido» **es falsa**, y conviene que quede escrito para que nadie
+abandone el método de `ENVIRONMENT.md`: un `iframe` **es su propio viewport** y
+las media queries se evalúan contra él. Lo comprobé de las dos formas y dan el
+mismo número: `iframe` de 768 px → 3 col · 237,3 px; viewport emulado de verdad
+a 768 px, midiendo en el documento de primer nivel → `matchMedia('(min-width:
+768px)')` a `true`, 3 col · **237,3 px**. El `iframe` sigue siendo válido (y es
+más barato); lo que no vale es medir sobre la pestaña sin emular, que son 568 px.
+
+Medido con los números más largos posibles, comparando **las 4 fichas de `HEAD`**
+con las 7 de la tajada devuelta y con las 7 de ahora:
+
+| Ancho | Antes (`HEAD`, 4 fichas) | Devuelta (7, sin `@media`) | Ahora (7, con `md`) |
+|---|---|---|---|
+| 375 px | 2 col · 165,5 | 2 col · 165,5 | **2 col · 165,5** |
+| 414 px | 2 col · 185 | 2 col · 185 | 2 col · 185 |
+| 760 px | 4 col · 173 | 4 col · 173 | 4 col · 173 |
+| 767 px | 4 col · 174,8 | 4 col · 174,8 | 4 col · 174,8 |
+| **768 px** | 4 col · 175 | 4 col · 175 | **3 col · 237,3** |
+| 800 px | 4 col · 183 | 4 col · 183 | 3 col · 248 |
+| 900 px | 4 col · 208 | 4 col · 208 | 4 col · 208 |
+| **1024 px** | **4 col · 239** | 6 col · 155 | **4 col · 239** |
+| 1280 px | 4 col · 303 | 6 col · 198 | 6 col · 198 |
+| 1440 px | 4 col · 343 | 7 col · 191 | 6 col · 224,7 |
+
+- **375 px no se movió un píxel**: 2 columnas de 165,5, rejilla 343 = 343,
+  documento 375 = 375. La regla entra en `@media (min-width: 768px)`, así que el
+  móvil no la ve. El render aprobado sigue cumpliéndose al pie de la letra.
+- **1024 px vuelve exactamente a lo de antes**: 4 columnas de 239 px, los mismos
+  239 px que tenía `HEAD`. Y ahora **ningún rótulo se parte**: medí las líneas de
+  cada etiqueta, 7 de 7 a una sola línea (en la versión devuelta se partían
+  cuatro).
+- **La banda 768–1023, que nadie había medido nunca: sale ganando, y con qué
+  medida lo digo.** A 767 px (que es lo que hacía la versión devuelta en todo el
+  escritorio) hay 4 columnas de 174,8 px y **cuatro de los siete rótulos se
+  parten en dos líneas** («CUMPLIMIENTO 90 D», «VECES QUE VOLVISTE»,
+  «SALVAVIDAS USADOS», «DIFICULTAD MEDIA»). A 768 px con la regla hay 3 columnas
+  de 237,3 px y **cero rótulos partidos**. El precio es alto de rejilla: 311 px
+  → 404 px (+93 px) por la tercera fila, en un panel que ya se desplaza porque
+  debajo hay tres gráficos. Cambio 93 px de scroll por cuatro rótulos que dejan
+  de romperse: **mejor**, no igual. **Mi decisión: se queda en `md`, no se
+  congela a `lg`.** Congelarlo dejaría los 768–1023 en 4×175 con cuatro rótulos
+  partidos, que es el apelotonamiento por el que devolví la tajada, solo que un
+  poco menos apretado; y una tablet de 768 es un sitio plausible para esta
+  pantalla.
+- **Rareza menor, no bloqueante:** entre ~890 y ~1000 px `auto-fit` vuelve a 4
+  columnas de ~208 px y dos rótulos vuelven a partirse. Es inherente a
+  `auto-fit` con siete fichas y no empeora nada de lo que había; queda anotado.
+- Sin desbordamiento de rejilla ni scroll horizontal en ninguno de los diez
+  anchos. El único nodo que desborda sigue siendo «CUMPLIMIENTO 90 D» a 375 px
+  (106/100), **preexistente y también en `HEAD`**, invisible por los 32 px de
+  padding de `StatCard`: deuda de `shared/ui`, no de esta tajada.
+
+**4 · El SCSS, compilado y comparado.** `sass --style=compressed` sobre el
+`HabitPanel.module.scss` de `HEAD` y el del árbol, y comparación de la **lista
+de selectores**, que es lo único que caza un comentario abierto: listas
+**idénticas**, ninguna regla perdida, una sola añadida (`@media (min-width:
+768px)` con `.tiles`), y 1.217 → 1.309 bytes = **+92 bytes exactos**, que es lo
+que él reportó. El CSS del bundle sube de 279,51 a **279,61 kB**: sube, no baja,
+así que no hay nada que investigar.
+
+**5 · Nada de lo ya aceptado se movió.** `git diff --stat` conserva intactos los
+recuentos de la primera vuelta en `HabitPanelTiles.tsx` (50), `HabitPanel.tsx`
+(12) y `habit-panel.utils.ts` (26); solo crecen el gráfico (37 → 44), los tests
+(147 → 254) y el SCSS (9, nuevo). Comprobado en el código: el orden de las siete
+fichas es el mismo y la dificultad sigue siendo la séptima y última;
+`MAX_DIFFICULTY = 4` y «de 4»; el cero de salvavidas se imprime y el de
+dificultad no existe; «Es la racha que llevas ahora»; y la aserción reescrita
+sigue siendo `getByText('mejor tramo')` y `/21 días.*mejor tramo/`, con el mismo
+matcher de antes. **La promesa de la caché se sostiene**: `computeCacheShapeId`
+vuelve a dar **`f8edc4f3becd`** con 32 ficheros de huella y cero ficheros de
+esta tajada dentro — el SCSS tampoco entra.
+
+**Puertas, corridas enteras por mí:** `pnpm typecheck` exit 0 · `pnpm lint`
+`✖ 14 problems (14 errors, 0 warnings)` = base · `pnpm test` `Tests 2 failed |
+2201 passed (2203)`, los dos de `SearchSelect`, sin rastro del flaky de
+`IconPicker` · `pnpm build` exit 0, chunk **1.151,90 kB**, CSS **279,61 kB**.
+Todo igual a la línea base que él declara.
+
+**Lo que sigue siendo prueba manual del usuario** (`/app/*` está tras el login):
+el espía de red del criterio 435; las siete fichas en un hábito con historia; y
+mirar el panel en una tablet de verdad alrededor de 768 px, que es la banda que
+esta corrección mueve.

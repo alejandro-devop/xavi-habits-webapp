@@ -41,6 +41,15 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   gap: 0.75rem;
+
+  /* Con siete fichas, el 9rem del móvil reparte seis columnas estrechas en
+     cuanto hay sitio: los rótulos se parten en dos líneas y la séptima ficha
+     se queda sola con cinco huecos al lado. De tablet para arriba la pista
+     mínima sube para que las fichas vuelvan a ser anchas. Por debajo de 768 px
+     no cambia nada: a 375 siguen siendo dos columnas. */
+  @include md {
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  }
 }
 
 .charts {

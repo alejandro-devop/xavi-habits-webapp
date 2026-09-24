@@ -463,6 +463,32 @@ export function hasAnyDifficulty(days: HabitDayEntry[]): boolean {
   return days.some((day) => typeof day.followUp?.difficulty === 'number')
 }
 
+export type AverageDifficulty = {
+  /** Media 0–4 de las dificultades anotadas en el tramo. */
+  average: number
+  /** Sobre cuántos días se calcula: los que **tienen** dificultad anotada. */
+  daysWithDifficulty: number
+}
+
+/**
+ * La dificultad media del tramo, **solo** sobre los días con dificultad
+ * anotada. Devuelve `null` cuando no hay ninguno: aquí un cero no sería «muy
+ * fácil», sería «no lo sé», y este panel no afirma lo que no sabe. Misma regla
+ * que ya sigue `buildDifficultySeries`, que no inventa semanas.
+ */
+export function buildAverageDifficulty(days: HabitDayEntry[]): AverageDifficulty | null {
+  const values = days
+    .map((day) => day.followUp?.difficulty)
+    .filter((value): value is number => typeof value === 'number')
+
+  if (values.length === 0) return null
+
+  return {
+    average: values.reduce((acc, value) => acc + value, 0) / values.length,
+    daysWithDifficulty: values.length,
+  }
+}
+
 export type GoalPoint = {
   date: string
   value: number

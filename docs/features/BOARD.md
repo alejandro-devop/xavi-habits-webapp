@@ -23,7 +23,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-012 | building | 2/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-24 |
 | FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
-| FEAT-015 | building | 3a de 5 aceptada (con su corrección) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
+| FEAT-015 | building | 3a y **1 aceptadas**, de 5 | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
 | FEAT-017 | planned | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |

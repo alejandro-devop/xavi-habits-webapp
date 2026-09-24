@@ -5,6 +5,7 @@ import { getHabitDailyGoal } from '@/features/habits/utils/habit-progress.utils'
 import { buildFollowUpsByHabit } from '@/features/habits/utils/habit-stats.utils'
 import { getTodayString } from '@/features/habits/utils/habit-type.utils'
 import {
+  buildAverageDifficulty,
   buildDayEntries,
   buildDifficultySeries,
   buildGoalSeries,
@@ -105,6 +106,7 @@ export function HabitPanel({ habit, range, onRangeChange }: Props) {
   const episodes = useMemo(() => buildStreakEpisodes(days), [days])
   const comebacks = useMemo(() => countComebacks(days), [days])
   const difficulty = useMemo(() => buildDifficultySeries(days), [days])
+  const avgDifficulty = useMemo(() => buildAverageDifficulty(days), [days])
   const goalPoints = useMemo(
     () => (shouldShowGoalChart(habit) ? buildGoalSeries(days, habit) : []),
     [days, habit],
@@ -202,6 +204,8 @@ export function HabitPanel({ habit, range, onRangeChange }: Props) {
         previous={previousSummary}
         comebacks={comebacks}
         rangeLabel={range === 365 ? 'del año' : HABIT_PANEL_RANGE_LABELS[range]}
+        rangeScopeLabel={range === 365 ? 'el último año' : `los últimos ${rangeLabel}`}
+        avgDifficulty={avgDifficulty}
       />
 
       <div className={styles.charts}>
@@ -213,7 +217,13 @@ export function HabitPanel({ habit, range, onRangeChange }: Props) {
 
       {episodes.length > 0 || showDifficulty ? (
         <div className={styles.chartsEven}>
-          {episodes.length > 0 ? <HabitStreakEpisodesChart episodes={episodes} /> : null}
+          {episodes.length > 0 ? (
+            <HabitStreakEpisodesChart
+              episodes={episodes}
+              lifetimeRecordDays={habit.maxStreak}
+              recordIsOngoing={habit.maxStreak > 0 && habit.streak === habit.maxStreak}
+            />
+          ) : null}
           {showDifficulty ? <HabitDifficultyChart points={difficulty} /> : null}
         </div>
       ) : null}

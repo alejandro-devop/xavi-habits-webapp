@@ -53,3 +53,34 @@
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
+
+/* Cuando la franja **se puede tocar** para corregir lo que dormiste (criterio
+   298) es un `<button>`, así que hay que devolverle la caja que el navegador le
+   quita: ancho entero, texto a la izquierda y la tipografía heredada. Sigue
+   pareciendo una franja, no un botón: el único añadido visible es «Corregir».
+   El `:focus-visible` es el del resto del módulo — el teclado tiene que poder
+   llegar aquí, que es la única puerta a la hoja desde el día. */
+button.band {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* «Corregir», en voz baja: dice que se puede tocar sin competir con lo que la
+   franja cuenta. No es una acción pendiente, es una puerta. */
+.edit {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}

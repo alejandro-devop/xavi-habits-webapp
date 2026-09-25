@@ -1,0 +1,76 @@
+/* La pregunta de la mañana **tiene la forma de la franja de arriba**
+   (`VidaNightBand.module.scss`, variante `dawn`): mismo borde, mismo radio y
+   los mismos tokens `--aura-night-*`, porque ocupa su sitio y habla de lo
+   mismo. Lo único que añade son los dos botones.
+
+   Nada de color escrito a mano aquí: tiene que cambiar con el tema (criterios
+   274 y 315). */
+.root {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  row-gap: 0.15rem;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--aura-night-border);
+  border-radius: 0.9rem;
+  background: var(--aura-night-dawn-bg);
+}
+
+.mark {
+  grid-row: 1;
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.question {
+  grid-row: 1;
+  margin: 0;
+  min-width: 0;
+  color: var(--aura-night-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  /* Una noche larga y una hora rara caben a 375 px porque la frase envuelve en
+     vez de desbordar (criterios 313 y 314). */
+  overflow-wrap: anywhere;
+}
+
+.why {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* A 375 px los dos botones se envuelven, nunca se salen; y ocupan el ancho
+   entero, como en el render, para que «Sí, así fue» sea un blanco grande. */
+.actions {
+  display: flex;
+  grid-row: 3;
+  grid-column: 1 / -1;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  min-width: 0;
+
+  /* El `Button` compartido **no es el hijo directo**: viene envuelto en un
+     `span`. Medido — sin esto los dos botones salían de 91 y 108 px en vez de
+     repartirse el ancho, y «Sí, así fue» es justo el blanco que no puede ser
+     pequeño. Así que el reparto va al envoltorio y el botón llena el suyo. */
+  > * {
+    flex: 1 1 8rem;
+    min-width: 0;
+  }
+
+  button {
+    width: 100%;
+  }
+}

@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
 import {
+  VIDA_NIGHT_SAME_TIME_ERROR,
   crossesMidnight,
+  describeLoggedNightKind,
+  describeNightBandLog,
+  describeNightSpan,
+  isSameNightTime,
+  nightEndedByNow,
+  nightLogDurationMinutes,
+  nightLogState,
   describeDiffToPlanned,
   describeNightDays,
   describeNightKind,
@@ -176,5 +184,191 @@ describe('los días', () => {
       'Las noches del lunes y del martes',
     )
     expect(describeNightDays(['friday'])).toBe('La noche del viernes')
+  })
+})
+
+/**
+ * **Lo real encima de lo planeado** (tajada 3). Aquí vive la regla de los tres
+ * estados del criterio 296, que es la que no puede decir cosas distintas en la
+ * franja, en la hoja y en la revisión.
+ */
+describe('lo que dormiste de verdad', () => {
+  const PLANNED = { bedTime: '23:00', wakeTime: '05:00', days: ['tuesday'] as VidaDayOfWeek[] }
+
+  it('los tres estados salen del dato, no de una bandera (criterio 296)', () => {
+    expect(nightLogState(null)).toBe('unconfirmed')
+    expect(nightLogState({ bedTime: '23:20', wakeTime: '05:40', confirmedAt: 'x' })).toBe(
+      'confirmed',
+    )
+    expect(nightLogState({ bedTime: null, wakeTime: '05:40', confirmedAt: 'x' })).toBe('no-data')
+    expect(nightLogState({ bedTime: '23:20', wakeTime: null, confirmedAt: 'x' })).toBe('no-data')
+    expect(nightLogState({ bedTime: null, wakeTime: null, confirmedAt: 'x' })).toBe('no-data')
+  })
+
+  it('sin las dos horas no hay duración: null, nunca 0 (criterios 305 y 317)', () => {
+    expect(nightLogDurationMinutes({ bedTime: '23:20', wakeTime: '05:40', confirmedAt: 'x' })).toBe(
+      380,
+    )
+    expect(nightLogDurationMinutes({ bedTime: null, wakeTime: '05:40', confirmedAt: 'x' })).toBeNull()
+    expect(nightLogDurationMinutes(null)).toBeNull()
+  })
+
+  // Criterio 297, con las palabras del render: «Dormiste 1:00 → 6:40» /
+  // «5 h 40 · 20 min menos que tu noche · confirmado».
+  it('confirmado dice lo real, la duración, la diferencia y la palabra', () => {
+    const dicho = describeNightBandLog(PLANNED, {
+      bedTime: '01:00',
+      wakeTime: '06:40',
+      confirmedAt: 'x',
+    })
+
+    expect(dicho.state).toBe('confirmed')
+    expect(dicho.label).toBe('Dormiste 1:00 → 6:40')
+    expect(dicho.detail).toBe('5 h 40 · 20 min menos que tu noche · confirmado')
+  })
+
+  it('dormir más que lo planeado se cuenta igual, sin premio ni reproche', () => {
+    const dicho = describeNightBandLog(PLANNED, {
+      bedTime: '23:20',
+      wakeTime: '05:40',
+      confirmedAt: 'x',
+    })
+
+    expect(dicho.label).toBe('Dormiste 23:20 → 5:40')
+    expect(dicho.detail).toBe('6 h 20 · 20 min más que tu noche · confirmado')
+  })
+
+  it('sin contestar no se afirma nada: solo la palabra «sin confirmar» (295)', () => {
+    const dicho = describeNightBandLog(PLANNED, null)
+
+    expect(dicho.state).toBe('unconfirmed')
+    expect(dicho.label).toBeNull()
+    expect(dicho.detail).toBe('sin confirmar')
+  })
+
+  it('una hora que no se sabe queda «sin dato» y no se rellena (303 y 305)', () => {
+    expect(describeNightBandLog(PLANNED, { bedTime: null, wakeTime: '06:40', confirmedAt: 'x' })).toEqual(
+      {
+        state: 'no-data',
+        label: 'Te levantaste a las 6:40',
+        detail: 'A qué hora te acostaste, sin dato',
+      },
+    )
+    expect(describeNightBandLog(PLANNED, { bedTime: '23:20', wakeTime: null, confirmedAt: 'x' })).toEqual(
+      {
+        state: 'no-data',
+        label: 'Te acostaste a las 23:20',
+        detail: 'A qué hora te levantaste, sin dato',
+      },
+    )
+  })
+
+  it('«la noche del martes al miércoles», y solo si cruzó (criterio 291)', () => {
+    expect(describeNightSpan(WEDNESDAY, true)).toBe('Noche del martes al miércoles')
+    expect(describeNightSpan(WEDNESDAY, false)).toBe('Noche del miércoles')
+  })
+
+  // Criterio 293: el usuario no hace ninguna cuenta.
+  it('dice si la noche registrada cruzó la medianoche o no', () => {
+    expect(describeLoggedNightKind('01:00', '06:40', WEDNESDAY)).toBe(
+      'Esta noche no cruzó la medianoche: empezó y acabó el miércoles.',
+    )
+    expect(describeLoggedNightKind('23:20', '05:40', WEDNESDAY)).toBe(
+      'Esta noche cruzó la medianoche: empezó el martes y acabó el miércoles.',
+    )
+    expect(describeLoggedNightKind(null, '05:40', WEDNESDAY)).toBeNull()
+  })
+
+  // Criterio 316, sobre todo lo que esta tajada estrena en texto.
+  it('ni una palabra de reproche en lo que dice de tu sueño', () => {
+    const textos = [
+      describeNightBandLog(PLANNED, { bedTime: '02:00', wakeTime: '05:00', confirmedAt: 'x' }),
+      describeNightBandLog(PLANNED, null),
+      describeNightBandLog(PLANNED, { bedTime: null, wakeTime: '05:00', confirmedAt: 'x' }),
+    ]
+      .map((dicho) => `${dicho.label ?? ''} ${dicho.detail ?? ''}`)
+      .join(' ')
+      .toLowerCase()
+
+    for (const palabra of ['poco', 'mal', 'deberías', 'apenas', 'desperdicio', 'tarde', 'por qué']) {
+      expect(textos).not.toContain(palabra)
+    }
+  })
+})
+
+/**
+ * **El suelo de la pregunta de la mañana** (hallazgo 1 del revisor de la tajada
+ * 3). A las 3:00 la noche de `23:00 → 5:00` todavía está pasando, y un toque
+ * habría guardado una hora de levantarse que no ha ocurrido.
+ */
+describe('cuándo ha terminado la noche', () => {
+  const CRUZA = { bedTime: '23:00', wakeTime: '05:00', days: ['thursday'] as VidaDayOfWeek[] }
+  const DENTRO = { bedTime: '01:00', wakeTime: '06:40', days: ['friday'] as VidaDayOfWeek[] }
+
+  it('una noche que cruza no ha terminado hasta su hora de levantarse', () => {
+    expect(nightEndedByNow(CRUZA, 3 * 60)).toBe(false)
+    expect(nightEndedByNow(CRUZA, 4 * 60 + 59)).toBe(false)
+    expect(nightEndedByNow(CRUZA, 5 * 60)).toBe(true)
+    expect(nightEndedByNow(CRUZA, 9 * 60 + 24)).toBe(true)
+  })
+
+  // El borde: **no** se compara contra la hora de acostarse ni se suman 24 h.
+  // La noche que acaba en este día acaba a su `wakeTime` en el reloj de este
+  // día, cruce o no cruce — y con `1:00 → 6:40` las 2:00 siguen siendo noche.
+  it('una noche que no cruza se mide igual, sin ningún caso aparte', () => {
+    expect(nightEndedByNow(DENTRO, 2 * 60)).toBe(false)
+    expect(nightEndedByNow(DENTRO, 6 * 60 + 39)).toBe(false)
+    expect(nightEndedByNow(DENTRO, 6 * 60 + 40)).toBe(true)
+  })
+
+  it('sin reloj —un día que no es hoy— la noche ya terminó', () => {
+    expect(nightEndedByNow(CRUZA, null)).toBe(true)
+  })
+
+  // Y lo que se ve entre medias: ni un hueco vacío ni un reproche.
+  it('mientras pasa, la franja dice que aún no ha terminado (no «sin confirmar»)', () => {
+    const enCurso = describeNightBandLog(CRUZA, null, { stillRunning: true })
+    expect(enCurso.state).toBe('unconfirmed')
+    expect(enCurso.label).toBeNull()
+    expect(enCurso.detail).toBe('aún no ha terminado')
+
+    // Y cuando termina sin contestar, la palabra del criterio 295.
+    expect(describeNightBandLog(CRUZA, null).detail).toBe('sin confirmar')
+  })
+
+  it('una noche ya contestada no cambia por estar en curso', () => {
+    const log = { bedTime: '23:00', wakeTime: '05:00', confirmedAt: 'x' }
+    expect(describeNightBandLog(CRUZA, log, { stillRunning: true })).toEqual(
+      describeNightBandLog(CRUZA, log),
+    )
+  })
+})
+
+/**
+ * **Las dos horas iguales** (criterio 263), que es del cliente y de nadie más.
+ * La regla vive aquí para que Ajustes y la hoja de «¿Cómo dormiste?» rechacen
+ * lo mismo: dos varas para el mismo dato es como se acaba guardando en un sitio
+ * lo que el otro no admite (hallazgo 2 del revisor de la tajada 3).
+ */
+describe('una noche de cero minutos no es una noche', () => {
+  it('las dos horas iguales se reconocen', () => {
+    expect(isSameNightTime('23:00', '23:00')).toBe(true)
+    expect(isSameNightTime('05:00', '05:00')).toBe(true)
+    expect(isSameNightTime('23:00', '05:00')).toBe(false)
+    // `5:00` sin el cero delante **no es `HH:mm`** y se cae por inválido, no
+    // por distinto: los dos campos de hora del módulo escriben dos dígitos.
+    expect(isSameNightTime('5:00', '05:00')).toBe(false)
+  })
+
+  it('lo que falta o no vale no es «la misma hora»: es otro problema', () => {
+    expect(isSameNightTime(null, '05:00')).toBe(false)
+    expect(isSameNightTime('23:00', null)).toBe(false)
+    expect(isSameNightTime('lunes', 'lunes')).toBe(false)
+  })
+
+  it('el mensaje es uno solo y dice por qué', () => {
+    expect(VIDA_NIGHT_SAME_TIME_ERROR).toContain('no pueden ser la misma')
+    // Y encaja con la aritmética que ya existía: esa noche no tiene duración.
+    expect(nightDurationMinutes('23:00', '23:00')).toBeNull()
   })
 })

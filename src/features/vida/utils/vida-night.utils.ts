@@ -111,6 +111,36 @@ export function describeNightKind(night: VidaNight, day?: VidaDayOfWeek): string
   return `Cruza la medianoche, y eso está bien: la noche del ${VIDA_DAY_LABELS[from]} es la madrugada del ${VIDA_DAY_LABELS[to]}.`
 }
 
+/**
+ * **El mensaje del criterio 263**, escrito una sola vez y usado en los dos
+ * sitios donde se pueden escribir dos horas de noche: Ajustes y la hoja de
+ * «¿Cómo dormiste?». Dos varas para el mismo dato es como se acaba guardando
+ * en un sitio lo que el otro rechaza.
+ */
+export const VIDA_NIGHT_SAME_TIME_ERROR =
+  'Las dos horas no pueden ser la misma: una noche de cero minutos no es una noche.'
+
+/**
+ * **Las dos horas son la misma**, o sea: una noche de cero minutos, que no es
+ * una noche (criterio 263).
+ *
+ * **Esta regla es solo del cliente**: el servidor mira el formato y nada más
+ * —lo dice la sección 2 tras revisar el validador y la migración—, así que si
+ * no está aquí no está en ningún sitio. Se compara en minutos, como todo en
+ * este archivo; el formato de dos dígitos ya lo exige `isValidHhMm`, así que
+ * `5:00` no llega hasta aquí: se cae antes, por inválido.
+ *
+ * Con alguna hora que falte o que no valga devuelve `false`: eso no es «la
+ * misma hora», es otro problema y lo dice quien llama con sus palabras.
+ */
+export function isSameNightTime(
+  bedTime: string | null | undefined,
+  wakeTime: string | null | undefined,
+): boolean {
+  if (!isValidHhMm(bedTime) || !isValidHhMm(wakeTime)) return false
+  return toMinutes(bedTime!) === toMinutes(wakeTime!)
+}
+
 /** ¿Esa noche está marcada? */
 export function nightAppliesToWeekday(night: VidaNight, day: VidaDayOfWeek): boolean {
   return night.days.includes(day)
@@ -252,4 +282,201 @@ export function describeNightDays(days: readonly VidaDayOfWeek[]): string {
   )
   if (labels.length === 1) return `La noche del ${labels[0]}`
   return `Las noches del ${labels.slice(0, -1).join(', ')} y del ${labels[labels.length - 1]}`
+}
+
+/* ------------------------------------------------------------------------- *
+ * Lo real encima de lo planeado (tajada 3)
+ * ------------------------------------------------------------------------- */
+
+/**
+ * **Lo que dormiste de verdad esa noche**, tal y como se guarda en el aparato.
+ *
+ * El tipo vive aquí, con el resto de la aritmética de la noche, y el store lo
+ * importa — igual que ya hace con `VidaPatternAnswer` de `vida-patterns.utils`.
+ * Así las funciones puras que lo leen no dependen de `zustand`.
+ *
+ * **Cualquiera de las dos horas puede ser `null`**: es «No sé a qué hora», y se
+ * guarda lo que sí se sabe (criterio 303). Lo que nunca se hace es rellenarla
+ * con lo planeado para cuadrar una cifra.
+ */
+export type VidaNightLog = {
+  /** `HH:mm` a la que te acostaste, o `null` si no se sabe. */
+  bedTime: string | null
+  /** `HH:mm` a la que te levantaste, o `null` si no se sabe. */
+  wakeTime: string | null
+  /** Cuándo se contestó, en ISO. No se enseña: sirve para saber que hubo respuesta. */
+  confirmedAt: string
+}
+
+/**
+ * **Los tres estados del criterio 296**, y salen del dato, no de una bandera:
+ *
+ * - `unconfirmed`: hay noche planeada y **no hay entrada**. Nadie contestó.
+ * - `confirmed`: hay entrada con **las dos** horas.
+ * - `no-data`: hay entrada y alguna hora quedó sin saber.
+ *
+ * Ignorar la pregunta deja `unconfirmed` **sin escribir nada** (criterio 295):
+ * no hacer nada no cuesta ni un byte en el aparato.
+ */
+export type VidaNightLogState = 'unconfirmed' | 'confirmed' | 'no-data'
+
+/** La palabra de cada estado, la misma en todas las pantallas (criterio 296). */
+export const VIDA_NIGHT_STATE_WORD: Record<VidaNightLogState, string> = {
+  unconfirmed: 'sin confirmar',
+  confirmed: 'confirmado',
+  'no-data': 'sin dato',
+}
+
+export function nightLogState(log: VidaNightLog | null | undefined): VidaNightLogState {
+  if (!log) return 'unconfirmed'
+  return isValidHhMm(log.bedTime) && isValidHhMm(log.wakeTime) ? 'confirmed' : 'no-data'
+}
+
+/** Cuánto se durmió de verdad. `null` si falta alguna hora (criterios 305 y 317). */
+export function nightLogDurationMinutes(log: VidaNightLog | null | undefined): number | null {
+  if (!log) return null
+  return nightDurationMinutes(log.bedTime, log.wakeTime)
+}
+
+/**
+ * **La noche del martes al miércoles**, o «la noche del miércoles» cuando no
+ * cruzó: el titular de la hoja y de la pregunta (criterio 291).
+ *
+ * Se nombra por la fecha en que **te levantas**, que es la clave con la que se
+ * guarda (criterio 294).
+ */
+export function describeNightSpan(wakeDate: string, crosses: boolean): string {
+  const day = getVidaDayOfWeek(wakeDate)
+  const label = VIDA_DAY_LABELS[day]
+  if (!crosses) return `Noche del ${label}`
+  const previous = VIDA_DAY_ORDER[(VIDA_DAY_ORDER.indexOf(day) + 6) % 7]!
+  return `Noche del ${VIDA_DAY_LABELS[previous]} al ${label}`
+}
+
+/**
+ * **Si la noche que se está registrando cruzó la medianoche o no, dicho**
+ * (criterio 293). El usuario no hace ninguna cuenta: acostarse a la 1:00 es una
+ * noche entera dentro del miércoles y aquí se lee con esas palabras.
+ *
+ * `null` mientras falte una hora: no se afirma nada de una noche a medias.
+ */
+export function describeLoggedNightKind(
+  bedTime: string | null,
+  wakeTime: string | null,
+  wakeDate: string,
+): string | null {
+  if (!isValidHhMm(bedTime) || !isValidHhMm(wakeTime)) return null
+  const day = VIDA_DAY_LABELS[getVidaDayOfWeek(wakeDate)]
+  if (nightLogCrosses(bedTime!, wakeTime!)) {
+    const previous =
+      VIDA_DAY_LABELS[
+        VIDA_DAY_ORDER[(VIDA_DAY_ORDER.indexOf(getVidaDayOfWeek(wakeDate)) + 6) % 7]!
+      ]
+    return `Esta noche cruzó la medianoche: empezó el ${previous} y acabó el ${day}.`
+  }
+  return `Esta noche no cruzó la medianoche: empezó y acabó el ${day}.`
+}
+
+/** `23:20 → 5:40` cruza; `1:00 → 6:40` no. La misma regla que `crossesMidnight`. */
+export function nightLogCrosses(bedTime: string, wakeTime: string): boolean {
+  return toMinutes(bedTime) > toMinutes(wakeTime)
+}
+
+/**
+ * **¿Ya terminó la noche que acaba en este día?**
+ *
+ * Existe porque la pregunta de la mañana tenía **techo y no suelo**: a las 3:00
+ * Hoy preguntaba «¿Dormiste 23:00 → 5:00?» por una noche que todavía estaba
+ * pasando, y un toque habría guardado como real una hora de levantarse **que no
+ * ha ocurrido**. Eso es inventar un dato, y es justo lo que esta feature viene
+ * a no hacer.
+ *
+ * **El borde, que no es una comparación obvia:** la noche cruza la medianoche,
+ * pero la que *termina* en este día termina siempre a su `wakeTime` leído en el
+ * reloj **de este día**, cruce o no cruce. Lo de «ayer» es su comienzo, y el
+ * comienzo aquí no importa: quien decide de qué día es cada noche es
+ * `nightEndingOnWeekday`, y esto solo mira su final. Por eso **no** hay que
+ * comparar contra `bedTime` ni sumar 24 h en ningún sitio.
+ *
+ * Sin reloj (`null`, que es lo que pasa en un día que no es hoy) la respuesta es
+ * **sí**: un día pasado ya terminó entero, y uno futuro no llega aquí porque su
+ * franja no cuenta nada real.
+ */
+export function nightEndedByNow(night: VidaNight, nowMinutes: number | null): boolean {
+  if (nowMinutes === null) return true
+  return nowMinutes >= toMinutes(night.wakeTime)
+}
+
+/**
+ * **Lo que dice la franja de arriba de un día real**, con sus tres estados
+ * (criterios 295, 296 y 297).
+ *
+ * Es una función pura y vive aquí, no en el componente, por la misma razón que
+ * `nightBandsForWeekday`: la franja de Hoy, la de la revisión y la de mañana
+ * tienen que decir **lo mismo**, y una regla escrita en tres sitios acaba
+ * diciendo tres cosas.
+ *
+ * Ni una palabra de juicio (criterio 316): dormir poco no es un fallo y aquí no
+ * se califica, se cuenta.
+ */
+export function describeNightBandLog(
+  night: VidaNight,
+  log: VidaNightLog | null | undefined,
+  options: { stillRunning?: boolean } = {},
+): { state: VidaNightLogState; label: string | null; detail: string | null } {
+  const state = nightLogState(log)
+  if (state === 'unconfirmed') {
+    // **Mientras la noche está pasando no hay nada sin confirmar**: hay una
+    // noche a medias. Decir «sin confirmar» a las 3:00 sería reprochar un
+    // silencio que todavía no existe, y dejar el hueco vacío sería peor. El
+    // dato guardado es el mismo —no hay entrada—, así que el estado no cambia:
+    // lo que cambia es la palabra (criterios 295 y 296).
+    if (options.stillRunning) {
+      return { state, label: null, detail: 'aún no ha terminado' }
+    }
+    // Sin respuesta no se afirma nada nuevo: la franja sigue diciendo lo
+    // planeado y **añade la palabra** (criterio 295).
+    return { state, label: null, detail: VIDA_NIGHT_STATE_WORD.unconfirmed }
+  }
+  const bed = log!.bedTime
+  const wake = log!.wakeTime
+  if (state === 'confirmed') {
+    const minutes = nightDurationMinutes(bed, wake)
+    const diff = describeDiffToPlanned(
+      diffToPlannedMinutes(minutes, nightDurationMinutes(night.bedTime, night.wakeTime)),
+    )
+    const parts = [formatNightDuration(minutes)]
+    if (diff) parts.push(lowerFirst(diff))
+    parts.push(VIDA_NIGHT_STATE_WORD.confirmed)
+    return {
+      state,
+      label: `Dormiste ${formatNightTime(bed!)} → ${formatNightTime(wake!)}`,
+      detail: parts.join(' · '),
+    }
+  }
+  // «Sin dato»: se guardó lo que se sabía y lo otro se dice que no se sabe.
+  if (isValidHhMm(wake)) {
+    return {
+      state,
+      label: `Te levantaste a las ${formatNightTime(wake!)}`,
+      detail: `A qué hora te acostaste, ${VIDA_NIGHT_STATE_WORD['no-data']}`,
+    }
+  }
+  if (isValidHhMm(bed)) {
+    return {
+      state,
+      label: `Te acostaste a las ${formatNightTime(bed!)}`,
+      detail: `A qué hora te levantaste, ${VIDA_NIGHT_STATE_WORD['no-data']}`,
+    }
+  }
+  return {
+    state,
+    label: 'De esta noche no quedó ninguna hora',
+    detail: VIDA_NIGHT_STATE_WORD['no-data'],
+  }
+}
+
+/** «20 min menos que tu noche» en medio de una frase, no al principio. */
+function lowerFirst(text: string): string {
+  return text.charAt(0).toLowerCase() + text.slice(1)
 }

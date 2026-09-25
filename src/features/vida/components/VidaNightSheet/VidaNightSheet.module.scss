@@ -1,0 +1,124 @@
+/* Mismo ritmo y mismos tonos que `VidaStartTimeSheet.module.scss`, que es la
+   otra hoja corta del módulo: dos hojas que se parecen se leen peor que dos
+   idénticas. Los controles son los compartidos (`Input type="time"`), así que
+   aquí no se estiliza ningún control nuevo. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+/* A 375 px las dos horas se ponen una debajo de otra; a partir de ahí, en dos
+   columnas iguales, como en el render. */
+.inputs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  min-width: 0;
+
+  @media (min-width: 30rem) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.lbl {
+  color: var(--color-text-secondary);
+  font-family: var(--font-label, inherit);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Lo que se acaba de contar: dato, no aviso. */
+.hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+/* Si la noche cruzó la medianoche o no, en el color de la noche: es la misma
+   idea que pintan las franjas, y el token cambia con el tema (criterio 315). */
+.kind {
+  margin: 0;
+  color: var(--aura-night-text, var(--color-text-secondary));
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.unknown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/* La misma píldora de `VidaGoalPrompt`: borde suave, sin fondo propio, y
+   marcada con `aria-pressed` cuando ese lado queda sin dato. */
+.chip {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  color: var(--color-text);
+  font-family: var(--font-label, inherit);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+
+  &[aria-pressed='true'] {
+    border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+/* Dónde se guarda esto, dicho y no escondido (criterio 299). */
+.device {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: 100%;
+}

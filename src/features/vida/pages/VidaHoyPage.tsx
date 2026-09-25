@@ -30,6 +30,8 @@ import { useBuildDayFromTemplate } from '@/features/vida/hooks/useBuildDayFromTe
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
 import { useVidaDayWindow } from '@/features/vida/hooks/useVidaDayWindow'
 import { VidaNightBand } from '@/features/vida/components/VidaNightBand'
+import { VidaNightPrompt } from '@/features/vida/components/VidaNightPrompt'
+import { VidaNightSheet } from '@/features/vida/components/VidaNightSheet'
 import { useVidaNowMinute } from '@/features/vida/hooks/useVidaNowMinute'
 import { useVidaOpenSession } from '@/features/vida/hooks/useVidaOpenSession'
 import { useVidaPatterns } from '@/features/vida/hooks/useVidaPatterns'
@@ -82,6 +84,7 @@ import {
 import {
   getBlockNote,
   isNoDataDismissed,
+  getNightLog,
   useVidaDeviceNotesStore,
 } from '@/features/vida/store/vida-device-notes.store'
 import type { GapWindow } from '@/features/vida/utils/vida-gap-form.utils'
@@ -103,6 +106,7 @@ import {
   getVidaDayOfWeek,
   pluralDayLabel,
 } from '@/features/vida/utils/vida-date.utils'
+import { nightEndedByNow } from '@/features/vida/utils/vida-night.utils'
 import {
   buildDayStrip,
   clampToPlanningWindow,
@@ -299,6 +303,10 @@ export function VidaHoyPage() {
   const markBlockCouldNot = useVidaDeviceNotesStore((state) => state.markBlockCouldNot)
   const clearBlockNote = useVidaDeviceNotesStore((state) => state.clearBlockNote)
   const dismissNoData = useVidaDeviceNotesStore((state) => state.dismissNoData)
+  // Lo que dormiste de verdad, **de este aparato** (criterio 299). Se lee igual
+  // que las notas de bloque: un selector del store, sin consulta ninguna.
+  const nightLogs = useVidaDeviceNotesStore((state) => state.nightLogs)
+  const setNightLog = useVidaDeviceNotesStore((state) => state.setNightLog)
   // «Lo hice» escribe una sesión con lo planeado (criterio 41). Es la misma
   // mutación que usa la hoja de registrar: ni clave ni invalidación nuevas.
   const createFollowUpMutation = useCreateActivityFollowUpMutation()
@@ -337,6 +345,59 @@ export function VidaHoyPage() {
    * misma costumbre tuviera un número distinto en cada pantalla.
    */
   const dayWindow = useVidaDayWindow(date)
+
+  /**
+   * **Lo real de la noche que acaba en este día** (FEAT-012, tajada 3).
+   *
+   * `nightLog` es lo guardado en el aparato, con la clave = **el día en que te
+   * levantas**, que es este (criterio 294). `null` es «sin confirmar», y es lo
+   * que deja ignorar la pregunta sin coste (criterio 295).
+   *
+   * `nightIsReal`: solo un día **con pasado** tiene noche que confirmar. En un
+   * día futuro la franja sigue contando lo planeado y **no** dice «sin
+   * confirmar», porque de mañana no hay nada que confirmar todavía (289).
+   */
+  const nightLog = getNightLog(nightLogs, date)
+  const nightIsReal = isToday || isPast
+  /**
+   * **Cuándo se pinta la pregunta de la mañana, y cuándo deja de pintarse.**
+   * El arquitecto lo dejó recomendado y no cerrado (criterios 288 frente a
+   * 295); esta es la decisión y su porqué:
+   *
+   * - **Solo en el día de hoy** y solo si esa noche llega hasta aquí (289).
+   * - **Solo mientras nadie haya contestado**: contestar la quita, y no vuelve
+   *   ese día ni tras recargar, porque lo guardado se persiste (290).
+   * - **Desde que la noche ha terminado de verdad** (`nightEndedByNow`). A las
+   *   3:00 la noche de 23:00 → 5:00 **todavía está pasando**, y un toque en «Sí,
+   *   así fue» guardaría como real una hora de levantarse que no ha ocurrido.
+   *   Ese es el suelo, y no es una comparación obvia: la noche cruza la
+   *   medianoche, pero la que *acaba* en este día acaba a su hora de levantarse
+   *   leída en el reloj **de este día** — la regla vive en el `utils`, con su
+   *   porqué.
+   * - **Hasta la hora de acostarte**, que es el final de la ventana de este
+   *   día. Pasada esa hora ya no es «la mañana siguiente»: la noche de la que
+   *   habla se da por no confirmada y **la franja lo dice con esa palabra**
+   *   (criterio 295, «al acabar el día»).
+   *
+   * No hay ninguna bandera de «descartada» en el aparato y no hace falta:
+   * ignorar la pregunta es literalmente no tocarla, y eso no escribe nada. Ni
+   * el suelo ni el techo son números inventados: uno sale de tu hora de
+   * levantarte y el otro de la ventana del día.
+   *
+   * **Y entre medias no queda ningún hueco**: mientras la noche está pasando la
+   * franja sigue ahí y dice que **aún no ha terminado**, así que de madrugada la
+   * pantalla no se queda muda ni afirma un «sin confirmar» que sería un reproche
+   * por un silencio que todavía no existe.
+   */
+  const nightStillRunning =
+    isToday && dayWindow.nightEnding !== null && !nightEndedByNow(dayWindow.nightEnding, nowMinutes)
+  const nightPromptOpen =
+    isToday &&
+    dayWindow.nightEnding !== null &&
+    nightLog === null &&
+    !nightStillRunning &&
+    nowMinutes !== null &&
+    nowMinutes < parseTimeToMinutes(dayWindow.endTime)
 
   // La tira: siete días desde dos antes del que se mira, con un punto por día.
   // Cada punto es **la misma consulta** que la agenda de ese día
@@ -736,6 +797,10 @@ export function VidaHoyPage() {
   const [logSheet, setLogSheet] = useState<LogSheetState | null>(null)
   const [logSheetOpen, setLogSheetOpen] = useState(false)
   const [logSheetSession, setLogSheetSession] = useState(0)
+  // La hoja de la noche (FEAT-012, tajada 3), con su propia `key` por apertura:
+  // es una tercera hoja y no comparte estado con las otras dos.
+  const [nightSheetOpen, setNightSheetOpen] = useState(false)
+  const [nightSheetSession, setNightSheetSession] = useState(0)
   const addMutation = useAddDayPlanItemMutation()
   // Armar el día visto desde su plantilla (criterios 21, 41–44). Es una sola
   // `activityDayPlanSet` y el resumen se pinta aquí, porque lleva un enlace al
@@ -752,6 +817,26 @@ export function VidaHoyPage() {
     setLogSheet(next)
     setLogSheetSession((session) => session + 1)
     setLogSheetOpen(true)
+  }
+
+  function openNightSheet() {
+    setNightSheetSession((session) => session + 1)
+    setNightSheetOpen(true)
+  }
+
+  /**
+   * **«Sí, así fue»: un toque y ya** (criterio 290). Lo planeado pasa a ser lo
+   * real y queda confirmado, en este aparato. No abre nada, no pide
+   * confirmación y no manda a ninguna pantalla — y como se persiste, la
+   * pregunta tampoco vuelve al recargar.
+   */
+  function confirmPlannedNight() {
+    if (!dayWindow.nightEnding) return
+    setNightLog(date, {
+      bedTime: dayWindow.nightEnding.bedTime,
+      wakeTime: dayWindow.nightEnding.wakeTime,
+      confirmedAt: new Date().toISOString(),
+    })
   }
 
   /**
@@ -1292,7 +1377,30 @@ export function VidaHoyPage() {
     // se pinta y lo que se cuenta no pueden discrepar.
     <>
       {dayWindow.nightEnding ? (
-        <VidaNightBand variant="dawn" night={dayWindow.nightEnding} day={getVidaDayOfWeek(date)} />
+        // La pregunta **ocupa el sitio de la franja de arriba**, que es lo que
+        // dibuja el render aprobado (momento A4): es la misma noche, todavía
+        // sin contestar. Así no hay dos cosas diciendo lo mismo, y contestar no
+        // mueve nada de sitio — solo cambia lo que esa franja cuenta.
+        nightPromptOpen ? (
+          <VidaNightPrompt
+            night={dayWindow.nightEnding}
+            onConfirm={confirmPlannedNight}
+            onDifferent={openNightSheet}
+          />
+        ) : (
+          <VidaNightBand
+            variant="dawn"
+            night={dayWindow.nightEnding}
+            day={getVidaDayOfWeek(date)}
+            realDay={nightIsReal}
+            log={nightLog}
+            stillRunning={nightStillRunning}
+            // Un día ya vivido se puede corregir siempre, sin límite (298). Una
+            // noche que **aún está pasando** no: no hay nada que corregir
+            // todavía, y la hoja guardaría horas que no han llegado.
+            onEdit={nightIsReal && !nightStillRunning ? openNightSheet : undefined}
+          />
+        )
       ) : null}
       {/* En un día que no es hoy la agenda va en **trazo más suave** (criterio
           33): es un plan, no lo que está pasando. Se apagan los bordes, no el
@@ -1560,6 +1668,23 @@ export function VidaHoyPage() {
           // puesta al elegir el «qué» dentro de un hueco (criterio 238).
           usualDurations={usualDurationsByActivity}
           onStart={(activityId, startTime) => sessionActions.start(activityId, startTime)}
+        />
+      ) : null}
+
+      {/* «¿Cómo dormiste?» (tajada 3). Se monta solo cuando hay una noche que
+          acabe en este día: sin ella no hay nada que preguntar. Lo que guarda
+          **no viaja al API**: se queda en este aparato, y la hoja lo dice. */}
+      {dayWindow.nightEnding ? (
+        <VidaNightSheet
+          key={nightSheetSession}
+          open={nightSheetOpen}
+          onClose={() => setNightSheetOpen(false)}
+          date={date}
+          night={dayWindow.nightEnding}
+          log={nightLog}
+          onSave={(saved) =>
+            setNightLog(date, { ...saved, confirmedAt: new Date().toISOString() })
+          }
         />
       ) : null}
     </div>

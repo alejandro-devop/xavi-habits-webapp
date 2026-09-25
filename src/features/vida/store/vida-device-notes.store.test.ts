@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   VIDA_DEVICE_NOTES_STORAGE_KEY,
   getBlockNote,
+  getNightLog,
   isBridgeDismissed,
   isNoDataDismissed,
   useVidaDeviceNotesStore,
@@ -24,6 +25,7 @@ function reset() {
     blockNotes: {},
     dismissedNoData: [],
     dismissedBridges: [],
+    nightLogs: {},
   })
   window.localStorage.clear()
 }
@@ -167,5 +169,89 @@ describe('«Dejarlo como está» del puente (FEAT-006, criterio 58)', () => {
     useVidaDeviceNotesStore.setState({ blockNotes: {}, dismissedNoData: ['x'] })
     expect(useVidaDeviceNotesStore.getState().dismissedBridges ?? []).toEqual([])
     expect(() => useVidaDeviceNotesStore.getState().dismissBridge(MONDAY, 'i1')).not.toThrow()
+  })
+})
+
+/**
+ * **Lo que dormiste de verdad** (FEAT-012, tajada 3). Criterios 294, 295, 296,
+ * 298 y 299: la clave es el día en que te levantas, no contestar no escribe
+ * nada, corregir se puede siempre, y todo cabe en la clave que ya existía.
+ */
+describe('la noche real', () => {
+  const MIERCOLES = '2026-09-23'
+
+  it('lo guardado pertenece al día en que te levantas, no al de la víspera (294)', () => {
+    useVidaDeviceNotesStore.getState().setNightLog(MIERCOLES, {
+      bedTime: '23:20',
+      wakeTime: '05:40',
+      confirmedAt: '2026-09-23T06:00:00.000Z',
+    })
+
+    const logs = useVidaDeviceNotesStore.getState().nightLogs
+    expect(getNightLog(logs, MIERCOLES)).toEqual({
+      bedTime: '23:20',
+      wakeTime: '05:40',
+      confirmedAt: '2026-09-23T06:00:00.000Z',
+    })
+    // El martes, que es cuando te acostaste, no tiene nada: la noche pertenece
+    // al día en que te levantas.
+    expect(getNightLog(logs, '2026-09-22')).toBeNull()
+  })
+
+  it('ignorar la pregunta no escribe nada: sin entrada, «sin confirmar» (295)', () => {
+    expect(getNightLog(useVidaDeviceNotesStore.getState().nightLogs, MIERCOLES)).toBeNull()
+    expect(window.localStorage.getItem(VIDA_DEVICE_NOTES_STORAGE_KEY)).toBeNull()
+  })
+
+  it('se puede corregir sin límite: la última respuesta manda (298)', () => {
+    const store = useVidaDeviceNotesStore.getState()
+    store.setNightLog(MIERCOLES, { bedTime: '23:00', wakeTime: '05:00', confirmedAt: 'a' })
+    store.setNightLog(MIERCOLES, { bedTime: '01:00', wakeTime: '06:40', confirmedAt: 'b' })
+    store.setNightLog(MIERCOLES, { bedTime: '01:10', wakeTime: '06:40', confirmedAt: 'c' })
+
+    expect(getNightLog(useVidaDeviceNotesStore.getState().nightLogs, MIERCOLES)).toEqual({
+      bedTime: '01:10',
+      wakeTime: '06:40',
+      confirmedAt: 'c',
+    })
+    expect(Object.keys(useVidaDeviceNotesStore.getState().nightLogs)).toEqual([MIERCOLES])
+  })
+
+  it('«No sé a qué hora» se guarda como `null`, no como una hora inventada (303)', () => {
+    useVidaDeviceNotesStore
+      .getState()
+      .setNightLog(MIERCOLES, { bedTime: null, wakeTime: '06:40', confirmedAt: 'x' })
+
+    expect(getNightLog(useVidaDeviceNotesStore.getState().nightLogs, MIERCOLES)?.bedTime).toBeNull()
+  })
+
+  it('deshacer la respuesta deja esa noche otra vez sin confirmar', () => {
+    const store = useVidaDeviceNotesStore.getState()
+    store.setNightLog(MIERCOLES, { bedTime: '23:00', wakeTime: '05:00', confirmedAt: 'a' })
+    store.clearNightLog(MIERCOLES)
+
+    expect(getNightLog(useVidaDeviceNotesStore.getState().nightLogs, MIERCOLES)).toBeNull()
+  })
+
+  // Criterio 299: **ninguna clave nueva** de `localStorage`.
+  it('viaja en la clave que ya existía y no estrena ninguna', () => {
+    useVidaDeviceNotesStore
+      .getState()
+      .setNightLog(MIERCOLES, { bedTime: '23:00', wakeTime: '05:00', confirmedAt: 'a' })
+
+    expect(window.localStorage.length).toBe(1)
+    expect(window.localStorage.key(0)).toBe(VIDA_DEVICE_NOTES_STORAGE_KEY)
+    const guardado = JSON.parse(window.localStorage.getItem(VIDA_DEVICE_NOTES_STORAGE_KEY)!)
+    expect(guardado.state.nightLogs[MIERCOLES].wakeTime).toBe('05:00')
+  })
+
+  it('un estado guardado **sin el campo** arranca vacío, sin migración', () => {
+    useVidaDeviceNotesStore.setState({ blockNotes: {}, dismissedNoData: ['x'] })
+    expect(useVidaDeviceNotesStore.getState().nightLogs ?? {}).toEqual({})
+    expect(() =>
+      useVidaDeviceNotesStore
+        .getState()
+        .setNightLog(MIERCOLES, { bedTime: null, wakeTime: '06:00', confirmedAt: 'x' }),
+    ).not.toThrow()
   })
 })

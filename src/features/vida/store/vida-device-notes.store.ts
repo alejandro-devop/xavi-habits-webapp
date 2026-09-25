@@ -6,6 +6,7 @@ import type {
   VidaPatternSuggestionKind,
 } from '@/features/vida/utils/vida-patterns.utils'
 import { vidaPatternSuggestionId } from '@/features/vida/utils/vida-patterns.utils'
+import type { VidaNightLog } from '@/features/vida/utils/vida-night.utils'
 import { storage } from '@/shared/lib/storage'
 
 /**
@@ -62,6 +63,20 @@ export interface VidaDeviceNotesState {
    * es nueva: `blockNotes` ya es un `Record`.
    */
   patternAnswers: Record<string, VidaPatternAnswer>
+  /**
+   * `YYYY-MM-DD` **del día en que te levantas** → lo que dormiste de verdad esa
+   * noche (FEAT-012, tajada 3, criterios 294 y 299). Va **en este mismo store y
+   * en esta misma clave**: un campo más, no un segundo `localStorage`.
+   *
+   * La clave es el día en que te **levantas** y no en el que te acuestas
+   * porque es el día que estás mirando cuando contestas: la mañana del
+   * miércoles preguntas por la noche del martes al miércoles, y lo guardado
+   * pertenece al miércoles (criterio 294).
+   *
+   * **Que no haya entrada es un estado**, «sin confirmar», y es el que deja
+   * ignorar la pregunta: no contestar no escribe nada (criterio 295).
+   */
+  nightLogs: Record<string, VidaNightLog>
 
   /** «No se pudo», con razón o sin ella. Vuelve a llamarse para cambiarla. */
   markBlockCouldNot: (date: string, itemId: string, reason: string | null) => void
@@ -73,6 +88,13 @@ export interface VidaDeviceNotesState {
   dismissBridge: (weekMonday: string, itemId: string) => void
   /** «Dejarlo»: la sugerencia calla cuatro semanas, con su fecha a la vista (83). */
   answerPatternSuggestion: (suggestionId: string, answer: VidaPatternAnswer) => void
+  /**
+   * Lo que dormiste esa noche. Se puede volver a llamar **sin límite**: la
+   * última respuesta manda (criterio 298).
+   */
+  setNightLog: (wakeDate: string, log: VidaNightLog) => void
+  /** Deshacer la respuesta: esa noche vuelve a estar «sin confirmar». */
+  clearNightLog: (wakeDate: string) => void
 }
 
 /** `2026-09-20|a1b2`: la fecha delante para que se lea de un vistazo. */
@@ -146,6 +168,17 @@ export function getStartTimeAnswerFor(
   return answers[vidaPatternSuggestionId(kind, itemId, dayOfWeek)] ?? null
 }
 
+/**
+ * Lo que se guardó de esa noche, o `null` — que es **«sin confirmar»**, no un
+ * fallo (criterios 295 y 296). Envoltorio para no repetir la clave.
+ */
+export function getNightLog(
+  logs: Record<string, VidaNightLog>,
+  wakeDate: string,
+): VidaNightLog | null {
+  return logs[wakeDate] ?? null
+}
+
 /** Si este tramo ya recibió un «dejarlo así» en este aparato (criterio 49). */
 export function isNoDataDismissed(dismissed: string[], date: string, sliceId: string): boolean {
   return dismissed.includes(vidaNoDataKey(date, sliceId))
@@ -163,6 +196,10 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
       // Lo mismo vale para FEAT-007: un estado guardado antes de F6 no trae
       // `patternAnswers` y el merge superficial lo deja en `{}`.
       patternAnswers: {},
+      // Y lo mismo para FEAT-012: un estado guardado antes de esta tajada no
+      // trae `nightLogs` y el merge superficial lo deja en `{}`. Sin `version`
+      // y sin `migrate`, igual que los dos de arriba.
+      nightLogs: {},
 
       markBlockCouldNot: (date, itemId, reason) =>
         set((state) => {
@@ -204,6 +241,20 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
           // la fecha de vuelta sea siempre la de la última respuesta.
           patternAnswers: { ...state.patternAnswers, [suggestionId]: answer },
         })),
+
+      setNightLog: (wakeDate, log) =>
+        set((state) => ({
+          // Se sobreescribe a propósito: corregir una noche ya confirmada es
+          // volver a contestar, y la última respuesta es la que vale (298).
+          nightLogs: { ...state.nightLogs, [wakeDate]: log },
+        })),
+
+      clearNightLog: (wakeDate) =>
+        set((state) => {
+          if (!(wakeDate in state.nightLogs)) return state
+          const { [wakeDate]: _removed, ...rest } = state.nightLogs
+          return { nightLogs: rest }
+        }),
     }),
     {
       name: VIDA_DEVICE_NOTES_STORAGE_KEY,
@@ -217,6 +268,7 @@ export const useVidaDeviceNotesStore = create<VidaDeviceNotesState>()(
         dismissedNoData: state.dismissedNoData,
         dismissedBridges: state.dismissedBridges,
         patternAnswers: state.patternAnswers,
+        nightLogs: state.nightLogs,
       }),
     },
   ),

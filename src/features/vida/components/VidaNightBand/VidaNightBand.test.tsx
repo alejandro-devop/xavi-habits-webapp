@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import userEvent from '@testing-library/user-event'
+import { describe, expect, it, vi } from 'vitest'
 import { VidaNightBand } from './VidaNightBand'
 
 const TUESDAY = 'tuesday'
@@ -95,5 +96,143 @@ describe('VidaNightBand (criterio 271)', () => {
       />,
     )
     expect(screen.getByText(/3 h/)).toBeInTheDocument()
+  })
+})
+
+/**
+ * **Lo real encima de lo planeado** (tajada 3): los tres estados del criterio
+ * 296 en la franja, y la puerta a la hoja (criterio 298).
+ *
+ * `realDay` es lo que separa la plantilla —una semana tipo, donde no hay nada
+ * que confirmar— de un día con fecha.
+ */
+describe('VidaNightBand — lo que dormiste de verdad (criterios 295 a 298)', () => {
+  it('en la plantilla no dice ni «confirmado» ni «sin confirmar»', () => {
+    const { container } = render(
+      <VidaNightBand variant="dawn" night={{ ...CROSSING }} day={WEDNESDAY} />,
+    )
+
+    expect(container.textContent).not.toContain('confirm')
+    expect(container.textContent).toContain('Duermes hasta las 5:00')
+  })
+
+  // Criterio 295: ignorar la pregunta es válido y la franja lo dice con esa
+  // palabra, **sin afirmar nada nuevo**: lo planeado sigue siendo lo planeado.
+  it('un día real sin contestar dice lo planeado y «sin confirmar»', () => {
+    render(<VidaNightBand variant="dawn" night={{ ...CROSSING }} day={WEDNESDAY} realDay />)
+
+    expect(screen.getByText('Duermes hasta las 5:00')).toBeInTheDocument()
+    expect(screen.getByText('Vienes de anoche · 6 h · sin confirmar')).toBeInTheDocument()
+    expect(screen.queryByText(/Dormiste/)).not.toBeInTheDocument()
+  })
+
+  // Criterio 297, literal.
+  it('confirmada, dice lo real: horas, duración, diferencia y «confirmado»', () => {
+    render(
+      <VidaNightBand
+        variant="dawn"
+        night={{ ...CROSSING }}
+        day={WEDNESDAY}
+        realDay
+        log={{ bedTime: '01:00', wakeTime: '06:40', confirmedAt: 'x' }}
+      />,
+    )
+
+    expect(screen.getByText('Dormiste 1:00 → 6:40')).toBeInTheDocument()
+    expect(
+      screen.getByText('5 h 40 · 20 min menos que tu noche · confirmado'),
+    ).toBeInTheDocument()
+  })
+
+  // Criterio 296: los tres estados se distinguen en pantalla, y también en el
+  // DOM (`data-state`), que es lo que permite mirarlos sin leer prosa.
+  it('«sin confirmar», «confirmado» y «sin dato» son tres cosas distintas', () => {
+    const { container } = render(
+      <>
+        <VidaNightBand variant="dawn" night={{ ...CROSSING }} day={WEDNESDAY} realDay />
+        <VidaNightBand
+          variant="dawn"
+          night={{ ...CROSSING }}
+          day={WEDNESDAY}
+          realDay
+          log={{ bedTime: '23:00', wakeTime: '05:00', confirmedAt: 'x' }}
+        />
+        <VidaNightBand
+          variant="dawn"
+          night={{ ...CROSSING }}
+          day={WEDNESDAY}
+          realDay
+          log={{ bedTime: null, wakeTime: '06:40', confirmedAt: 'x' }}
+        />
+      </>,
+    )
+
+    const estados = [...container.querySelectorAll<HTMLElement>('[data-state]')].map(
+      (node) => node.dataset.state,
+    )
+    expect(estados).toEqual(['unconfirmed', 'confirmed', 'no-data'])
+    expect(container.textContent).toContain('sin confirmar')
+    expect(container.textContent).toContain('confirmado')
+    expect(container.textContent).toContain('A qué hora te acostaste, sin dato')
+  })
+
+  // La franja de **abajo** habla de la noche que aún no ha pasado: de eso no
+  // hay nada que confirmar, y por eso no cambia ni una palabra.
+  it('la de abajo no habla de confirmar aunque el día sea real', () => {
+    const { container } = render(
+      <VidaNightBand
+        variant="dusk"
+        night={{ ...CROSSING }}
+        day={TUESDAY}
+        realDay
+        log={{ bedTime: '23:00', wakeTime: '05:00', confirmedAt: 'x' }}
+      />,
+    )
+
+    expect(screen.getByText('23:00 · te acuestas')).toBeInTheDocument()
+    expect(container.textContent).not.toContain('confirmado')
+  })
+
+  // El suelo de la pregunta, por su otro lado: mientras la noche pasa la franja
+  // no se queda muda **y no dice «sin confirmar»**.
+  it('mientras la noche está pasando dice que aún no ha terminado', () => {
+    render(
+      <VidaNightBand variant="dawn" night={{ ...CROSSING }} day={WEDNESDAY} realDay stillRunning />,
+    )
+
+    expect(screen.getByText('Duermes hasta las 5:00')).toBeInTheDocument()
+    expect(screen.getByText('Vienes de anoche · 6 h · aún no ha terminado')).toBeInTheDocument()
+    expect(screen.queryByText(/sin confirmar/)).not.toBeInTheDocument()
+  })
+
+  // Criterio 298: se toca la franja y abre la hoja. **La franja es el botón**,
+  // así que sigue sin contener ningún control dentro (criterio 272).
+  it('con `onEdit` la franja entera se puede tocar, y no mete un botón dentro', async () => {
+    const user = userEvent.setup()
+    const onEdit = vi.fn()
+    render(
+      <VidaNightBand
+        variant="dawn"
+        night={{ ...CROSSING }}
+        day={WEDNESDAY}
+        realDay
+        log={{ bedTime: '23:00', wakeTime: '05:00', confirmedAt: 'x' }}
+        onEdit={onEdit}
+      />,
+    )
+
+    const franja = document.querySelector<HTMLElement>('[data-variant="dawn"]')!
+    expect(franja.tagName).toBe('BUTTON')
+    expect(franja.querySelector('button')).toBeNull()
+
+    await user.click(franja)
+    expect(onEdit).toHaveBeenCalledTimes(1)
+  })
+
+  it('sin `onEdit` la franja no se puede tocar', () => {
+    render(<VidaNightBand variant="dawn" night={{ ...CROSSING }} day={WEDNESDAY} realDay />)
+
+    expect(document.querySelector('[data-variant="dawn"]')!.tagName).toBe('DIV')
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 })

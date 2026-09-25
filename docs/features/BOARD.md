@@ -20,7 +20,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | building | 2/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-23 |
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
-| FEAT-012 | building | 2/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-24 |
+| FEAT-012 | building | 3/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-25 |
 | FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | building | 3a, **1 y 2 aceptadas**, de 5 (3b bloqueada por el API; 4 detrás) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
@@ -129,6 +129,96 @@ Hallazgos anotados, no devueltos: el botón «Empezar» se va **17 px** por
 debajo del borde **solo** cuando una de las cinco fichas ocupa fila entera
 (arreglarlo toca `SteppedModal`, el molde de todos los modales), y a media
 tarde la lista no ofrece el bloque en curso. Queda la tajada 2 (24 h).
+
+**FEAT-012 `building` 3/4** (2026-09-25, revisor). **Cierre de los hallazgos 1
+y 2 confirmado**; la tajada 3 sigue aceptada, sin commitear. Sembré los bordes
+en vez de creerlos: `23:00 → 5:00` a las 3:00 y 4:59 **no** pregunta, a las
+**5:00 en punto** sí; `1:00 → 6:40` a las 2:00 y 6:39 no, a las **6:40 en
+punto** sí; sin reloj (día que no es hoy) la noche cuenta como terminada. **El
+razonamiento contraintuitivo es correcto**: la noche que *termina* en este día
+termina a su `wakeTime` en el reloj de este día, cruce o no, porque de qué día
+es cada noche lo decide `nightEndingOnWeekday`; sumar 24 h o mirar `bedTime`
+daría peor. Entre medias no queda hueco: la franja es un **`DIV` no tocable**,
+`data-state="unconfirmed"`, «… 12 h 50 · **aún no ha terminado**», store vacío
+y **tres** estados, no cuatro (recorridos los cuatro caminos de
+`describeNightBandLog`). **Una sola regla** para las dos horas iguales:
+`isSameNightTime` y su mensaje declarados una vez e importados por Ajustes y la
+hoja —comparé el texto pintado **contra la constante**, no contra una copia— y
+en Ajustes el formato se valida antes, así que su suite pasa entera sin tocarla;
+«No sé a qué hora» en un lado sigue guardando. **Mi juicio sobre el riesgo
+nuevo:** es el precio correcto —el coste es aplazar, no perder, y con un toque
+que escribe la hora planeada no hay forma honesta de preguntar antes—; si se
+quiere la otra mitad, la salida es abrir la hoja **sin prellenar la hora de
+levantarse**, no reabrir la franja tal cual. Medido a **375 y 768 px**: cero
+desbordes, botones en 159 y 356 px. Líneas base mías: **2 fallos de 2283**,
+lint **14/0**, chunk **1.159,88 kB**, CSS **282,61 kB** en el **mismo fichero**
+(`index-DBh9uCr-.css`) que mi build anterior. `buster` **`f8edc4f3becd`** en
+`HEAD` y en el árbol, ejecutado: **nadie pierde la caché**. Los otros tres
+hallazgos siguen escritos. Queda la **tajada 4**.
+
+**FEAT-012 `in-review` 3/4** (2026-09-25, constructor). **Hallazgos 1 y 2 de la
+tajada 3 cerrados** por encargo del usuario, sin commitear; la tajada sigue
+aceptada y vuelve a `in-review` para que el revisor mire **solo estas dos
+cosas**. (1) **La pregunta ya tiene suelo**: a las 3:00 la noche de
+`23:00 → 5:00` todavía está pasando y ya no se pregunta, así que ningún toque
+puede guardar una hora de levantarse que no ha ocurrido. El borde vive en
+`nightEndedByNow`, que mira el **final** de la noche en el reloj de **este** día
+—cruce o no cruce—, y por eso `1:00 → 6:40` no necesita un caso aparte. Entre
+medianoche y esa hora la franja **no se queda muda ni reprocha**: dice «aún no
+ha terminado», el dato sigue siendo `unconfirmed` (tres estados, no cuatro) y no
+se puede abrir la hoja, que era la otra puerta a guardar horas que no han
+llegado. (2) **Las dos horas iguales se rechazan también en la hoja**, con la
+regla y el mensaje de Ajustes extraídos a `vida-night.utils.ts`
+(`isSameNightTime` + `VIDA_NIGHT_SAME_TIME_ERROR`): una vara, no dos. Los otros
+tres hallazgos se quedan escritos y sin tocar. `pnpm test` **2 de 2283** (+13),
+lint 14/0, chunk 1.159,88 kB, **CSS idéntico** (282,61 kB, mismo hash: no se tocó
+ni una regla de SCSS) y el **`buster` sigue en `f8edc4f3becd`**, ejecutado y no
+razonado. Medido otra vez a **375 y 768 px**: cero desbordes.
+
+**FEAT-012 `building` 3/4** (2026-09-25, revisor). **Tajada 3 aceptada**, sin
+commitear. Los doce criterios (288–299, 316 y 318) comprobados **sembrando**, no
+leyendo sus pruebas: 17 casos propios sobre la pregunta, la hoja, la franja y el
+store, borrados después. **Confirmar es un toque de verdad** (un `click`, dos
+botones y ninguno más) y **ignorar no escribe ni un byte**: sin respuesta la
+franja no dice «Dormiste», dice lo planeado + «sin confirmar» y el aparato sigue
+vacío. **Cada cifra nombrada es la que se calcula**: cinco noches cruzadas contra
+`nightDurationMinutes` —6 h, 5 h 40, 12 h 50, 45 min, 7 h— y la franja dice lo
+mismo que la hoja; barrido de siete palabras de reproche, cero. La decisión que
+el arquitecto dejó abierta (preguntar **hasta la hora de acostarte**) es la
+correcta: a las 23:10 la pregunta se ha callado y «sin confirmar» se lee de
+verdad. **El `buster` no cambia**, ejecutado y no razonado: `computeCacheShapeId`
+sobre `HEAD` exportado con `git archive` y sobre el árbol da **`f8edc4f3becd`**
+en los dos, 32 fuentes y ninguna nueva. Línea base mía: **2 fallos de 2270**,
+lint **14/0**, chunk **1.159,55 kB**, CSS **282,61 kB** (sube). Medido en
+`iframe`s de **375 y 768 px**: cero desbordes y los dos botones repartidos
+(159 y 356 px). Las dos aserciones de la tajada 2 están **adaptadas por cambio
+de producto, no aflojadas** (lo que sostenía el criterio sigue intacto). El
+`Button` de `shared/ui` **no se tocó**: el arreglo del ancho vive dentro del
+módulo SCSS de la pregunta. Hallazgos anotados: la pregunta **no tiene suelo**
+—a las 3:00 pregunta por una noche que aún no acabó—, la hoja acepta las dos
+horas iguales, el criterio 299 no es comprobable tal y como está escrito (lo
+afirmable es que la noche no estrena clave) y los botones miden 32 px de alto.
+Queda la **tajada 4**.
+
+**FEAT-012 `in-review` 2/4** (2026-09-25, constructor). **Tajada 3 construida**,
+sin commitear. Hoy **pregunta por la noche que acaba de pasar** y confirmarla es
+**un toque**: «Sí, así fue» guarda lo planeado como real, la pregunta se va y no
+vuelve ese día ni al recargar; «Fue distinto» abre «¿Cómo dormiste?» con las dos
+horas puestas, la duración, la diferencia en palabras neutras y dos «No sé a qué
+hora». **Ignorarla no escribe nada** y la franja acaba diciendo «sin confirmar».
+Todo en el aparato: **ni una consulta, ni una clave de `localStorage` nueva, ni
+una línea del API** — y por lo mismo **el `buster` no cambia: nadie pierde la
+caché por esta tajada**. La decisión que el arquitecto dejó abierta (cuándo deja
+de preguntar) **está tomada y escrita en el código**: se pinta hasta **la hora de
+acostarte**, que sale de la ventana del día y no de un número inventado; así
+ignorar sigue siendo gratis *y* la palabra «sin confirmar» del criterio 295 se
+lee de verdad. `pnpm test` **2 de 2270** (+51, misma línea base), lint 14/0, CSS
+**282,61 kB** (sube). Medido a **375 y 768 px**: cero desbordes, y ahí apareció
+un defecto real —los dos botones no se repartían el ancho porque el `Button`
+compartido viene envuelto en un `span`—, arreglado. **Lo que más probablemente
+rompe: la franja de arriba de Hoy ya no dice lo mismo**, y dos aserciones de la
+tajada 2 están adaptadas (no borradas). Falta la prueba manual dentro de
+`/app/*`.
 
 **FEAT-012 `building` 2/4** (2026-09-24, revisor). **Tajada 2 aceptada**, sin
 commitear. Con noche puesta **el día se encoge** y Hoy, la plantilla y la

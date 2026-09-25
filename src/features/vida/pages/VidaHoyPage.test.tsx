@@ -377,7 +377,9 @@ beforeEach(() => {
   // Devolverlas aquí y no al final de cada prueba: una limpieza al final solo
   // corre si la prueba pasa, y una asercion caída dejaría a las siguientes un
   // día con bloques «no se pudo» —el fallo en cascada que esconde la causa.
-  useVidaDeviceNotesStore.setState({ blockNotes: {} })
+  // Lo mismo vale para lo que dormiste (FEAT-012, tajada 3): una noche
+  // confirmada en una prueba haría que la siguiente no viera la pregunta.
+  useVidaDeviceNotesStore.setState({ blockNotes: {}, nightLogs: {} })
   startSession = vi.fn().mockResolvedValue({ ok: true })
   finishSession = vi.fn().mockResolvedValue({ ok: true })
 })
@@ -4293,6 +4295,20 @@ describe('VidaHoyPage — la noche es el borde del día (FEAT-012)', () => {
     } as UserSettings)
   }
 
+  /**
+   * **Esa noche, ya contestada.** Desde la tajada 3 la franja de arriba de un
+   * día real cuenta lo que dormiste, y mientras nadie conteste su sitio lo
+   * ocupa la pregunta (criterio 288). Las pruebas de la **forma** de las dos
+   * franjas —dónde van y qué no son— parten por tanto de una noche confirmada.
+   */
+  function nocheConfirmada(bedTime = '23:00', wakeTime = '05:00') {
+    useVidaDeviceNotesStore.getState().setNightLog('2026-09-18', {
+      bedTime,
+      wakeTime,
+      confirmedAt: '2026-09-18T07:05:00.000Z',
+    })
+  }
+
   // `data-variant` no basta aquí: en Hoy lo llevan también la tarjeta de «lo
   // que viene» y las filas de sesión. Las franjas son las dos únicas con
   // `dawn` / `dusk`.
@@ -4322,12 +4338,16 @@ describe('VidaHoyPage — la noche es el borde del día (FEAT-012)', () => {
   // en el mismo sitio relativo — lo primero y lo último de la agenda.
   it('pinta la franja de arriba y la de abajo, fuera de la lista (criterios 278 y 272)', () => {
     conNoche()
+    // Con la noche ya contestada, la de arriba cuenta **lo real** (criterio
+    // 297): es lo que se ve en Hoy el resto del día. Sin contestar, su sitio lo
+    // ocupa la pregunta, y eso se prueba en el bloque de la tajada 3.
+    nocheConfirmada()
     renderWithProviders(<VidaHoyPage />)
 
     const pintadas = bands()
     expect(pintadas).toHaveLength(2)
     expect(pintadas[0]!.dataset.variant).toBe('dawn')
-    expect(pintadas[0]!.textContent).toContain('Duermes hasta las 5:00')
+    expect(pintadas[0]!.textContent).toContain('Dormiste 23:00 → 5:00')
     expect(pintadas[1]!.dataset.variant).toBe('dusk')
     expect(pintadas[1]!.textContent).toContain('23:00 · te acuestas')
 
@@ -4399,6 +4419,7 @@ describe('VidaHoyPage — la noche es el borde del día (FEAT-012)', () => {
       vidaDayEndTime: '22:00',
       vidaDayStartTime: '06:30',
     })
+    nocheConfirmada('01:00', '06:40')
     renderWithProviders(<VidaHoyPage />)
 
     const linea = screen.getByText(/Tu día ·/).textContent ?? ''
@@ -4424,5 +4445,260 @@ describe('VidaHoyPage — la noche es el borde del día (FEAT-012)', () => {
     expect(budgetText()).toContain('planeado 1h')
     // Y las 6 h de sueño no aparecen en ninguna parte de la barra.
     expect(budgetText()).not.toContain('6h')
+  })
+})
+
+/**
+ * **Lo real encima de lo planeado** (FEAT-012, tajada 3). Criterios 288, 289,
+ * 290, 294, 295, 296, 298 y 299.
+ *
+ * El día es **viernes 18/9/2026 a las 9:24**, o sea por la mañana: la noche del
+ * jueves al viernes ya pasó y nadie ha dicho todavía cómo fue.
+ */
+describe('VidaHoyPage — la noche que ya pasó (FEAT-012, tajada 3)', () => {
+  function conNoche(overrides: Partial<UserSettings> = {}) {
+    settingsQuery = ready({
+      ...SETTINGS,
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: ['thursday', 'friday'],
+      ...overrides,
+    } as UserSettings)
+  }
+
+  function pregunta() {
+    return screen.queryByText('¿Dormiste 23:00 → 5:00?')
+  }
+
+  function franjaDeArriba(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('[data-variant="dawn"]')
+  }
+
+  // Criterio 288: la pregunta, **una** y con sus dos salidas.
+  it('con la noche sin registrar, Hoy pregunta cómo fue (criterio 288)', () => {
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(pregunta()).toBeInTheDocument()
+    expect(
+      screen.getByText('Es tu noche de siempre. Si fue así, un toque y listo.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Sí, así fue' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Fue distinto' })).toBeInTheDocument()
+    // Ocupa el sitio de la franja de arriba: no hay dos cosas diciendo lo mismo.
+    expect(franjaDeArriba()).toBeNull()
+    expect(screen.getAllByText('¿Dormiste 23:00 → 5:00?')).toHaveLength(1)
+  })
+
+  it('sin noche marcada ese día no se pregunta nada (criterio 275)', () => {
+    conNoche({ vidaNightDays: ['monday'] })
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(pregunta()).toBeNull()
+  })
+
+  // Criterio 289: nunca en un día futuro. De mañana no hay nada que confirmar,
+  // y la franja de ese día sigue contando lo planeado, sin «sin confirmar».
+  it('en un día futuro no pregunta y la franja no habla de confirmar (289)', () => {
+    conNoche()
+    viewedDate = '2026-09-19'
+    plansByDate['2026-09-19'] = []
+    planQuery = ready([])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(pregunta()).toBeNull()
+    expect(franjaDeArriba()!.textContent).toContain('Duermes hasta las 5:00')
+    expect(franjaDeArriba()!.textContent).not.toContain('confirm')
+  })
+
+  // Criterio 289: y nunca **por su cuenta** en un día pasado. Ahí la franja
+  // dice lo que hay —«sin confirmar»— y se puede tocar, pero no interrumpe.
+  it('en un día pasado no pregunta: la franja dice «sin confirmar» (289 y 295)', () => {
+    conNoche({ vidaNightDays: ['wednesday', 'thursday', 'friday'] })
+    viewedDate = '2026-09-17'
+    plansByDate['2026-09-17'] = []
+    planQuery = ready([])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    expect(pregunta()).toBeNull()
+    expect(franjaDeArriba()!.textContent).toContain('sin confirmar')
+  })
+
+  // Criterio 290: **un toque**. Y 294 y 299: lo guardado es del día en que te
+  // levantas y cabe en la clave que ya existía.
+  it('«Sí, así fue» guarda lo planeado como real y la pregunta se va (290)', () => {
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sí, así fue' }))
+
+    expect(pregunta()).toBeNull()
+    expect(franjaDeArriba()!.textContent).toContain('Dormiste 23:00 → 5:00')
+    expect(franjaDeArriba()!.textContent).toContain('confirmado')
+
+    // El dato: la clave es **el viernes**, el día en que te levantas (294).
+    const guardado = useVidaDeviceNotesStore.getState().nightLogs
+    expect(Object.keys(guardado)).toEqual(['2026-09-18'])
+    expect(guardado['2026-09-18']).toMatchObject({ bedTime: '23:00', wakeTime: '05:00' })
+    expect(guardado['2026-09-18']!.confirmedAt).toBeTruthy()
+  })
+
+  // Criterio 290: «no vuelve ese día, tampoco tras recargar». Lo que sostiene
+  // el «tampoco tras recargar» es que está **persistido**, no un estado de
+  // React: un montaje nuevo con el mismo aparato ya no pregunta.
+  it('una vez contestada no vuelve a preguntar al volver a montar la pantalla', () => {
+    conNoche()
+    const primera = renderWithProviders(<VidaHoyPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Sí, así fue' }))
+    primera.unmount()
+
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(pregunta()).toBeNull()
+    expect(franjaDeArriba()!.textContent).toContain('confirmado')
+  })
+
+  // Criterio 295: ignorarla es válido y **no escribe nada**. Al acabar el día
+  // —pasada la hora de acostarse— la pregunta se calla y la franja lo dice.
+  it('ignorarla no guarda nada, y al acabar el día queda «sin confirmar» (295)', () => {
+    conNoche()
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 10, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(pregunta()).toBeNull()
+    expect(franjaDeArriba()!.textContent).toContain('Duermes hasta las 5:00')
+    expect(franjaDeArriba()!.textContent).toContain('sin confirmar')
+    expect(useVidaDeviceNotesStore.getState().nightLogs).toEqual({})
+  })
+
+  // **El suelo de la pregunta** (hallazgo 1 del revisor). A las 3:00 la noche
+  // de 23:00 → 5:00 todavía está pasando: preguntar ahí y guardar de un toque
+  // dejaría escrita una hora de levantarse **que no ha ocurrido**.
+  it('de madrugada no pregunta: esa noche aún no ha terminado', () => {
+    conNoche()
+    vi.setSystemTime(new Date(2026, 8, 18, 3, 0, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(pregunta()).toBeNull()
+    // Y no deja un hueco: la franja sigue ahí y dice lo que pasa, sin reproche.
+    const franja = franjaDeArriba()!
+    expect(franja.textContent).toContain('Duermes hasta las 5:00')
+    expect(franja.textContent).toContain('aún no ha terminado')
+    expect(franja.textContent).not.toContain('sin confirmar')
+    // Tampoco se puede abrir la hoja: no hay nada que corregir todavía.
+    expect(franja.tagName).toBe('DIV')
+    expect(useVidaDeviceNotesStore.getState().nightLogs).toEqual({})
+  })
+
+  it('en cuanto llega tu hora de levantarte, pregunta', () => {
+    conNoche()
+    vi.setSystemTime(new Date(2026, 8, 18, 5, 0, 0))
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(pregunta()).toBeInTheDocument()
+  })
+
+  // El mismo suelo con una noche que **no cruza** la medianoche: la regla no
+  // tiene ningún caso aparte, porque mira el final y no el comienzo.
+  it('con 1:00 → 6:40, a las 2:00 tampoco pregunta y a las 7:00 sí', () => {
+    conNoche({ vidaNightBedTime: '01:00', vidaNightWakeTime: '06:40', vidaNightDays: ['friday'] })
+    vi.setSystemTime(new Date(2026, 8, 18, 2, 0, 0))
+    const primera = renderWithProviders(<VidaHoyPage />)
+    expect(pregunta()).toBeNull()
+    expect(franjaDeArriba()!.textContent).toContain('aún no ha terminado')
+    primera.unmount()
+
+    vi.setSystemTime(new Date(2026, 8, 18, 7, 0, 0))
+    renderWithProviders(<VidaHoyPage />)
+    expect(screen.getByText('¿Dormiste 1:00 → 6:40?')).toBeInTheDocument()
+  })
+
+  // Criterio 291: «Fue distinto» abre la hoja, con lo planeado dentro.
+  it('«Fue distinto» abre «¿Cómo dormiste?» con las dos horas puestas (291)', () => {
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fue distinto' }))
+
+    expect(screen.getByText('¿Cómo dormiste?')).toBeInTheDocument()
+    expect(
+      screen.getByText('Noche del jueves al viernes · tu noche dice 23:00 → 5:00'),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Te acostaste')).toHaveValue('23:00')
+    // Abrir la hoja no guarda nada: hasta que no se toca «Guardar» no hay dato.
+    expect(useVidaDeviceNotesStore.getState().nightLogs).toEqual({})
+  })
+
+  // Criterio 298: lo ya confirmado se corrige tocando la franja, sin límite.
+  it('tocar la franja confirmada abre la misma hoja con lo guardado (298)', () => {
+    conNoche()
+    useVidaDeviceNotesStore.getState().setNightLog('2026-09-18', {
+      bedTime: '01:00',
+      wakeTime: '06:40',
+      confirmedAt: '2026-09-18T07:00:00.000Z',
+    })
+    renderWithProviders(<VidaHoyPage />)
+
+    const franja = franjaDeArriba()!
+    expect(franja.tagName).toBe('BUTTON')
+    fireEvent.click(franja)
+
+    expect(screen.getByText('¿Cómo dormiste?')).toBeInTheDocument()
+    expect(screen.getByLabelText('Te acostaste')).toHaveValue('01:00')
+    expect(screen.getByLabelText('Te levantaste')).toHaveValue('06:40')
+  })
+
+  // Criterio 299: **ninguna clave nueva** de `localStorage`.
+  it('lo real se guarda en el aparato y no estrena ninguna clave (299)', () => {
+    window.localStorage.clear()
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sí, así fue' }))
+
+    // La pantalla de Hoy guarda alguna cosa más suya (la caché persistida de
+    // React Query), así que lo que se afirma es lo del criterio: **la noche no
+    // estrena ninguna clave**, va en la que ya existía.
+    const claves = Object.keys(window.localStorage)
+    expect(claves).toContain('xavi.vida.deviceNotes')
+    expect(claves.filter((clave) => clave.toLowerCase().includes('night'))).toEqual([])
+    const guardado = JSON.parse(window.localStorage.getItem('xavi.vida.deviceNotes')!)
+    expect(guardado.state.nightLogs['2026-09-18'].wakeTime).toBe('05:00')
+  })
+
+  // Criterio 296: los tres estados se distinguen **en pantalla**, y ninguna
+  // pantalla los mezcla.
+  it('«sin confirmar», «confirmado» y «sin dato» no se mezclan (296)', () => {
+    conNoche()
+    useVidaDeviceNotesStore.getState().setNightLog('2026-09-18', {
+      bedTime: null,
+      wakeTime: '06:40',
+      confirmedAt: '2026-09-18T07:00:00.000Z',
+    })
+    renderWithProviders(<VidaHoyPage />)
+
+    const franja = franjaDeArriba()!
+    expect(franja.dataset.state).toBe('no-data')
+    expect(franja.textContent).toContain('Te levantaste a las 6:40')
+    expect(franja.textContent).toContain('sin dato')
+    expect(franja.textContent).not.toContain('confirmado')
+    expect(franja.textContent).not.toContain('sin confirmar')
+  })
+
+  // Criterio 316, sobre lo que esta tajada estrena en la pantalla que más se
+  // mira: ni una palabra de reproche por haber dormido mal o no haber dicho
+  // nada.
+  it('ni una palabra de reproche en la pregunta ni en la franja', () => {
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+    const texto = (document.body.textContent ?? '').toLowerCase()
+
+    for (const palabra of ['deberías', 'desperdicio', 'apenas', 'dormiste poco']) {
+      expect(texto).not.toContain(palabra)
+    }
   })
 })

@@ -14,8 +14,10 @@ import {
   VIDA_DAY_SHORT_LABELS,
 } from '@/features/vida/utils/vida-date.utils'
 import {
+  VIDA_NIGHT_SAME_TIME_ERROR,
   describeNightKind,
   formatNightDuration,
+  isSameNightTime,
   nightDurationMinutes,
   normalizeNightDays,
 } from '@/features/vida/utils/vida-night.utils'
@@ -237,8 +239,10 @@ export function VidaAjustesPage() {
     }
     // Criterio 263. **Esta comprobación es solo del cliente**: el servidor mira
     // el formato y nada más, así que si no está aquí no está en ningún sitio.
-    if (bedTime === wakeTime) {
-      setNightError('Las dos horas no pueden ser la misma: una noche de cero minutos no es una noche.')
+    // La regla y su mensaje viven en `vida-night.utils.ts` porque la hoja de
+    // «¿Cómo dormiste?» escribe el mismo dato y tiene que rechazar lo mismo.
+    if (isSameNightTime(bedTime, wakeTime)) {
+      setNightError(VIDA_NIGHT_SAME_TIME_ERROR)
       return
     }
     // Y lo que **no** se comprueba, a propósito: que te levantes después de

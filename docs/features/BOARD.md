@@ -130,6 +130,32 @@ debajo del borde **solo** cuando una de las cinco fichas ocupa fila entera
 (arreglarlo toca `SteppedModal`, el molde de todos los modales), y a media
 tarde la lista no ofrece el bloque en curso. Queda la tajada 2 (24 h).
 
+**FEAT-012 `building` 3/4** (2026-09-25, segundo revisor). **Tajada 3 aceptada
+de nuevo, ya commiteada** (`23d072b`). Revisor distinto: sembré mis propios
+casos en dos ficheros temporales (12 en total, borrados; árbol limpio) en vez
+de leer sus pruebas. **Hallazgo 1 cerrado**: `23:00 → 5:00` calla a 0:00, 3:00
+y 4:59 y pregunta a las **5:00 en punto**; `1:00 → 6:40` calla a 1:00, 2:00 y
+6:39 y pregunta a las **6:40**. Y la **segunda puerta** también está cerrada —
+la franja de madrugada es `DIV`, sin `onEdit`, cero botones dentro, «aún no ha
+terminado», `data-state="unconfirmed"`— así que no queda forma de guardar una
+hora que no ha llegado. **Hallazgo 2 cerrado**: `23:00/23:00` no guarda, no
+cierra, pinta el error de la constante compartida y **no enseña ninguna cifra**;
+la corrección normal y «No sé a qué hora» siguen guardando. **Ajustes no cambia
+de comportamiento**: el formato se valida antes, así que `===` e
+`isSameNightTime` son la misma función sobre `HH:mm` canónico. **Nada de
+288–299 se deshizo**: 7 ficheros y **369 pruebas** verdes, más mis 12 casos.
+**Línea base mía, clavada**: typecheck limpio, lint **14/0**, **2 fallos de
+2283**, chunk **1.159,88 kB**, CSS **282,61 kB** en `index-DBh9uCr-.css` — mismo
+hash de contenido que la medición anterior, el CSS no bajó. **Las dos decisiones
+abiertas del arquitecto**, resueltas y razonables: techo **y** suelo para la
+pregunta (ninguno inventa un número, el precio es aplazar, no perder), y el
+aviso de sesión vieja ya toma la ventana de hoy desde la tajada 2. Hallazgos
+nuevos, anotados: el cierre **no tiene commit propio** (viaja con toda la tajada
+y con el grafo regenerado, así que el «antes» no es recuperable), `ENVIRONMENT.md`
+se tocó dentro de esa tanda pese al protocolo (su contenido es correcto), y un
+hueco teórico si la hora de levantarse cayera tras el final de la ventana.
+Queda la tajada 4.
+
 **FEAT-012 `building` 3/4** (2026-09-25, revisor). **Cierre de los hallazgos 1
 y 2 confirmado**; la tajada 3 sigue aceptada, sin commitear. Sembré los bordes
 en vez de creerlos: `23:00 → 5:00` a las 3:00 y 4:59 **no** pregunta, a las

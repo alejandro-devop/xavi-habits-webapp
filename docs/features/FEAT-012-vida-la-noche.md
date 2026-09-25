@@ -1,7 +1,7 @@
 ---
 id: FEAT-012
 title: La noche — dormir deja de ser un agujero y pasa a ser el borde del día
-status: in-review
+status: building
 architect: yes
 area: features/vida, features/settings, **API (xavi-platform-node)**
 requested: 2026-09-22
@@ -871,7 +871,7 @@ Moldes secundarios, uno por pieza, para no buscarlos:
 |---|---|---|---|---|
 | 1 | **Tu noche existe y se ve en la plantilla.** Los tres campos en la capa de datos, `useVidaNight`, la aritmética pura, la sección «Tu noche» en Ajustes y las dos franjas en la plantilla — sin mover ninguna ventana ni ninguna cuenta. | `settings/types/user-settings.types.ts`, `settings/graphql/user-settings.graphql.ts`, `settings/graphql/schema/user-settings.schema.graphql` (recopiar), **nuevos** `vida/utils/vida-night.utils.ts`(+test), `vida/hooks/useVidaNight.ts`(+test), `vida/components/VidaNightBand/`; `vida/pages/VidaAjustesPage.tsx`(+`.module.scss`,+test), `vida/pages/VidaPlantillaPage.tsx:506`, `app/styles/_theme-variables.scss:155,239` | 260–268 y 270–276 (el 269 pasa a la tajada 2); y de los transversales 310, 311, 312, 313, 314, 315, 316, 317, 318 en lo que aplique a Ajustes y a la plantilla | **aceptada** (2026-09-23; 313, 314 y 315 medidos por el revisor) |
 | 2 | **Hoy cuenta bien.** La ventana del día sale de la noche, en Hoy, en la plantilla y en la revisión; las franjas en Hoy; huecos y presupuesto ciertos. | **nuevo** `vida/hooks/useVidaDayWindow.ts`(+test); `vida/pages/VidaHoyPage.tsx:331-337,397,429,436-437,551-554,578,1261,1296-1297,1418-1419`, `vida/pages/VidaRevisionPage.tsx`, `vida/components/VidaDayBudget/VidaDayBudget.tsx:108,210`, `vida/components/VidaTemplateDaySummary/VidaTemplateDaySummary.tsx:99`, `vida/routes/VidaModuleLayout.tsx:53,162` | 269 y 277 (movidos de la 1), 278–287 | **aceptada** (2026-09-24, revisor) |
-| 3 | **Lo real encima de lo planeado.** La pregunta de la mañana, «Sí, así fue» en un toque, la hoja «¿Cómo dormiste?» y «sin confirmar» si se ignora. | `vida/store/vida-device-notes.store.ts:154-221`, **nuevos** `vida/components/VidaNightPrompt/`, `vida/components/VidaNightSheet/`; `vida/pages/VidaHoyPage.tsx:1340` y el montaje de la hoja; `vida/components/VidaNightBand/` (estado confirmado) | 288–299 | **aceptada** (2026-09-25) · vuelve a **in-review** (2026-09-25): cerrados los hallazgos 1 y 2 del revisor por encargo del usuario |
+| 3 | **Lo real encima de lo planeado.** La pregunta de la mañana, «Sí, así fue» en un toque, la hoja «¿Cómo dormiste?» y «sin confirmar» si se ignora. | `vida/store/vida-device-notes.store.ts:154-221`, **nuevos** `vida/components/VidaNightPrompt/`, `vida/components/VidaNightSheet/`; `vida/pages/VidaHoyPage.tsx:1340` y el montaje de la hoja; `vida/components/VidaNightBand/` (estado confirmado) | 288–299 | **aceptada** (2026-09-25) · re-revisada y **aceptada de nuevo** (2026-09-25, segundo revisor): los hallazgos 1 y 2 están cerrados y nada de 288–299 se deshizo |
 | 4 | **Lo real manda y lo que no se sabe se dice.** La ventana desde la hora real, «No sé a qué hora» → sin dato, y los días pasados confirmables. | `vida/hooks/useVidaDayWindow.ts`, `vida/utils/vida-night.utils.ts`, `vida/components/VidaNightSheet/`, `vida/components/VidaNightBand/`, `vida/pages/VidaHoyPage.tsx`, `vida/pages/VidaRevisionPage.tsx` | 300–309 | pendiente |
 
 **Dos decisiones pequeñas que dejo recomendadas, no cerradas** (no están en los
@@ -2305,3 +2305,157 @@ byte: ninguna regla de SCSS se movió, ni hacia arriba ni hacia abajo. Y el
 invalidador, ejecutado sobre `HEAD` exportado con `git archive` y sobre el
 árbol: **`f8edc4f3becd` en los dos**, 32 fuentes de forma, ninguna de `/pages/`.
 **Nadie pierde la caché con esta tajada**; se le puede prometer al usuario.
+
+#### Tajada 3 · segunda re-revisión, con `23d072b` en la mano (2026-09-25)
+
+**Veredicto: aceptada.** Revisor distinto del que escribió los hallazgos y del
+que firmó la primera re-revisión. Reproduje lo que denunciaba cada hallazgo
+**sembrando mis propios casos** (dos ficheros temporales, `__review-t3c.test.tsx`
+—10 casos— y `__review-t3d.test.tsx` —2 casos—, **borrados antes de reportar**;
+`git status` vuelve a estar limpio), no leyendo sus pruebas. La línea base la
+corrí entera yo y clava las cuatro cifras.
+
+**Aviso de método, porque cambia lo que se puede afirmar:** el arreglo **no
+tiene commit propio**. `23d072b` trae la tajada 3 **entera** —construcción,
+cierre de los dos hallazgos, las dos entradas de revisión anteriores y hasta el
+grafo regenerado—, así que «el diff del arreglo» no existe como tal y el «antes»
+de los hallazgos no es recuperable del historial. Lo que sí se puede afirmar es
+el estado de ahora, y eso es lo que medí.
+
+**Hallazgo 1 — la pregunta sin suelo: cerrado.**
+
+- `nightEndedByNow` con mis propios bordes, doce casos, sin reutilizar sus
+  constantes: `23:00 → 5:00` es `false` a 0:00, 3:00 y **4:59**, y `true` a
+  **5:00 en punto**, 5:01 y 23:10; `1:00 → 6:40` es `false` a 1:00, 2:00 y
+  **6:39**, y `true` a **6:40** y 20:00; sin reloj (`null`), `true`.
+- La puerta está en la página y es la correcta: `nightPromptOpen` exige ahora
+  `!nightStillRunning` (`VidaHoyPage.tsx:392-400`), con `nightStillRunning`
+  atado a `isToday`. Techo y suelo salen los dos del dato del usuario
+  (`dayWindow.endTime` y `wakeTime`), ninguno es un número inventado.
+- **La otra puerta para guardar una hora que no ha llegado también está
+  cerrada**, y esto es lo que hace que el arreglo no sea cosmético: la franja de
+  madrugada recibe `onEdit` sólo si `!nightStillRunning` (`:1401`). Sembrado por
+  mi cuenta: con `stillRunning` la franja es **`DIV`**, cero `<button>` dentro,
+  dice «aún no ha terminado», **no** dice «sin confirmar» ni «Dormiste», y su
+  `data-state` sigue siendo `unconfirmed`. Sin `stillRunning` vuelve a ser
+  `BUTTON` y un clic llama a `onEdit` una vez.
+
+**Hallazgo 2 — las dos horas iguales en la hoja: cerrado.**
+
+- Sembrado: `23:00 / 23:00` en «¿Cómo dormiste?» **no llama a `onSave`**, no
+  cierra la hoja, pinta el error en el `role="alert"` y **no aparece ninguna
+  cifra** de duración.
+- Y comprobé que no rompió lo que sí tiene que guardar: una corrección normal
+  guarda `{bedTime:'23:20', wakeTime:'05:40'}` y cierra; «No sé a qué hora me
+  acosté» guarda `{bedTime:null, wakeTime:'05:00'}` — «sin dato» en un lado no
+  se confunde con «la misma hora».
+- **Es una sola regla, no dos copias:** `isSameNightTime` y
+  `VIDA_NIGHT_SAME_TIME_ERROR` se declaran una vez (`vida-night.utils.ts:120` y
+  `:136`) y los importan los dos sitios; un `grep` por el texto del mensaje no
+  devuelve ninguna cadena repetida.
+- **Y no cambia Ajustes.** El diff sustituye `bedTime === wakeTime` por
+  `isSameNightTime(bedTime, wakeTime)` **después** de `isValidHhMm` en los dos
+  campos (`VidaAjustesPage.tsx:236-245`): sobre `HH:mm` canónico la igualdad de
+  cadenas y la de minutos son la misma función, así que Ajustes recibe
+  exactamente las mismas entradas y da las mismas salidas. Su suite pasa entera
+  sin tocarla.
+
+**Que el arreglo no deshizo nada de 288–299.** Las cuatro suites pedidas más las
+dos vecinas, corridas por mí: `VidaNightPrompt`, `VidaNightSheet`,
+`VidaNightBand`, `VidaHoyPage`, `vida-night.utils` y `VidaAjustesPage` +
+`vida-device-notes.store` → **7 ficheros, 369 pruebas, todas verdes**. Y
+sembrado aparte: la pregunta tiene **exactamente** dos botones («Sí, así fue»,
+«Fue distinto») con su línea «Es tu noche de siempre…», confirmar llama a
+`onConfirm` **una vez** y no abre nada (288, 290); la hoja abre prellenada con
+`23:00 / 05:00` y el titular «tu noche dice 23:00 → 5:00» (291); con la noche
+terminada y sin respuesta la franja dice «sin confirmar» (295); en la plantilla
+(`realDay` ausente) no dice ni «confirmado» ni «sin confirmar» (296); y
+recorriendo los cuatro caminos de `describeNightBandLog` el conjunto de estados
+del dato sigue siendo **tres** (`confirmed`, `no-data`, `unconfirmed`) — «aún no
+ha terminado» es una forma de decir `unconfirmed`, no un cuarto estado.
+
+**Alcance del commit, mirado entero.** Fuera de `docs/` y de `graphify-out/`
+toca **14 ficheros y todos son de la tajada**: los tres componentes de la noche
+(+ sus `.module.scss` y tests), `vida-night.utils.ts`(+test),
+`vida-device-notes.store.ts`(+test), `VidaHoyPage.tsx`(+test) y las 8 líneas de
+`VidaAjustesPage.tsx`. **`src/shared/` no aparece**: el reparto del ancho de los
+dos botones vive en `VidaNightPrompt.module.scss`, una clase de módulo hasheada
+que no puede alcanzar a ningún otro botón. Busqué a los vecinos con
+`graphify query "quién usa isSameNightTime y VIDA_NIGHT_SAME_TIME_ERROR"` (51
+nodos) y confirmé abriendo los ficheros con `grep -rn` sobre `src/`: los únicos
+consumidores de los tres símbolos nuevos son `VidaNightSheet`, `VidaAjustesPage`
+y `VidaHoyPage`. **Ojo con el grafo aquí:** `23d072b` lo regeneró, así que
+refleja el árbol **con** la tajada dentro — sirve para «quién llama a esto
+ahora», no para «qué había antes».
+
+**Línea base, corrida entera por mí sobre el árbol limpio:** `pnpm typecheck`
+**limpio** (exit 0); `pnpm lint` **14 errores / 0 warnings**; `pnpm test`
+**2 fallos de 2283** (`SearchSelect` ×2, preexistentes; 131 ficheros verdes, el
+flaky de `IconPicker` no salió); `pnpm build` chunk inicial **1.159,88 kB** y
+CSS **282,61 kB** en `index-DBh9uCr-.css`. Las cuatro cifras son **las de
+`ENVIRONMENT.md`**, y el CSS **no baja**: no hay ninguna regla comida por un
+comentario abierto, así que no hizo falta comparar listas de selectores.
+
+**Las dos decisiones que el arquitecto dejó recomendadas y no cerradas**
+
+- **Cuándo deja de preguntar la mañana.** Recomendaba «mientras sea hoy y no
+  haya sueño guardado, sin más puerta». El constructor puso **dos**: techo en tu
+  hora de acostarte y suelo en tu hora de levantarte. **Razonable, y mejor que
+  lo recomendado**, por dos razones que se pueden comprobar: sin techo, «sin
+  confirmar» no se leería nunca antes de medianoche (la pregunta taparía la
+  franja todo el día), y sin suelo un toque de madrugada guardaría como real una
+  hora de levantarse que no ha ocurrido — justo lo que el criterio 317 prohíbe.
+  Ninguna de las dos puertas inventa un número y ninguna escribe nada, así que
+  «ignorar» sigue siendo literalmente no tocarla (295). El precio está dicho en
+  el commit: quien abre Hoy de madrugada ve la pregunta más tarde; se aplaza, no
+  se pierde, y un día pasado se confirma después (306).
+- **El aviso de sesión vieja** (`VidaModuleLayout.tsx`). Recomendaba pasarle la
+  ventana de hoy en la tajada 2, y **eso es lo que hay**: el layout llama a
+  `useVidaDayWindow(getCurrentLocalDate())` y le da `dayWindow.endTime` a
+  `VidaStaleSessionPrompt`, con el comentario explicando que el aviso y el
+  presupuesto de Hoy no pueden decir dos finales de día distintos. Hecho en la
+  tajada 2, no en ésta; lo dejo confirmado porque nadie lo había afirmado
+  mirando el fichero.
+
+**Estados.** Sin datos y sin respuesta: cubiertos (y el segundo es el centro de
+la tajada). Cargando y error: **no son de esta tajada** (311 y 312 se cerraron
+en la 2) y el arreglo no añade ninguna petición. Permisos: no aplica, el dato es
+del aparato. Texto largo y móvil a 375 px: **no los volví a medir en el
+navegador**, y no hace falta para lo que cambió — el CSS compilado es
+`index-DBh9uCr-.css`, **el mismo nombre de fichero con hash de contenido** que
+reportó la medición anterior, o sea el mismo CSS byte a byte; ninguna regla se
+ha movido desde que se midió 375/375 y 768/768 sin desbordes.
+
+**¿Duplica algo?** No, y el cierre de los hallazgos va en la dirección
+contraria: quitó la segunda vara que la hoja tenía para el mismo dato.
+
+**Hallazgos nuevos** (anotados, no devueltos)
+
+6. **El arreglo no tiene commit propio.** Construcción, revisión y cierre de
+   hallazgos viajan en `23d072b` junto con 103.000 líneas de grafo regenerado.
+   Funciona, pero deja sin historia el «antes» de cualquier hallazgo futuro: el
+   siguiente revisor no puede ver qué cambió al cerrarlo. Si vuelve a pasar,
+   que el cierre sea su propio commit.
+7. **`ENVIRONMENT.md` se modificó dentro de esa misma tanda** (la nota del arnés
+   en `public/` y la actualización de las cifras de tests y paquete). El
+   contenido es correcto —lo he verificado: 2283 y 1.159,88 kB son lo que mide
+   hoy—, pero el protocolo dice que los agentes de la cadena **no** lo tocan.
+   Queda dicho; no lo he revertido ni editado.
+8. **Un hueco teórico en la ventana de la pregunta:** si alguna vez la hora de
+   levantarse cayera **después** del final de la ventana del día (una «noche»
+   degenerada del tipo `23:00 → 23:30`, que no cruza), suelo y techo se cruzan y
+   la pregunta no saldría nunca ese día. No es ninguna de las noches del render
+   ni de los criterios, y la franja seguiría diciendo «sin confirmar», así que
+   no se pierde dato. Para quien construya la tajada 4, que es la que mueve la
+   ventana con lo real.
+
+Los cinco hallazgos anteriores (el 299 no comprobable como está redactado, los
+32 px de alto de los botones, la lectura del criterio 278, y los dos ya
+cerrados) **siguen escritos y sin tocar**.
+
+**Lo que no pude revisar.** Nada de `/app/*`: está tras el login y ahí no entro,
+así que la pregunta de la mañana **en la app real** sigue siendo prueba manual
+del usuario —y con el suelo nuevo hay un paso que sólo él puede hacer: abrir Hoy
+**antes** de su hora de levantarse y ver que no pregunta, y volver después y ver
+que sí. Tampoco repetí las mediciones de ancho en el navegador (justificado
+arriba por el hash del CSS) ni el tema oscuro.

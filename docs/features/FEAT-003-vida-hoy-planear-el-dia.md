@@ -3760,3 +3760,29 @@ sección 3, `git diff HEAD`, `vida-agenda.utils.ts:239-271` (el partido del huec
 del reloj), un arnés de 11 tests bajo `src/features/vida/utils/` (**borrado**;
 `git status` no lo lista) y la corrida entera de `pnpm test`, `pnpm build` y
 `pnpm lint`.*
+
+---
+
+### Derogaciones posteriores — FEAT-010, tajada 3 (2026-09-25)
+
+**No se reescribe ningún criterio de arriba**: quedan como se escribieron y como
+se aceptaron. Lo que cambia es que **cuatro de ellos ya no describen la
+pantalla**, y quien los lea tiene que saberlo antes de buscar lo que dicen:
+
+| Criterio | Qué decía | Estado | Dónde está escrito |
+|---|---|---|---|
+| **18** | Hasta 3 fichas de plantilla en el hueco, con «+N más» | **Derogado en su parte de fichas.** Lo que sobrevive es el hueco con su franja y su tamaño | FEAT-010, criterio 381 |
+| **19** | La ficha sin duración se lee «sin duración» y abre la hoja para elegir cuánto | **Derogado entero** | FEAT-010, criterio 381 |
+| **23** | Un toque en una ficha con duración la coloca al principio del hueco | **Derogado entero** | FEAT-010, criterio 381 |
+| **48** | El lateral «Tu plantilla de \<día\>» marcando lo que ya está en el plan, con «Ponerla en el primer hueco donde cabe» · y «Mañana · Armar mañana desde la plantilla» | **Derogada su primera mitad** (el panel y «Ponerla»). **La segunda sigue viva** y no se tocó: «Mañana» se mudó a `components/VidaTomorrowAside/` | FEAT-010, criterio 383 |
+
+**Por qué**, en palabras del usuario: «no me resultan útiles, para mí no es
+intuitivo qué hacen» y «esto se reemplaza con lo de "que viene"». Las dos
+superficies escribían el plan **al primer toque y sin confirmación**, con dos
+reglas distintas que ninguna decía.
+
+**Los criterios 24 y 25 siguen enteros y son ahora el único camino para planear
+en un hueco:** «+ otra cosa» abre la hoja «Poner algo a las HH:MM» con el
+subtítulo del hueco. Y el **21** («Armar desde la plantilla») tampoco se toca.
+Lo comprueban, uno por camino, los cuatro casos del criterio 384 de FEAT-010 en
+`src/features/vida/pages/VidaHoyPage.test.tsx`.

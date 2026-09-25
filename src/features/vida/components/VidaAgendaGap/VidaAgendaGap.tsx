@@ -1,25 +1,19 @@
-import type { CSSProperties } from 'react'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
-import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
-import type { AgendaGap, GapSuggestions } from '@/features/vida/utils/vida-agenda.utils'
+import type { AgendaGap } from '@/features/vida/utils/vida-agenda.utils'
 import { formatGapRange } from '@/features/vida/utils/vida-agenda.utils'
 import { pluralDayLabel } from '@/features/vida/utils/vida-date.utils'
-import { UNCATEGORIZED_GROUP_ICON } from '@/features/vida/utils/vida-catalog.utils'
 import {
   formatDurationFromMinutes,
   formatTimeForDisplay,
   MIN_LOG_MINUTES,
   minutesToTime,
 } from '@/features/vida/utils/vida-time.utils'
-import { AppIcon } from '@/shared/ui/AppIcon'
 import { Button } from '@/shared/ui/Button'
 import styles from './VidaAgendaGap.module.scss'
 
 type VidaAgendaGapProps = {
   gap: AgendaGap
-  /** Lo que la plantilla puede ofrecer aquí, ya filtrado y ordenado. */
-  suggestions: GapSuggestions
-  /** «viernes»: de qué día es la plantilla que se está ofreciendo. */
+  /** «viernes»: de qué día es la plantilla de la que se habla. */
   dayLabel: string
   /**
    * Este es el hueco donde se explica que la plantilla está vacía. Se marca uno
@@ -27,15 +21,14 @@ type VidaAgendaGapProps = {
    */
   showTemplateHint?: boolean
   /**
-   * Un toque en una ficha **con duración**: la coloca al principio del hueco
-   * (criterio 23). Sin duración, `durationMinutes` llega `null` y quien escuche
-   * abre la hoja para elegir cuánto en vez de inventárselo (criterio 19).
+   * **Cuántas cosas trae la plantilla de este día** (FEAT-010, criterio 381).
+   * Con `showTemplateHint` y `0`, el hueco explica que la plantilla está vacía
+   * y enlaza al catálogo. Antes este número venía dentro de `GapSuggestions`;
+   * al retirarse las fichas llega **suelto**, para que esa rama no se pierda
+   * por el camino. Lo calcula la página, que ya lo tiene para «Armar desde la
+   * plantilla».
    */
-  onPlaceSuggestion?: (
-    gap: AgendaGap,
-    suggestion: VidaSuggestion,
-    durationMinutes: number | null,
-  ) => void
+  templateCount?: number
   /** «+ otra cosa»: abre la hoja de tres preguntas (criterio 24). */
   onOpenSheet?: (gap: AgendaGap) => void
   /**
@@ -56,21 +49,22 @@ type VidaAgendaGapProps = {
    * la tira no se ofrecería nunca (criterio 232).
    */
   isPastDay?: boolean
-  /** Hay una colocación en vuelo: las fichas no admiten un segundo toque. */
-  isPlacing?: boolean
 }
 
 /**
- * Un tramo libre: sus horas, su tamaño y lo que de la plantilla cabe dentro.
+ * Un tramo libre: sus horas, su tamaño y la vía para poner algo dentro.
  *
- * **Desde la tajada 3 las fichas colocan.** Un toque en una con duración la
- * pone al principio del hueco con `activityDayPlanItemAdd` (criterio 23); una
- * **sin duración** no se coloca a ciegas: abre la hoja para elegir cuánto
- * (criterio 19). Y «+ otra cosa» abre esa misma hoja vacía (criterio 24).
+ * **Las fichas de sugerencia ya no están** (FEAT-010, criterio 381): quedan
+ * derogados los criterios 18 —en su parte de fichas—, 19 y 23 de FEAT-003, y
+ * con ellos la mitad del criterio 91 de FEAT-007 (los chips que ofrecían «la
+ * duración que sueles tardar»), cuya parte útil se mudó a la tarjeta de «Lo que
+ * viene» (criterio 372). Colocaban al primer toque, sin confirmación, y el
+ * usuario dijo que no le resultaba intuitivo qué hacían.
  *
- * Mientras no llegue `onPlaceSuggestion`, las fichas siguen siendo texto: es lo
- * que deja montar este componente en un arnés o en un día pasado (tajada 4, en
- * solo lectura) sin pintar controles que no llevan a ninguna parte.
+ * La única salida para planear aquí es **«+ otra cosa»**, que abre la hoja de
+ * «Poner algo a las HH:MM» con el subtítulo del hueco (criterios 24 y 25, y
+ * FEAT-010 criterio 382): explícita y confirmable, que es justo lo que las
+ * fichas no eran. El hueco **sigue diciendo su franja y su tamaño**.
  *
  * Los tramos más cortos que `MIN_PLANNING_MINUTES` (`isSliver`) **no ofrecen
  * planear**: ahí no cabe ninguna píldora. Si además no hay nada que contar, se
@@ -99,16 +93,13 @@ type VidaAgendaGapProps = {
  */
 export function VidaAgendaGap({
   gap,
-  suggestions,
   dayLabel,
   showTemplateHint = false,
-  onPlaceSuggestion,
+  templateCount = 0,
   onOpenSheet,
   onLogPast,
   isPastDay = false,
-  isPlacing = false,
 }: VidaAgendaGapProps) {
-  const canPlace = Boolean(onPlaceSuggestion)
   const rangeLabel = formatGapRange(gap)
   const sizeLabel = formatDurationFromMinutes(gap.durationMinutes)
   const isPast = gap.isPast || isPastDay
@@ -188,123 +179,27 @@ export function VidaAgendaGap({
           <span className={styles.size}>{sizeLabel}</span>
         </p>
 
-        {suggestions.visible.length > 0 ? (
-          <>
-            <ul className={styles.chips}>
-              {suggestions.visible.map(({ suggestion, durationMinutes, isUsual }) => {
-                const category = suggestion.item.activity?.category ?? null
-                const colorStyle = category?.color
-                  ? ({ '--vida-category-color': category.color } as CSSProperties)
-                  : undefined
-                const title = suggestion.item.activity?.title ?? 'Actividad'
-                const durationLabel =
-                  durationMinutes === null
-                    ? 'sin duración'
-                    : formatDurationFromMinutes(durationMinutes)
-                // **El dato sin pedir nada** (FEAT-007, criterio 91): cuando lo
-                // que se ofrece es lo que **sueles** tardar, la ficha lo dice.
-                // Con menos de cuatro datos no hay etiqueta **ni hueco
-                // reservado** donde iría: la ficha es la de antes.
-                const chipLabel = isUsual ? `sueles tardar ${durationLabel}` : durationLabel
-                const body = (
-                  <>
-                    <AppIcon
-                      name={category?.icon ?? UNCATEGORIZED_GROUP_ICON}
-                      size="xs"
-                      decorative
-                    />
-                    <span className={styles.chipName}>{title}</span>
-                    <span className={styles.chipTime} data-usual={isUsual ? '' : undefined}>
-                      {chipLabel}
-                    </span>
-                  </>
-                )
-                return (
-                  <li key={suggestion.item.id}>
-                    {canPlace ? (
-                      <button
-                        type="button"
-                        className={styles.chip}
-                        style={colorStyle}
-                        disabled={isPlacing}
-                        // Una ficha sin duración no se coloca a ciegas: quien
-                        // escucha abre la hoja con ella puesta (criterio 19).
-                        aria-label={
-                          durationMinutes === null
-                            ? `Poner ${title} aquí, eligiendo cuánto dura`
-                            : `Poner ${title} a las ${formatTimeForDisplay(minutesToTime(gap.startMinutes))}, ${chipLabel}`
-                        }
-                        onClick={() => onPlaceSuggestion?.(gap, suggestion, durationMinutes)}
-                      >
-                        {body}
-                      </button>
-                    ) : (
-                      <span className={styles.chip} style={colorStyle}>
-                        {body}
-                      </span>
-                    )}
-                  </li>
-                )
-              })}
+        {/* **La única vía para planear aquí** (criterio 382). Antes iba
+            detrás de hasta tres fichas de plantilla; desde FEAT-010 tajada 3 es
+            lo que hay, y sigue abriendo la misma hoja con el subtítulo del
+            hueco. La lista de una sola píldora se conserva a propósito: es la
+            misma forma —y los mismos estilos— que tenía cuando la acompañaban
+            las fichas, así que el hueco no cambia de aspecto al perderlas. */}
+        {showTemplateHint && templateCount === 0 ? (
+          <p className={styles.note}>
+            Todavía no tienes nada en tu plantilla para los {pluralDayLabel(dayLabel)}.{' '}
+            <Button variant="ghost" size="sm" to={vidaPaths.actividades}>
+              Ver tus actividades
+            </Button>
+          </p>
+        ) : null}
 
-              {onOpenSheet ? (
-                <li>
-                  <button
-                    type="button"
-                    className={[styles.chip, styles.chipMore].join(' ')}
-                    disabled={isPlacing}
-                    aria-label={`Poner otra cosa a las ${formatTimeForDisplay(minutesToTime(gap.startMinutes))}`}
-                    onClick={() => onOpenSheet(gap)}
-                  >
-                    + otra cosa
-                  </button>
-                </li>
-              ) : null}
-            </ul>
-            <p className={styles.note}>
-              De tu plantilla de {dayLabel}, lo que cabe aquí
-              {suggestions.hiddenCount > 0 ? ` (y ${suggestions.hiddenCount} más)` : ''}.
-              {/* Solo cuando de verdad hay alguna costumbre que ofrecer: sin
-                  datos, esta frase no existe (criterio 92). */}
-              {suggestions.visible.some((entry) => entry.isUsual)
-                ? ' La duración que se ofrece es la que sueles tardar, no la que pusiste.'
-                : ''}
-            </p>
-          </>
-        ) : showTemplateHint && suggestions.templateCount === 0 ? (
-          <>
-            <p className={styles.note}>
-              Todavía no tienes nada en tu plantilla para los {pluralDayLabel(dayLabel)}.{' '}
-              <Button variant="ghost" size="sm" to={vidaPaths.actividades}>
-                Ver tus actividades
-              </Button>
-            </p>
-            {onOpenSheet ? (
-              <ul className={styles.chips}>
-                <li>
-                  <button
-                    type="button"
-                    className={[styles.chip, styles.chipMore].join(' ')}
-                    disabled={isPlacing}
-                    aria-label={`Poner otra cosa a las ${formatTimeForDisplay(minutesToTime(gap.startMinutes))}`}
-                    onClick={() => onOpenSheet(gap)}
-                  >
-                    + otra cosa
-                  </button>
-                </li>
-              </ul>
-            ) : null}
-          </>
-        ) : onOpenSheet ? (
-          // Sin fichas que ofrecer (todo lo de la plantilla ya está en el plan,
-          // o no cabe) el hueco **sigue siendo sitio**: la vía a la hoja no
-          // desaparece.
+        {onOpenSheet ? (
           <ul className={styles.chips}>
             <li>
               <button
                 type="button"
                 className={[styles.chip, styles.chipMore].join(' ')}
-                disabled={isPlacing}
                 aria-label={`Poner otra cosa a las ${formatTimeForDisplay(minutesToTime(gap.startMinutes))}`}
                 onClick={() => onOpenSheet(gap)}
               >

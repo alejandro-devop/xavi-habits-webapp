@@ -1,16 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
-import type { VidaItem, VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import { parseTimeToMinutes } from '@/features/vida/utils/vida-time.utils'
 import {
   buildDayAgenda,
   buildGuidanceLine,
   findLargestGap,
   findNextBlockId,
-  fitsInGap,
   formatGapRange,
   getDayBudget,
-  suggestionsForGap,
   type AgendaBlock,
   type AgendaGap,
 } from '@/features/vida/utils/vida-agenda.utils'
@@ -45,29 +42,6 @@ function block(
     activity: { id: `a-${id}`, title: `Actividad ${id}`, category: null },
     ...overrides,
   }
-}
-
-function suggestion(
-  id: string,
-  durationMinutes: number | null,
-  overrides: Partial<VidaItem> = {},
-): VidaSuggestion {
-  const item: VidaItem = {
-    id,
-    userId: 1,
-    activityId: `a-${id}`,
-    days: ['friday'],
-    startTime: null,
-    durationMinutes,
-    notes: null,
-    isActive: true,
-    orderIndex: 0,
-    createdAt: '2026-09-01T00:00:00.000Z',
-    updatedAt: '2026-09-01T00:00:00.000Z',
-    activity: { id: `a-${id}`, title: `Cosa ${id}`, category: null },
-    ...overrides,
-  }
-  return { item, takenToday: false }
 }
 
 const gapOf = (startMinutes: number, endMinutes: number, isPast = false): AgendaGap => ({
@@ -425,140 +399,22 @@ describe('findLargestGap', () => {
   })
 })
 
-describe('fitsInGap', () => {
-  const gap = gapOf(630, 780) // 2h 30
-
-  it('cabe lo que no se pasa del hueco', () => {
-    expect(fitsInGap(gap, 150)).toBe(true)
-    expect(fitsInGap(gap, 151)).toBe(false)
-  })
-
-  it('sin duración no cabe: no se le inventa una (criterio 19)', () => {
-    expect(fitsInGap(gap, null)).toBe(false)
-    expect(fitsInGap(gap, 0)).toBe(false)
-  })
-})
-
-describe('suggestionsForGap', () => {
-  const gap = gapOf(630, 780) // 10:30 – 13:00, 150 min
-
-  it('ofrece solo lo que cabe (criterio 18)', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [suggestion('corta', 20), suggestion('larga', 240)],
-      gap,
-      planItems: [],
-    })
-
-    expect(visible.map((entry) => entry.suggestion.item.id)).toEqual(['corta'])
-  })
-
-  it('excluye lo que ya está en el plan de ese día, por `activityId`', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [suggestion('uno', 20), suggestion('dos', 30)],
-      gap,
-      planItems: [block('x', '08:00', '08:30', { activityId: 'a-uno' })],
-    })
-
-    expect(visible.map((entry) => entry.suggestion.item.id)).toEqual(['dos'])
-  })
-
-  it('NO usa `takenToday` para excluir: en un día futuro siempre es `false`', () => {
-    const tomada = suggestion('tomada', 20)
-    const { visible } = suggestionsForGap({
-      suggestions: [{ ...tomada, takenToday: true }],
-      gap,
-      planItems: [],
-    })
-
-    expect(visible).toHaveLength(1)
-  })
-
-  it('como mucho tres visibles, y dice cuántas quedan fuera', () => {
-    const { visible, hiddenCount } = suggestionsForGap({
-      suggestions: [
-        suggestion('1', 20),
-        suggestion('2', 20),
-        suggestion('3', 20),
-        suggestion('4', 20),
-      ],
-      gap,
-      planItems: [],
-    })
-
-    expect(visible).toHaveLength(3)
-    expect(hiddenCount).toBe(1)
-  })
-
-  it('las que no tienen duración van al final y no se filtran por tamaño (criterio 19)', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [suggestion('sin', null), suggestion('con', 30)],
-      gap,
-      planItems: [],
-    })
-
-    expect(visible.map((entry) => entry.suggestion.item.id)).toEqual(['con', 'sin'])
-    expect(visible[1]!.durationMinutes).toBeNull()
-  })
-
-  it('lo que la plantilla pone justo a esa hora va primero', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [
-        suggestion('otra', 30, { orderIndex: 0 }),
-        suggestion('aqui', 30, { orderIndex: 5, startTime: '11:00' }),
-      ],
-      gap,
-      planItems: [],
-    })
-
-    expect(visible[0]!.suggestion.item.id).toBe('aqui')
-  })
-
-  it('un tramo que ya pasó no ofrece nada (hallazgo del revisor)', () => {
-    const pasado = gapOf(630, 780, true)
-    const { visible, templateCount } = suggestionsForGap({
-      suggestions: [suggestion('cabe', 20)],
-      gap: pasado,
-      planItems: [],
-    })
-
-    expect(visible).toHaveLength(0)
-    // La plantilla del día se sigue contando: es lo que lee el texto de «hoy
-    // sin plan».
-    expect(templateCount).toBe(1)
-  })
-
-  it('un hueco empezado ofrece por lo que le QUEDA, no por su tamaño entero', () => {
-    // 10:30–13:00 con ahora a las 11:30: `buildDayAgenda` lo parte y la mitad
-    // de después mide 1h 30, así que una de 2 h deja de caber.
-    const agenda = buildDayAgenda({
-      planItems: [block('a', '08:00', '10:30'), block('b', '13:00', '14:00')],
-      dayStart: DAY_START,
-      dayEnd: DAY_END,
-      nowMinutes: 11 * 60 + 30,
-    })
-    const futuro = agenda.gaps.find((g) => g.startMinutes === 690)!
-
-    expect(futuro.durationMinutes).toBe(90)
-    expect(
-      suggestionsForGap({
-        suggestions: [suggestion('dosHoras', 120), suggestion('unaHora', 60)],
-        gap: futuro,
-        planItems: [],
-      }).visible.map((entry) => entry.suggestion.item.id),
-    ).toEqual(['unaHora'])
-  })
-
-  it('los ítems desactivados no se ofrecen ni se cuentan', () => {
-    const { visible, templateCount } = suggestionsForGap({
-      suggestions: [suggestion('viva', 30), suggestion('muerta', 30, { isActive: false })],
-      gap,
-      planItems: [],
-    })
-
-    expect(visible).toHaveLength(1)
-    expect(templateCount).toBe(1)
-  })
-})
+/**
+ * **Lo que ya no se prueba aquí, y por qué.** `fitsInGap`, `suggestionsForGap`
+ * y su `describe` de «la duración que sueles tardar, en las fichas del hueco»
+ * vivían justo aquí. Se fueron con las fichas: **FEAT-010, criterio 381**
+ * deroga el criterio 18 de FEAT-003 en su parte de fichas, el 19 y el 23
+ * enteros, y la mitad del criterio 91 de FEAT-007 (la costumbre ofrecida en un
+ * chip). `findFirstFittingGap` se fue con el panel lateral (criterio 383, que
+ * deroga la primera mitad del criterio 48 de FEAT-003).
+ *
+ * No queda aritmética que probar en su lugar —lo que el hueco hace ahora es
+ * enseñar su franja, su tamaño y **solo** «+ otra cosa» (criterio 382)—, así
+ * que lo nuevo se afirma donde se pinta: `VidaAgendaGap.test.tsx`, y sitio por
+ * sitio los cuatro caminos del criterio 384 en `VidaHoyPage.test.tsx`. La
+ * mitad viva del 91 se prueba en `vida-patterns.utils.test.ts`, por actividad,
+ * que es de donde la lee la tarjeta de «Lo que viene» (criterio 372).
+ */
 
 describe('findNextBlockId y formatGapRange', () => {
   const blocks: AgendaBlock[] = buildDayAgenda({
@@ -580,55 +436,5 @@ describe('findNextBlockId y formatGapRange', () => {
   it('las horas del hueco se leen sin cero a la izquierda', () => {
     expect(formatGapRange(gapOf(630, 780))).toBe('10:30 – 13:00')
     expect(formatGapRange(gapOf(480, 540))).toBe('8:00 – 9:00')
-  })
-})
-
-describe('la duración que sueles tardar, en las fichas del hueco (FEAT-007, criterios 91 y 92)', () => {
-  const gap = gapOf(630, 780) // 10:30 – 13:00, 150 min
-
-  it('sin costumbres, la ficha es EXACTAMENTE la de antes: la que pusiste y sin etiqueta', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [suggestion('compra', 30)],
-      gap,
-      planItems: [],
-    })
-
-    expect(visible[0]?.durationMinutes).toBe(30)
-    expect(visible[0]?.isUsual).toBe(false)
-  })
-
-  it('con cuatro datos o más ofrece la que sueles tardar, y lo dice', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [suggestion('compra', 30)],
-      gap,
-      planItems: [],
-      usualDurations: { compra: 55 },
-    })
-
-    expect(visible[0]?.durationMinutes).toBe(55)
-    expect(visible[0]?.isUsual).toBe(true)
-  })
-
-  it('la costumbre manda también para saber si CABE: 55 min no entran en un hueco de 40', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [suggestion('compra', 30)],
-      gap: gapOf(630, 670),
-      planItems: [],
-      usualDurations: { compra: 55 },
-    })
-
-    expect(visible).toEqual([])
-  })
-
-  it('un ítem sin duración sigue sin ella: la costumbre no le inventa una (criterio 19)', () => {
-    const { visible } = suggestionsForGap({
-      suggestions: [suggestion('sinDuracion', null)],
-      gap,
-      planItems: [],
-      usualDurations: { sinDuracion: 55 },
-    })
-
-    expect(visible[0]?.durationMinutes).toBeNull()
-    expect(visible[0]?.isUsual).toBe(false)
   })
 })

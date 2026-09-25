@@ -70,7 +70,8 @@ type Ranked = {
  * pintado: la lista se reordenaría con la hoja ya abierta, bajo el dedo.
  *
  * Devuelve `VidaSuggestion[]` **tal cual**, no un tipo nuevo: el picker no
- * cambia de contrato, igual que con `suggestionsForGap`. Sin plantilla
+ * cambia de contrato, igual que hacía `suggestionsForGap` antes de que
+ * FEAT-010 retirase las fichas del hueco. Sin plantilla
  * devuelve `[]` y quien pinta ya tiene escrita su frase (criterio 629), y
  * **no se rellena** con el catálogo: meter en la hoja cosas que no están en el
  * plan de hoy es justo lo que no se pidió, y para eso está el buscador.

@@ -960,39 +960,20 @@ function consequenceFor(item: VidaItem, daysLabel: string, verb: string): string
 /* ── Los avisos pegados al bloque, en Hoy (FEAT-007, tajada 3) ──────────── */
 
 /**
- * **La duración que sueles tardar, por ítem de plantilla** (criterio 91).
- *
- * Devuelve **solo** las que tienen cuatro datos o más: con menos, la clave no
- * está, el hueco ofrece la que pusiste y no hay etiqueta ni hueco vacío donde
- * iría. Que el valor por defecto sea `{}` es lo que hace el criterio 92
- * verdadero por construcción: sin patrones, Hoy es exactamente el de antes.
- */
-export function usualDurationsByItemId(
-  patterns: Pick<VidaActivityPattern, 'itemId' | 'usualDurationMinutes'>[],
-): Record<string, number> {
-  const lookup: Record<string, number> = {}
-  for (const pattern of patterns) {
-    if (pattern.usualDurationMinutes !== null) {
-      lookup[pattern.itemId] = pattern.usualDurationMinutes
-    }
-  }
-  return lookup
-}
-
-/**
  * **La misma costumbre, pero por actividad** (FEAT-011, criterio 238).
  *
- * `usualDurationsByItemId` va por **ítem de plantilla**, que es lo que necesitan
- * las fichas del hueco; al **registrar** no hay ítem: hay una actividad elegida
- * en el buscador, que puede ni estar en la plantilla de ese día. Este es el
- * salto, y sale gratis porque `VidaActivityPattern` ya lleva `activityId` al
- * lado de `itemId`.
+ * Tuvo una hermana, `usualDurationsByItemId`, que iba por **ítem de
+ * plantilla**: era lo que necesitaban las fichas del hueco, y se retiró con
+ * ellas (FEAT-010, criterio 381, que deroga la mitad del criterio 91). Ésta
+ * quedó porque al **registrar** no hay ítem: hay una actividad elegida en el
+ * buscador, que puede ni estar en la plantilla de ese día. El salto sale gratis
+ * porque `VidaActivityPattern` ya lleva `activityId` al lado de `itemId`.
  *
  * Con la misma actividad en **dos ítems** de plantilla gana la mediana que más
  * datos tiene (`usualDurationSamples`), y con empate la primera: mezclar dos
  * medianas inventaría un número que no midió nadie.
  *
- * Como su hermana, devuelve **solo** las que tienen dato de verdad —el `null`
+ * Devuelve **solo** las que tienen dato de verdad —el `null`
  * de `usualDurationMinutes` ya trae dentro la regla de los cuatro datos—, así
  * que la clave que falta es la señal de «aquí no se dice nada» (criterio 240).
  */

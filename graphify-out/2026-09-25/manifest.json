@@ -2440,8 +2440,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.tsx": {
-    "mtime": 1790313576.0039632,
-    "ast_hash": "162a13987a9084c06155d6c612c4cd32",
+    "mtime": 1790350656.089193,
+    "ast_hash": "d5b51bc81b54d1634acf842b13bdbe7f",
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaPlantillaPage.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790314118.468353,
-    "ast_hash": "6e418e3221944f021cb7c6be0f67bec2",
+    "mtime": 1790350312.1993113,
+    "ast_hash": "9d36952bda3649b3dbeb7d7d986d0445",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790313408.630621,
-    "ast_hash": "878f63672fb8eeccf93e15a8c4dd2a8a",
+    "mtime": 1790314536.0621061,
+    "ast_hash": "ebdda7be6995e552841aa7325c90f6e5",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2965,8 +2965,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaDayBudget/VidaDayBudget.tsx": {
-    "mtime": 1790247392.4462657,
-    "ast_hash": "35cf0db9c11aa8ca30392af5c3e46118",
+    "mtime": 1790350645.467193,
+    "ast_hash": "9deaaed8717d6ab88b2ef07ab80c62c4",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaDayBudget/index.ts": {
@@ -3000,8 +3000,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaHoyPage.test.tsx": {
-    "mtime": 1790313665.132653,
-    "ast_hash": "d7a1a0f846c5f476cbc33a7cf811e94b",
+    "mtime": 1790350984.9382803,
+    "ast_hash": "9da4c3027b5cc284eb6c30282792d82d",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-agenda.utils.test.ts": {
@@ -3485,8 +3485,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/pages/VidaRevisionPage.test.tsx": {
-    "mtime": 1790248146.8337262,
-    "ast_hash": "6fe05778e38c732eeee3bd092e451080",
+    "mtime": 1790351070.7023222,
+    "ast_hash": "ca24e76d9c9bf4f0fc873b8fcdc56be5",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-review.utils.test.ts": {
@@ -3735,8 +3735,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-012-vida-la-noche.md": {
-    "mtime": 1790314118.465353,
-    "ast_hash": "e3becf65470d23ef770532b79d74dc23",
+    "mtime": 1790350414.8582444,
+    "ast_hash": "168c6bc271f96f457dc62705a6b22605",
     "semantic_hash": ""
   },
   "docs/vida/assets/13-vida-dormir.html": {
@@ -4075,8 +4075,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaNightBand/VidaNightBand.test.tsx": {
-    "mtime": 1790313645.823718,
-    "ast_hash": "8662aa90e0985f7bde04c8b2513c11ca",
+    "mtime": 1790350723.147199,
+    "ast_hash": "e21f06bfbaa4cbe4d45cfcc7b06e5f6b",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaNightBand/VidaNightBand.tsx": {
@@ -4100,13 +4100,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-night.utils.test.ts": {
-    "mtime": 1790313629.4967742,
-    "ast_hash": "7ebc670a306f1ad32a11f8ff3b3970f2",
+    "mtime": 1790350746.1192026,
+    "ast_hash": "5e1fcf8c15d75f50a317fc7fa21e4e50",
     "semantic_hash": ""
   },
   "src/features/vida/utils/vida-night.utils.ts": {
-    "mtime": 1790313629.495774,
-    "ast_hash": "6c2d59c51c9b545cc3313d6611b68cd5",
+    "mtime": 1790350576.963196,
+    "ast_hash": "9ec9bba12c63ed84e8caa0d15300e544",
     "semantic_hash": ""
   },
   "docs/features/FEAT-023-empezar-algo-sin-muro.md": {
@@ -4145,13 +4145,13 @@
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaDayWindow.test.tsx": {
-    "mtime": 1790247702.0058017,
-    "ast_hash": "190209b112c9cf79c3938ffa5e563e56",
+    "mtime": 1790350789.1732116,
+    "ast_hash": "5801c8155d22a6fde4b82381f181d209",
     "semantic_hash": ""
   },
   "src/features/vida/hooks/useVidaDayWindow.ts": {
-    "mtime": 1790247378.0612743,
-    "ast_hash": "139bc96e2efca26cf0e3d1128ee6ce05",
+    "mtime": 1790350635.7641928,
+    "ast_hash": "f771087d63cec9b82d09da3b931eb88b",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260924_110203_feat_017__que_existe_ya_para_buscar_iconos__para_l.md": {

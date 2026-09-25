@@ -1,1 +1,0 @@
-export { VidaTemplateAside } from './VidaTemplateAside'

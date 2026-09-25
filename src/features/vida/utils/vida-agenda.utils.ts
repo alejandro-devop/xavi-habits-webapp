@@ -21,7 +21,6 @@
  */
 
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
-import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
 import {
   MIN_PLANNING_MINUTES,
   formatDurationFromMinutes,
@@ -29,9 +28,6 @@ import {
   minutesToTime,
   parseTimeToMinutes,
 } from '@/features/vida/utils/vida-time.utils'
-
-/** Cuántas fichas de plantilla se ven en un hueco antes de resumir (criterio 18). */
-export const MAX_GAP_SUGGESTIONS = 3
 
 export type AgendaBlock = {
   kind: 'block'
@@ -61,7 +57,7 @@ export type AgendaGap = {
   /**
    * Más corto que `MIN_PLANNING_MINUTES`. **No desaparece**: se pinta como una línea
    * fina con sus minutos, porque si no la leyenda (criterio 14) dejaría de
-   * cuadrar con lo que se ve. Lo que no hace es ofrecer fichas.
+   * cuadrar con lo que se ve. Lo que no hace es ofrecer «+ otra cosa».
    *
    * **El nombre se queda corto desde FEAT-014.** Significa exactamente «aquí no
    * cabe nada que *planear*», y **no** «aquí no se pinta más que una línea»: un
@@ -73,8 +69,9 @@ export type AgendaGap = {
    * esa tajada no cambiaba comportamiento ni tests; queda como deuda. Su sitio
    * exacto es este campo más **los tres sitios que lo calculan** —`makeGap` y
    * `findLargestGap` aquí, `sliceGap` en `vida-execution.utils.ts`— y **los dos
-   * que deciden con él**: `findFirstFittingGap` aquí y `buildNoDataSlices` en
-   * `vida-execution.utils.ts`. Se nombran por función y no por número de línea
+   * que decide con él**: `buildNoDataSlices` en `vida-execution.utils.ts`
+   * (`findFirstFittingGap` era el otro y se retiró con FEAT-010 criterio 383).
+   * Se nombran por función y no por número de línea
    * a propósito: la primera versión de esta lista ya nació con las líneas
    * corridas.
    */
@@ -427,150 +424,6 @@ export function buildGuidanceLine({ agenda, nowMinutes, dayStart, dayEnd }: Guid
   }
 
   return `${head} Tu hueco más grande va de ${formatGapRange(largest)} · ${formatDurationFromMinutes(largest.durationMinutes)}.`
-}
-
-export type GapSuggestion = {
-  suggestion: VidaSuggestion
-  /** La duración **de su ítem de plantilla** (D1). `null` si el ítem no la tiene. */
-  durationMinutes: number | null
-  /**
-   * La duración que se ofrece es **la que sueles tardar**, no la que pusiste
-   * (FEAT-007, criterio 91). Quien pinta la ficha lo dice —«sueles tardar
-   * 55m»—; con `false` no hay etiqueta **ni hueco reservado** donde iría.
-   */
-  isUsual: boolean
-}
-
-export type GapSuggestions = {
-  visible: GapSuggestion[]
-  /** Las que caben y no se pintan por el tope de tres. */
-  hiddenCount: number
-  /** Cuántas cosas trae la plantilla ese día, en total, estén o no en el plan. */
-  templateCount: number
-}
-
-export type SuggestionsForGapInput = {
-  suggestions: VidaSuggestion[]
-  gap: AgendaGap
-  planItems: ActivityDayPlanItem[]
-  limit?: number
-  /**
-   * **La duración que sueles tardar, por id de ítem de plantilla** (FEAT-007,
-   * criterio 91). Sale de `usualDurationsByItemId()` y solo trae las que
-   * tienen cuatro datos o más.
-   *
-   * **Por defecto vacío, y eso es lo que hace verdadero el criterio 92**: sin
-   * patrones —o sin datos suficientes— este archivo devuelve exactamente lo
-   * que devolvía antes de F6, ficha a ficha.
-   */
-  usualDurations?: Record<string, number>
-}
-
-/** Cabe si tiene duración y no se pasa del hueco. */
-export function fitsInGap(gap: AgendaGap, minutes: number | null): boolean {
-  if (minutes === null || minutes <= 0) return false
-  return minutes <= gap.durationMinutes
-}
-
-/**
- * El **primer hueco del día donde cabe** algo de esa duración (criterio 48).
- *
- * Se saltan los tramos que ya pasaron —colocar algo en un rato que ya pasó no
- * tiene sentido— y los `sliver`, que no llegan al mínimo. El hueco que contiene
- * al reloj ya viene partido por `buildDayAgenda`, así que la mitad que queda
- * empieza **en ahora**: un hueco empezado ofrece desde ahora, igual que en la
- * tajada 3.
- *
- * Devuelve `null` cuando no cabe en ninguno; quien llama apaga el botón y dice
- * por qué, en vez de ofrecer algo que no se puede hacer.
- */
-export function findFirstFittingGap(gaps: AgendaGap[], minutes: number | null): AgendaGap | null {
-  return (
-    gaps.find((gap) => !gap.isPast && !gap.isSliver && fitsInGap(gap, minutes)) ?? null
-  )
-}
-
-/**
- * Lo que la plantilla puede ofrecer en un hueco (criterios 18 y 19).
- *
- * **La exclusión se calcula contra el plan del día, nunca contra `takenToday`.**
- * `takenToday` es el «ya lo tomé hoy» de F1, sale de otra tabla y en un día
- * futuro es siempre `false`: no dice si la actividad está en el plan.
- * Confundirlos es el error caro de esta feature, y está anotado en la sección 2.
- *
- * Las que **no tienen duración** no se filtran por tamaño ni se les inventa una:
- * van al final y quien las pinte dice «sin duración».
- */
-export function suggestionsForGap({
-  suggestions,
-  gap,
-  planItems,
-  limit = MAX_GAP_SUGGESTIONS,
-  usualDurations = {},
-}: SuggestionsForGapInput): GapSuggestions {
-  // Un tramo que ya pasó no ofrece nada. Con la marca de «ahora» partiendo el
-  // hueco, el que queda por delante ya tiene el tamaño correcto: es lo que
-  // cierra el hallazgo 3 del revisor —un hueco empezado ofrecía por su tamaño
-  // entero— y lo que evita, en la tajada 3, colocar un bloque en el pasado.
-  if (gap.isPast) {
-    return {
-      visible: [],
-      hiddenCount: 0,
-      templateCount: suggestions.filter((suggestion) => suggestion.item.isActive !== false).length,
-    }
-  }
-
-  const plannedActivityIds = new Set(planItems.map((item) => item.activityId))
-  const candidates = suggestions
-    .filter((suggestion) => suggestion.item.isActive !== false)
-    .filter((suggestion) => !plannedActivityIds.has(suggestion.item.activityId))
-
-  const startsInsideGap = (suggestion: VidaSuggestion) => {
-    const startTime = suggestion.item.startTime
-    if (!startTime) return false
-    const minutes = parseTimeToMinutes(startTime)
-    return minutes >= gap.startMinutes && minutes < gap.endMinutes
-  }
-
-  /**
-   * **La que sueles tardar manda sobre la que pusiste** (criterio 91), y manda
-   * también para saber si cabe: ofrecer 55 min en un hueco de 40 porque la
-   * plantilla dice 30 sería colocar algo que no entra. Un ítem **sin
-   * duración** sigue sin ella —no se coloca a ciegas, criterio 19—: la
-   * costumbre no le inventa una.
-   */
-  const offeredFor = (suggestion: VidaSuggestion): number | null =>
-    suggestion.item.durationMinutes === null
-      ? null
-      : (usualDurations[suggestion.item.id] ?? suggestion.item.durationMinutes)
-
-  const withDuration = candidates
-    .filter((suggestion) => fitsInGap(gap, offeredFor(suggestion)))
-    .sort((a, b) => {
-      // Lo que la plantilla pone justo a esta hora, primero: es lo que el
-      // usuario ya había decidido para este rato.
-      const inside = Number(startsInsideGap(b)) - Number(startsInsideGap(a))
-      if (inside !== 0) return inside
-      return a.item.orderIndex - b.item.orderIndex
-    })
-    .map((suggestion) => ({
-      suggestion,
-      durationMinutes: offeredFor(suggestion),
-      isUsual: usualDurations[suggestion.item.id] !== undefined,
-    }))
-
-  const withoutDuration = candidates
-    .filter((suggestion) => suggestion.item.durationMinutes === null)
-    .sort((a, b) => a.item.orderIndex - b.item.orderIndex)
-    .map((suggestion) => ({ suggestion, durationMinutes: null, isUsual: false }))
-
-  const ordered = [...withDuration, ...withoutDuration]
-
-  return {
-    visible: ordered.slice(0, limit),
-    hiddenCount: Math.max(0, ordered.length - limit),
-    templateCount: suggestions.filter((suggestion) => suggestion.item.isActive !== false).length,
-  }
 }
 
 /**

@@ -13,7 +13,6 @@ import {
   suggestionReturnDate,
   buildTemplateSheetAdvice,
   usualDurationsByActivityId,
-  usualDurationsByItemId,
   vidaPatternSuggestionId,
   type BlockHintCandidate,
   type PatternDayInput,
@@ -793,7 +792,16 @@ describe('los avisos pegados al bloque, en Hoy (criterios 87 y 88)', () => {
   })
 })
 
-describe('la duración que sueles tardar, en los chips del hueco (criterio 91)', () => {
+/**
+ * **La mitad viva del criterio 91 de FEAT-007.** Los chips del hueco que
+ * ofrecían «la duración que sueles tardar» se retiraron —FEAT-010 criterio 381
+ * deroga esa mitad— y con ellos `usualDurationsByItemId`. Lo que la costumbre
+ * mide **sigue siendo lo mismo** y sigue teniendo dueño: la tarjeta de «Lo que
+ * viene» dice «suele durarte N» (criterio 372) leyendo
+ * `usualDurationsByActivityId`. Por eso estos dos casos no se borran: se les
+ * cambia la puerta de salida, no la aritmética.
+ */
+describe('la duración que sueles tardar (criterio 91, su mitad viva tras FEAT-010 381)', () => {
   it('con cinco datos la trae, redondeada a cinco minutos', () => {
     const { patterns } = build(
       fiveDays({ startTime: '09:00', durationMinutes: 68 }),
@@ -802,7 +810,7 @@ describe('la duración que sueles tardar, en los chips del hueco (criterio 91)',
 
     expect(patterns[0]?.usualDurationSamples).toBe(5)
     expect(patterns[0]?.usualDurationMinutes).toBe(70)
-    expect(usualDurationsByItemId(patterns)).toEqual({ i1: 70 })
+    expect(usualDurationsByActivityId(patterns)).toEqual({ a1: 70 })
   })
 
   it('planeada cinco veces y registrada dos: **no** hay costumbre que ofrecer', () => {
@@ -817,7 +825,7 @@ describe('la duración que sueles tardar, en los chips del hueco (criterio 91)',
 
     expect(patterns[0]?.usualDurationSamples).toBe(2)
     expect(patterns[0]?.usualDurationMinutes).toBeNull()
-    expect(usualDurationsByItemId(patterns)).toEqual({})
+    expect(usualDurationsByActivityId(patterns)).toEqual({})
   })
 })
 

@@ -4,12 +4,14 @@ import type { UserSettings } from '@/features/settings/types/user-settings.types
 import { VidaSessionUiContext } from '@/features/vida/hooks/useVidaSessionUi'
 import type { VidaStartNoteRequest } from '@/features/vida/hooks/useVidaSessionUi'
 import { VidaHoyPage } from '@/features/vida/pages/VidaHoyPage'
+import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import { useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
 import type { ActivityCategory } from '@/features/vida/types/activity-category.types'
 import type { VidaGoal } from '@/features/vida/types/vida-goal.types'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
 import type { VidaItem, VidaSuggestion } from '@/features/vida/types/vida-item.types'
+import { appModules } from '@/layouts/AppLayout/app-nav.config'
 import { renderWithProviders } from '@/test/render'
 
 /**
@@ -438,21 +440,39 @@ describe('VidaHoyPage — el día con plan', () => {
     expect(screen.getByText('· en 36 min')).toBeInTheDocument()
   })
 
-  it('los huecos traen sus horas, su tamaño y solo lo que cabe (criterios 17 y 18)', () => {
+  it('los huecos traen sus horas y su tamaño (criterio 17)', () => {
     renderWithProviders(<VidaHoyPage />)
 
     const hueco = screen.getByLabelText('Libre de 10:30 – 13:00')
+    expect(within(hueco).getByText('Libre 10:30 – 13:00')).toBeInTheDocument()
     expect(within(hueco).getByText('2h 30')).toBeInTheDocument()
-    expect(within(hueco).getByText('Poner lavadora')).toBeInTheDocument()
-    // «Compra de la semana» dura 4 h: no cabe en 2 h 30.
-    expect(within(hueco).queryByText('Compra de la semana')).not.toBeInTheDocument()
   })
 
-  it('una sugerencia sin duración se lee «sin duración» y no se filtra (criterio 19)', () => {
-    suggestionsQuery = ready([suggestion('s3', 'Descansar', null)])
+  /**
+   * **El criterio 18 queda derogado en su parte de fichas, y el 19 entero**
+   * (FEAT-010, criterio 381). Este caso ocupa el sitio de los dos que había
+   * —«solo lo que cabe» y «sin duración»—: lo que se afirma ahora es que el
+   * hueco **no ofrece ninguna ficha**, ni la que cabía ni la que no traía
+   * duración, y que su única salida es «+ otra cosa» (criterio 382).
+   */
+  it('criterio 381 — el hueco no ofrece fichas de plantilla: ni la que cabe ni la que no trae duración', () => {
+    suggestionsQuery = ready([
+      suggestion('s1', 'Poner lavadora', 20),
+      suggestion('s3', 'Descansar', null),
+    ])
     renderWithProviders(<VidaHoyPage />)
 
-    expect(screen.getAllByText('sin duración').length).toBeGreaterThan(0)
+    const hueco = screen.getByLabelText('Libre de 10:30 – 13:00')
+    expect(within(hueco).queryByText('Poner lavadora')).not.toBeInTheDocument()
+    expect(within(hueco).queryByText('Descansar')).not.toBeInTheDocument()
+    expect(within(hueco).queryByText('sin duración')).not.toBeInTheDocument()
+    // Las dos salidas que le quedan al hueco de delante, y ninguna más: la de
+    // planear (criterio 382) y la de contar lo que acabas de hacer (FEAT-011,
+    // criterio 241), que cuelga de su propio nodo y no de que hubiera fichas.
+    expect(within(hueco).getAllByRole('button').map((b) => b.textContent)).toEqual([
+      '+ otra cosa',
+      'Registrar',
+    ])
   })
 
   it('abre a la altura de «Ahora» sin que lo anterior desaparezca (criterio 20)', () => {
@@ -479,15 +499,25 @@ describe('VidaHoyPage — el día con plan', () => {
     }
   })
 
-  it('el lateral de escritorio marca lo que ya está en el plan (criterio 48)', () => {
+  /**
+   * **El panel «Tu plantilla de \<día\>» ya no existe** (FEAT-010, criterio
+   * 383, que deroga la primera mitad del criterio 48 de FEAT-003). Este caso
+   * ocupa el sitio del que marcaba «en el plan»: lo que se afirma ahora es que
+   * el lateral se quedó **solo con «Mañana»**, que es la mitad que sobrevive.
+   */
+  it('criterio 383 — el lateral ya no trae la plantilla del día, ni «Ponerla»', () => {
     suggestionsQuery = ready([
       suggestion('s1', 'Poner lavadora', 20),
       suggestion('b1', 'Bañarme', 45, { activityId: 'a-b1' }),
     ])
     renderWithProviders(<VidaHoyPage />)
 
-    const lateral = screen.getByLabelText('Tu plantilla de viernes')
-    expect(within(lateral).getAllByText('en el plan')).toHaveLength(1)
+    expect(screen.queryByLabelText('Tu plantilla de viernes')).not.toBeInTheDocument()
+    expect(screen.queryByText('en el plan')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Ponerla/ })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /en el primer hueco donde cabe/i }),
+    ).not.toBeInTheDocument()
   })
 
   it('no reprocha nada en ninguna parte de la pantalla (criterio 56)', () => {
@@ -722,46 +752,31 @@ describe('VidaHoyPage — los estados', () => {
 })
 
 describe('VidaHoyPage — poner algo en un hueco (tajada 3)', () => {
-  it('criterio 23 — un toque en una ficha la coloca al principio del hueco', () => {
+  /**
+   * **Los criterios 23 y 19 quedan derogados** (FEAT-010, criterio 381): el
+   * toque que colocaba al principio del hueco, y el que abría la hoja para una
+   * ficha sin duración, se fueron con las fichas. No se borran a secas: en su
+   * sitio queda el caso que afirma que **nadie escribe el plan de un toque**, y
+   * debajo el camino que los sustituye —«+ otra cosa», criterios 24, 25 y 382—,
+   * que es el mismo de siempre y no se toca.
+   */
+  it('criterios 23 y 19 derogados — ningún toque en el hueco escribe el plan sin pasar por la hoja', () => {
+    suggestionsQuery = ready([
+      suggestion('s1', 'Poner lavadora', 20),
+      suggestion('s3', 'Estirar la espalda', null),
+    ])
     renderWithProviders(<VidaHoyPage />)
 
-    // El hueco de 10:30 a 13:00 ofrece «Poner lavadora» (20 min, cabe).
-    fireEvent.click(screen.getByRole('button', { name: /Poner Poner lavadora a las 10:30/ }))
+    expect(
+      screen.queryByRole('button', { name: /^Poner Poner lavadora a las/ }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /aquí, eligiendo cuánto dura/ }),
+    ).not.toBeInTheDocument()
 
-    expect(addMutation.mutate).toHaveBeenCalledTimes(1)
-    expect(addMutation.mutate.mock.calls[0][0]).toEqual({
-      date: '2026-09-18',
-      activityId: 'a-s1',
-      startTime: '10:30',
-      endTime: '10:50',
-    })
-  })
-
-  it('criterio 23 — el hueco que ya empezó coloca desde ahora, no desde antes', () => {
-    // Entre el bloque de las 8:45 y el de las 10:00 hay hueco, y el reloj (9:24)
-    // cae dentro: `buildDayAgenda` lo parte y la mitad de después empieza en el
-    // reloj. Colocar ahí no puede llevar la hora al pasado.
-    renderWithProviders(<VidaHoyPage />)
-    fireEvent.click(screen.getByRole('button', { name: /Poner Poner lavadora a las 9:24/ }))
-
-    expect(addMutation.mutate.mock.calls[0][0]).toMatchObject({
-      startTime: '09:24',
-      endTime: '09:44',
-    })
-  })
-
-  it('criterio 19 — una ficha sin duración no coloca nada: abre la hoja', () => {
-    suggestionsQuery = ready([suggestion('s3', 'Estirar la espalda', null)])
-    renderWithProviders(<VidaHoyPage />)
-
-    fireEvent.click(
-      screen.getAllByRole('button', {
-        name: /Poner Estirar la espalda aquí, eligiendo cuánto dura/,
-      })[0],
-    )
-
+    // La única salida del hueco abre la hoja, y la hoja no ha escrito nada.
+    fireEvent.click(screen.getAllByRole('button', { name: /Poner otra cosa a las 10:30/ })[0])
     expect(addMutation.mutate).not.toHaveBeenCalled()
-    expect(screen.getByRole('heading', { name: 'Cuánto' })).toBeInTheDocument()
   })
 
   it('criterio 24 — «+ otra cosa» abre la hoja con el subtítulo del hueco', () => {
@@ -1010,10 +1025,16 @@ describe('VidaHoyPage — cualquier día (tajada 4)', () => {
   })
 })
 
-describe('VidaHoyPage — el lateral pone en el primer hueco donde cabe (criterio 48)', () => {
-  it('coloca con `activityDayPlanItemAdd` al principio del primer hueco que la admite', () => {
-    // 9:24. El plan deja libre 6:30–8:00, 9:00–13:00 y 13:30–23:00; la primera
-    // mitad ya pasó, así que el primer hueco vivo empieza **en ahora**.
+/**
+ * **El lateral, tras retirarle la plantilla** (FEAT-010, tajada 3). Aquí vivía
+ * el `describe` de «el lateral pone en el primer hueco donde cabe (criterio
+ * 48)», con sus cinco casos de `PlaceInFirstGapButton`. El criterio 383 retira
+ * ese panel entero —su lista, su «Ponerla» y `findFirstFittingGap`— y deja **la
+ * otra mitad del 48**: «Mañana · Armar mañana desde la plantilla», que no se
+ * toca. Esto es lo que afirma lo nuevo, en el sitio de lo derogado.
+ */
+describe('VidaHoyPage — el lateral se queda solo con «Mañana» (criterio 383)', () => {
+  it('el lateral existe y es el de «Mañana», no el de la plantilla del día', () => {
     planQuery = ready([
       block('b1', 'Bañarme', '08:00', '09:00'),
       block('b2', 'Cocinar', '13:00', '13:30'),
@@ -1021,75 +1042,38 @@ describe('VidaHoyPage — el lateral pone en el primer hueco donde cabe (criteri
     suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
     renderWithProviders(<VidaHoyPage />)
 
-    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
-    fireEvent.click(
-      within(aside).getByRole('button', { name: /en el primer hueco donde cabe/i }),
-    )
-
-    expect(addMutation.mutate).toHaveBeenCalledTimes(1)
-    expect(addMutation.mutate).toHaveBeenCalledWith({
-      date: '2026-09-18',
-      activityId: 'a-s1',
-      startTime: '09:24',
-      endTime: '09:44',
-    })
-  })
-
-  it('sin duración en la plantilla, la pone con la de por defecto (30 min)', () => {
-    planQuery = ready([])
-    suggestionsQuery = ready([suggestion('s1', 'Leer', null)])
-    renderWithProviders(<VidaHoyPage />)
-
-    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
-    fireEvent.click(
-      within(aside).getByRole('button', { name: /en el primer hueco donde cabe/i }),
-    )
-
-    const call = addMutation.mutate.mock.calls[0]?.[0] as { startTime: string; endTime: string }
-    expect(call.endTime).toBe(minutesLater(call.startTime, 30))
-  })
-
-  it('lo que ya está en el plan no ofrece el botón: se marca «en el plan»', () => {
-    planQuery = ready([block('b1', 'Poner lavadora', '10:00', '10:20', 'a-s1')])
-    suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
-    renderWithProviders(<VidaHoyPage />)
-
-    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
-    expect(within(aside).getByText('en el plan')).toBeInTheDocument()
     expect(
-      within(aside).queryByRole('button', { name: /en el primer hueco donde cabe/i }),
+      screen.queryByRole('complementary', { name: /tu plantilla de/i }),
     ).not.toBeInTheDocument()
-  })
-
-  it('si no cabe en ningún hueco, el botón queda apagado y dice por qué', () => {
-    // El día entero ocupado: 6:30 → 23:00 de un tirón.
-    planQuery = ready([block('b1', 'Todo el día', '06:30', '23:00')])
-    suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
-    renderWithProviders(<VidaHoyPage />)
-
-    const aside = screen.getByRole('complementary', { name: /tu plantilla de/i })
-    const button = within(aside).getByRole('button', { name: /no cabe hoy en ningún rato libre/i })
-    expect(button).toBeDisabled()
-    expect(within(aside).getByText(/No queda un rato de 20m en este día/)).toBeInTheDocument()
+    const aside = screen.getByRole('complementary', { name: /^Mañana, / })
+    expect(within(aside).queryByRole('button', { name: /Ponerla/ })).not.toBeInTheDocument()
+    expect(
+      within(aside).queryByRole('button', { name: /no cabe hoy en ningún rato libre/i }),
+    ).not.toBeInTheDocument()
     expect(addMutation.mutate).not.toHaveBeenCalled()
   })
 
-  it('en un día pasado no hay lateral, así que tampoco hay dónde poner (criterio 38)', () => {
+  it('camino (c) del criterio 384 — «Armar mañana desde la plantilla» sigue donde estaba', () => {
+    // Mañana es sábado 19: la plantilla entera tiene que traer algo de ese día
+    // para que haya qué armar.
+    itemsQuery = ready([suggestion('t1', 'Leer un rato', 30, { days: ['saturday'] }).item])
+    renderWithProviders(<VidaHoyPage />)
+
+    const aside = screen.getByRole('complementary', { name: /^Mañana, / })
+    expect(
+      within(aside).getByRole('button', { name: 'Armar mañana desde la plantilla' }),
+    ).toBeInTheDocument()
+  })
+
+  it('en un día pasado no hay lateral (criterio 38)', () => {
     viewedDate = '2026-09-17'
     renderWithProviders(<VidaHoyPage />, {
       routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
     })
 
-    expect(screen.queryByRole('complementary', { name: /tu plantilla de/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
   })
 })
-
-/** `08:00` + 30 → `08:30`. Solo para leer la aserción de arriba. */
-function minutesLater(time: string, minutes: number): string {
-  const [h = '0', m = '0'] = time.split(':')
-  const total = Number(h) * 60 + Number(m) + minutes
-  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
-}
 
 describe('VidaHoyPage — empezar y terminar un bloque (FEAT-004, tajada 1)', () => {
   it('criterio 1 — en hoy cada bloque trae «▶ Empezar»', () => {
@@ -2162,17 +2146,74 @@ describe('el aviso pegado al bloque, en Hoy (criterios 87 a 94)', () => {
     expect(screen.queryByText('De tus últimas semanas')).not.toBeInTheDocument()
   })
 
-  it('criterio 91 — los chips del hueco ofrecen la duración que sueles tardar, y lo dicen', () => {
+  /**
+   * **La mitad del criterio 91 que vivía en el chip del hueco queda derogada**
+   * (FEAT-010, criterio 381). La costumbre no se pierde: se dice en la tarjeta
+   * de «Lo que viene», con las palabras del criterio 372 («suele durarte N»),
+   * y eso se prueba en el bloque de FEAT-010. Aquí se afirma lo que ya no está.
+   */
+  it('criterio 91, su mitad derogada — el hueco ya no ofrece «sueles tardar» en un chip', () => {
     suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
     patternsResult.patterns = [
       patternWith({ itemId: 's1', activityId: 'a-s1', usualDurationMinutes: 55, dayPatch: null }),
     ]
     renderWithProviders(<VidaHoyPage />)
 
-    expect(screen.getAllByText('sueles tardar 55m').length).toBeGreaterThan(0)
+    const hueco = screen.getByLabelText('Libre de 10:30 – 13:00')
+    expect(within(hueco).queryByText('sueles tardar 55m')).not.toBeInTheDocument()
     expect(
-      screen.getAllByText(/La duración que se ofrece es la que sueles tardar/).length,
-    ).toBeGreaterThan(0)
+      screen.queryByText(/La duración que se ofrece es la que sueles tardar/),
+    ).not.toBeInTheDocument()
+  })
+})
+
+
+/**
+ * **Nada se queda sin camino** (FEAT-010, criterio 384). Al retirar las fichas
+ * del hueco y el panel «Tu plantilla de \<día\>» se van dos superficies, no
+ * dos capacidades: lo que servían sigue teniendo puerta. Un caso por camino,
+ * sitio por sitio, y **ninguno de los cuatro se toca en esta feature**.
+ */
+describe('VidaHoyPage — los cuatro caminos siguen abiertos (criterio 384)', () => {
+  it('(a) poner algo en un hueco → «+ otra cosa», con el subtítulo del hueco', () => {
+    renderWithProviders(<VidaHoyPage />)
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Poner otra cosa a las 10:30/ })[0])
+
+    expect(screen.getByText('Poner algo a las 10:30')).toBeInTheDocument()
+    expect(
+      screen.getByText('Hueco de 2h 30 · hasta las 13:00 «Cocinar y almorzar»'),
+    ).toBeInTheDocument()
+  })
+
+  it('(b) armar el día desde la plantilla → el botón de siempre, y el puente a la semana', () => {
+    // Sin plan y con plantilla: es cuando se ofrece armar el día (criterio 21).
+    planQuery = ready([])
+    suggestionsQuery = ready([suggestion('s1', 'Poner lavadora', 20)])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(
+      screen.getByRole('button', { name: /^Armar desde la plantilla/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /semana/i })).toHaveAttribute(
+      'href',
+      vidaPaths.semanaForDate('2026-09-18'),
+    )
+  })
+
+  it('(c) planear mañana → «Armar mañana desde la plantilla», en el lateral', () => {
+    itemsQuery = ready([suggestion('t1', 'Leer un rato', 30, { days: ['saturday'] }).item])
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(
+      screen.getByRole('button', { name: 'Armar mañana desde la plantilla' }),
+    ).toBeInTheDocument()
+  })
+
+  it('(d) ver qué dice tu plantilla → `/app/vida/plantilla`, y sigue en la barra del módulo', () => {
+    expect(vidaPaths.plantilla).toBe('/app/vida/plantilla')
+    const vida = appModules.find((module) => module.id === 'vida')
+    expect(vida?.sections.map((section) => section.to)).toContain(vidaPaths.plantilla)
   })
 })
 

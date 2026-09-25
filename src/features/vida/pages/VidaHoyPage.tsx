@@ -16,15 +16,12 @@ import { VidaLogSessionSheet } from '@/features/vida/components/VidaLogSessionSh
 import { VidaUpNextCard } from '@/features/vida/components/VidaUpNextCard'
 import type { VidaLogSessionMode } from '@/features/vida/components/VidaLogSessionSheet'
 import { VidaPlaceInGapSheet } from '@/features/vida/components/VidaPlaceInGapSheet'
-import { VidaTemplateAside } from '@/features/vida/components/VidaTemplateAside'
+import { VidaTomorrowAside } from '@/features/vida/components/VidaTomorrowAside'
 import {
   useActivityCategoriesQuery,
   useSetActivityCategoryGoalMutation,
 } from '@/features/vida/hooks/useActivityCategories'
-import {
-  useAddDayPlanItemMutation,
-  useEditDayPlanItemMutation,
-} from '@/features/vida/hooks/useActivityDayPlan'
+import { useEditDayPlanItemMutation } from '@/features/vida/hooks/useActivityDayPlan'
 import { useCreateActivityFollowUpMutation } from '@/features/vida/hooks/useActivityFollowUps'
 import { useBuildDayFromTemplate } from '@/features/vida/hooks/useBuildDayFromTemplate'
 import { useVidaDayData } from '@/features/vida/hooks/useVidaDayData'
@@ -40,18 +37,12 @@ import { useVidaSessionUi } from '@/features/vida/hooks/useVidaSessionUi'
 import { useVidaWeekPlans } from '@/features/vida/hooks/useVidaWeekPlans'
 import { vidaPaths } from '@/features/vida/routes/vida-paths'
 import type { ActivityFollowUp } from '@/features/vida/types/activity-followup.types'
-import type { VidaSuggestion } from '@/features/vida/types/vida-item.types'
-import type {
-  AgendaBlock,
-  AgendaGap,
-  GapSuggestions,
-} from '@/features/vida/utils/vida-agenda.utils'
+import type { AgendaBlock, AgendaGap } from '@/features/vida/utils/vida-agenda.utils'
 import {
   buildDayAgenda,
   buildGuidanceLine,
   findNextBlockId,
   getDayBudget,
-  suggestionsForGap,
 } from '@/features/vida/utils/vida-agenda.utils'
 import { templateNoteForActivity } from '@/features/vida/utils/vida-notes.utils'
 import {
@@ -70,7 +61,6 @@ import type { VidaBlockHint as BlockHint } from '@/features/vida/utils/vida-patt
 import {
   pickBlockHints,
   usualDurationsByActivityId,
-  usualDurationsByItemId,
 } from '@/features/vida/utils/vida-patterns.utils'
 import { logSessionInput } from '@/features/vida/utils/vida-session.utils'
 import { topStartSuggestions } from '@/features/vida/utils/vida-start-suggestions.utils'
@@ -124,7 +114,6 @@ import styles from './VidaHoyPage.module.scss'
 const SUBTITLE = 'Tu día repartido, y dónde te queda sitio.'
 
 /** Un hueco de un día pasado no ofrece nada: se mira (D3, criterio 38). */
-const NO_SUGGESTIONS: GapSuggestions = { visible: [], hiddenCount: 0, templateCount: 0 }
 
 /**
  * **La sesión de un bloque cuya nota se puede leer y escribir** (FEAT-018).
@@ -595,12 +584,7 @@ export function VidaHoyPage() {
   })
 
   // La duración que sueles tardar, para los chips del hueco (criterio 91).
-  // Vacío mientras no haya patrones: Hoy es entonces el de FEAT-003/004.
-  const usualDurations = useMemo(
-    () => usualDurationsByItemId(patterns.patterns),
-    [patterns.patterns],
-  )
-  // La misma costumbre **por actividad**, para la duración que viene puesta al
+  // La costumbre **por actividad**, para la duración que viene puesta al
   // registrar en un hueco (FEAT-011, criterio 238). Al registrar no hay ítem de
   // plantilla: hay una actividad elegida, que puede ni estar en la plantilla de
   // hoy. Vacío mientras no haya patrones, como su hermana.
@@ -801,7 +785,6 @@ export function VidaHoyPage() {
   // es una tercera hoja y no comparte estado con las otras dos.
   const [nightSheetOpen, setNightSheetOpen] = useState(false)
   const [nightSheetSession, setNightSheetSession] = useState(0)
-  const addMutation = useAddDayPlanItemMutation()
   // Armar el día visto desde su plantilla (criterios 21, 41–44). Es una sola
   // `activityDayPlanSet` y el resumen se pinta aquí, porque lleva un enlace al
   // catálogo que no cabe en un toast.
@@ -836,42 +819,6 @@ export function VidaHoyPage() {
       bedTime: dayWindow.nightEnding.bedTime,
       wakeTime: dayWindow.nightEnding.wakeTime,
       confirmedAt: new Date().toISOString(),
-    })
-  }
-
-  /**
-   * Un toque en una ficha: **al principio del hueco**, con la duración que trae
-   * su ítem de plantilla (criterio 23). La agenda, los huecos y el presupuesto
-   * se rehacen solos con la invalidación por fecha del hook: no hay estado
-   * duplicado que refrescar.
-   *
-   * Sin duración no se coloca nada a ciegas: se abre la hoja con esa actividad
-   * puesta para elegir cuánto (criterio 19).
-   */
-  function placeSuggestion(
-    gap: AgendaGap,
-    suggestion: VidaSuggestion,
-    suggestionMinutes: number | null,
-  ) {
-    const gapWindow = gapToWindow(gap)
-    if (suggestionMinutes === null) {
-      openSheet({
-        kind: 'place',
-        gapWindow,
-        preselected: {
-          id: suggestion.item.activityId,
-          title: suggestion.item.activity?.title ?? 'Actividad',
-          icon: suggestion.item.activity?.category?.icon ?? null,
-          color: suggestion.item.activity?.category?.color ?? null,
-        },
-      })
-      return
-    }
-    const startTime = minutesToTime(gap.startMinutes)
-    addMutation.mutate({
-      date,
-      activityId: suggestion.item.activityId,
-      ...toDayPlanTimes(startTime, suggestionMinutes),
     })
   }
 
@@ -1268,23 +1215,15 @@ export function VidaHoyPage() {
               gap={entry}
               dayLabel={dayLabel}
               showTemplateHint={canPlan && entry.id === firstRealGapId}
-              // En un día pasado el hueco **no ofrece nada**: ni fichas, ni
+              // Cuántas cosas trae la plantilla de este día: es lo único que
+              // queda de las fichas retiradas (FEAT-010, criterio 381) y lo que
+              // sostiene la rama de «tu plantilla no trae nada». El mismo
+              // número que usa «Armar desde la plantilla»: no hay una segunda
+              // cuenta.
+              templateCount={templateCount}
+              // En un día pasado el hueco **no ofrece planear**: tampoco
               // «+ otra cosa» (criterio 38). Ofrecer algo para un rato que ya
               // pasó sería un control que no lleva a ninguna parte.
-              suggestions={
-                canPlan
-                  ? suggestionsForGap({
-                      suggestions,
-                      gap: entry,
-                      planItems,
-                      // **El dato sin pedir nada** (criterio 91). Vacío
-                      // mientras no haya cuatro datos de esa actividad: la
-                      // ficha es entonces exactamente la de antes.
-                      usualDurations,
-                    })
-                  : NO_SUGGESTIONS
-              }
-              onPlaceSuggestion={canPlan ? placeSuggestion : undefined}
               onOpenSheet={
                 canPlan
                   ? (gap) => openSheet({ kind: 'place', gapWindow: gapToWindow(gap) })
@@ -1300,7 +1239,6 @@ export function VidaHoyPage() {
               // En un día de la tira **todo** ya pasó, y sus huecos no traen
               // la marca: allí no hay reloj (criterio 232).
               isPastDay={isPast}
-              isPlacing={addMutation.isPending}
             />
           )}
         </Fragment>
@@ -1608,16 +1546,12 @@ export function VidaHoyPage() {
 
         {/* El lateral **no se pinta en un día pasado** (criterio 38): desde que
             lleva «Armar mañana desde la plantilla» dejó de ser solo lectura, y
-            un día pasado se mira y no se toca. */}
-        {canPlan ? (
-          <VidaTemplateAside
-            dayLabel={dayLabel}
-            suggestions={suggestions}
-            planItems={planItems}
-            date={date}
-            agenda={agenda}
-          />
-        ) : null}
+            un día pasado se mira y no se toca.
+
+            Desde FEAT-010 tajada 3 lo único que trae es «Mañana»: la lista «Tu
+            plantilla de \<día\>» con su «Ponerla» se retiró entera (criterio
+            383, que deroga la primera mitad del criterio 48 de FEAT-003). */}
+        {canPlan ? <VidaTomorrowAside viewedDate={date} /> : null}
       </div>
 
       {sheet && canPlan ? (
@@ -1651,8 +1585,7 @@ export function VidaHoyPage() {
           // ordenada por lo que toca ahora y cortada en cinco; «Registrar
           // tiempo pasado» y «Corregir» siguen viendo la plantilla entera,
           // letra por letra. La regla vive en la función pura y se aplica
-          // aquí, igual que `suggestionsForGap` unas líneas más arriba: el
-          // picker no aprende nada nuevo.
+          // aquí: el picker no aprende nada nuevo.
           suggestions={
             logSheet.mode === 'start'
               ? topStartSuggestions({ suggestions, nowMinutes })

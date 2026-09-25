@@ -1,0 +1,42 @@
+/* El lateral de escritorio. La página decide cuándo se ve: aquí no hay
+   `media query`, solo el aspecto.
+
+   Viene de `VidaTemplateAside.module.scss`: `.root` es el mismo vidrio de
+   antes, y `.heading` / `.note` son las reglas `.tomorrowHeading` /
+   `.tomorrowNote` del bloque «Mañana», que ahora es lo único que hay dentro.
+   Se fue con el archivo la separación de arriba (`border-top`): ya no hay nada
+   por encima de lo que separarse. */
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+  min-width: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 1.25rem;
+  background: var(--aura-glass-1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-glass, var(--shadow-sm));
+}
+
+.heading {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: capitalize;
+}
+
+.note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}

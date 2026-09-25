@@ -60,8 +60,9 @@ export type VidaDayWindow = VidaDayHours & {
  * Qué resuelve y por qué está aquí y no dentro de `useVidaDayHours`: la ventana
  * del día deja de ser una propiedad de los ajustes y pasa a depender **del
  * día**. `useVidaDayHours` lo llaman siete sitios y dos no tienen fecha
- * (`VidaTemplateAside`, la cuadrícula de la semana), así que sigue siendo el
- * lector crudo de los ajustes y **no se toca**; esto lo compone encima.
+ * (`VidaTomorrowAside` —antes `VidaTemplateAside`— y la cuadrícula de la
+ * semana), así que sigue siendo el lector crudo de los ajustes y **no se
+ * toca**; esto lo compone encima.
  *
  * La regla, que es la decisión D1 y la respuesta del usuario del 2026-09-24:
  *

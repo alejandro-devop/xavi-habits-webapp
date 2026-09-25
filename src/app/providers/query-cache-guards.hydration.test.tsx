@@ -82,7 +82,7 @@ function AgendaDeHoy() {
 /**
  * El segundo gesto que puede tumbar Hoy, y el que se coló en la primera vuelta:
  * `item.days.includes(...)` sin red. Es lo que hace `templateItemsForDate`
- * (`vida-build-day.utils.ts:80`), que `VidaTemplateAside` llama en el primer
+ * (`vida-build-day.utils.ts:80`), que `VidaTomorrowAside` llama en el primer
  * pintado de Hoy.
  */
 function PlantillaDeManana() {

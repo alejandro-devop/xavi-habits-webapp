@@ -1,11 +1,13 @@
 ---
 id: FEAT-010
 title: Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic
-status: building
+status: delivered
 architect: yes    # vive dentro de la lista de la agenda y se mueve con la sesión en marcha, y retira dos superficies de FEAT-003 derogando criterios entregados
 area: features/vida
 requested: 2026-09-22
-updated: 2026-09-23   # tajada 2 **aceptada** (192, 193, 197, 377 y la segunda mitad del 209). Las tajadas 1 y 2 aceptadas; la 3 sin empezar. 218 lo cierra el usuario
+updated: 2026-09-25   # tajada 3 **aceptada** (revisor): 380–385 con evidencia, CSS 282,61 → 280,11 kB verificado por selectores, cero código vivo de lo retirado. **Las tres tajadas aceptadas: feature `delivered`.** 212/213/214 y 218 los cierra el usuario
+# histórico: 2026-09-25 — tajada 3 **in-review** (constructor): retiradas las fichas del hueco y el panel del lateral
+# histórico: 2026-09-23 — tajada 2 **aceptada** (192, 193, 197, 377 y la segunda mitad del 209). Las tajadas 1 y 2 aceptadas; la 3 sin empezar. 218 lo cierra el usuario
 ---
 
 # FEAT-010 — Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic
@@ -377,7 +379,7 @@ y, al explicarle qué hacían:
 |---|---|---|
 | 1 | **«Lo que viene», dentro de la línea, con la promesa escrita y un clic.** Debajo de lo que está pasando (o en la línea de AHORA), la siguiente cosa de la plantilla con «suele durarte N», **la frase de verdad siempre**, «▶ Empezar ahora» de un solo toque, y las salidas pequeñas debajo. **Ya es útil sola, y es la feature entera en su caso normal:** el usuario pulsa. Criterios 180, 183, 184, 186, 187, 188, 189, 196, 203–217, 370–376, 378, 379. | aceptada |
 | 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo «· se pasó de la hora» con «Ya la hice» escrita, la mitad «ya llegó» de la regla de elección, y el momento en que la plantilla se acabó: cuánto te queda de día y «Empezar algo». Criterios 192, 193, 197, 375 (segunda mitad), 377. | aceptada |
-| 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con sus derogaciones escritas (FEAT-003 18, 19, 23 y la mitad del 48; FEAT-007 la mitad del 91), «+ otra cosa» y «Armar mañana» intactos, y los cuatro caminos comprobados uno a uno. Criterios 380–385. | pending |
+| 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con sus derogaciones escritas (FEAT-003 18, 19, 23 y la mitad del 48; FEAT-007 la mitad del 91), «+ otra cosa» y «Armar mañana» intactos, y los cuatro caminos comprobados uno a uno. Criterios 380–385. | aceptada |
 
 **Por qué este orden:** la 1 resuelve **lo que frenaba al usuario** y no depende
 de nada nuevo (el arranque, el cierre de lo anterior y la costumbre ya están en
@@ -740,7 +742,7 @@ y se cierra en la tajada 2. Queda anotado, no reescrito.
 |---|---|---|---|---|
 | 1 | **«Lo que viene» dentro de la línea, con la promesa y un clic.** La regla entera, el anclaje, la tarjeta y el arranque de un toque. Sin candidatos, no se pinta nada (eso es la tajada 2). | **crea** `utils/vida-up-next.utils.ts` + `.test.ts` · **crea** `components/VidaUpNextCard/{VidaUpNextCard.tsx,.module.scss,index.ts}` · `VidaHoyPage.tsx:8` (import), tras `:260` (el `useMemo`), tras `:321` (`usualByActivityId`), `:647` (`map`→`flatMap` + `renderEntry`), antes de `:642` (`upNextCard`) · `vida-patterns.utils.ts` tras `:981` + su test **solo si FEAT-011 t3 no ha llegado** · `VidaHoyPage.test.tsx` | 180, 183, 184, 186, 187, 188, 189, 196, 203, 204, 205, 206, 207, 208, 210, 211, 212, 213, 214, 215, 216, 217, 370, 371, 372, 373, 374, **375 entero**, 376, 378, 379 · 209 su primera mitad | aceptada |
 | 2 | **Los dos bordes: se pasó la hora, y ya no queda nada.** El rótulo, «Ya la hice» y la cara apagada con lo que queda de día. | `utils/vida-up-next.utils.ts` (`variant: 'empty'`, `isOverdue`, `showDidIt`) + su test · `VidaUpNextCard.tsx` y su `.module.scss` (trazo apagado y punteado) · `VidaHoyPage.tsx` (pasar `budget`/`dayHours.endTime` y enganchar `markBlockDone` en `:474`) · `VidaHoyPage.test.tsx` (los números coinciden con `VidaDayBudget`) | 192, 193, 197, 377 · 209 su segunda mitad · 218 (el usuario) | aceptada |
-| 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con los cuatro caminos comprobados uno a uno. | ver el plan de retirada | 380, 381, 382, 383, 384, 385 | pending |
+| 3 | **Retirar las fichas del hueco y el panel «Tu plantilla de \<día\>».** Con los cuatro caminos comprobados uno a uno. | ver el plan de retirada | 380, 381, 382, 383, 384, 385 | in-review |
 
 ### El plan de retirada de la tajada 3, archivo a archivo
 
@@ -1387,6 +1389,248 @@ el «▶ Empezar algo» va en hueco con tinta mint clara. Se lee.
 **Estado del árbol:** sin commitear.
 
 
+### Tajada 3 — retirar las fichas del hueco y el panel «Tu plantilla de \<día\>»
+
+**Summary for the reviewer:**
+1. **Qué se construyó:** el hueco de delante perdió sus fichas de plantilla y se
+   quedó con su franja, su tamaño y **«+ otra cosa»**; el lateral de escritorio
+   perdió la lista «Tu plantilla de \<día\>» con su «Ponerla» y se quedó **solo
+   con «Mañana»**, mudado a `components/VidaTomorrowAside/`.
+2. **Dónde:** `VidaAgendaGap` (+ su `.module.scss` y su test), `VidaHoyPage`
+   (+ su test), `vida-agenda.utils.ts`, `vida-patterns.utils.ts` y sus tests;
+   **carpeta borrada:** `components/VidaTemplateAside/`.
+3. **Lo que más probablemente rompí:** la rama de **plantilla vacía** del hueco.
+   Antes su número venía dentro de `GapSuggestions` (`templateCount`, calculado
+   **contra las sugerencias de ese día**); ahora llega suelto desde la página,
+   donde `templateCount = buildableTemplate.length` —**que es otra cuenta**: la
+   de «Armar desde la plantilla», que filtra por *armable*, no por *activa*. En
+   los casos probados dan lo mismo, pero si alguna vez difieren, el hueco diría
+   «tu plantilla no trae nada» con plantilla o al revés. Mirad ahí primero.
+   Segundo sitio: el lateral **entero desaparece** cuando `VidaTomorrowAside`
+   devuelve `null` (último domingo de la ventana, o mirando mañana) — antes
+   quedaba el panel con la lista. Es consecuencia buscada del 383, pero es un
+   cambio de layout que nadie escribió.
+
+**Antes de borrar nada: el censo de consumidores** (criterio 385). El plan de la
+sección 2 se contó sobre `30a0d40` y `main` ha avanzado hasta `6ff8b2e`
+(FEAT-011 a 024). Repetido el `git grep` del plan sobre el árbol de hoy, símbolo
+a símbolo:
+
+| Símbolo | Consumidores **hoy** (`6ff8b2e`) | ¿Cambió desde `30a0d40`? | Qué se hizo |
+|---|---|---|---|
+| `suggestionsForGap` (`vida-agenda.utils.ts`) | `VidaHoyPage.tsx:1276` · `vida-agenda.utils.test.ts` (13 usos) · una **mención en comentario** en `vida-start-suggestions.utils.ts:73` | No | **Borrada.** El comentario se reescribió |
+| `MAX_GAP_SUGGESTIONS` | solo `suggestionsForGap` | No | **Borrada** |
+| `GapSuggestion` / `GapSuggestions` | `VidaAgendaGap.tsx:4,21` · `VidaAgendaGap.test.tsx:5,33` · `VidaHoyPage.tsx:47,127` (`NO_SUGGESTIONS`) | No | **Borrados los tres sitios** |
+| `SuggestionsForGapInput` | solo `suggestionsForGap` | — (el plan no lo listaba) | **Borrado** |
+| `findFirstFittingGap` | **solo** `VidaTemplateAside.tsx:17,184` · una mención en el comentario de `isSliver` (`vida-agenda.utils.ts:76`) | No | **Borrada.** El comentario se corrigió |
+| `fitsInGap` | **solo** `suggestionsForGap` y `findFirstFittingGap`, + su test (`:428-440`) | No: **FEAT-011 t3 no lo enganchó**, y `VidaDurationPills` sigue sin usarlo — la premisa del criterio 385 sigue siendo falsa, como ya avisó el arquitecto | **Borrada** con su test |
+| `usualDurationsByItemId` (`vida-patterns.utils.ts`) | `VidaHoyPage.tsx:600` → `suggestionsForGap` · `vida-patterns.utils.test.ts:805,820` | No | **Borrada** |
+| `usualDurationsByActivityId` | `VidaHoyPage.tsx:608` → `VidaLogSessionSheet` y la tarjeta de «Lo que viene» | **Sí, ganó consumidores** (FEAT-011 t3 y FEAT-010 t1) | **Se queda viva**, intacta |
+| `VidaTemplateAside` | `VidaHoyPage.tsx:19,1613` · su `index.ts` · **tres menciones en comentarios**: `query-cache-guards.hydration.test.tsx:85`, `useVidaDayWindow.ts:63`, `vida-execution.utils.ts:6` | No gana consumidores nuevos de código | **Carpeta borrada**; los tres comentarios, corregidos |
+| `VidaTomorrowBlock` | solo dentro de `VidaTemplateAside.tsx:145,243` | No | **Movido** a `VidaTomorrowAside`, **antes** de borrar la carpeta |
+| `placeSuggestion` / `onPlaceSuggestion` | `VidaHoyPage.tsx:851,1287` · `VidaAgendaGap.tsx` · 2 usos en `VidaAgendaGap.test.tsx` | No | **Borrados** |
+| `isPlacing` + `addMutation` de la página | `VidaHoyPage.tsx:804,871,1303` | **Sí, para bien**: `useAddDayPlanItemMutation` **ya no se le pasa a la hoja** — `VidaPlaceInGapSheet` tiene la suya. El aviso del plan («si se borra `addMutation` se rompe “+ otra cosa”») **ya no aplica** | **Borrados de la página**; el hook sigue vivo en la hoja |
+| `VidaSuggestion` (tipo) | 14 archivos: picker, hojas, `useVidaDayData`, `vida-start-suggestions`… | Sí, muchos | **No se toca** |
+| `templateCount` (nombre) | `VidaHoyPage.tsx:1082` · `VidaSemanaPage.tsx:132,353` | — | Reutilizado como **prop nueva** del hueco |
+
+**Ningún símbolo ganó un consumidor nuevo que obligara a dejarlo vivo.** El único
+que lo ganó, `usualDurationsByActivityId`, no estaba en la lista de borrado.
+
+**What was built:**
+
+- **`components/VidaAgendaGap/VidaAgendaGap.tsx`** — fuera la rama de fichas
+  (chips, «+N más» y la nota «de tu plantilla de \<día\>, lo que cabe aquí»),
+  fuera las props `suggestions`, `onPlaceSuggestion` e `isPlacing`, fuera
+  `canPlace` y los `import` de `CSSProperties`, `VidaSuggestion`,
+  `GapSuggestions`, `AppIcon` y `UNCATEGORIZED_GROUP_ICON`. **Entra
+  `templateCount?: number`**, que sostiene la rama de plantilla vacía («tu
+  plantilla no trae nada» + «Ver tus actividades»). **Se conservan** la cabecera
+  con franja y tamaño, la rama `sliver`/`isPast` de FEAT-011 y **«+ otra cosa»**.
+- **`…/VidaAgendaGap.module.scss`** — mueren `.chipName`, `.chipTime` y
+  `button.chip:disabled`.
+- **`components/VidaTomorrowAside/`** (nueva: `.tsx`, `.module.scss`, `index.ts`)
+  — `VidaTomorrowBlock` movido tal cual, ahora como el `<aside>` del lateral.
+- **`components/VidaTemplateAside/`** — **borrada entera** (`git rm`), con
+  `PlaceInFirstGapButton`, la lista de plantilla, su `useAddDayPlanItemMutation`
+  y el `<h2>Tu plantilla de {dayLabel}</h2>`.
+- **`pages/VidaHoyPage.tsx`** — `placeSuggestion` borrada entera, `NO_SUGGESTIONS`
+  fuera, el `useMemo` de `usualDurations` (por ítem) fuera, `addMutation` fuera,
+  el hueco recibe `templateCount`, y el lateral pasa a
+  `<VidaTomorrowAside viewedDate={date} />`. **No se tocan** `openSheet`,
+  `SheetState.kind === 'place'` ni la hoja: «+ otra cosa» sigue por ahí.
+- **`utils/vida-agenda.utils.ts`** — fuera `MAX_GAP_SUGGESTIONS`, `GapSuggestion`,
+  `GapSuggestions`, `SuggestionsForGapInput`, `fitsInGap`, `findFirstFittingGap`
+  y `suggestionsForGap` (143 líneas).
+- **`utils/vida-patterns.utils.ts`** — fuera `usualDurationsByItemId`.
+- **Tests** — ninguno se borró a secas; cada uno nombra el criterio que lo deroga
+  (como en FEAT-006): `vida-agenda.utils.test.ts` (los dos `describe` sustituidos
+  por una nota que dice dónde vive ahora lo nuevo), `vida-patterns.utils.test.ts`
+  (los dos casos del 91 siguen, por `usualDurationsByActivityId`),
+  `VidaAgendaGap.test.tsx` (+5 casos: 381 y 382) y `VidaHoyPage.test.tsx`
+  (4 casos reescritos y un `describe` nuevo con **los cuatro caminos del 384**).
+- **Comentarios corregidos** en cuatro archivos que nombraban lo retirado.
+
+**Why this way, y en qué me separo del plan:**
+
+1. **`.chips`, `.chip`, `.chipMore` y `.note` NO mueren**, aunque el plan de la
+   sección 2 los daba por muertos. Es un error del plan, no una decisión mía:
+   «+ otra cosa» **es** un `.chip .chipMore` dentro de un `<ul class=chips>`, y
+   la rama de plantilla vacía usa `.note`. Borrarlos habría cambiado el aspecto
+   del hueco justo donde el criterio 382 dice que no cambia. Mueren exactamente
+   los tres selectores que se quedaron sin nadie: `.chipName`, `.chipTime` y
+   `button.chip:disabled` (nada queda deshabilitado tras irse `isPlacing`).
+2. **El `.tomorrow` del lateral se convierte en el `.root` del componente nuevo**
+   y sus dos reglas se renombran a `.heading` y `.note`. Se le quitó el
+   `border-top`: ya no hay nada encima de lo que separarse. La tipografía se
+   conserva **exacta** (0,8125 rem, `capitalize`) para que «Mañana» se vea igual
+   que antes. El `<h3>` pasa a `<h2>`: ahora es el título del panel, el sitio que
+   ocupaba `<h2>Tu plantilla de \<día\>`.
+3. **`isPlacing` fuera del todo**, no «solo si queda algo con estado en vuelo»:
+   al irse `placeSuggestion`, `addMutation` se quedó sin escritura y «+ otra
+   cosa» no escribe nada —lo hace la hoja, con su propia mutación—, así que
+   deshabilitarlo era mentir sobre un estado que no existe.
+4. **Lo nuevo del hueco se prueba en `VidaAgendaGap.test.tsx`, no en
+   `vida-agenda.utils.test.ts`.** El plan pedía sustituir ahí los `describe`
+   derogados, pero ya no queda aritmética que afirmar: lo que el hueco hace ahora
+   solo se ve al pintarlo. En el archivo de utilidades queda **la nota escrita**
+   de qué se fue, por qué y dónde vive su sustituto.
+
+**Verification** (`docs/features/ENVIRONMENT.md`; ningún servicio levantado ni
+parado por mí — el 5173 del usuario estaba arriba y se usó solo como pestaña):
+
+| Qué | Línea base | Ahora | Lectura |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** | = |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0** | = |
+| `pnpm test` | 2 fallos de 2304 | **2 fallos de 2294** (`SearchSelect` ×2, preexistentes) | −10 tests, **todos por irse con su módulo**. El flaky de `IconPicker` no salió |
+| `pnpm build` | chunk 1.160,84 kB · CSS 282,61 kB | **1.154,54 kB · CSS 280,11 kB** | −6,30 kB y **−2,50 kB a propósito** |
+
+**La bajada del CSS, demostrada como manda `ENVIRONMENT.md`** (no por el tamaño:
+por la lista de selectores). Compilado **todo** el SCSS de `HEAD` y del árbol con
+`sass --style=compressed` y comparados los selectores:
+
+```
+comm -23 head-sel.txt tree-sel.txt     # lo que desapareció
+button.chip:disabled      .chipName      .chipTime
+.noRoom                   .noRoomNote    .place
+.place:disabled           .place:focus-visible:not(:disabled)
+.place:hover:not(:disabled)
+.tomorrow                 .tomorrowHeading   .tomorrowNote
+
+comm -13 head-sel.txt tree-sel.txt     # lo que apareció
+(vacío)
+```
+
+**Doce selectores, y son exactamente los doce que borré**: tres de las fichas del
+hueco, seis del «Ponerla» del panel y tres del bloque «Mañana» que se renombraron
+a `.root` / `.heading` / `.note` (nombres que ya existían en otros módulos, por
+eso no salen como nuevos). **Ninguna regla ajena se perdió: no hay comentario sin
+cerrar.** El mismo diff por archivo lo confirma: `VidaAgendaGap.module.scss`
+pierde 3 selectores y ninguno más.
+
+*Salvedad honesta del método:* 16 `.module.scss` **no compilan sueltos** con
+`sass` (usan `@use` con alias que solo resuelve Vite) y quedan fuera de la
+comparación, **los mismos 16 en `HEAD` y en el árbol**. Comprobado con `cmp` que
+los 16 son **byte a byte idénticos** entre `HEAD` y el árbol: no pueden haber
+movido la cifra. Ninguno es de Vida.
+
+**En pantalla** (arnés temporal en la raíz + `src/`, con `MemoryRouter` y datos
+sintéticos; **borrado antes de reportar**, `git status` no lo lista):
+
+- **375 px** (en `iframe`, no en la pestaña, que emula 568): documento **375 px
+  exactos**, **0 nodos desbordados**. El hueco de 10:30–13:00 se lee
+  `10:30 | Libre 10:30 – 13:00 | 2h 30 | + otra cosa | Registrar` — franja,
+  tamaño, la salida de planear y la de contar de FEAT-011, y nada más.
+- **Plantilla vacía:** `… | Todavía no tienes nada en tu plantilla para los
+  viernes. | Ver tus actividades | + otra cosa` — la rama **no se perdió**.
+- **Hueco pasado:** `8:45 | Libre 8:45 – 9:24 | 39m | Registrar lo que hice` —
+  la rama de FEAT-011 intacta.
+- **760 px:** 0 desbordados (el ancho que `ENVIRONMENT.md` avisa que falla solo).
+- **Oscuro** (`[data-theme='dark']`): todos los textos del hueco medidos,
+  **mínimo 7,35:1** (hora, franja, tamaño, «+ otra cosa», «Registrar», «Ver tus
+  actividades»; «Registrar lo que hice» del pasado, 17,33:1).
+
+**Criteria it closes:**
+
+- **380 — las dos a la vez, y solo ahora.** Las dos retiradas van en este mismo
+  cambio, con las tajadas 1 y 2 ya en `main` (`384526a`): «Lo que viene» está en
+  pantalla antes de que se quite nada. ✔
+- **381 — las fichas desaparecen.** `VidaAgendaGap.test.tsx`: «ninguna ficha de
+  plantilla, ni “+N más”, ni “sueles tardar”» (un solo control en el hueco);
+  `VidaHoyPage.test.tsx`: «el hueco no ofrece fichas: ni la que cabe ni la que no
+  trae duración» y «el hueco ya no ofrece “sueles tardar” en un chip».
+  Derogaciones anotadas en **FEAT-003 sección 4** (18 parcial, 19, 23) y en
+  **FEAT-007 sección 4** (mitad del 91). ✔
+- **382 — «+ otra cosa» no desaparece.** `VidaAgendaGap.test.tsx`: abre la hoja
+  con el hueco, y el hueco sigue diciendo franja y tamaño.
+  `VidaHoyPage.test.tsx` criterio 24 (intacto): «Poner algo a las 10:30» con
+  «Hueco de 2h 30 · hasta las 13:00 “Cocinar y almorzar”». La rama de plantilla
+  vacía viaja por `templateCount`, con dos casos. ✔
+- **383 — el panel desaparece entero, y «Mañana» se queda.**
+  `VidaHoyPage.test.tsx`: no hay `complementary` «Tu plantilla de viernes», ni
+  «en el plan», ni «Ponerla», ni «en el primer hueco donde cabe»; sí hay
+  `complementary` «Mañana, sábado» con «Armar mañana desde la plantilla».
+  Derogación anotada en FEAT-003 sección 4 (mitad del 48). ✔
+- **384 — nada se queda sin camino, un test por camino.** `describe` nuevo «los
+  cuatro caminos siguen abiertos» en `VidaHoyPage.test.tsx`: **(a)** «+ otra
+  cosa» con el subtítulo del hueco · **(b)** «Armar desde la plantilla» + el
+  enlace a la semana · **(c)** «Armar mañana desde la plantilla» en el lateral ·
+  **(d)** `vidaPaths.plantilla === '/app/vida/plantilla'` y sigue listada en
+  `appModules` (la píldora del módulo). Ninguno de los cuatro se tocó. ✔
+- **385 — código muerto retirado entero, y no de más.** La tabla de consumidores
+  de arriba, hecha **sobre el árbol de hoy antes de borrar**; los siete símbolos
+  sin consumidor borrados; `usualDurationsByActivityId` y `fitsInGap`
+  comprobados uno a uno; la carpeta borrada **después** de mover
+  `VidaTomorrowBlock`; ningún test borrado a secas y cada sustituto nombra su
+  criterio. ✔
+
+**Queda para el usuario** (no se puede cerrar desde aquí: todo `/app/*` está
+detrás del login y los agentes no entran):
+
+1. Abrir `/app/vida/hoy` con sesión y un hueco por delante: comprobar que el
+   hueco **solo** ofrece «+ otra cosa» (y «Registrar»), que «+ otra cosa» abre la
+   hoja con la hora y el subtítulo correctos, y que **se puede poner algo hasta
+   el final** sin tropiezo.
+2. Mirar el lateral de escritorio: solo «Mañana, \<día\>», y que **«Armar mañana
+   desde la plantilla» arma mañana de verdad**.
+3. Un día **sin nada en la plantilla**: el primer hueco tiene que decir «Todavía
+   no tienes nada en tu plantilla para los \<días\>» con «Ver tus actividades».
+   *(Es el punto del riesgo 3 de arriba: la cuenta cambió de origen.)*
+4. Un día **pasado** y un día **futuro**: el pasado sigue ofreciendo «Registrar
+   lo que hice» y no trae lateral; el futuro no ofrece registrar.
+5. Y lo de fondo, que es la razón de la tajada: **que no se eche de menos nada**
+   de lo que se quitó.
+
+**Risks:**
+
+- El `templateCount` de la página es `buildableTemplate.length` y el de antes
+  salía de las sugerencias activas del día. Dos cuentas parecidas, no idénticas.
+- El lateral entero puede desaparecer donde antes quedaba media caja
+  (`VidaTomorrowAside` devuelve `null`).
+- `.chips` sobrevive con **un solo hijo**: si alguien asumía que era una lista de
+  varias píldoras, el `flex-wrap` ya no hace nada.
+- Cuatro archivos ajenos tocados **solo en comentarios** (`useVidaDayWindow.ts`,
+  `vida-execution.utils.ts`, `vida-start-suggestions.utils.ts` y
+  `query-cache-guards.hydration.test.tsx`): cero cambio de comportamiento, pero
+  ensucian el diff.
+
+**Lo que vi de paso y no toqué** (fuera de alcance):
+
+- `VidaTomorrowAside` no tiene **suite propia** —`VidaTemplateAside` tampoco la
+  tenía—: se prueba solo a través de `VidaHoyPage.test.tsx`. Es deuda heredada,
+  no estrenada aquí.
+- 16 `.module.scss` no compilan sueltos con `sass`, lo que **debilita la
+  comprobación que el propio `ENVIRONMENT.md` manda hacer**. Se puede arreglar
+  pasándole a `sass` el alias `@`; no es de esta tajada, pero merece una línea en
+  ese archivo o un script en `package.json`.
+- `useVidaDayHours` sigue documentado como «lo llaman siete sitios»: con el panel
+  fuera puede que ya no sean siete. No lo conté.
+
+**Tree state:** sin commitear. `git rm` dejó **en el índice** el borrado de
+`components/VidaTemplateAside/`; todo lo demás está en el árbol de trabajo.
+`components/VidaTomorrowAside/` aparece como no rastreada. Arnés borrado.
+`graphify update .` corrido al terminar.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — «Lo que viene», dentro de la línea, con la promesa y un clic
@@ -1904,3 +2148,241 @@ construible.
    en `/app/vida/hoy`).
 5. Y lo que de verdad cierra la feature (**218**): con la hora pasada delante,
    **¿pulsas sin miedo a que te registre horas que no vas a pasar?**
+
+### Tajada 3 — retirar las fichas del hueco y el panel «Tu plantilla de \<día\>»
+
+**Veredicto: aceptada.** Con ella la feature queda **`delivered`**.
+
+**Criteria, one by one** (contra la sección 1, no contra el resumen del
+constructor):
+
+- **380 — las dos a la vez, y en la última tajada.** ✔ Las dos retiradas viajan
+  en el mismo árbol; las tajadas 1 y 2 están aceptadas y en `main`, así que «Lo
+  que viene» ya estaba en pantalla antes de quitar nada.
+- **381 — las fichas desaparecen.** ✔ `VidaAgendaGap.tsx` no tiene rama de
+  fichas: el hueco futuro pinta cabecera + (nota de plantilla vacía) + una sola
+  píldora. Afirmado por tres casos nuevos en `VidaAgendaGap.test.tsx`
+  (`getAllByRole('button')).toHaveLength(1)`, sin `/más$/`, sin
+  `/sueles tardar/`, sin `/lo que cabe aquí/`) y por dos reescritos en
+  `VidaHoyPage.test.tsx`. Derogaciones anotadas donde tocaba (ver abajo).
+- **382 — «+ otra cosa» no desaparece.** ✔ Comprobado en el código
+  (`VidaAgendaGap.tsx`: `<ul class=chips><li><button class="chip chipMore">+ otra
+  cosa`), en test (`onOpenSheet` recibe el hueco; el hueco sigue diciendo franja
+  y tamaño) y **en pantalla medida por mí** (abajo). La rama «tu plantilla no
+  trae nada» + «Ver tus actividades» **sigue viva por `templateCount`**: la vi
+  renderizada con `templateCount={0}` y ausente con `templateCount={3}`.
+- **383 — el panel desaparece entero y «Mañana» se queda.** ✔ La carpeta
+  `VidaTemplateAside/` está borrada en el índice; `VidaTomorrowAside` es un
+  **movimiento fiel**: `diff` del cuerpo viejo (`6ff8b2e:VidaTemplateAside.tsx:243-326`)
+  contra el nuevo → **solo** cambian el nombre de la función, `section`→`aside`,
+  `h3`→`h2` y tres clases renombradas. La llamada a `build({ date: tomorrow,
+  templateItems: template, … })` es idéntica.
+- **384 — los cuatro caminos, cada uno con su test.** ✔ con matices, abiertos
+  uno a uno en `VidaHoyPage.test.tsx:2177-2218`:
+  **(a)** *afirma el camino*: pulsa «Poner otra cosa a las 10:30» y comprueba que
+  la hoja abre con «Poner algo a las 10:30» y el subtítulo del hueco.
+  **(b)** afirma la **presencia** del botón «Armar desde la plantilla» y el
+  `href` del puente a la semana; no pulsa.
+  **(c)** afirma la presencia de «Armar mañana desde la plantilla» (y en
+  `:1056-1064`, dentro del `complementary`); no pulsa.
+  **(d)** afirma `vidaPaths.plantilla === '/app/vida/plantilla'` y que sigue en
+  `appModules`; no renderiza la pantalla.
+  Los cuatro caminos **existen y ninguno se tocó** —que es lo que el criterio
+  pide—, pero (b), (c) y (d) son de presencia, no de comportamiento. Va como
+  hallazgo, no como devolución: (b) escribe por `useBuildDayFromTemplate`, que no
+  se modificó, y (c) es código movido sin cambios.
+- **385 — código muerto retirado, y no de más.** ✔ Censo repetido por mí sobre el
+  árbol: `git grep` de `suggestionsForGap|MAX_GAP_SUGGESTIONS|findFirstFittingGap|GapSuggestion|fitsInGap|usualDurationsByItemId|SuggestionsForGapInput|NO_SUGGESTIONS|placeSuggestion|onPlaceSuggestion|isPlacing|VidaTemplateAside`
+  excluyendo `docs/` y `graphify-out/` → **10 apariciones, las diez dentro de
+  comentarios** que explican la retirada. **Cero código vivo.**
+  `usualDurationsByActivityId` sigue viva y **sin tocar** (el `git diff` de
+  `vida-patterns.utils.ts` solo borra la hermana y reescribe el comentario de
+  cabecera; el cuerpo de la función no cambia) y conserva sus consumidores
+  (`VidaHoyPage:592`, `VidaLogSessionSheet`, cuatro casos de test).
+  Ningún test borrado a secas: **−15** en `vida-agenda.utils.test.ts` (los 2 de
+  `fitsInGap`, los 9 de `suggestionsForGap` y los 4 del `describe` de las fichas
+  del 91) **+5** en `VidaAgendaGap.test.tsx` = **−10**, exactamente los −10 de la
+  corrida; `VidaHoyPage.test.tsx` cambia 12 por 12. Cada sustituto nombra su
+  criterio y el archivo de utilidades queda con la nota de dónde vive lo nuevo.
+
+**Las tres desviaciones del plan, juzgadas con el código delante:**
+
+1. **Conservar `.chips`, `.chip`, `.chipMore` y `.note` es correcto.** Verificado
+   en `VidaAgendaGap.tsx`: «+ otra cosa» **es** `<ul class=chips><li><button
+   class="chip chipMore">`, y la rama de plantilla vacía **es** `<p class=note>`.
+   El plan los daba por muertos y el plan se equivocaba.
+2. **Sacar `addMutation` e `isPlacing` de la página es correcto.** `VidaHoyPage`
+   nunca le pasó una mutación a `VidaPlaceInGapSheet`: la hoja tiene la suya
+   (`VidaPlaceInGapSheet.tsx:96` y `:153`). El camino de punta a punta está
+   cubierto: la página abre la hoja desde «+ otra cosa» (`VidaHoyPage.test.tsx:778-787`)
+   y la hoja guarda con `addMutation.mutate` afirmado en su propia suite
+   (criterio 23/25, y el criterio 29 para el fallo). Nada quedó sin escribir.
+3. **El riesgo que él mismo señaló: `templateCount` cambió de cuenta. Medido, y
+   no puede hacer desaparecer la rama.**
+   - Antes: `suggestions.filter(s => s.item.isActive !== false).length`
+     (`6ff8b2e:vida-agenda.utils.ts`, dentro de `suggestionsForGap`).
+   - Ahora: `usableTemplateItems(...)`, que filtra `isActive !== false`
+     **y además** `activity?.status !== 'cancelled'` (`vida-build-day.utils.ts:63-67`).
+   - **Los dos ignoran el plan del día**: lo ya puesto hoy no entraba en la
+     cuenta vieja (era `suggestions`, no `candidates`), así que **ese caso no
+     difiere**. Tampoco «otro día»: las dos salen de las `suggestions` de la
+     fecha mirada.
+   - **La única divergencia real** son los ítems cuya actividad está
+     **archivada** (`status: 'cancelled'`), que el API sí devuelve dentro de las
+     sugerencias (`vida-items.graphql.ts:14-19`). La cuenta nueva es siempre
+     **subconjunto** de la vieja ⇒ si la vieja era 0, la nueva también: **la
+     rama no puede desaparecer cuando debía aparecer.** Solo puede aparecer de
+     más, en un día cuyos ítems de plantilla apunten **todos** a actividades
+     archivadas; y ahí la frase es imprecisa pero la salida que ofrece —«Ver tus
+     actividades»— es justo el sitio donde se arregla. Además ahora **cuadra con
+     la cabecera** de la misma pantalla (`VidaHoyPage.tsx:1496`), que ya usaba
+     esta cuenta y antes podía contradecir al hueco. **Hallazgo, no devolución.**
+
+**What broke nearby** (cómo busqué, no solo qué encontré):
+
+- **`graphify explain "VidaTemplateAside"` → «No node matching»**: el
+  constructor corrió `graphify update .` al terminar, así que el grafo ya
+  refleja el árbol **sin** el componente y no sirve para «¿quién dependía de
+  esto?». Lo dejo escrito porque es el caso que `PROTOCOL.md` avisa al revés.
+  La pregunta se contestó sobre `6ff8b2e`, que sí es el estado previo:
+  `git grep -n "VidaTemplateAside" 6ff8b2e -- src` → **un solo importador de
+  código** (`VidaHoyPage.tsx:19,1613`), su propio `index.ts`, y tres menciones
+  en comentarios. `VidaTomorrowBlock` en `6ff8b2e` → solo dentro de
+  `VidaTemplateAside.tsx`. Nadie más quedó colgando.
+- **Lo que vivía al lado en el hueco**: la rama `sliver`/`isPast` de FEAT-011
+  («Registrar lo que hice») y la segunda salida de FEAT-014 siguen en el
+  archivo y las vi renderizadas (`8:45 | Libre 8:45 – 9:24 | 39m | Registrar lo
+  que hice`). Sus suites pasan enteras.
+- **Los cuatro archivos ajenos tocados** (`useVidaDayWindow.ts`,
+  `vida-execution.utils.ts`, `vida-start-suggestions.utils.ts`,
+  `query-cache-guards.hydration.test.tsx`): revisados en el `git grep` de
+  arriba, **solo comentarios**; sus tests pasan.
+- **La bajada del CSS, rehecha por mí** como manda `ENVIRONMENT.md`. Compilé
+  **todo** el `.scss` de `6ff8b2e` (`git archive`) y del árbol con
+  `sass --style=compressed`, extraje los selectores y los comparé:
+  `comm -23` → **exactamente 12**: `button.chip:disabled`, `.chipName`,
+  `.chipTime`, `.noRoom`, `.noRoomNote`, `.place`, `.place:disabled`,
+  `.place:focus-visible:not(:disabled)`, `.place:hover:not(:disabled)`,
+  `.tomorrow`, `.tomorrowHeading`, `.tomorrowNote`. `comm -13` → **vacío**.
+  **Coincide con lo que el constructor declaró, símbolo a símbolo.** Los **16**
+  `.module.scss` que no compilan sueltos son **la misma lista** en los dos lados
+  y `cmp` los da **byte a byte idénticos**: no movieron la cifra. Ninguna regla
+  ajena se perdió, no hay comentario sin cerrar.
+
+**Línea base, corrida entera por mí:**
+
+| Qué | Línea base | Medido ahora | Lectura |
+|---|---|---|---|
+| `pnpm typecheck` | limpio | **limpio** | = |
+| `pnpm lint` | 14 / 0 | **14 errores / 0 warnings** | = |
+| `pnpm test` | 2 fallos de 2304 | **2 fallos de 2294** (`SearchSelect` ×2, preexistentes) | −10, y los −10 están contados uno a uno arriba |
+| `pnpm build` | 1.160,84 kB · CSS 282,61 kB | **1.154,54 kB · CSS 280,11 kB** | −6,30 kB y −2,50 kB, la bajada del CSS demostrada por selectores |
+
+**States left unbuilt** (medidos por mí, con un arnés temporal en la raíz + `src/`
+servido por el 5173 del usuario, en `iframe` del ancho exacto porque la pestaña
+emula 568; **arnés borrado**, `git status` no lo lista):
+
+- **Mobile 375 px:** `documentElement.scrollWidth` = **375**, **0 nodos
+  desbordados**. **760 px:** 760 y 0 desbordados (el ancho que
+  `ENVIRONMENT.md` avisa que falla solo). ✔ criterio 212.
+- **Sin datos / plantilla vacía:** `templateCount={0}` → `10:30 | Libre 10:30 –
+  13:00 | 2h 30 | Todavía no tienes nada en tu plantilla para los viernes. |
+  Ver tus actividades | + otra cosa`. Con `templateCount={3}` la nota no está y
+  queda `… | 2h 30 | + otra cosa`. ✔
+- **Pasado:** `8:45 | Libre 8:45 – 9:24 | 39m | Registrar lo que hice`. ✔
+- **Oscuro:** sin desbordes y con los textos legibles, pero **no doy por
+  verificada la cifra de contraste**: mi arnés no pinta la superficie real de la
+  app, así que el fondo efectivo no es el de `/app/vida/hoy` y los números que
+  saqué (9,9–13,7:1 en oscuro; y un 2,76:1 en «Ver tus actividades» que el
+  desglose por capas demuestra que es artefacto del arnés) no son concluyentes
+  en ninguno de los dos temas. Lo que **sí** es firme: el `.module.scss` cambia
+  **solo restando** (`.chipName`, `.chipTime`, `button.chip:disabled`); las
+  reglas `.note`, `.chips`, `.chip` y `.chipMore` no se tocan, así que el tema
+  oscuro de lo que sobrevive es **el mismo que ya estaba aceptado**. Criterio
+  214 sigue siendo del usuario.
+- **Cargando / error / sin permisos:** no aplican a esta tajada —es una
+  retirada; el hueco no pide nada al servidor—. En `VidaTomorrowAside` el estado
+  «cargando» sí existe y se conservó tal cual («Mirando cómo viene mañana…»).
+- **Texto largo:** no medido aquí. Los dos textos del hueco (franja y tamaño) son
+  generados, no de usuario; el único texto de usuario que llegaba al hueco venía
+  **en las fichas que se han retirado**. Riesgo menor que antes, no mayor.
+
+**Does it duplicate something that existed?** No. Contra la sección 2: no se creó
+ninguna utilidad —solo se borraron siete símbolos y se **movió** un bloque—;
+`VidaTomorrowAside` es `VidaTomorrowBlock` con otro nombre, comprobado con
+`diff`; `templateCount` reutiliza el `buildableTemplate` que la página ya
+calculaba (`VidaHoyPage.tsx:1028-1029`), sin una segunda cuenta; y
+`usualDurationsByActivityId` absorbe a su hermana en vez de duplicarla.
+
+**Derogaciones, revisadas una a una:** en `FEAT-003` y `FEAT-007` el `git diff`
+es **solo adiciones al final del archivo**. Ningún criterio de arriba se
+reescribió: los dos bloques son un apéndice fechado que dice qué criterio queda
+derogado, en qué mitad, y apunta a FEAT-010. Correcto.
+
+**Hallazgos** (no devuelven la tajada; quedan escritos):
+
+1. `templateCount` puede encender la rama «tu plantilla no trae nada» en un día
+   cuyos ítems apunten **todos** a actividades archivadas. Nunca al revés.
+2. Los caminos (b), (c) y (d) del 384 se prueban por **presencia**, no pulsando.
+   Nadie pulsa «Armar mañana desde la plantilla» en ninguna suite —tampoco antes
+   de esta tajada—: `VidaTomorrowAside` sigue sin suite propia, deuda heredada.
+3. La comprobación de CSS que `ENVIRONMENT.md` manda hacer está **coja en 16
+   archivos** por el alias `@`. Se arregla pasándole el `--load-path` a `sass` o
+   con un script en `package.json`. No es de esta tajada, pero el mapa debería
+   decirlo (no toco `ENVIRONMENT.md`).
+4. El lateral **entero** puede quedar en nada cuando `VidaTomorrowAside`
+   devuelve `null` (último domingo de la ventana, o mirando mañana). Es
+   consecuencia buscada del 383, pero es un cambio de hueco en el escritorio que
+   conviene que el usuario mire.
+
+**Verdict: accepted** — los seis criterios (380–385) se cumplen con evidencia,
+la línea base no empeora en ninguna de las cuatro puertas, la bajada del CSS es
+legítima y verificada por mi propia lista de selectores, el censo de símbolos
+da **cero** código vivo fuera de comentarios, y no encontré ninguna regresión
+en lo que vivía alrededor. Las tres desviaciones del plan están bien razonadas
+y las comprobé con el código delante. Lo que no pude cerrar —375 px sobre la
+pantalla real, oscuro con la superficie real, y el recorrido con sesión— es el
+límite estructural del repositorio (`/app/*` está tras login y los agentes no
+entran), y va abajo como pasos del usuario.
+
+**For the user** — con esta tajada la feature queda **entregada**:
+
+Hoy, cuando abres el día, la pantalla ya no te empuja desde dos sitios a la vez.
+Antes, cada rato libre te llenaba la línea con fichas de tu plantilla que al
+tocarlas **escribían el plan al primer toque y sin preguntar**, y el lateral te
+repetía la lista entera del día con un botón «Ponerla» que colocaba con otra
+regla distinta que nadie te contaba. Eso es lo que nos dijiste que no entendías
+y que te invadía, y es lo que se ha ido. Lo que queda en cada hueco es lo que de
+verdad necesitas saber: **a qué hora empieza, hasta cuándo va y cuánto te cabe**,
+con una sola salida clara, «+ otra cosa», que abre la hoja de siempre donde tú
+eliges qué, cuánto y cuándo, y confirmas. Y si ese día tu plantilla no trae nada,
+el hueco te lo dice y te lleva a tus actividades.
+
+No has perdido ningún camino. Armar el día entero desde la plantilla sigue donde
+estaba, la vista de semana también, y el lateral del escritorio se queda **solo
+con «Mañana»**, que es el gesto de la noche: dejar mañana montado en dos toques
+sin cambiar de pantalla. Lo que las fichas intentaban hacer —decirte qué toca
+ahora— lo hace desde hace dos tajadas la tarjeta de **«Lo que viene»**, dentro de
+la línea y justo debajo de lo que estás haciendo, con «suele durarte N» y un
+botón de empezar. Una sola voz en vez de tres.
+
+**Cinco pasos para recorrerlo a mano** (todo esto vive tras tu sesión, así que
+solo lo puedes cerrar tú):
+
+1. Abre **Hoy** con un rato libre por delante: el hueco tiene que enseñar su
+   franja y su tamaño, y ofrecer **«+ otra cosa»** (más «Registrar» si el rato ya
+   pasó) y **nada más**. Ninguna ficha de tu plantilla.
+2. Pulsa **«+ otra cosa»**: tiene que abrir «Poner algo a las HH:MM» con el
+   subtítulo del hueco. Elige qué, cuánto y cuándo, y **guarda**: el bloque tiene
+   que aparecer en la línea.
+3. Mira el **lateral del escritorio**: solo «Mañana, \<día\>». Pulsa **«Armar
+   mañana desde la plantilla»** y comprueba que mañana queda armado de verdad.
+   *(Ojo: el lateral no se pinta si ya estás mirando mañana ni el último día de
+   la ventana.)*
+4. Entra en un día **cuya plantilla esté vacía**: el primer hueco tiene que
+   decir «Todavía no tienes nada en tu plantilla para los \<días\>» con «Ver tus
+   actividades». Y si tienes ítems de plantilla apuntando a actividades
+   **archivadas**, mira qué dice ahí: es el único punto donde la cuenta cambió.
+5. Y lo de fondo, que es la razón de la tajada: **usa el día un rato y fíjate en
+   si echas de menos algo** de lo que se ha quitado. Si algo te falta, dilo: se
+   puede devolver por otro camino.

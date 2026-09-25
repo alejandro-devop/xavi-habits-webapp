@@ -2,8 +2,8 @@
  * Lo real encima de lo planeado: el cruce sesión ↔ bloque y el presupuesto.
  *
  * Archivo **hermano** de `vida-agenda.utils.ts`, no una ampliación suya. Aquel
- * describe **el plan** —lo importan `vida-gap-form.utils.ts`, `VidaAgendaGap` y
- * `VidaTemplateAside`, a los que lo ejecutado no les incumbe— y esto es **un
+ * describe **el plan** —lo importan `vida-gap-form.utils.ts` y `VidaAgendaGap`,
+ * a los que lo ejecutado no les incumbe— y esto es **un
  * segundo pase** sobre su resultado (decisión 3 del plan). `buildDayAgenda` no
  * gana una cuarta variante ni `AgendaBlock` un campo nuevo.
  *

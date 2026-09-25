@@ -2,16 +2,21 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { VidaAgendaGap } from '@/features/vida/components/VidaAgendaGap'
-import type { AgendaGap, GapSuggestions } from '@/features/vida/utils/vida-agenda.utils'
+import type { AgendaGap } from '@/features/vida/utils/vida-agenda.utils'
 import { renderWithProviders } from '@/test/render'
 
 /**
  * **La tolerancia del hueco** (FEAT-014, tajada 1).
  *
  * Lo que se comprueba aquí es la puerta: quién trae «Registrar lo que hice» y
- * quién se queda en la línea fina. La tarjeta grande y sus fichas son de
- * FEAT-003 y FEAT-011 y no se tocan; lo que estrena esta feature es el tramo de
- * **5 a 14 minutos ya pasado**, que antes no tenía nada que pulsar.
+ * quién se queda en la línea fina. La tarjeta grande es de FEAT-003 y FEAT-011;
+ * lo que estrena esta feature es el tramo de **5 a 14 minutos ya pasado**, que
+ * antes no tenía nada que pulsar.
+ *
+ * **Y desde FEAT-010 tajada 3, lo que el hueco futuro ofrece** (segundo
+ * `describe`): las fichas de sugerencia se retiraron —criterio 381, que deroga
+ * el 18 en su parte de fichas y el 19 y el 23 enteros de FEAT-003— y lo que
+ * queda es la franja, el tamaño y **«+ otra cosa»** (criterio 382).
  */
 
 function makeGap(partial: Partial<AgendaGap> & { startMinutes: number; endMinutes: number }): AgendaGap {
@@ -30,12 +35,10 @@ function makeGap(partial: Partial<AgendaGap> & { startMinutes: number; endMinute
   }
 }
 
-const noSuggestions: GapSuggestions = { visible: [], hiddenCount: 0, templateCount: 0 }
-
 function renderGap(gap: AgendaGap, props: Partial<Parameters<typeof VidaAgendaGap>[0]> = {}) {
   return renderWithProviders(
     <ul>
-      <VidaAgendaGap gap={gap} suggestions={noSuggestions} dayLabel="viernes" {...props} />
+      <VidaAgendaGap gap={gap} dayLabel="viernes" {...props} />
     </ul>,
   )
 }
@@ -86,7 +89,6 @@ describe('VidaAgendaGap — la tolerancia del hueco (FEAT-014)', () => {
 
   it('la salida de planear no se mueve: un hueco corto que aún no ha llegado se ve igual que antes (criterio 404)', () => {
     renderGap(makeGap({ startMinutes: 587, endMinutes: 600 }), {
-      onPlaceSuggestion: vi.fn(),
       onOpenSheet: vi.fn(),
       onLogPast: vi.fn(),
     })
@@ -99,7 +101,6 @@ describe('VidaAgendaGap — la tolerancia del hueco (FEAT-014)', () => {
 
   it('el hueco corto pasado no ofrece planear: ni fichas ni «+ otra cosa» (criterio 404)', () => {
     renderGap(makeGap({ startMinutes: 587, endMinutes: 600, isPast: true }), {
-      onPlaceSuggestion: vi.fn(),
       onOpenSheet: vi.fn(),
       onLogPast: vi.fn(),
     })
@@ -135,5 +136,66 @@ describe('VidaAgendaGap — la tolerancia del hueco (FEAT-014)', () => {
     })
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
     expect(screen.getByText('Libre 9:57 – 10:00 · 3m')).toBeInTheDocument()
+  })
+})
+
+/**
+ * **Lo que queda del hueco futuro tras retirar las fichas** (FEAT-010, tajada
+ * 3). Estos casos sustituyen a los que afirmaban el comportamiento derogado —el
+ * `describe` de `suggestionsForGap` en `vida-agenda.utils.test.ts` y los chips
+ * de «sueles tardar»—: no se borraron a secas, se cambiaron por los que
+ * afirman lo nuevo.
+ */
+describe('VidaAgendaGap — el hueco sin fichas (FEAT-010, criterios 381 y 382)', () => {
+  // 10:30 – 13:00: un hueco grande y por delante, el caso donde antes se
+  // pintaban hasta tres fichas y el «+N más».
+  const futuro = makeGap({ startMinutes: 630, endMinutes: 780 })
+
+  it('criterio 382 — «+ otra cosa» sigue ahí y abre la hoja con el hueco', async () => {
+    const onOpenSheet = vi.fn()
+    renderGap(futuro, { onOpenSheet })
+
+    const boton = screen.getByRole('button', { name: 'Poner otra cosa a las 10:30' })
+    expect(boton).toHaveTextContent('+ otra cosa')
+
+    await userEvent.click(boton)
+    expect(onOpenSheet).toHaveBeenCalledWith(futuro)
+  })
+
+  it('criterio 382 — el hueco sigue diciendo su franja y su tamaño', () => {
+    renderGap(futuro, { onOpenSheet: vi.fn() })
+
+    expect(screen.getByRole('region', { name: 'Libre de 10:30 – 13:00' })).toBeInTheDocument()
+    expect(screen.getByText('Libre 10:30 – 13:00')).toBeInTheDocument()
+    expect(screen.getByText('2h 30')).toBeInTheDocument()
+  })
+
+  it('criterio 381 — ninguna ficha de plantilla, ni «+N más», ni «sueles tardar»', () => {
+    renderGap(futuro, { onOpenSheet: vi.fn(), templateCount: 4 })
+
+    // Un solo control en el hueco: la vía explícita. Ni tres fichas ni un
+    // resumen de las que no caben.
+    expect(screen.getAllByRole('button')).toHaveLength(1)
+    expect(screen.queryByText(/más$/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/sueles tardar/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/lo que cabe aquí/)).not.toBeInTheDocument()
+  })
+
+  it('criterio 381 — la rama de plantilla vacía no se pierde: llega por `templateCount`', () => {
+    renderGap(futuro, { onOpenSheet: vi.fn(), showTemplateHint: true, templateCount: 0 })
+
+    expect(
+      screen.getByText('Todavía no tienes nada en tu plantilla para los viernes.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ver tus actividades' })).toBeInTheDocument()
+    // Y con plantilla, ni rastro del aviso.
+    expect(screen.getByRole('button', { name: 'Poner otra cosa a las 10:30' })).toBeInTheDocument()
+  })
+
+  it('criterio 381 — con plantilla, el hueco no explica nada: solo la salida', () => {
+    renderGap(futuro, { onOpenSheet: vi.fn(), showTemplateHint: true, templateCount: 3 })
+
+    expect(screen.queryByText(/Todavía no tienes nada en tu plantilla/)).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button')).toHaveLength(1)
   })
 })

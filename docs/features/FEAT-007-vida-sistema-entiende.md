@@ -3059,3 +3059,24 @@ aplicación de verdad:
    cuándo se considera que un día «se sale de la cuenta» (30 minutos y dos
    muestras). Con tus datos verás si señala días que no debía o si calla
    alguno.
+
+---
+
+### Derogaciones posteriores — FEAT-010, tajada 3 (2026-09-25)
+
+**El criterio 91 no se reescribe: queda derogado por la mitad.** Decía que el
+hueco ofreciera «la duración que sueles tardar» en su ficha —«sueles tardar
+55m»— y que lo dijera. Las fichas del hueco se retiraron enteras (FEAT-010,
+criterio 381), así que **esa mitad muere con ellas**.
+
+**La otra mitad está viva y tiene dueño nuevo:** lo que la costumbre mide se
+dice ahora en la tarjeta de «Lo que viene», con las palabras del **criterio 372
+de FEAT-010** («suele durarte N», y manda la costumbre sobre la plantilla
+cuando difieren). La aritmética es la misma y no se duplicó: se pasó de
+`usualDurationsByItemId` —retirada, sin consumidores— a
+`usualDurationsByActivityId`, que ya existía desde FEAT-011.
+
+Los dos casos que probaban el criterio 91 **no se borraron**: siguen en
+`src/features/vida/utils/vida-patterns.utils.test.ts`, midiendo lo mismo por la
+puerta que queda. El criterio **92** («sin cuatro datos, ni etiqueta ni hueco
+reservado») sigue vigente tal cual.

@@ -95,10 +95,11 @@
   min-width: 0;
 }
 
-/* Desde la tajada 3 una ficha es un botón: tocarla coloca (criterio 23). El
-   `font: inherit` y el fondo son el reseteo del botón; la forma es la misma que
-   tenía como texto, para que la pantalla no cambie de aspecto al ganar acción.
-   44 px de alto mínimo: es un objetivo táctil de dedo, no de ratón. */
+/* La píldora del hueco. Desde FEAT-010 tajada 3 la única que queda es
+   «+ otra cosa» (`.chipMore`): las fichas de sugerencia se retiraron con el
+   criterio 381 y con ellas `.chipName`, `.chipTime` y el `:disabled` de la
+   colocación en vuelo. La forma se conserva tal cual —lista, píldora y trazo
+   discontinuo— para que el hueco no cambie de aspecto al perderlas. */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -128,11 +129,6 @@ button.chip {
     outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
   }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: progress;
-  }
 }
 
 /* «+ otra cosa»: la misma píldora en trazo discontinuo, como «+ nueva» en la
@@ -142,20 +138,6 @@ button.chip {
   background: none;
   color: var(--color-text-secondary);
   font-weight: 600;
-}
-
-.chipName {
-  overflow: hidden;
-  color: var(--color-text);
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.chipTime {
-  flex: 0 0 auto;
-  color: var(--color-text-secondary);
-  font-variant-numeric: tabular-nums;
 }
 
 .note {

@@ -18,7 +18,11 @@ La API vive en otro repositorio (`~/Developer/xavi-platform-node`, el esquema
 en `src/graphql/modules/`). **Casi no se toca** desde aquí: la única excepción hasta hoy es FEAT-003 (hora y duración en la plantilla). Un push a `main` de ese repo despliega a la vez a Cloud Run (con job de migraciones contra Neon) y a Render (auto-deploy, sin migraciones al arrancar): como comparten base, el job de Cloud Run migra para los dos.
 
 **Los agentes no levantan ni paran nada.** Si el 5173 no responde, va en el
-reporte y se sigue con lo que no dependa de él. Para mirar una pantalla se
+reporte y se sigue con lo que no dependa de él. Si aun así arrancas uno con
+`preview_start {name}` porque lo necesitas para un arnés, **di en el reporte
+que queda arriba y en qué puerto**: `preview_stop` no existe en todas las
+sesiones de agente, y la sesión principal lo para o lo deja según convenga.
+Nunca lo mates con `pkill`. Para mirar una pantalla se
 abre una pestaña con `preview_start {url: "http://localhost:5173"}` — es una
 pestaña, no arranca ningún servidor. Si de verdad no hay nada arriba,
 `preview_start {name: "xavi-habits-web"}` arranca uno desde

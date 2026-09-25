@@ -389,6 +389,9 @@ beforeEach(() => {
     // FEAT-007: sin esto, un «Dejarlo» de un test calla la pregunta del
     // siguiente y el fallo parece de otra cosa.
     patternAnswers: {},
+    // FEAT-012 tajada 4: lo mismo con la noche. Una noche confirmada en una
+    // prueba le movería la ventana del día a la siguiente.
+    nightLogs: {},
   })
   templateItems = []
   bridgeSessions = []
@@ -749,6 +752,42 @@ describe('en qué se repartió el día (criterios 26, 27, 28, 29, 32 y 33)', () 
       ),
     ).toBeInTheDocument()
   })
+
+  /**
+   * **Criterio 308** (tajada 4): confirmar un día pasado recalcula **su**
+   * revisión, igual que si se hubiera confirmado ese día. La ventana de la
+   * revisión sale del mismo sitio que la de Hoy, así que basta con que lo real
+   * esté guardado: no hay ninguna segunda cuenta que actualizar.
+   */
+  it('con la noche confirmada, «de tu día» sale de la hora real de levantarse (308)', () => {
+    withCategories()
+    settingsQuery = ready({
+      ...SETTINGS,
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday',
+      ],
+    } as unknown as UserSettings)
+    // El viernes 18 te levantaste a las 7:00, no a las 5:00 que dice tu noche.
+    useVidaDeviceNotesStore.getState().setNightLog('2026-09-18', {
+      bedTime: '23:00',
+      wakeTime: '07:00',
+      confirmedAt: '2026-09-19T08:00:00.000Z',
+    })
+    renderPage()
+
+    // 7:00 → 23:00 son 16 h: dos menos que con la noche planeada (18 h).
+    expect(screen.getByText(/de las 16h de tu día\./)).toBeInTheDocument()
+    expect(screen.queryByText(/de las 18h de tu día\./)).not.toBeInTheDocument()
+  })
+
 
   it('ni un porcentaje, ni la palabra «cumplimiento» en toda la pantalla (criterio 29)', () => {
     withCategories()

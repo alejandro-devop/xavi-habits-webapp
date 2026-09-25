@@ -434,9 +434,18 @@ export function describeNightBandLog(
     if (options.stillRunning) {
       return { state, label: null, detail: 'aún no ha terminado' }
     }
-    // Sin respuesta no se afirma nada nuevo: la franja sigue diciendo lo
-    // planeado y **añade la palabra** (criterio 295).
-    return { state, label: null, detail: VIDA_NIGHT_STATE_WORD.unconfirmed }
+    // **Sin respuesta, la franja no habla en pasado** (criterio 302): no dice
+    // «dormiste» ni «vienes de anoche», dice **lo que tu noche dice** y que
+    // nadie lo ha confirmado. Hasta la tajada 3 aquí se leía lo planeado en
+    // presente («Duermes hasta las 5:00 · Vienes de anoche · 6 h · sin
+    // confirmar»); el cambio de etiqueta lo dejó dicho aquella tajada para
+    // ésta, porque el 302 pide estas palabras y no aquéllas. La cifra que
+    // acompaña es la de **tu noche**, no una medida de lo que pasó.
+    return {
+      state,
+      label: `Tu noche dice ${formatNightTime(night.bedTime)} → ${formatNightTime(night.wakeTime)}`,
+      detail: `${formatNightDuration(nightDurationMinutes(night.bedTime, night.wakeTime))} · ${VIDA_NIGHT_STATE_WORD.unconfirmed}`,
+    }
   }
   const bed = log!.bedTime
   const wake = log!.wakeTime
@@ -479,4 +488,86 @@ export function describeNightBandLog(
 /** «20 min menos que tu noche» en medio de una frase, no al principio. */
 function lowerFirst(text: string): string {
   return text.charAt(0).toLowerCase() + text.slice(1)
+}
+
+/* ------------------------------------------------------------------------- *
+ * Lo real manda, y lo que no se sabe se dice (tajada 4)
+ * ------------------------------------------------------------------------- */
+
+/**
+ * **El mínimo de día despierto que hace falta para que un día siga siendo un
+ * día**, en minutos.
+ *
+ * No es una preferencia: es el suelo que impide que un dato raro deje la agenda
+ * sin geometría. Media hora es poco para cualquier día real y bastante para que
+ * ninguna de las noches del expediente —de 3 h a 12 h— se acerque siquiera.
+ */
+export const VIDA_MIN_AWAKE_MINUTES = 30
+
+/**
+ * De dónde sale el comienzo del día cuando hay noche:
+ *
+ * - `unconfirmed`: nadie contestó. Manda **lo planeado** (D4: lo no confirmado
+ *   no se usa para nada más que para preguntar).
+ * - `real`: hay hora real de levantarse y **es la que manda** (criterio 300).
+ * - `no-data`: hay respuesta y esa hora quedó sin saber (criterio 303). Se cae
+ *   a lo planeado **y se dice** (criterio 304).
+ * - `out-of-window`: hay hora real, pero cae tan tarde que no dejaría día. Se
+ *   trata como **sin dato**, por lo mismo: más vale decir que no se sabe que
+ *   enseñar una ventana imposible.
+ */
+export type VidaRealDayStartReason = 'unconfirmed' | 'real' | 'no-data' | 'out-of-window'
+
+export type VidaRealDayStart = {
+  /** La hora real utilizable, o `null` si manda lo planeado. */
+  startTime: string | null
+  reason: VidaRealDayStartReason
+}
+
+/**
+ * **Cuándo la hora real de levantarse manda sobre la planeada** (criterios 300
+ * a 304).
+ *
+ * La regla, entera, y es la que cierra el hueco que dejó avisado el revisor de
+ * la tajada 3:
+ *
+ * > La ventana real **nunca empieza después del final del día menos
+ * > `VIDA_MIN_AWAKE_MINUTES`**. Si el dato guardado lo viola —una noche
+ * > degenerada del tipo `23:00 → 23:30`, o una corrección absurda— **se trata
+ * > como sin dato y se dice**, no se recorta ni se da por bueno.
+ *
+ * Por qué así y no de otra forma: recortarla («pues que empiece a las 22:30»)
+ * enseñaría una hora que nadie ha dicho, y dejarla pasar daría una ventana
+ * negativa o de cero minutos, que no tiene ni huecos ni presupuesto. La tercera
+ * salida —quedarse callado y usar lo planeado sin avisar— es la peor de las
+ * tres: sería la pantalla afirmando lo planeado como si fuera real, que es
+ * justo lo que esta feature viene a no hacer (criterio 317).
+ *
+ * **Sin entrada no se decide nada**: `unconfirmed` y lo planeado (D4).
+ */
+export function resolveRealDayStart(
+  log: VidaNightLog | null | undefined,
+  plannedEndTime: string,
+): VidaRealDayStart {
+  if (!log) return { startTime: null, reason: 'unconfirmed' }
+  if (!isValidHhMm(log.wakeTime)) return { startTime: null, reason: 'no-data' }
+  const wake = toMinutes(log.wakeTime!)
+  const latestUsable = isValidHhMm(plannedEndTime)
+    ? toMinutes(plannedEndTime) - VIDA_MIN_AWAKE_MINUTES
+    : MINUTES_PER_DAY
+  if (wake > latestUsable) return { startTime: null, reason: 'out-of-window' }
+  return { startTime: log.wakeTime, reason: 'real' }
+}
+
+/**
+ * **Cómo se dice en pantalla que la ventana es la planeada y no un dato real**
+ * (criterio 304). `null` cuando no hay nada que aclarar: sin respuesta lo dice
+ * la franja con su «sin confirmar», y con hora real las horas ya son las de
+ * verdad.
+ */
+export const VIDA_REAL_START_NOTE: Record<VidaRealDayStartReason, string | null> = {
+  unconfirmed: null,
+  real: null,
+  'no-data': 'lo planeado: de tu hora de levantarte no quedó dato',
+  'out-of-window': 'lo planeado: la hora que guardaste no deja día',
 }

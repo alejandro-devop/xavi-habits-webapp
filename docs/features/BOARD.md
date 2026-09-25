@@ -20,7 +20,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-009 | delivered | 3/3 | features/vida | Los huecos llegan a la plantilla — el tiempo libre entre ítems, y un toque lo llena | 2026-09-22 |
 | FEAT-010 | building | 2/3 | features/vida | Lo que viene — dentro de la línea, debajo de lo que estás haciendo, y arranca de un clic | 2026-09-23 |
 | FEAT-011 | delivered | 3/3 | features/vida | Registrar en el hueco — el rato libre que ya pasó se pulsa y cuentas qué hiciste | 2026-09-22 |
-| FEAT-012 | building | 3/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-25 |
+| FEAT-012 | delivered | 4/4 | features/vida, features/settings | La noche — dormir deja de ser un agujero y pasa a ser el borde del día | 2026-09-25 |
 | FEAT-013 | delivered | 3/3 | features/vida | Empezar algo que ya empezó — decir a qué hora arrancó lo que sigue en marcha | 2026-09-23 |
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | building | 3a, **1 y 2 aceptadas**, de 5 (3b bloqueada por el API; 4 detrás) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-24 |
@@ -33,6 +33,56 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
+
+**FEAT-012 `delivered` 4/4** (2026-09-25, revisor). **Tajada 4 aceptada — y con
+ella la feature entera.** La hora real de levantarse manda: comprobado con casos
+propios (22 pruebas escritas y borradas), corrección `02:15 / 07:50` → «Tu día ·
+7:50 → 23:00 · dormiste 5 h 35» **en el mismo montaje**, sin una sola fila de
+agenda anterior a esa hora. Los bordes de `VIDA_MIN_AWAKE_MINUTES = 30`
+comprobados uno a uno (22:30 se usa, 22:31 no, noche degenerada `23:00 → 23:30`
+no rompe la geometría) y **la pantalla lo nombra**: «(lo planeado: la hora que
+guardaste no deja día)». El futuro no se lee **ni se escribe**: pulsar su franja
+no abre la hoja. Vecinos revisados abriendo cada llamante —`VidaModuleLayout` y
+el `todayWindow` de la revisión consumen **sólo `endTime`**, que esta tajada no
+toca; la plantilla pasa `log = null` y sale idéntica a la tajada 2—; 9 suites,
+528 pruebas verdes. Línea base mía: typecheck limpio, lint **14/0**, tests **2
+de 2304** (`SearchSelect`, sin el flaky de `IconPicker`), chunk 1.160,84 kB y
+CSS **282,61 kB con el mismo hash `index-DBh9uCr-.css`** — mismo CSS byte a
+byte, por eso acepto las medidas de 375/768 y oscuro sin repetirlas. Dos desvíos
+aceptados y escritos: **«sin dato» en vez del «—» literal del 305** (es lo que
+manda el 296 y lo que el criterio protege se cumple: nunca «0 h» ni cifra
+estimada) y el `beforeEach` que limpia `nightLogs`, que **arregla una fuga real**
+entre pruebas y no tapa ninguna. Hallazgo abierto: con media noche
+(`wakeTime` sí, `bedTime` no) la línea enseña la ventana **real** junto a la
+duración **planeada** sin decir que lo es. **Lo único que queda es del usuario:
+el criterio 319**, con sus seis pasos en el expediente.
+
+**FEAT-012 `in-review` 4/4** (2026-09-25, constructor). **Tajada 4 construida —
+la última.** La hora real de levantarse **manda** sobre la planeada: confirmada
+la noche, el día empieza ahí y los huecos y el presupuesto se recalculan **sin
+recargar** (300, 301). Lo que no se sabe no se rellena: sin hora real la ventana
+vuelve a lo planeado **y la línea «Tu día ·» lo dice entre paréntesis** (303,
+304), y nunca aparece «0 h» (305). Los días pasados se confirman a posteriori
+sin que nadie pregunte por su cuenta (306, 307), confirmar uno recalcula **su**
+ventana y **su** revisión —«de las 18h» pasa a «de las 16h»— y no toca la de hoy
+(308), y del futuro no se lee ni se guarda nada (309). **Cerrado el hueco que
+avisó el revisor de la tajada 3**: una hora real que caiga después del final del
+día menos 30 min (`VIDA_MIN_AWAKE_MINUTES`) **se trata como sin dato y se dice**
+—no se recorta, que enseñaría una hora que nadie dijo, ni se acepta, que daría
+una ventana sin huecos ni presupuesto—. Techo y suelo de la pregunta de la
+mañana **sin tocar**. Línea base: typecheck limpio, lint **14/0**, **2 fallos de
+2304** (los `SearchSelect` de siempre, +21 pruebas), chunk **1.160,84 kB** y CSS
+**282,61 kB** en `index-DBh9uCr-.css`, **el mismo fichero con hash de contenido**
+que la línea base: no se tocó una regla de SCSS. Medido en arnés (borrado):
+375/375 y 768/768 sin desbordes con el caso largo, y el rótulo cambia de
+`rgb(55,48,163)` a `rgb(199,210,254)` en oscuro. **Lo que más probablemente he
+roto:** la franja sin confirmar cambia de texto a «Tu noche dice 23:00 → 5:00 ·
+6 h · sin confirmar» —es el criterio 302 literal y la tajada 3 lo dejó escrito
+para ésta—, con tres aserciones adaptadas y ninguna borrada; y `useVidaDayWindow`
+**se suscribe ahora al store del aparato**, así que Hoy, la revisión y el layout
+se repintan al confirmar una noche. **Sin commitear.** Aviso: el 5173 estaba
+apagado, lo arranqué para medir y **no he podido pararlo** (no hay
+`preview_stop` en esta sesión).
 
 **FEAT-024 `delivered` 1/1** (2026-09-24, revisor). **Tajada única aceptada y
 con ella la feature.** Verificado por mí, no leído del reporte: corrí `npm test`

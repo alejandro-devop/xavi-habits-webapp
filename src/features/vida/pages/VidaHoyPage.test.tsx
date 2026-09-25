@@ -4570,8 +4570,13 @@ describe('VidaHoyPage — la noche que ya pasó (FEAT-012, tajada 3)', () => {
     renderWithProviders(<VidaHoyPage />)
 
     expect(pregunta()).toBeNull()
-    expect(franjaDeArriba()!.textContent).toContain('Duermes hasta las 5:00')
+    // **Adaptada en la tajada 4** (criterio 302): lo que sostiene el criterio
+    // 295 —que ignorar no escribe nada y la franja lo dice con esa palabra—
+    // se afirma igual; lo que cambia es que la franja ya no habla en presente
+    // de una noche que nadie ha contado, dice lo que **dice tu noche**.
+    expect(franjaDeArriba()!.textContent).toContain('Tu noche dice 23:00 → 5:00')
     expect(franjaDeArriba()!.textContent).toContain('sin confirmar')
+    expect(franjaDeArriba()!.textContent).not.toContain('Dormiste')
     expect(useVidaDeviceNotesStore.getState().nightLogs).toEqual({})
   })
 
@@ -4700,5 +4705,172 @@ describe('VidaHoyPage — la noche que ya pasó (FEAT-012, tajada 3)', () => {
     for (const palabra of ['deberías', 'desperdicio', 'apenas', 'dormiste poco']) {
       expect(texto).not.toContain(palabra)
     }
+  })
+})
+
+/**
+ * **Lo real manda, y lo que no se sabe se dice** (FEAT-012, tajada 4).
+ * Criterios 300, 301, 304, 305, 306, 307, 308 y 309.
+ *
+ * Sigue siendo **viernes 18/9/2026 a las 9:24**. La noche del jueves al viernes
+ * ya pasó; lo que cambia en esta tajada es qué hace la ventana del día con lo
+ * que se conteste.
+ */
+describe('VidaHoyPage — la ventana con lo que dormiste de verdad (tajada 4)', () => {
+  function conNoche(overrides: Partial<UserSettings> = {}) {
+    settingsQuery = ready({
+      ...SETTINGS,
+      vidaNightBedTime: '23:00',
+      vidaNightWakeTime: '05:00',
+      vidaNightDays: ['wednesday', 'thursday', 'friday'],
+      ...overrides,
+    } as UserSettings)
+  }
+
+  function franjaDeArriba(): HTMLElement | null {
+    return document.querySelector<HTMLElement>('[data-variant="dawn"]')
+  }
+
+  /** La línea «Tu día · 5:00 → 23:00 · duermes 6 h». */
+  function lineaDelDia(): string {
+    return screen.getByText(/Tu día ·/).textContent ?? ''
+  }
+
+  /** El texto de las filas de la agenda: la primera es el primer tramo del día. */
+  function filasDeLaAgenda(): string[] {
+    const lista = document.querySelector<HTMLElement>('ol[class*="agenda"]')!
+    return within(lista)
+      .getAllByRole('listitem')
+      .map((row) => row.textContent ?? '')
+  }
+
+  // Criterios 300 y 301: **sin recargar**. Se contesta la pregunta de la
+  // mañana con una hora distinta y la ventana se mueve en el mismo montaje.
+  it('corregir la noche mueve la ventana y los huecos en el acto (300 y 301)', async () => {
+    conNoche()
+    planQuery = ready([block('b1', 'Leer un rato', '09:00', '10:00')])
+    renderWithProviders(<VidaHoyPage />)
+
+    // Antes: el día empieza a las 5:00, que es lo que dice tu noche.
+    expect(lineaDelDia()).toContain('5:00 → 23:00')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fue distinto' }))
+    fireEvent.change(screen.getByLabelText('Te acostaste'), { target: { value: '01:00' } })
+    fireEvent.change(screen.getByLabelText('Te levantaste'), { target: { value: '06:40' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    // Después, en el mismo montaje: la ventana empieza a la hora **real**.
+    expect(lineaDelDia()).toContain('6:40 → 23:00')
+    expect(lineaDelDia()).toContain('dormiste 5 h 40')
+    expect(lineaDelDia()).not.toContain('5:00 →')
+    // Y ningún hueco ofrece un rato en el que estabas durmiendo (301): el
+    // primer tramo del día empieza a las 6:40, no a las 5:00.
+    const filas = filasDeLaAgenda()
+    expect(filas.length).toBeGreaterThan(0)
+    expect(filas[0]).toContain('6:40')
+    expect(filas.join(' | ')).not.toContain('5:00')
+  })
+
+  // Criterio 302: lo no confirmado no mueve nada y no se afirma en pasado.
+  it('sin confirmar, la ventana sigue siendo la planeada (302)', () => {
+    conNoche()
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(lineaDelDia()).toContain('5:00 → 23:00')
+    expect(lineaDelDia()).toContain('duermes 6 h')
+    expect(lineaDelDia()).not.toContain('dormiste')
+  })
+
+  // Criterios 303, 304 y 305: «No sé a qué hora me levanté» deja la ventana en
+  // lo planeado **y la pantalla lo dice**, sin inventar ninguna cifra.
+  it('sin la hora real de levantarse, la ventana es la planeada y se dice (304)', () => {
+    conNoche()
+    useVidaDeviceNotesStore.getState().setNightLog('2026-09-18', {
+      bedTime: '23:20',
+      wakeTime: null,
+      confirmedAt: '2026-09-18T07:00:00.000Z',
+    })
+    renderWithProviders(<VidaHoyPage />)
+
+    expect(lineaDelDia()).toContain('5:00 → 23:00')
+    expect(lineaDelDia()).toContain('lo planeado: de tu hora de levantarte no quedó dato')
+    // Ni una duración inventada de una noche a medias (305): la franja pone
+    // «sin dato» y la línea del día sigue diciendo lo que dice tu noche.
+    expect(lineaDelDia()).toContain('duermes 6 h')
+    expect(franjaDeArriba()!.textContent).toContain('sin dato')
+    expect(franjaDeArriba()!.textContent).not.toContain('0 h')
+  })
+
+  // Criterios 306 y 307: un día pasado no interrumpe, pero tiene salida.
+  it('un día pasado sin confirmar se puede confirmar a posteriori (306 y 307)', () => {
+    conNoche()
+    viewedDate = '2026-09-17'
+    plansByDate['2026-09-17'] = []
+    planQuery = ready([])
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    // No pregunta por su cuenta (307)…
+    expect(screen.queryByText('¿Dormiste 23:00 → 5:00?')).toBeNull()
+    // …pero la franja sigue ahí, lo dice y es la salida (306).
+    const franja = franjaDeArriba()!
+    expect(franja.textContent).toContain('sin confirmar')
+    expect(franja.tagName).toBe('BUTTON')
+
+    fireEvent.click(franja)
+    expect(screen.getByText('¿Cómo dormiste?')).toBeInTheDocument()
+  })
+
+  // Criterio 308: confirmar un día pasado recalcula **su** ventana.
+  it('confirmar un día pasado recalcula su ventana, no la de hoy (308)', () => {
+    conNoche()
+    viewedDate = '2026-09-17'
+    plansByDate['2026-09-17'] = []
+    planQuery = ready([])
+    const pasado = renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-17'] },
+    })
+
+    fireEvent.click(franjaDeArriba()!)
+    fireEvent.change(screen.getByLabelText('Te levantaste'), { target: { value: '07:15' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(lineaDelDia()).toContain('7:15 → 23:00')
+    // Lo guardado es de **ese** día, no del de hoy (294 y 308).
+    expect(Object.keys(useVidaDeviceNotesStore.getState().nightLogs)).toEqual(['2026-09-17'])
+    pasado.unmount()
+
+    // Y hoy sigue con su ventana planeada: confirmar el jueves no movió el
+    // viernes.
+    viewedDate = '2026-09-18'
+    planQuery = ready([])
+    renderWithProviders(<VidaHoyPage />)
+    expect(lineaDelDia()).toContain('5:00 → 23:00')
+  })
+
+  // Criterio 309: del futuro no se guarda sueño ni se mueve ninguna ventana.
+  it('un día futuro no ofrece confirmar ni corregir, y su ventana es la planeada (309)', () => {
+    conNoche()
+    viewedDate = '2026-09-19'
+    plansByDate['2026-09-19'] = []
+    planQuery = ready([])
+    // Aunque el aparato tuviera una entrada con fecha de mañana, no cuenta.
+    useVidaDeviceNotesStore.getState().setNightLog('2026-09-19', {
+      bedTime: '22:00',
+      wakeTime: '08:30',
+      confirmedAt: '2026-09-18T07:00:00.000Z',
+    })
+    renderWithProviders(<VidaHoyPage />, {
+      routerProps: { initialEntries: ['/app/vida/hoy?d=2026-09-19'] },
+    })
+
+    expect(screen.queryByText('¿Dormiste 23:00 → 5:00?')).toBeNull()
+    const franja = franjaDeArriba()!
+    expect(franja.tagName).toBe('DIV')
+    expect(franja.textContent).toContain('Duermes hasta las 5:00')
+    expect(franja.textContent).not.toContain('confirm')
+    expect(lineaDelDia()).toContain('5:00 → 23:00')
+    expect(lineaDelDia()).not.toContain('8:30')
   })
 })

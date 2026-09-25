@@ -1,17 +1,28 @@
 import { useVidaDayHours, type VidaDayHours } from '@/features/vida/hooks/useVidaDayHours'
 import { useVidaNight, type VidaNightState } from '@/features/vida/hooks/useVidaNight'
 import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
-import { getVidaDayOfWeek } from '@/features/vida/utils/vida-date.utils'
-import type { VidaNight } from '@/features/vida/utils/vida-night.utils'
+import { getNightLog, useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
+import { getCurrentLocalDate, getVidaDayOfWeek } from '@/features/vida/utils/vida-date.utils'
+import type {
+  VidaNight,
+  VidaNightLog,
+  VidaRealDayStartReason,
+} from '@/features/vida/utils/vida-night.utils'
 import {
+  VIDA_REAL_START_NOTE,
   formatNightDuration,
   nightBandsForWeekday,
   nightDurationMinutes,
+  nightLogDurationMinutes,
+  resolveRealDayStart,
 } from '@/features/vida/utils/vida-night.utils'
 import { isEndAfterStart } from '@/features/vida/utils/vida-time.utils'
 
-/** De dónde sale cada borde de la ventana. */
-export type VidaDayWindowSource = 'night' | 'settings' | 'fallback'
+/**
+ * De dónde sale cada borde de la ventana. `night-real` es la hora **que
+ * ocurrió** (criterio 300); `night`, la que tu noche planea.
+ */
+export type VidaDayWindowSource = 'night' | 'night-real' | 'settings' | 'fallback'
 
 export type VidaDayWindow = VidaDayHours & {
   /** La noche planeada tal cual, o `null` si no hay o no se puede usar todavía. */
@@ -30,6 +41,17 @@ export type VidaDayWindow = VidaDayHours & {
    * «Tu día»—. `isDefault` es exactamente `defaultScheduleNote !== null`.
    */
   defaultScheduleNote: string | null
+  /**
+   * **Qué pasó con la hora real de levantarse** (FEAT-012, tajada 4). Manda
+   * cuando la hay (`real`, criterio 300); sin respuesta o sin dato, manda lo
+   * planeado (criterios 302 y 304).
+   */
+  realStartReason: VidaRealDayStartReason
+  /**
+   * **Que la ventana es lo planeado y no un dato real**, dicho con palabras
+   * (criterio 304). `null` cuando no hay nada que aclarar.
+   */
+  plannedStartNote: string | null
 }
 
 /**
@@ -77,6 +99,14 @@ export function resolveVidaDayWindow(
   hours: VidaDayHours,
   nightState: VidaNightState,
   day: VidaDayOfWeek | null,
+  /**
+   * **Lo que se durmió de verdad esa noche** (tajada 4), o `null`. Solo lo
+   * tienen los días **con fecha y con pasado**: la plantilla es una semana tipo
+   * y un día futuro no tiene noche que contar (criterio 309), así que ahí llega
+   * siempre `null` y esta función se comporta **exactamente** como en la
+   * tajada 2.
+   */
+  log: VidaNightLog | null = null,
 ): VidaDayWindow {
   // Guarda 1: en vuelo o caído, la noche no existe para nadie (criterio 286).
   const usableNight =
@@ -91,16 +121,43 @@ export function resolveVidaDayWindow(
   const dawn = coherent ? bands.dawn : null
   const dusk = coherent ? bands.dusk : null
   const settingsSource: VidaDayWindowSource = hours.isDefault ? 'fallback' : 'settings'
-  const startSource: VidaDayWindowSource = dawn ? 'night' : settingsSource
   const endSource: VidaDayWindowSource = dusk ? 'night' : settingsSource
+  const endTime = dusk ? dusk.bedTime : hours.endTime
+
+  /**
+   * **Lo real manda sobre lo planeado** (tajada 4, criterios 300 a 304).
+   *
+   * Solo se mira si esa noche **termina aquí**: lo guardado cuenta la noche que
+   * abre este día, y si este día no tiene franja de arriba no hay hora real de
+   * levantarse que ponga. La regla completa —incluido qué se hace con una hora
+   * que no dejaría día— vive en `resolveRealDayStart`, con su porqué.
+   */
+  const realStart = dawn
+    ? resolveRealDayStart(log, endTime)
+    : ({ startTime: null, reason: 'unconfirmed' } as const)
+  const startTime = realStart.startTime ?? (dawn ? dawn.wakeTime : hours.startTime)
+  const startSource: VidaDayWindowSource = realStart.startTime
+    ? 'night-real'
+    : dawn
+      ? 'night'
+      : settingsSource
 
   // La duración que se enseña es la de la noche que **manda** en este día: la
   // que lo abre si la hay, y si no la que lo cierra. Nunca una suma de las dos:
   // con una noche que cruza son la misma noche, y sumarla sería contarla doble.
+  //
+  // Y con la hora real puesta, la cifra también es la real: decir «duermes 6 h»
+  // al lado de un día que empieza a las 6:40 sería enseñar dos datos que no
+  // casan (criterio 317). Si de lo real solo quedó una hora, no hay duración
+  // que decir y manda otra vez lo planeado (criterio 305).
   const leading = dawn ?? dusk
-  const sleepLabel = leading
-    ? `duermes ${formatNightDuration(nightDurationMinutes(leading.bedTime, leading.wakeTime))}`
-    : null
+  const realMinutes = realStart.reason === 'real' ? nightLogDurationMinutes(log) : null
+  const sleepLabel =
+    realMinutes !== null
+      ? `dormiste ${formatNightDuration(realMinutes)}`
+      : leading
+        ? `duermes ${formatNightDuration(nightDurationMinutes(leading.bedTime, leading.wakeTime))}`
+        : null
 
   const defaultScheduleNote =
     startSource === 'fallback' && endSource === 'fallback'
@@ -113,9 +170,11 @@ export function resolveVidaDayWindow(
 
   return {
     ...hours,
-    startTime: dawn ? dawn.wakeTime : hours.startTime,
-    endTime: dusk ? dusk.bedTime : hours.endTime,
+    startTime,
+    endTime,
     isDefault: defaultScheduleNote !== null,
+    realStartReason: realStart.reason,
+    plannedStartNote: VIDA_REAL_START_NOTE[realStart.reason],
     night: usableNight,
     nightEnding: dawn,
     nightStarting: dusk,
@@ -139,12 +198,37 @@ export function resolveVidaDayWindow(
 export function useVidaDayWindow(date: string | null): VidaDayWindow {
   const hours = useVidaDayHours()
   const night = useVidaNight()
-  return resolveVidaDayWindow(hours, night, date === null ? null : getVidaDayOfWeek(date))
+  /**
+   * **Lo real vive en el aparato** (tajada 4): un selector del store, ni una
+   * consulta más (criterio 318). Se lee **aquí** y no en cada pantalla para que
+   * confirmar una noche recalcule de una vez la ventana de Hoy **y** la de su
+   * revisión (criterios 300, 301 y 308): una regla, no dos copias que un día
+   * dirán cosas distintas.
+   */
+  const nightLogs = useVidaDeviceNotesStore((state) => state.nightLogs)
+  /**
+   * **Un día futuro no tiene sueño** (criterio 309). No se puede guardar desde
+   * la pantalla, y aquí tampoco se lee: si algún aparato tuviera una entrada
+   * con fecha de mañana —otra sesión, el reloj movido—, su franja seguiría
+   * contando lo planeado y no movería ninguna ventana.
+   */
+  const usableLog =
+    date !== null && date <= getCurrentLocalDate() ? getNightLog(nightLogs, date) : null
+  return resolveVidaDayWindow(
+    hours,
+    night,
+    date === null ? null : getVidaDayOfWeek(date),
+    usableLog,
+  )
 }
 
 /**
  * La ventana de **un día de la semana**. La usa la plantilla, que es una semana
  * tipo y no tiene fechas.
+ *
+ * **Aquí no entra lo real**, y no es un olvido: en una semana tipo no existe
+ * «la noche del martes pasado», existe «los martes». La plantilla es lo que
+ * planeas, y lo que dormiste una noche concreta no puede moverla.
  */
 export function useVidaWeekdayWindow(day: VidaDayOfWeek | null): VidaDayWindow {
   const hours = useVidaDayHours()

@@ -28,6 +28,14 @@ type VidaDayBudgetProps = {
    * es **exactamente** la de FEAT-003.
    */
   sleepLabel?: string | null
+  /**
+   * **Que estas horas son lo planeado y no un dato real** (FEAT-012, criterio
+   * 304): hay respuesta de esa noche, pero la hora de levantarse no se sabe o
+   * no deja día, así que la ventana cae a la planeada **y se dice**. `null`
+   * cuando no hay nada que aclarar: sin respuesta ya lo dice la franja con su
+   * «sin confirmar», y con hora real las horas son las de verdad.
+   */
+  plannedStartNote?: string | null
   agenda: DayAgenda
   budget: DayBudget
   /** La línea de guía ya compuesta (criterio 15). */
@@ -93,6 +101,7 @@ export function VidaDayBudget({
   isDefaultSchedule,
   defaultScheduleNote = 'el horario por defecto',
   sleepLabel = null,
+  plannedStartNote = null,
   agenda,
   budget,
   guidance,
@@ -226,6 +235,9 @@ export function VidaDayBudget({
             es **el borde** del día, y aquí solo se dice cuánto dura para que el
             número de la izquierda («puestas de 17h») se pueda explicar mirando
             la pantalla (criterios 277 y 284). */}
+        {plannedStartNote ? (
+          <span className={styles.scheduleNote}> ({plannedStartNote})</span>
+        ) : null}
         {sleepLabel ? <span className={styles.scheduleSleep}> · {sleepLabel}</span> : null}
         {isDefaultSchedule ? (
           <>

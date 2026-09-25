@@ -1,7 +1,8 @@
 import { renderHook } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserSettings } from '@/features/settings/types/user-settings.types'
 import { useVidaDayWindow, useVidaWeekdayWindow } from '@/features/vida/hooks/useVidaDayWindow'
+import { useVidaDeviceNotesStore } from '@/features/vida/store/vida-device-notes.store'
 import type { ActivityDayPlanItem } from '@/features/vida/types/activity-day-plan.types'
 import { buildDayAgenda, getDayBudget } from '@/features/vida/utils/vida-agenda.utils'
 
@@ -301,5 +302,159 @@ describe('useVidaWeekdayWindow', () => {
 
     expect(result.current.startTime).toBe('06:30')
     expect(result.current.nightEnding).toBeNull()
+  })
+})
+
+/**
+ * **Lo real manda** (tajada 4, criterios 300 a 309).
+ *
+ * Lo que se durmió de verdad vive en el aparato, así que aquí se siembra en el
+ * store —no hay consulta que mockear (criterio 318)— y se lee la ventana.
+ */
+describe('useVidaDayWindow — la ventana con lo que dormiste de verdad', () => {
+  /** El miércoles 2026-09-23 a las 9:24: hoy es ese día en todas estas pruebas. */
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 8, 23, 9, 24, 0))
+    useVidaDeviceNotesStore.setState({ nightLogs: {} })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    useVidaDeviceNotesStore.setState({ nightLogs: {} })
+  })
+
+  function seedLog(date: string, bedTime: string | null, wakeTime: string | null) {
+    useVidaDeviceNotesStore.setState({
+      nightLogs: { [date]: { bedTime, wakeTime, confirmedAt: '2026-09-23T07:00:00.000Z' } },
+    })
+  }
+
+  // Criterio 300: «Tu día · 6:40 → 23:00», no 5:00.
+  it('con el sueño confirmado el día empieza a la hora real de levantarse (300)', () => {
+    settled(EVERY_NIGHT)
+    seedLog(WEDNESDAY, '01:00', '06:40')
+    const { result } = renderHook(() => useVidaDayWindow(WEDNESDAY))
+
+    expect(result.current.startTime).toBe('06:40')
+    expect(result.current.endTime).toBe('23:00')
+    expect(result.current.startSource).toBe('night-real')
+    expect(result.current.realStartReason).toBe('real')
+    // La cifra que acompaña también es la real: 1:00 → 6:40 son 5 h 40.
+    expect(result.current.sleepLabel).toBe('dormiste 5 h 40')
+    // Y no se aclara nada: estas horas **son** un dato real.
+    expect(result.current.plannedStartNote).toBeNull()
+  })
+
+  // Criterio 301: los huecos y el presupuesto salen de esa hora.
+  it('no queda ningún hueco antes de la hora real de levantarse (301)', () => {
+    settled(EVERY_NIGHT)
+    seedLog(WEDNESDAY, '01:00', '06:40')
+    const { result } = renderHook(() => useVidaDayWindow(WEDNESDAY))
+
+    const agenda = buildDayAgenda({
+      planItems: [block('p1', '09:00', '10:00')],
+      dayStart: result.current.startTime,
+      dayEnd: result.current.endTime,
+      nowMinutes: null,
+    })
+
+    // 6:40 son 400 minutos. Ni un hueco antes.
+    expect(agenda.gaps[0]!.startMinutes).toBe(400)
+    expect(agenda.gaps.every((gap) => gap.startMinutes >= 400)).toBe(true)
+    // Y el presupuesto se mide sobre el día que de verdad queda.
+    const budget = getDayBudget({ agenda, dayEnd: result.current.endTime, nowMinutes: null })
+    expect(budget.dayMinutes).toBe(1380 - 400)
+  })
+
+  // Criterio 302, y la decisión D4: lo no confirmado no se usa para nada.
+  it('sin confirmar, la ventana sigue siendo la planeada (302)', () => {
+    settled(EVERY_NIGHT)
+    const { result } = renderHook(() => useVidaDayWindow(WEDNESDAY))
+
+    expect(result.current.startTime).toBe('05:00')
+    expect(result.current.startSource).toBe('night')
+    expect(result.current.realStartReason).toBe('unconfirmed')
+    expect(result.current.sleepLabel).toBe('duermes 6 h')
+    expect(result.current.plannedStartNote).toBeNull()
+  })
+
+  // Criterios 303, 304 y 305: sin dato no se inventa nada y se dice.
+  it('con la hora de levantarse sin dato cae a lo planeado, y lo dice (304)', () => {
+    settled(EVERY_NIGHT)
+    seedLog(WEDNESDAY, '23:20', null)
+    const { result } = renderHook(() => useVidaDayWindow(WEDNESDAY))
+
+    expect(result.current.startTime).toBe('05:00')
+    expect(result.current.startSource).toBe('night')
+    expect(result.current.realStartReason).toBe('no-data')
+    expect(result.current.plannedStartNote).toBe(
+      'lo planeado: de tu hora de levantarte no quedó dato',
+    )
+    // Y **ninguna duración inventada** (305): la que se dice es la de tu noche.
+    expect(result.current.sleepLabel).toBe('duermes 6 h')
+  })
+
+  it('sin noche puesta, una hora sin dato cae a vidaDayStartTime (304)', () => {
+    settled({ vidaDayStartTime: '07:00', vidaDayEndTime: '22:00' })
+    seedLog(WEDNESDAY, '23:20', null)
+    const { result } = renderHook(() => useVidaDayWindow(WEDNESDAY))
+
+    expect(result.current.startTime).toBe('07:00')
+    // Sin franja de arriba no hay nada real que poner, y tampoco nada que
+    // aclarar: ese día no tiene noche de la que hablar.
+    expect(result.current.realStartReason).toBe('unconfirmed')
+  })
+
+  // El hueco que avisó el revisor de la tajada 3.
+  it('una hora real que no dejaría día se trata como sin dato, y se dice', () => {
+    settled(EVERY_NIGHT)
+    seedLog(WEDNESDAY, '23:00', '23:30')
+    const { result } = renderHook(() => useVidaDayWindow(WEDNESDAY))
+
+    expect(result.current.startTime).toBe('05:00')
+    expect(result.current.endTime).toBe('23:00')
+    expect(result.current.realStartReason).toBe('out-of-window')
+    expect(result.current.plannedStartNote).toBe(
+      'lo planeado: la hora que guardaste no deja día',
+    )
+  })
+
+  // Criterio 308: confirmar un día pasado recalcula **su** ventana.
+  it('un día pasado confirmado recalcula su ventana, no la de hoy (308)', () => {
+    settled(EVERY_NIGHT)
+    // Martes 2026-09-22: ayer.
+    seedLog('2026-09-22', '23:10', '07:15')
+
+    const ayer = renderHook(() => useVidaDayWindow('2026-09-22')).result.current
+    expect(ayer.startTime).toBe('07:15')
+    expect(ayer.startSource).toBe('night-real')
+
+    const hoy = renderHook(() => useVidaDayWindow(WEDNESDAY)).result.current
+    expect(hoy.startTime).toBe('05:00')
+    expect(hoy.realStartReason).toBe('unconfirmed')
+  })
+
+  // Criterio 309: del futuro no hay sueño que valga.
+  it('un día futuro no lee ningún sueño guardado (309)', () => {
+    settled(EVERY_NIGHT)
+    // Jueves 2026-09-24: mañana. Aunque hubiera entrada, no mueve nada.
+    seedLog('2026-09-24', '22:00', '08:30')
+    const { result } = renderHook(() => useVidaDayWindow('2026-09-24'))
+
+    expect(result.current.startTime).toBe('05:00')
+    expect(result.current.startSource).toBe('night')
+    expect(result.current.realStartReason).toBe('unconfirmed')
+    expect(result.current.sleepLabel).toBe('duermes 6 h')
+  })
+
+  // La plantilla es una semana tipo: lo de una noche concreta no la mueve.
+  it('la plantilla no se entera de lo que dormiste una noche concreta', () => {
+    settled(EVERY_NIGHT)
+    seedLog(WEDNESDAY, '01:00', '06:40')
+    const { result } = renderHook(() => useVidaWeekdayWindow('wednesday'))
+
+    expect(result.current.startTime).toBe('05:00')
+    expect(result.current.realStartReason).toBe('unconfirmed')
   })
 })

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { VidaDayOfWeek } from '@/features/vida/types/vida-item.types'
 import {
+  VIDA_MIN_AWAKE_MINUTES,
   VIDA_NIGHT_SAME_TIME_ERROR,
+  VIDA_REAL_START_NOTE,
+  resolveRealDayStart,
   crossesMidnight,
   describeLoggedNightKind,
   describeNightBandLog,
@@ -238,12 +241,19 @@ describe('lo que dormiste de verdad', () => {
     expect(dicho.detail).toBe('6 h 20 · 20 min más que tu noche · confirmado')
   })
 
-  it('sin contestar no se afirma nada: solo la palabra «sin confirmar» (295)', () => {
+  // **Adaptada en la tajada 4, no aflojada.** Lo que afirmaba —que sin
+  // contestar no se afirma nada de lo que pasó y se lee «sin confirmar»— se
+  // sigue afirmando; lo que cambia es **con qué palabras**, y las nuevas son
+  // las del criterio 302: «tu noche dice 23:00 → 5:00 · sin confirmar». La
+  // tajada 3 dejó escrito que ese cambio de etiqueta le tocaba a ésta.
+  it('sin contestar la franja dice lo que dice tu noche, «sin confirmar» (295 y 302)', () => {
     const dicho = describeNightBandLog(PLANNED, null)
 
     expect(dicho.state).toBe('unconfirmed')
-    expect(dicho.label).toBeNull()
-    expect(dicho.detail).toBe('sin confirmar')
+    expect(dicho.label).toBe('Tu noche dice 23:00 → 5:00')
+    expect(dicho.detail).toBe('6 h · sin confirmar')
+    // Y no afirma en pasado: ni «dormiste», ni «vienes de anoche» (302).
+    expect(`${dicho.label} ${dicho.detail}`.toLowerCase()).not.toContain('dormiste')
   })
 
   it('una hora que no se sabe queda «sin dato» y no se rellena (303 y 305)', () => {
@@ -332,8 +342,10 @@ describe('cuándo ha terminado la noche', () => {
     expect(enCurso.label).toBeNull()
     expect(enCurso.detail).toBe('aún no ha terminado')
 
-    // Y cuando termina sin contestar, la palabra del criterio 295.
-    expect(describeNightBandLog(CRUZA, null).detail).toBe('sin confirmar')
+    // Y cuando termina sin contestar, la palabra del criterio 295 —ahora con
+    // la etiqueta del 302 delante, que es de la tajada 4.
+    expect(describeNightBandLog(CRUZA, null).detail).toBe('6 h · sin confirmar')
+    expect(describeNightBandLog(CRUZA, null).label).toBe('Tu noche dice 23:00 → 5:00')
   })
 
   it('una noche ya contestada no cambia por estar en curso', () => {
@@ -370,5 +382,67 @@ describe('una noche de cero minutos no es una noche', () => {
     expect(VIDA_NIGHT_SAME_TIME_ERROR).toContain('no pueden ser la misma')
     // Y encaja con la aritmética que ya existía: esa noche no tiene duración.
     expect(nightDurationMinutes('23:00', '23:00')).toBeNull()
+  })
+})
+
+/**
+ * **Lo real manda, y lo que no cabe se dice** (tajada 4, criterios 300 a 305).
+ *
+ * El hueco que cierra la última prueba lo dejó avisado el revisor de la tajada
+ * 3: una hora de levantarse **posterior** al final del día dejaría una ventana
+ * negativa o de cero minutos, sin huecos y sin presupuesto.
+ */
+describe('la hora real de levantarse y la ventana del día', () => {
+  const log = (wakeTime: string | null) => ({ bedTime: '23:00', wakeTime, confirmedAt: 'x' })
+
+  it('sin respuesta manda lo planeado, y se dice que nadie ha contestado (302)', () => {
+    expect(resolveRealDayStart(null, '23:00')).toEqual({
+      startTime: null,
+      reason: 'unconfirmed',
+    })
+    // Y no hay nada que aclarar en la línea del día: lo dice la franja.
+    expect(VIDA_REAL_START_NOTE.unconfirmed).toBeNull()
+  })
+
+  it('con la hora real, manda la hora real (300)', () => {
+    expect(resolveRealDayStart(log('06:40'), '23:00')).toEqual({
+      startTime: '06:40',
+      reason: 'real',
+    })
+    expect(VIDA_REAL_START_NOTE.real).toBeNull()
+  })
+
+  it('sin dato cae a lo planeado **y lo dice** (303 y 304)', () => {
+    expect(resolveRealDayStart(log(null), '23:00')).toEqual({
+      startTime: null,
+      reason: 'no-data',
+    })
+    expect(VIDA_REAL_START_NOTE['no-data']).toContain('lo planeado')
+    // Y no se inventa ninguna duración con media noche (305).
+    expect(nightLogDurationMinutes(log(null))).toBeNull()
+    expect(formatNightDuration(nightLogDurationMinutes(log(null)))).toBe('—')
+  })
+
+  it('una hora que no deja día se trata como sin dato, y se dice', () => {
+    // El borde exacto: con el día acabando a las 23:00, la última hora de
+    // levantarse utilizable es 22:30 — ni un minuto más tarde.
+    expect(resolveRealDayStart(log('22:30'), '23:00').reason).toBe('real')
+    expect(resolveRealDayStart(log('22:31'), '23:00')).toEqual({
+      startTime: null,
+      reason: 'out-of-window',
+    })
+    expect(VIDA_REAL_START_NOTE['out-of-window']).toContain('lo planeado')
+    expect(VIDA_MIN_AWAKE_MINUTES).toBe(30)
+  })
+
+  it('la noche degenerada del revisor (23:00 → 23:30) no deja la ventana del revés', () => {
+    // Levantarse a las 23:30 con el día acabando a las 23:00: la hora real
+    // **no se recorta** ni se da por buena; se dice que no se sabe.
+    const resuelto = resolveRealDayStart(
+      { bedTime: '23:00', wakeTime: '23:30', confirmedAt: 'x' },
+      '23:00',
+    )
+    expect(resuelto.startTime).toBeNull()
+    expect(resuelto.reason).toBe('out-of-window')
   })
 })

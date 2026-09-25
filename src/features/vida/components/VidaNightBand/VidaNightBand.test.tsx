@@ -118,12 +118,20 @@ describe('VidaNightBand — lo que dormiste de verdad (criterios 295 a 298)', ()
 
   // Criterio 295: ignorar la pregunta es válido y la franja lo dice con esa
   // palabra, **sin afirmar nada nuevo**: lo planeado sigue siendo lo planeado.
-  it('un día real sin contestar dice lo planeado y «sin confirmar»', () => {
-    render(<VidaNightBand variant="dawn" night={{ ...CROSSING }} day={WEDNESDAY} realDay />)
+  // **Adaptada en la tajada 4** (criterio 302), no aflojada: sigue afirmando
+  // que sin contestar la franja **no afirma nada de lo que pasó** y que se lee
+  // «sin confirmar». Lo que cambia son las palabras, que ahora son las del
+  // criterio 302 — la tajada 3 dejó dicho que esa etiqueta le tocaba a ésta.
+  it('un día real sin contestar dice lo que dice tu noche y «sin confirmar»', () => {
+    const { container } = render(
+      <VidaNightBand variant="dawn" night={{ ...CROSSING }} day={WEDNESDAY} realDay />,
+    )
 
-    expect(screen.getByText('Duermes hasta las 5:00')).toBeInTheDocument()
-    expect(screen.getByText('Vienes de anoche · 6 h · sin confirmar')).toBeInTheDocument()
+    expect(screen.getByText('Tu noche dice 23:00 → 5:00')).toBeInTheDocument()
+    expect(screen.getByText('6 h · sin confirmar')).toBeInTheDocument()
     expect(screen.queryByText(/Dormiste/)).not.toBeInTheDocument()
+    // Ni una palabra en pasado sobre una noche que nadie ha contado (302).
+    expect(container.textContent).not.toContain('Vienes de anoche')
   })
 
   // Criterio 297, literal.

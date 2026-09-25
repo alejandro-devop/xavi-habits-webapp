@@ -1449,8 +1449,13 @@ export function VidaHoyPage() {
             isDefaultSchedule={dayWindow.isDefault}
             defaultScheduleNote={dayWindow.defaultScheduleNote ?? undefined}
             // «duermes 6 h» (criterio 277): lo que explica que el día empiece a
-            // las 5:00 y acabe a las 23:00 sin que haya que ir a Ajustes.
+            // las 5:00 y acabe a las 23:00 sin que haya que ir a Ajustes. Con
+            // la noche confirmada dice lo real —«dormiste 5 h 40»— y las horas
+            // son las de verdad (criterio 300).
             sleepLabel={dayWindow.sleepLabel}
+            // Y cuando de lo real no quedó hora de levantarse, la línea dice
+            // que estas horas son lo planeado (criterio 304).
+            plannedStartNote={dayWindow.plannedStartNote}
             agenda={agenda}
             budget={budget}
             executed={execution.budget}

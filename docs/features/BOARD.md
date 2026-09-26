@@ -25,7 +25,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | building | 4 pendiente, **1, 2, 3a y 3b aceptadas**, de 5 (3a desplegada; la hora ya se guarda y se corrige) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-25 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
-| FEAT-017 | building | **1/4 aceptada**, de 4 (2, 3 y 4 pendientes; la 2 y la 4 esperan una decisión del usuario) | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
+| FEAT-017 | building | **2/4 aceptadas (1 y 3)**, de 4 (la 2 y la 4 esperan una decisión del usuario) | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
@@ -33,6 +33,60 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
+
+**FEAT-017 `building`, tajada 3 de 4 aceptada** (2026-09-26, revisor). **Al
+abrir «+ nueva categoría» en Vida el color ya viene puesto, y es uno de los seis
+del núcleo que no usa ninguna otra categoría tuya.** Los nueve criterios (516–523
+y 530) comprobados por mí, no leídos del resumen. **El desvío del plan está
+justificado y lo medí:** el `useRef` que pedía el arquitecto da **4 errores**
+«Cannot access refs during render» y la variante con efecto **1** de
+`set-state-in-effect` —arnés de un solo uso, retirado—, así que el ajuste de
+estado durante el render es la única salida y está bien puesto: condición
+guardada, pestillo dentro del propio `setState`, ningún hook debajo, y **la
+prueba del caso frío existe** (lista que llega después del montaje, con el mock
+releyendo la lista en cada render). **Sin regresiones**: grafo para los vecinos
+del paso, `git grep` sobre `HEAD` para quién lo montaba antes (solo
+`VidaActivitySheet:789`), las **siete** suites que mockean
+`useActivityCategories` revisadas una a una —todas listan el hook nuevo— y el
+`ColorPicker` sin tocar (la muestra marcada es `box-shadow` más palomita
+absoluta: no mueve la caja a 375 ni a 760 px). Puertas medidas hoy: typecheck
+limpio, lint **14/0**, `pnpm test` **3 fallos de 2.353** (los dos de
+`SearchSelect` y el del sábado en `HabitPanel.test.tsx:566` — hoy es sábado),
+build verde con CSS **281,63 kB** y chunk inicial **1.157,77 kB**. Cuatro
+hallazgos menores, ninguno bloqueante: los dos gemelos del sorteo no se apuntan
+el uno al otro (`habit-colors.ts` no sabe que ahora tiene hermano en Vida); **en
+frío no hay muestra marcada** hasta que llega la lista, y con la consulta en
+error no llega nunca (era el comportamiento anterior, no es regresión); la
+lección del linter merece una línea en `ENVIRONMENT.md`, que no toco; y un
+`as unknown as` evitable en la suite de la hoja. **El recorrido real es del
+usuario: está tras el login** y no levanté nada (el 5173 sigue apagado). Quedan
+la tajada 2 y la 4, las dos esperando respuesta (D-E y D-D revisada).
+
+**FEAT-017 `in-review`, tajada 3 de 4 construida** (2026-09-26, constructor).
+**Al abrir «+ nueva categoría» en Vida el color ya viene puesto, y no es el de
+ninguna categoría que ya tengas.** Nace `pickInitialCategoryColor` en
+`src/features/vida/utils/vida-category-color.utils.ts` —gemelo de
+`pickInitialHabitColor`, no una reutilización: Vida y hábitos se reparten los
+colores por separado (criterio 519)— con **13 pruebas de generador fijo**, y
+`CreateVidaCategoryStep` la usa; **`VidaCategoryForm` y `VidaCategoriasPage` no
+se han tocado**, así que editar sigue enseñando el color de siempre, `null`
+incluido (criterio 521). Solo reparte entre los **6 del núcleo** (criterio 528),
+así que no depende de la tajada 4. **La trampa del montaje, resuelta y con
+desvío que contar:** el plan pedía un `useRef` como pestillo, y el linter de
+este repositorio lo prohíbe («Cannot access refs during render», +4 errores
+medidos) igual que prohíbe `setState` dentro de un efecto; el pestillo vive en
+el propio estado y se ajusta durante el render —mismo comportamiento: se sortea
+**una vez**, en cuanto llega la primera lista, nunca sobre cero categorías—.
+**6 pruebas nuevas** en `VidaActivitySheet.test.tsx`, el único sitio que monta
+el paso, incluida la del **caso frío** (la lista llegando después). Criterios
+516, 517, 518, 519, 520, 521, 522, 523 y 530 cerrados con evidencia. Puertas:
+typecheck **limpio**, lint **14/0** (línea base), `pnpm test` **3 fallos de
+2.353** —los dos de `SearchSelect` y el del sábado en `HabitPanel.test.tsx:566`,
+los tres de la línea base; el total sube porque son mis 19 pruebas nuevas—,
+build verde con el **CSS clavado en 281,63 kB** y el chunk inicial en 1.157,77
+kB (**+0,40 kB**). Sin commitear. **El recorrido real es del usuario: está tras
+el login** y hoy el 5173 estaba apagado. Las tajadas 2 y 4 siguen esperando
+respuesta (D-E y D-D revisada).
 
 **FEAT-017 `building`, tajada 1 de 4 aceptada** (2026-09-26, revisor). **Las
 búsquedas de iconos que devolvían cero ya encuentran el que siempre estuvo ahí.**

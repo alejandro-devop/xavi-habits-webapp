@@ -202,7 +202,7 @@ categorias selecciona uno distinto al azar.»
 |---|---|---|
 | 1 | Palabras clave que arreglan las búsquedas de iconos que hoy fallan (incluida «chef») | accepted (2026-09-26, revisor) |
 | 2 | Cien iconos nuevos curados, dentro de las reglas de integridad ya existentes | pending |
-| 3 | Al crear una categoría de Vida, el color nace sorteado entre el núcleo y sin repetir el de otra categoría | pending |
+| 3 | Al crear una categoría de Vida, el color nace sorteado entre el núcleo y sin repetir el de otra categoría | accepted (2026-09-26, revisor) |
 | 4 | Más colores extendidos en la paleta compartida | pending |
 
 **Architect? no** — porque las cuatro tajadas cuelgan de estructuras que ya
@@ -588,7 +588,7 @@ proponer hexadecimales.
 |---|---|---|---|---|
 | 1 | Las búsquedas de iconos que hoy devuelven cero encuentran el icono que ya existe (incluida «chef» y la frase «sombrero de chef») | `src/shared/icons/catalog/home.icons.ts` (`kitchen-set`, `fire-burner`, `blender`, `mortar-pestle`) + el resto de `catalog/*.icons.ts`, **solo arrays `keywords`**; filas nuevas en la tabla `cases` de `catalog-integrity.test.ts:186` | 504, 505, 506, 507, 508, 530 | accepted (2026-09-26, revisor) |
 | 2 | Los iconos útiles que quedan en Font Awesome Free entran al catálogo, con la cifra real medida | entradas nuevas en `src/shared/icons/catalog/*.icons.ts` con sus `import { faXxx }`; **nada más** | 510, 511, 512, 513, 514, 515, 530 — y **509 con la cifra real** (ver D-E) | pending |
-| 3 | Al abrir «+ nueva categoría» en Vida el color ya viene puesto, y no repite el de otra categoría | **crear** `src/features/vida/utils/vida-category-color.utils.ts` y `…utils.test.ts`; **modificar** `CreateVidaCategoryStep.tsx:38` (+ el import del hook) y `VidaActivitySheet.test.tsx:200-210`. **`VidaCategoryForm.tsx` y `VidaCategoriasPage.tsx` no se tocan** | 516, 517, 518, 519, 520, 521, 522, 523, 530 | pending |
+| 3 | Al abrir «+ nueva categoría» en Vida el color ya viene puesto, y no repite el de otra categoría | **crear** `src/features/vida/utils/vida-category-color.utils.ts` y `…utils.test.ts`; **modificar** `CreateVidaCategoryStep.tsx:38` (+ el import del hook) y `VidaActivitySheet.test.tsx:200-210`. **`VidaCategoryForm.tsx` y `VidaCategoriasPage.tsx` no se tocan** | 516, 517, 518, 519, 520, 521, 522, 523, 530 | accepted (2026-09-26, revisor) |
 | 4 | La paleta compartida gana los colores extendidos que de verdad se distinguen | `color-palette.ts:57-82`; contadores de `habit-colors.test.ts:47-68`, `ColorPicker.test.tsx:8-11`, `VidaActivitySheet.test.tsx:203-208`; los comentarios que dicen «diecisiete» | 524, 525, 526, 527, 528, 529, 530 | pending |
 
 **Las cuatro tajadas siguen siendo verticales y del expediente: no las he
@@ -857,6 +857,242 @@ el alcance):
 corrido al terminar (4.646 nodos, 5.591 aristas). No se sembró ningún dato de
 prueba y no queda ningún fichero temporal en el repositorio.
 
+### Tajada 3 — un color que no se repite al crear una categoría de Vida
+
+**Resumen para quien revisa:**
+1. Nace `pickInitialCategoryColor` en `src/features/vida/utils/vida-category-color.utils.ts`
+   —copia literal de `habit-colors.ts:44-65`, con su test de generador fijo de
+   trece casos— y `CreateVidaCategoryStep` la usa: abrir «+ nueva categoría»
+   deja una muestra **ya marcada**, y no es la de ninguna categoría existente.
+2. Seis pruebas nuevas en `VidaActivitySheet.test.tsx` —el único sitio que monta
+   el paso— cubren 516, 518, 519, 520 y 522, **incluido el caso frío**: la lista
+   de categorías llegando después del montaje.
+3. **Lo que más probablemente he roto:** el paso ahora **ajusta estado durante
+   el render** (`if (!colorChoice.decided && categories) setColorChoice(…)`,
+   `CreateVidaCategoryStep.tsx:72-77`). Es el patrón que React documenta para
+   esto y el único de los tres posibles que pasa el linter de este repositorio,
+   pero es la primera línea a mirar: si alguien invierte esa condición o pierde
+   el pestillo `decided`, el render entra en bucle. El segundo sitio es el
+   ayudante `openNewCategoryStep` de `VidaActivitySheet.test.tsx:268-274`: he
+   tenido que esperar también al `radiogroup`, porque la fila de colores aparece
+   un tic después del título y sin esa espera las pruebas leen el DOM antes de
+   que esté pintado (me costó una corrida en rojo que parecía del componente y
+   era del arnés).
+
+**Qué se ha construido:**
+
+- **CREADO** `src/features/vida/utils/vida-category-color.utils.ts` —
+  `pickInitialCategoryColor(usedColors, random = Math.random)`. Copia de
+  `habit-colors.ts:44-65` sin una sola diferencia de algoritmo: cuenta usos
+  **solo entre los seis del núcleo**, normaliza con `normalizeColor`, ignora
+  `null`, extendidos y colores de fuera de la paleta, y reparte entre los de
+  cuenta mínima con un `random` inyectable y su clamp para `random() === 1`.
+  Importa `CORE_COLORS` y `normalizeColor` **del submódulo**
+  `@/shared/ui/ColorPicker/color-palette`, no del barril: es una función pura y
+  ahí no entra React. La cabecera deja escrito por qué es un gemelo y no una
+  función compartida (criterio 519: Vida y hábitos son dominios independientes,
+  y compartir la función obligaría a compartir la lista de «en uso», que es
+  justo lo que no se comparte).
+- **CREADO** `src/features/vida/utils/vida-category-color.utils.test.ts` —
+  calcado de `habit-colors.test.ts:138-219` con su `fixedRandom`: trece casos,
+  los diez del molde más tres del criterio 517 y 522 (catálogo vacío con barrido
+  fino del generador, empate a mínimo con los seis en uso, y el «menos usado»).
+- **MODIFICADO** `src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx`
+  — entra `useActivityCategoriesQuery` en el import que ya existía (`:2-6`), el
+  `useState` del color pasa a ser un pestillo `{ decided, value }` sembrado con
+  el sorteo (`:68-83`), y el `ColorPicker` recibe `handleColorChange`, que echa
+  el pestillo para que lo elegido a mano no se mueva nunca más. El comentario de
+  cabecera dice ahora que el color llega sorteado.
+- **MODIFICADO** `src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx`
+  — seis pruebas nuevas debajo de la de «+ nueva» (`:251-368`), más dos
+  ayudantes (`selectedSwatchHex`, que lee `data-color-swatch` de la muestra con
+  `aria-checked`, y `openNewCategoryStep`). Ninguna prueba anterior cambia.
+
+**Por qué así, y la trampa del montaje.** El arquitecto avisó de que el
+`useState(() => …)` de `HabitCreateWizard:52-69` **no** vale aquí: el paso se
+apila dentro de `VidaActivitySheet` y en frío el primer render llega con
+`data: undefined`, así que un inicializador sortearía sobre cero categorías y
+repetiría color —y en verde, porque en los tests el hook está mockeado con datos
+síncronos—. Estoy de acuerdo y **no he usado el inicializador**: el sorteo entra
+en cuanto llega la primera lista y una sola vez.
+
+Lo que no he podido usar es el `useRef` que recomendaba el plan, y la razón es
+del linter, no del diseño: `react-hooks` (v6, reglas del compilador) da
+**«Cannot access refs during render»** cuatro veces sobre `colorDecided.current`
+leído en el cuerpo del componente —lo medí: `pnpm lint` pasaba de 14 a 18
+errores—. La otra variante clásica, `useEffect` + `setColor`, está vetada por la
+regla hermana **`react-hooks/set-state-in-effect`** («Calling setState
+synchronously within an effect»), que es la que ya cuenta cuatro de los catorce
+errores de la línea base: habría sido el decimoquinto. Así que el pestillo vive
+en el propio estado, que es el patrón que React documenta para ajustar estado
+durante el render y el único de los tres que deja el linter en 14/0. **La
+semántica es exactamente la que pedía el plan** (sortear una vez, en cuanto haya
+lista), solo cambia dónde vive el pestillo. Alternativa descartada: subir el
+sorteo a `VidaActivitySheet` y pasarlo como prop al apilar el paso —es
+lint-limpio y más simple, pero devuelve la trampa por la puerta de atrás: si
+alguien pulsa «+ nueva» antes de que la lista llegue, sortea sobre cero.
+
+Y una consecuencia que conviene que el revisor conozca: **mientras la lista no
+ha llegado, el `ColorPicker` no muestra ninguna muestra marcada** (es el estado
+de hoy, no una regresión). En cuanto llega, se marca. No hay parpadeo de un
+color a otro: el pestillo garantiza que solo se sortea una vez.
+
+**Verificación.**
+
+Puertas completas, comparadas con la línea base de `ENVIRONMENT.md`:
+
+```
+$ pnpm typecheck
+> tsc -b --noEmit          (sin salida, exit 0)
+
+$ pnpm lint
+✖ 14 problems (14 errors, 0 warnings)        ← línea base: 14 / 0
+
+$ pnpm test
+ Test Files  2 failed | 133 passed (135)
+      Tests  3 failed | 2350 passed (2353)
+```
+
+Los tres fallos son los de la línea base, uno a uno: `SearchSelect.test.tsx` ×2
+(preexistentes) y `HabitPanel.test.tsx:566` —`expected ['0','0','12','0'] to
+deeply equal ['0','0','13','0']`—, que es **el del sábado** que `ENVIRONMENT.md`
+describe: hoy, 2026-09-26, es sábado, el reloj de esa prueba no está congelado y
+la ventana de 90 días cuenta doce domingos en vez de trece. No es de esta
+tajada. El total sube de 2.334 a 2.353: +19 pruebas, que son mis trece del
+sorteo y seis de la hoja.
+
+```
+$ pnpm build
+dist/assets/index-v0cxWTuY.css        281.63 kB │ gzip:  43.39 kB
+dist/assets/IconPicker-BNEInjmN.js      4.64 kB │ gzip:   1.81 kB
+dist/assets/app-icons-Bcd5ucsp.js     620.56 kB │ gzip: 193.35 kB
+dist/assets/index-BVOJLtrx.js       1,157.77 kB │ gzip: 348.97 kB
+✓ built in 2.69s
+```
+
+**El CSS sigue clavado en 281,63 kB** —no he tocado ningún `.scss`, así que no
+hay ninguna bajada que investigar—. El chunk inicial pasa de 1.157,37 a
+1.157,77 kB: **+0,40 kB**, que es la función nueva más la llamada al hook.
+`app-icons` (620,56 kB) e `IconPicker` (4,64 kB) siguen perezosos y sin tocar.
+
+Suites tocadas, corridas aparte para que no se mezclen con nada:
+
+```
+$ pnpm vitest run src/features/vida/utils/vida-category-color.utils.test.ts \
+    src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx
+ Test Files  2 passed (2)
+      Tests  61 passed (61)
+```
+
+**Criterios que cierra, uno a uno.**
+
+- **516 — abrir «+ nueva categoría» con al menos una categoría deja el color ya
+  puesto, y es uno del núcleo que ninguna categoría usa.** Cubierto por dos
+  pruebas. `«+ nueva» abre con un color ya puesto que ninguna categoría usa`:
+  con Casa en `#8b5cf6` y Yo en `#0284c7`, la muestra con `aria-checked` existe,
+  su `data-color-swatch` está entre los seis del núcleo y **no** es ninguno de
+  esos dos. Y `lo que se crea sin tocar el color va con el sorteado`: el
+  `createCategory.mutateAsync` recibe exactamente el hex que estaba marcado, o
+  sea que el sorteo llega hasta la API y no se queda en la pantalla. En la
+  función pura, `con algunas categorías, elige entre los colores que quedan
+  libres` y `nunca repite mientras queden colores libres`.
+- **517 — con los seis usados, elige el que menos categorías tienen; empate,
+  cualquiera de los empatados.** `con los seis del núcleo en uso, devuelve el
+  que menos categorías tienen` (todos dos veces menos el azul, y sale el azul
+  para tres valores del generador), `con los seis usados por igual, vuelve a
+  repartir entre todos` y `con los seis en uso y un empate a mínimo, elige entre
+  los empatados` (barrido del generador de 0 a 1 en pasos de 0,05; siempre uno
+  de los dos empatados).
+- **518 — el color no cambia mientras se escribe el nombre o se elige el
+  icono.** `el color sorteado no se mueve al escribir el nombre`: quince
+  pulsaciones y el hex marcado es el mismo; y además se refresca la lista de
+  categorías por debajo y tampoco se mueve. Es la prueba que descarta un
+  `useMemo` sobre `categories`: esa variante vuelve a sortear cada vez que la
+  lista cambia de identidad, y un refresco en segundo plano movería el color.
+- **519 — mira las categorías de Vida, no las de hábitos.** La única entrada de
+  datos de la función es `useActivityCategoriesQuery().data`
+  (`CreateVidaCategoryStep.tsx:40-41`), el hook de `activity_categories`; el
+  fichero nuevo no importa nada de `features/habits` y `habit-colors.ts` no
+  importa nada de Vida. Comprobado con `grep -rn "habit" src/features/vida/utils/vida-category-color.utils*`:
+  las tres coincidencias son comentarios que citan el precedente, ninguna es un
+  `import`.
+- **520 — elegir a mano sustituye al sorteado, sin avisar.** `elegir una muestra
+  a mano sustituye al color sorteado`: se pulsa «Magenta», la marca se mueve a
+  `#c02ca7`, se sigue escribiendo el nombre y no vuelve al sorteado, y la
+  mutación viaja con `#c02ca7`. Ningún aviso ni confirmación por el camino.
+- **521 — editar no sortea nada.** `VidaCategoryForm.tsx` y
+  `VidaCategoriasPage.tsx` **no aparecen en el diff** (`git status` lo confirma:
+  los de `src/` que aparecen son cuatro y ninguno es ese). La precarga de la edición sigue
+  siendo `color: category.color` en `VidaCategoriasPage.tsx:81`, `null`
+  incluido. La función nueva no se importa en ningún sitio más que en
+  `CreateVidaCategoryStep`.
+- **522 — con el catálogo vacío, cualquiera de los seis.** `sin ninguna
+  categoría todavía, igualmente abre con uno de los seis` en la hoja, y en la
+  función pura `sin categorías devuelve el que señale el generador` más `con el
+  catálogo vacío siempre sale uno de los seis` (cien valores del generador).
+- **523 — función propia de Vida, con tests de generador fijo.** El fichero
+  nuevo no reutiliza ni importa `pickInitialHabitColor`. Sus trece casos siguen
+  el molde de `habit-colors.test.ts:138-219` y cubren los cuatro que pide el
+  criterio: sin categorías, con algunas, con los seis en uso, y con extendidos y
+  colores de fuera (`#123456`, `rebeccapurple`, `''`, `null`) mezclados en el
+  historial sin bloquear ninguna casilla del núcleo.
+- **528 (por adelantado, y es de la tajada 4) — los extendidos no entran en el
+  sorteo.** `solo sortea entre los seis del núcleo, nunca un extendido`: cinco
+  historiales × cien valores del generador, y nunca sale un extendido.
+- **530 — typecheck limpio, lint y tests no peores, build limpio.** Las cifras
+  están arriba: 14/0 en lint, 3 fallos conocidos de 2.353, y el build en verde
+  con el CSS intacto.
+
+**Lo que queda pendiente de prueba manual.** El recorrido real vive tras el
+login y los agentes no entran con credenciales (`ENVIRONMENT.md`), y hoy además
+el 5173 estaba apagado cuando corrí la sonda. Pasos para el usuario, dos
+minutos: (1) en `/app/vida/hoy` o en `/app/vida/actividades`, abrir la hoja de
+una actividad nueva; (2) pulsar «+ nueva» en la fila de categorías; (3) mirar
+que **hay una muestra ya marcada** y que no es el color de ninguna categoría de
+la lista de abajo; (4) escribir el nombre y elegir un icono: la marca no se
+mueve; (5) pulsar otra muestra: se mueve a esa y se queda; (6) crear y
+comprobar que la cápsula de la categoría nueva sale con ese color; (7) desde
+`/app/vida/actividades` → editar una categoría existente: sigue enseñando su
+color de siempre, sin inventar ninguno.
+
+**Riesgos.**
+
+- El ajuste de estado durante el render es correcto y está probado, pero es una
+  figura que en este repositorio solo aparece aquí. Si alguien la copia sin el
+  pestillo, hace bucle.
+- La marca aparece **al llegar la lista**, no en el primer fotograma. Con la
+  caché caliente es imperceptible; en frío hay un instante sin muestra marcada.
+  Es mejor que sortear sobre cero categorías, que era la alternativa.
+- El sorteo usa `Math.random()` de verdad en producción: dos categorías creadas
+  seguidas sin que la lista se refresque entre medias **pueden** coincidir de
+  color, porque la segunda sortea con la lista que tenga la caché en ese
+  momento. El hook invalida la lista al crear, así que en la práctica llega
+  actualizada; lo dejo escrito porque es el único camino por el que 516 podría
+  no cumplirse con datos reales.
+- `VidaActivitySheet.test.tsx` gana seis pruebas que dependen del orden de
+  pintado del paso apilado. Si el `SteppedModal` cambia de animación, el
+  ayudante `openNewCategoryStep` es lo primero que hay que revisar.
+
+**Lo que descubrí y no estaba en el plan** (anotado, sin tocarlo):
+
+- El plan daba por bueno el `useRef`, y el linter de este repositorio lo
+  prohíbe. Las reglas del compilador de `react-hooks` cierran a la vez las dos
+  salidas habituales (`ref` en render y `setState` en efecto); la única que
+  queda es el ajuste de estado durante el render. Merece la pena que quede en
+  `ENVIRONMENT.md` si un tercer expediente tropieza con lo mismo: yo no lo he
+  tocado, que es de otros agentes.
+- La línea base de tests de `ENVIRONMENT.md` dice 2.334 y hoy el árbol da 2.353
+  contando mis 19: la tajada 1 ya había sumado algunas. La regla de «no peor»
+  se cumple igual porque lo que se compara son los fallos, no el total.
+
+**Estado del árbol:** sin commitear. Cuatro ficheros de `src/`
+—`vida-category-color.utils.ts` y `vida-category-color.utils.test.ts` (nuevos) y
+`CreateVidaCategoryStep.tsx` y `VidaActivitySheet.test.tsx` (modificados)— más
+este expediente y `BOARD.md`. `graphify update .` corrido al terminar (4.654
+nodos, 5.600 aristas). No se sembró ningún dato de prueba, no hice ninguna
+llamada a la API y no queda ningún fichero temporal ni arnés en el repositorio.
+No levanté ni paré ningún servidor: el 5173 estaba apagado y sigue apagado.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — palabras clave que arreglan lo que no se encontraba
@@ -1033,3 +1269,207 @@ el icono de Cocinar. Repite con **sombrero de chef** y con **gimnasio**, y de
 paso escribe **lavadora** para ver que lo que ya funcionaba sigue igual, con un
 solo resultado.
 
+
+### Tajada 3 — un color que no se repite al crear una categoría de Vida
+
+**Veredicto: `accepted`.** Los nueve criterios (516–523 y 530) se cumplen con
+evidencia propia, corrida por mí y no leída del resumen. El desvío respecto al
+plan —`setState` durante el render en vez del `useRef` que pedía el arquitecto—
+**está justificado y lo he comprobado con un experimento propio**: las dos
+alternativas suben la línea base del linter. Hay cuatro hallazgos, todos
+menores y ninguno bloqueante; van abajo.
+
+**Criterios, uno a uno** (contra la sección 1, literal).
+
+- **516 — abrir «+ nueva» con al menos una categoría deja el color ya puesto, y
+  es uno del núcleo que ninguna categoría de Vida usa.** Cumplido. Prueba de la
+  hoja `«+ nueva» abre con un color ya puesto que ninguna categoría usa`, y la
+  de la mutación: `createCategory.mutateAsync` viaja con el hex que estaba
+  marcado, o sea que el sorteo llega a la API y no se queda en la pantalla. En
+  la función pura, `con algunas categorías, elige entre los colores que quedan
+  libres` y `nunca repite mientras queden colores libres`. Corridas por mí en la
+  suite completa (abajo).
+- **517 — con los seis usados, el que menos categorías tienen; empate,
+  cualquiera de los empatados.** Cumplido, tres casos: el «menos usado» con tres
+  valores del generador, el reparto plano, y el empate con barrido de 0 a 1 en
+  pasos de 0,05.
+- **518 — el color no se mueve mientras se escribe el nombre o se elige el
+  icono.** Cumplido, y por partida doble: el pestillo `decided` en el código
+  (`CreateVidaCategoryStep.tsx:68-83`) y la prueba que además **refresca la
+  lista de categorías por debajo** y comprueba que el hex marcado sigue siendo
+  el mismo. Leí el componente entero buscando el bucle: la condición es
+  `if (!colorChoice.decided && categories)` y lo primero que hace el `setState`
+  es echar el pestillo, así que se dispara **una sola vez** y React descarta ese
+  render y repite antes de pintar; no hay ningún hook después del `if`, que es
+  la otra forma de romper esta figura.
+- **519 — mira las categorías de Vida, no las de hábitos.** Cumplido. La única
+  entrada de datos es `useActivityCategoriesQuery().data`
+  (`CreateVidaCategoryStep.tsx:40-41`). Comprobado además que **no existe el
+  concepto de categoría archivada** en este dominio: el documento
+  `ACTIVITY_CATEGORIES_QUERY` (`src/features/vida/graphql/activity-categories.graphql.ts:1-21`)
+  no trae ningún campo de archivado, así que «las activas» son todas las que
+  devuelve la consulta y el criterio no tiene letra pequeña. El fichero nuevo no
+  importa nada de `features/habits`.
+- **520 — elegir a mano sustituye al sorteado, sin avisar.** Cumplido. Prueba
+  `elegir una muestra a mano sustituye al color sorteado`: se pulsa «Magenta»,
+  la marca se mueve, se sigue escribiendo y no vuelve, y la mutación viaja con
+  `#c02ca7`. En el código, `handleColorChange` echa el mismo pestillo, así que
+  una lista que llegue **después** de la elección manual tampoco la pisa —lo
+  verifiqué leyendo el orden: el `if` exige `!decided`—.
+- **521 — editar no sortea nada.** Cumplido. `VidaCategoryForm.tsx` y
+  `VidaCategoriasPage.tsx` no están en el árbol modificado (`git status
+  --porcelain -- src/` devuelve exactamente cuatro rutas, ninguna es esa), la
+  precarga sigue siendo `color: category.color` en `VidaCategoriasPage.tsx:81` y
+  `pickInitialCategoryColor` **no se importa en ningún otro sitio** (comprobado
+  con el grafo, `graphify explain "CreateVidaCategoryStep"`, y confirmado con
+  `grep -rn "vida-category-color" src`: un único importador).
+- **522 — con el catálogo vacío, cualquiera de los seis.** Cumplido, en la hoja
+  y en la función pura (cien valores del generador).
+- **523 — función propia de Vida con tests de generador fijo.** Cumplido: trece
+  casos en `vida-category-color.utils.test.ts`, incluidos los cuatro que pide el
+  criterio, con extendidos, `#123456`, `rebeccapurple`, `''` y `null` mezclados.
+  El import es del **submódulo** `@/shared/ui/ColorPicker/color-palette`
+  (`vida-category-color.utils.ts:21`), no del barril: comprobado a ojo en el
+  fichero.
+- **530 — typecheck, lint, tests y build.** Medido por mí, hoy, en este árbol:
+  `pnpm typecheck` sin salida y exit 0; `pnpm lint` **14 errores / 0 warnings**,
+  clavado en la línea base; `pnpm test` **3 fallos de 2.353** (`SearchSelect` ×2
+  y el `HabitPanel.test.tsx:566` del sábado —hoy es sábado— que
+  `ENVIRONMENT.md` describe al detalle: `['0','0','12','0']` frente a
+  `['0','0','13','0']`); `pnpm build` en verde, CSS **281,63 kB** intacto,
+  `app-icons` 620,56 kB y `IconPicker` 4,64 kB todavía perezosos, chunk inicial
+  1.157,77 kB.
+
+**El desvío del plan, comprobado y no creído.** El arquitecto pedía un `useRef`
+de pestillo y el constructor dice que el linter lo prohíbe. Lo medí con un arnés
+de un solo uso —dos componentes mínimos, uno con `ref` leída en el cuerpo y otro
+con `useEffect` + `setState`, en un directorio propio bajo `src/` que quité en la
+misma orden—:
+
+```
+6:7   error  Cannot access refs during render        (×4, variante useRef)
+6:33  error  Calling setState synchronously within an effect  (×1, variante useEffect)
+✖ 5 problems (5 errors, 0 warnings)
+```
+
+Las dos salidas están cerradas de verdad, y el `setState` condicional durante el
+render **no** produce ningún error del mismo plugin (`eslint-plugin-react-hooks`
+^7.1.1, no v6 como dice la sección 3 — detalle sin consecuencia). Es el patrón
+que React documenta para derivar estado de props, está bien puesto —condición
+guardada, pestillo dentro del propio `setState`, sin hooks debajo— y la prueba
+del caso frío existe: `si la lista llega después, el color se sortea al llegar y
+no en frío` monta el paso con `data: undefined`, comprueba que **no hay ninguna
+muestra marcada**, mete la lista y con la siguiente pulsación aparece un color
+que no es ninguno de los dos en uso. Y no es una prueba que pase por casualidad:
+el `vi.mock` del módulo lee la variable `categories` en **cada** render
+(`VidaActivitySheet.test.tsx:52-56`), así que el cambio de lista se ve de verdad.
+
+**Qué se ha roto cerca, y cómo lo busqué.**
+
+- **El grafo primero.** `graphify explain "CreateVidaCategoryStep"` da los siete
+  vecinos del paso: llama a `useActivityCategoriesQuery`, `useModalStep`, las dos
+  mutaciones y `pickInitialCategoryColor`, y lo re-exporta su `index.ts`. El
+  grafo está **actualizado al después** del cambio (el constructor corrió
+  `graphify update .`), así que para el «quién dependía antes» usé `git grep`
+  sobre `HEAD`: el único sitio que monta el paso es
+  `VidaActivitySheet.tsx:789`, más la lista de vocabulario
+  `vida-vocabulary.test.ts:51`. Ambos verdes.
+- **La trampa de `ENVIRONMENT.md` con los mocks de `useActivityCategories`.**
+  Recorrí las **siete** suites que mockean el módulo y comprobé una por una que
+  listan `useActivityCategoriesQuery`: `VidaActivitySheet`, `VidaArchivadasPage`,
+  `VidaAjustesPage`, `VidaPlantillaPage`, `VidaHoyPage`, `VidaCategoriasPage`,
+  `VidaActividadesPage`. Ninguna se queda verde por casualidad con la llamada
+  nueva; la única que además monta la hoja (`VidaPlantillaPage`) la tiene.
+- **Quién más usa lo tocado.** `ColorPicker` no se ha modificado (no está en el
+  diff); lo que cambia es el `value` que recibe el paso. Miré su hoja de estilos
+  por si la muestra marcada movía la caja: el estado seleccionado es
+  `box-shadow` más una palomita `position: absolute` dentro de la muestra
+  (`ColorPicker.module.scss:46-68`), cero cambio de tamaño, así que la fila no
+  envuelve distinto a 375 ni a 760 px.
+- **Lo que el constructor señaló como más probable de romper** era justo el
+  ajuste de estado durante el render y el ayudante `openNewCategoryStep`. Empecé
+  por ahí: el primero, arriba; el segundo espera al `radiogroup` además del
+  título, que es la espera correcta y no un `sleep` disfrazado.
+- **La creación seguida de dos categorías**, que el constructor deja anotada como
+  el único camino por el que 516 podría no cumplirse con datos reales: la
+  mutación de crear invalida la lista (`useActivityCategories.ts:49`,
+  `invalidateActivityCategoryQueries`), así que la segunda vez el sorteo ve la
+  categoría recién creada en cuanto vuelva la consulta.
+- **Resultado:** no encontré ninguna regresión.
+
+**Estados.**
+
+- **Vacío** — cubierto y es criterio (522): sin ninguna categoría, sale uno de
+  los seis.
+- **Cargando** — mientras la lista no ha llegado **no hay ninguna muestra
+  marcada**. Es exactamente lo que había antes de esta tajada (el color nacía en
+  `null`), así que no es regresión, pero tampoco es un estado construido: en
+  frío hay un instante sin color puesto. Queda como hallazgo.
+- **Error** — si la consulta de categorías se queda en error, `data` sigue
+  indefinida y el color **nunca** se sortea: la categoría se crea sin color, como
+  hasta hoy. Tampoco es regresión y tampoco lo pide ningún criterio; hallazgo.
+- **Sin permisos** — no aplica: el paso vive dentro de la sesión y no hay roles
+  en este producto.
+- **Texto largo** — no aplica: esta tajada no pinta texto.
+- **Móvil 375 px** — no aplica como medición nueva, y digo por qué: no entra
+  ningún elemento en la fila, solo se marca una muestra que ya se dibujaba, y el
+  marcado no ocupa caja (`box-shadow` + palomita absoluta). El ancho de la
+  paleta es asunto de la tajada 4 (criterio 527), que sí añade muestras.
+
+**¿Duplica algo que ya existía?** Sí, y **a propósito y por escrito**: el cuerpo
+de `pickInitialCategoryColor` es idéntico al de `pickInitialHabitColor`. Lo pide
+el criterio 523 («no se reutiliza ni se importa la de hábitos»), lo razona la
+sección 2 («un sorteo compartido en `shared/` — no») y la cabecera del fichero
+nuevo lo explica. Respetado también lo demás de la sección 2: no hay paleta de
+Vida, no hay fichero de datos de colores, no hay `CreateVidaCategoryStep.test.tsx`
+nuevo (las pruebas entran en la suite de la hoja, que es donde se monta) y la
+función vive en `features/vida/utils/`, no en `data/`.
+
+**Hallazgos** (ninguno bloquea):
+
+1. **Los dos gemelos no se apuntan el uno al otro.** El fichero de Vida cita a
+   `habit-colors.ts`, pero `habit-colors.ts` no menciona que ahora tiene un
+   gemelo. Quien arregle un día el reparto en uno no tiene forma de enterarse del
+   otro. Una línea de comentario en `habit-colors.ts` lo cierra; no la escribo
+   yo, que reviso.
+2. **En frío no hay color marcado** (estado de carga y estado de error). Es el
+   comportamiento anterior, así que no devuelvo la tajada por esto, pero conviene
+   que el usuario lo sepa: con la caché fría, el color aparece un instante
+   después de abrir el paso.
+3. **`ENVIRONMENT.md` se queda sin la lección más cara de esta tajada**: que las
+   reglas del compilador de `react-hooks` cierran a la vez `ref` en render y
+   `setState` en efecto, y que la salida que queda es el ajuste de estado durante
+   el render. Lo comprobé yo mismo y lo dejo escrito aquí; **no toco ese fichero**,
+   que es de todos los agentes.
+4. **Detalle de la suite:** `categories = undefined as unknown as ActivityCategory[]`
+   (`VidaActivitySheet.test.tsx`) fuerza el tipo porque la variable del mock no
+   admite `undefined`. Tipar la variable como `ActivityCategory[] | undefined`
+   quitaría el casting y dejaría el caso frío expresado sin rodeos. Cosmético.
+
+**Lo que no pude revisar, y lo digo:** el recorrido real vive tras el login y
+**no entro con credenciales** (`ENVIRONMENT.md`); el 5173 no estaba arriba y no
+levanté nada. Todo lo de arriba es código, tests y build. La confirmación con
+datos reales es del usuario, con los pasos de abajo.
+
+**Para el usuario:** cuando abras **+ nueva categoría** en Vida, el color ya
+viene elegido, y es uno de los seis que la app reparte sola: el que no está
+usando ninguna otra categoría tuya. Ya no hace falta pararse a decidir un color
+cada vez que creas una categoría, ni acabar con dos categorías del mismo tono sin
+darte cuenta. Si prefieres otro, tocas la muestra que quieras y esa manda: a
+partir de ahí el color no se mueve, escribas lo que escribas o cambies el icono
+las veces que quieras.
+
+Editar una categoría que ya tienes sigue igual que siempre: te enseña el color que
+le pusiste, y si no tenía ninguno, sigue sin tenerlo — abrir la edición no le
+inventa nada. Para probarlo en dos minutos: (1) en `/app/vida/hoy` o en
+`/app/vida/actividades`, abre la hoja de una actividad; (2) pulsa **+ nueva** en
+la fila de categorías; (3) mira que hay una muestra ya marcada y que no coincide
+con el color de ninguna categoría que ya tengas; (4) escribe el nombre y elige un
+icono: la marca no se mueve; (5) toca otra muestra: se pasa a esa y se queda;
+(6) crea la categoría y comprueba que su cápsula sale con ese color; (7) desde
+`/app/vida/actividades`, entra a editar una categoría de antes: sigue con su
+color de siempre.
+
+**La feature no está entregada todavía:** faltan la tajada 2 (los iconos nuevos,
+que espera tu respuesta a D-E) y la tajada 4 (los colores extendidos, que espera
+D-D revisada).

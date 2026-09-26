@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import {
+  useActivityCategoriesQuery,
   useCreateActivityCategoryMutation,
   useSetActivityCategoryGoalMutation,
 } from '@/features/vida/hooks/useActivityCategories'
+import { pickInitialCategoryColor } from '@/features/vida/utils/vida-category-color.utils'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 import { Checkbox } from '@/shared/ui/Checkbox'
@@ -26,18 +28,59 @@ type Props = {
  *
  * El color entra por el `ColorPicker` compartido (los diecisiete de la paleta),
  * no por la rueda del sistema: en Vida el color de la categoría es lo que pinta
- * la cápsula de cada tarjeta y tiene que leerse en los dos temas.
+ * la cápsula de cada tarjeta y tiene que leerse en los dos temas. Y llega ya
+ * sorteado: ver `pickInitialCategoryColor` más abajo.
  */
 export function CreateVidaCategoryStep({ onCreated }: Props) {
   const { pop } = useModalStep()
   const createMutation = useCreateActivityCategoryMutation()
   const setGoalMutation = useSetActivityCategoryGoalMutation()
+  // Los colores que ya usan las categorías del usuario. Es la misma lista que
+  // pide la hoja de abajo, así que casi siempre viene de la caché.
+  const categoriesQuery = useActivityCategoriesQuery()
+  const categories = categoriesQuery.data
 
   const [name, setName] = useState('')
   const [icon, setIcon] = useState<string | null>(null)
-  const [color, setColor] = useState<string | null>(null)
   const [isWork, setIsWork] = useState(false)
   const [nameError, setNameError] = useState<string | null>(null)
+
+  /**
+   * El color, **sorteado una sola vez y en cuanto haya lista** (criterios 516 y
+   * 518).
+   *
+   * Aquí **no** vale el `useState(() => …)` de `HabitCreateWizard:52-69`. Ese
+   * wizard es la raíz de su modal y su lista viene de la caché; este paso se
+   * apila dentro de `VidaActivitySheet`, y en frío —sesión recién abierta, o
+   * `useVidaQueryGuard` todavía cerrado— el primer render llega con
+   * `data: undefined`. Un inicializador sortearía sobre cero categorías y
+   * podría repetir el color de la de al lado, y en los tests **saldría verde**
+   * porque ahí el hook está mockeado con datos síncronos.
+   *
+   * `decided` es el pestillo que garantiza «una sola vez»: se echa al sortear y
+   * también al elegir una muestra a mano, así que ni escribir el nombre, ni
+   * elegir el icono, ni que la lista se refresque por debajo mueven el color.
+   * Va en el propio estado —el patrón de React para ajustar estado durante el
+   * render— y no en un `useRef`: leer una `ref` en el cuerpo del componente lo
+   * prohíbe `react-hooks` («Cannot access refs during render»), y un `useEffect`
+   * con `setState` también está vetado por el linter de este repositorio.
+   */
+  const [colorChoice, setColorChoice] = useState<{ decided: boolean; value: string | null }>({
+    decided: false,
+    value: null,
+  })
+  if (!colorChoice.decided && categories) {
+    setColorChoice({
+      decided: true,
+      value: pickInitialCategoryColor(categories.map((category) => category.color)),
+    })
+  }
+  const color = colorChoice.value
+
+  /** Lo que elige la persona manda: a partir de ahí el sorteo ya no entra. */
+  function handleColorChange(next: string | null) {
+    setColorChoice({ decided: true, value: next })
+  }
 
   const isMutating = createMutation.isPending || setGoalMutation.isPending
 
@@ -101,7 +144,7 @@ export function CreateVidaCategoryStep({ onCreated }: Props) {
         <span className={styles.colorLabel}>Color</span>
         <ColorPicker
           value={color}
-          onChange={setColor}
+          onChange={handleColorChange}
           disabled={isMutating}
           label="Color de la categoría"
         />

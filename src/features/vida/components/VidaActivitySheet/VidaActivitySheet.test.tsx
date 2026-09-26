@@ -248,6 +248,127 @@ describe('VidaActivitySheet', () => {
     )
   })
 
+  /**
+   * El color sorteado de «+ nueva» (FEAT-017, tajada 3). El único sitio que
+   * monta `CreateVidaCategoryStep` es esta hoja, así que 516, 518, 520 y 522
+   * viven aquí; el reparto en sí se prueba a solas en
+   * `vida-category-color.utils.test.ts`.
+   */
+  const CORE_HEXES = ['#10b981', '#4d7c0f', '#f59e0b', '#e11d48', '#8b5cf6', '#0284c7']
+
+  /** El hex de la muestra marcada, o null si no hay ninguna. */
+  function selectedSwatchHex(): string | null {
+    const checked = screen.queryAllByRole('radio', { checked: true })
+    expect(checked.length).toBeLessThanOrEqual(1)
+    return checked[0]?.getAttribute('data-color-swatch') ?? null
+  }
+
+  async function openNewCategoryStep(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: '+ nueva' }))
+    expect(await screen.findByRole('heading', { name: 'Nueva categoría' })).toBeInTheDocument()
+    // La fila de colores tarda un tic más que el título: sin esperarla se leería
+    // «ninguno marcado» cuando lo que pasa es que todavía no está pintada.
+    await screen.findByRole('radiogroup', { name: 'Color de la categoría' })
+  }
+
+  it('«+ nueva» abre con un color ya puesto que ninguna categoría usa (criterios 516 y 519)', async () => {
+    const user = userEvent.setup()
+    // Casa lleva el violeta y Yo el azul (ver `beforeEach`).
+    renderSheet()
+
+    await openNewCategoryStep(user)
+
+    const picked = selectedSwatchHex()
+    expect(CORE_HEXES).toContain(picked)
+    expect(picked).not.toBe('#8b5cf6')
+    expect(picked).not.toBe('#0284c7')
+  })
+
+  it('sin ninguna categoría todavía, igualmente abre con uno de los seis (criterio 522)', async () => {
+    const user = userEvent.setup()
+    categories = []
+    renderSheet()
+
+    await openNewCategoryStep(user)
+
+    expect(CORE_HEXES).toContain(selectedSwatchHex())
+  })
+
+  it('si la lista llega después, el color se sortea al llegar y no en frío (criterios 516 y 518)', async () => {
+    const user = userEvent.setup()
+    // El caso frío: el paso se apila antes de que la consulta traiga nada.
+    categories = undefined as unknown as ActivityCategory[]
+    categoriesQuery = { isPending: true, isError: false, fetchStatus: 'fetching', refetch: vi.fn() }
+    renderSheet()
+
+    await openNewCategoryStep(user)
+    // Sin lista no se sortea: sortear sobre cero categorías repetiría color.
+    expect(selectedSwatchHex()).toBeNull()
+
+    categories = [
+      buildCategory({ color: '#10b981' }),
+      buildCategory({ id: 'yo', name: 'Yo', color: '#4d7c0f', orderIndex: 1 }),
+    ]
+    categoriesQuery = { isPending: false, isError: false, fetchStatus: 'idle', refetch: vi.fn() }
+    // Cualquier render posterior vale; escribir una letra es el más natural.
+    await user.type(screen.getByLabelText('Cómo la llamas'), 'P')
+
+    const picked = selectedSwatchHex()
+    expect(CORE_HEXES).toContain(picked)
+    expect(picked).not.toBe('#10b981')
+    expect(picked).not.toBe('#4d7c0f')
+  })
+
+  it('el color sorteado no se mueve al escribir el nombre (criterio 518)', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+
+    await openNewCategoryStep(user)
+    const picked = selectedSwatchHex()
+
+    await user.type(screen.getByLabelText('Cómo la llamas'), 'Plantas de casa')
+    expect(selectedSwatchHex()).toBe(picked)
+
+    // Y tampoco cuando la lista de categorías se refresca por debajo.
+    categories = [...categories, buildCategory({ id: 'otra', name: 'Otra', color: '#f59e0b' })]
+    await user.type(screen.getByLabelText('Cómo la llamas'), '!')
+    expect(selectedSwatchHex()).toBe(picked)
+  })
+
+  it('elegir una muestra a mano sustituye al color sorteado (criterio 520)', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+
+    await openNewCategoryStep(user)
+    expect(selectedSwatchHex()).not.toBe('#c02ca7')
+
+    await user.click(screen.getByRole('radio', { name: 'Magenta' }))
+    expect(selectedSwatchHex()).toBe('#c02ca7')
+
+    // Y lo elegido a mano tampoco se mueve luego.
+    await user.type(screen.getByLabelText('Cómo la llamas'), 'Plantas')
+    expect(selectedSwatchHex()).toBe('#c02ca7')
+
+    createCategory.mutateAsync.mockResolvedValue({ id: 'plantas', name: 'Plantas' })
+    await user.click(screen.getByRole('button', { name: 'Crear categoría' }))
+
+    expect(createCategory.mutateAsync.mock.calls[0][0]).toMatchObject({ color: '#c02ca7' })
+  })
+
+  it('lo que se crea sin tocar el color va con el sorteado (criterio 516)', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+
+    await openNewCategoryStep(user)
+    const picked = selectedSwatchHex()
+
+    await user.type(screen.getByLabelText('Cómo la llamas'), 'Plantas')
+    createCategory.mutateAsync.mockResolvedValue({ id: 'plantas', name: 'Plantas' })
+    await user.click(screen.getByRole('button', { name: 'Crear categoría' }))
+
+    expect(createCategory.mutateAsync.mock.calls[0][0]).toMatchObject({ color: picked })
+  })
+
   it('editando precarga nombre y categoría y guarda con la mutación de editar (criterio 15)', async () => {
     const user = userEvent.setup()
     const { onClose } = renderSheet({ activity: buildActivity() })

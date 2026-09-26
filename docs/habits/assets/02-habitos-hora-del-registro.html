@@ -1,0 +1,280 @@
+<title>La hora del registro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --hab:#a78bfa; --hab-2:#8b5cf6;
+    --ok:#10b981; --mid:#f59e0b; --bad:#f43f5e;
+    --ink:#e2e8f0; --ink-soft:#94a3b8; --ink-dim:#64748b;
+    --bg:#0b1220; --card:#131c2e; --card-2:#172032; --edge:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#070c16;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink);padding:26px 18px 70px}
+  .page{max-width:1280px;margin:0 auto}
+  h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+  .lede{font-size:13.5px;color:var(--ink-soft);line-height:1.7;max-width:900px;margin:0 0 4px}
+  .lede b{color:#f1f5f9}
+  .caption{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);margin:40px 0 12px}
+  .note{font-size:12.5px;color:var(--ink-soft);margin:14px 0 0;line-height:1.65;max-width:900px}
+  .note b{color:#e2e8f0}
+  .ask{margin:12px 0 0;padding:11px 13px;border-radius:12px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.26);font-size:12.5px;line-height:1.6;color:#ddd6fe;max-width:900px}
+  .ask b{color:#f5f3ff}
+
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;align-items:start}
+  .col{display:flex;flex-direction:column;gap:11px;min-width:0}
+  .ctitle{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#c4b5fd}
+  .ctitle.now{color:var(--ink-dim)}
+  .ctitle small{display:block;font-weight:500;letter-spacing:0;text-transform:none;color:var(--ink-dim);margin-top:3px;font-size:11.5px;line-height:1.5}
+
+  .phone{width:100%;max-width:340px;border-radius:32px;padding:8px;background:#020617;box-shadow:0 22px 52px -22px rgba(0,0,0,.9)}
+  .screen{border-radius:26px;background:var(--bg);padding:12px 11px 14px;position:relative;overflow:hidden;min-height:660px}
+  .dim{position:absolute;inset:0;background:rgba(2,6,23,.55)}
+  .list{display:flex;flex-direction:column;gap:7px}
+  .item{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:14px;background:var(--card);border:1px solid var(--edge)}
+  .idot{width:22px;height:22px;border-radius:8px;background:linear-gradient(140deg,var(--hab),var(--hab-2));flex:none}
+  .iname{font-size:12.5px;font-weight:600;flex:1}
+  .istate{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-dim)}
+  .istate.ok{color:var(--ok)} .istate.bad{color:#fda4af}
+
+  .sheet{position:absolute;left:0;right:0;bottom:0;border-radius:22px 22px 26px 26px;background:var(--card-2);border:1px solid var(--edge);padding:10px 13px 14px}
+  .grab{width:36px;height:4px;border-radius:999px;background:rgba(148,163,184,.3);margin:0 auto 10px}
+  .stitle{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .ssub{font-family:'Inter',sans-serif;font-size:10.5px;color:var(--ink-dim);margin-top:2px}
+  .field{margin-top:11px}
+  .lbl{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:500;color:var(--ink-soft);margin-bottom:5px}
+  .diff{display:flex;gap:6px}
+  .diff span{flex:1;text-align:center;padding:7px 0;border-radius:10px;border:1px solid var(--edge);font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;color:var(--ink-soft)}
+  .diff span.on{background:rgba(167,139,250,.16);border-color:rgba(167,139,250,.45);color:#ede9fe}
+  .ta{min-height:44px;border-radius:10px;border:1px solid var(--edge);background:var(--bg);padding:8px 10px;font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-dim)}
+  .ta.filled{color:var(--ink)}
+
+  .hour{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:11px;padding:9px 11px;border-radius:12px;background:rgba(148,163,184,.06);border:1px solid var(--edge)}
+  .hour .l{font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft)}
+  .hour .l b{color:#f1f5f9;font-weight:700;font-variant-numeric:tabular-nums}
+  .hour .l small{display:block;font-size:9.5px;color:var(--ink-dim);margin-top:2px}
+  .link{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;color:#c4b5fd;white-space:nowrap}
+  .hour.edit{display:block;border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.07)}
+  .hour.edit .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .timeinp{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .timeinp .box{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;height:38px;border-radius:10px;border:1.5px solid var(--hab);background:var(--bg);font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .timeinp .box i{font-style:normal;color:var(--ink-dim);font-weight:500}
+  .timeinp .caret{display:inline-block;width:1.5px;height:18px;background:var(--hab);margin-left:1px;vertical-align:middle}
+  .save{height:38px;padding:0 13px;border-radius:10px;background:var(--hab-2);color:#fff;font-family:'Inter',sans-serif;font-size:11px;font-weight:700;display:flex;align-items:center}
+  .save.off{opacity:.4}
+  .hint{font-family:'Inter',sans-serif;font-size:9.5px;color:var(--ink-dim);margin-top:7px;line-height:1.5}
+  .hint b{color:var(--ink-soft)}
+
+  .actions{margin-top:12px;padding-top:11px;border-top:1px solid var(--edge);display:flex;flex-direction:column;gap:7px}
+  .btn{height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:12px;font-weight:700}
+  .btn.p{background:var(--hab-2);color:#fff}
+  .btn.s{background:rgba(148,163,184,.1);color:var(--ink);border:1px solid var(--edge)}
+  .btn.g{color:#fda4af;background:transparent}
+  .toast{position:absolute;left:14px;right:14px;top:14px;padding:9px 12px;border-radius:12px;background:#0f172a;border:1px solid rgba(16,185,129,.4);font-family:'Inter',sans-serif;font-size:11px;color:#d1fae5;display:flex;gap:8px;align-items:center;box-shadow:0 10px 30px -10px rgba(0,0,0,.8)}
+  .toast .d{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+  .toast b{color:#fff;font-variant-numeric:tabular-nums}
+
+  .wire{margin-top:10px;padding:9px 11px;border-radius:12px;background:rgba(2,6,23,.6);border:1px dashed rgba(148,163,184,.25);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;line-height:1.6;color:var(--ink-soft);white-space:pre-wrap;overflow-wrap:anywhere}
+  .wire b{color:#c4b5fd;font-weight:700}
+  .wire s{color:var(--ink-dim)}
+
+  .table{width:100%;border-collapse:collapse;margin-top:14px;max-width:900px;font-size:12.5px}
+  .table th,.table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--edge);vertical-align:top;line-height:1.5}
+  .table th{font-family:'Inter',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-dim)}
+  .table td b{color:#f1f5f9}
+  .table td.y{color:#a7f3d0} .table td.n{color:var(--ink-dim)}
+
+  @media (max-width:420px){
+    body{padding:20px 14px 56px}
+    .phone{max-width:100%}
+  }
+</style>
+
+<div class="page">
+
+  <h1>La hora del registro</h1>
+  <p class="lede">Tajada 3b de las métricas de un hábito. Regla de fondo: <b>marcar sigue costando un toque</b>. La hora del reloj viaja escondida en ese mismo toque, y no hay ni un desplegable ni una pregunta nueva en el camino de marcar. Lo único que aparece en pantalla es <b>una línea en el registro del día</b> que dice a qué hora fue y deja corregirla — porque «la hora del botón» no siempre es la hora real, como enseñó empezar algo que ya empezó.</p>
+
+  <p class="caption">1 · Marcar no cambia: el mismo toque, ahora con hora</p>
+  <div class="row">
+
+    <div class="col">
+      <p class="ctitle now">Hoy<small>La hoja del día de «Meditar». Dificultad, notas y los dos botones. Nada dice a qué hora ocurrió nada.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="list">
+          <div class="item"><div class="idot"></div><div class="iname">Meditar</div><div class="istate">pendiente</div></div>
+          <div class="item"><div class="idot" style="background:linear-gradient(140deg,#34d399,#10b981)"></div><div class="iname">Leer 20 min</div><div class="istate ok">hecho</div></div>
+          <div class="item"><div class="idot" style="background:linear-gradient(140deg,#fbbf24,#f59e0b)"></div><div class="iname">Sin azúcar</div><div class="istate">pendiente</div></div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="stitle">Meditar</div>
+          <div class="ssub">Hoy, jueves 25 de septiembre</div>
+          <div class="field"><div class="lbl">Dificultad (opcional)</div><div class="diff"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="field"><div class="lbl">Notas (opcional)</div><div class="ta">¿Cómo fue?</div></div>
+          <div class="actions">
+            <div class="btn p">Completé el hábito hoy</div>
+            <div class="btn g">Registrar falla del día</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Propuesto · al marcar<small>Idéntico a hoy. Pulsas a las 22:15 y viaja «22:15» dentro de la misma mutación. <b>Cero píxeles nuevos en este paso</b>: el criterio 453 devuelve la tajada si aparece uno.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="list">
+          <div class="item"><div class="idot"></div><div class="iname">Meditar</div><div class="istate">pendiente</div></div>
+          <div class="item"><div class="idot" style="background:linear-gradient(140deg,#34d399,#10b981)"></div><div class="iname">Leer 20 min</div><div class="istate ok">hecho</div></div>
+          <div class="item"><div class="idot" style="background:linear-gradient(140deg,#fbbf24,#f59e0b)"></div><div class="iname">Sin azúcar</div><div class="istate">pendiente</div></div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="stitle">Meditar</div>
+          <div class="ssub">Hoy, jueves 25 de septiembre</div>
+          <div class="field"><div class="lbl">Dificultad (opcional)</div><div class="diff"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="field"><div class="lbl">Notas (opcional)</div><div class="ta">¿Cómo fue?</div></div>
+          <div class="actions">
+            <div class="btn p">Completé el hábito hoy</div>
+            <div class="btn g">Registrar falla del día</div>
+          </div>
+          <div class="wire"><s>// lo que viaja al pulsar a las 22:15</s>
+habitFollowUpAdd({
+  habitId, date: "2026-09-25",
+  isFailed: true,
+  <b>timeOfDay: "22:15"</b>   <s>← la hora del toque</s>
+})</div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Propuesto · un día pasado<small>Registrar el martes desde el calendario. Aquí no se sabe la hora, así que <b>no se inventa</b>: viaja sin ella. La hoja tampoco cambia.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="list">
+          <div class="item"><div class="idot"></div><div class="iname">Meditar</div><div class="istate">sin registro</div></div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="stitle">Meditar</div>
+          <div class="ssub">Martes 23 de septiembre</div>
+          <div class="field"><div class="lbl">Dificultad (opcional)</div><div class="diff"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="field"><div class="lbl">Notas (opcional)</div><div class="ta">¿Cómo fue?</div></div>
+          <div class="actions">
+            <div class="btn p">Completé el hábito ese día</div>
+            <div class="btn g">Registrar falla del día</div>
+          </div>
+          <div class="wire"><s>// registrando un día que no es hoy</s>
+habitFollowUpAdd({
+  habitId, date: "2026-09-23",
+  isAccomplished: true
+  <s>// sin timeOfDay: nadie sabe a qué hora fue</s>
+})</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+  <p class="note"><b>Lo que decide este paso:</b> la hora se toma <b>en el instante de pulsar</b>, no al abrir la hoja (si la dejas abierta diez minutos, la hora es la del botón). Se guarda igual en cumplimientos que en fallos, y también en cada suma de un hábito de cantidad: en ese caso la hora que queda es <b>la del último toque</b>, que es el que cierra el día. Un día pasado no lleva hora y no la llevará hasta que tú la pongas a mano. El texto del botón de un día pasado («ese día») ya existe hoy o no: no es parte de esta tajada, está aquí solo para que el caso se entienda.</p>
+
+  <p class="caption">2 · Después de marcar: el registro del día dice la hora, y se corrige</p>
+  <div class="row">
+
+    <div class="col">
+      <p class="ctitle">La línea de la hora<small>Al volver a abrir el registro de hoy aparece <b>una sola línea</b> entre las notas y los botones. Solo existe si el registro tiene hora.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="list">
+          <div class="item"><div class="idot"></div><div class="iname">Meditar</div><div class="istate bad">falla</div></div>
+          <div class="item"><div class="idot" style="background:linear-gradient(140deg,#34d399,#10b981)"></div><div class="iname">Leer 20 min</div><div class="istate ok">hecho</div></div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="stitle">Meditar</div>
+          <div class="ssub">Hoy, jueves 25 de septiembre · registrado como falla</div>
+          <div class="field"><div class="lbl">Dificultad (opcional)</div><div class="diff"><span>1</span><span>2</span><span>3</span><span class="on">4</span><span>5</span></div></div>
+          <div class="field"><div class="lbl">Notas (opcional)</div><div class="ta filled">Llegué tarde y me fui directo a la cama.</div></div>
+          <div class="hour">
+            <div class="l">Registrado a las <b>22:15</b><small>la hora en que pulsaste</small></div>
+            <div class="link">Corregir</div>
+          </div>
+          <div class="actions">
+            <div class="btn s">Guardar notas y dificultad</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Corrigiendo<small>«Corregir» abre un campo de hora <b>en el sitio</b>, con la hora actual ya escrita. Guardar manda <b>solo la hora</b>: ni la falla, ni las notas, ni la dificultad se reescriben.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="list">
+          <div class="item"><div class="idot"></div><div class="iname">Meditar</div><div class="istate bad">falla</div></div>
+          <div class="item"><div class="idot" style="background:linear-gradient(140deg,#34d399,#10b981)"></div><div class="iname">Leer 20 min</div><div class="istate ok">hecho</div></div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="stitle">Meditar</div>
+          <div class="ssub">Hoy, jueves 25 de septiembre · registrado como falla</div>
+          <div class="field"><div class="lbl">Dificultad (opcional)</div><div class="diff"><span>1</span><span>2</span><span>3</span><span class="on">4</span><span>5</span></div></div>
+          <div class="field"><div class="lbl">Notas (opcional)</div><div class="ta filled">Llegué tarde y me fui directo a la cama.</div></div>
+          <div class="hour edit">
+            <div class="top"><div class="l">¿A qué hora fue de verdad?</div><div class="link" style="color:var(--ink-dim)">Cancelar</div></div>
+            <div class="timeinp">
+              <div class="box">21<i>:</i>4<span class="caret"></span></div>
+              <div class="save">Guardar hora</div>
+            </div>
+            <div class="hint">Ahora dice <b>22:15</b>. Cambia solo la hora; lo demás queda como está.</div>
+          </div>
+          <div class="actions">
+            <div class="btn s">Guardar notas y dificultad</div>
+          </div>
+          <div class="wire"><s>// al guardar la hora</s>
+habitFollowUpEdit({
+  id,
+  <b>timeOfDay: "21:40"</b>
+})  <s>// y nada más: ni isFailed, ni notes, ni difficulty</s></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="col">
+      <p class="ctitle">Guardada · y el registro sin hora<small>Arriba, la confirmación tras corregir. Abajo, un registro de antes de esta feature: <b>la línea no existe</b>, y la hoja se ve exactamente como hoy.</small></p>
+      <div class="phone"><div class="screen">
+        <div class="toast"><span class="d"></span>Hora corregida: <b>&nbsp;21:40</b></div>
+        <div class="list" style="margin-top:44px">
+          <div class="item"><div class="idot"></div><div class="iname">Meditar</div><div class="istate bad">falla</div></div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="stitle">Meditar</div>
+          <div class="ssub">Lunes 15 de septiembre · registrado como hecho</div>
+          <div class="field"><div class="lbl">Dificultad (opcional)</div><div class="diff"><span>1</span><span class="on">2</span><span>3</span><span>4</span><span>5</span></div></div>
+          <div class="field"><div class="lbl">Notas (opcional)</div><div class="ta">¿Cómo fue?</div></div>
+          <div class="actions">
+            <div class="btn s">Guardar notas y dificultad</div>
+          </div>
+          <div class="hint" style="margin-top:10px">Este registro es de antes: <b>no tiene hora y no aparece ninguna línea</b>. No se pinta «sin hora» ni un guion: ese silencio es el criterio 458.</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <p class="note"><b>Lo que decide esta pantalla:</b> la corrección vive en el registro del día porque ahí es donde ya se corrigen las notas y la dificultad; no hay una pantalla nueva ni un ajuste en otra parte. La línea se lee como un dato («Registrado a las 22:15») y no como un campo más del formulario, para no sugerir que hay que rellenarla. «Guardar hora» es <b>un botón propio</b>, separado de «Guardar notas y dificultad»: una intención, una acción, y la mutación que viaja lleva únicamente <code>timeOfDay</code>.</p>
+
+  <table class="table">
+    <tr><th>Situación</th><th>¿Se guarda hora?</th><th>¿Aparece la línea?</th></tr>
+    <tr><td>Marco hoy (hecho, falla o una suma)</td><td class="y">Sí, la del toque</td><td class="y">Sí, al reabrir el registro</td></tr>
+    <tr><td>Registro un día pasado desde el calendario</td><td class="n">No: viaja sin hora</td><td class="n">No</td></tr>
+    <tr><td>Reabro un registro de antes de esta feature</td><td class="n">— (no tiene)</td><td class="n">No: se ve como hoy</td></tr>
+    <tr><td>Edito notas o dificultad de un registro con hora</td><td class="y">Se conserva la que había</td><td class="y">Sí, sin tocarla</td></tr>
+    <tr><td>Corrijo la hora</td><td class="y">Solo la hora viaja</td><td class="y">Sí, con la nueva</td></tr>
+  </table>
+
+  <div class="ask"><b>Tu decisión (D5, tajada 3b):</b> ¿te vale esta forma —una línea «Registrado a las HH:mm · Corregir» solo cuando hay hora, y la corrección en el sitio con su propio «Guardar hora»—? Y una pregunta que el expediente dejó abierta: un registro <b>sin</b> hora (un día pasado, o uno viejo) <b>no deja ponerle hora a mano</b> en esta tajada, porque la línea no existe. Si quieres poder añadirla, dilo y la línea pasaría a decir «Sin hora · Añadir» en esos casos; si no, se queda callada como está dibujado.</div>
+
+</div>

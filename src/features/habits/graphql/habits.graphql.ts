@@ -41,6 +41,7 @@ const FOLLOW_UP_FIELDS = `
   isLifeline
   difficulty
   archived
+  timeOfDay
 `
 
 const MEASURE_FIELDS = `
@@ -141,6 +142,7 @@ export const HABIT_WEEK_VIEW_QUERY = `
           count
           time
           notes
+          timeOfDay
         }
       }
       lifelinesRemaining
@@ -163,6 +165,7 @@ export const HABIT_FOLLOW_UPS_IN_DATES_QUERY = `
         count
         time
         notes
+        timeOfDay
       }
     }
   }

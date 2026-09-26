@@ -73,6 +73,8 @@ export interface HabitFollowUp {
   notes: string | null
   story: string | null
   archived: boolean
+  /** Hora de reloj local «HH:mm» a la que se registró el día. `null` = sin hora. */
+  timeOfDay: string | null
 }
 
 export interface HabitCollection {
@@ -114,6 +116,7 @@ export interface HabitFollowUpsDateGroup {
     count: number | null
     time: number | null
     notes: string | null
+    timeOfDay: string | null
   }>
 }
 
@@ -156,6 +159,8 @@ export interface HabitFollowUpAddInput {
   isFailed?: boolean
   isLifeline?: boolean
   difficulty?: number | null
+  /** «HH:mm» local. Ausente = el API la deja en `null` (sin hora). */
+  timeOfDay?: string | null
 }
 
 export interface HabitFollowUpEditInput {
@@ -168,6 +173,8 @@ export interface HabitFollowUpEditInput {
   isFailed?: boolean
   archived?: boolean
   difficulty?: number | null
+  /** Ausente = no se toca la hora guardada; `null` = se borra. */
+  timeOfDay?: string | null
 }
 
 export interface HabitFilters {

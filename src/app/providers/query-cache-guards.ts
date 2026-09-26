@@ -1,5 +1,5 @@
 import type { PersistedClient } from '@tanstack/react-query-persist-client'
-import { vidaKeys } from '@/shared/api/query-keys'
+import { habitKeys, vidaKeys } from '@/shared/api/query-keys'
 
 /**
  * La red de abajo: **se valida lo que se rehidrata, no lo que se recibe.**
@@ -40,7 +40,7 @@ import { vidaKeys } from '@/shared/api/query-keys'
  * pintado —`activeDays.includes(...)`, `suggestion.item.days`—, la pantalla se
  * cae entera y ahí sí.
  *
- * Aplicada hoy son **ocho guardas**. Cubren lo que alimenta `/app/vida/hoy` y lo
+ * Aplicada hoy son **nueve guardas**. Cubren lo que alimenta `/app/vida/hoy` y lo
  * que se recorre sin red en Plantilla y Revisión. Y no se decide de memoria:
  * `SIN_GUARDA_A_PROPOSITO`, abajo, lista las claves de Vida que se quedan fuera
  * **con su motivo**, y un test recorre `vidaKeys` y falla si aparece una que no
@@ -166,6 +166,21 @@ export const CACHE_GUARDS: readonly CacheGuard[] = [
     // cada arranque: un prefijo que cubre varias formas es una trampa.
     keyPrefix: [...vidaKeys.followUps.all(), 'range'],
     porQue: 'Revisión recorre cada grupo de días y su lista de sesiones',
+    isValid: (data) =>
+      everyItem(data, (group) => hasString(group, 'date') && Array.isArray(group.followUps)),
+  },
+  {
+    // **La primera guarda de hábitos, y la única de esta feature.**
+    // `HabitFollowUpsDateGroup[]` = `{ date, followUps[] }`, la misma forma que
+    // obligó a partir la guarda de `vidaKeys.followUps.range`. Va porque
+    // `buildFollowUpsByHabit` (`habit-stats.utils.ts`) hace
+    // `for (const fu of group.followUps)` **sin red**: un grupo cacheado sin
+    // `followUps` tumba cuatro pantallas antes de pintar. El resto de
+    // `habitKeys` sigue fuera del automatismo a sabiendas (ver el test de
+    // cobertura): `FABRICAS` solo recorre `vidaKeys`, y meter hábitos ahí es una
+    // decisión por clave con su propio expediente.
+    keyPrefix: [...habitKeys.all, 'calendar'],
+    porQue: 'el panel, Mi Día, la lista y Mi Persona recorren cada grupo y su lista de seguimientos',
     isValid: (data) =>
       everyItem(data, (group) => hasString(group, 'date') && Array.isArray(group.followUps)),
   },

@@ -174,6 +174,8 @@ export function buildFollowUpsByHabit(
         notes: fu.notes,
         story: null,
         archived: false,
+        // Sin esta línea la hora no llega al panel aunque el servidor la mande.
+        timeOfDay: fu.timeOfDay ?? null,
       })
     }
   }

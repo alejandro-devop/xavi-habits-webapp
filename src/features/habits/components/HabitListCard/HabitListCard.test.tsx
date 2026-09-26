@@ -56,6 +56,7 @@ function buildFollowUps(dates: string[]): Map<string, HabitFollowUp> {
         notes: null,
         story: null,
         archived: false,
+        timeOfDay: null,
       },
     ]),
   )

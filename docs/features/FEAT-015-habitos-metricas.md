@@ -5,7 +5,7 @@ status: building
 architect: yes    # solo para las tajadas 3 y 4; la 1 y la 2 cuelgan del panel que ya existe
 area: features/habits, **API (xavi-platform-node)** en las tajadas 3–4
 requested: 2026-09-22
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # FEAT-015 — Las métricas de un hábito
@@ -936,7 +936,7 @@ dos**, porque el corte cae justo donde cae un despliegue:
 | 1 | **Las cifras que faltan.** Récord como ficha propia y distinguido del mejor episodio del tramo, salvavidas usados, dificultad media. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitPanelTiles.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.module.scss`, `HabitPanel/HabitStreakEpisodesChart.tsx` (revisión del rótulo), `HabitPanel/HabitPanel.test.tsx` | 430–439 + 473–480 | **aceptada** (2026-09-24, en segunda vuelta: frase del récord corregida y escritorio remedido) |
 | 2 | **Dónde se falla, contado como fallos.** El día se elige por fallos, el umbral se dice en voz alta, muere «Vas peor». | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitWeekdayChart.tsx`, `HabitPanel/HabitPanel.tsx`, `HabitPanel/HabitPanel.test.tsx` | 440–452 + 473–480 | **aceptada** (2026-09-24, en segunda vuelta: la frase del caso de callar ya cuenta registros y lo dice; mutación y anchos remedidos por el revisor. Pendiente solo el 480 del usuario, y dentro de él la frase en un hábito de los de «evitar») |
 | 3a | **El API aprende la hora.** Columna, mapeo, SDL, validadores. **Nada visible; se cierra con el push del usuario y el job de migración.** | `xavi-platform-node`: `migrations/071_habit_logs_time_of_day.sql`, `src/services/habit.service.ts`, `src/types/services/habit.types.ts`, `src/graphql/modules/habit/habit.schema.ts`, `src/validators/schemas/habit.schemas.ts` | ninguno por sí sola (habilita 453–462) | in-review (aceptada el 2026-09-24; reabierta por la corrección del `null`, que decidió el usuario) |
-| 3b | **La hora se guarda y se corrige**, en el mismo toque, en los cuatro sitios a la vez. | `hooks/useHabitFollowUps.ts`, `utils/habit-time.utils.ts` (+ suite, nuevo), `types/habit.types.ts`, `graphql/habit-follow-ups.graphql.ts`, `graphql/habits.graphql.ts`, `utils/habit-stats.utils.ts`, `components/HabitFollowUpForm/HabitFollowUpForm.tsx`, `app/providers/query-cache-guards.ts`, los `vi.mock` de `HabitDayRow.test.tsx` | 453–462 | pendiente (**bloqueada por 3a**) |
+| 3b | **La hora se guarda y se corrige**, en el mismo toque, en los cuatro sitios a la vez. | `hooks/useHabitFollowUps.ts`, `utils/habit-time.utils.ts` (+ suite, nuevo), `types/habit.types.ts`, `graphql/habit-follow-ups.graphql.ts`, `graphql/habits.graphql.ts`, `utils/habit-stats.utils.ts`, `components/HabitFollowUpForm/HabitFollowUpForm.tsx`, `app/providers/query-cache-guards.ts`, los `vi.mock` de `HabitDayRow.test.tsx` | 453–462 | **aceptada** (2026-09-25; 453–461 verificados por el revisor con espía de variables y arnés a 375 px en oscuro. El 461 se cumple por orden de despliegue, no por construcción, y queda escrito en la sección 4. Pendiente solo el 462 del usuario) |
 | 4 | **A qué hora.** Bandas horarias en la rejilla del panel. | `utils/habit-panel.utils.ts` (+ suite), `HabitPanel/HabitHourBandsChart.tsx` (nuevo), `HabitPanel/HabitPanel.tsx`, `HabitPanel/charts.module.scss`, `HabitPanel/HabitPanel.test.tsx` | 463–472 | pendiente (**depende de 3b y de que pasen semanas**) |
 
 **Por qué se parte la 3 y por qué 3a no es una tajada horizontal disfrazada.** La
@@ -972,6 +972,19 @@ inmediatamente; la 4 sigue sin poder construirse el mismo día que la 3b.
 - **El coste real de arreglar las seis suites rotas del API.** Miré por qué están
   rotas (`HabitStreakFields` con tres campos nuevos) pero no cuántos tests hay que
   tocar. Está fuera de esta feature y dicho como riesgo, no medido.
+
+### D5 · Render de la tajada 3b — aprobado el 2026-09-25
+
+`docs/habits/assets/02-habitos-hora-del-registro.html`, aprobado tal cual. Lo que
+fija: **marcar no cambia** (cero píxeles nuevos en ese camino); al reabrir el
+registro del día aparece **una línea** entre «Notas» y los botones —«Registrado a
+las HH:mm · Corregir»— **solo si el seguimiento tiene `timeOfDay`**; «Corregir»
+abre un campo de hora en el sitio con su propio botón «Guardar hora», que manda
+`habitFollowUpEdit` con **solo `timeOfDay`**. Un registro **sin** hora (día pasado
+o anterior a la feature) **no enseña la línea y no deja añadirla a mano** en esta
+tajada: se preguntó y el usuario no pidió lo contrario, así que queda callado
+como está dibujado. La 3a está desplegada en Render (comprobado ese día contra el
+API real), así que el criterio 461 se prueba en el orden correcto.
 
 ## 3. Construcción — feature-builder
 
@@ -1998,6 +2011,175 @@ estaba en pantalla, así que el contraste de oscuro medido en la primera vuelta
 `src/features/habits` de la primera vuelta —ninguno nuevo—, más este expediente.
 El arnés temporal se borró antes de escribir esto.
 
+### Tajada 3b — la hora se guarda y se corrige
+
+**Resumen para el revisor:** marcar un hábito **hoy** guarda ahora la hora del
+reloj del momento de pulsar, sin un paso más y sin un píxel nuevo en ese camino;
+al reabrir el registro del día aparece **una línea** —«Registrado a las HH:mm ·
+Corregir»— **solo si ese seguimiento tiene hora**, y corregirla manda **un**
+`habitFollowUpEdit` con `{ id, timeOfDay }` y nada más. El sello vive en el
+`mutationFn` de `useAddHabitFollowUpMutation`, que es el embudo por el que pasan
+los cuatro sitios que escriben, así que ninguno de ellos se tocó.
+**Lo que más probablemente he roto:** la **lectura** de seguimientos en todas las
+pantallas, no la escritura. `HabitFollowUp.timeOfDay` es ahora un campo
+**obligatorio** del tipo (`string | null`) y `timeOfDay` entró en **cuatro**
+selecciones GraphQL (`FOLLOW_UP_FULL_FIELDS`, `FOLLOW_UP_FIELDS` de Mi Día, el
+`followUp` de `habitWeekView` y el recortado de `habitFollowUpsInDates`): si la
+API que responde no tuviera el campo, **las cuatro consultas fallarían enteras**,
+no solo la hora. Está desplegado en Render y comprobado, pero es el punto único
+de caída de esta tajada. El segundo candidato es la **guarda de caché nueva**
+sobre `habitKeys.calendar`: es la primera guarda de hábitos que existe, y un
+predicado mal puesto tira la caché del panel, Mi Día, la lista y Mi Persona en
+cada arranque sin que nada se ponga rojo.
+
+**Qué se construyó:**
+
+- `src/features/habits/utils/habit-time.utils.ts` — **nuevo**. `nowHHmm`,
+  `isValidHHmm`, `toHHmm` y `timeOfDayForDate(date, today, now)`. El criterio 457
+  entero vive en la última: un día que no es hoy devuelve `null`. Suite propia en
+  `habit-time.utils.test.ts` (12 casos).
+- `src/features/habits/hooks/useHabitFollowUps.ts` — el `mutationFn` de
+  `useAddHabitFollowUpMutation` sella la hora **al pulsar**; si sale `null`, la
+  clave **no viaja** (criterio 461). Y `useSetFollowUpTimeOfDayMutation()`,
+  hermana que manda solo `{ id, timeOfDay }` y avisa con un toast.
+- `src/features/habits/components/HabitFollowUpForm/HabitFollowUpForm.tsx` (+ su
+  `.module.scss`) — la línea de la hora entre «Notas» y los botones, con
+  «Corregir» → `<input type="time">` precargado + «Guardar hora» + «Cancelar», y
+  el texto «Ahora dice HH:mm…». Exactamente lo dibujado en el render aprobado.
+- `src/features/habits/types/habit.types.ts` — `timeOfDay` en `HabitFollowUp`, en
+  el sub-objeto recortado de `HabitFollowUpsDateGroup` y, opcional, en los dos
+  inputs.
+- `graphql/habit-follow-ups.graphql.ts` y `graphql/habits.graphql.ts` — las
+  cuatro selecciones.
+- `src/features/habits/utils/habit-stats.utils.ts` — `timeOfDay` en el remapeo de
+  `buildFollowUpsByHabit`, sin el cual la hora no llega al panel.
+- `src/app/providers/query-cache-guards.ts` — guarda de `habitKeys.calendar`,
+  copiando la de `vidaKeys.followUps.range` (misma forma `{date, followUps[]}`).
+- Tests: `HabitFollowUpForm.test.tsx` (**nuevo**, 7 casos, mockeando el **API** y
+  no los hooks, para cubrir el recorrido completo), tres casos nuevos en
+  `habit-stats.utils.test.ts` para el criterio 459, el `vi.mock` de
+  `HabitDayRow.test.tsx` completado con el hook nuevo, y `timeOfDay: null` en
+  tres fixtures que el tipo obligatorio dejó cojas.
+
+**Por qué así, y qué se descartó:**
+
+- **El sello va en el hook, no en los componentes.** Los cuatro sitios que
+  escriben (círculo de Mi Día, los tres caminos del cajón, salvavidas y su botón)
+  pasan por el mismo `mutationFn`: una decisión en vez de cuatro. No se tocó
+  ninguno de ellos y por eso «marcar» no cambió ni un píxel.
+- **No se reutilizó `updateFollowUp` del formulario** para corregir la hora:
+  reescribe `difficulty` y `notes` en el mismo edit y eso rompe el criterio 455.
+  De ahí la mutación hermana.
+- **No se importó nada de `features/vida`.** Busqué primero: `vida-time.utils.ts`
+  tiene `isValidHhMm` y `normalizeTimeForDisplay`, y `vida-date.utils.ts` tiene
+  `getCurrentLocalDate` — **encajarían**, pero son de otro módulo de features y el
+  plan lo descartó explícitamente («presta la forma, no el código»). Lo que sí se
+  reutilizó es lo de casa: `getTodayString` de `habit-type.utils.ts`. `nowHHmm` no
+  existía en ninguna parte del repositorio.
+- **`timeOfDay` obligatorio en el tipo, opcional en los inputs.** Obligatorio
+  obliga a que cualquier fixture nueva decida si hay hora o no; opcional en el
+  input es lo que permite que «ausente» signifique «sin hora» sin escribir
+  `undefined` a mano.
+
+**Verificación (línea base medida hoy, 2026-09-25, en este mismo árbol):**
+
+| Qué | Antes | Después |
+|---|---|---|
+| `pnpm typecheck` | limpio | limpio |
+| `pnpm lint` | 14 errores / 0 warnings | **14 / 0** (los mismos) |
+| `pnpm test` | 2 fallos de 2302 (`SearchSelect` ×2) | **2 fallos de 2312**, los mismos dos; +10 tests nuevos |
+| `pnpm build` | — | **0**; CSS 280,11 → **281,63 kB** (sube: estilos nuevos), chunk inicial 1.154,54 → **1.157,37 kB** |
+
+Arnés temporal (`arnes-3b.html` + `src/arnes-3b.tsx` + una página de `iframe`s),
+**ya borrado**, con el componente montado en `iframe` de 375 y 760 px:
+
+- 375 px: `scrollWidth === clientWidth` (360 = 360), **0 nodos desbordados**, con
+  la línea cerrada y con el editor abierto (campo 166 px + botón 137 px caben).
+- 760 px: 745 = 745, **0 desbordados**.
+- Con hora: «Registrado a las 22:15 / la hora en que pulsaste / Corregir». Sin
+  hora: el texto de la hoja es **idéntico** al de hoy, sin «sin hora» ni guion.
+- Oscuro (`data-theme='dark'`, ámbito `[data-ds='aura']` en un descendiente):
+  «22:15» **14,89:1**, «la hora en que pulsaste» y «Cancelar» **7,88:1**,
+  «Corregir» **9,76:1**, el `input` **12,59:1**. Todos ≥ 4,5:1.
+
+**Criterios, uno a uno:**
+
+- **453 — marcar no cambia.** Cumplido. `git diff` no toca `HabitDayRow.tsx`,
+  `useHabitLifelineAction.ts` ni `HabitLifelineButton.tsx`, y en
+  `HabitFollowUpForm` el bloque nuevo está **fuera** del camino de marcar y detrás
+  de `followUpTime ?`. Test: «marcar hoy no añade ni un paso» comprueba que antes
+  de pulsar no hay ni «¿a qué hora…» ni «Corregir» en el DOM.
+- **454 — una mutación con la hora del instante de pulsar.** Cumplido y probado
+  con reloj falso: hoja abierta a las 22:15, pulsada a las **22:25**, viaja
+  `"22:25"`. Un solo `addHabitFollowUp`.
+- **455 — corregir manda solo la hora.** Cumplido.
+  `expect(updateHabitFollowUp.mock.calls[0][0]).toEqual({ id: 'log-1', timeOfDay: '21:40' })`
+  — `toEqual`, no `toMatchObject`: si se colara `notes` o `difficulty`, el test cae.
+- **456 — también en los cumplimientos.** Cumplido: el sello está en el hook, que
+  es el mismo para `isAccomplished`, `isFailed`, `isLifeline` y las sumas. El test
+  del 454 usa precisamente el botón de **completar**.
+- **457 — un día pasado no inventa hora.** Cumplido: `timeOfDayForDate` con su
+  suite, y el test de componente comprueba que el input que viaja
+  `not.toHaveProperty('timeOfDay')`.
+- **458 — un seguimiento sin hora se ve como hoy.** Cumplido en el cajón de
+  registro (test + arnés). En Mi Día, semana y calendario **no se pintó nada
+  nuevo**: solo se añadió un campo a la consulta. Verificado por los 2312 tests y
+  porque ninguna de esas pantallas cambió de archivo.
+- **459 — la hora viaja en las dos formas.** Cumplido y con test que lo sujeta:
+  las dos selecciones contienen `timeOfDay` y `buildFollowUpsByHabit` conserva la
+  hora de la forma recortada (y devuelve `null`, no medianoche, cuando no la hay).
+- **460 — `time` no se toca.** Cumplido. `git diff -U0 -- src | grep '\btime\b'`
+  sin `timeOfDay` devuelve solo `type="time"` y dos `id`/`aria-labelledby` del
+  campo nuevo: ni una línea del campo `time`.
+- **461 — el cliente no revienta si el API no tiene el campo.** Cumplido **en la
+  mutación**: cuando no hay hora, la clave no aparece en las variables. **Con una
+  salvedad honesta que el revisor debe pesar:** las cuatro **selecciones** sí piden
+  `timeOfDay` siempre, así que contra un API sin el campo las consultas fallarían.
+  El orden de despliegue que el plan fijó (API primero) es lo que lo cubre, y 3a
+  está desplegada y comprobada; no es una protección del cliente.
+- **462 — del usuario.** Pendiente. Todo `/app/*` está tras el login y los agentes
+  no entran. Pasos: abrir «Mi Día» en el móvil, marcar un hábito **de hoy**,
+  volver a abrir el registro de ese día y comprobar que dice «Registrado a las»
+  con la hora del momento; pulsar «Corregir», cambiar la hora, guardar, y
+  comprobar que las notas y la dificultad siguen como estaban.
+- **Transversales:** 473 (nada se presenta como lo que no es; sin hora **no se
+  dice nada**), 474 (cero frases prohibidas: el `grep` de la lista sobre los
+  archivos que toqué da **0**; los 13 de `src/features/habits/` son de HEAD y no
+  míos), 475 (estados: el cajón conserva los suyos; el nuevo tiene cargando —
+  `isLoading` del botón— y error — toast), 476 (medido arriba), 477 (tabla
+  arriba), 478 (**esta tajada sí toca `graphql/`, y le toca**: la 478 dice «salvo
+  la 3 y la 4»), 479 (ninguna ruta nueva: `git diff` no toca `router/` ni
+  `app-nav.config.ts`).
+
+**Lo que descubrí y no estaba en el plan:**
+
+1. **`<input type="time">` se pinta en el formato del navegador, no en el del
+   dato.** En el arnés (navegador en inglés) la hora `22:15` se lee «10:15 PM».
+   El **valor** sigue siendo `"22:15"` y es lo que viaja, así que el contrato no
+   se rompe; pero el render dibuja «21:4» estilo 24 h y en un dispositivo en
+   inglés se verá AM/PM. No lo arreglo —sería un campo a mano y eso encarece la
+   corrección— pero queda dicho.
+2. **Tres fixtures de test estaban cojas** y el tipo obligatorio las destapó:
+   `HabitDayRow.test.tsx`, `HabitListCard.test.tsx` y `habit-panel.utils.test.ts`.
+   Se les puso `timeOfDay: null`; ninguna aserción se borró.
+3. **`buildFollowUpsByHabit` no tenía ni un test** antes de esta tajada, a pesar
+   de ser el remapeo del que comen cuatro pantallas. Ahora tiene tres. No amplío
+   más: está fuera de alcance.
+4. **`FOLLOW_UP_FIELDS` de Mi Día y el `followUp` de `habitWeekView` no listan
+   `habitId`** y sin embargo se tipan como `HabitFollowUp`. Es una mentira de
+   tipos preexistente; no la toco.
+5. **El arnés en oscuro tiene una trampa que cuesta turnos:** `data-ds='aura'`
+   tiene que ir en un **descendiente** de `<html>`, porque el bloque oscuro es
+   `[data-theme='dark'] [data-ds='aura']`. Con `data-ds` en el propio `<html>` el
+   tema oscuro **no se aplica** y se mide el claro creyendo medir el oscuro.
+
+**Nota de entorno (no la toco, la digo):** la línea base real de `pnpm test` hoy,
+medida antes de empezar, es **2 fallos de 2302** —no de 2203 ni de 2219—.
+
+**Estado del árbol:** sin commitear. Queda **un servidor de Vite arrancado por mí
+en el 5174** (`preview_start` con `autoPort`; el del usuario sigue en el 5173).
+No tengo `preview_stop` en esta sesión: la sesión principal decide si lo para.
+
 ## 4. Revisión — feature-reviewer
 
 ### Tajada 3a — el API aprende la hora
@@ -2920,3 +3102,149 @@ dice «hay N registros o menos», que es la que se corrigió.
 `ENVIRONMENT.md` sigue diciendo «2 fallos de **2203**»; con esta tajada dentro
 son **2219**. El número de fallos es el mismo y el que manda; el total lleva dos
 tajadas desfasado.
+
+### Tajada 3b — la hora se guarda y se corrige
+
+**Veredicto: aceptada.** Los 453–461 se cumplen, comprobados por mi cuenta y no
+leídos del reporte; el 462 sigue siendo del usuario. Línea base igual que la de
+`ENVIRONMENT.md`. Hay dos hallazgos escritos abajo que **no** devuelven la
+tajada.
+
+**Línea base, medida en el árbol sucio (no leída):**
+
+- `pnpm typecheck` → exit 0, limpio.
+- `pnpm lint` → **14 errores / 0 warnings**, los mismos preexistentes.
+- `pnpm test` → **2 fallos de 2312** (`SearchSelect` ×2, preexistentes). La base
+  dice «2 de 2294»: mismo número de fallos, el total sube por los tests nuevos.
+- `pnpm build` **no** lo corrí (lo dejo dicho, no lo disimulo): el `tsc -b` de
+  `typecheck` salió limpio y la tajada no añade SCSS que pudiera comerse reglas
+  más allá del bloque nuevo, que sí se ve pintado en el arnés.
+
+**Criterios, uno a uno.**
+
+- **453 · marcar no cuesta ni un píxel más. Cumplido.** `git diff --stat` no
+  lista `HabitDayRow.tsx` ni ningún otro componente del camino de marcar: el
+  único `.tsx` de producto tocado es `HabitFollowUpForm.tsx`, y ahí el bloque
+  nuevo está detrás de `followUpTime ? … : null`, que solo es cierto con
+  `existingFollowUp.timeOfDay`. Medido en el arnés: con `timeOfDay: null` el
+  formulario no pinta ni la línea ni «Corregir» ni la frase «sin hora». Ni
+  desplegable, ni confirmación, ni un segundo paso.
+- **454 · una mutación con la hora del momento de pulsar. Cumplido.** Espié las
+  **variables reales** montando el hook con `graphqlRequest` mockeado (test
+  temporal mío, ya borrado): `{"input":{"habitId":"7","date":"2026-09-25",
+  "isAccomplished":true,"timeOfDay":"20:15"}}` — una sola llamada, formato
+  `HH:mm`. Que la hora es la del **botón** y no la del montaje se ve en el
+  código (`nowHHmm()` solo se llama dentro del `mutationFn`; `grep` de
+  `new Date()` en `HabitFollowUpForm.tsx` y `HabitDayRow.tsx`: cero) y lo sujeta
+  el test del constructor, que corrí: hoja abierta a las 22:15, pulsada a las
+  22:25, viaja `"22:25"`.
+- **455 · corregir manda solo la hora. Cumplido**, leyendo lo que viaja, no el
+  tipo: `{"input":{"id":"l1","timeOfDay":"21:40"}}` sobre
+  `mutation HabitFollowUpEdit($input: HabitFollowUpEditInput!)`. Dos claves y
+  nada más: ni `isFailed`, ni `notes`, ni `difficulty`. `useSetFollowUpTimeOfDay
+  Mutation` no pasa por `HabitFollowUpForm.updateFollowUp`, que sí las
+  reescribiría.
+- **456 · también en los cumplimientos. Cumplido.** El sello está en el embudo
+  (`useAddHabitFollowUpMutation`), por el que pasan los cuatro sitios que
+  escriben — comprobado que `useHabitLifelineAction.ts:17` y
+  `HabitDayRow.tsx:73` usan ese mismo hook. Mi espía de arriba es precisamente
+  un **cumplimiento** (`isAccomplished: true`) y lleva hora.
+- **457 · un día pasado no inventa hora. Cumplido.** Variables reales con
+  `date: '2026-09-23'`: `{"input":{"habitId":"7","date":"2026-09-23",
+  "isFailed":true}}` — la clave **no viaja**. Y «hoy» se decide en local, no en
+  UTC: `timeOfDayForDate` → `getTodayString()` → `formatLocalDateToYmd(new
+  Date())` (`habit-type.utils.ts:28`). Comprobado además el caso `date`
+  ausente: lleva hora, que es lo correcto porque el API lo resuelve como hoy.
+- **458 · lo de antes se ve igual. Cumplido.** Ningún componente de «Mi Día»,
+  semana, calendario o panel cambia (`git diff --stat`), `timeOfDay` es aditivo
+  y `toHHmm(null)` da `null`, que se pinta **callando**. La guarda nueva de
+  `query-cache-guards.ts` **no tira caché sana**, y lo verifiqué por separado:
+  el prefijo `['habits','calendar']` solo cubre `habitKeys.calendar(from,to)`
+  (`useHabits.ts:73`, único uso), cuyo `queryFn` devuelve
+  `HabitFollowUpsDateGroup[]` (`habits.api.ts:57-66`) — exactamente `{ date,
+  followUps[] }`, que es lo que el predicado exige; no se solapa con ninguna
+  otra guarda y las suites `query-cache-guards.*` siguen verdes.
+- **459 · la hora en las dos formas. Cumplido, y contra el API real.** En el
+  cliente: `timeOfDay` en `FOLLOW_UP_FULL_FIELDS`, en `FOLLOW_UP_FIELDS`, en
+  `HABIT_WEEK_VIEW_QUERY`, en `HABIT_FOLLOW_UPS_IN_DATES_QUERY` y conservado en
+  el remapeo de `buildFollowUpsByHabit`. Y la forma recortada la validé contra
+  `https://xavi-api-9om1.onrender.com/graphql`: la consulta
+  `habitFollowUpsInDates{ followUps{ id timeOfDay } }` **pasa la validación** y
+  solo devuelve `UNAUTHENTICATED`; `habitFollowUpEdit(input:{timeOfDay:"22:15"})`
+  tampoco protesta por el campo.
+- **460 · `time` intacto. Cumplido.** `git diff -U0 -- src | grep '\btime\b'`
+  sin `timeOfDay`: solo el nombre del archivo nuevo, un `type="time"` del
+  `<input>`, un `id` de etiqueta y dos `time: null` en fixtures de test nuevos.
+  Ni una línea de la duración en minutos.
+- **461 · el cliente no revienta sin el campo. Cumplido, pero por orden de
+  despliegue y no por construcción, y así queda escrito.** La mutación no manda
+  `timeOfDay` cuando no hay hora, pero **todas las selecciones lo piden
+  siempre**: contra un API sin el campo, marcar fallaría por validación. El
+  antecedente del criterio ya es falso —3a está desplegada y lo verifiqué yo
+  contra el API real, ver 459—, así que la ventana de riesgo está cerrada y el
+  criterio se da por cumplido. **Corolario para la tajada 4 y para cualquier
+  reversión: si alguna vez se revierte el API, este cliente deja de poder
+  marcar.** No es deuda que devuelva la tajada; es una nota de despliegue.
+- **462 · del usuario. Pendiente**, como estaba. Todo `/app/*` está tras el
+  login y los agentes no entran.
+
+**Transversales que aplican:** 473 (nada se rellena con un cero: sin hora se
+calla), 474 (ni una palabra de reproche: «Registrado a las HH:mm · la hora en
+que pulsaste» y «¿A qué hora fue de verdad?»), 477 (línea base, arriba), 478
+(no aplica: esta tajada sí es de la 3), 479 (ninguna ruta ni entrada de menú
+nuevas).
+
+**Qué miré alrededor.** `git diff --stat` primero, para saber qué se tocó de
+verdad. Luego, uno por uno: quién más usa `habitKeys.calendar` (`grep` en `src`,
+un solo sitio) y qué forma devuelve, porque la guarda nueva era el riesgo más
+caro; quién más pasa por `useAddHabitFollowUpMutation` (el salvavidas y el
+círculo de Mi Día, los dos intactos); y si `HabitFollowUp.timeOfDay`
+**obligatorio** rompía a alguien — `pnpm typecheck` limpio sobre el árbol entero
+es la prueba de que los tres fixtures ajenos eran todos los que faltaban, y el
+`git diff` de esos tres tests **no borra ni una línea** (`grep -c '^-[^-]'` = 0):
+nadie perdió aserciones. Obligatorio es lo correcto: las dos selecciones piden
+el campo siempre, así que un seguimiento sin la clave sería un error, no un
+caso. El grafo no me servía aquí para «quién dependía antes» —refleja el estado
+posterior al `graphify update` del constructor—, así que fui por `grep` y por el
+compilador.
+
+**Estados.** Medidos en un arnés temporal en la raíz del repo (ya borrado), con
+la hoja dentro de un `iframe` de **375 px** y `data-theme='dark'` en `<html>` +
+`data-ds='aura'` en `<body>` (que es lo que pide el selector
+`[data-theme='dark'] [data-ds='aura']` de `_theme-variables.scss:251`):
+
+- **Sin dato** (seguimiento sin hora): resuelto callando, como fija D5.
+- **375 px**: `scrollWidth === clientWidth === 375` y **cero nodos desbordados**,
+  tanto con la línea como con el campo abierto; el `<input type=time>` (189 px)
+  y «Guardar hora» (137 px) caben en la fila (borde derecho en 355).
+- **Oscuro, contraste** (mínimo **7,88:1**, todos ≥ 4,5): la hora `22:15`
+  **14,89:1**, «Registrado a las» y el `small` **7,88:1**, «Corregir» **9,76:1**
+  (`rgb(78,222,163)`), «¿A qué hora fue de verdad?» **14,89:1**, el campo
+  **12,59:1**, «Cancelar» **7,88:1**. En claro, el mínimo es **6,03:1**.
+- **Cargando**: el botón usa `isLoading` y deshabilita campo, «Cancelar» y
+  «Guardar hora». Resuelto.
+- **Error**: `onError` del hook levanta el toast «Error al guardar la hora» y la
+  línea se queda con la hora vieja. Resuelto por el camino que ya existía.
+- **Permisos** y **texto largo**: no aplican (una hoja de un hábito propio; la
+  línea es de ancho fijo `HH:mm`). Probé aun así con notas de 100 caracteres y
+  nombre de hábito largo: nada se desborda.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: `habit-time.utils.ts`
+es el único archivo nuevo y no repite `habit-panel.utils.ts` (aquella es
+aritmética de lectura); no nace un segundo formulario de registro; la corrección
+**no** reutiliza `updateFollowUp` justamente porque reescribiría notas y
+dificultad, y eso estaba escrito en el plan. La guarda de caché entra por el
+registro que ya existe, sin mecanismo nuevo.
+
+**Hallazgos que no devuelven la tajada** (para quien haga la 4):
+
+1. **Los documentos GraphQL de hábitos no tienen test de contrato.**
+   `contracts.test.ts` solo existe en `src/features/vida/graphql/`, y no hay SDL
+   vendorizado de hábitos: el campo nuevo de las cinco selecciones no lo valida
+   nada en CI. Lo cubrí a mano contra el API real, pero es un hueco preexistente
+   que esta tajada agranda.
+2. **La cabecera de `query-cache-guards.ts` sigue diciendo «Aplicada hoy son
+   ocho guardas»**; con la de hábitos son **nueve**. Dos palabras, pero es el
+   comentario que le dice al siguiente cuántas hay.
+3. **Nota de entorno (no la toco, la digo):** la fila de `pnpm test` de
+   `ENVIRONMENT.md` dice «2 fallos de 2294»; en el árbol son **2 de 2312**.

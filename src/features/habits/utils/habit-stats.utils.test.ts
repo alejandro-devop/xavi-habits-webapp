@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildFollowUpsByHabit,
   countEntriesByCategory,
   filterEntriesByCategory,
   getHabitDayTotals,
@@ -7,6 +8,8 @@ import {
   getStarHabit,
 } from '@/features/habits/utils/habit-stats.utils'
 import type { HabitFollowUp, HabitMyDayEntry } from '@/features/habits/types/habit.types'
+import { HABIT_FOLLOW_UPS_IN_DATES_QUERY } from '@/features/habits/graphql/habits.graphql'
+import { HABIT_FOLLOW_UP_ADD_MUTATION } from '@/features/habits/graphql/habit-follow-ups.graphql'
 
 type EntryOptions = {
   streak?: number
@@ -195,5 +198,68 @@ describe('filtro por categoría', () => {
 
   it('devuelve lista vacía si la categoría no tiene hábitos hoy', () => {
     expect(filterEntriesByCategory(entries, 'descanso')).toEqual([])
+  })
+})
+
+/**
+ * La regla 6 del expediente: `timeOfDay` tiene que viajar en **las dos** formas
+ * del seguimiento —la completa y la recortada de `habitFollowUpsInDates`— y
+ * sobrevivir al remapeo. Si se olvida una, la métrica de horas sale vacía y
+ * parece un fallo del servidor.
+ */
+describe('la hora llega hasta el panel (FEAT-015, criterio 459)', () => {
+  it('las dos selecciones del seguimiento piden timeOfDay', () => {
+    expect(HABIT_FOLLOW_UP_ADD_MUTATION).toContain('timeOfDay')
+    expect(HABIT_FOLLOW_UPS_IN_DATES_QUERY).toContain('timeOfDay')
+  })
+
+  it('el remapeo por hábito conserva la hora de la forma recortada', () => {
+    const porHabito = buildFollowUpsByHabit([
+      {
+        date: '2026-09-25',
+        followUps: [
+          {
+            id: 'log-1',
+            date: '2026-09-25',
+            habitId: '7',
+            isAccomplished: false,
+            isFailed: true,
+            isLifeline: false,
+            difficulty: 4,
+            count: null,
+            time: null,
+            notes: null,
+            timeOfDay: '22:15',
+          },
+        ],
+      },
+    ])
+
+    expect(porHabito.get('7')?.get('2026-09-25')?.timeOfDay).toBe('22:15')
+  })
+
+  it('un seguimiento de antes de la feature llega sin hora, no a medianoche', () => {
+    const porHabito = buildFollowUpsByHabit([
+      {
+        date: '2026-09-15',
+        followUps: [
+          {
+            id: 'log-0',
+            date: '2026-09-15',
+            habitId: '7',
+            isAccomplished: true,
+            isFailed: false,
+            isLifeline: false,
+            difficulty: null,
+            count: null,
+            time: null,
+            notes: null,
+            timeOfDay: null,
+          },
+        ],
+      },
+    ])
+
+    expect(porHabito.get('7')?.get('2026-09-15')?.timeOfDay).toBeNull()
   })
 })

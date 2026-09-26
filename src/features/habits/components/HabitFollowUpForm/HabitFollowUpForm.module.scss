@@ -237,3 +237,103 @@
   font-size: 0.8rem;
   color: var(--color-danger);
 }
+
+/* ── La hora del registro (FEAT-015, tajada 3b) ───────────────────────────────
+   Una línea, y solo si el seguimiento tiene hora. Se lee como un dato, no como
+   un campo más del formulario: nada aquí sugiere que haya que rellenarlo. */
+.hourLine {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-elevated, var(--color-surface));
+}
+
+.hourLineEditing {
+  display: block;
+  border-color: var(--color-primary);
+}
+
+.hourLineTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.hourFact {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  line-height: 1.35;
+
+  strong {
+    color: var(--color-text);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.1rem;
+    font-size: 0.72rem;
+    color: var(--color-text-secondary);
+  }
+}
+
+.hourAsk {
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.hourLink,
+.hourCancel {
+  flex-shrink: 0;
+  padding: 0.2rem 0.1rem;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.hourLink {
+  color: var(--color-primary);
+}
+
+.hourCancel {
+  color: var(--color-text-secondary);
+}
+
+.hourEditRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.hourInputField {
+  flex: 1;
+  min-width: 0;
+}
+
+.hourInput {
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  font-weight: 600;
+}

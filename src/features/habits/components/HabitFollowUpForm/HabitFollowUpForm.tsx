@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useConfirmDialog } from '@/shared/ui/ConfirmDialog'
 import {
   useAddHabitFollowUpMutation,
+  useSetFollowUpTimeOfDayMutation,
   useUpdateHabitFollowUpMutation,
 } from '@/features/habits/hooks/useHabitFollowUps'
 import { HabitDifficultyPicker } from '@/features/habits/components/HabitDifficultyPicker'
@@ -9,6 +10,7 @@ import { Button } from '@/shared/ui/Button'
 import { Input } from '@/shared/ui/Input'
 import type { Habit, HabitFollowUp } from '@/features/habits/types/habit.types'
 import { formatMeasureDisplay } from '@/features/habits/utils/habit-measure-form.utils'
+import { isValidHHmm, toHHmm } from '@/features/habits/utils/habit-time.utils'
 import {
   formatProgressLabel,
   getCurrentProgressValue,
@@ -32,6 +34,7 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
   const { confirm } = useConfirmDialog()
   const addMutation = useAddHabitFollowUpMutation()
   const updateMutation = useUpdateHabitFollowUpMutation()
+  const setTimeMutation = useSetFollowUpTimeOfDayMutation()
 
   const isQuantified = habit.habitType === 'count' || habit.habitType === 'time'
   const isEditing = Boolean(existingFollowUp)
@@ -42,6 +45,16 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
   const [difficulty, setDifficulty] = useState<number | null>(existingFollowUp?.difficulty ?? 2)
   const [notes, setNotes] = useState<string>(existingFollowUp?.notes ?? '')
   const [incrementError, setIncrementError] = useState<string | null>(null)
+  /**
+   * La hora corregida en esta sesión del cajón. El dato manda mientras no se
+   * toque; en cuanto se corrige, lo que se lee es lo que acabó de guardarse, sin
+   * depender de que el cajón reciba props frescas antes de repintarse.
+   */
+  const [correctedTime, setCorrectedTime] = useState<string | null>(null)
+  const [isEditingTime, setIsEditingTime] = useState(false)
+  const [timeDraft, setTimeDraft] = useState('')
+
+  const followUpTime = correctedTime ?? toHHmm(existingFollowUp?.timeOfDay)
 
   const isMutating = addMutation.isPending || updateMutation.isPending
   const measureLabel = formatMeasureDisplay(habit.measure)
@@ -145,6 +158,28 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
     }
 
     addFollowUp({ isFailed: true })
+  }
+
+  function openTimeEditor() {
+    setTimeDraft(followUpTime ?? '')
+    setIsEditingTime(true)
+  }
+
+  function handleSaveTimeOfDay() {
+    if (!existingFollowUp || !isValidHHmm(timeDraft)) return
+    setTimeMutation.mutate(
+      {
+        id: existingFollowUp.id,
+        timeOfDay: timeDraft,
+        context: { habitId: habit.id, date },
+      },
+      {
+        onSuccess: () => {
+          setCorrectedTime(timeDraft)
+          setIsEditingTime(false)
+        },
+      },
+    )
   }
 
   const parsedIncrement = parseIncrement()
@@ -303,6 +338,60 @@ export function HabitFollowUpForm({ habit, date, existingFollowUp, onSuccess }: 
           disabled={isMutating}
         />
       </div>
+
+      {followUpTime ? (
+        isEditingTime ? (
+          <div className={`${styles.hourLine} ${styles.hourLineEditing}`}>
+            <div className={styles.hourLineTop}>
+              <span className={styles.hourAsk} id="habit-follow-up-time-label">
+                ¿A qué hora fue de verdad?
+              </span>
+              <button
+                type="button"
+                className={styles.hourCancel}
+                onClick={() => setIsEditingTime(false)}
+                disabled={setTimeMutation.isPending}
+              >
+                Cancelar
+              </button>
+            </div>
+            <div className={styles.hourEditRow}>
+              <div className={styles.hourInputField}>
+                <Input
+                  type="time"
+                  value={timeDraft}
+                  onChange={(e) => setTimeDraft(e.target.value)}
+                  className={styles.hourInput}
+                  aria-labelledby="habit-follow-up-time-label"
+                  disabled={setTimeMutation.isPending}
+                />
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleSaveTimeOfDay}
+                isLoading={setTimeMutation.isPending}
+                disabled={setTimeMutation.isPending || !isValidHHmm(timeDraft)}
+              >
+                Guardar hora
+              </Button>
+            </div>
+            <p className={styles.hint}>
+              Ahora dice <strong>{followUpTime}</strong>. Cambia solo la hora; lo demás queda
+              como está.
+            </p>
+          </div>
+        ) : (
+          <div className={styles.hourLine}>
+            <p className={styles.hourFact}>
+              Registrado a las <strong>{followUpTime}</strong>
+              <small>la hora en que pulsaste</small>
+            </p>
+            <button type="button" className={styles.hourLink} onClick={openTimeEditor}>
+              Corregir
+            </button>
+          </div>
+        )
+      ) : null}
 
       <div className={styles.actions}>
         {isQuantified ? (

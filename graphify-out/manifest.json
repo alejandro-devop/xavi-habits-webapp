@@ -350,8 +350,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFollowUpForm/HabitFollowUpForm.tsx": {
-    "mtime": 1789696614.9615407,
-    "ast_hash": "d20e42da81e635be14a1cb02ad164f24",
+    "mtime": 1790384041.4117074,
+    "ast_hash": "9bab8c15a7f170f7944ee8f3c047d65d",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitFollowUpForm/index.ts": {
@@ -495,8 +495,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/graphql/habit-follow-ups.graphql.ts": {
-    "mtime": 1789696614.9645407,
-    "ast_hash": "b7d8035c4e8a3aca6b69fe45e95545de",
+    "mtime": 1790383972.099908,
+    "ast_hash": "a680502459f1f0b3d42a1a9092f384f1",
     "semantic_hash": ""
   },
   "src/features/habits/graphql/habit-measures.graphql.ts": {
@@ -510,8 +510,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/graphql/habits.graphql.ts": {
-    "mtime": 1789696614.9645407,
-    "ast_hash": "3dc39e41e39c6fd6851a98d7aad395e1",
+    "mtime": 1790383972.099908,
+    "ast_hash": "acfc1aba9630e7d432b1cdc93bc6df7b",
     "semantic_hash": ""
   },
   "src/features/habits/hooks/useHabitCategories.ts": {
@@ -520,8 +520,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/hooks/useHabitFollowUps.ts": {
-    "mtime": 1789696614.9655406,
-    "ast_hash": "935678d3664e82e5a9bc1cf13871d3b1",
+    "mtime": 1790383991.2108521,
+    "ast_hash": "0176f592b39046d58c1e6520911e8298",
     "semantic_hash": ""
   },
   "src/features/habits/hooks/useHabitMeasures.ts": {
@@ -620,8 +620,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/types/habit.types.ts": {
-    "mtime": 1789696614.9665406,
-    "ast_hash": "2aadb7b5b6536f205e61e8a914df27b6",
+    "mtime": 1790383972.099908,
+    "ast_hash": "0742adf0ef44f171e91b009b35e713ea",
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-category-form.utils.ts": {
@@ -1990,8 +1990,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayRow/HabitDayRow.test.tsx": {
-    "mtime": 1789704239.227141,
-    "ast_hash": "8c73f212dabc10b6917fe9248bfe815a",
+    "mtime": 1790384195.581914,
+    "ast_hash": "4b65542800581a2f2f2f49b284093ce0",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitDayRow/HabitDayRow.tsx": {
@@ -2040,13 +2040,13 @@
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-stats.utils.test.ts": {
-    "mtime": 1789702761.882639,
-    "ast_hash": "64c8a16284ce5344e17e8797ec90c4bd",
+    "mtime": 1790384751.1438177,
+    "ast_hash": "2bd137e247485584ed2a2cf32b8c034a",
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-stats.utils.ts": {
-    "mtime": 1789705130.1303256,
-    "ast_hash": "0f6a612518031875a215a4090c67163a",
+    "mtime": 1790383972.099908,
+    "ast_hash": "c0d698ad5d8699c7ce1496c73d8c84a2",
     "semantic_hash": ""
   },
   "src/shared/hooks/useMediaQuery.test.tsx": {
@@ -2085,8 +2085,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitListCard/HabitListCard.test.tsx": {
-    "mtime": 1789705529.0404415,
-    "ast_hash": "d0ebfe6c0b5e81736b300b87dfccefe6",
+    "mtime": 1790384209.1900353,
+    "ast_hash": "864165c2b9aeb21ab59777c3ad801314",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitListCard/HabitListCard.tsx": {
@@ -2370,8 +2370,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-panel.utils.test.ts": {
-    "mtime": 1790262879.4692535,
-    "ast_hash": "b2bcf7a30c7c21e4b60a0ee7401d9a96",
+    "mtime": 1790384209.1910353,
+    "ast_hash": "e4ec313cc4ced4e57732812959fd40dc",
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-panel.utils.ts": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790356349.1842608,
-    "ast_hash": "9fe733ea2cd7618d47ef02f240611d08",
+    "mtime": 1790384804.2539446,
+    "ast_hash": "c5770c50ea54c228ddfb5fe3dc837a76",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790352144.762132,
-    "ast_hash": "e5d477c180f52e98f3c89c509c462365",
+    "mtime": 1790357369.7166967,
+    "ast_hash": "91e80137de021d6dcd20d736a21f200e",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3715,8 +3715,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-010-vida-hoy-que-toca-ahora.md": {
-    "mtime": 1790356343.1692362,
-    "ast_hash": "e6214ef9cc38941308426333c68594e3",
+    "mtime": 1790357162.3040047,
+    "ast_hash": "2356388bca060f849578615b0d69907f",
     "semantic_hash": ""
   },
   "docs/features/FEAT-011-vida-hoy-registrar-en-hueco.md": {
@@ -3785,8 +3785,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-015-habitos-metricas.md": {
-    "mtime": 1790263795.8738692,
-    "ast_hash": "6645872efb9ccbed8bc99a9ef603f076",
+    "mtime": 1790384878.140094,
+    "ast_hash": "eb3dc20ac86265a65bfb405c0193714d",
     "semantic_hash": ""
   },
   "graphify-out/memory/query_20260922_193727_d\u00f3nde_se_pinta_la_lista_de_la_agenda_de_hoy_y_qu\u00e9.md": {
@@ -4055,8 +4055,8 @@
     "semantic_hash": ""
   },
   "src/app/providers/query-cache-guards.ts": {
-    "mtime": 1790189574.5236883,
-    "ast_hash": "e734841cea0480fa716036d7f49be4d9",
+    "mtime": 1790384054.8286693,
+    "ast_hash": "836c51ba67da3607e0f9b3d0d673bb48",
     "semantic_hash": ""
   },
   "src/app/providers/query-cache-guards.coverage.test.ts": {
@@ -4192,6 +4192,26 @@
   "src/features/vida/components/VidaTomorrowAside/index.ts": {
     "mtime": 1790354872.8996131,
     "ast_hash": "b89cc013838e22b1b9e04b952cf88d23",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitFollowUpForm/HabitFollowUpForm.test.tsx": {
+    "mtime": 1790384157.1345513,
+    "ast_hash": "a339d219fe76f42a14bf7835f84d6336",
+    "semantic_hash": ""
+  },
+  "src/features/habits/utils/habit-time.utils.test.ts": {
+    "mtime": 1790383959.2959456,
+    "ast_hash": "60477a7d4d9a02e557f8c8ef65bdb106",
+    "semantic_hash": ""
+  },
+  "src/features/habits/utils/habit-time.utils.ts": {
+    "mtime": 1790383944.9379883,
+    "ast_hash": "c7b336d3e531c22b1543cc362157b619",
+    "semantic_hash": ""
+  },
+  "docs/habits/assets/02-habitos-hora-del-registro.html": {
+    "mtime": 1790380820.899728,
+    "ast_hash": "771ee54cea619c59ecb7757c77c64635",
     "semantic_hash": ""
   }
 }

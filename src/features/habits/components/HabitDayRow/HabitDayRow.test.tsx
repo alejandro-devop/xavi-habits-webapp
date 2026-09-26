@@ -13,6 +13,9 @@ vi.mock('@/features/habits/hooks/useHabitFollowUps', () => ({
   useAddHabitFollowUpMutation: () => ({ mutate: addMutate, isPending: false }),
   useRemoveHabitFollowUpMutation: () => ({ mutate: removeMutate, isPending: false }),
   useUpdateHabitFollowUpMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  // Aunque esta suite no lo recorra: un `vi.mock` incompleto deja la siguiente
+  // suite verde por casualidad.
+  useSetFollowUpTimeOfDayMutation: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
 vi.mock('@/features/habits/hooks/useHabits', () => ({
@@ -117,6 +120,7 @@ describe('HabitDayRow', () => {
       notes: null,
       story: null,
       archived: false,
+      timeOfDay: null,
     }
     const { onOpenRegister } = renderRow(buildEntry({}, followUp))
 

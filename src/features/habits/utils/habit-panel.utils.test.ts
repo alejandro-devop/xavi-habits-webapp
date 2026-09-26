@@ -43,6 +43,7 @@ function makeFollowUp(overrides: Partial<HabitFollowUp> = {}): HabitFollowUp {
     notes: null,
     story: null,
     archived: false,
+    timeOfDay: null,
     ...overrides,
   }
 }

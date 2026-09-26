@@ -11,6 +11,7 @@ const FOLLOW_UP_FULL_FIELDS = `
   notes
   story
   archived
+  timeOfDay
 `
 
 export const HABIT_FOLLOW_UP_ADD_MUTATION = `

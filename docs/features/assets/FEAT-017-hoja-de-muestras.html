@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FEAT-017 · Hoja de muestras de color</title>
+<style>
+  /* ──────────────────────────────────────────────────────────────────────────
+     Los tokens del vidrio son los de verdad: copiados de
+     src/app/styles/_theme-variables.scss ([data-ds='aura'] y su variante
+     oscura). La muestra y la palomita están calcadas de
+     ColorPicker.module.scss:12-68. Sin scripts y sin dependencias externas.
+     ────────────────────────────────────────────────────────────────────────── */
+  :root {
+    --hoja-bg: #f1f4f8;
+    --hoja-text: #0f172a;
+    --hoja-text-2: #475569;
+    --hoja-card: #ffffff;
+    --hoja-line: #e2e8f0;
+    --font-label: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 1.25rem 1rem 4rem;
+    background: var(--hoja-bg);
+    color: var(--hoja-text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 68rem; margin: 0 auto; }
+
+  h1 { font-size: 1.45rem; line-height: 1.25; margin: 0 0 0.35rem; letter-spacing: -0.02em; }
+  h2 { font-size: 1.12rem; margin: 2.4rem 0 0.25rem; letter-spacing: -0.01em; }
+  p { margin: 0.5rem 0; max-width: 46rem; }
+  .lede { color: var(--hoja-text-2); }
+  code { font-family: var(--mono); font-size: 0.84em; word-break: break-word; }
+  .hex { font-family: var(--mono); font-size: 0.84em; }
+  em { font-style: italic; }
+
+  .panel {
+    background: var(--hoja-card);
+    border: 1px solid var(--hoja-line);
+    border-radius: 14px;
+    padding: 0.4rem 0.8rem;
+    margin: 1rem 0;
+  }
+
+  /* ── La tabla de puertas ─────────────────────────────────────────────── */
+  .tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .puertas { width: 100%; min-width: 28rem; border-collapse: collapse; font-size: 0.88rem; }
+  .puertas th, .puertas td {
+    text-align: left;
+    padding: 0.5rem 0.45rem;
+    border-bottom: 1px solid var(--hoja-line);
+    vertical-align: top;
+  }
+  .puertas tr:last-child td { border-bottom: 0; }
+  .puertas th {
+    font-family: var(--font-label);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--hoja-text-2);
+    font-weight: 600;
+  }
+  .puertas td:first-child { white-space: nowrap; font-weight: 600; }
+  .puertas td.num { font-family: var(--mono); white-space: nowrap; text-align: right; }
+
+  /* ── El vidrio ───────────────────────────────────────────────────────── */
+  .vidrio {
+    position: relative;
+    border-radius: 18px;
+    padding: 0.55rem;
+    overflow: hidden;
+  }
+  /* El lienzo aurora reducido a lo esencial: el fondo de la app y sus orbes. */
+  .vidrio.claro {
+    background:
+      radial-gradient(75% 90% at 8% 0%, rgba(78, 222, 163, 0.42), transparent 62%),
+      radial-gradient(70% 85% at 95% 18%, rgba(210, 187, 255, 0.45), transparent 64%),
+      radial-gradient(90% 70% at 50% 108%, rgba(224, 242, 254, 0.85), transparent 66%),
+      #fafcfb;
+  }
+  .vidrio.oscuro {
+    background:
+      radial-gradient(75% 90% at 8% 0%, rgba(16, 185, 129, 0.24), transparent 62%),
+      radial-gradient(70% 85% at 95% 18%, rgba(124, 58, 237, 0.3), transparent 64%),
+      radial-gradient(90% 70% at 50% 108%, rgba(30, 58, 95, 0.75), transparent 66%),
+      #0b1220;
+  }
+  .lamina {
+    border-radius: 14px;
+    padding: 0.6rem 0.65rem 0.55rem;
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+  }
+  .claro > .lamina {
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow: 0 16px 48px -8px rgba(100, 116, 139, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    --color-text: #0f172a;
+    --color-surface: rgba(255, 255, 255, 0.45);
+    --tinta: #0f172a;
+    color: #0f172a;
+  }
+  .oscuro > .lamina {
+    background: rgba(22, 30, 47, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+    --color-text: #eef2ff;
+    --color-surface: rgba(255, 255, 255, 0.06);
+    --tinta: #eef2ff;
+    color: #eef2ff;
+  }
+  .rotulo {
+    font-family: var(--font-label);
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    opacity: 0.55;
+    margin: 0 0 0.45rem;
+  }
+  .sub {
+    font-family: var(--font-label);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    opacity: 0.6;
+    margin: 0.9rem 0 0.5rem;
+  }
+  .sub:first-of-type { margin-top: 0.2rem; }
+  .amplio { padding: 0.75rem; }
+  .amplio > .lamina { padding: 0.9rem 0.85rem 1rem; }
+
+  /* ── La muestra, calcada de ColorPicker.module.scss ──────────────────── */
+  .fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem; }
+  .swatch {
+    position: relative;
+    width: 1.875rem;
+    height: 1.875rem;
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, var(--color-text, #0f172a) 16%, transparent);
+    border-radius: 9999px;
+    background: var(--color-picker-swatch);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* El anillo del seleccionado, :48-52: superficie fuera, color después. */
+    box-shadow:
+      0 0 0 2px var(--color-surface),
+      0 0 0 4px var(--color-picker-swatch);
+  }
+  @media (min-width: 25rem) { .swatch { width: 2rem; height: 2rem; } }
+  /* La palomita: blanca, con la misma sombra de :54-63. */
+  .check { width: 0.875rem; height: 0.875rem; color: #fff; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%)); }
+  .check-svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+
+  /* ── Los diecisiete de referencia ────────────────────────────────────── */
+  .duo { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin-top: 0.75rem; }
+  @media (min-width: 48rem) { .duo { grid-template-columns: 1fr 1fr; } }
+
+  .refs { display: grid; grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr)); gap: 0.7rem 0.35rem; }
+  .ref { text-align: center; }
+  .ref .cap { display: block; font-size: 0.72rem; line-height: 1.3; margin-top: 0.45rem; }
+  .ref .cap .hex { display: block; opacity: 0.55; font-size: 0.66rem; }
+
+  /* ── Rejilla de fichas ──────────────────────────────────────────────── */
+  .fichas { display: grid; grid-template-columns: 1fr; gap: 0.8rem; margin-top: 0.85rem; }
+  @media (min-width: 30rem) { .fichas { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 56rem) { .fichas { grid-template-columns: repeat(3, 1fr); } }
+
+  .ficha {
+    background: var(--hoja-card);
+    border: 1px solid var(--hoja-line);
+    border-radius: 16px;
+    padding: 0.7rem;
+  }
+  .vidrios { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+  .vidrios .vidrio { padding: 0.4rem; border-radius: 13px; }
+  .vidrios .lamina { padding: 0.55rem 0.4rem 0.6rem; }
+
+  .nombre {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+    margin: 0.75rem 0 0;
+  }
+  .nombre strong { font-size: 1rem; letter-spacing: -0.01em; }
+  .nombre .hex { margin-left: auto; color: var(--hoja-text-2); }
+
+  .datos {
+    list-style: none;
+    margin: 0.45rem 0 0;
+    padding: 0.45rem 0 0;
+    border-top: 1px solid var(--hoja-line);
+    font-size: 0.8rem;
+  }
+  .datos li { display: flex; justify-content: space-between; gap: 0.6rem; padding: 0.1rem 0; }
+  .datos .k { color: var(--hoja-text-2); }
+  .datos .v { font-family: var(--mono); white-space: nowrap; }
+  .datos .v.flojo { color: #b45309; }
+
+  .etiqueta {
+    display: inline-block;
+    font-family: var(--font-label);
+    font-size: 0.64rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.12rem 0.5rem;
+    border-radius: 9999px;
+    background: #eef2ff;
+    color: #3730a3;
+    vertical-align: 0.18em;
+    white-space: nowrap;
+  }
+  .etiqueta.nueva { background: #ecfdf5; color: #065f46; vertical-align: baseline; }
+
+  /* ── Las tres preguntas ─────────────────────────────────────────────── */
+  .preguntas { counter-reset: q; list-style: none; padding: 0; margin: 0.75rem 0 0; }
+  .preguntas li {
+    counter-increment: q;
+    position: relative;
+    padding: 0.75rem 0.9rem 0.8rem 2.7rem;
+    border: 1px solid var(--hoja-line);
+    border-radius: 12px;
+    background: var(--hoja-card);
+    margin-bottom: 0.6rem;
+  }
+  .preguntas li::before {
+    content: counter(q);
+    position: absolute;
+    left: 0.85rem;
+    top: 0.8rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 9999px;
+    background: #0f172a;
+    color: #fff;
+    font-family: var(--font-label);
+    font-size: 0.76rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .preguntas .pista { display: block; color: var(--hoja-text-2); font-size: 0.85rem; margin-top: 0.25rem; }
+
+  footer {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--hoja-line);
+    color: var(--hoja-text-2);
+    font-size: 0.8rem;
+  }
+  footer p { max-width: 52rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Hoja de muestras de color — FEAT-017, tajada 4</h1>
+  <p class="lede">
+    Medición del 26 de septiembre de 2026 sobre el árbol. Aquí no se decide
+    nada: se enseña lo que hay para que el color lo elija quien lo va a usar.
+    Cada muestra está pintada al tamaño real del <code>ColorPicker</code>, sobre
+    vidrio claro y sobre vidrio oscuro, con la palomita blanca encima.
+  </p>
+
+  <h2>Cómo se midió</h2>
+  <p>
+    Rejilla de paso 8 por canal más el 255 de cada canal (33³ = 35.937 colores),
+    con el <code>deltaE</code> OKLab de
+    <code>src/features/habits/data/habit-colors.test.ts:17-44</code>, sin
+    cambiarle una coma. Las puertas se aplican en cadena: cada una mira solo lo
+    que dejó pasar la anterior.
+  </p>
+  <div class="panel tabla-scroll">
+    <table class="puertas">
+      <thead>
+        <tr><th>Puerta</th><th>Qué exige</th><th>Pasan</th><th>De la rejilla</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1 · núcleo</td>
+          <td>ΔE ≥ 15 de cada uno de los seis del núcleo (criterio 524)</td>
+          <td class="num">15.244</td>
+          <td class="num">42,42 %</td>
+        </tr>
+        <tr>
+          <td>2 · banda de luz</td>
+          <td>luminosidad OKLab <em>L</em> entre 0,449 (Añil) y 0,769 (Ámbar), que es donde la palomita blanca se lee</td>
+          <td class="num">3863</td>
+          <td class="num">10,75 %</td>
+        </tr>
+        <tr>
+          <td>3 · extendidos</td>
+          <td>ΔE ≥ 11,2 de cada uno de los once extendidos actuales — el suelo que <code>color-palette.ts:61</code> documenta como aceptable (Malva ↔ Rosa palo)</td>
+          <td class="num">182</td>
+          <td class="num">0,51 %</td>
+        </tr>
+        <tr>
+          <td>4 · entre sí</td>
+          <td>selección greedy: de esos 182 se va cogiendo el que más lejos esté del conjunto entero, exigiendo ΔE ≥ 11,2 también entre los nuevos</td>
+          <td class="num">5</td>
+          <td class="num">tanda A</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    La cifra de la puerta 4 no es un artefacto del greedy: una búsqueda aparte
+    con 20.000 arranques aleatorios sobre los mismos candidatos no encontró
+    ninguna tanda mayor de 5. La barrida fina confirma lo que ya decía la
+    gruesa — <strong>el techo útil ronda 5</strong>, no 8.
+  </p>
+  <p>
+    La <strong>tanda B</strong> llega a 8 bajando <em>solo</em> el suelo de la
+    puerta 3 y el de la puerta 4, de 11,2 a <strong>10,2</strong>. Las puertas 1
+    y 2 se quedan intactas: los 8 siguen a ΔE ≥ 15 del núcleo y dentro de la
+    banda de luz, así que la palomita blanca se lee en los 8 y el sorteo
+    automático nunca los confunde con un color del núcleo.
+  </p>
+
+  <h2>Los diecisiete de hoy, como referencia</h2>
+  <p class="lede">Lo que ya está en la paleta. Los nuevos se comparan contra esto.</p>
+
+  <div class="duo">
+    <div class="vidrio claro amplio"><div class="lamina">
+      <p class="rotulo">Vidrio claro · Aura</p>
+      <p class="sub">Núcleo · seis</p>
+      <div class="refs">
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#10b981" title="Menta"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Menta<span class="hex">#10b981</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#4d7c0f" title="Oliva"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Oliva<span class="hex">#4d7c0f</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#f59e0b" title="Ámbar"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Ámbar<span class="hex">#f59e0b</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e11d48" title="Carmín"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Carmín<span class="hex">#e11d48</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#8b5cf6" title="Violeta"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Violeta<span class="hex">#8b5cf6</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#0284c7" title="Azul"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Azul<span class="hex">#0284c7</span></span></div>
+      </div>
+      <p class="sub">Extendidos · once</p>
+      <div class="refs">
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#11bff0" title="Cian"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Cian<span class="hex">#11bff0</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#99a7f9" title="Lavanda"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Lavanda<span class="hex">#99a7f9</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#2d3acc" title="Añil"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Añil<span class="hex">#2d3acc</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#7017b6" title="Morado"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Morado<span class="hex">#7017b6</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#793974" title="Ciruela"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Ciruela<span class="hex">#793974</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#b46ca8" title="Malva"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Malva<span class="hex">#b46ca8</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#c02ca7" title="Magenta"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Magenta<span class="hex">#c02ca7</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#ff6ce2" title="Fucsia"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Fucsia<span class="hex">#ff6ce2</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e1808d" title="Rosa palo"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Rosa palo<span class="hex">#e1808d</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#924b00" title="Canela"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Canela<span class="hex">#924b00</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#af761e" title="Bronce"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Bronce<span class="hex">#af761e</span></span></div>
+      </div>
+    </div></div>
+    <div class="vidrio oscuro amplio"><div class="lamina">
+      <p class="rotulo">Vidrio oscuro · Aura</p>
+      <p class="sub">Núcleo · seis</p>
+      <div class="refs">
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#10b981" title="Menta"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Menta<span class="hex">#10b981</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#4d7c0f" title="Oliva"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Oliva<span class="hex">#4d7c0f</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#f59e0b" title="Ámbar"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Ámbar<span class="hex">#f59e0b</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e11d48" title="Carmín"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Carmín<span class="hex">#e11d48</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#8b5cf6" title="Violeta"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Violeta<span class="hex">#8b5cf6</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#0284c7" title="Azul"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Azul<span class="hex">#0284c7</span></span></div>
+      </div>
+      <p class="sub">Extendidos · once</p>
+      <div class="refs">
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#11bff0" title="Cian"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Cian<span class="hex">#11bff0</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#99a7f9" title="Lavanda"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Lavanda<span class="hex">#99a7f9</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#2d3acc" title="Añil"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Añil<span class="hex">#2d3acc</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#7017b6" title="Morado"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Morado<span class="hex">#7017b6</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#793974" title="Ciruela"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Ciruela<span class="hex">#793974</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#b46ca8" title="Malva"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Malva<span class="hex">#b46ca8</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#c02ca7" title="Magenta"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Magenta<span class="hex">#c02ca7</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#ff6ce2" title="Fucsia"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Fucsia<span class="hex">#ff6ce2</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e1808d" title="Rosa palo"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Rosa palo<span class="hex">#e1808d</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#924b00" title="Canela"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Canela<span class="hex">#924b00</span></span></div>
+          <div class="ref"><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#af761e" title="Bronce"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div><span class="cap">Bronce<span class="hex">#af761e</span></span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <h2>Tanda A · 5 bien distintos <span class="etiqueta">suelo 11,2</span></h2>
+  <p class="lede">
+    Todos los suelos en su sitio: ΔE ≥ 15 del núcleo, dentro de la banda de luz,
+    ΔE ≥ 11,2 de los once extendidos y ΔE ≥ 11,2 entre ellos. Es la tanda máxima
+    que da el barrido fino con las reglas tal y como están escritas hoy.
+  </p>
+  <div class="fichas">
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#186068" title="Petróleo"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#186068" title="Petróleo"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Petróleo</strong><span class="hex">#186068</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">16,1</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">16,8</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">12,2</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">7,21:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,450</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e000ff" title="Orquídea"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e000ff" title="Orquídea"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Orquídea</strong><span class="hex">#e000ff</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">16,7</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">14,3</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">14,0</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">3,74:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,656</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#b0b0a8" title="Piedra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#b0b0a8" title="Piedra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Piedra</strong><span class="hex">#b0b0a8</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,5</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">13,0</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">22,2</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v flojo">2,18:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,755</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#786870" title="Pizarra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#786870" title="Pizarra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Pizarra</strong><span class="hex">#786870</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,6</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">12,2</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">12,2</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">5,23:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,535</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#ff00b0" title="Buganvilla"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#ff00b0" title="Buganvilla"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Buganvilla</strong><span class="hex">#ff00b0</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,8</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">11,7</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">14,0</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">3,57:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,662</span></li>
+            </ul>
+          </div>
+  </div>
+
+  <h2>Tanda B · 8, con el suelo en 10,2 <span class="etiqueta">suelo 10,2</span></h2>
+  <p class="lede">
+    Los 5 de la tanda A más 3. Lo único que se relaja es la separación
+    respecto a los extendidos y entre los nuevos: de 11,2 baja a 10,2. Para
+    situarlo, hoy Malva y Rosa palo conviven a 11,2 y la propia paleta lo
+    documenta como parecido deliberado; 10,2 es un punto más cerca que eso.
+    Los ΔE «a los nuevos» de esta tanda son los de aquí, no los de la A: al
+    entrar tres colores más, algunos vecinos se acercan.
+  </p>
+  <div class="fichas">
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#186068" title="Petróleo"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#186068" title="Petróleo"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Petróleo</strong><span class="hex">#186068</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">16,1</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">16,8</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">10,4</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">7,21:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,450</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e000ff" title="Orquídea"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#e000ff" title="Orquídea"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Orquídea</strong><span class="hex">#e000ff</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">16,7</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">14,3</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">14,0</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">3,74:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,656</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#b0b0a8" title="Piedra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#b0b0a8" title="Piedra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Piedra</strong><span class="hex">#b0b0a8</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,5</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">13,0</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">11,6</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v flojo">2,18:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,755</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#786870" title="Pizarra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#786870" title="Pizarra"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Pizarra</strong><span class="hex">#786870</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,6</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">12,2</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">10,7</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">5,23:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,535</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#ff00b0" title="Buganvilla"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#ff00b0" title="Buganvilla"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Buganvilla</strong><span class="hex">#ff00b0</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,8</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">11,7</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">14,0</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">3,57:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,662</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#982038" title="Granate"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#982038" title="Granate"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Granate</strong> <span class="etiqueta nueva">los tres de más</span><span class="hex">#982038</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,2</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">10,9</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">15,9</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">8,08:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,450</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#988888" title="Tórtola"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#988888" title="Tórtola"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Tórtola</strong> <span class="etiqueta nueva">los tres de más</span><span class="hex">#988888</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">16,2</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">10,8</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">10,7</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">3,38:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,641</span></li>
+            </ul>
+          </div>
+          <div class="ficha">
+            <div class="vidrios">
+              <div class="vidrio claro"><div class="lamina">
+                <p class="rotulo">Claro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#485090" title="Marino"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+              <div class="vidrio oscuro"><div class="lamina">
+                <p class="rotulo">Oscuro</p><div class="fila"><span class="swatch marcada" style="--color-picker-swatch:#485090" title="Marino"><span class="check"><svg class="check-svg" viewBox="0 0 448 512" aria-hidden="true" focusable="false"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></div>
+              </div></div>
+            </div>
+            <p class="nombre"><strong>Marino</strong> <span class="etiqueta nueva">los tres de más</span><span class="hex">#485090</span></p>
+            <ul class="datos">
+              <li><span class="k">ΔE mínimo al núcleo</span><span class="v">15,3</span></li>
+              <li><span class="k">ΔE mínimo a los once</span><span class="v">10,3</span></li>
+              <li><span class="k">ΔE mínimo a los nuevos</span><span class="v">10,4</span></li>
+              <li><span class="k">Contraste con blanco</span><span class="v">7,43:1</span></li>
+              <li><span class="k">Luminosidad <em>L</em></span><span class="v">0,456</span></li>
+            </ul>
+          </div>
+  </div>
+
+  <h2>Las tres respuestas que hacen falta</h2>
+  <p class="lede">
+    Con esto la tajada 4 se puede construir. Los nombres en español son una
+    propuesta: cámbialos si alguno no te suena.
+  </p>
+  <ol class="preguntas">
+    <li>
+      <strong>¿Cuántos colores aceptas</strong>, sabiendo que el techo útil
+      medido ronda 5 y no 8?
+      <span class="pista">La tanda A da 5; la B da 8 acercándolos. También vale un número intermedio: dentro de cada tanda los primeros son los más separados, así que se puede cortar por donde quieras.</span>
+    </li>
+    <li>
+      <strong>¿Prefieres menos colores bien distintos o más colores parecidos entre sí?</strong>
+      <span class="pista">Es el mismo intercambio visto desde el ojo: con la tanda B entran dos grises cálidos que se parecen entre ellos y un azul que se acerca a Añil.</span>
+    </li>
+    <li>
+      <strong>¿Aceptas que alguno salga de la banda <em>L</em> 0,449-0,769?</strong>
+      <span class="pista">Fuera de esa banda aparecen tonos muy oscuros y muy claros que el ΔE premia, pero obliga a cambiar el color de la palomita en <code>ColorPicker.module.scss:57-62</code>, hoy blanca para los diecisiete. Si la respuesta es no, las dos tandas se quedan como están.</span>
+    </li>
+  </ol>
+
+  <footer>
+    <p>
+      El vidrio de esta hoja no es una imitación a ojo: los valores están
+      copiados de <code>src/app/styles/_theme-variables.scss</code>
+      (<code>[data-ds='aura']</code> y <code>[data-theme='dark'] [data-ds='aura']</code>) —
+      <code>--color-glass</code>, <code>--color-glass-border</code>,
+      <code>--shadow-glass</code>, <code>--blur-md</code>, los tres orbes del
+      lienzo aurora y los dos <code>--color-bg</code>. La muestra y la palomita
+      están calcadas de <code>ColorPicker.module.scss:12-68</code>, incluido el
+      <code>drop-shadow</code> que sostiene el blanco sobre los tonos más claros.
+      Esta hoja no lleva ni un script: es HTML y CSS, y se abre igual desde el
+      disco que servida por Vite.
+    </p>
+    <p>
+      El contraste con blanco es la razón WCAG (<code>#fff</code> contra el color
+      de la muestra). Se marca en ámbar por debajo de 2,5:1 — no es una puerta,
+      es la zona donde la palomita se apoya en el <code>drop-shadow</code> para
+      leerse. Para comparar: Ámbar, el más justo de los diecisiete actuales, da
+      2,15:1 y se sostiene.
+    </p>
+  </footer>
+</div>
+</body>
+</html>

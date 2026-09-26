@@ -618,6 +618,27 @@ de la 4 (solo sortea entre el núcleo, criterio 528).
   esa cifra. El usuario decide entre **~5 bien distintos** o **8+ con parecidos**,
   sobre la hoja de muestras.
 
+  **Hoja de muestras: `docs/features/assets/FEAT-017-hoja-de-muestras.html`
+  (2026-09-26): tanda A de 5, tanda B de 8 con suelo 10,2.** El barrido fino
+  está hecho: rejilla de paso 8 por canal más el 255 de cada canal (33³ =
+  **35.937** colores), con el `deltaE` de `habit-colors.test.ts:17-44` sin
+  tocar. Pasan la puerta del núcleo (ΔE ≥ 15, criterio 524) **15.244 (42,42 %)**;
+  de esos siguen dentro de la banda `L` 0,449-0,769 **3.863 (10,75 %)**; y de
+  esos aguantan ΔE ≥ 11,2 contra los once extendidos **182 (0,51 %)**. La
+  selección greedy sobre esos 182 da **5** — y una búsqueda aparte con 20.000
+  arranques aleatorios no encontró ninguna tanda mayor, así que el 5 no es un
+  artefacto del greedy. La barrida fina, entonces, **confirma la cifra gruesa
+  en vez de subirla**: el techo útil son 5. La tanda B llega a **8** bajando
+  solo el suelo contra los extendidos y entre los nuevos de 11,2 a **10,2**
+  (las puertas del núcleo y de la banda de luz se quedan intactas, así que los
+  ocho siguen leyéndose con la palomita blanca y el sorteo automático no los
+  confunde con el núcleo). Los cinco de A son `#186068` Petróleo, `#e000ff`
+  Orquídea, `#b0b0a8` Piedra, `#786870` Pizarra y `#ff00b0` Buganvilla; los
+  tres que añade B son `#982038` Granate, `#988888` Tórtola y `#485090` Marino.
+  La hoja pinta cada uno sobre vidrio claro y vidrio oscuro de Aura con la
+  palomita encima, y cierra con las tres preguntas de arriba. Los nombres son
+  una propuesta abierta.
+
 ## 3. Construction — feature-builder
 
 ### Tajada 1 — palabras clave que arreglan lo que no se encontraba

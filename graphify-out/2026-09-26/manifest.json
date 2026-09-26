@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790440251.9692347,
-    "ast_hash": "bd74cdb87a5527237fe0d7df848f061b",
+    "mtime": 1790385560.9375503,
+    "ast_hash": "ea97315f030a6ed256502994342831dd",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790440300.0853977,
-    "ast_hash": "45aaa31c0f85401863d02ea1823eea03",
+    "mtime": 1790385629.475542,
+    "ast_hash": "a41f180d89055a397009183507c7648c",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -2800,8 +2800,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/CreateVidaCategoryStep/CreateVidaCategoryStep.tsx": {
-    "mtime": 1790440820.84371,
-    "ast_hash": "ccefd4f91e87419e50511e26aacbb6a7",
+    "mtime": 1790115187.7775395,
+    "ast_hash": "ce751c52ecd521325d5d710608055ea1",
     "semantic_hash": ""
   },
   "src/features/vida/components/CreateVidaCategoryStep/index.ts": {
@@ -2810,8 +2810,8 @@
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx": {
-    "mtime": 1790440667.5393884,
-    "ast_hash": "cd4103764a94ebef72bbfa08839fbea5",
+    "mtime": 1790116531.9204466,
+    "ast_hash": "0120c35afe6581552bb6caa1ca3a09d8",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaActivitySheet/VidaActivitySheet.tsx": {
@@ -3860,8 +3860,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-017-vida-mas-iconos-y-colores.md": {
-    "mtime": 1790440461.4698808,
-    "ast_hash": "29d1f05f2c6230e7ae0c1876bf3c8c5a",
+    "mtime": 1790438980.5071034,
+    "ast_hash": "7b5cc54e4f2af8bf060ef028ecdd9a77",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx": {
@@ -4212,16 +4212,6 @@
   "docs/habits/assets/02-habitos-hora-del-registro.html": {
     "mtime": 1790380820.899728,
     "ast_hash": "771ee54cea619c59ecb7757c77c64635",
-    "semantic_hash": ""
-  },
-  "src/features/vida/utils/vida-category-color.utils.test.ts": {
-    "mtime": 1790440502.2869897,
-    "ast_hash": "2429c67a11bf249650ea0db6f7bab141",
-    "semantic_hash": ""
-  },
-  "src/features/vida/utils/vida-category-color.utils.ts": {
-    "mtime": 1790440478.0299256,
-    "ast_hash": "a54a23f46658abb25b66a2d368ac1c0f",
     "semantic_hash": ""
   }
 }

@@ -25,7 +25,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | building | 4 pendiente, **1, 2, 3a y 3b aceptadas**, de 5 (3a desplegada; la hora ya se guarda y se corrige) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-25 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
-| FEAT-017 | planned | 0/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
+| FEAT-017 | building | **1/4 aceptada**, de 4 (2, 3 y 4 pendientes; la 2 y la 4 esperan una decisión del usuario) | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
@@ -33,6 +33,31 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
+
+**FEAT-017 `building`, tajada 1 de 4 aceptada** (2026-09-26, revisor). **Las
+búsquedas de iconos que devolvían cero ya encuentran el que siempre estuvo ahí.**
+«chef» y la frase entera «sombrero de chef» dan `kitchen-set` (Cocinar) —antes,
+**0 resultados**—, y con ellas «gorro de cocinero», «sartén», «tupper»,
+«repostería», «hornear», «lavavajillas», «taladro», «gimnasio», «flexiones»,
+«patinar», «audiolibro», «pañal», «ensalada» y «panadería»: **33 palabras clave
+nuevas en 14 iconos que ya existían**, ni un icono nuevo, ni un `name`, ni un
+`label`, ni una línea del buscador. «cocina» pasa de 5 a **7** y ya trae los seis
+que pide el criterio 505. Revisado con arnés propio fuera del repositorio que
+importa el catálogo real y reconstruye el de HEAD desde el diff: **de las 3.746
+consultas del vocabulario anterior cambian 28 y las 28 solo añaden — ninguna
+pierde un resultado**; «lavadora» sigue en 1. Criterios 504, 505, 506, 507, 508
+y 530 cumplidos. Puertas verificadas por el revisor: typecheck **limpio**, lint
+**14/0** (línea base), iconos **71/71**, build verde, `app-icons` **620,56 kB**
+(perezoso, +0,36 kB). `pnpm test` da **3 fallos de 2.334**: los dos de
+`SearchSelect` y `HabitPanel.test.tsx:566`, **preexistente y del calendario** —el
+mismo árbol pasa **25/25** corriéndolo con `TZ=Pacific/Kiritimati`, donde hoy ya
+es domingo—. Hallazgos sin devolución: ruido nuevo por subcadena en cinco
+consultas ajenas («arte»→`fire-burner` por «sartén», «cine»→`kitchen-set`,
+«pan»→`baby`, «aura»→`utensils`, «post»→`kitchen-set`), un icono de más cada una
+y sin desplazar al correcto; y `ENVIRONMENT.md` dice «2 fallos» cuando los
+sábados son 3. Sin commitear. **El recorrido real (abrir el selector en Vida y
+escribir «chef») es del usuario: está tras el login.** Las tajadas 2 y 4 siguen
+esperando respuesta (D-E y D-D revisada); la 3 no depende de ninguna.
 
 **FEAT-012 `delivered` 4/4** (2026-09-25, revisor). **Tajada 4 aceptada — y con
 ella la feature entera.** La hora real de levantarse manda: comprobado con casos

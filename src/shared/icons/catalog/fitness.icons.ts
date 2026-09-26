@@ -75,7 +75,7 @@ import {
 import type { AppIconEntry } from '@/shared/icons/types'
 
 export const fitnessIcons = [
-  { name: 'dumbbell', label: 'Pesas', category: 'fitness', icon: faDumbbell, keywords: ['gym', 'fitness', 'exercise', 'workout', 'pesas', 'ejercicio', 'fuerza', 'mancuerna', 'musculación'] },
+  { name: 'dumbbell', label: 'Pesas', category: 'fitness', icon: faDumbbell, keywords: ['gym', 'fitness', 'exercise', 'workout', 'pesas', 'ejercicio', 'fuerza', 'mancuerna', 'musculación', 'gimnasio', 'crossfit'] },
   { name: 'running', label: 'Correr', category: 'fitness', icon: faPersonRunning, keywords: ['person-running', 'ejercicio', 'deporte', 'cardio', 'run', 'gym', 'running', 'trotar'] },
   { name: 'walking', label: 'Caminar', category: 'fitness', icon: faPersonWalking, keywords: ['person-walking', 'paseo', 'steps', 'pasos', 'andar', 'walk'] },
   { name: 'bicycle', label: 'Bicicleta', category: 'fitness', icon: faBicycle, keywords: ['ciclismo', 'bike', 'cardio', 'bici', 'pedalear'] },
@@ -89,7 +89,7 @@ export const fitnessIcons = [
   { name: 'weight-hanging', label: 'Pesa rusa', category: 'fitness', icon: faWeightHanging, keywords: ['kettlebell', 'peso', 'carga', 'fuerza', 'levantamiento', 'weight', 'abdominales'] },
   { name: 'person-hiking', label: 'Senderismo', category: 'fitness', icon: faPersonHiking, keywords: ['hiking', 'trekking', 'montaña', 'excursión', 'ruta', 'caminata'] },
   { name: 'person-biking', label: 'Ciclismo', category: 'fitness', icon: faPersonBiking, keywords: ['biking', 'bici', 'bicicleta', 'ruta', 'spinning', 'cycling'] },
-  { name: 'person-skating', label: 'Patinaje', category: 'fitness', icon: faPersonSkating, keywords: ['skating', 'patines', 'patinete', 'hielo', 'ruedas'] },
+  { name: 'person-skating', label: 'Patinaje', category: 'fitness', icon: faPersonSkating, keywords: ['skating', 'patines', 'patinete', 'hielo', 'ruedas', 'patinar'] },
   { name: 'person-skiing', label: 'Esquí', category: 'fitness', icon: faPersonSkiing, keywords: ['skiing', 'esqui', 'nieve', 'montaña', 'invierno'] },
   { name: 'person-skiing-nordic', label: 'Esquí de fondo', category: 'fitness', icon: faPersonSkiingNordic, keywords: ['nordic', 'esqui', 'fondo', 'nieve', 'resistencia'] },
   { name: 'person-snowboarding', label: 'Snowboard', category: 'fitness', icon: faPersonSnowboarding, keywords: ['snowboard', 'nieve', 'tabla', 'invierno', 'montaña'] },
@@ -127,7 +127,7 @@ export const fitnessIcons = [
   { name: 'hand-back-fist', label: 'Boxeo', category: 'fitness', icon: faHandBackFist, keywords: ['boxeo', 'puño', 'golpe', 'fuerza'] },
   { name: 'arrows-spin', label: 'Rotación', category: 'fitness', icon: faArrowsSpin, keywords: ['rotar', 'movilidad', 'girar', 'estiramiento'] },
   { name: 'maximize', label: 'Estirar', category: 'fitness', icon: faMaximize, keywords: ['estirar', 'estiramiento', 'extensión', 'flexibilidad'] },
-  { name: 'up-down', label: 'Repeticiones', category: 'fitness', icon: faUpDown, keywords: ['repeticiones', 'sentadillas', 'subir', 'bajar'] },
+  { name: 'up-down', label: 'Repeticiones', category: 'fitness', icon: faUpDown, keywords: ['repeticiones', 'sentadillas', 'subir', 'bajar', 'flexiones', 'dominadas'] },
   { name: 'gauge-simple', label: 'Ritmo', category: 'fitness', icon: faGaugeSimple, keywords: ['ritmo', 'pulso', 'velocidad', 'medidor'] },
   { name: 'bolt-lightning', label: 'Explosividad', category: 'fitness', icon: faBoltLightning, keywords: ['energía', 'potencia', 'rápido', 'intensidad'] },
   { name: 'fire-flame-simple', label: 'Calorías', category: 'fitness', icon: faFireFlameSimple, keywords: ['calorías', 'quemar', 'fuego', 'intensidad'] },

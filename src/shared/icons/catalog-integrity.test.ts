@@ -199,6 +199,34 @@ describe('catálogo de iconos — búsqueda en español', () => {
     ['regalo', 'gift'],
     ['diario', 'book-bookmark'],
     ['verdura', 'carrot'],
+    // FEAT-017 tajada 1: búsquedas que antes devolvían cero y ya encuentran el
+    // icono que siempre estuvo ahí. La consulta entera del usuario («sombrero de
+    // chef») entra como frase en `keywords` porque `filterAppIcons` exige TODOS
+    // los tokens: sin la frase, «sombrero» y «chef» nunca caen en la misma entrada.
+    ['chef', 'kitchen-set'],
+    ['sombrero de chef', 'kitchen-set'],
+    ['gorro de cocinero', 'kitchen-set'],
+    ['tupper', 'kitchen-set'],
+    ['sartén', 'fire-burner'],
+    ['licuar', 'blender'],
+    ['hierbas', 'mortar-pestle'],
+    ['lavavajillas', 'sink'],
+    ['ensalada', 'bowl-food'],
+    ['panadería', 'bread-slice'],
+    ['taladro', 'screwdriver'],
+    ['gimnasio', 'dumbbell'],
+    ['flexiones', 'up-down'],
+    ['patinar', 'person-skating'],
+    ['audiolibro', 'headphones'],
+    ['pañal', 'baby'],
+    // «cocina» tiene que seguir trayendo los seis de la cocina, y dos de ellos
+    // (utensils y bowl-food) no aparecían hasta esta tajada.
+    ['cocina', 'kitchen-set'],
+    ['cocina', 'fire-burner'],
+    ['cocina', 'blender'],
+    ['cocina', 'mortar-pestle'],
+    ['cocina', 'utensils'],
+    ['cocina', 'bowl-food'],
   ]
 
   it.each(cases)('«%s» encuentra %s', (query, expected) => {

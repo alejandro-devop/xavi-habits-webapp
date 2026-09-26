@@ -75,7 +75,7 @@ import type { AppIconEntry } from '@/shared/icons/types'
 export const entertainmentIcons = [
   { name: 'music', label: 'Música', category: 'entertainment', icon: faMusic, keywords: ['canción', 'audio', 'playlist', 'piano', 'teclado musical', 'bailar', 'baile', 'cantar'] },
   { name: 'guitar', label: 'Guitarra', category: 'entertainment', icon: faGuitar, keywords: ['instrumento', 'música', 'práctica', 'guitarra', 'acordes', 'bajo'] },
-  { name: 'headphones', label: 'Auriculares', category: 'entertainment', icon: faHeadphones, keywords: ['música', 'audio', 'escuchar', 'cascos'] },
+  { name: 'headphones', label: 'Auriculares', category: 'entertainment', icon: faHeadphones, keywords: ['música', 'audio', 'escuchar', 'cascos', 'audiolibro'] },
   { name: 'film', label: 'Cine', category: 'entertainment', icon: faFilm, keywords: ['película', 'video', 'series', 'cine', 'peli'] },
   { name: 'clapperboard', label: 'Rodaje', category: 'entertainment', icon: faClapperboard, keywords: ['cine', 'video', 'contenido', 'grabar', 'claqueta'] },
   { name: 'camera', label: 'Cámara', category: 'entertainment', icon: faCamera, keywords: ['foto', 'fotografía', 'creativo', 'cámara', 'retratar'] },

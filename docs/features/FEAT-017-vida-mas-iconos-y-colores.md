@@ -1,11 +1,11 @@
 ---
 id: FEAT-017
 title: Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear
-status: planned
+status: building
 architect: no    # las cuatro tajadas cuelgan de estructuras ya existentes: los datos del catálogo de iconos (src/shared/icons/catalog/*.icons.ts), los dos niveles de la paleta (src/shared/ui/ColorPicker/color-palette.ts) y el sorteo que ya existe para hábitos (src/features/habits/data/habit-colors.ts, pickInitialHabitColor), que documenta por escrito que su equivalente de Vida es dominio de Vida y vive en Vida. Ninguna tajada crea entidad, pantalla ni cruce de capas nuevo.
 area: shared/icons, shared/ui, features/vida
 requested: 2026-09-22
-updated: 2026-09-24
+updated: 2026-09-26
 ---
 
 # FEAT-017 — Categorías: más iconos que se encuentran, más colores, y uno que no se repite al crear
@@ -200,7 +200,7 @@ categorias selecciona uno distinto al azar.»
 **Slices:** (vertical, cada una usable por sí sola)
 | # | What it does | State |
 |---|---|---|
-| 1 | Palabras clave que arreglan las búsquedas de iconos que hoy fallan (incluida «chef») | pending |
+| 1 | Palabras clave que arreglan las búsquedas de iconos que hoy fallan (incluida «chef») | accepted (2026-09-26, revisor) |
 | 2 | Cien iconos nuevos curados, dentro de las reglas de integridad ya existentes | pending |
 | 3 | Al crear una categoría de Vida, el color nace sorteado entre el núcleo y sin repetir el de otra categoría | pending |
 | 4 | Más colores extendidos en la paleta compartida | pending |
@@ -586,7 +586,7 @@ proponer hexadecimales.
 
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
-| 1 | Las búsquedas de iconos que hoy devuelven cero encuentran el icono que ya existe (incluida «chef» y la frase «sombrero de chef») | `src/shared/icons/catalog/home.icons.ts` (`kitchen-set`, `fire-burner`, `blender`, `mortar-pestle`) + el resto de `catalog/*.icons.ts`, **solo arrays `keywords`**; filas nuevas en la tabla `cases` de `catalog-integrity.test.ts:186` | 504, 505, 506, 507, 508, 530 | pending |
+| 1 | Las búsquedas de iconos que hoy devuelven cero encuentran el icono que ya existe (incluida «chef» y la frase «sombrero de chef») | `src/shared/icons/catalog/home.icons.ts` (`kitchen-set`, `fire-burner`, `blender`, `mortar-pestle`) + el resto de `catalog/*.icons.ts`, **solo arrays `keywords`**; filas nuevas en la tabla `cases` de `catalog-integrity.test.ts:186` | 504, 505, 506, 507, 508, 530 | accepted (2026-09-26, revisor) |
 | 2 | Los iconos útiles que quedan en Font Awesome Free entran al catálogo, con la cifra real medida | entradas nuevas en `src/shared/icons/catalog/*.icons.ts` con sus `import { faXxx }`; **nada más** | 510, 511, 512, 513, 514, 515, 530 — y **509 con la cifra real** (ver D-E) | pending |
 | 3 | Al abrir «+ nueva categoría» en Vida el color ya viene puesto, y no repite el de otra categoría | **crear** `src/features/vida/utils/vida-category-color.utils.ts` y `…utils.test.ts`; **modificar** `CreateVidaCategoryStep.tsx:38` (+ el import del hook) y `VidaActivitySheet.test.tsx:200-210`. **`VidaCategoryForm.tsx` y `VidaCategoriasPage.tsx` no se tocan** | 516, 517, 518, 519, 520, 521, 522, 523, 530 | pending |
 | 4 | La paleta compartida gana los colores extendidos que de verdad se distinguen | `color-palette.ts:57-82`; contadores de `habit-colors.test.ts:47-68`, `ColorPicker.test.tsx:8-11`, `VidaActivitySheet.test.tsx:203-208`; los comentarios que dicen «diecisiete» | 524, 525, 526, 527, 528, 529, 530 | pending |
@@ -620,8 +620,416 @@ de la 4 (solo sortea entre el núcleo, criterio 528).
 
 ## 3. Construction — feature-builder
 
-*(pendiente)*
+### Tajada 1 — palabras clave que arreglan lo que no se encontraba
+
+**Resumen para quien revisa:**
+1. Treinta y tres palabras clave nuevas repartidas entre **catorce iconos que ya
+   existían**, en cinco ficheros de `src/shared/icons/catalog/`; ni un icono
+   nuevo, ni un `name`, ni un `label`, ni una línea de `icon-search.ts`.
+2. Veintidós filas nuevas en la tabla `cases` de `catalog-integrity.test.ts`,
+   inmediatamente debajo de las quince que ya había; ninguna regla de `:92-181`
+   se ha tocado.
+3. **Lo que más probablemente he roto:** la búsqueda de iconos es global, así
+   que cualquier palabra que haya añadido aparece ahora en consultas de otra
+   gente. Los dos sitios donde eso se paga son `IconPicker.test.tsx:75-90`
+   (exige que «lavadora» devuelva **exactamente 1**) y `icon-search.test.ts:14-18
+   y :39-46` (exigen que «finanzas» devuelva solo `finance` y «mascota» solo
+   `pets`). Ninguna de las treinta y tres palabras contiene `lavadora`,
+   `finanzas` ni `mascota` como subcadena, y las cinco suites de iconos pasan
+   71/71 — pero si algo se cae por aquí, es por ahí. El segundo sitio a mirar es
+   `utensils` y `bowl-food`, que **no son de `home` sino de `health`**: les he
+   metido «cocina» porque el criterio 505 los nombra y no aparecían.
+
+**Qué se construyó:**
+
+*Datos del catálogo (solo arrays `keywords`, siempre añadiendo al final):*
+
+| Fichero | Icono | Palabras clave añadidas |
+|---|---|---|
+| `catalog/home.icons.ts:95` | `kitchen-set` (Cocinar) | `chef`, `sombrero de chef`, `gorro de cocinero`, `cocinero`, `hornear`, `repostería`, `tupper`, `fiambrera` |
+| `catalog/home.icons.ts:96` | `fire-burner` (Fogón) | `sartén`, `olla`, `cocinar` |
+| `catalog/home.icons.ts:97` | `blender` (Batidora) | `licuar`, `zumo`, `cocinar` |
+| `catalog/home.icons.ts:140` | `mortar-pestle` (Mortero) | `majar`, `hierbas` |
+| `catalog/home.icons.ts:94` | `sink` (Fregar) | `lavaplatos`, `lavavajillas` |
+| `catalog/home.icons.ts:113` | `screwdriver` (Bricolaje) | `taladro`, `tornillo` |
+| `catalog/health.icons.ts:85` | `utensils` (Utensilios) | `cocina`, `restaurante` |
+| `catalog/health.icons.ts:84` | `bowl-food` (Comida) | `cocina`, `ensalada` |
+| `catalog/health.icons.ts:102` | `bread-slice` (Pan) | `panadería`, `hornear` |
+| `catalog/fitness.icons.ts:78` | `dumbbell` (Pesas) | `gimnasio`, `crossfit` |
+| `catalog/fitness.icons.ts:130` | `up-down` (Repeticiones) | `flexiones`, `dominadas` |
+| `catalog/fitness.icons.ts:92` | `person-skating` (Patinaje) | `patinar` |
+| `catalog/entertainment.icons.ts:78` | `headphones` (Auriculares) | `audiolibro` |
+| `catalog/social.icons.ts:76` | `baby` (Bebé) | `pañal` |
+
+**Total: 33 palabras clave nuevas en 14 iconos.** Ninguna entrada pierde nada:
+todas las palabras se añaden al final del array que ya había.
+
+*Test:* `src/shared/icons/catalog-integrity.test.ts` — 22 filas nuevas en la
+tabla `cases` (justo tras `['verdura', 'carrot']`), con un comentario corto que
+explica por qué la frase entera entra como palabra clave. Las reglas de
+integridad (`:92-181`) quedan exactamente como estaban.
+
+**Por qué así, y qué se descartó:**
+
+- **La frase entera como palabra clave, no un cambio en el buscador.**
+  `filterAppIcons` (`icon-search.ts:47-52`) parte la consulta en tokens y exige
+  que **todos** estén en el pajar. «sombrero de chef» son tres tokens, y
+  `sombrero` solo vivía en `hat-wizard`. Con `'sombrero de chef'` dentro de las
+  palabras clave de `kitchen-set`, el pajar contiene la frase y los tres tokens
+  caen por subcadena. Medido: antes 0 resultados, ahora 1. Tocar `icon-search.ts`
+  (puntuar por tokens coincidentes en vez de exigirlos todos) estaba fuera de
+  alcance y sigue estándolo: es la feature aparte que ya describe la sección 2.
+- **Se eligieron búsquedas que hoy devolvían cero, no sinónimos de adorno.** De
+  las 33, **31 corresponden a consultas medidas con 0 resultados** sobre el
+  catálogo de `HEAD`. Las dos excepciones, dichas en voz alta: `olla` (devolvía
+  12 resultados, **todos falsos** — `dollar` contiene `olla` como subcadena, así
+  que salían `sack-dollar`, `money-check-dollar`…) y `zumo` (devolvía solo
+  `lemon`). En los dos casos la búsqueda existía pero no encontraba el icono
+  correcto.
+- **Descartado meter «cocina» en `mortar-pestle` y en los demás de la cocina:**
+  no hacía falta. `cocinar` ya contiene `cocina` como subcadena y el buscador
+  compara por `includes`, así que esos cuatro ya aparecían. Los únicos dos que
+  faltaban para el criterio 505 eran `utensils` y `bowl-food`, de `health`.
+- **Descartado tocar `jug-detergent` (Lavadora)** ni añadir `lavadora` en ningún
+  sitio: `IconPicker.test.tsx:84` exige exactamente un resultado para esa
+  consulta. `lavaplatos` y `lavavajillas` van a `sink` y no contienen esa
+  subcadena.
+- **Descartado añadir `flexiones`/`abdominales` a `child-reaching`** (Estiramientos):
+  `up-down` se llama «Repeticiones» y ya traía `sentadillas`, así que es el
+  vecino correcto. `abdominales` se quedó fuera porque ya devolvía resultados y
+  ninguno de los candidatos del catálogo lo dibuja de verdad.
+
+**Verificación:**
+
+*Las consultas, una por una, antes y después.* Medidas con un guion de un solo
+uso que parsea los catorce `*.icons.ts` y reimplementa `filterAppIcons` letra por
+letra (normalización sin tildes, tokens, `includes`, `pickerOnly`); parsea las
+**868** entradas, las mismas que cuenta el test de integridad. El guion vivió en
+el directorio temporal de la sesión y **no queda nada suyo en el repositorio**.
+
+| Consulta | Antes | Después |
+|---|---|---|
+| `chef` | 0 | 1 → `kitchen-set` |
+| `sombrero de chef` | 0 | 1 → `kitchen-set` |
+| `gorro de cocinero` | 0 | 1 → `kitchen-set` |
+| `cocinero` | 0 | 1 → `kitchen-set` |
+| `hornear` | 0 | 2 → `bread-slice`, `kitchen-set` |
+| `repostería` | 0 | 1 → `kitchen-set` |
+| `tupper` | 0 | 1 → `kitchen-set` |
+| `fiambrera` | 0 | 1 → `kitchen-set` |
+| `sartén` | 0 | 1 → `fire-burner` |
+| `licuar` | 0 | 1 → `blender` |
+| `majar` | 0 | 1 → `mortar-pestle` |
+| `hierbas` | 0 | 1 → `mortar-pestle` |
+| `lavaplatos` | 0 | 1 → `sink` |
+| `lavavajillas` | 0 | 1 → `sink` |
+| `taladro` | 0 | 1 → `screwdriver` |
+| `tornillo` | 0 | 1 → `screwdriver` |
+| `ensalada` | 0 | 1 → `bowl-food` |
+| `panadería` | 0 | 1 → `bread-slice` |
+| `gimnasio` | 0 | 1 → `dumbbell` |
+| `crossfit` | 0 | 1 → `dumbbell` |
+| `flexiones` | 0 | 1 → `up-down` |
+| `dominadas` | 0 | 1 → `up-down` |
+| `patinar` | 0 | 1 → `person-skating` |
+| `audiolibro` | 0 | 1 → `headphones` |
+| `pañal` | 0 | 1 → `baby` |
+| `restaurante` | 1 (`pizza-slice`) | 2 → + `utensils` |
+| `zumo` | 1 (`lemon`) | 2 → + `blender` |
+| `olla` | 12, **todos falsos** (`dollar` ⊃ `olla`) | 13 → + `fire-burner` |
+| `cocina` | 5 | **7** → `bowl-food`, `utensils`, `sink`, `kitchen-set`, `fire-burner`, `blender`, `mortar-pestle` |
+| `cocinar` | 2 | 4 → `kitchen-set`, `fire-burner`, `blender`, `mortar-pestle` |
+| `lavadora` | 1 (`jug-detergent`) | **1** (sin cambio, a propósito) |
+
+*Puertas del proyecto* (regla «no peor que la línea base» de `ENVIRONMENT.md`):
+
+```
+pnpm typecheck  → limpio (tsc -b --noEmit, sin salida)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)     [línea base: 14/0]
+pnpm vitest run src/shared/icons src/shared/ui/IconPicker
+                → Test Files 5 passed (5) · Tests 71 passed (71)
+pnpm test       → Test Files 2 failed | 132 passed (134)
+                  Tests 3 failed | 2331 passed (2334)
+pnpm build      → ✓ built in 3,35 s
+                  index.css       281,63 kB
+                  IconPicker       4,64 kB
+                  app-icons      620,56 kB   (línea base 620,20 → +0,36 kB)
+                  index.js     1.157,37 kB
+```
+
+**Sobre los 3 fallos de `pnpm test`, uno por uno** (la línea base dice 2):
+
+- `SearchSelect` ×2 — preexistentes, los que ya documenta `ENVIRONMENT.md`.
+- `HabitPanel.test.tsx:566` «señala el día de más fallos aunque otro día esté
+  entero sin registrar» — **preexistente y del calendario, no de esta tajada.**
+  El test no congela el reloj (`const today = getTodayString()`,
+  `HabitPanel.test.tsx:509`) y exige que el domingo aparezca **13** veces en la
+  ventana de 90 días del panel. Noventa días son 12 semanas más 6: seis días de
+  la semana salen 13 veces y **uno sale 12**, y cuál es depende del día en que se
+  corra. Hoy es **sábado 2026-09-26** y al que le toca salir 12 veces es el
+  domingo, justo el que el test fija. Corre solo y falla igual; el diff de esta
+  tajada son palabras clave de iconos y una tabla de casos, y `HabitPanel` no
+  importa nada del catálogo. Queda anotado abajo como hallazgo, sin tocarlo.
+- El total sube de 2.312 a **2.334** porque la tabla `cases` gana 22 filas y
+  cada fila es un test (`it.each`). 2.312 + 22 = 2.334. ✓
+
+*Lo que no se ha ejecutado, a propósito:* `pnpm format` y `pnpm format:check`
+(`ENVIRONMENT.md` los marca como prohibido y ya roto en HEAD justo en estos
+ficheros del catálogo), y ningún arranque ni parada de servidores. No se ha
+abierto el navegador: esta tajada no pinta un píxel nuevo y todo lo que cambia
+se mide en test.
+
+**Criterios que cierra:**
+
+- **504 — Buscar «chef» encuentra al menos `kitchen-set`.** ✅ Medido: antes 0,
+  ahora 1 (`kitchen-set`). Fijado en el test como `['chef', 'kitchen-set']`. La
+  frase literal del usuario, «sombrero de chef», también da `kitchen-set`
+  (fila propia en la tabla). Ningún icono nuevo.
+- **505 — «cocina» encuentra los seis y ninguno pierde palabras.** ✅ Ahora
+  devuelve los seis: `kitchen-set`, `fire-burner`, `blender`, `mortar-pestle`,
+  `utensils` y `bowl-food` (antes eran cuatro de esos seis más `sink`; `utensils`
+  y `bowl-food` **no aparecían**, y por eso les entra «cocina»). Seis filas
+  nuevas en la tabla lo fijan una a una. Que no se pierde nada se ve en el diff:
+  las 14 entradas solo **añaden** al final del array —
+  `git diff src/shared/icons/catalog/` no tiene ni una palabra clave retirada.
+- **506 — Al menos 15 palabras clave nuevas en iconos ya existentes, con la
+  lista de qué se buscó y qué se amplió.** ✅ **33** palabras en **14** iconos,
+  con las dos tablas de arriba: la de qué se añadió a cada icono y la de qué
+  consulta devolvía qué antes y después. Ningún icono creado.
+- **507 — Los dos tests de integridad siguen en verde sin editar ninguna regla.**
+  ✅ `pnpm vitest run src/shared/icons src/shared/ui/IconPicker` → 71/71 en 5
+  ficheros (incluye `catalog-integrity.test.ts`, `icon-registry.test.ts`,
+  `icon-search.test.ts` e `IconPicker.test.tsx`). El diff de
+  `catalog-integrity.test.ts` son 28 líneas **todas dentro de la tabla `cases`**;
+  las reglas de `:92-181` no se tocan.
+- **508 — Ningún `name` ni `label` cambia.** ✅ El diff de `catalog/` son 14
+  líneas sustituidas y en las 14 lo único distinto es el contenido del array
+  `keywords`. Comprobable en una línea:
+  `git diff -U0 src/shared/icons/catalog/ | grep '^[-+].*name:'` devuelve pares
+  idénticos salvo por las palabras añadidas.
+- **530 — typecheck limpio, lint y tests no peores, build limpio.** ✅ con una
+  salvedad dicha arriba: typecheck limpio, lint 14/0 (igual que la línea base),
+  build en verde, y los tests suman **un tercer fallo que no es de esta tajada**
+  (`HabitPanel`, dependiente del día de la semana). Los cinco ficheros de iconos
+  están 71/71.
+
+**Riesgos:**
+
+1. **Una palabra clave es global.** Cada una de las 33 amplía lo que devuelven
+   otras consultas por subcadena. Dos ejemplos reales que ya están medidos:
+   «hornear» ahora trae dos iconos y «cocina» siete. Si alguien tenía en la
+   cabeza que una consulta devolvía un solo resultado, ahora puede devolver dos.
+2. **El `WeakMap` de `icon-search.ts:17` cachea el pajar por entrada**, pero se
+   construye en caliente y las entradas son objetos nuevos en cada arranque: no
+   hay caché persistida que invalidar. Nada que tirar en el navegador de nadie
+   (y `vite/cache-shape.ts` no mira estos ficheros).
+3. **El peso.** `app-icons` pasa de 620,20 a 620,56 kB: **+0,36 kB**, que es
+   justo el texto de las 33 palabras. Sigue siendo un chunk perezoso.
+4. **Lo que esta tajada NO arregla, y conviene que el revisor no lo confunda con
+   un defecto:** una búsqueda en lenguaje natural larga sigue devolviendo cero si
+   la frase exacta no está como palabra clave, porque `filterAppIcons` exige
+   todos los tokens. «sombrero de chef» funciona porque la frase entera está
+   escrita; «un sombrero de cocinero» no. Eso es la feature aparte que describe
+   la sección 2, no un hallazgo nuevo.
+
+**Hallazgos que no estaban en el plan** (anotados, **sin tocar**, por no ampliar
+el alcance):
+
+- **`HabitPanel.test.tsx:547-572` depende del día de la semana en que se corra.**
+  Falla los sábados, y hoy es sábado. Es un test de hábitos, no de iconos, y
+  arreglarlo (congelar el reloj con `vi.setSystemTime`) es de otro expediente.
+  Mientras tanto, la línea base de `ENVIRONMENT.md` dirá 2 o 3 fallos según el
+  día, y eso merece una línea en ese fichero cuando alguien lo actualice.
+- **`utensils` y `bowl-food` viven en `health`, no en `home`.** La sección 2 los
+  daba por vecinos de cocina sin decir su fichero; el criterio 505 obliga a
+  tocar `health.icons.ts`, que no estaba en la lista de ficheros de la tajada.
+  Está dentro de «el resto de `catalog/*.icons.ts`», así que no es una desviación,
+  pero conviene que conste.
+- **El buscador empareja por subcadena, y eso produce falsos positivos curiosos**:
+  «olla» devolvía doce iconos de dinero porque `dollar` contiene `olla`. No es
+  nuevo ni es de esta tajada; se apunta porque cualquiera que mida resultados se
+  lo va a encontrar.
+
+**Estado del árbol:** sin commitear. Seis ficheros de `src/` tocados
+(`catalog/home.icons.ts`, `catalog/health.icons.ts`, `catalog/fitness.icons.ts`,
+`catalog/entertainment.icons.ts`, `catalog/social.icons.ts` y
+`catalog-integrity.test.ts`) más este expediente y `BOARD.md`. `graphify update .`
+corrido al terminar (4.646 nodos, 5.591 aristas). No se sembró ningún dato de
+prueba y no queda ningún fichero temporal en el repositorio.
 
 ## 4. Review — feature-reviewer
 
-*(pendiente)*
+### Tajada 1 — palabras clave que arreglan lo que no se encontraba
+
+**Veredicto: `accepted`.** Los seis criterios (504, 505, 506, 507, 508, 530) se
+cumplen con evidencia propia; no hay regresión: **ninguna consulta del
+vocabulario anterior pierde ni un resultado**, medido sobre las 3.746 consultas
+que salen del propio catálogo.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del
+constructor). Medidos con un arnés propio de un solo uso —un `.spec.ts` y su
+`vitest.config.ts` en el directorio temporal de la sesión, **fuera del
+repositorio**— que importa el catálogo real (`@/shared/icons/app-icons`) y la
+función real (`filterAppIcons`, `pickerOnly: true`), y que reconstruye el
+catálogo **de HEAD** a partir del propio `git diff -U0` para comparar antes y
+después en la misma corrida. 868 entradas, 846 elegibles en el selector:
+
+- **504 — «chef» encuentra al menos `kitchen-set`.** ✅ Antes: **0 resultados**
+  para «chef» y **0** para «sombrero de chef». Después: **1 y 1**, y en los dos
+  casos es `kitchen-set`. La frase literal del usuario funciona.
+- **505 — «cocina» sigue encontrando los seis, y ninguno pierde palabras.** ✅
+  Antes «cocina» daba 5 (`blender`, `fire-burner`, `kitchen-set`,
+  `mortar-pestle`, `sink`); ahora da **7**: los mismos cinco más `utensils` y
+  `bowl-food`, que son los dos que el criterio nombraba y no aparecían. Los seis
+  del criterio están. Que **ninguno pierde nada** no se da por bueno leyendo el
+  diff: el arnés comprueba entrada por entrada que las palabras clave de HEAD
+  son **prefijo exacto** de las de ahora (solo se añade, y al final), y además
+  que para cada una de las 3.746 consultas del vocabulario previo todo icono que
+  salía antes sigue saliendo. Las dos comprobaciones pasan.
+- **506 — Al menos 15 palabras nuevas en iconos ya existentes, con la lista
+  escrita.** ✅ **33 palabras en 14 entradas**, contadas por el arnés sobre el
+  diff, no copiadas del informe. Ningún icono nuevo: el diff tiene 14 líneas
+  retiradas y 14 añadidas, emparejadas una a una, y el catálogo sigue en 868.
+  La lista de qué se buscó y qué se amplió está en la sección 3, en dos tablas.
+- **507 — `catalog-integrity.test.ts` e `icon-registry.test.ts` en verde sin
+  editar ninguna regla.** ✅ `npx vitest run src/shared/icons src/shared/ui/IconPicker`
+  → **5 ficheros, 71/71**. El diff de `catalog-integrity.test.ts` es **28 líneas
+  añadidas y cero retiradas**, todas dentro de la tabla `cases`; las reglas de
+  `:92-181` no se tocan. **Matiz literal, que queda como hallazgo y no como
+  motivo de devolución:** la segunda mitad del criterio dice «el diff de esta
+  tajada son solo arrays `keywords` dentro de `catalog/*.icons.ts`», y el diff
+  incluye también la tabla `cases`. La sección 2 lo autoriza expresamente («Un
+  test nuevo de `catalog-integrity`: **se añaden filas a su tabla**») y la tabla
+  de tajadas lo pide por escrito, así que la frase del criterio describe los
+  datos de producto, no el diff entero. Se anota para que nadie lo lea al revés
+  más adelante.
+- **508 — Ningún `name` ni `label` cambia.** ✅ Comprobado por el arnés sobre las
+  14 parejas del diff: `name`, `label` y el identificador de Font Awesome
+  (`icon: faXxx`) son idénticos en las 14; lo único distinto es el contenido de
+  `keywords`. Y `vida-starting-points.test.ts`, el único sitio fuera de iconos
+  que consume `appIcons`, usa **solo `name`**: nada que se mueva.
+- **530 — typecheck, lint, tests y build.** ✅ con la salvedad del calendario,
+  verificada aparte:
+  - `pnpm typecheck` → limpio, sin salida.
+  - `pnpm lint` → **14 errores / 0 warnings** = línea base exacta.
+  - `pnpm test` → **3 fallos de 2.334** (2.312 + 22 filas nuevas de `it.each`,
+    la cuenta cuadra). Dos son los `SearchSelect` de siempre.
+  - `pnpm build` → verde. `app-icons` **620,56 kB** (perezoso, +0,36 kB),
+    `IconPicker` 4,64 kB, `index.js` 1.157,37 kB, CSS 281,63 kB. El CSS **sube**,
+    así que no hay ninguna regla comida por un comentario abierto (y el diff no
+    toca SCSS). El `index.js` está por encima de la cifra de 2026-09-22 de
+    `ENVIRONMENT.md` (1.154,54 kB) por los commits posteriores, no por esta
+    tajada: los cinco ficheros tocados entran solo en el chunk perezoso
+    (`icon-registry.ts:61`, `import('@/shared/icons/app-icons')` y nadie más los
+    importa en caliente).
+
+**El tercer fallo, comprobado como preexistente e independiente.** No me fié del
+razonamiento: corrí el mismo fichero, **sobre el mismo árbol y sin tocar nada**,
+con el reloj del sistema en otra zona horaria donde hoy ya es domingo:
+`TZ=Pacific/Kiritimati npx vitest run src/features/habits/components/HabitPanel/HabitPanel.test.tsx`
+→ **25/25 en verde**. Con la zona local (sábado 2026-09-26) falla en `:566`
+pidiendo 13 domingos y encontrando 12. Mismo código, distinto día, distinto
+resultado: depende del calendario, no del cambio. Además `HabitPanel.tsx` y su
+test **no importan nada de iconos** (grep de `icons|IconPicker` en los dos:
+cero). Queda como está: no es de este expediente.
+
+**Qué busqué alrededor, y cómo.**
+
+1. **El grafo primero**, como manda `CLAUDE.md`: `graphify explain "appIcons"` y
+   `graphify explain "filterAppIcons"` devuelven nodos de grado 1 y 2 (solo
+   `contains` y una llamada a `normalizeSearchText`), así que aquí el grafo no
+   contesta «quién depende de esto» y lo digo en vez de aparentar cobertura.
+   Completado con `git grep` sobre el árbol.
+2. **Quién consume lo tocado:** `git grep -ln "appIcons\|filterAppIcons" -- src`
+   → `IconPicker.tsx` (la búsqueda del selector), `icon-registry.ts` (la carga
+   perezosa), `icon-search.ts`, `index.ts`, `test/setup.ts`,
+   `vida-starting-points.test.ts` y las tres suites de iconos. Y
+   `git grep -ln` de los cinco catálogos → solo `catalog/index.ts` y
+   `icon-search.test.ts`. No hay ningún otro consumidor escondido.
+3. **Quién más usa la palabra `keywords`:** `identity-suggestions.ts` (hábitos) y
+   `app-nav.config.ts` (la barra y `⌘K`) tienen **sus propias** listas de
+   palabras clave y no importan nada del catálogo de iconos: cambiar estas no
+   mueve ni las sugerencias de identidad ni el buscador de comandos.
+4. **Lo que el constructor señaló como «lo que más probablemente he roto»** —las
+   consultas con cuenta fija—: «lavadora» sigue en **1** (`jug-detergent`), y
+   las suites de `icon-search` e `IconPicker` que exigen pureza de categoría en
+   «finanzas» y «mascota» pasan enteras.
+5. **La pregunta de verdad: ¿alguna búsqueda que antes funcionaba funciona peor
+   ahora?** Construí el conjunto de **3.746 consultas** que salen del propio
+   catálogo de HEAD (cada `name`, cada `label`, cada palabra clave y cada palabra
+   suelta dentro de una palabra clave) y comparé el resultado antes y después,
+   una por una. **Cambian 28, y las 28 solo añaden**; ninguna pierde. Las que
+   valen la pena mirar: «cocina» 5→7 (los dos que pide el criterio), «cocinar»
+   2→4, «restaurante» 1→2 (`+utensils`), «zumo» 1→2 (`+blender`), «sombrero» 1→2
+   (`+kitchen-set`), «cross» 4→5 (`+dumbbell`, por «crossfit»), «libro» 4→5
+   (`+headphones`, por «audiolibro»). Y las de ruido por subcadena, del mismo
+   tipo que el «olla» ↔ `dollar` que el constructor reporta: **«arte» ahora trae
+   `fire-burner`** (por «sartén» sin tilde), **«cine» trae `kitchen-set`** (por
+   «cocinero»), **«pan» trae `baby`** (por «pañal»), **«aura» trae `utensils`**
+   (por «restaurante») y **«post» trae `kitchen-set`** (por «repostería»). En los
+   cinco casos es **un** icono de más al final de una lista que ya tenía de 3 a
+   14: no desplaza a nadie —`filterAppIcons` no puntúa, conserva el orden del
+   catálogo— y el icono correcto sigue donde estaba. Queda como hallazgo, no
+   como defecto: es la aritmética de `includes`, que esta tajada no cambia.
+6. **Duplicados:** cero palabras clave repetidas dentro de una misma entrada en
+   los 14 ficheros del catálogo, y cero filas repetidas en la tabla `cases`
+   (comprobado con un `uniq -d` sobre las filas).
+
+**Estados que nadie construye.** Esta tajada **no pinta nada**: `keywords` no se
+renderiza en ningún sitio —`IconPicker.tsx` muestra y anuncia `entry.label`
+(`:52-53`, `:211`, `:268`), nunca las palabras clave—, así que **texto largo** y
+**móvil a 375 px** no aplican: la frase «sombrero de chef» vive en un array, no
+en el DOM. **Vacío** (búsqueda sin resultados), **carga** (el catálogo perezoso)
+y **error** son los mismos estados que ya tenía el selector y ninguno cambia de
+camino. **Permisos** no aplica: el selector de iconos ya está dentro de la
+sesión. Nada que reclamar aquí.
+
+**¿Duplica algo que ya existía?** No. Contra «Lo que NO hay que crear» de la
+sección 2: no se ha creado buscador, normalizador ni ranking (`icon-search.ts`
+intacto: no aparece en `git diff`), no hay fichero de datos nuevo, no hay test
+nuevo de integridad —filas en la tabla que ya había, que es exactamente lo que
+la sección 2 pedía—, y ningún icono nuevo que pisara a la tajada 2. El catálogo
+sigue en 868 entradas. Tampoco se ha reimplementado la búsqueda en ningún sitio:
+el arnés que la reimplementaba era del constructor, vivía en el directorio
+temporal y **no hay rastro suyo en el repositorio** (`git status` solo lista los
+seis ficheros de `src/`, este expediente, `BOARD.md` y la salida de `graphify`).
+
+**Hallazgos** (ninguno devuelve la tajada):
+
+1. **Ruido nuevo por subcadena en cinco consultas ajenas**: «arte»→`fire-burner`,
+   «cine»→`kitchen-set`, «pan»→`baby`, «aura»→`utensils`, «post»→`kitchen-set`.
+   Un icono de más cada una. Si algún día se pone puntuación en el buscador (la
+   feature aparte que describe la sección 2), esto se va solo.
+2. **La frase literal del criterio 507** («el diff son solo arrays `keywords`»)
+   choca con las filas de test que la sección 2 sí pide. Se cumple el fondo
+   —ninguna regla editada— y se deja escrito el matiz.
+3. **`ENVIRONMENT.md` se queda corto en la línea base de tests**: dice «2 fallos
+   de 2312», y **los sábados son 3** por `HabitPanel.test.tsx:547-572`, que no
+   congela el reloj. No lo he tocado (no me corresponde); lo digo para quien lo
+   actualice. Congelar ese reloj es un expediente propio.
+
+**Lo que no he podido comprobar, y lo digo en vez de disimularlo:** el recorrido
+real —abrir el selector de iconos de una categoría de Vida y escribir «chef»—
+**vive detrás del login** y los agentes no entran con credenciales. Lo medido es
+la misma función que usa el selector (`filterAppIcons` sobre `appIcons`, con
+`pickerOnly`), que es todo lo que esta tajada cambia; el clic final es del
+usuario y va abajo en dos pasos.
+
+**Para el usuario:** buscar un icono en Vida ya no depende de acertar con la
+palabra exacta que alguien escribió hace meses. Escribir «chef» —o la frase
+entera «sombrero de chef», que fue la que no encontró nada— te lleva al icono de
+cocina (Cocinar); y lo mismo pasa con «gorro de cocinero», «sartén», «tupper»,
+«repostería», «hornear», «lavavajillas», «taladro», «gimnasio», «flexiones»,
+«patinar», «audiolibro», «pañal», «ensalada» o «panadería», que hasta hoy
+devolvían una rejilla vacía. No hay iconos nuevos todavía: son los mismos de
+siempre, ahora encontrables. «cocina» pasa de traer cinco a traer los siete de
+la cocina, y ninguna búsqueda que ya te funcionaba trae menos que antes.
+
+El sombrero de chef dibujado tal cual sigue sin existir en el paquete de iconos
+gratuito, así que lo que se ha hecho es que esa búsqueda te lleve al icono que sí
+sirve. Para probarlo a mano: entra en Vida, abre **+ nueva categoría** (o edita
+una que tengas), toca el selector de iconos y escribe **chef**; debería aparecer
+el icono de Cocinar. Repite con **sombrero de chef** y con **gimnasio**, y de
+paso escribe **lavadora** para ver que lo que ya funcionaba sigue igual, con un
+solo resultado.
+

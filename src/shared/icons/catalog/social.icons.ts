@@ -73,7 +73,7 @@ export const socialIcons = [
   { name: 'people-roof', label: 'Familia', category: 'social', icon: faPeopleRoof, keywords: ['familia', 'padres', 'hermanos', 'casa', 'family', 'parientes'] },
   { name: 'hands-holding-child', label: 'Cuidar', category: 'social', icon: faHandsHoldingChild, keywords: ['cuidar', 'hijos', 'familia', 'crianza', 'apoyo'] },
   { name: 'children', label: 'Hijos', category: 'social', icon: faChildren, keywords: ['hijos', 'niños', 'familia', 'crianza', 'kids'] },
-  { name: 'baby', label: 'Bebé', category: 'social', icon: faBaby, keywords: ['bebé', 'recién nacido', 'familia', 'crianza', 'baby'] },
+  { name: 'baby', label: 'Bebé', category: 'social', icon: faBaby, keywords: ['bebé', 'recién nacido', 'familia', 'crianza', 'baby', 'pañal'] },
   { name: 'hand-holding-hand', label: 'Pareja', category: 'social', icon: faHandHoldingHand, keywords: ['pareja', 'novia', 'novio', 'juntos', 'apoyo', 'de la mano'] },
   { name: 'ring', label: 'Aniversario', category: 'social', icon: faRing, keywords: ['anillo', 'boda', 'aniversario', 'pareja', 'compromiso'] },
   { name: 'people-group', label: 'Comunidad', category: 'social', icon: faPeopleGroup, keywords: ['comunidad', 'grupo', 'amigos', 'gente', 'vecinos', 'club'] },

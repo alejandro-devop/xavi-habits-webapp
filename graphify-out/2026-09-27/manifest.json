@@ -900,8 +900,8 @@
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/entertainment.icons.ts": {
-    "mtime": 1790439169.6174567,
-    "ast_hash": "b3be401afb4fd6325a08eb791b310864",
+    "mtime": 1790486139.3415666,
+    "ast_hash": "43d1f009f0b99114267f9270c7f2ab21",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/finance.icons.ts": {
@@ -910,18 +910,18 @@
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/fitness.icons.ts": {
-    "mtime": 1790439169.6174567,
-    "ast_hash": "490f30a9467637fd239ccf5e0431f835",
+    "mtime": 1790486139.3435664,
+    "ast_hash": "1b0c6704b979aaa4dc1daba28d958827",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/health.icons.ts": {
-    "mtime": 1790439169.6164565,
-    "ast_hash": "4244fe538aaf67dfc941594679eade4d",
+    "mtime": 1790486139.3405664,
+    "ast_hash": "5c468c021f276d386b9227033cbbac7b",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/home.icons.ts": {
-    "mtime": 1790439169.6154566,
-    "ast_hash": "f0e3b620b8d5624cd6c1a4d33c859170",
+    "mtime": 1790486139.3395665,
+    "ast_hash": "c39b8d94e7cce37edd054a283b53af8d",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/index.ts": {
@@ -940,13 +940,13 @@
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/productivity.icons.ts": {
-    "mtime": 1789777777.0256653,
-    "ast_hash": "5238b6c47fecf9957e15f89616e7cc95",
+    "mtime": 1790486139.3425665,
+    "ast_hash": "e8932af8a5cc4ae64b083ffd369b28c4",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/study.icons.ts": {
-    "mtime": 1789777777.0286653,
-    "ast_hash": "ef49c14ff72819691781aa72a372d28b",
+    "mtime": 1790486139.3435664,
+    "ast_hash": "771bfaccfc991a286ef88b2c95a2a139",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/system.icons.ts": {
@@ -960,8 +960,8 @@
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/work.icons.ts": {
-    "mtime": 1789777777.0276654,
-    "ast_hash": "04726484019ad42f3f708d3a6c3f6309",
+    "mtime": 1790486139.3425665,
+    "ast_hash": "573cf56f82390513fe44065f8511a32c",
     "semantic_hash": ""
   },
   "src/shared/icons/categories.ts": {
@@ -2295,13 +2295,13 @@
     "semantic_hash": ""
   },
   "src/shared/icons/catalog-integrity.test.ts": {
-    "mtime": 1790439187.1864853,
-    "ast_hash": "8e859e2f0d5613559ef1aba08dccbd7c",
+    "mtime": 1790486212.7205522,
+    "ast_hash": "6e8741037b945f80b11d0c3a1fea9b56",
     "semantic_hash": ""
   },
   "src/shared/icons/catalog/social.icons.ts": {
-    "mtime": 1790439169.6174567,
-    "ast_hash": "c178cf69fdbdf41705a258a5b0e9ef8f",
+    "mtime": 1790486139.3405664,
+    "ast_hash": "8f715b191980e023ce084a7cf185ff62",
     "semantic_hash": ""
   },
   "docs/remodel/assets/09-panel-habito.html": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790440251.9692347,
-    "ast_hash": "bd74cdb87a5527237fe0d7df848f061b",
+    "mtime": 1790486612.4024744,
+    "ast_hash": "940c6518648cf7d91c5e73ec3ad89d8c",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790440300.0853977,
-    "ast_hash": "45aaa31c0f85401863d02ea1823eea03",
+    "mtime": 1790441885.4963522,
+    "ast_hash": "6c660835c4a5ce66e72ab3ab10c82f74",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3860,8 +3860,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-017-vida-mas-iconos-y-colores.md": {
-    "mtime": 1790440461.4698808,
-    "ast_hash": "29d1f05f2c6230e7ae0c1876bf3c8c5a",
+    "mtime": 1790486589.8634787,
+    "ast_hash": "f35106697e7404610ae54d15c45c903b",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx": {
@@ -4222,6 +4222,11 @@
   "src/features/vida/utils/vida-category-color.utils.ts": {
     "mtime": 1790440478.0299256,
     "ast_hash": "a54a23f46658abb25b66a2d368ac1c0f",
+    "semantic_hash": ""
+  },
+  "docs/features/assets/FEAT-017-hoja-de-muestras.html": {
+    "mtime": 1790442338.2276516,
+    "ast_hash": "2b35aab6db6c450b673dc6ac9e3f58d0",
     "semantic_hash": ""
   }
 }

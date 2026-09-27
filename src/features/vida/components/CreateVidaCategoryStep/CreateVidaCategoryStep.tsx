@@ -26,7 +26,7 @@ type Props = {
  * abajo no se pierde porque ese estado vive en `VidaActivitySheet`, que no se
  * desmonta —el mismo reparto que `CreateHabitCategoryStep` en hábitos—.
  *
- * El color entra por el `ColorPicker` compartido (los diecisiete de la paleta),
+ * El color entra por el `ColorPicker` compartido (los veintidós de la paleta),
  * no por la rueda del sistema: en Vida el color de la categoría es lo que pinta
  * la cápsula de cada tarjeta y tiene que leerse en los dos temas. Y llega ya
  * sorteado: ver `pickInitialCategoryColor` más abajo.

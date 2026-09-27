@@ -1,6 +1,6 @@
 @use '@/app/styles/tokens' as *;
 
-// Las diecisiete muestras. `flex-wrap` es la red de seguridad de los 375px: si no
+// Las veintidós muestras. `flex-wrap` es la red de seguridad de los 375px: si no
 // caben en una fila bajan a la siguiente, nunca desbordan el formulario.
 .root {
   display: flex;
@@ -58,7 +58,8 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  // Los diecisiete tonos están en la banda clara: el blanco se lee en todos, y
+  // Los veintidós tonos están en la banda clara (`L` de OKLab 0,449-0,769, y los
+  // cinco de FEAT-017 tajada 4 también): el blanco se lee en todos, y
   // la sombra lo asegura sobre los más claros (ámbar, lavanda, cian).
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 45%));
 

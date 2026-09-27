@@ -1,7 +1,7 @@
 ---
 id: FEAT-017
 title: Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear
-status: building
+status: delivered
 architect: no    # las cuatro tajadas cuelgan de estructuras ya existentes: los datos del catálogo de iconos (src/shared/icons/catalog/*.icons.ts), los dos niveles de la paleta (src/shared/ui/ColorPicker/color-palette.ts) y el sorteo que ya existe para hábitos (src/features/habits/data/habit-colors.ts, pickInitialHabitColor), que documenta por escrito que su equivalente de Vida es dominio de Vida y vive en Vida. Ninguna tajada crea entidad, pantalla ni cruce de capas nuevo.
 area: shared/icons, shared/ui, features/vida
 requested: 2026-09-22
@@ -203,7 +203,7 @@ categorias selecciona uno distinto al azar.»
 | 1 | Palabras clave que arreglan las búsquedas de iconos que hoy fallan (incluida «chef») | accepted (2026-09-26, revisor) |
 | 2 | Cien iconos nuevos curados, dentro de las reglas de integridad ya existentes | accepted (2026-09-27, revisor) — **41 iconos (868 → 909)**, la cifra real de D-E (a); 509 leído con esa decisión |
 | 3 | Al crear una categoría de Vida, el color nace sorteado entre el núcleo y sin repetir el de otra categoría | accepted (2026-09-26, revisor) |
-| 4 | Más colores extendidos en la paleta compartida | pending |
+| 4 | Más colores extendidos en la paleta compartida | accepted (2026-09-27, revisor) — **tanda A: 5 colores, paleta 17 → 22**; 524-529 y 530 comprobados, sin regresión |
 
 **Architect? no** — porque las cuatro tajadas cuelgan de estructuras que ya
 existen y no cruzan ninguna capa nueva: la 1 y la 2 son datos dentro de
@@ -589,7 +589,7 @@ proponer hexadecimales.
 | 1 | Las búsquedas de iconos que hoy devuelven cero encuentran el icono que ya existe (incluida «chef» y la frase «sombrero de chef») | `src/shared/icons/catalog/home.icons.ts` (`kitchen-set`, `fire-burner`, `blender`, `mortar-pestle`) + el resto de `catalog/*.icons.ts`, **solo arrays `keywords`**; filas nuevas en la tabla `cases` de `catalog-integrity.test.ts:186` | 504, 505, 506, 507, 508, 530 | accepted (2026-09-26, revisor) |
 | 2 | Los iconos útiles que quedan en Font Awesome Free entran al catálogo, con la cifra real medida | entradas nuevas en `src/shared/icons/catalog/*.icons.ts` con sus `import { faXxx }`; **nada más** | 510, 511, 512, 513, 514, 515, 530 — y **509 con la cifra real** (ver D-E) | accepted (2026-09-27, revisor) — 868 → **909**, sin regresión de búsqueda |
 | 3 | Al abrir «+ nueva categoría» en Vida el color ya viene puesto, y no repite el de otra categoría | **crear** `src/features/vida/utils/vida-category-color.utils.ts` y `…utils.test.ts`; **modificar** `CreateVidaCategoryStep.tsx:38` (+ el import del hook) y `VidaActivitySheet.test.tsx:200-210`. **`VidaCategoryForm.tsx` y `VidaCategoriasPage.tsx` no se tocan** | 516, 517, 518, 519, 520, 521, 522, 523, 530 | accepted (2026-09-26, revisor) |
-| 4 | La paleta compartida gana los colores extendidos que de verdad se distinguen | `color-palette.ts:57-82`; contadores de `habit-colors.test.ts:47-68`, `ColorPicker.test.tsx:8-11`, `VidaActivitySheet.test.tsx:203-208`; los comentarios que dicen «diecisiete» | 524, 525, 526, 527, 528, 529, 530 | pending |
+| 4 | La paleta compartida gana los colores extendidos que de verdad se distinguen | `color-palette.ts:57-82`; contadores de `habit-colors.test.ts:47-68`, `ColorPicker.test.tsx:8-11`, `VidaActivitySheet.test.tsx:203-208`; los comentarios que dicen «diecisiete» | 524, 525, 526, 527, 528, 529, 530 | accepted (2026-09-27, revisor) — 5 extendidos nuevos (paleta 22); 529 dicho con su cifra; ΔE, ancho y puertas remedidos |
 
 **Las cuatro tajadas siguen siendo verticales y del expediente: no las he
 recortado.** El orden 1 → 2 → 3 → 4 es correcto y **la 4 va la última a
@@ -1382,6 +1382,222 @@ no queda ningún arnés ni fichero temporal en el repositorio, y **no levanté n
 paré ningún servidor**: el 5173 estaba apagado al empezar y sigue apagado.
 `graphify update .` corrido al terminar.
 
+### Tajada 4 — los cinco colores de la tanda A
+
+**Resumen para el revisor (3 líneas):** la paleta compartida pasa de **17 a 22
+colores** (6 núcleo + **16** extendidos): entran los cinco de la **tanda A que
+eligió el usuario** (D-D, 2026-09-27) al **final** de `EXTENDED_COLORS`, sin
+mover ni un hexadecimal de los diecisiete que ya estaban, y con los contadores
+de los tres ficheros de test ajenos subidos a mano de 17/11 a 22/16.
+**Dónde:** `color-palette.ts` (datos + los comentarios que decían «once» y
+«diecisiete»), `habit-colors.test.ts`, `ColorPicker.test.tsx`,
+`VidaActivitySheet.test.tsx`, y los comentarios de `habit-colors.ts`,
+`ColorPicker.tsx`, `ColorPicker.module.scss`, `VidaCategoryForm.tsx` y
+`CreateVidaCategoryStep.tsx`.
+**Lo que es más probable que haya roto:** algún contador de muestras que no
+salga en el `grep` de «17» porque cuente de otra forma (un `toHaveLength` con
+una expresión, un test que dé por hecho que el `ColorPicker` cabe en una fila, o
+una instantánea). Miré los que conozco y `pnpm test` entero está en la línea
+base, pero es ahí donde yo buscaría primero. Segundo sitio: la palomita blanca
+sobre `Piedra` (`#b0b0a8`, el más claro de los cinco, `L` 0,755) — se lee por
+cálculo y por la hoja de muestras, no por una captura de la app real.
+
+**Lo que se construyó:**
+
+- `src/shared/ui/ColorPicker/color-palette.ts` — cinco entradas nuevas al final
+  de `EXTENDED_COLORS`, con la misma forma que `cyan` (`:70`) y en el orden en
+  que el usuario las vio en la hoja de muestras:
+
+  | `name` | `label` | hex | `tier` |
+  |---|---|---|---|
+  | `petrol` | Petróleo | `#186068` | `extended` |
+  | `orchid` | Orquídea | `#e000ff` | `extended` |
+  | `stone` | Piedra | `#b0b0a8` | `extended` |
+  | `slate` | Pizarra | `#786870` | `extended` |
+  | `bougainvillea` | Buganvilla | `#ff00b0` | `extended` |
+
+  Y los comentarios del fichero puestos al día: «Diecisiete tonos» → «Veintidós
+  tonos», «los once que solo se eligen a mano» → «los dieciséis», y un párrafo
+  nuevo en la cabecera de `EXTENDED_COLORS` con las tres cifras medidas y con el
+  porqué de que vayan al final (no mover de sitio a ninguno de los diecisiete).
+- **Contadores subidos a mano**, que es lo que el plan avisaba que se caería si
+  no: `habit-colors.test.ts:47-68` (`toHaveLength(11)`→16, `toHaveLength(17)`→22,
+  los dos `toBe(17)`→22 y el nombre del `it`), `ColorPicker.test.tsx:8-11`
+  (`toHaveLength(17)`→22 y el nombre del `it`) y
+  `VidaActivitySheet.test.tsx:203-208` (`toHaveLength(17)`→22 y su comentario).
+  **La puerta ΔE de `habit-colors.test.ts:84-95` no se tocó**: corre igual, solo
+  que ahora sobre 16 extendidos × 6 del núcleo (96 pares en vez de 66).
+- **Comentarios que habrían quedado mintiendo** (la lista salió del `grep` del
+  plan): `habit-colors.ts:10`, `ColorPicker.tsx:55` («nunca debe costar
+  diecisiete tabulaciones» → veintidós), `ColorPicker.module.scss:3` y `:59`
+  (este último ahora nombra la banda `L` 0,449-0,769 y dice que los cinco nuevos
+  también caen dentro), `VidaCategoryForm.tsx:41` y
+  `CreateVidaCategoryStep.tsx:29`. Tras el cambio, `grep -rn "diecisiete" src/`
+  solo devuelve la frase nueva de `color-palette.ts:76`, que habla **a
+  propósito** de los diecisiete anteriores.
+- **Dos pruebas nuevas en `ColorPicker.test.tsx`**, las dos del criterio 526/527
+  y ninguna de ellas un contador: los cinco nombres nuevos se buscan por
+  `getByRole('radio', { name: … })` (o sea, por su `aria-label`), y un caso de
+  **tecla Inicio** que no existía —solo estaba el de **Fin**—, que ahora
+  comprueba que desde el último (`Buganvilla`) se vuelve al primero (`Menta`).
+
+**Por qué así, y qué se descartó:**
+
+- **Al final de la lista, no intercalados por tono.** Intercalar habría leído
+  mejor como arcoíris, pero el criterio 525 dice que los diecisiete no cambian
+  «de orden», y el `ColorPicker` usa el índice para el teclado y para `Fin`. Al
+  final, el diff es aditivo y ningún índice existente se mueve. El coste es
+  estético y está escrito: la fila termina en teal, dos fucsias y dos grises.
+- **No toqué `ColorPicker.module.scss` por desbordamiento**, como decía el plan:
+  `.root` ya es `display:flex; flex-wrap:wrap`. Lo único que cambió ahí son dos
+  comentarios. Comprobado a la manera de `ENVIRONMENT.md`: el CSS del build
+  sigue en **281,63 kB**, ni un byte menos.
+- **La palomita sigue blanca.** Los cinco están dentro de la banda `L` de OKLab
+  0,449-0,769 que documenta `ColorPicker.module.scss:59` (`petrol` 0,450, el más
+  oscuro de los cinco, justo por encima de `indigo` 0,449; `stone` 0,755, por
+  debajo de `amber` 0,769). No hacía falta tocar el color de la marca, y no se
+  tocó.
+- **No creé ningún fichero.** La tajada es datos y contadores.
+
+**Verificación:**
+
+*Los ΔE, con el `deltaE` literal de `habit-colors.test.ts:40` (OKLab, escala
+0-100), medidos antes de escribir ningún hexadecimal:*
+
+| Color | hex | `L` OKLab | ΔE mínimo al **núcleo** | ΔE mínimo a los **once** | ΔE mínimo **entre los cinco** |
+|---|---|---|---|---|---|
+| Petróleo | `#186068` | 0,450 | **16,13** (olive) | 16,78 (plum) | 12,24 (Pizarra) |
+| Orquídea | `#e000ff` | 0,656 | **16,74** (violet) | 14,28 (magenta) | 14,02 (Buganvilla) |
+| Piedra | `#b0b0a8` | 0,755 | **15,48** (mint) | 13,00 (rose) | 22,20 (Pizarra) |
+| Pizarra | `#786870` | 0,535 | **15,56** (blue) | 12,22 (cinnamon) | 12,24 (Petróleo) |
+| Buganvilla | `#ff00b0` | 0,662 | **15,85** (crimson) | 11,69 (fuchsia) | 14,02 (Orquídea) |
+
+El peor caso contra el núcleo es **15,48** (criterio 524 pide ≥ 15); el peor
+contra los once anteriores, **11,69**, y entre los cinco, **12,24** (el suelo
+documentado en `color-palette.ts:62` es 11,2: `mauve` ↔ `rose`). Ni hex ni
+`name` repetidos con los diecisiete.
+
+*Suites del área (antes de las puertas generales):*
+
+```
+pnpm vitest run src/shared/ui/ColorPicker src/features/habits/data/habit-colors.test.ts \
+  src/features/vida/utils/vida-category-color.utils.test.ts \
+  src/features/vida/components/VidaActivitySheet/VidaActivitySheet.test.tsx
+ Test Files  4 passed (4)
+      Tests  92 passed (92)
+```
+
+*Las cuatro puertas, enteras:*
+
+```
+pnpm typecheck  → limpio (tsc -b --noEmit, sin salida)
+pnpm lint       → ✖ 14 problems (14 errors, 0 warnings)   [línea base: 14/0]
+pnpm test       → Test Files 1 failed | 134 passed (135)
+                  Tests  2 failed | 2362 passed (2364)     [línea base: 2 de 2.363;
+                  los dos fallos son los de SearchSelect.test.tsx:40 y su gemelo,
+                  preexistentes. El total sube en 1 porque añadí el caso de Inicio.]
+pnpm build      → dist/assets/index-BCPcuC9d.js   1.158,09 kB   [base 1.157,77 → +0,32 kB]
+                  dist/assets/app-icons-7rub3Vdw.js 652,57 kB   [igual]
+                  dist/assets/IconPicker-CqJCoVKg.js  4,64 kB   [igual]
+                  dist/assets/index-v0cxWTuY.css    281,63 kB   [igual, no baja]
+```
+
+*La medida de ancho (criterio 527), que es la que no se puede hacer sobre la
+pestaña:* el 5173 estaba **apagado** al empezar y sigue apagado —no levanto ni
+paro servidores—, así que no medí sobre la app real. Lo que sí medí, y cómo:
+compilé el `ColorPicker.module.scss` **del árbol** con
+`node_modules/.bin/sass --load-path=src` (el fichero real, no una copia a mano),
+monté con ese CSS y con las 22 muestras reales (mismo marcado que pinta
+`ColorPicker.tsx:90-110`, con el `box-sizing: border-box` global de
+`global.scss:5-8`) una página estática **fuera del repositorio**, con la
+pantalla metida en un `iframe` del ancho exacto y **sin contenedor flex
+alrededor** (la trampa que avisa `ENVIRONMENT.md`). Medido con
+`contentDocument` dentro de cada `iframe`:
+
+| Ancho | `innerWidth` real del `iframe` | muestra | `.root` `clientWidth` / `scrollWidth` | `documentElement.scrollWidth` | filas con 22 | filas con 17 |
+|---|---|---|---|---|---|---|
+| 375 px | 375 | 30×30 px | 343 / **343** | 375 | **3** (9+9+4) | 2 |
+| 760 px | 760 | 32×32 px | 728 / **728** | 760 | **2** (18+4) | 1 |
+
+`scrollWidth === clientWidth` en los dos anchos y el documento no crece: **no
+desborda**; los colores nuevos bajan de fila, que es justo lo que decía el plan
+que haría `flex-wrap`. El `innerWidth` de 375 confirma que la media query
+`min-width: 25rem` se evaluó de verdad dentro del `iframe` (la muestra mide 30
+px y no 32). La página de medida **se borró**: `git status` solo lista ficheros
+modificados, ninguno nuevo.
+
+**Criterios que cierra, uno a uno:**
+
+- **524 — cada extendido nuevo a ΔE ≥ 15 de cada color del núcleo.** Cumplido y
+  comprobado **por el test que ya existía**, no por uno mío:
+  `habit-colors.test.ts:84-95` sin tocar, ahora sobre 16 extendidos. El peor par
+  es `stone` ↔ `mint` = **15,48**. La suite pasa (92/92 en la corrida del área).
+- **525 — los diecisiete hexadecimales de antes no cambian.** Cumplido: el diff
+  de `EXTENDED_COLORS` es **solo cinco líneas añadidas** después de `bronze`;
+  `CORE_COLORS` está intacto y el test que fija los seis hex del núcleo
+  (`habit-colors.test.ts:53-62`) sigue verde sin tocarse. Ningún índice existente
+  se mueve.
+- **526 — nombre en español y anunciado como los demás.** Cumplido: los cinco
+  llevan `label` en español y el `ColorPicker` los pinta con
+  `role="radio"` + `aria-label={option.label}` por el mismo `map`, sin caso
+  especial. Evidencia: `ColorPicker.test.tsx` los encuentra por nombre
+  accesible, los cinco.
+- **527 — teclado y sin desbordar.** Teclado: `ColorPicker.test.tsx` cubre
+  flecha derecha (`PALETTE_COLORS[0]`→`[1]`), **Fin** (→ `PALETTE_COLORS.at(-1)`,
+  que ahora es `Buganvilla` y no `Bronce`, porque el test lee la lista y no un
+  literal) e **Inicio** (nuevo, desde `Buganvilla` → `Menta`); las flechas
+  arriba/abajo y el recorrido completo pasan por el mismo `handleKeyDown`
+  (`ColorPicker.tsx:63-80`), que no se tocó. Ancho: la tabla de arriba, a 375 y a
+  **760** px. **Lo que no puedo cerrar desde aquí**: verlo en la pantalla real
+  del formulario de categoría, que está tras el login — va como prueba manual.
+- **528 — los nuevos no entran en ningún sorteo.** Cumplido y, además,
+  comprobado solo: los dos sorteos recorren `CORE_COLORS`
+  (`habit-colors.ts:44-65`, `vida-category-color.utils.ts:38`) y los dos tests
+  que lo vigilan (`habit-colors.test.ts:146,166` y
+  `vida-category-color.utils.test.ts:32,52`) construyen su caso **a partir de
+  `EXTENDED_COLORS`**, así que desde este cambio también prueban con los cinco
+  nuevos: se usan los dieciséis extendidos como historial y el sorteo sigue
+  devolviendo uno del núcleo. Los cinco nacen `tier: 'extended'`.
+- **529 — la cifra real, escrita.** **Son 5, no 8.** Con el barrido fino, la
+  puerta que ata no es la del criterio 524 (ΔE ≥ 15 del núcleo: la pasa el 44 %
+  de la rejilla) sino parecerse a los once que ya había y salirse de la banda de
+  luminosidad donde la palomita blanca se lee. La tanda A que eligió el usuario
+  entrega **5 colores** con ΔE mínimo **15,48** al núcleo, **11,69** a los once y
+  **12,24** entre sí. La paleta queda en **22**, no en las ~25 que proponía D-D.
+- **530 — puertas.** typecheck limpio, lint **14/0**, tests **2 fallos de
+  2.364** (los dos de `SearchSelect`, preexistentes), build verde con el CSS
+  clavado en 281,63 kB. Ninguna peor que la línea base.
+
+**Riesgos:**
+
+1. **Los contadores que no dicen «17».** Subí los tres que el plan señalaba y
+   `grep` no encuentra más, pero un test que cuente muestras de otra forma no
+   saldría en ese `grep`. La corrida completa está en la línea base, así que si
+   existe, no se está ejecutando.
+2. **`Piedra` (`#b0b0a8`) es el color más claro de la paleta después de `amber`.**
+   La palomita blanca sobre él se sostiene por el `drop-shadow`, igual que sobre
+   ámbar; está medido en la hoja de muestras y en la banda `L`, pero quien lo
+   mire en una pantalla real lo juzgará mejor que yo.
+3. **Dos grises y dos fucsias seguidos al final de la fila.** Es consecuencia de
+   respetar el orden del criterio 525. Si al verlo en la app el usuario prefiere
+   intercalarlos por tono, es un cambio de una línea cada uno — pero mueve
+   índices, así que conviene decidirlo antes de que haya categorías guardadas
+   eligiendo por posición (hoy nada elige por posición: todo va por hex).
+4. **La deuda vieja sigue igual:** el hexadecimal se guarda tal cual y sirve a
+   los dos temas; los cinco nuevos heredan esa deuda, que ya estaba anotada como
+   fuera de fase en `color-palette.ts`.
+
+**Estado del árbol:** sin commitear. Diez ficheros: nueve de `src/`
+(`color-palette.ts`, `ColorPicker.tsx`, `ColorPicker.test.tsx`,
+`ColorPicker.module.scss`, `habit-colors.ts`, `habit-colors.test.ts`,
+`VidaCategoryForm.tsx`, `CreateVidaCategoryStep.tsx`,
+`VidaActivitySheet.test.tsx`) más este expediente y `BOARD.md`. **Ningún fichero
+nuevo**: la página de medida vivió fuera del repositorio y lo que llegó a tocar
+el árbol se borró antes de reportar. No sembré datos de prueba, no llamé a la
+API, no entré con credenciales y **no levanté ni paré ningún servidor** (el 5173
+estaba apagado al empezar y sigue apagado). `graphify update .` corrido al
+terminar: 4.658 nodos, 5.604 aristas.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — palabras clave que arreglan lo que no se encontraba
@@ -1964,3 +2180,181 @@ se entienden a la primera — si alguna no, se le cambia el nombre y ya.
 **La feature no está entregada todavía:** falta la **tajada 4** (los colores
 extendidos), que ya tiene tu respuesta a D-D —tanda A, los cinco de la hoja de
 muestras— y está lista para construirse.
+
+### Tajada 4 — los cinco colores de la tanda A
+
+**Veredicto: `accepted`** (2026-09-27, revisor). Los seis criterios de la tajada
+(524-529) y el transversal (530) se comprueban uno a uno abajo, con mis propias
+medidas: recalculé los ΔE con el `deltaE` literal del test, remedí el ancho con
+mi propio arnés en el scratchpad y corrí las cuatro puertas enteras. No encontré
+ninguna regresión. Lo que queda es de ojo humano y va como prueba manual: verlo
+en la pantalla real de categorías, que está tras el login.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del
+constructor):
+
+- **524 — cada extendido nuevo a ΔE ≥ 15 de cada uno de los seis del núcleo.**
+  **Cumplido.** Recalculé los 30 pares (5 × 6) con el mismo `toOklab`/`deltaE`
+  copiado de `habit-colors.test.ts:16-43` en un script del scratchpad, sin usar
+  la tabla del constructor: mínimos `petrol`↔`olive` 16,13; `orchid`↔`violet`
+  16,74; `stone`↔`mint` **15,48** (el más justo); `slate`↔`blue` 15,56;
+  `bougainvillea`↔`crimson` 15,85. Coincide con la tabla de la sección 3 cifra a
+  cifra. **Y la puerta no se relajó:** `git diff` de `habit-colors.test.ts` son
+  tres hunks y **todos son contadores** (líneas 47-50 y 64-67); el `it('deja cada
+  extendido a ΔE ≥ 15 de cada color del núcleo')` de las líneas 84-95 no aparece
+  en el diff — sigue recorriendo `HABIT_EXTENDED_COLORS × HABIT_CORE_COLORS`
+  entero, con el umbral 15 y sin exclusiones, y ahora son 96 pares en vez de 66.
+  La suite pasa en la corrida completa.
+- **525 — los diecisiete hexadecimales actuales no cambian, ni de orden.**
+  **Cumplido.** `git diff src/shared/ui/ColorPicker/color-palette.ts` frente a
+  `HEAD`: en `CORE_COLORS` no hay ni un hunk; en `EXTENDED_COLORS`, cinco líneas
+  **añadidas después de `bronze`** y ninguna modificada ni movida. Los índices de
+  los diecisiete se quedan donde estaban.
+- **526 — `label` en español y anunciado como los demás.** **Cumplido.** Los
+  cinco `label` son «Petróleo», «Orquídea», «Piedra», «Pizarra» y «Buganvilla»;
+  el `ColorPicker` los pinta por el mismo `map` con `role="radio"` y
+  `aria-label={option.label}` (`ColorPicker.tsx:90-105`), sin caso especial. El
+  test nuevo los busca a los cinco por nombre accesible y pasa.
+- **527 — teclado y sin desbordar.** **Cumplido en lo que se puede comprobar
+  fuera de la app.** Teclado: `handleKeyDown` (`ColorPicker.tsx:63-80`) no se
+  tocó y calcula `Home`→0, `End`→`options.length - 1` y las flechas en módulo,
+  así que crece solo con la lista; el test de `Fin` lee `PALETTE_COLORS.at(-1)`
+  (no un literal) y el de `Inicio` es nuevo. Ancho: **remedí yo**, sin mirar la
+  tabla del constructor. Compilé el `ColorPicker.module.scss` **del árbol** con
+  `sass --load-path=src` (solo cambié la primera línea, el alias `@/`, que `sass`
+  a secas no resuelve), monté las 22 muestras con el marcado real y el
+  `box-sizing: border-box` global en una página del **scratchpad** (ningún
+  fichero en el repo) y la medí con Chrome headless metiendo la pantalla en un
+  `iframe` del ancho exacto, sin contenedor flex alrededor:
+
+  | Ancho | `innerWidth` del `iframe` | muestra | `.root` client/scroll | `documentElement.scrollWidth` | filas con 22 | filas con 17 |
+  |---|---|---|---|---|---|---|
+  | 375 px | 375 | 30 px | 343 / 343 | 375 | **3** | 2 |
+  | 760 px | 760 | 32 px | 728 / 728 | 760 | **2** | 1 |
+
+  `scrollWidth === clientWidth` en los dos anchos y el documento no crece: **no
+  desborda**, las muestras nuevas bajan de fila. Reproduce la medición de la
+  sección 3 exactamente. Dos matices honestos: mi arnés supone un contenedor con
+  16 px de margen a cada lado (como el del constructor), y con `flex-wrap: wrap`
+  y muestras de ancho fijo el resultado no depende de ese supuesto mientras el
+  contenedor mida más que una muestra; y **ver la fila en la pantalla real de
+  categorías no se puede desde aquí** (tras el login) — va como prueba manual.
+- **528 — los nuevos no entran en ningún sorteo.** **Cumplido y comprobado en el
+  código, no en el resumen.** `pickInitialHabitColor`
+  (`habit-colors.ts:44-65`) y `pickInitialCategoryColor`
+  (`vida-category-color.utils.ts:38-60`) construyen su cuenta con
+  `CORE_COLORS.map(...)` y eligen entre `CORE_COLORS.filter(...)`: un color que
+  no esté en el núcleo ni cuenta ni puede salir. Los cinco nacen
+  `tier: 'extended'`. Y los tests lo dicen con los cinco dentro: los casos de
+  `habit-colors.test.ts:146,166` y `vida-category-color.utils.test.ts:32,52`
+  arman el historial **a partir de `EXTENDED_COLORS`**, que ahora son dieciséis,
+  así que desde este cambio también prueban que Petróleo, Orquídea, Piedra,
+  Pizarra y Buganvilla no bloquean ninguna casilla ni se sortean.
+- **529 — la cifra real escrita.** **Cumplido.** La sección 3 dice **5, no 8**,
+  con las tres distancias mínimas (15,48 al núcleo; 11,69 a los once anteriores;
+  12,24 entre los cinco) y con la razón de por qué la puerta que ata no es la del
+  524. La tabla de la tajada 4 en las dos listas de tajadas también dice 5 y la
+  paleta 17 → 22.
+- **530 — las puertas.** **Cumplido**, corridas por mí enteras sobre el árbol:
+  `pnpm typecheck` limpio (rc 0); `pnpm lint` **14 problemas (14 errores, 0
+  warnings)** = línea base; `pnpm test` **2 fallos de 2.364** (`SearchSelect` ×2,
+  los preexistentes; el total sube 1 por el caso de `Inicio`) = línea base;
+  `pnpm build` verde con `index` **1.158,09 kB**, `app-icons` **652,57 kB**,
+  `IconPicker` **4,64 kB** y CSS **281,63 kB** — el CSS **no baja**, que es la
+  señal que pide `ENVIRONMENT.md` para descartar un comentario SCSS sin cerrar.
+  El chunk inicial sube 0,32 kB frente a la línea base del día: son las cinco
+  entradas de datos, y el criterio de «no crecer» era el 514, de la tajada 2.
+
+**Qué miré alrededor, y cómo:**
+
+- **El grafo primero.** `graphify explain "PALETTE_COLORS"` y `graphify explain
+  "ColorPicker"`: `PALETTE_COLORS` solo tiene cuatro aristas (el fichero, el
+  barril, `ColorPicker.tsx` y su test) y `ColorPicker()` cinco. Como el grafo se
+  reconstruye en los commits, eso es el estado **anterior** al cambio, que es
+  justo lo que quería para «quién dependía de esto». Poco alcance, así que lo
+  confirmé abriendo ficheros.
+- **Quién más pinta el `ColorPicker`**, que es lo que el constructor no nombró y
+  es lo que más me preocupaba: además de los dos formularios de Vida, lo usan
+  **hábitos** — `HabitFormModal/HabitWizardStep1.tsx` y
+  `HabitFormModal/HabitEditForm.tsx`. Esas dos pantallas también pasan a enseñar
+  22 muestras. Fui a su suite a ver si contaba: `HabitFormModal.test.tsx`
+  filtra por `aria-checked` y comprueba pertenencia a `HABIT_COLORS`
+  (líneas 244, 259, 268, 350), **no usa índices ni longitudes**, así que no se
+  cae ni se queda mintiendo. Pasa.
+- **Contadores escondidos**, el riesgo nº 1 que dejó escrito el constructor.
+  Barrí con `grep -rn "getAllByRole('radio')|PALETTE_COLORS.length|toHaveLength(1[0-9]|2[0-9])|.length).toBe" src/`:
+  los tres contadores del diff son los únicos de la paleta;
+  `ColorPicker.test.tsx:94` ya usaba `PALETTE_COLORS.length + 1`. **No hay
+  ficheros `.snap` en `src/`**, así que no hay instantánea que se caiga.
+- **Quién consume la paleta como datos:** `vida-starting-points.ts/.test.ts` y
+  `vida-category-color.utils` solo tocan `CORE_COLORS`; nada guarda ni elige por
+  **posición** en la lista (todo va por hexadecimal), que es lo que haría
+  peligroso añadir al final. Lo verifiqué con el mismo `grep` de consumidores.
+- **El CSS**, que en este repositorio es donde se pierden reglas en silencio: el
+  build lo deja en 281,63 kB, ni un byte menos que la línea base, y el diff del
+  `.module.scss` son dos comentarios. No hay bloque abierto sin cerrar.
+
+**Estados que nadie construye:** la mayoría **no aplica** y digo cuáles: no hay
+datos que puedan faltar (la paleta es una constante), ni carga, ni error de red,
+ni permisos — el `ColorPicker` no pide nada. Los que sí aplican:
+
+- **Móvil (375 px):** comprobado arriba, tres filas, sin scroll horizontal.
+- **Texto largo:** los nombres nuevos no se pintan como texto, van en
+  `aria-label` y `title`; «Buganvilla» (11 caracteres) es el más largo de la
+  paleta y no ocupa espacio en la fila. No rompe nada.
+- **Sin selección y con un color de fuera de la paleta:** ya cubiertos por los
+  tests que existían y siguen verdes.
+
+**¿Duplica algo que ya existía?** No. Contra la sección 2: no se creó ningún
+fichero, no hay una segunda lista de colores, ni un validador ΔE nuevo — se
+reusa el que ya vivía en `habit-colors.test.ts`, que es exactamente lo que el
+plan pedía. El sorteo no se tocó.
+
+**Hallazgos que no devuelven la tajada** (quedan escritos, no hay que hacer nada
+ahora):
+
+1. **El `grep` de «diecisiete» no da cero, da uno:** `color-palette.ts:76`, en el
+   párrafo nuevo, «para no mover de sitio a ninguno de los **diecisiete** que ya
+   estaban». Es correcto: habla a propósito de los diecisiete anteriores, no
+   afirma que la paleta tenga diecisiete. Lo dejo dicho porque la comprobación
+   pedida esperaba cero.
+2. **La palomita blanca sobre `Piedra`, medida:** contraste blanco/`#b0b0a8` =
+   **2,18:1**; el caso que ya existía y se aceptó, `Ámbar` `#f59e0b`, está en
+   **2,15:1**, y `Piedra` tiene menos luminosidad OKLab (0,755 frente a 0,769).
+   O sea: `Piedra` **no empeora** el peor caso de la paleta y se sostiene por el
+   mismo `drop-shadow`. Aun así son cifras bajas para las dos, y eso es deuda
+   vieja del selector, no de esta tajada.
+3. **Cosmético:** al quitar la palabra «diecisiete» de la cabecera quedó la línea
+   «una lista de / hexadecimales no conoce ningún dominio» con un salto corto. No
+   toco código; queda anotado por si alguien reformatea el fichero.
+4. **Pendiente de ojo humano (no de agente):** la fila termina en teal, dos
+   grises y dos fucsias, consecuencia de respetar el orden del criterio 525. El
+   propio constructor lo dice. Si al verlo no convence, intercalarlos mueve
+   índices y hoy nada elige por posición, así que es barato **ahora**.
+
+**Lo que no pude comprobar y por qué:** la pantalla real de categorías de Vida
+está tras el login y **no entro con credenciales**; el 5173 estaba **apagado**
+cuando empecé y sigue apagado — **no levanté ni paré ningún servidor**. Todo lo
+visual lo medí con arnés propio en el scratchpad (Chrome headless, `iframe` del
+ancho exacto) y con el CSS compilado del árbol; no dejé ningún fichero en el
+repositorio.
+
+**Para el usuario:** ahora, cuando pongas color a una categoría de Vida —o a un
+hábito, porque el selector es el mismo—, la fila de muestras tiene **22 colores
+en vez de 17**: entran los cinco que elegiste en la hoja de muestras, Petróleo,
+Orquídea, Piedra, Pizarra y Buganvilla, al final de la fila y con su nombre en
+español, así que también se oyen bien si navegas con teclado o lector. Los
+diecisiete de antes siguen exactamente donde estaban y con el mismo tono: nada de
+lo que ya tienes guardado cambia de color. Y los cinco nuevos son solo para
+elegir a mano — cuando la app te pone el color sola al crear una categoría,
+sigue repartiendo únicamente entre los seis del núcleo, para que dos categorías
+decididas por la app nunca se parezcan.
+
+Para verlo en dos minutos: (1) entra en `/app/vida/actividades` y abre la hoja de
+una actividad; (2) pulsa **+ nueva** en la fila de categorías; (3) mira la fila de
+colores: son 22, con los cinco nuevos al final; (4) pásate por ellos con las
+flechas y prueba **Fin** e **Inicio** —tienen que llevarte al último y al
+primero—; (5) elige **Piedra**, el gris claro, y comprueba que la palomita blanca
+se distingue bien encima; (6) estrecha la ventana del navegador hasta un móvil y
+mira que las muestras bajan de fila y nunca aparece barra horizontal. Si los dos
+grises y los dos fucsias juntos al final no te gustan, decirlo ahora es barato.

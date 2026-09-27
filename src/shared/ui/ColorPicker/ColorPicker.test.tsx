@@ -5,14 +5,20 @@ import { ColorPicker } from './ColorPicker'
 import { CORE_COLORS, PALETTE_COLORS } from './color-palette'
 
 describe('ColorPicker', () => {
-  it('muestra las diecisiete muestras con su nombre en español', () => {
+  it('muestra las veintidós muestras con su nombre en español', () => {
     render(<ColorPicker value={null} onChange={vi.fn()} />)
 
-    expect(screen.getAllByRole('radio')).toHaveLength(17)
+    expect(screen.getAllByRole('radio')).toHaveLength(22)
     expect(screen.getByRole('radio', { name: 'Menta' })).toBeTruthy()
     expect(screen.getByRole('radio', { name: 'Azul' })).toBeTruthy()
     // Los extendidos también se anuncian: el nombre es lo que los hace legítimos.
     expect(screen.getByRole('radio', { name: 'Malva' })).toBeTruthy()
+    // Y los cinco de FEAT-017 (tajada 4) se anuncian igual que el resto.
+    expect(screen.getByRole('radio', { name: 'Petróleo' })).toBeTruthy()
+    expect(screen.getByRole('radio', { name: 'Orquídea' })).toBeTruthy()
+    expect(screen.getByRole('radio', { name: 'Piedra' })).toBeTruthy()
+    expect(screen.getByRole('radio', { name: 'Pizarra' })).toBeTruthy()
+    expect(screen.getByRole('radio', { name: 'Buganvilla' })).toBeTruthy()
     expect(screen.getByRole('radio', { name: 'Canela' })).toBeTruthy()
   })
 
@@ -67,6 +73,17 @@ describe('ColorPicker', () => {
     await user.keyboard('{End}')
 
     expect(onChange).toHaveBeenCalledWith(PALETTE_COLORS.at(-1)!.hex)
+  })
+
+  it('vuelve a la primera muestra con la tecla Inicio', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    render(<ColorPicker value={PALETTE_COLORS.at(-1)!.hex} onChange={onChange} />)
+
+    screen.getByRole('radio', { name: PALETTE_COLORS.at(-1)!.label }).focus()
+    await user.keyboard('{Home}')
+
+    expect(onChange).toHaveBeenCalledWith(PALETTE_COLORS[0].hex)
   })
 
   it('enseña el color de fuera de la paleta que ya tenía', () => {

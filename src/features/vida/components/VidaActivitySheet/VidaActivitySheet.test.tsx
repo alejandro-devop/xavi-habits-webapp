@@ -200,12 +200,12 @@ describe('VidaActivitySheet', () => {
     await user.type(screen.getByLabelText('Cómo la llamas'), 'Regar las plantas')
     await user.click(screen.getByRole('button', { name: '+ nueva' }))
 
-    // El paso apilado: nombre, icono y los diecisiete colores de la paleta.
+    // El paso apilado: nombre, icono y los veintidós colores de la paleta.
     expect(await screen.findByRole('heading', { name: 'Nueva categoría' })).toBeInTheDocument()
     expect(
       await screen.findByRole('radiogroup', { name: 'Color de la categoría' }),
     ).toBeInTheDocument()
-    expect(screen.getAllByRole('radio')).toHaveLength(17)
+    expect(screen.getAllByRole('radio')).toHaveLength(22)
     // Y la casilla de la meta, con su línea (criterio 485: es el segundo de los
     // dos formularios de categoría).
     expect(

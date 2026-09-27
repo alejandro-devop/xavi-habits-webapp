@@ -25,7 +25,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | building | 4 pendiente, **1, 2, 3a y 3b aceptadas**, de 5 (3a desplegada; la hora ya se guarda y se corrige) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-25 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
-| FEAT-017 | building | **3/4 aceptadas (1, 2 y 3)**, falta la 4 (colores extendidos, tanda A ya elegida) | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
+| FEAT-017 | delivered | 4/4 | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
@@ -33,6 +33,62 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
+
+**FEAT-017 `delivered`, tajada 4 de 4 aceptada** (2026-09-27, revisor). **La
+paleta pasa a 22 colores y con esto la feature queda entregada entera.** Los
+cinco de la tanda A —Petróleo, Orquídea, Piedra, Pizarra y Buganvilla— entran al
+final de los extendidos: los diecisiete de antes no cambian ni de tono ni de
+sitio, los cinco se anuncian con su nombre en español y **no entran en ningún
+sorteo** (cuando la app pone el color sola sigue repartiendo solo los seis del
+núcleo). Comprobé los seis criterios (524-529) y el transversal con medidas
+propias, no con el resumen: recalculé los 30 pares ΔE con el `deltaE` literal
+del test (el más justo, `stone` ↔ `mint` = **15,48**, por encima del 15 que pide
+el criterio) y confirmé que **la puerta ΔE no se relajó** —el diff de
+`habit-colors.test.ts` son tres hunks y los tres son contadores—; remedí el
+ancho con mi propio arnés en el scratchpad (Chrome headless, `iframe` del ancho
+exacto, CSS compilado del árbol): **3 filas a 375 px y 2 a 760, `scrollWidth ===
+clientWidth`, sin scroll horizontal**; y corrí las cuatro puertas enteras:
+typecheck limpio, lint **14/0**, tests **2 fallos de 2.364** (los de
+`SearchSelect`, preexistentes; +1 test nuevo, el de la tecla Inicio) y build
+verde con el CSS clavado en **281,63 kB** (no baja: no hay comentario SCSS
+abierto). Sin regresiones: el `ColorPicker` también lo pintan **hábitos**
+(`HabitWizardStep1` y `HabitEditForm`) y su suite no cuenta muestras ni usa
+índices; no hay instantáneas en `src/` y nada guarda ni elige colores por
+posición. Dos apuntes sin acción: el `grep` de «diecisiete» devuelve **una**
+línea, la del comentario nuevo que habla a propósito de los diecisiete
+anteriores; y la palomita blanca sobre `Piedra` mide **2,18:1**, algo mejor que
+el caso de `Ámbar` que ya estaba aceptado (2,15:1), así que no empeora el peor
+caso. **Lo que queda es de ojo humano**: verlo en la pantalla de categorías
+—está tras el login, no entro con credenciales, y el 5173 estaba apagado; no
+levanté ni paré nada—: que la palomita sobre Piedra convenza y si los dos grises
+y los dos fucsias juntos al final de la fila gustan (intercalarlos es barato
+ahora, mueve índices y hoy nada elige por posición).
+
+**FEAT-017 `in-review`, tajada 4 de 4 construida** (2026-09-27, constructor).
+**La paleta comparte 22 colores: entran los cinco de la tanda A que eligió el
+usuario** —Petróleo `#186068`, Orquídea `#e000ff`, Piedra `#b0b0a8`, Pizarra
+`#786870`, Buganvilla `#ff00b0`— al **final** de `EXTENDED_COLORS` (6 núcleo +
+16 extendidos), sin mover ni un hexadecimal ni un índice de los diecisiete que
+ya estaban. Medidos con el `deltaE` literal del test: el peor par contra el
+**núcleo** es 15,48 (`stone` ↔ `mint`, el criterio pide ≥ 15), contra los **once**
+anteriores 11,69 y **entre sí** 12,24; los cinco caen dentro de la banda `L`
+0,449-0,769, **así que la palomita blanca no cambió**. Subí a mano los tres
+contadores que el plan avisaba (`habit-colors.test.ts`, `ColorPicker.test.tsx`,
+`VidaActivitySheet.test.tsx`) y los siete comentarios que decían «diecisiete»;
+**la puerta ΔE no se tocó**, solo corre sobre más colores. Dos pruebas nuevas en
+`ColorPicker.test.tsx`: los cinco nombres nuevos por `aria-label` y la tecla
+**Inicio**, que no tenía caso. **Ancho medido, no supuesto** (el 5173 estaba
+apagado y sigue apagado): el SCSS real compilado con `sass`, las 22 muestras en
+un `iframe` sin contenedor flex — a **375 px** `scrollWidth` 343 = `clientWidth`
+343, 3 filas (9+9+4); a **760 px** 728 = 728, 2 filas. No desborda en ninguno.
+Puertas: typecheck limpio, lint **14/0**, `pnpm test` **2 fallos de 2.364** (los
+de `SearchSelect`; el total sube 1 por mi caso de Inicio), build con el inicial
+en **1.158,09 kB** (+0,32) y el **CSS clavado en 281,63 kB**. **Criterios 524,
+525, 526, 527, 528, 529 y 530 cerrados**; el **529 va con su cifra real: son 5 y
+no 8**. **Pendiente del usuario: ver las 22 muestras en el formulario de
+categoría** —está tras el login, no entro con credenciales—, mirando la palomita
+sobre `Piedra` y si le convence que los dos grises y los dos fucsias queden
+juntos al final de la fila. Con esto la feature no tiene tajadas sin construir.
 
 **FEAT-017 `building`, tajada 2 de 4 aceptada** (2026-09-27, revisor). **El
 catálogo de iconos queda en 909: los 41 nuevos entran y ninguna búsqueda pierde

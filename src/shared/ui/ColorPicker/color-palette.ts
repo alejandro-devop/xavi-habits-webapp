@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // La paleta de la app
 //
-// Diecisiete tonos en dos niveles. El criterio no es el gusto: es que dos cosas
+// Veintidós tonos en dos niveles. El criterio no es el gusto: es que dos cosas
 // con color distinto se distingan de verdad, también para quien no ve bien el
 // rojo o el verde.
 //
 // Vivía en `features/habits/data/habit-colors.ts`. Se mudó aquí cuando el
 // módulo Vida pidió el mismo selector (FEAT-002, tajada 2): una lista de
-// diecisiete hexadecimales no conoce ningún dominio, y dos features la
+// hexadecimales no conoce ningún dominio, y dos features la
 // necesitan. Lo que **no** se mudó es `pickInitialHabitColor`, que sortea el
 // color de un hábito nuevo mirando los hábitos que ya hay: eso sí es dominio y
 // sigue en hábitos.
@@ -18,8 +18,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * `core` son los seis que la app puede repartir sola; `extended`, los once que
- * solo se eligen a mano. La distinción no es decorativa: el sorteo depende de
+ * `core` son los seis que la app puede repartir sola; `extended`, los dieciséis
+ * que solo se eligen a mano. La distinción no es decorativa: el sorteo depende de
  * ella, así que vive en los datos y no en quien los pinta.
  */
 export type ColorTier = 'core' | 'extended'
@@ -55,7 +55,7 @@ export const CORE_COLORS: readonly PaletteColor[] = [
 ] as const
 
 /**
- * Los extendidos: once colores que **solo se eligen a mano**.
+ * Los extendidos: dieciséis colores que **solo se eligen a mano**.
  *
  * Cada uno está a ΔE ≥ 15 en OKLab de cada color del núcleo —comprobado en el
  * test, no supuesto—, así que nunca se confunde con uno que la app haya
@@ -65,6 +65,16 @@ export const CORE_COLORS: readonly PaletteColor[] = [
  *
  * Salen de una búsqueda con el validador de paletas, no de una propuesta
  * estética: no se sustituyen «porque quedan mejor».
+ *
+ * Los cinco últimos entraron en FEAT-017 (tajada 4), elegidos por el usuario
+ * sobre `docs/features/assets/FEAT-017-hoja-de-muestras.html`. Se midieron con
+ * el mismo `deltaE` del test: ΔE ≥ 15 de cada color del núcleo (el más justo,
+ * `stone` ↔ `mint` = 15,5), ΔE ≥ 11,2 de los once anteriores (el más justo,
+ * `bougainvillea` ↔ `fuchsia` = 11,7) y ΔE ≥ 12,2 entre sí. Y todos dentro de
+ * la banda de luminosidad `L` 0,449-0,769 de OKLab en la que la palomita blanca
+ * de `ColorPicker.module.scss` se sigue leyendo: por eso la palomita no cambió.
+ * Van al final de la lista para no mover de sitio a ninguno de los diecisiete
+ * que ya estaban.
  */
 export const EXTENDED_COLORS: readonly PaletteColor[] = [
   { name: 'cyan', label: 'Cian', hex: '#11bff0', tier: 'extended' },
@@ -78,6 +88,11 @@ export const EXTENDED_COLORS: readonly PaletteColor[] = [
   { name: 'rose', label: 'Rosa palo', hex: '#e1808d', tier: 'extended' },
   { name: 'cinnamon', label: 'Canela', hex: '#924b00', tier: 'extended' },
   { name: 'bronze', label: 'Bronce', hex: '#af761e', tier: 'extended' },
+  { name: 'petrol', label: 'Petróleo', hex: '#186068', tier: 'extended' },
+  { name: 'orchid', label: 'Orquídea', hex: '#e000ff', tier: 'extended' },
+  { name: 'stone', label: 'Piedra', hex: '#b0b0a8', tier: 'extended' },
+  { name: 'slate', label: 'Pizarra', hex: '#786870', tier: 'extended' },
+  { name: 'bougainvillea', label: 'Buganvilla', hex: '#ff00b0', tier: 'extended' },
 ] as const
 
 /** La paleta completa, en el orden en que se muestra: primero el núcleo. */

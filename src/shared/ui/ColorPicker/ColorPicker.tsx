@@ -52,7 +52,7 @@ export function ColorPicker({
 
   const selectedIndex = options.findIndex((option) => option.hex === selectedHex)
   // Sin selección, el primero es el que recibe el tabulador: entrar al grupo
-  // nunca debe costar diecisiete tabulaciones.
+  // nunca debe costar veintidós tabulaciones.
   const focusableIndex = selectedIndex >= 0 ? selectedIndex : 0
 
   function focusAt(index: number) {

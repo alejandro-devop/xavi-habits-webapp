@@ -44,10 +44,10 @@ function deltaE(a: string, b: string): number {
 }
 
 describe('HABIT_COLORS', () => {
-  it('tiene diecisiete colores: seis del núcleo y once extendidos', () => {
+  it('tiene veintidós colores: seis del núcleo y dieciséis extendidos', () => {
     expect(HABIT_CORE_COLORS).toHaveLength(6)
-    expect(HABIT_EXTENDED_COLORS).toHaveLength(11)
-    expect(HABIT_COLORS).toHaveLength(17)
+    expect(HABIT_EXTENDED_COLORS).toHaveLength(16)
+    expect(HABIT_COLORS).toHaveLength(22)
   })
 
   it('mantiene los seis hexadecimales del núcleo', () => {
@@ -64,8 +64,8 @@ describe('HABIT_COLORS', () => {
   it('no repite hex ni nombre, y guarda los hex en minúsculas', () => {
     const hexes = HABIT_COLORS.map((c) => c.hex)
     const names = HABIT_COLORS.map((c) => c.name)
-    expect(new Set(hexes).size).toBe(17)
-    expect(new Set(names).size).toBe(17)
+    expect(new Set(hexes).size).toBe(22)
+    expect(new Set(names).size).toBe(22)
     for (const hex of hexes) expect(hex).toMatch(/^#[0-9a-f]{6}$/)
   })
 

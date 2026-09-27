@@ -7,7 +7,7 @@
 //
 //  1. Los **nombres de hábitos** de la paleta, re-exportados, para que nada de
 //     lo que ya importaba de aquí tenga que cambiar (incluido su test, que fija
-//     los ΔE de los diecisiete tonos).
+//     los ΔE de los veintidós tonos).
 //  2. `pickInitialHabitColor`, que **sí** es dominio de hábitos: sortea el color
 //     de un hábito nuevo mirando los que ya usan los hábitos del usuario.
 //

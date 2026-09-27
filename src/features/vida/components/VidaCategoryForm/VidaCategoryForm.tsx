@@ -38,7 +38,7 @@ type Props = {
  * pantalla decide qué mutación toca, como `HabitCategoryForm` en hábitos.
  *
  * El icono entra por `IconPickerLazy` (lo que exporta `@/shared/ui/IconPicker`)
- * y el color por los diecisiete de la paleta compartida: el `<input type=color>`
+ * y el color por los veintidós de la paleta compartida: el `<input type=color>`
  * a pelo no se usa en Vida.
  */
 export function VidaCategoryForm({

@@ -5,7 +5,7 @@ status: building
 architect: no    # las cuatro tajadas cuelgan de estructuras ya existentes: los datos del catálogo de iconos (src/shared/icons/catalog/*.icons.ts), los dos niveles de la paleta (src/shared/ui/ColorPicker/color-palette.ts) y el sorteo que ya existe para hábitos (src/features/habits/data/habit-colors.ts, pickInitialHabitColor), que documenta por escrito que su equivalente de Vida es dominio de Vida y vive en Vida. Ninguna tajada crea entidad, pantalla ni cruce de capas nuevo.
 area: shared/icons, shared/ui, features/vida
 requested: 2026-09-22
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 # FEAT-017 — Categorías: más iconos que se encuentran, más colores, y uno que no se repite al crear
@@ -201,7 +201,7 @@ categorias selecciona uno distinto al azar.»
 | # | What it does | State |
 |---|---|---|
 | 1 | Palabras clave que arreglan las búsquedas de iconos que hoy fallan (incluida «chef») | accepted (2026-09-26, revisor) |
-| 2 | Cien iconos nuevos curados, dentro de las reglas de integridad ya existentes | pending |
+| 2 | Cien iconos nuevos curados, dentro de las reglas de integridad ya existentes | accepted (2026-09-27, revisor) — **41 iconos (868 → 909)**, la cifra real de D-E (a); 509 leído con esa decisión |
 | 3 | Al crear una categoría de Vida, el color nace sorteado entre el núcleo y sin repetir el de otra categoría | accepted (2026-09-26, revisor) |
 | 4 | Más colores extendidos en la paleta compartida | pending |
 
@@ -587,7 +587,7 @@ proponer hexadecimales.
 | # | What it does | Files | Criteria it closes | State |
 |---|---|---|---|---|
 | 1 | Las búsquedas de iconos que hoy devuelven cero encuentran el icono que ya existe (incluida «chef» y la frase «sombrero de chef») | `src/shared/icons/catalog/home.icons.ts` (`kitchen-set`, `fire-burner`, `blender`, `mortar-pestle`) + el resto de `catalog/*.icons.ts`, **solo arrays `keywords`**; filas nuevas en la tabla `cases` de `catalog-integrity.test.ts:186` | 504, 505, 506, 507, 508, 530 | accepted (2026-09-26, revisor) |
-| 2 | Los iconos útiles que quedan en Font Awesome Free entran al catálogo, con la cifra real medida | entradas nuevas en `src/shared/icons/catalog/*.icons.ts` con sus `import { faXxx }`; **nada más** | 510, 511, 512, 513, 514, 515, 530 — y **509 con la cifra real** (ver D-E) | pending |
+| 2 | Los iconos útiles que quedan en Font Awesome Free entran al catálogo, con la cifra real medida | entradas nuevas en `src/shared/icons/catalog/*.icons.ts` con sus `import { faXxx }`; **nada más** | 510, 511, 512, 513, 514, 515, 530 — y **509 con la cifra real** (ver D-E) | accepted (2026-09-27, revisor) — 868 → **909**, sin regresión de búsqueda |
 | 3 | Al abrir «+ nueva categoría» en Vida el color ya viene puesto, y no repite el de otra categoría | **crear** `src/features/vida/utils/vida-category-color.utils.ts` y `…utils.test.ts`; **modificar** `CreateVidaCategoryStep.tsx:38` (+ el import del hook) y `VidaActivitySheet.test.tsx:200-210`. **`VidaCategoryForm.tsx` y `VidaCategoriasPage.tsx` no se tocan** | 516, 517, 518, 519, 520, 521, 522, 523, 530 | accepted (2026-09-26, revisor) |
 | 4 | La paleta compartida gana los colores extendidos que de verdad se distinguen | `color-palette.ts:57-82`; contadores de `habit-colors.test.ts:47-68`, `ColorPicker.test.tsx:8-11`, `VidaActivitySheet.test.tsx:203-208`; los comentarios que dicen «diecisiete» | 524, 525, 526, 527, 528, 529, 530 | pending |
 
@@ -610,6 +610,9 @@ de la 4 (solo sortea entre el núcleo, criterio 528).
   **(c)** comprar Font Awesome Pro, que también resolvería el sombrero de chef
   de D-A. **No construyas la tajada 2 sin esta respuesta**: las tres dan
   catálogos distintos.
+  **Decidido por el usuario el 2026-09-27: (a).** La tajada 2 entrega los
+  iconos útiles que haya con la cifra real medida; el criterio 509 se lee con
+  esa cifra.
 - **D-D revisada — «al menos 8 colores más» pasa el test y no pasa el ojo.**
   Contra la puerta del criterio 524 (ΔE ≥ 15 del núcleo) caben de sobra: 44 % del
   espacio de color. Contra el ojo, exigiendo además la banda de luminosidad que
@@ -617,6 +620,10 @@ de la 4 (solo sortea entre el núcleo, criterio 528).
   tanda máxima medida con rejilla gruesa es **5**. Una barrida fina subirá algo
   esa cifra. El usuario decide entre **~5 bien distintos** o **8+ con parecidos**,
   sobre la hoja de muestras.
+  **Decidido por el usuario el 2026-09-27: tanda A.** Entran los cinco de la
+  hoja de muestras (`#186068` Petróleo, `#e000ff` Orquídea, `#b0b0a8` Piedra,
+  `#786870` Pizarra, `#ff00b0` Buganvilla), todos dentro de la banda de la
+  palomita blanca; la palomita no cambia.
 
   **Hoja de muestras: `docs/features/assets/FEAT-017-hoja-de-muestras.html`
   (2026-09-26): tanda A de 5, tanda B de 8 con suelo 10,2.** El barrido fino
@@ -1114,6 +1121,267 @@ nodos, 5.600 aristas). No se sembró ningún dato de prueba, no hice ninguna
 llamada a la API y no queda ningún fichero temporal ni arnés en el repositorio.
 No levanté ni paré ningún servidor: el 5173 estaba apagado y sigue apagado.
 
+### Tajada 2 — los iconos útiles que quedaban en Font Awesome Free
+
+**Resumen para el revisor (3 líneas):** el catálogo pasa de **868 a 909**
+iconos: **41 entradas nuevas** repartidas en 8 de los 13 grupos, cada una con su
+`import { faXxx }` nominal y sus palabras clave en español, más 10 filas nuevas
+en la tabla de búsqueda de `catalog-integrity.test.ts` y el suelo de tamaño de
+ese mismo test subido de 850/840 a 900/875. No toqué `app-icons.ts`,
+`icon-registry.ts`, `categories.ts` ni `icon-search.ts`.
+**Lo que es más probable que haya roto:** una palabra clave nueva que ensucie
+una búsqueda ajena por subcadena — el sitio a mirar es `IconPicker.test.tsx:84`
+(«lavadora» exige **exactamente 1** resultado, y sigue en 1) y las dos pruebas
+de pureza de categoría de `icon-search.test.ts` («finanzas» → solo `finance`,
+«mascota» → solo `pets`, las dos verdes). Y, en segundo lugar, el peso: el chunk
+`app-icons` sube **+32,01 kB** (perezoso; el inicial no se mueve).
+
+**Son 41, no 100 ni 60-80. La cifra real, medida.** El usuario resolvió **D-E
+opción (a)**: se entregan los iconos útiles que haya con la cifra medida. La
+medición de la sección 2 (554 `iconName` libres → ~269 sin cromo → ~113 sin
+catástrofe/zodiaco/armas/monedas → «del orden de 60-80 útiles») **se queda alta
+por una razón que solo aparece al comparar con el catálogo entrada por entrada**:
+buena parte de esos 113 ya tiene **gemelo semántico dentro del catálogo bajo otro
+icono de Font Awesome**, así que entrarían como cupo, no como utilidad
+(criterio 512). Los que descarté por esa razón, con su gemelo:
+
+| Libre en Font Awesome | Ya está en el catálogo como | Por qué no entra |
+|---|---|---|
+| `kit-medical` | `medkit` «Botiquín» | y además `icon-aliases.ts:26` ya mapea `kit-medical → medkit`: una entrada con ese `name` **rompe** la prueba de alias |
+| `flask-vial` | `vial` «Analítica» (y `vials` en pets) | mismo concepto, misma etiqueta |
+| `envelope-open` | `envelope-open-text` «Carta» | mismo dibujo con texto |
+| `cloud-showers-heavy` | `cloud-rain` «Lluvia» | el chaparrón no es otra actividad |
+| `tablet`, `mobile`, `mobile-screen-button` | `tablet`, `mobile`, `mobile-button` | **el `name` ya está ocupado** aunque el `iconName` estuviera libre |
+| `martini-glass-empty` | `martini-glass`, `martini-glass-citrus` | tres copas |
+| `mask` | `mask-face`, `masks-theater` | — |
+| `temperature-half` y las otras cuatro | `temperature-high/low`, `thermometer` | — |
+| `truck-front`, `bus-side` | `truck`, `bus`, `bus-simple` | — |
+| `hat-cowboy-side` | (entra `hat-cowboy`) | la misma prenda de perfil |
+| `dice-one`…`dice-five` | `dice`, `dice-six`, `dice-d6`, `dice-d20` | cupo puro |
+| las diez caras `face-grin-*` libres | 24 caras ya en el catálogo | cupo puro |
+
+Y mantuve fuera lo que el usuario dejó fuera por escrito: zodiaco (12), banderas,
+monedas exóticas (14), catástrofe y reparto humanitario (`tarp`, `tents`,
+`house-flood-water`, `person-drowning`, `bridge-circle-*`…), armas y militar, y
+cromo de interfaz (flechas, ángulos, `square-*`, `circle-*`, formato de texto).
+**41 es el número que queda cuando cada entrada tiene que nombrar algo que
+alguien hace.**
+
+**Conteo reproducible, con el comando de la sección 2:**
+
+```
+antes:    usados 868   libres 554
+después:  usados 909   libres 513
+```
+
+(909 − 868 = 41 = 554 − 513. Cuadra por los dos lados.)
+
+**Los 41, por grupo, con por qué cada uno** (todos con `label` en español y
+5-7 palabras clave; **no puse variantes sin tilde**: `filterAppIcons` normaliza
+tildes en los dos lados —`icon-search.ts:17-33`, y la prueba «MEDITACION» lo
+demuestra—, así que una variante sin tilde sería ruido que no cambia ningún
+resultado. Lo digo porque el criterio 512 las pedía «donde aplique» y aquí no
+aplica):
+
+**home (14)** — la casa, moverse y el tiempo que hace:
+`truck-moving` Mudanza · `truck-pickup` Camioneta · `traffic-light` Semáforo ·
+`diamond-turn-right` Indicaciones (cómo llegar, GPS) · `square-parking`
+Aparcamiento · `solar-panel` Placas solares · `tape` Cinta adhesiva (embalar,
+manualidades) · `mitten` Guantes · `vest` Chaleco · `icicles` Helada · `smog`
+Contaminación (calidad del aire) · `cloud-bolt` Tormenta · `cloud-sun-rain`
+Chubascos · `monument` Monumento (turismo).
+
+**health (6)** — lo que se hace con la salud, no la enfermedad:
+`file-prescription` Receta médica (renovar la receta) · `comment-medical`
+Consulta médica · `file-waveform` Electrocardiograma (**etiqueta distinta a
+propósito**: `file-medical` ya es «Informe médico») · `hand-dots` Alergia ·
+`person-pregnant` Embarazo · `person-breastfeeding` Lactancia.
+
+**social (6)** — `child` Niño y `child-dress` Niña (**el par que `children`
+«Hijos» no cubre**: una categoría por hijo es justo lo que se pide en una app de
+hábitos) · `baby-carriage` Carrito de bebé · `gifts` Regalos (navidad, reyes;
+`gift` singular es «Regalo») · `check-to-slot` Votar · `building-ngo`
+Voluntariado.
+
+**entertainment (6)** — `image-portrait` Retrato · `meteor` Estrella fugaz
+(perseidas, mirar las estrellas) · `hat-cowboy` Sombrero vaquero (disfraz, baile
+country) · `dungeon` Juegos de rol · `cubes` Bloques (jugar con los niños) ·
+`user-astronaut` Astronauta.
+
+**work (3)** — `chart-diagram` Organigrama (mapa mental) · `table-cells` Hoja de
+cálculo (`table-list` es «Tabla» y `table-columns` «Tablero»: los tres son cosas
+distintas) · `envelopes-bulk` Boletines.
+
+**productivity (3)** — `envelope-circle-check` Bandeja a cero (inbox zero) ·
+`file-arrow-down` Descargar archivo · `file-arrow-up` Subir archivo.
+
+**study (2)** — `earth-asia` Asia y `earth-oceania` Oceanía, que **completan la
+familia** que ya tenía América, África y Europa.
+
+**fitness (1)** — `compass` Orientación (brújula; `compass-drafting` es «Dibujo
+técnico», otra cosa).
+
+Los cinco grupos que no crecen —`finance`, `mindfulness`, `pets`, `technology` y
+`system`— es porque **en lo que queda libre no había nada que sirviera para
+ellos sin repetir**: lo de finanzas son símbolos de moneda exótica, lo de
+tecnología son `tablet`/`mobile` con el `name` ocupado, y en mascotas y
+mindfulness no quedaba nada. Prefiero decirlo a rellenar.
+
+**Qué se tocó:**
+
+- `src/shared/icons/catalog/{home,health,social,entertainment,work,productivity,study,fitness}.icons.ts`
+  — 41 entradas nuevas con la forma de `home.icons.ts:93` (una línea,
+  `name/label/category/icon/keywords`), cada una con su `import { faXxx }`
+  nominal insertado **en orden alfabético** dentro del bloque de importación que
+  ya existía, y una línea de comentario «FEAT-017 tajada 2» encabezando el bloque
+  nuevo de cada fichero para que el rastro no dependa del `git log`.
+- `src/shared/icons/catalog-integrity.test.ts` — dos cosas y nada más: **10
+  filas** en la tabla `cases` (una por grupo que estrena iconos) y el suelo de
+  tamaño de `:171-173`, de `850/840` a **`900/875`**, con la cifra real (909
+  totales, 884 elegibles) escrita en el comentario. **Ninguna regla de `:92-181`
+  cambia.**
+- **Nada más.** `app-icons.ts`, `icon-registry.ts`, `categories.ts`,
+  `icon-search.ts` e `icon-aliases.ts` están idénticos: el catálogo se compone
+  solo (`app-icons.ts:21-34`).
+
+**Por qué así, y qué descarté:**
+
+- **El suelo del test lo subí, pero no lo dejé clavado en 909.** «Ajustarlo a la
+  cifra real» podía leerse como `toBe(909)`; eso convierte una prueba de «el
+  catálogo es grande» en un congelador que se cae cada vez que alguien añada un
+  icono. Quien impide que desaparezca ninguno es la lista de **453 nombres
+  congelados** de `:18`, que no toqué. Subir el suelo con el mismo margen que
+  tenía (18 y 3 por debajo del real) conserva las dos intenciones.
+- **Los comentarios que dicen «850 entradas»** (`icon-registry.ts:8`,
+  `icon-aliases.ts:5`, `index.ts:7`) **los dejé como están**: dicen «pasa de 850»
+  y «las 850 entradas» y con 909 siguen siendo ciertos, y esos tres ficheros
+  están en la lista de lo que no se toca.
+- **No añadí variantes sin tilde** (ver arriba). Si el revisor prefiere tenerlas
+  igualmente por documentación, es una línea por entrada.
+
+**Verificación, con salidas literales:**
+
+```
+$ node -e "…comando de conteo de la sección 2…"      # antes
+usados 868 libres 554
+$ node -e "…el mismo comando…"                        # después
+usados 909 libres 513
+
+$ grep -ho "name: '" src/shared/icons/catalog/*.icons.ts | wc -l
+909
+
+$ for f in src/shared/icons/catalog/*.icons.ts; do …; done
+entertainment 76   finance 70   fitness 73   health 81   home 88
+mindfulness 66     pets 61      productivity 72          social 73
+study 74           system 25    technology 71            work 79
+
+$ npx vitest run src/shared/icons/ src/shared/ui/IconPicker
+Test Files  5 passed (5)
+      Tests  81 passed (81)
+
+$ pnpm typecheck
+(exit 0, sin salida)
+
+$ pnpm lint
+✖ 14 problems (14 errors, 0 warnings)
+
+$ pnpm test
+Test Files  1 failed | 134 passed (135)
+      Tests  2 failed | 2361 passed (2363)
+   (los dos de SearchSelect, los de la línea base. Hoy es domingo: el tercero,
+    el del sábado en HabitPanel.test.tsx:566, no sale. El flaky de IconPicker
+    tampoco salió en la corrida completa.)
+
+$ pnpm build            # antes
+dist/assets/index-v0cxWTuY.css        281.63 kB │ gzip:  43.39 kB
+dist/assets/IconPicker-BNEInjmN.js      4.64 kB │ gzip:   1.81 kB
+dist/assets/app-icons-Bcd5ucsp.js     620.56 kB │ gzip: 193.35 kB
+dist/assets/index-BVOJLtrx.js       1,157.77 kB │ gzip: 348.97 kB
+
+$ pnpm build            # después
+dist/assets/index-v0cxWTuY.css        281.63 kB │ gzip:  43.39 kB
+dist/assets/IconPicker-CrOWFPA5.js      4.64 kB │ gzip:   1.81 kB
+dist/assets/app-icons-CQUjwa8n.js     652.57 kB │ gzip: 202.79 kB
+dist/assets/index-Ci3Cvwd7.js       1,157.77 kB │ gzip: 348.98 kB
+```
+
+**Criterios, uno a uno:**
+
+- **509 — el catálogo crece, todos con `label` y `keywords` no vacíos.** Leído
+  con la cifra real de D-E (a): **868 → 909**, no ≥968. La prueba «cada entrada
+  trae etiqueta y palabras clave» (`catalog-integrity.test.ts:137-143`) pasa
+  sobre las 909. **El criterio tal como está escrito (≥968) no se cumple y no lo
+  reescribo**: la decisión del usuario del 2026-09-27 dice que se lee con la
+  cifra medida, y la cifra medida es 41 iconos nuevos. Queda dicho aquí para que
+  el revisor lo juzgue con el número delante.
+- **510 — no desaparece ni cambia ningún nombre actual.** La prueba de los 453
+  congelados (`:98-102`) sigue en verde **sin tocarla**, y el diff es de solo
+  inserciones: `git diff --stat src/shared/icons/catalog/` da **8 ficheros, 90
+  inserciones, 0 borrados** (82 de datos + 8 comentarios).
+- **511 — ningún icono nuevo repite un `prefix:iconName` ya presente.** La prueba
+  «no repite el mismo icono de Font Awesome en dos entradas» (`:123-135`) pasa; y
+  la aritmética lo confirma sin depender de ella: los libres bajan exactamente
+  554 → 513.
+- **512 — cada icono elegido por utilidad.** La tabla de arriba, los 41 con su
+  razón, y la tabla de descartados por gemelo semántico. Evidencia ejecutable:
+  **10 filas nuevas** en la tabla de búsqueda en español, una por grupo, todas
+  verdes (`mudanza`, `aparcar`, `receta médica`, `lactancia`, `votar`, `juegos de
+  rol`, `hoja de cálculo`, `inbox zero`, `brújula`, `oceanía`). Las diez devolvían
+  **cero** antes de esta tajada.
+- **513 — los 13 grupos mantienen el suelo de 60 elegibles.** La prueba
+  `:162-169` pasa, y el conteo de arriba lo enseña: el mínimo elegible sigue
+  siendo `pets` con **61** (`system`, 25, no es elegible). Ningún grupo baja:
+  **solo hubo inserciones**, ninguna redistribución.
+- **514 — el catálogo sigue en un chunk perezoso aparte y el inicial no crece.**
+  `app-icons-*.js` sigue siendo su propio fichero y el inicial está en
+  **1.157,77 kB antes y 1.157,77 kB después** (el gzip se mueve 0,01 kB por el
+  hash del nombre). El CSS, clavado en **281,63 kB**.
+- **515 — el peso medido y registrado.** `app-icons`: **620,56 kB → 652,57 kB**,
+  **+32,01 kB** para 41 iconos = **0,78 kB/icono** (la estimación de la sección 2
+  era 0,71; la diferencia son iconos con más trazado). En gzip, 193,35 → 202,79
+  kB (**+9,44 kB**). Es un chunk perezoso: no entra en el arranque.
+- **530 — puertas.** typecheck **limpio**; lint **14 errores / 0 warnings**,
+  clavado en la línea base; `pnpm test` **2 fallos de 2363** (los dos de
+  `SearchSelect`, preexistentes; el total sube 10 porque son mis filas nuevas de
+  la tabla de búsqueda); `pnpm build` verde.
+
+**Lo que no puedo cerrar desde aquí:** que los 41 iconos **se vean bien** en la
+rejilla del selector. El `IconPicker` vive tras el login y **no entro con
+credenciales**; hoy además el 5173 estaba apagado (comprobado con
+`docs/features/probe.sh`) y **no levanté nada**. Que el dibujo de cada icono
+corresponde a su etiqueta lo comprobé leyendo el nombre de Font Awesome, no
+mirándolo. **Pendiente de prueba manual del usuario**, en dos minutos: entrar en
+`/app/vida` → categorías → «+ nueva categoría» → abrir el selector de iconos y
+buscar `mudanza`, `aparcar`, `receta médica`, `lactancia`, `votar`, `juegos de
+rol`, `hoja de cálculo`, `inbox zero`, `brújula` y `oceanía`; cada una tiene que
+traer su icono y el dibujo tiene que pegar con la palabra.
+
+**Riesgos:**
+
+1. **Falsos positivos por subcadena.** Una palabra clave larga la alcanza
+   cualquier consulta corta que sea subcadena suya. Los sitios donde eso se
+   nota son los tres que cuentan resultados o exigen pureza
+   (`IconPicker.test.tsx:84`, `icon-search.test.ts:16-20` y `:39-46`) y los tres
+   están verdes. Fuera de ahí, una búsqueda puede traer un icono de más: por
+   ejemplo «coche» ahora también trae **Carrito de bebé** (por «cochecito»), y
+   «regalo» trae **Regalo** y **Regalos**. Me parecen mejoras, pero son cambios
+   de resultado que nadie pidió.
+2. **El peso.** +32 kB sin comprimir en el chunk perezoso. No toca el arranque,
+   pero el selector de iconos tarda un pelín más la primera vez que se abre.
+3. **Etiquetas que no vi dibujadas.** `hand-dots` («Alergia»), `file-waveform`
+   («Electrocardiograma») y `building-ngo` («Voluntariado») son las tres cuyo
+   dibujo es menos evidente desde el nombre. Si alguna no se lee, se cambia la
+   etiqueta sin tocar nada más.
+4. **El suelo del test ya no es 850.** Si otra rama quita iconos, ahora se cae
+   antes. Es lo que se quería, pero conviene saberlo.
+
+**Estado del árbol:** sin commitear. Nueve ficheros de `src/` —los ocho
+`catalog/*.icons.ts` y `catalog-integrity.test.ts`— más este expediente y
+`BOARD.md`. No se sembró ningún dato de prueba, no hice ninguna llamada a la API,
+no queda ningún arnés ni fichero temporal en el repositorio, y **no levanté ni
+paré ningún servidor**: el 5173 estaba apagado al empezar y sigue apagado.
+`graphify update .` corrido al terminar.
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — palabras clave que arreglan lo que no se encontraba
@@ -1494,3 +1762,205 @@ color de siempre.
 **La feature no está entregada todavía:** faltan la tajada 2 (los iconos nuevos,
 que espera tu respuesta a D-E) y la tajada 4 (los colores extendidos, que espera
 D-D revisada).
+
+### Tajada 2 — los iconos útiles que quedaban en Font Awesome Free
+
+**Veredicto: `accepted`.** Los siete criterios que la tajada cierra (510, 511,
+512, 513, 514, 515, 530) se cumplen con evidencia propia, y el **509 se da por
+cumplido leído con D-E (a)**, la decisión del usuario del 2026-09-27: la cifra
+real son **41 iconos (868 → 909)**, no ≥968. **La explicación de por qué son 41
+y no los 60-80 estimados se sostiene**: muestreé la lista de los 513 libres y
+comprobé uno a uno los gemelos que el constructor alega. No hay regresión:
+**ninguna consulta pierde ni un resultado**, medido antes/después con
+`filterAppIcons` sobre el catálogo de `HEAD` y el del árbol en la misma corrida.
+
+**Cómo lo medí** (arnés de un solo uso, **fuera del repositorio**: un
+`harness.test.ts` y su `vitest.harness.config.ts` en el directorio temporal de
+la sesión, con `--root` apuntando aquí y un alias que sustituye
+`@/shared/icons/catalog` por los catálogos de `HEAD` extraídos con `git show`).
+Importa el catálogo real y la función real; 87 consultas; y un script aparte
+que reconstruye `name/label/category/icon/keywords` de las 868 entradas de
+`HEAD` y las 909 del árbol para compararlas entrada por entrada. **No queda
+ningún fichero nuevo en el repositorio** (`git status`: los mismos nueve de
+`src/` del constructor).
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen):
+
+- **509 — el catálogo crece, todos con `label` y `keywords` no vacíos.** ✅ con
+  la lectura de D-E (a), ❌ con el número literal (≥968), y lo digo con las dos
+  cifras delante: **868 → 909**, **+41**. El comando de conteo de la sección 2,
+  corrido por mí sobre los dos árboles, da `HEAD usados 868 libres 554` y
+  `usados 909 libres 513`: cuadra por los dos lados (554 − 513 = 41). Las 909
+  entradas traen `label` y `keywords` no vacíos (la regla de
+  `catalog-integrity.test.ts:137-143` pasa, y mi propio recuento no encontró
+  ninguna vacía). **No reescribo el criterio**: queda cumplido por la decisión
+  del usuario, no por relajación del revisor.
+- **510 — ningún `name` actual desaparece ni cambia de icono.** ✅ comprobado
+  **contra `HEAD`**, no contra la prueba: de los 868 nombres de `HEAD`,
+  **desaparecidos 0**, **con `icon`, `label` o `category` cambiados 0**, y
+  **con alguna palabra clave perdida 0**. El diff de `catalog/` son 90
+  inserciones y **0 borrados** en 8 ficheros. La lista de los 453 congelados
+  sigue intacta.
+- **511 — ningún icono de Font Awesome repetido, ni `name` duplicado.** ✅
+  resolviendo cada `faXxx` contra el paquete instalado: **0 `iconName`
+  repetidos** y **0 `name` repetidos** entre las 909 entradas; ningún `faXxx`
+  sin resolver. Comprobado además que ninguno de los 41 nombres nuevos choca
+  con una clave de `icon-aliases.ts` (45 alias) ni es destino de ninguna.
+- **512 — cada icono elegido por utilidad, con ≥3 palabras clave en español.**
+  ✅ Leí los 41 con su `label` y sus `keywords`: todos traen **5, 6 o 7**
+  palabras, todas en español y todas nombrando algo que alguien hace o tiene
+  (`mudanza`, `aparcar`, `receta médica`, `lactancia`, `votar`, `inbox zero`,
+  `paseo con el bebé`…). **El grupo encaja en los ocho ficheros**: `home` ya
+  contenía transporte (`car`, `bus`, `train`, `taxi`, `caravan`,
+  `plane-departure`) y tiempo (`cloud-rain`, `snowflake`, `umbrella`), así que
+  `traffic-light`, `square-parking`, `truck-pickup`, `diamond-turn-right`,
+  `cloud-bolt`, `icicles` y `monument` siguen la convención del fichero, no la
+  rompen; `compass` cae en `fitness` junto a `person-hiking`, `mountain` y
+  `tower-observation`. **Las variantes sin tilde no aplican y lo verifiqué en
+  vez de creerlo**: con el catálogo nuevo, «nino», «camion», «semaforo» y
+  «contaminacion» encuentran `child`/`cubes`, `truck-moving`/`truck-pickup`,
+  `traffic-light` y `smog` — `filterAppIcons` normaliza los dos lados.
+  **Falsos positivos por subcadena, medidos**: de las 87 consultas del arnés,
+  **ninguna pierde resultados** y tres ganan uno que no esperaría quien busca:
+  «asia» ahora trae también `dungeon` (por «fantasía» → «fantasia», que
+  contiene «asia»), «niño»/«nino» traen `cubes` (por «jugar con los niños») y
+  «coche» trae `baby-carriage` (por «cochecito») y `square-parking`. Los del
+  constructor («coche» → Carrito de bebé, «regalo» → Regalo y Regalos) los
+  confirmo tal cual. Ninguno rompe nada y todos son propios del AND por
+  subcadena que ya existía; van como hallazgo, no como devolución.
+- **513 — los 13 grupos mantienen el suelo de 60 elegibles.** ✅ contadas las
+  909 por el campo `category` (no por fichero): entertainment 76, finance 70,
+  fitness 73, health 81, home 88, mindfulness 66, pets 61, productivity 74,
+  social 78, study 74, technology 71, work 75, y 22 de `other` (las de
+  `system`, que no son elegibles). El mínimo sigue siendo **pets con 61** y
+  **ningún grupo baja**: solo hubo inserciones. La regla `:162-169` pasa.
+- **514 — chunk perezoso aparte y el inicial que no crece.** ✅ `pnpm build`
+  corrido por mí: `app-icons-CQUjwa8n.js` **652,57 kB** sigue siendo su propio
+  fichero, el inicial está en **1.157,77 kB** —clavado en la línea base de
+  `ENVIRONMENT.md`— y el CSS en **281,63 kB**, que es la señal que esa tabla
+  pide vigilar.
+- **515 — el peso medido y registrado.** ✅ 620,56 → **652,57 kB**, **+32,01 kB**
+  (0,78 kB/icono), 193,35 → 202,79 kB en gzip. La cifra «antes» la corrobora la
+  línea base de `ENVIRONMENT.md` (620 kB) además del informe del constructor.
+- **530 — puertas.** ✅ `pnpm build` verde (incluye el `tsc -b`); `pnpm lint`
+  **14 errores / 0 warnings**, la línea base exacta; `pnpm test` **2 fallos de
+  2.363** (los dos de `SearchSelect`, preexistentes; el total sube 10 por las
+  filas nuevas de la tabla de búsqueda); `npx vitest run src/shared/icons
+  src/shared/ui/IconPicker` **81 de 81 en verde**.
+
+**Juicio de la explicación de los 41 (D-E leído en serio).** Tomé la lista de
+los **513 libres** y la filtré quitando cromo de interfaz, letras y dígitos,
+zodiaco y símbolos de moneda; sobre lo que quedó busqué gemelos en el catálogo
+con los nombres reales. **Los gemelos que alega el constructor son ciertos**:
+existen en el catálogo `scissors`, `broom`, `tent`, `campground`, `caravan`,
+`landmark`, `lock`/`lock-open`, `plane`, `pen`, `toilet`, `bath`, `mask-face`,
+`wand-magic-sparkles` y `user-secret`, que son justamente los que dejan fuera a
+`hand-scissors`, `tents`/`tarp`, `trailer`, `landmark-flag`, `unlock`,
+`plane-up`, `pen-clip`, `restroom`, `mask`, `wand-magic` y `user-ninja`. Lo que
+de verdad queda fuera sin gemelo es corto y discutible: **`helicopter`,
+`igloo`, `magnet`, `archway`, `snowplow`, `universal-access` y los fenómenos
+`tornado`/`hurricane`/`volcano`** — objetos y paisaje más que actividades, y
+los tres últimos caen en la catástrofe que el usuario dejó fuera por escrito.
+**No hay varios iconos claramente útiles abandonados**: la explicación de los
+gemelos semánticos se sostiene y el 41 es defendible como cifra real.
+
+**Qué miré alrededor (regresiones).** El grafo **no sirvió aquí** y lo digo:
+`graphify explain "catalog icons"` no encuentra nodo y `graphify query` sobre
+iconos devuelve `Alert`/`ThemeToggle` y la guía del design system, porque el
+catálogo entra al grafo como datos, no como símbolos. Caí en `git grep` sobre
+los importadores reales: los únicos consumidores de `appIcons`/`catalog` son
+`icon-registry.ts`, `icon-utils.ts`, `icon-aliases.ts`, `IconPicker.tsx`,
+`src/test/setup.ts` (registra el catálogo entero antes de cada suite) y
+`vida-starting-points.test.ts` (comprueba que sus trece iconos **están** en el
+catálogo). Los seis leen el catálogo por contención o por nombre, así que una
+adición no les quita nada, y la suite completa lo confirma. **Los cinco
+ficheros que no debían cambiar no cambiaron**: `app-icons.ts`,
+`icon-registry.ts`, `categories.ts`, `icon-search.ts` e `icon-aliases.ts` no
+aparecen en `git status`. Y el diff del test de integridad es exactamente lo
+declarado: el suelo `850/840 → 900/875` con su comentario, y 10 filas nuevas en
+la tabla `cases`; **ninguna regla de `:92-181` tocada**.
+
+**Estados sin construir:**
+- **Sin datos, cargando, error, sin permisos** — no aplican: esta tajada son
+  datos estáticos dentro de un chunk que ya se cargaba; el esqueleto de carga
+  del selector y su comportamiento sin resultados son los de antes.
+- **Texto largo** — comprobado, no es riesgo nuevo: la etiqueta más larga de
+  las 41 es «Electrocardiograma» (18 caracteres) y el catálogo ya vivía con
+  «Protección respiratoria» y «Recoger los excrementos» (23).
+- **Móvil 375 px** — no lo medí, y digo por qué: no cambia ningún componente ni
+  ninguna regla de estilo, y la rejilla del selector es la misma con 41
+  celdas más. Si el usuario ve una fila rara, es deuda previa del `IconPicker`,
+  no de esta tajada.
+
+**¿Duplica algo que ya existía?** Contra la sección 2: no. No se creó buscador,
+ni normalizador, ni fichero de catálogo, ni test nuevo — las entradas van en los
+ficheros que ya existían y las pruebas, como filas de la tabla que ya existía.
+Sí hay un matiz que el propio criterio de gemelos del constructor debería haber
+cazado y no cazó (hallazgo 1).
+
+**Hallazgos** (ninguno bloquea):
+
+1. **Tres etiquetas nuevas repiten exactamente una etiqueta que ya existía:**
+   `chart-diagram` «Organigrama» (ya estaba `sitemap`), `table-cells` «Hoja de
+   cálculo» (ya estaba `file-excel`) y `building-ngo` «Voluntariado» (ya estaba
+   `handshake-angle`). Medido: buscar «organigrama», «excel» o «voluntariado»
+   devuelve **dos** resultados con el mismo nombre y dibujo distinto. No rompe
+   ninguna regla —el catálogo ya tenía **46 pares** de etiqueta repetida antes
+   de esta tajada— y los dibujos son de verdad distintos, pero es justo el
+   criterio de «gemelo semántico» con el que se descartaron otros, aplicado con
+   menos rigor hacia dentro. Se cierra matizando la etiqueta (p. ej. «Diagrama
+   de bloques», «Tabla de celdas», «ONG») si al usuario le molesta la
+   duplicidad; **no lo toco yo, que reviso**.
+2. **«asia» encuentra Juegos de rol** por la palabra clave «fantasía». Es el
+   único falso positivo nuevo que no tiene lectura amable. Una línea: cambiar
+   «fantasía» por «fantasia épica» o «rol de fantasía» en `dungeon`.
+3. **El suelo del test ya no es 850 sino 900/875.** Está bien razonado en la
+   sección 3 (suelo, no congelador), pero conviene saber que quien quite iconos
+   en otra rama se cae antes.
+4. **Los comentarios que dicen «las 850 entradas»** (`icon-registry.ts:8`,
+   `icon-aliases.ts:5`, `index.ts:7`, `vida-starting-points.test.ts:16`) siguen
+   diciendo 850 con 909 en el catálogo. Siguen siendo ciertos como suelo, pero
+   envejecen; ficheros que esta tajada no debía tocar, así que se quedan.
+
+**Lo que no pude revisar, y lo digo:** **que los 41 dibujos correspondan a su
+etiqueta**. El selector vive tras el login, **no entro con credenciales**
+(`ENVIRONMENT.md`), no levanté ni paré ningún servidor y el 5173 no lo toqué.
+Todo lo de arriba es catálogo, tests, búsqueda medida y build. Las tres
+etiquetas que el constructor señala como menos evidentes desde el nombre
+—`hand-dots` «Alergia», `file-waveform` «Electrocardiograma» y `building-ngo`
+«Voluntariado»— **siguen pendientes de tu vistazo**, y se cambian sin tocar
+nada más si alguna no se lee.
+
+**Para el usuario:** el selector de iconos de las categorías tiene **41 iconos
+más**, y no son relleno: son los que quedaban en Font Awesome sin gemelo dentro
+del catálogo y que nombran algo que se hace. Ahora hay mudanza, camioneta,
+semáforo, aparcamiento, indicaciones, placas solares, cinta adhesiva, guantes,
+chaleco, helada, contaminación, tormenta, chubascos y monumento; receta médica,
+consulta médica, electrocardiograma, alergia, embarazo y lactancia; niño, niña,
+carrito de bebé, regalos, votar y voluntariado; retrato, estrella fugaz,
+sombrero vaquero, juegos de rol, bloques y astronauta; organigrama, hoja de
+cálculo y boletines; bandeja a cero, descargar y subir archivo; Asia y Oceanía,
+que completan los continentes; y brújula para salir al monte. Búsquedas que
+antes devolvían **cero** —«aparcar», «lactancia», «votar», «juegos de rol»,
+«inbox zero», «brújula», «oceanía», «embarazo», «semáforo», «guantes»,
+«chaleco», «helada», «tormenta», «retrato», «vaquero», «solar», «disfraz» o
+«bloques»— ahora traen su icono, y **ninguna búsqueda que ya funcionaba perdió
+un solo resultado**.
+
+Son 41 y no los cien que pediste, y esa es la cifra real medida, no un atajo:
+en Font Awesome Free quedaban 554 iconos sin usar, pero la mayoría son flechas y
+cromo de interfaz, zodiaco, monedas exóticas, catástrofes, o dibujos que el
+catálogo ya tenía con otro nombre (un botiquín, un vial, una copa de más). Meter
+cien habría significado meter relleno. El selector pesa 32 kB más, y como se
+carga aparte, la app no arranca ni un milisegundo más tarde. Para probarlo en
+dos minutos: (1) entra en `/app/vida/actividades` y abre la hoja de una
+actividad; (2) pulsa **+ nueva** en la fila de categorías; (3) abre el selector
+de iconos; (4) busca `mudanza`, `aparcar`, `receta médica`, `lactancia`,
+`votar`, `juegos de rol`, `hoja de cálculo`, `inbox zero`, `brújula` y
+`oceanía`, y mira que cada una trae su icono y que el dibujo pega con la
+palabra; (5) de paso, mira que `alergia`, `electrocardiograma` y `voluntariado`
+se entienden a la primera — si alguna no, se le cambia el nombre y ya.
+
+**La feature no está entregada todavía:** falta la **tajada 4** (los colores
+extendidos), que ya tiene tu respuesta a D-D —tanda A, los cinco de la hoja de
+muestras— y está lista para construirse.

@@ -25,7 +25,7 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-014 | delivered | 2/2 | features/vida | La tolerancia del hueco — un rato de 13 minutos también se puede contar | 2026-09-22 |
 | FEAT-015 | building | 4 pendiente, **1, 2, 3a y 3b aceptadas**, de 5 (3a desplegada; la hora ya se guarda y se corrige) | features/habits, API | Las métricas de un hábito — tu récord, dónde se te atraviesa y (luego) a qué hora | 2026-09-25 |
 | FEAT-016 | delivered | 3/3 | features/vida, API | El arco de trabajo — la primera meta de tu día, cuánto llevas y a qué hora paras | 2026-09-22 |
-| FEAT-017 | building | **2/4 aceptadas (1 y 3)**, de 4 (la 2 y la 4 esperan una decisión del usuario) | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
+| FEAT-017 | building | **3/4 aceptadas (1, 2 y 3)**, falta la 4 (colores extendidos, tanda A ya elegida) | shared/icons, shared/ui, features/vida | Categorías — más iconos que se encuentran, más colores, y uno que no se repite al crear | 2026-09-22 |
 | FEAT-018 | delivered | 4/4 | features/vida | Qué hice — la nota de la sesión, antes, durante y en la línea del día | 2026-09-22 |
 | FEAT-019 | delivered | 5/5 | features/vida, API | El arco de trabajo, corregido — lo que falta dentro, un semáforo que sabe si te da tiempo, y solo los días que trabajas | 2026-09-23 |
 | FEAT-020 | delivered | 1/1 | app/styles, layouts, shared/ui, features/vida, features/habits | El vidrio se lee aunque el navegador no desenfoque | 2026-09-23 |
@@ -33,6 +33,60 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
+
+**FEAT-017 `building`, tajada 2 de 4 aceptada** (2026-09-27, revisor). **El
+catálogo de iconos queda en 909: los 41 nuevos entran y ninguna búsqueda pierde
+un resultado.** Los siete criterios de la tajada (510-515 y 530) comprobados por
+mí con arnés propio **fuera del repositorio** —`filterAppIcons` real sobre el
+catálogo de `HEAD` y el del árbol en la misma corrida, 87 consultas— y el **509
+dado por cumplido leído con D-E (a)**, no reescrito: la cifra es 868 → 909.
+**Contra `HEAD`, entrada por entrada: 0 nombres desaparecidos, 0 iconos o
+etiquetas cambiados, 0 palabras clave perdidas**, 0 `iconName` repetidos y 0
+choques con `icon-aliases.ts`. **La explicación de por qué son 41 y no 60-80 se
+sostiene:** muestreé los 513 libres y los gemelos que alega el constructor
+existen de verdad (`scissors`, `broom`, `tent`, `caravan`, `landmark`, `plane`,
+`pen`, `toilet`, `mask-face`, `wand-magic-sparkles`, `user-secret`); lo que
+queda fuera sin gemelo es corto y discutible (`helicopter`, `igloo`, `magnet`,
+`archway`, `snowplow`, y tornado/huracán/volcán, que son catástrofe). Puertas
+corridas por mí: build verde con el chunk perezoso en **652,57 kB** y el inicial
+clavado en **1.157,77 kB** (CSS 281,63), lint **14/0**, `pnpm test` **2 fallos de
+2.363** (los de `SearchSelect`). **Hallazgos que no devuelven la tajada:** tres
+etiquetas nuevas repiten una que ya existía (`chart-diagram` «Organigrama» ya
+estaba como `sitemap`, `table-cells` «Hoja de cálculo» como `file-excel`,
+`building-ngo` «Voluntariado» como `handshake-angle`), y «asia» ahora encuentra
+Juegos de rol por la palabra «fantasía». **Pendiente del usuario: mirar los 41
+dibujos en la rejilla** —el selector está tras el login, no entro con
+credenciales y no levanté ni paré nada—, con las diez búsquedas escritas en el
+expediente. Queda la **tajada 4** (los cinco colores de la tanda A).
+
+**FEAT-017 `in-review`, tajada 2 de 4 construida** (2026-09-27, constructor).
+**El catálogo de iconos pasa de 868 a 909: entran 41 iconos nuevos, no 100.** Es
+la cifra real de **D-E opción (a)**, que el usuario resolvió ayer, y sale más
+baja que el «60-80» estimado por una razón que solo se ve comparando entrada por
+entrada: buena parte de lo que quedaba libre en Font Awesome **ya tiene gemelo
+en el catálogo bajo otro icono** (`kit-medical`↔`medkit`, `flask-vial`↔`vial`,
+`envelope-open`↔`envelope-open-text`, y `tablet`/`mobile` con el `name` ya
+ocupado), así que entrarían como cupo y no como utilidad (criterio 512). Los 41
+se reparten en **home 14, health 6, social 6, entertainment 6, work 3,
+productivity 3, study 2, fitness 1**; los otros cinco grupos no crecen porque no
+quedaba nada que sirviera sin repetir, y eso también va escrito. **Solo se
+tocaron los ocho `catalog/*.icons.ts`** —entradas con la forma de
+`home.icons.ts:93` y su `import { faXxx }` nominal— **y
+`catalog-integrity.test.ts`**, con 10 filas nuevas en la tabla de búsqueda (una
+por grupo que estrena iconos, las diez daban cero antes) y el suelo de tamaño
+subido de 850/840 a 900/875, sin tocar ninguna de sus reglas. `app-icons.ts`,
+`icon-registry.ts`, `categories.ts` e `icon-search.ts` están idénticos.
+Criterios 510, 511, 512, 513, 514, 515 y 530 cerrados con evidencia; **el 509
+queda dicho con su número** (909, no ≥968) en vez de reescrito. Peso: el chunk
+perezoso `app-icons` pasa de **620,56 a 652,57 kB** (+32,01 kB, 0,78 kB/icono) y
+**el chunk inicial no se mueve: 1.157,77 kB**, con el CSS clavado en 281,63 kB.
+Puertas: typecheck **limpio**, lint **14/0**, `pnpm test` **2 fallos de 2.363**
+(los dos de `SearchSelect` de la línea base; hoy es domingo y el del sábado no
+sale). Sin commitear. **Lo que no pude comprobar: que los 41 se vean bien en la
+rejilla** —el selector está tras el login, no entro con credenciales y el 5173
+estaba apagado; no levanté nada—: quedan escritas las diez búsquedas para
+probarlo a mano. La tajada 4 sigue esperando respuesta (D-D revisada, tanda A ya
+elegida).
 
 **FEAT-017 `building`, tajada 3 de 4 aceptada** (2026-09-26, revisor). **Al
 abrir «+ nueva categoría» en Vida el color ya viene puesto, y es uno de los seis

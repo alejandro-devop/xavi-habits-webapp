@@ -9,6 +9,7 @@ import {
   faBullhorn,
   faBusinessTime,
   faChartColumn,
+  faChartDiagram,
   faCity,
   faClipboardCheck,
   faClipboardUser,
@@ -19,6 +20,7 @@ import {
   faDesktop,
   faDiagramProject,
   faDolly,
+  faEnvelopesBulk,
   faFile,
   faFileCsv,
   faFileExcel,
@@ -60,6 +62,7 @@ import {
   faStapler,
   faStore,
   faSuitcase,
+  faTableCells,
   faTableList,
   faTerminal,
   faToolbox,
@@ -155,4 +158,8 @@ export const workIcons = [
   { name: 'file-import', label: 'Importar', category: 'work', icon: faFileImport, keywords: ['importar', 'cargar', 'archivo', 'datos'] },
   { name: 'rectangle-ad', label: 'Publicidad', category: 'work', icon: faRectangleAd, keywords: ['anuncio', 'publicidad', 'campaña', 'marketing'] },
   { name: 'stapler', label: 'Grapadora', category: 'work', icon: faStapler, keywords: ['grapar', 'papeles', 'oficina', 'archivar'] },
+  // FEAT-017 tajada 2: iconos útiles que quedaban libres en Font Awesome Free solid.
+  { name: 'chart-diagram', label: 'Organigrama', category: 'work', icon: faChartDiagram, keywords: ['organigrama', 'diagrama', 'esquema', 'estructura', 'mapa mental', 'jerarquía'] },
+  { name: 'table-cells', label: 'Hoja de cálculo', category: 'work', icon: faTableCells, keywords: ['hoja de cálculo', 'excel', 'celdas', 'tabla', 'datos', 'presupuesto'] },
+  { name: 'envelopes-bulk', label: 'Boletines', category: 'work', icon: faEnvelopesBulk, keywords: ['boletines', 'newsletter', 'correo masivo', 'suscripciones', 'envío de correos', 'campaña'] },
 ] as const satisfies readonly AppIconEntry[]

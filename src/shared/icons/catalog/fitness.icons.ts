@@ -11,6 +11,7 @@ import {
   faBowlingBall,
   faCableCar,
   faChildReaching,
+  faCompass,
   faDumbbell,
   faFire,
   faFireFlameCurved,
@@ -147,4 +148,6 @@ export const fitnessIcons = [
   { name: 'person-falling', label: 'Equilibrio', category: 'fitness', icon: faPersonFalling, keywords: ['caída', 'equilibrio', 'estabilidad', 'prevención'] },
   { name: 'street-view', label: 'Salir al barrio', category: 'fitness', icon: faStreetView, keywords: ['paseo', 'barrio', 'calle', 'salir'] },
   { name: 'stopwatch-20', label: 'Cronómetro de serie', category: 'fitness', icon: faStopwatch20, keywords: ['cronómetro', 'tiempo', 'serie', 'descanso'] },
+  // FEAT-017 tajada 2: iconos útiles que quedaban libres en Font Awesome Free solid.
+  { name: 'compass', label: 'Orientación', category: 'fitness', icon: faCompass, keywords: ['orientación', 'brújula', 'senderismo', 'excursión', 'ruta', 'norte'] },
 ] as const satisfies readonly AppIconEntry[]

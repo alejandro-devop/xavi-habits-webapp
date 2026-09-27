@@ -169,8 +169,12 @@ describe('catálogo de iconos — inventario', () => {
   })
 
   it('muestra un catálogo grande en el selector', () => {
-    expect(appIcons.length).toBeGreaterThanOrEqual(850)
-    expect(pickerIcons.length).toBeGreaterThanOrEqual(840)
+    // FEAT-017 tajada 2: el catálogo pasó de 868 a 909 entradas (884 elegibles,
+    // las otras 25 son de `system`). El suelo se sube con el mismo margen que
+    // tenía antes: es un suelo, no un congelador — la lista de 453 nombres de
+    // arriba es la que impide que desaparezca ninguno.
+    expect(appIcons.length).toBeGreaterThanOrEqual(900)
+    expect(pickerIcons.length).toBeGreaterThanOrEqual(875)
   })
 
   it('muestra la categoría Social con sus iconos', () => {
@@ -227,6 +231,18 @@ describe('catálogo de iconos — búsqueda en español', () => {
     ['cocina', 'mortar-pestle'],
     ['cocina', 'utensils'],
     ['cocina', 'bowl-food'],
+    // FEAT-017 tajada 2: una búsqueda por cada grupo que estrena iconos, para
+    // que se vea que entraron por su nombre natural y no solo por su `name`.
+    ['mudanza', 'truck-moving'],
+    ['aparcar', 'square-parking'],
+    ['receta médica', 'file-prescription'],
+    ['lactancia', 'person-breastfeeding'],
+    ['votar', 'check-to-slot'],
+    ['juegos de rol', 'dungeon'],
+    ['hoja de cálculo', 'table-cells'],
+    ['inbox zero', 'envelope-circle-check'],
+    ['brújula', 'compass'],
+    ['oceanía', 'earth-oceania'],
   ]
 
   it.each(cases)('«%s» encuentra %s', (query, expected) => {

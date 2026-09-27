@@ -27,7 +27,9 @@ import {
   faDrawPolygon,
   faEarthAfrica,
   faEarthAmericas,
+  faEarthAsia,
   faEarthEurope,
+  faEarthOceania,
   faEquals,
   faEraser,
   faFlask,
@@ -147,4 +149,7 @@ export const studyIcons = [
   { name: 'map', label: 'Mapa', category: 'study', icon: faMap, keywords: ['mapa', 'geografía', 'ruta', 'viaje'] },
   { name: 'earth-americas', label: 'América', category: 'study', icon: faEarthAmericas, keywords: ['mundo', 'globo', 'américa', 'geografía'] },
   { name: 'earth-africa', label: 'África', category: 'study', icon: faEarthAfrica, keywords: ['mundo', 'globo', 'áfrica', 'geografía'] },
+  // FEAT-017 tajada 2: iconos útiles que quedaban libres en Font Awesome Free solid.
+  { name: 'earth-asia', label: 'Asia', category: 'study', icon: faEarthAsia, keywords: ['asia', 'mundo', 'mapa', 'geografía', 'continente', 'viaje'] },
+  { name: 'earth-oceania', label: 'Oceanía', category: 'study', icon: faEarthOceania, keywords: ['oceanía', 'mundo', 'mapa', 'geografía', 'continente', 'australia'] },
 ] as const satisfies readonly AppIconEntry[]

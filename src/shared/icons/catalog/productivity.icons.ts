@@ -27,6 +27,9 @@ import {
   faCrosshairs,
   faCrown,
   faDiagramNext,
+  faEnvelopeCircleCheck,
+  faFileArrowDown,
+  faFileArrowUp,
   faFilePen,
   faFlag,
   faFolderClosed,
@@ -141,4 +144,8 @@ export const productivityIcons = [
   { name: 'chart-area', label: 'Tendencia', category: 'productivity', icon: faChartArea, keywords: ['gráfica', 'área', 'tendencia', 'datos'] },
   { name: 'gauge', label: 'Medidor', category: 'productivity', icon: faGauge, keywords: ['medidor', 'nivel', 'rendimiento', 'progreso'] },
   { name: 'diagram-next', label: 'Siguiente paso', category: 'productivity', icon: faDiagramNext, keywords: ['paso', 'flujo', 'siguiente', 'proceso'] },
+  // FEAT-017 tajada 2: iconos útiles que quedaban libres en Font Awesome Free solid.
+  { name: 'envelope-circle-check', label: 'Bandeja a cero', category: 'productivity', icon: faEnvelopeCircleCheck, keywords: ['bandeja a cero', 'inbox zero', 'correo revisado', 'vaciar la bandeja', 'email', 'correo al día'] },
+  { name: 'file-arrow-down', label: 'Descargar archivo', category: 'productivity', icon: faFileArrowDown, keywords: ['descargar archivo', 'descarga', 'bajar fichero', 'guardar', 'documento', 'download'] },
+  { name: 'file-arrow-up', label: 'Subir archivo', category: 'productivity', icon: faFileArrowUp, keywords: ['subir archivo', 'subida', 'enviar fichero', 'cargar', 'documento', 'upload'] },
 ] as const satisfies readonly AppIconEntry[]

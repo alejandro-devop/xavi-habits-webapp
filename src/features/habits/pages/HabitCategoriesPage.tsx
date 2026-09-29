@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { HabitCategoryForm } from '@/features/habits/components/HabitCategoryForm'
+import { pickInitialHabitCategoryColor } from '@/features/habits/data/habit-colors'
 import {
   useHabitCategoriesQuery,
   useCreateHabitCategoryMutation,
@@ -27,7 +28,12 @@ import styles from './HabitCategoriesPage.module.scss'
 type FormMode = { type: 'create' } | { type: 'edit'; category: HabitCategory }
 
 export function HabitCategoriesPage() {
-  const { data: categories = [], isLoading, isError, error, refetch } = useHabitCategoriesQuery()
+  // `data` **sin** valor por defecto a propósito: `= []` confundía «la lista aún
+  // no ha llegado» con «no hay ninguna», y el sorteo del color de una categoría
+  // nueva necesita distinguirlas (FEAT-026, criterio 10). Sortear sobre una
+  // lista que no ha llegado es sortear sobre cero y puede repetir color.
+  const { data: categories, isLoading, isError, error, refetch } = useHabitCategoriesQuery()
+  const categoriesArrived = categories !== undefined
   const createMutation = useCreateHabitCategoryMutation()
   const updateMutation = useUpdateHabitCategoryMutation()
   const removeMutation = useRemoveHabitCategoryMutation()
@@ -38,14 +44,24 @@ export function HabitCategoriesPage() {
 
   const sortedCategories = useMemo(
     () =>
-      [...categories].sort(
+      [...(categories ?? [])].sort(
         (a, b) => a.orderIndex - b.orderIndex || a.name.localeCompare(b.name),
       ),
     [categories],
   )
 
+  /**
+   * El color de una categoría nueva se sortea **aquí, al pulsar**, y una sola
+   * vez: es un manejador de evento, así que escribir el nombre o elegir el icono
+   * después no lo mueven. Mira los colores de las **categorías de hábitos**, no
+   * los de los hábitos. Si la lista aún no ha llegado no se abre: los dos
+   * botones que llaman aquí están deshabilitados hasta entonces, y esto es la
+   * red por si alguien lo llama igual.
+   */
   const openCreate = () => {
-    setFormValues(defaultCategoryFormValues(nextCategoryOrderIndex(categories)))
+    if (!categories) return
+    const color = pickInitialHabitCategoryColor(categories.map((category) => category.color))
+    setFormValues(defaultCategoryFormValues(nextCategoryOrderIndex(categories), color))
     setFormMode({ type: 'create' })
   }
 
@@ -92,7 +108,7 @@ export function HabitCategoriesPage() {
     <section className={styles.panel}>
       <div className={styles.toolbar}>
         <p className={styles.lead}>Organiza tus hábitos en categorías con icono, color y orden.</p>
-        <Button type="button" onClick={openCreate} disabled={isLoading}>
+        <Button type="button" onClick={openCreate} disabled={!categoriesArrived}>
           Nueva categoría
         </Button>
       </div>
@@ -118,7 +134,7 @@ export function HabitCategoriesPage() {
         </div>
       ) : null}
 
-      {!isLoading && !isError && sortedCategories.length === 0 ? (
+      {categoriesArrived && !isError && sortedCategories.length === 0 ? (
         <div className={styles.emptyState}>
           <p className={styles.emptyText}>No hay categorías todavía.</p>
           <Button type="button" onClick={openCreate}>

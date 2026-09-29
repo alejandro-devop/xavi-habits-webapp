@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import type { HabitCategoryFormValues } from '@/features/habits/types/habit-category.types'
 import { validateCategoryForm } from '@/features/habits/utils/habit-category-form.utils'
 import { Button } from '@/shared/ui/Button'
+import { ColorPicker } from '@/shared/ui/ColorPicker'
 import { FormField } from '@/shared/ui/FormField'
 import { IconPicker } from '@/shared/ui/IconPicker'
 import { Input } from '@/shared/ui/Input'
@@ -80,28 +81,21 @@ export function HabitCategoryForm({
         />
       </FormField>
 
-      <FormField
-        id="habit-category-color"
-        label="Color"
-        error={error?.includes('color') ? error : undefined}
-      >
-        <div className={styles.colorRow}>
-          <input
-            type="color"
-            className={styles.colorPicker}
-            value={values.color ?? '#6366f1'}
-            onChange={(e) => patch({ color: e.target.value })}
-            disabled={loading}
-            aria-label="Selector de color"
-          />
-          <Input
-            value={values.color ?? ''}
-            onChange={(e) => patch({ color: e.target.value })}
-            placeholder="#6366f1"
-            disabled={loading}
-          />
-        </div>
-      </FormField>
+      {/* Las veintidós de la paleta compartida, como en `VidaCategoryForm`: la
+          rueda del sistema y el campo de hex se fueron en FEAT-026. No va en
+          `FormField` porque su `<label for>` apuntaría a un grupo de radios; el
+          nombre accesible lo lleva el propio grupo. Lo que llega en `values.color`
+          se enseña tal cual —de la paleta, de fuera («Color actual») o ninguno— y
+          solo cambia si alguien elige otra muestra. */}
+      <div className={styles.colorRow}>
+        <span className={styles.colorLabel}>Color</span>
+        <ColorPicker
+          value={values.color}
+          onChange={(color) => patch({ color })}
+          disabled={loading}
+          label="Color de la categoría"
+        />
+      </div>
 
       <FormField
         id="habit-category-order"
@@ -119,7 +113,7 @@ export function HabitCategoryForm({
         />
       </FormField>
 
-      {error && !error.includes('nombre') && !error.includes('color') && !error.includes('orden') ? (
+      {error && !error.includes('nombre') && !error.includes('orden') ? (
         <p className={styles.formError} role="alert">
           {error}
         </p>

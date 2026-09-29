@@ -5,6 +5,7 @@ import {
   HABIT_EXTENDED_COLORS,
   findHabitColor,
   normalizeHabitColor,
+  pickInitialHabitCategoryColor,
   pickInitialHabitColor,
 } from './habit-colors'
 
@@ -215,5 +216,48 @@ describe('pickInitialHabitColor', () => {
 
   it('aguanta un generador que devuelva exactamente 1', () => {
     expect(HABIT_CORE_COLORS.map((c) => c.hex)).toContain(pickInitialHabitColor([], fixedRandom(1)))
+  })
+})
+
+describe('pickInitialHabitCategoryColor', () => {
+  const coreHexes = HABIT_CORE_COLORS.map((c) => c.hex)
+
+  it('sin categorías, cualquiera de los seis del núcleo (criterio 3)', () => {
+    const picked = new Set<string>()
+    for (let r = 0; r < 1; r += 0.01) picked.add(pickInitialHabitCategoryColor([], fixedRandom(r)))
+    expect([...picked].sort()).toEqual([...coreHexes].sort())
+  })
+
+  it('con alguna categoría, elige uno del núcleo que ninguna usa (criterio 2)', () => {
+    const used = [HABIT_CORE_COLORS[0].hex, '#6366f1', null, HABIT_CORE_COLORS[3].hex]
+    for (let r = 0; r < 1; r += 0.05) {
+      const picked = pickInitialHabitCategoryColor(used, fixedRandom(r))
+      expect(coreHexes).toContain(picked)
+      expect(picked).not.toBe(HABIT_CORE_COLORS[0].hex)
+      expect(picked).not.toBe(HABIT_CORE_COLORS[3].hex)
+    }
+  })
+
+  it('con los seis en uso, el que menos categorías tienen (criterio 3)', () => {
+    const used = [...coreHexes, ...coreHexes.filter((hex) => hex !== HABIT_CORE_COLORS[2].hex)]
+    for (const r of [0, 0.5, 0.999]) {
+      expect(pickInitialHabitCategoryColor(used, fixedRandom(r))).toBe(HABIT_CORE_COLORS[2].hex)
+    }
+  })
+
+  it('solo cuenta lo que se le pasa: los colores de los hábitos no entran (criterio 4)', () => {
+    // Quien llama le pasa los colores de las categorías; con cero categorías,
+    // da igual que los hábitos ya usen los seis: el sorteo reparte entre todos.
+    expect(pickInitialHabitCategoryColor([], fixedRandom(0))).toBe(HABIT_CORE_COLORS[0].hex)
+    expect(pickInitialHabitCategoryColor([], fixedRandom(0.99))).toBe(HABIT_CORE_COLORS.at(-1)!.hex)
+  })
+
+  it('da lo mismo que el sorteo de hábitos con la misma lista y el mismo generador', () => {
+    const used = [HABIT_CORE_COLORS[1].hex, HABIT_CORE_COLORS[4].hex]
+    for (const r of [0, 0.3, 0.7, 0.999]) {
+      expect(pickInitialHabitCategoryColor(used, fixedRandom(r))).toBe(
+        pickInitialHabitColor(used, fixedRandom(r)),
+      )
+    }
   })
 })

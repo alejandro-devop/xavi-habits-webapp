@@ -63,3 +63,29 @@ export function pickInitialHabitColor(
   const index = Math.min(candidates.length - 1, Math.floor(random() * candidates.length))
   return candidates[index].hex
 }
+
+/**
+ * Sortea el color con el que nace una categoría de hábitos nueva (FEAT-026).
+ *
+ * **Es el mismo algoritmo que el de los hábitos, a propósito**, y por eso
+ * delega en vez de copiarlo: solo los seis del núcleo, sin repetir mientras
+ * quede alguno libre, y si no, entre los menos usados. Lo que cambia es **a
+ * quién se mira**: `categoryColors` son los colores de las **categorías de
+ * hábitos** del usuario, no los de sus hábitos ni los de las categorías de
+ * Vida. Dos categorías se distinguen entre sí en el filtro de Mis hábitos; que
+ * una categoría comparta color con un hábito no molesta a nadie.
+ *
+ * Vida tiene su gemelo en `vida-category-color.utils.ts` porque allí hay una
+ * frontera de módulo; aquí no la hay. Si un día cambian las reglas del sorteo
+ * de hábitos, cambian también las de sus categorías: es la consecuencia
+ * aceptada.
+ *
+ * Quien llama tiene que pasar la lista **ya llegada**: sortear sobre una lista
+ * que aún no ha llegado es sortear sobre cero y puede repetir color.
+ */
+export function pickInitialHabitCategoryColor(
+  categoryColors: readonly (string | null)[],
+  random: () => number = Math.random,
+): string {
+  return pickInitialHabitColor(categoryColors, random)
+}

@@ -6,34 +6,54 @@ import type {
 import type { HabitCategory } from '@/features/habits/types/habit.types'
 import { normalizeIconName } from '@/shared/icons'
 
-const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
-
-export function defaultCategoryFormValues(orderIndex = 0): HabitCategoryFormValues {
+/**
+ * Los valores con los que se abre «crear». El color **lo trae quien llama**
+ * (el sorteo de `pickInitialHabitCategoryColor`, que necesita la lista de
+ * categorías ya llegada): este fichero no sortea, solo arma el formulario.
+ *
+ * Antes el valor por defecto era `#6366f1`, un índigo que no está en la paleta
+ * de 22: toda categoría creada sin tocar el color nacía con un color de fuera
+ * (FEAT-026).
+ */
+export function defaultCategoryFormValues(
+  orderIndex = 0,
+  color: string | null = null,
+): HabitCategoryFormValues {
   return {
     name: '',
     description: '',
     icon: null,
-    color: '#6366f1',
+    color,
     orderIndex: String(orderIndex),
   }
 }
 
+/**
+ * Editar enseña **el color que la categoría ya tiene, tal cual**: uno de la
+ * paleta, uno de fuera (el `ColorPicker` lo pinta como «Color actual») o
+ * ninguno. Antes, sin color, se rellenaba con `#6366f1` y guardar le escribía
+ * índigo aunque solo se hubiera cambiado el nombre (FEAT-026, criterio 8).
+ */
 export function categoryToFormValues(category: HabitCategory): HabitCategoryFormValues {
   return {
     name: category.name,
     description: category.description ?? '',
     icon: category.icon,
-    color: category.color ?? '#6366f1',
+    color: category.color,
     orderIndex: String(category.orderIndex),
   }
 }
 
+/**
+ * Ya no se valida el color (FEAT-026): desde el `ColorPicker` no se puede
+ * escribir uno mal, y lo único que podría no ser un hex de seis cifras es lo
+ * que la categoría ya traía guardado. Bloquear el guardado por eso obligaría a
+ * cambiar el color para poder cambiar el nombre, y editar no toca el color que
+ * no se toca (el servidor tampoco lo exige: `z.string().max(255)`).
+ */
 export function validateCategoryForm(values: HabitCategoryFormValues): string | null {
   if (!values.name.trim()) {
     return 'El nombre es obligatorio.'
-  }
-  if (values.color && values.color.trim() && !HEX_COLOR_PATTERN.test(values.color.trim())) {
-    return 'El color debe ser un hex válido (ej. #6366f1).'
   }
   const order = Number(values.orderIndex)
   if (values.orderIndex.trim() !== '' && (!Number.isInteger(order) || order < 0)) {

@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FEAT-025 · Hoja de muestras de los botones</title>
+<style>
+  /* ──────────────────────────────────────────────────────────────────────────
+     Nada de este bloque está escrito a mano: es la salida de
+       node_modules/.bin/sass --load-path=src <fichero>
+     sobre el árbol del 28 de septiembre de 2026, con las clases prefijadas
+     como haría CSS Modules. Los tokens son src/app/styles/_theme-variables.scss
+     entero; los componentes, Button.module.scss, AppIcon.module.scss,
+     HabitDayMarker.module.scss y las reglas .toggle/.toggleDone de
+     HabitDayRow.module.scss. A cada :hover:not(:disabled) se le añade el
+     gemelo .forzar-hover para enseñar el hover quieto.
+     Sin scripts y sin dependencias externas.
+     ────────────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+  --color-bg: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-glass: rgba(255, 255, 255, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.5);
+  --color-primary: #007aff;
+  --color-primary-hover: #0066d6;
+  --color-secondary: #636366;
+  --color-success: #248a3d;
+  --color-warning: #c93400;
+  --color-danger: #d70015;
+  --color-border: rgba(28, 28, 30, 0.12);
+  --color-text: #1c1c1e;
+  --color-text-secondary: #48484a;
+  --color-text-muted: #86868b;
+  --color-focus-ring: rgba(0, 122, 255, 0.45);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.06);
+  --blur-sm: 8px;
+  --blur-md: 12px;
+  --blur-lg: 20px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+  --font-family: -apple-system, BlinkMacSystemFont, SF Pro Text, SF Pro Display, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --font-handwritten: 'Caveat', cursive;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 2.5rem;
+  --layout-max-width: 960px;
+  --auth-form-max-width: 400px;
+  --paper-bg: #fafaf5;
+  --paper-line: rgba(0, 0, 0, 0.07);
+  --paper-margin: #e8b4b8;
+  --paper-margin-width: 44px;
+  --paper-row-height: 40px;
+  --paper-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.07),
+    2px 4px 0 rgba(0, 0, 0, 0.03);
+  --paper-texture-opacity: 0.025;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-16: 4rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-8: 2rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --color-text-primary: var(--color-text);
+  --color-text-tertiary: var(--color-text-muted);
+  --color-accent: var(--color-primary);
+  --color-error: var(--color-danger);
+  --color-focus: var(--color-focus-ring);
+  --color-surface-raised: color-mix(in srgb, var(--color-text) 7%, var(--color-surface-elevated));
+  --color-surface-hover: color-mix(in srgb, var(--color-text) 5%, transparent);
+  --color-border-subtle: color-mix(in srgb, var(--color-border) 55%, transparent);
+  --color-border-strong: color-mix(in srgb, var(--color-border) 180%, transparent);
+  --color-error-subtle: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  --color-success-subtle: color-mix(in srgb, var(--color-success) 12%, transparent);
+  --color-warning-subtle: color-mix(in srgb, var(--color-warning) 14%, transparent);
+}
+
+[data-theme=dark] {
+  color-scheme: dark;
+  --color-bg: #000000;
+  --color-surface: #1c1c1e;
+  --color-surface-elevated: #2c2c2e;
+  --color-glass: rgba(44, 44, 46, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
+  --color-primary: #409cff;
+  --color-primary-hover: #007aff;
+  --color-secondary: #aeaeb2;
+  --color-success: #34c759;
+  --color-warning: #ff9500;
+  --color-danger: #ff3b30;
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-text: #f5f5f7;
+  --color-text-secondary: #aeaeb2;
+  --color-text-muted: #86868b;
+  --color-focus-ring: rgba(64, 156, 255, 0.5);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --paper-bg: #242424;
+  --paper-line: rgba(255, 255, 255, 0.055);
+  --paper-margin: rgba(232, 140, 145, 0.35);
+  --paper-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.35),
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    2px 2px 0 rgba(0, 0, 0, 0.2);
+  --paper-texture-opacity: 0.035;
+}
+
+[data-ds=aura] {
+  --color-primary: #006c49;
+  --color-primary-hover: #00553a;
+  --color-bg: #fafcfb;
+  --color-surface: rgba(255, 255, 255, 0.45);
+  --color-surface-elevated: #f4f7fb;
+  --color-text: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+  --color-glass: rgba(255, 255, 255, 0.78);
+  --color-glass-border: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(255, 255, 255, 0.7);
+  --color-success: #059669;
+  --color-danger: #ba1a1a;
+  --color-focus-ring: rgba(124, 58, 237, 0.45);
+  --shadow-glass:
+    0 16px 48px -8px rgba(100, 116, 139, 0.14), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  --blur-md: 32px;
+  --radius-md: 16px;
+  --radius-xl: 32px;
+  --font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --aura-cta-bg: linear-gradient(135deg, #10b981, #059669);
+  --aura-cta-glow: 0 8px 24px -4px rgba(16, 185, 129, 0.42);
+  --aura-well-bg: rgba(255, 255, 255, 0.45);
+  --aura-well-inset: inset 0 2px 4px rgba(15, 23, 42, 0.03);
+  --aura-glass-1: rgba(255, 255, 255, 0.55);
+  --font-label: 'Inter', system-ui, sans-serif;
+  --aurora-orb-1: rgba(78, 222, 163, 0.42);
+  --aurora-orb-2: rgba(210, 187, 255, 0.45);
+  --aurora-orb-3: rgba(224, 242, 254, 0.85);
+  --aura-ring-track: rgba(15, 23, 42, 0.1);
+  --aura-ring-from: #10b981;
+  --aura-ring-to: #7c3aed;
+  --aura-night-dusk-bg: linear-gradient(135deg, rgba(79, 70, 229, 0.14), rgba(124, 58, 237, 0.1));
+  --aura-night-dawn-bg: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(245, 158, 11, 0.12));
+  --aura-night-border: rgba(79, 70, 229, 0.26);
+  --aura-night-text: #3730a3;
+  --button-radius: var(--radius-full);
+  --button-font-family: var(--font-label);
+  --button-primary-bg: var(--aura-cta-bg);
+  --button-primary-hover-bg: var(--aura-cta-bg);
+  --button-primary-shadow: var(--aura-cta-glow), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  --button-primary-hover-shadow:
+    0 12px 28px -4px rgba(16, 185, 129, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  --button-primary-hover-transform: translateY(-2px);
+  --input-bg: var(--aura-well-bg);
+  --input-shadow: var(--aura-well-inset);
+  --input-focus-border: rgba(124, 58, 237, 0.6);
+  --input-focus-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14), var(--aura-well-inset);
+  --form-label-font-family: var(--font-label);
+  --popover-bg: var(--color-glass);
+  --nav-link-radius: 14px;
+  --nav-link-font-family: var(--font-label);
+  --nav-link-active-bg: #ffffff;
+  --nav-link-active-color: var(--color-primary);
+  --nav-link-active-weight: 600;
+  --nav-link-active-shadow: 0 8px 22px -8px rgba(16, 185, 129, 0.35);
+  --nav-link-hover-bg: rgba(255, 255, 255, 0.55);
+  --aura-avatar-bg: linear-gradient(135deg, #a7f3d0, #c4b5fd);
+}
+
+[data-theme=dark] [data-ds=aura] {
+  --color-primary: #4edea3;
+  --color-primary-hover: #6ee7b7;
+  --color-bg: #0b1220;
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-surface-elevated: #161e2f;
+  --color-text: #eef2ff;
+  --color-text-secondary: #a8b3c7;
+  --color-text-muted: #7c8aa5;
+  --color-glass: rgba(22, 30, 47, 0.72);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
+  --color-border: rgba(255, 255, 255, 0.12);
+  --color-success: #4edea3;
+  --color-danger: #ffb4ab;
+  --shadow-glass: 0 16px 48px -8px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  --aura-well-bg: rgba(255, 255, 255, 0.06);
+  --aura-well-inset: inset 0 2px 4px rgba(0, 0, 0, 0.14);
+  --aura-glass-1: rgba(255, 255, 255, 0.06);
+  --aurora-orb-1: rgba(16, 185, 129, 0.24);
+  --aurora-orb-2: rgba(124, 58, 237, 0.3);
+  --aurora-orb-3: rgba(30, 58, 95, 0.75);
+  --aura-ring-track: rgba(255, 255, 255, 0.14);
+  --aura-ring-from: #4edea3;
+  --aura-ring-to: #a78bfa;
+  --aura-night-dusk-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(124, 58, 237, 0.16));
+  --aura-night-dawn-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(245, 158, 11, 0.16));
+  --aura-night-border: rgba(165, 180, 252, 0.3);
+  --aura-night-text: #c7d2fe;
+  --nav-link-active-bg: rgba(255, 255, 255, 0.1);
+  --nav-link-active-shadow: 0 8px 22px -10px rgba(78, 222, 163, 0.45);
+  --nav-link-hover-bg: rgba(255, 255, 255, 0.06);
+  --aura-avatar-bg: linear-gradient(135deg, #4edea3, #a78bfa);
+}
+
+.AppIcon-root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  vertical-align: middle;
+  line-height: 0;
+  color: currentColor;
+}
+
+.AppIcon-size2xs {
+  width: 0.625rem;
+  height: 0.625rem;
+  font-size: 0.625rem;
+}
+
+.AppIcon-xs {
+  width: 0.75rem;
+  height: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.AppIcon-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+  font-size: 0.875rem;
+}
+
+.AppIcon-md {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+}
+
+.AppIcon-lg {
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1.25rem;
+}
+
+.AppIcon-xl {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.AppIcon-size2xl {
+  width: 2rem;
+  height: 2rem;
+  font-size: 2rem;
+}
+
+.AppIcon-root :global(svg) {
+  width: 1em;
+  height: 1em;
+  max-width: none;
+  max-height: none;
+  display: block;
+}
+
+.AppIcon-fallback {
+  display: inline-block;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-text) 12%, var(--color-surface));
+  border: 1px dashed var(--color-border);
+  flex-shrink: 0;
+}
+
+.AppIcon-fallbackPending {
+  background: color-mix(in srgb, var(--color-text) 6%, var(--color-surface));
+  border-style: none;
+}
+
+.AppIcon-fallback.AppIcon-size2xs {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+.AppIcon-fallback.AppIcon-xs {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.AppIcon-fallback.AppIcon-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.AppIcon-fallback.AppIcon-md {
+  width: 1rem;
+  height: 1rem;
+}
+
+.AppIcon-fallback.AppIcon-lg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.AppIcon-fallback.AppIcon-xl {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.AppIcon-fallback.AppIcon-size2xl {
+  width: 2rem;
+  height: 2rem;
+}
+
+.Button-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--button-radius, var(--radius-md));
+  font-family: var(--button-font-family, inherit);
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.Button-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.Button-button:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.Button-sm {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.875rem;
+  min-height: 2rem;
+}
+
+.Button-md {
+  padding: 0.6rem 1.15rem;
+  font-size: 1rem;
+  min-height: 2.5rem;
+}
+
+.Button-lg {
+  padding: 0.75rem 1.4rem;
+  font-size: 1.0625rem;
+  min-height: 2.75rem;
+}
+
+.Button-fullWidth {
+  width: 100%;
+}
+
+.Button-primary {
+  background: var(--button-primary-bg, var(--color-primary));
+  box-shadow: var(--button-primary-shadow, none);
+  color: #fff;
+}
+.Button-primary:hover:not(:disabled), .Button-primary.forzar-hover {
+  background: var(--button-primary-hover-bg, var(--color-primary-hover));
+  box-shadow: var(--button-primary-hover-shadow, var(--button-primary-shadow, none));
+  transform: var(--button-primary-hover-transform, none);
+}
+
+.Button-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.Button-secondary:hover:not(:disabled), .Button-secondary.forzar-hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.Button-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+.Button-ghost:hover:not(:disabled), .Button-ghost.forzar-hover {
+  background: color-mix(in srgb, var(--color-text) 6%, transparent);
+  color: var(--color-text);
+}
+
+.Button-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+.Button-danger:hover:not(:disabled), .Button-danger.forzar-hover {
+  filter: brightness(1.08);
+}
+
+.Button-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.Button-label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.HabitDayRow-toggle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 50%;
+  background: var(--color-glass);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  grid-column: 2;
+  grid-row: 1;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.HabitDayRow-toggle:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+.HabitDayRow-toggle:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+.HabitDayRow-toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+@media (min-width: 900px) {
+  .HabitDayRow-toggle {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+.HabitDayRow-toggleDone {
+  border-color: transparent;
+  background: var(--aura-cta-bg, var(--color-success));
+  color: #fff;
+  box-shadow: var(--aura-cta-glow, none);
+}
+
+.HabitDayMarker-marker {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+}
+
+.HabitDayMarker-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.HabitDayMarker-ringTrack {
+  stroke: color-mix(in srgb, var(--color-text) 12%, transparent);
+}
+
+.HabitDayMarker-ringProgress {
+  stroke: currentColor;
+  transition: stroke-dasharray 0.25s ease;
+}
+
+.HabitDayMarker-dayNumber {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: var(--color-surface-raised, color-mix(in srgb, var(--color-text) 5%, transparent));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: inherit;
+  line-height: 1;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.HabitDayMarker-moodBadge {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.15rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  font-size: 0.625rem;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 0 1px var(--color-surface, #fff));
+}
+
+.HabitDayMarker-notesBadge {
+  position: absolute;
+  right: -0.1rem;
+  bottom: -0.15rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: var(--color-surface, #fff);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  pointer-events: none;
+  line-height: 0;
+}
+
+/* ── Modo chip ──────────────────────────────────────────────────────────────
+   Marcador autónomo de la semana en curso: el color del estado vive aquí y no
+   en el CSS del padre. Los estados salen de los tokens del ámbito Aura.       */
+.HabitDayMarker-chip {
+  width: 1.625rem;
+  height: 1.625rem;
+}
+.HabitDayMarker-chip .HabitDayMarker-dayNumber {
+  width: 100%;
+  height: 100%;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--color-text) 4.5%, transparent);
+  color: var(--color-text-muted);
+  font-family: var(--font-label, inherit);
+  font-size: 0.625rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.HabitDayMarker-chip.HabitDayMarker-statusEmpty .HabitDayMarker-dayNumber {
+  color: var(--color-text-muted);
+}
+
+.HabitDayMarker-chip.HabitDayMarker-statusAccomplished .HabitDayMarker-dayNumber {
+  background: var(--aura-cta-bg, var(--color-success));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 16%, transparent);
+}
+
+.HabitDayMarker-chip.HabitDayMarker-statusFailed .HabitDayMarker-dayNumber {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--color-danger) 28%, transparent);
+  color: var(--color-danger);
+}
+
+.HabitDayMarker-chip.HabitDayMarker-statusLifeline .HabitDayMarker-dayNumber {
+  background: color-mix(in srgb, var(--aura-ring-to, var(--color-primary)) 16%, transparent);
+  border-color: color-mix(in srgb, var(--aura-ring-to, var(--color-primary)) 32%, transparent);
+  color: var(--aura-ring-to, var(--color-primary));
+}
+
+.HabitDayMarker-chip.HabitDayMarker-statusPartial .HabitDayMarker-dayNumber {
+  background: conic-gradient(var(--color-success) 0 var(--marker-progress, 0%), color-mix(in srgb, var(--color-text) 7%, transparent) var(--marker-progress, 0%) 100%);
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.HabitDayMarker-chip.HabitDayMarker-today .HabitDayMarker-dayNumber {
+  border-color: color-mix(in srgb, var(--color-text) 38%, transparent);
+}
+
+.HabitDayMarker-chip.HabitDayMarker-future {
+  opacity: 0.4;
+}
+
+/* ── Modo barra ─────────────────────────────────────────────────────────────
+   Misma semántica de color que el chip, otra silueta: en una tarjeta de 324px
+   no caben 14 círculos, pero sí 14 barras.                                   */
+.HabitDayMarker-chip.HabitDayMarker-bar {
+  width: auto;
+  height: 1.375rem;
+  flex: 1 1 0;
+  min-width: 0.25rem;
+}
+.HabitDayMarker-chip.HabitDayMarker-bar .HabitDayMarker-dayNumber {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  font-size: 0;
+  box-shadow: none;
+}
+
+.HabitDayMarker-chip.HabitDayMarker-bar.HabitDayMarker-statusPartial .HabitDayMarker-dayNumber {
+  background: linear-gradient(to top, var(--color-success) 0 var(--marker-progress, 0%), color-mix(in srgb, var(--color-text) 7%, transparent) var(--marker-progress, 0%) 100%);
+}
+
+.HabitDayMarker-chip.HabitDayMarker-bar.HabitDayMarker-today .HabitDayMarker-dayNumber {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-text) 28%, transparent);
+}
+</style>
+<style>
+  /* ── La hoja: maquetación y las propuestas ─────────────────────────────── */
+  :root {
+    --hoja-bg: #f1f4f8;
+    --hoja-text: #0f172a;
+    --hoja-text-2: #475569;
+    --hoja-card: #ffffff;
+    --hoja-line: #e2e8f0;
+    --hoja-font: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --hoja-label: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 1.25rem 1rem 4rem;
+    background: var(--hoja-bg);
+    color: var(--hoja-text);
+    font-family: var(--hoja-font);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 72rem; margin: 0 auto; }
+  h1 { font-size: 1.45rem; line-height: 1.25; margin: 0 0 0.35rem; letter-spacing: -0.02em; }
+  h2 { font-size: 1.15rem; margin: 2.6rem 0 0.25rem; letter-spacing: -0.01em; }
+  h3 { font-size: 1rem; margin: 0 0 0.2rem; letter-spacing: -0.01em; }
+  p { margin: 0.5rem 0; max-width: 48rem; }
+  .lede { color: var(--hoja-text-2); }
+  code { font-family: var(--mono); font-size: 0.84em; word-break: break-word; }
+
+  .panel { background: var(--hoja-card); border: 1px solid var(--hoja-line); border-radius: 14px; padding: 0.4rem 0.8rem; margin: 1rem 0; }
+  .tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .resumen { width: 100%; min-width: 30rem; border-collapse: collapse; font-size: 0.86rem; }
+  .resumen th, .resumen td { text-align: left; padding: 0.42rem 0.45rem; border-bottom: 1px solid var(--hoja-line); vertical-align: top; }
+  .resumen tr:last-child td { border-bottom: 0; }
+  .resumen th { font-family: var(--hoja-label); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hoja-text-2); font-weight: 600; }
+  .resumen td.num { font-family: var(--mono); white-space: nowrap; text-align: right; }
+  .resumen td:first-child { white-space: nowrap; }
+  .pasa { color: #047857; }
+  .no-pasa { color: #b91c1c; font-weight: 700; }
+
+  /* ── El vidrio: tokens de _theme-variables.scss, compilados arriba ─────── */
+  .vidrio {
+    position: relative;
+    border-radius: 18px;
+    padding: 0.55rem;
+    overflow: hidden;
+    /* El lienzo aurora (AuroraCanvas.module.scss) reducido a sus tres orbes. */
+    background:
+      radial-gradient(75% 90% at 8% 0%, var(--aurora-orb-1), transparent 62%),
+      radial-gradient(70% 85% at 95% 18%, var(--aurora-orb-2), transparent 64%),
+      radial-gradient(90% 70% at 50% 108%, var(--aurora-orb-3), transparent 66%),
+      var(--color-bg);
+  }
+  .lamina {
+    border-radius: 14px;
+    padding: 0.6rem 0.7rem 0.75rem;
+    background: var(--color-glass);
+    border: 1px solid var(--color-glass-border);
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(var(--blur-md));
+    -webkit-backdrop-filter: blur(var(--blur-md));
+    color: var(--color-text);
+  }
+  .rotulo { font-family: var(--hoja-label); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.09em; opacity: 0.6; margin: 0 0 0.3rem; }
+  .sub { font-family: var(--hoja-label); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; opacity: 0.65; margin: 0.7rem 0 0.4rem; }
+
+  /* ── Las propuestas: lo único que la hoja añade al CSS compilado ─────── */
+  .hoja-tinta .Button-primary,
+  .hoja-tinta .Button-danger,
+  .hoja-tinta .HabitDayRow-toggleDone,
+  .hoja-tinta .HabitDayMarker-statusAccomplished .HabitDayMarker-dayNumber { color: var(--hoja-tinta); }
+  .hoja-fondo .Button-danger { background: var(--hoja-fondo); border-color: var(--hoja-borde, transparent); }
+
+  /* ── Rejillas ─────────────────────────────────────────────────────────── */
+  .fichas { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 0.9rem; }
+  .ficha { background: var(--hoja-card); border: 1px solid var(--hoja-line); border-radius: 16px; padding: 0.8rem; min-width: 0; }
+  .ficha .nota { font-size: 0.85rem; color: var(--hoja-text-2); margin: 0.1rem 0 0.7rem; }
+  .vidrios { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+  @media (min-width: 52rem) { .vidrios { grid-template-columns: 1fr 1fr; } .vidrios.uno { grid-template-columns: 1fr; max-width: calc(50% - 0.3rem); } }
+  .fila-botones { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem 0.7rem; }
+  .muestra { margin: 0; display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
+  .muestra > button { max-width: 100%; }
+  .cifra { margin-top: 0.4rem; font-size: 0.72rem; line-height: 1.3; display: flex; flex-direction: column; }
+  .cifra .num { font-family: var(--mono); font-size: 0.8rem; font-weight: 700; }
+  .cifra .donde { opacity: 0.8; }
+  .lamina .cifra { color: var(--color-text-secondary); font-weight: 400; }
+  .lamina .cifra .num { color: var(--color-text); }
+  /* Las marcas usan los colores de Aura que ya pasan AA sobre su vidrio. */
+  .lamina .cifra.pasa .num::before { content: '✓ '; color: var(--color-primary); }
+  .lamina .cifra.no-pasa .num::before { content: '✗ '; color: var(--color-danger); }
+  .lamina .cifra.no-pasa .num::after { content: ' no llega'; font-weight: 600; color: var(--color-danger); }
+  .hermanos { display: flex; flex-wrap: wrap; gap: 1rem 1.6rem; align-items: flex-start; }
+  .hermanos .sub { margin-top: 0.3rem; }
+  .semana { display: flex; gap: 0.3rem; align-items: center; min-height: 2.5rem; }
+
+  .etiqueta {
+    display: inline-block; font-family: var(--hoja-label); font-size: 0.64rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 0.12rem 0.5rem; border-radius: 9999px;
+    background: #eef2ff; color: #3730a3; vertical-align: 0.15em; white-space: nowrap;
+  }
+  .etiqueta.opcional { background: #f1f5f9; color: #334155; }
+
+  /* ── Las preguntas ────────────────────────────────────────────────────── */
+  .preguntas { list-style: none; padding: 0; margin: 0.75rem 0 0; }
+  .preguntas li { padding: 0.8rem 0.95rem 0.85rem; border: 1px solid var(--hoja-line); border-radius: 12px; background: var(--hoja-card); margin-bottom: 0.7rem; }
+  .preguntas .opciones { margin: 0.4rem 0 0; padding-left: 1.1rem; font-size: 0.9rem; }
+  .preguntas .opciones li { border: 0; padding: 0.1rem 0; margin: 0; background: none; }
+  .recomiendo { margin-top: 0.55rem; padding: 0.55rem 0.7rem; border-radius: 10px; background: #ecfdf5; color: #064e3b; font-size: 0.9rem; max-width: none; }
+
+  footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--hoja-line); color: var(--hoja-text-2); font-size: 0.8rem; }
+  footer p { max-width: 54rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Hoja de muestras de los botones — FEAT-025, tajada 1</h1>
+  <p class="lede">
+    Medición del 28 de septiembre de 2026 sobre el árbol. Aquí no se decide
+    nada: se enseña el botón <code>primary</code> y el <code>danger</code> de
+    hoy frente a las propuestas, en claro y en oscuro, en reposo y en hover, a
+    los tres tamaños reales (<code>sm</code> 14&nbsp;px, <code>md</code>
+    16&nbsp;px y <code>lg</code> 17&nbsp;px, peso 600), sobre el vidrio de Aura.
+    Debajo de cada muestra, su contraste medido.
+  </p>
+
+  <h2>Cómo se midió</h2>
+  <p>
+    En Chrome 154 sin cabeza, con perfil de color sRGB y a doble densidad, sobre
+    esta misma hoja. Por cada muestra se hacen dos capturas: una con la etiqueta
+    oculta (queda el fondo real del botón ya compuesto sobre el vidrio y la
+    aurora, con el <code>filter</code> del hover aplicado) y otra con un bloque
+    del color de la etiqueta en su sitio (queda el color real de la letra,
+    también con el filtro). El contraste es la razón de WCAG&nbsp;2.x entre el
+    color de la letra y <strong>el píxel más desfavorable de todo el fondo del
+    botón</strong>: toda la píldora, dejando fuera 3&nbsp;px de borde (el borde
+    transparente de 1&nbsp;px, el brillo de 1&nbsp;px de arriba y el suavizado). Si bajo la propia etiqueta la
+    cifra es distinta, se da también. En los hermanos de hábitos, el mismo
+    método sobre el círculo.
+  </p>
+  <p>
+    <strong>Umbral:</strong> 4,5:1 para toda etiqueta de botón (ninguna llega a
+    «texto grande»: haría falta 18,66&nbsp;px en negrita). 3:1 para los glifos
+    de los hermanos, que son no-texto. <span class="pasa">✓</span> pasa,
+    <span class="no-pasa">✗</span> no pasa.
+  </p>
+
+  <h2>Resumen: el peor de los tres tamaños</h2>
+  <div class="panel tabla-scroll">
+    <table class="resumen">
+      <thead>
+        <tr><th>Botón</th><th>Opción</th><th>Claro · reposo</th><th>Claro · hover</th><th>Oscuro · reposo</th><th>Oscuro · hover</th></tr>
+      </thead>
+      <tbody><tr><td><code>primary</code></td><td>Hoy</td><td class="num no-pasa">2,59</td><td class="num no-pasa">2,59</td><td class="num no-pasa">2,59</td><td class="num no-pasa">2,59</td></tr><tr><td><code>primary</code></td><td>D-A (a)</td><td class="num pasa">5,56</td><td class="num pasa">5,56</td><td class="num pasa">5,56</td><td class="num pasa">5,56</td></tr><tr><td><code>primary</code></td><td>D-A (b)</td><td class="num pasa">4,85</td><td class="num pasa">4,85</td><td class="num pasa">4,85</td><td class="num pasa">4,85</td></tr><tr><td><code>primary</code></td><td>D-A (c)</td><td class="num pasa">5,56</td><td class="num pasa">5,56</td><td class="num pasa">6,11</td><td class="num pasa">6,11</td></tr><tr><td><code>primary</code></td><td>D-A (d)</td><td class="num no-pasa">2,59</td><td class="num no-pasa">2,59</td><td class="num pasa">6,11</td><td class="num pasa">6,11</td></tr><tr><td><code>danger</code></td><td>Hoy</td><td class="num pasa">6,46</td><td class="num pasa">5,73</td><td class="num no-pasa">1,70</td><td class="num no-pasa">1,54</td></tr><tr><td><code>danger</code></td><td>D-B (a)</td><td class="num pasa">6,46</td><td class="num pasa">5,73</td><td class="num pasa">6,54</td><td class="num pasa">5,82</td></tr><tr><td><code>danger</code></td><td>D-B (b)</td><td class="num pasa">6,46</td><td class="num pasa">5,73</td><td class="num pasa">7,72</td><td class="num pasa">8,02</td></tr><tr><td><code>danger</code></td><td>D-B (c)</td><td class="num pasa">6,46</td><td class="num pasa">5,73</td><td class="num pasa">6,75</td><td class="num pasa">7,37</td></tr><tr><td><code>danger</code></td><td>claro a juego (b)</td><td class="num pasa">13,26</td><td class="num pasa">14,50</td><td class="num">·</td><td class="num">·</td></tr><tr><td><code>danger</code></td><td>claro a juego (c)</td><td class="num pasa">5,05</td><td class="num pasa">4,61</td><td class="num">·</td><td class="num">·</td></tr></tbody>
+    </table>
+  </div>
+
+  <h2>D-A · El verde del botón principal</h2>
+  <p class="lede">
+    Es el botón que guarda, empieza o confirma en casi todas las pantallas de
+    Vida y de hábitos (y el <code>Button</code> sin <code>variant</code>). Hoy
+    lleva el mismo degradado en los dos temas.
+  </p>
+  <div class="fichas"><section class="ficha" id="p-hoy"><h3>Hoy <span class="etiqueta">hoy</span></h3><p class="nota">Blanco sobre <code>linear-gradient(135deg, #10b981, #059669)</code>. El mismo en los dos temas; el hover solo sube 2&nbsp;px y aumenta el brillo de la sombra.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-claro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra no-pasa"><span class="num">2,62:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,71</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-claro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-claro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-claro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra no-pasa"><span class="num">2,62:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,71</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-claro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-claro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-oscuro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra no-pasa"><span class="num">2,62:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,71</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-oscuro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-oscuro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-oscuro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra no-pasa"><span class="num">2,62:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,71</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-oscuro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-hoy-oscuro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="p-a"><h3>D-A (a) · degradado más oscuro, letra blanca </h3><p class="nota"><code>#047857 → #065f46</code> con <code>#fff</code>. Igual en claro y en oscuro. Se pierde el tono menta; el botón se ve más sobrio.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina " style="--aura-cta-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-hover-bg: linear-gradient(135deg, #047857, #065f46)"><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-claro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,78</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-claro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-claro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">5,56:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-claro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,78</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-claro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-claro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">5,56:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina " style="--aura-cta-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-hover-bg: linear-gradient(135deg, #047857, #065f46)"><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-oscuro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,78</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-oscuro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-oscuro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">5,56:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-oscuro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,78</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-oscuro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-a-oscuro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">5,56:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="p-b"><h3>D-A (b) · el mismo menta, letra oscura </h3><p class="nota">El degradado de hoy con <code>#0f172a</code> (el <code>--color-text</code> de claro). Se queda el color de marca; cambia el carácter del botón.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--hoja-tinta: #0f172a"><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-claro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">4,91:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,09</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-claro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-claro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-claro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">4,91:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,09</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-claro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-claro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--hoja-tinta: #0f172a"><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-oscuro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">4,91:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,09</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-oscuro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-oscuro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-oscuro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">4,91:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,09</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-oscuro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-b-oscuro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">4,85:1</span><span class="donde">peor punto: a la derecha</span><span class="donde">bajo la etiqueta 5,03</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="p-c"><h3>D-A (c) · distinto por tema </h3><p class="nota">Claro como (a). Oscuro: <code>#4edea3 → #10b981</code> (el <code>--color-primary</code> de oscuro hacia el menta de hoy) con <code>#022c22</code>. De noche el botón brilla. Dos aspectos que mantener.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina " style="--aura-cta-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-hover-bg: linear-gradient(135deg, #047857, #065f46)"><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-claro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,78</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-claro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-claro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">5,56:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-claro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,78</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-claro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">5,63:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-claro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">5,56:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 5,70</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--aura-cta-bg: linear-gradient(135deg, #4edea3, #10b981); --button-primary-bg: linear-gradient(135deg, #4edea3, #10b981); --button-primary-hover-bg: linear-gradient(135deg, #4edea3, #10b981); --hoja-tinta: #022c22"><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-oscuro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">6,24:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,45</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-oscuro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-oscuro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-oscuro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">6,18:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,38</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-oscuro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-c-oscuro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="p-d"><h3>D-A (d) · solo oscuro </h3><p class="nota">Oscuro como (c); claro se queda exactamente como hoy, con sus cifras de hoy.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-claro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra no-pasa"><span class="num">2,65:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,71</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-claro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-claro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-claro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra no-pasa"><span class="num">2,65:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,71</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-claro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-claro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra no-pasa"><span class="num">2,59:1</span><span class="donde">peor punto: arriba a la izquierda</span><span class="donde">bajo la etiqueta 2,67</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--aura-cta-bg: linear-gradient(135deg, #4edea3, #10b981); --button-primary-bg: linear-gradient(135deg, #4edea3, #10b981); --button-primary-hover-bg: linear-gradient(135deg, #4edea3, #10b981); --hoja-tinta: #022c22"><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-oscuro-reposo-sm" class="Button-button Button-primary Button-sm"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">6,18:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,38</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-oscuro-reposo-md" class="Button-button Button-primary Button-md"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-oscuro-reposo-lg" class="Button-button Button-primary Button-lg"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-oscuro-hover-sm" class="Button-button Button-primary Button-sm forzar-hover"><span class="Button-label">Guardar</span></button><figcaption class="cifra pasa"><span class="num">6,18:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,38</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-oscuro-hover-md" class="Button-button Button-primary Button-md forzar-hover"><span class="Button-label">Empezar el día</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="p-d-oscuro-hover-lg" class="Button-button Button-primary Button-lg forzar-hover"><span class="Button-label">Guardar cambios</span></button><figcaption class="cifra pasa"><span class="num">6,11:1</span><span class="donde">peor punto: a la derecha</span><span class="donde">bajo la etiqueta 6,31</span></figcaption></figure></div></div></div></div></div></section></div>
+
+  <h2>D-B · El rojo de la confirmación en oscuro</h2>
+  <p class="lede">
+    El botón de aceptar de las nueve confirmaciones rojas de hábitos y el botón
+    rojo de la ficha de un hábito archivado. En claro ya pasa; el problema es el
+    oscuro. Debajo, dos variantes opcionales de claro por si quieres que los dos
+    temas se parezcan.
+  </p>
+  <div class="fichas"><section class="ficha" id="d-hoy"><h3>Hoy <span class="etiqueta">hoy</span></h3><p class="nota">Claro: blanco sobre <code>#ba1a1a</code>. Oscuro: blanco sobre <code>#ffb4ab</code>. El hover es <code>filter: brightness(1.08)</code>: aclara, y en oscuro eso empeora.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-claro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-claro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-claro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-claro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-claro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-claro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-oscuro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra no-pasa"><span class="num">1,70:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-oscuro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra no-pasa"><span class="num">1,70:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-oscuro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra no-pasa"><span class="num">1,70:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-oscuro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra no-pasa"><span class="num">1,54:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-oscuro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra no-pasa"><span class="num">1,54:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-hoy-oscuro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra no-pasa"><span class="num">1,54:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="d-a"><h3>D-B (a) · rojo profundo, letra blanca </h3><p class="nota">Oscuro: blanco sobre <code>#b3261e</code>. Claro no cambia. Los dos temas quedan parecidos.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-claro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-claro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-claro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-claro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-claro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-claro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina " style="--color-danger: #b3261e"><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-oscuro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">6,54:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-oscuro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">6,54:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-oscuro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">6,54:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-oscuro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">5,82:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-oscuro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">5,82:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-a-oscuro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">5,82:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="d-b"><h3>D-B (b) · el mismo rosado, letra granate </h3><p class="nota">Oscuro: <code>#690005</code> sobre el <code>#ffb4ab</code> de hoy. Claro no cambia.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-claro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-claro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-claro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-claro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-claro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-claro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--hoja-tinta: #690005"><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-oscuro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">7,72:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-oscuro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">7,72:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-oscuro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">7,72:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-oscuro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">8,02:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-oscuro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">8,02:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-b-oscuro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">8,02:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="d-c"><h3>D-B (c) · tonal </h3><p class="nota">Oscuro: fondo <code>#ffb4ab</code> al 16&nbsp;% sobre el vidrio, borde al 32&nbsp;%, letra <code>#ffb4ab</code> (como el <code>IconButton</code> <code>danger</code> en reposo). Claro no cambia.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-claro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-claro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-claro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">6,46:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-claro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-claro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-claro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">5,73:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-fondo hoja-tinta" style="--hoja-fondo: color-mix(in srgb, #ffb4ab 16%, transparent); --hoja-borde: color-mix(in srgb, #ffb4ab 32%, transparent); --hoja-tinta: #ffb4ab"><p class="rotulo">Vidrio oscuro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-oscuro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">6,75:1</span><span class="donde">peor punto: arriba a la izquierda</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-oscuro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">7,04:1</span><span class="donde">peor punto: arriba a la derecha</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-oscuro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">7,06:1</span><span class="donde">peor punto: arriba a la izquierda</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-oscuro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">7,59:1</span><span class="donde">peor punto: a la derecha</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-oscuro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">7,37:1</span><span class="donde">peor punto: abajo al centro</span><span class="donde">bajo la etiqueta 7,49</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-c-oscuro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">7,38:1</span><span class="donde">peor punto: abajo a la izquierda</span><span class="donde">bajo la etiqueta 7,49</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="d-bj"><h3>Si eliges (b) y quieres claro a juego <span class="etiqueta opcional">opcional</span></h3><p class="nota">Fondo <code>#ffdad6</code>, letra <code>#410002</code>: el rosado pálido de claro, con letra oscura.</p><div class="vidrios uno"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-fondo hoja-tinta" style="--hoja-fondo: #ffdad6; --hoja-tinta: #410002"><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-bj-claro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">13,26:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-bj-claro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">13,26:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-bj-claro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">13,26:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-bj-claro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">14,50:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-bj-claro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">14,50:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-bj-claro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">14,50:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="d-cj"><h3>Si eliges (c) y quieres claro a juego <span class="etiqueta opcional">opcional</span></h3><p class="nota">Fondo <code>#ba1a1a</code> al 12&nbsp;%, borde al 28&nbsp;%, letra <code>#ba1a1a</code>.</p><div class="vidrios uno"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-fondo hoja-tinta" style="--hoja-fondo: color-mix(in srgb, #ba1a1a 12%, transparent); --hoja-borde: color-mix(in srgb, #ba1a1a 28%, transparent); --hoja-tinta: #ba1a1a"><p class="rotulo">Vidrio claro · Aura</p><p class="sub">Reposo</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-cj-claro-reposo-sm" class="Button-button Button-danger Button-sm"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">5,05:1</span><span class="donde">peor punto: arriba a la izquierda</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-cj-claro-reposo-md" class="Button-button Button-danger Button-md"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">5,16:1</span><span class="donde">peor punto: arriba a la derecha</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-cj-claro-reposo-lg" class="Button-button Button-danger Button-lg"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">5,16:1</span><span class="donde">peor punto: arriba a la izquierda</span></figcaption></figure></div><p class="sub">Hover</p><div class="fila-botones"><figure class="muestra"><button type="button" tabindex="-1" data-m="d-cj-claro-hover-sm" class="Button-button Button-danger Button-sm forzar-hover"><span class="Button-label">Archivar</span></button><figcaption class="cifra pasa"><span class="num">4,63:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-cj-claro-hover-md" class="Button-button Button-danger Button-md forzar-hover"><span class="Button-label">Archivar hábito</span></button><figcaption class="cifra pasa"><span class="num">4,62:1</span><span class="donde">fondo uniforme</span></figcaption></figure><figure class="muestra"><button type="button" tabindex="-1" data-m="d-cj-claro-hover-lg" class="Button-button Button-danger Button-lg forzar-hover"><span class="Button-label">Sí, archivarlo</span></button><figcaption class="cifra pasa"><span class="num">4,61:1</span><span class="donde">fondo uniforme</span></figcaption></figure></div></div></div></div></div></section></div>
+
+  <h2>D-C · El botón «hecho» y el chip de día cumplido</h2>
+  <p class="lede">
+    Los dos pintan un glifo (la palomita) sobre el mismo degradado que el botón
+    principal, así que su umbral es 3:1. El chip de día cumplido enseña la
+    palomita, no el número; el número solo sale en los días sin marcar. Al pasar
+    el ratón, el botón «hecho» solo crece un 5&nbsp;%: el color no cambia, por
+    eso aquí va solo el reposo.
+  </p>
+  <div class="panel tabla-scroll">
+    <table class="resumen">
+      <thead>
+        <tr><th>Opción</th><th>Claro · «hecho»</th><th>Claro · chip</th><th>Oscuro · «hecho»</th><th>Oscuro · chip</th></tr>
+      </thead>
+      <tbody><tr><td>No siguen (y también: hoy)</td><td class="num no-pasa">2,73</td><td class="num no-pasa">2,76</td><td class="num no-pasa">2,73</td><td class="num no-pasa">2,76</td></tr><tr><td>Siguen a D-A (a)</td><td class="num pasa">5,86</td><td class="num pasa">5,86</td><td class="num pasa">5,86</td><td class="num pasa">5,86</td></tr><tr><td>Siguen a D-A (b)</td><td class="num pasa">5,09</td><td class="num pasa">5,15</td><td class="num pasa">5,09</td><td class="num pasa">5,15</td></tr><tr><td>Siguen a D-A (c)</td><td class="num pasa">5,86</td><td class="num pasa">5,86</td><td class="num pasa">6,38</td><td class="num pasa">6,45</td></tr></tbody>
+    </table>
+  </div>
+  <div class="fichas"><section class="ficha" id="c-no"><h3>No siguen (y también: hoy) <span class="etiqueta">hoy</span></h3><p class="nota">Se quedan como están, elijas lo que elijas en D-A.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio claro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-no-claro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra no-pasa"><span class="num">2,73:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 2,86</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-no-claro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra no-pasa"><span class="num">2,76:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 2,86</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina "><p class="rotulo">Vidrio oscuro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-no-oscuro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra no-pasa"><span class="num">2,73:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 2,86</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-no-oscuro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra no-pasa"><span class="num">2,76:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 2,86</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="c-a"><h3>Siguen a D-A (a) </h3><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina " style="--aura-cta-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-hover-bg: linear-gradient(135deg, #047857, #065f46)"><p class="rotulo">Vidrio claro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-a-claro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra pasa"><span class="num">5,86:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 6,09</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-a-claro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra pasa"><span class="num">5,86:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 6,09</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina " style="--aura-cta-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-hover-bg: linear-gradient(135deg, #047857, #065f46)"><p class="rotulo">Vidrio oscuro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-a-oscuro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra pasa"><span class="num">5,86:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 6,09</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-a-oscuro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra pasa"><span class="num">5,86:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 6,09</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="c-b"><h3>Siguen a D-A (b) </h3><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--hoja-tinta: #0f172a"><p class="rotulo">Vidrio claro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-b-claro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra pasa"><span class="num">5,09:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la palomita 5,39</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-b-claro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra pasa"><span class="num">5,15:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la palomita 5,33</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--hoja-tinta: #0f172a"><p class="rotulo">Vidrio oscuro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-b-oscuro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra pasa"><span class="num">5,09:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la palomita 5,39</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-b-oscuro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra pasa"><span class="num">5,15:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la palomita 5,33</span></figcaption></figure></div></div></div></div></div></section><section class="ficha" id="c-c"><h3>Siguen a D-A (c) </h3><p class="nota">Con (d), claro queda como «no siguen» y oscuro como aquí.</p><div class="vidrios"><div data-theme="light" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina " style="--aura-cta-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-bg: linear-gradient(135deg, #047857, #065f46); --button-primary-hover-bg: linear-gradient(135deg, #047857, #065f46)"><p class="rotulo">Vidrio claro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-c-claro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra pasa"><span class="num">5,86:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 6,09</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-c-claro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra pasa"><span class="num">5,86:1</span><span class="donde">peor punto: arriba al centro</span><span class="donde">bajo la palomita 6,09</span></figcaption></figure></div></div></div></div><div data-theme="dark" class="tema"><div data-ds="aura" class="vidrio"><div class="lamina hoja-tinta" style="--aura-cta-bg: linear-gradient(135deg, #4edea3, #10b981); --button-primary-bg: linear-gradient(135deg, #4edea3, #10b981); --button-primary-hover-bg: linear-gradient(135deg, #4edea3, #10b981); --hoja-tinta: #022c22"><p class="rotulo">Vidrio oscuro · Aura</p><div class="hermanos"><figure class="muestra"><p class="sub">Botón «hecho» del día</p><button type="button" tabindex="-1" data-m="c-c-oscuro-toggle" class="HabitDayRow-toggle HabitDayRow-toggleDone" aria-pressed="true" aria-label="Hecho"><span class="AppIcon-root AppIcon-sm"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></button><figcaption class="cifra pasa"><span class="num">6,38:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la palomita 6,81</span></figcaption></figure><figure class="muestra"><p class="sub">Chip de día cumplido</p><div class="semana"><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber" data-m="c-c-oscuro-chip"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusEmpty"><span class="HabitDayMarker-dayNumber">24</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-statusAccomplished"><span class="HabitDayMarker-dayNumber"><span class="AppIcon-root AppIcon-size2xs"><svg viewBox="0 0 448 512" aria-hidden="true" style="display:block;width:100%;height:100%;fill:currentColor"><path d="M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z"/></svg></span></span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-today"><span class="HabitDayMarker-dayNumber">27</span></span><span class="HabitDayMarker-marker HabitDayMarker-chip HabitDayMarker-future"><span class="HabitDayMarker-dayNumber">28</span></span></div><figcaption class="cifra pasa"><span class="num">6,45:1</span><span class="donde">peor punto: abajo a la derecha</span><span class="donde">bajo la palomita 6,74</span></figcaption></figure></div></div></div></div></div></section></div>
+
+  <h2>Las decisiones que hacen falta</h2>
+  <p class="lede">
+    Tal como las formula el expediente, con la cifra medida de cada opción al
+    lado (el peor de los tres tamaños, reposo y hover). Ninguna bloquea a las
+    otras salvo D-C, que usa el verde de D-A.
+  </p>
+  <ol class="preguntas">
+    <li>
+      <strong>D-A — Qué verde para el botón principal, y en qué tema.</strong>
+      El degradado es el mismo en claro y en oscuro, y en los dos queda por
+      debajo de AA (2,59 medido).
+      <ul class="opciones">
+        <li><em>(a) Degradado más oscuro, texto blanco</em> (<code>#047857 → #065f46</code>): 5,56 en los dos temas. Más sobrio, menos menta; el mismo en los dos temas.</li>
+        <li><em>(b) Mismo degradado menta, texto oscuro</em> (<code>#0f172a</code>): 4,85 en los dos temas. Se conserva el color de marca; el botón pasa a tener letra oscura, que es un cambio de carácter. Es la que menos margen deja.</li>
+        <li><em>(c) Distinto por tema</em>: claro como (a), 5,56; oscuro <code>#4edea3 → #10b981</code> con <code>#022c22</code>, 6,11. Brilla sobre el fondo nocturno. Dos aspectos que mantener.</li>
+        <li><em>(d) Solo oscuro</em>: oscuro como (c), 6,11; claro sigue en 2,59. Es literalmente lo pedido, pero el claro seguiría sin llegar.</li>
+      </ul>
+      <p class="recomiendo"><strong>Recomiendo (a).</strong> Es un solo valor, igual en los dos temas, con el mayor margen en claro (5,56 frente a 4,85 de la b), y la letra sigue siendo blanca, como en el rojo. Si al verlo de noche echas de menos el brillo del menta, (c) es el paso siguiente y cuesta un valor más en el tema oscuro, no otra decisión.</p>
+    </li>
+    <li>
+      <strong>D-B — Qué rojo para el botón de confirmación en oscuro.</strong>
+      Hoy 1,70 en reposo y 1,54 en hover (el hover aclara y empeora).
+      <ul class="opciones">
+        <li><em>(a) Rojo profundo con texto blanco</em> (<code>#b3261e</code>): 6,54 en reposo, 5,82 en hover. Se parece al rojo de claro; en la noche resalta más.</li>
+        <li><em>(b) Mismo rosado <code>#ffb4ab</code>, texto granate</em> (<code>#690005</code>): 7,72 en reposo, 8,02 en hover. Conserva el tono suave actual; letra oscura.</li>
+        <li><em>(c) Tonal</em>, como el <code>IconButton</code> <code>danger</code>: fondo al 16&nbsp;% y letra <code>#ffb4ab</code>, 6,75 en reposo y 7,37 en hover. Muy discreto; una confirmación irreversible pasa a destacar menos que el botón principal.</li>
+      </ul>
+      <p class="recomiendo"><strong>Recomiendo (a).</strong> Es el mismo botón en los dos temas, deja la letra blanca como en el verde de D-A (a) y es el que más se nota como «esto no tiene vuelta atrás», que es para lo que existe. La (c) lo apaga justo donde tiene que destacar. En claro no cambia nada: sigue en 6,46 y 5,73.</p>
+    </li>
+    <li>
+      <strong>D-C — ¿Los hermanos de hábitos siguen al botón?</strong> El botón
+      «hecho» del día y el chip de día cumplido pintan la palomita blanca sobre
+      el mismo degradado: 2,73 medido en el peor de los dos, por debajo incluso del 3:1 que
+      se pide a un glifo.
+      <ul class="opciones">
+        <li><em>Sí:</em> un solo verde en toda la app, y el día cumplido se lee (con (a), 5,86); cambia también el aspecto del calendario de hábitos, que nadie ha pedido tocar.</li>
+        <li><em>No:</em> los hábitos se quedan como están, con la palomita blanca que no llega a AA, y el verde del botón y el del día cumplido dejan de ser el mismo.</li>
+      </ul>
+      <p class="recomiendo"><strong>Recomiendo que sí.</strong> Hoy ni siquiera llegan al umbral más bajo, y el día cumplido es lo que más se mira en hábitos. Con (a) sale gratis: los dos leen ya el mismo token que el botón. Lo que cambia en el calendario es que el verde se oscurece; la forma, la palomita y el anillo de hoy se quedan igual.</p>
+    </li>
+    <li>
+      <strong>D-D — El anillo de foco</strong> (≈&nbsp;2,05 en claro,
+      ≈&nbsp;1,56 en oscuro), fuera de alcance aquí. <em>¿Expediente propio
+      ahora, o se deja anotado?</em> Afecta a todos los campos y controles, no
+      solo a botones.
+      <p class="recomiendo"><strong>Recomiendo expediente propio, abierto ahora y construido después de FEAT-025.</strong> Quien navega con teclado hoy casi no ve dónde está, y es un solo token (<code>--color-focus-ring</code>); pero toca cada campo de la app y merece su propia hoja, no colarse en esta.</p>
+    </li>
+  </ol>
+
+
+  <footer>
+    <p>
+      El vidrio no es una imitación a ojo: los tokens de esta hoja son
+      <code>src/app/styles/_theme-variables.scss</code> compilado entero, y cada
+      muestra vive dentro de un <code>[data-ds='aura']</code> (y de un
+      <code>[data-theme='dark']</code> en las de oscuro), igual que en la app.
+      Los orbes del lienzo aurora van como tres degradados radiales con sus
+      colores reales; el vidrio lleva <code>--color-glass</code>,
+      <code>--color-glass-border</code>, <code>--shadow-glass</code> y el
+      desenfoque de <code>--blur-md</code>. La palomita es la de Font Awesome que
+      pinta <code>AppIcon name="check"</code>.
+    </p>
+    <p>
+      Lo único que la hoja añade al CSS compilado son dos reglas para pintar las
+      propuestas: el color de la letra (hoy <code>#fff</code> fijo en
+      <code>Button.module.scss</code>) y el fondo tonal de D-B (c). Cómo se
+      llevaría cada propuesta a la app lo decide la construcción de las tajadas
+      2, 3 y 4, no esta hoja. Esta hoja no lleva ni un script: es HTML y CSS, y
+      se abre igual desde el disco que servida por Vite.
+    </p>
+  </footer>
+</div>
+</body>
+</html>

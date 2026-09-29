@@ -33,6 +33,63 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
+| FEAT-025 | in-review | 1/4 (la hoja de muestras, construida; 2-4 esperan D-A, D-B, D-C del usuario) | shared/ui, app/styles | Los botones se leen — el verde y el rojo de Aura con texto que se distingue, sobre todo en oscuro | 2026-09-28 |
+| FEAT-026 | building | 2/2 (1 aceptada; D-A y D-B construidas con la recomendada, pendientes de confirmar) | features/habits | Las categorías de hábitos eligen color en la paleta, como todo lo demás | 2026-09-28 |
+
+**FEAT-026 `building`, tajada 1 de 2 aceptada** (2026-09-28, revisor). La
+pantalla Categorías crea y edita el color con la paleta compartida; crear nace
+con un color del núcleo que no repite el de otra categoría, y editar respeta el
+que hay, sea de fuera de la paleta («Color actual») o ninguno (`null` sigue
+`null`, ya no se inventa `#6366f1`). «Nueva categoría» espera a que llegue la
+lista para no sortear sobre vacío. Queda en prueba manual el color de la
+tarjeta y del filtro de Mis hábitos tras guardar. Hallazgos que no devuelven:
+crear justo después de crear puede repetir color (la lista aún no se ha
+refrescado), falta un test del caso de error, y «Cancelar»/«Eliminar» siguen en
+el formulario y las tarjetas. D-A y D-B, construidas con la recomendada,
+pendientes del usuario. Siguiente: tajada 2 (el paso «+ nueva categoría» del
+asistente).
+
+**FEAT-025 `in-review`, tajada 1 de 4 construida** (2026-09-28, constructor).
+Hoja de muestras en `docs/features/assets/FEAT-025-hoja-de-muestras.html`,
+medida en Chrome headless con el CSS real compilado: el verde de hoy da
+**2,59:1** en los dos temas (no 2,22 como decía la sección 1), el rojo 1,70 en
+oscuro y 1,54 en hover, y el botón «hecho» y el chip de hábitos 2,73/2,76.
+Recomendación del constructor: D-A (a) verde `#047857→#065f46` con letra
+blanca, 5,56; D-B (a) rojo `#b3261e` en oscuro, 6,54; D-C sí; D-D expediente
+propio. Las tajadas 2-4 esperan que el usuario elija sobre la hoja.
+
+**FEAT-026 `specified`** (2026-09-28, analista). Cierra la deuda de
+`docs/remodel/BACKLOG.md:29`: las categorías de hábitos dejan la rueda del
+sistema y el campo de hex por el `ColorPicker` de 22 muestras. Leído en el
+código: el paso «+ nueva categoría» del asistente enseña índigo y guarda sin
+color; crear desde la pantalla guarda `#6366f1`, que no está en la paleta; y
+editar una categoría sin color le escribe índigo. Dos tajadas: (1) pantalla
+Categorías, crear con color sorteado que no repite y editar sin cambiar el
+color que hay (también el de fuera de la paleta, que sale como «Color
+actual»); (2) el paso del asistente, a prueba de montaje en frío. Sin
+arquitecto (ColorPicker + sorteo ya resueltos en hábitos y en Vida; modelo:
+`CreateVidaCategoryStep`). Sin render (el control ya está aprobado; el ancho
+se mide a 375 y 760). Decisiones del usuario que no bloquean: D-A (sorteo o
+sin color; recomendado sorteo) y D-B (se pierde la opción de dejar una
+categoría sin color; recomendado aceptarlo). Siguiente: constructor, tajada 1.
+
+**FEAT-025 `specified`** (2026-09-28, analista). Deuda del sistema de diseño
+que arrastraban FEAT-005 y FEAT-006, ahora con expediente propio. Cifras
+calculadas desde los tokens (la tajada 1 las remide en navegador): el `Button`
+`primary` es blanco sobre el degradado `#10b981 → #059669`, **2,22 a 3,77:1 en
+los dos temas** (el degradado no cambia con el tema); el `danger` en oscuro es
+blanco sobre `#ffb4ab`, **1,70:1**, y su hover **empeora** a 1,52. El `danger` en
+claro ya pasa (6,46). Ninguna etiqueta es «texto grande» (14-17 px a 600):
+umbral **4,5:1** para todas. **Tajada 1 = hoja de muestras** en
+`docs/features/assets/FEAT-025-hoja-de-muestras.html` (actual frente a
+propuestas, claro y oscuro, sobre el vidrio real); **nada de `src/` cambia hasta
+que el usuario elija**. Decisiones del usuario, todas mirando la hoja: **D-A**
+qué verde y en qué tema, **D-B** qué rojo en oscuro, **D-C** si el botón «hecho»
+y el chip de día cumplido de hábitos (mismo degradado, misma cifra) siguen al
+botón, **D-D** si el anillo de foco (≈ 2,05 claro, ≈ 1,56 oscuro, de todos los
+controles) merece expediente propio. Sin arquitecto: cuelga de
+`shared/ui/Button` y de los enganches `--button-primary-*` de
+`_theme-variables.scss`.
 
 **FEAT-017 `delivered`, tajada 4 de 4 aceptada** (2026-09-27, revisor). **La
 paleta pasa a 22 colores y con esto la feature queda entregada entera.** Los

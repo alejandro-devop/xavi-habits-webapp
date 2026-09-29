@@ -1,7 +1,7 @@
 ---
 id: FEAT-025
 title: Los botones se leen — el verde y el rojo de Aura con texto que se distingue, sobre todo en oscuro
-status: in-review
+status: building    # tajada 1 aceptada; 2-4 esperan D-A, D-B y D-C
 architect: no    # cambia valores de tokens y reglas de un componente que ya existe (shared/ui/Button); no hay concepto nuevo
 area: shared/ui, app/styles
 requested: 2026-09-28
@@ -91,6 +91,20 @@ texto cumplen también ellos.
 `secondary` y `ghost` sobre vidrio: cifras aproximadas sobre el fondo base
 (`#fafcfb` / `#0b1220` con la superficie encima); los orbes de la aurora mueven
 el fondo, y por eso la hoja mide sobre el vidrio real.
+
+> **Nota del revisor, 2026-09-28 (tajada 1).** Tres cifras de esta sección
+> están mal calculadas; se deja el texto del analista como está y se corrige
+> aquí. Ninguna cambia un criterio ni una decisión.
+> - **2,22 → 2,54.** Blanco sobre `#10b981` (el extremo claro del degradado)
+>   da **2,54** con la fórmula de WCAG, no 2,22. Afecta al resumen de arriba, a
+>   la fila `primary` de esta tabla, a los hermanos («2,22–3,77») y a D-A (d) y
+>   D-C. Medido en la píldora, que no llega a la esquina del degradado, da
+>   **2,59**; en los círculos de los hermanos, **2,73** («hecho») y **2,76**
+>   (chip), por debajo incluso del 3:1 de un glifo.
+> - **8,04 → 7,04** en D-A (b): `#0f172a` sobre `#10b981`.
+> - **1,52 → 1,54** en `danger` hover oscuro: blanco sobre el propio `#ffc2b9`
+>   que da la tabla.
+> - Redondeos sin consecuencia: D-B (a) 6,53 → 6,54; D-B (b) «≈ 7,6» → 7,72.
 
 ### Hermanos, uno por uno
 
@@ -186,7 +200,7 @@ desfavorable** del fondo del botón si es un degradado, y en los **dos** temas.
 
 | # | Qué hace | Estado |
 |---|---|---|
-| 1 | **La hoja de muestras.** Un HTML suelto en `docs/features/assets/` con `primary` y `danger` actuales frente a las propuestas, en claro y oscuro, sobre el vidrio real, con el contraste medido debajo de cada una, y los hermanos de D-C. Sirve para que el usuario elija; no toca la app. Cierra 640-643. | in-review |
+| 1 | **La hoja de muestras.** Un HTML suelto en `docs/features/assets/` con `primary` y `danger` actuales frente a las propuestas, en claro y oscuro, sobre el vidrio real, con el contraste medido debajo de cada una, y los hermanos de D-C. Sirve para que el usuario elija; no toca la app. Cierra 640-643. | accepted |
 | 2 | **El rojo se lee en oscuro.** Se aplica la opción de D-B: el botón de aceptar de las confirmaciones de hábitos y el botón rojo de la ficha del hábito archivado se leen de noche. Es la peor cifra (1,70) y la de menos superficie. Cierra 644-646 y la parte `danger` de 648-652, 654. | pending (espera D-B) |
 | 3 | **El verde se lee.** Se aplica la opción de D-A: la acción principal de todas las pantallas de Vida y hábitos se lee, en el tema o temas elegidos. Cierra 647 y la parte `primary` de 648-652, 654. | pending (espera D-A) |
 | 4 | **Los hermanos**, solo si D-C dice que siguen: el botón «hecho» y el chip de día cumplido de hábitos. Si D-C dice que no, esta tajada no existe. Cierra 653. | pending (espera D-C) |
@@ -393,3 +407,153 @@ fila de la tajada 1 y el `status:` de este expediente). `BOARD.md` no lo he
 tocado.
 
 ## 4. Revisión — feature-reviewer
+
+### Tajada 1
+
+**Criterios, uno por uno:**
+
+- **640 — cumple.** La hoja enseña `primary` (hoy + D-A a, b, c, d) y `danger`
+  (hoy + D-B a, b, c, más dos «claro a juego» opcionales), en claro y en
+  oscuro, reposo y hover, a `sm`, `md` **y** `lg` (el criterio pedía `sm` y
+  `md`), cada una dentro de `[data-theme] > [data-ds='aura']` con lámina de
+  vidrio sobre los orbes. Debajo de cada muestra: cifra, punto («peor punto:
+  arriba a la izquierda», «fondo uniforme»…) y la cifra bajo la etiqueta si
+  difiere. 136 muestras con `data-m`.
+  - **El CSS es el real.** Compilé yo `Button.module.scss`,
+    `_theme-variables.scss`, `HabitDayMarker.module.scss` y
+    `HabitDayRow.module.scss` con `node_modules/.bin/sass --load-path=src
+    --style=expanded` y comparé contra el primer `<style>` de la hoja,
+    normalizando espacios y comentarios: los tokens de tema están **literales y
+    enteros**; `Button` también, una vez aplicado el prefijo `Button-` y el
+    gemelo `.forzar-hover` de cada `:hover:not(:disabled)`; `HabitDayMarker`
+    entero y las reglas `.toggle*`/`.toggleDone` de `HabitDayRow`, idénticas.
+    Lo que la hoja añade es solo `.hoja-tinta` (color de letra) y
+    `.hoja-fondo` (fondo tonal), declarados como tales, y los valores de cada
+    propuesta van en `style=` sobre el contenedor.
+  - **Las cifras, remedidas con arnés propio.** Chrome headless, perfil sRGB,
+    densidad **1** (el constructor usó 2), dos capturas de la hoja (etiqueta y
+    glifos ocultos / un bloque de 8 px de `currentColor` en la etiqueta) y
+    búsqueda del píxel más desfavorable dentro de la píldora con 3 px de
+    margen y el radio real. Las 136: 123 coinciden a ±0,06; las 13 restantes se
+    separan entre 0,07 y 0,12, siempre en degradados o en el tonal, y ninguna
+    cruza un umbral (4,5 ni 3). Además, fórmula WCAG sobre los colores exactos
+    y sobre la geometría del círculo:
+
+    | Fila | Hoja | Mío (píxel) | Fórmula |
+    |---|---|---|---|
+    | `primary` hoy, los dos temas | 2,59 | 2,59 | extremo 2,54, centro 3,07 |
+    | D-A (a) | 5,56 | 5,56 | extremo 5,48 |
+    | D-A (b) | 4,85 | 4,85 | extremo 4,74 |
+    | D-A (c) claro / oscuro | 5,56 / 6,11 | 5,56 / 6,11 | 5,48 / 5,97 |
+    | `danger` hoy claro | 6,46 / 5,73 | 6,46 / 5,73 | 6,46 / 5,73 |
+    | `danger` hoy oscuro | 1,70 / 1,54 | 1,70 / 1,54 | 1,70 / 1,54 |
+    | D-B (a) | 6,54 / 5,82 | 6,54 / 5,82 | 6,54 / 5,82 |
+    | D-B (b) | 7,72 / 8,02 | 7,72 / 8,02 | 7,72 / 8,02 |
+    | D-B (c) tonal | 6,75 / 7,37 | 6,75 / 7,46 | depende del fondo |
+    | claro a juego (b) / (c) | 13,26-14,50 / 5,05-4,61 | idénticas | 13,26 / 14,50 |
+    | Hermanos hoy («hecho» / chip) | 2,73 / 2,76 | 2,74 / 2,77 | 2,73 / 2,76 (círculo, 3 px) |
+    | Siguen a (a) | 5,86 | 5,78 / 5,85 | 5,86 |
+    | Siguen a (c) oscuro | 6,38 / 6,45 | 6,45 / 6,52 | 6,48 |
+
+    En los degradados la cifra de la píldora queda unas centésimas **por
+    encima** del extremo calculado porque la píldora no llega a la esquina del
+    degradado de 135°: es correcto medir ahí, y es lo que pide el criterio
+    («punto más desfavorable del fondo del botón»). Las diferencias con mi
+    arnés son de rejilla de píxeles: la misma regla da 2,62 en una ficha y
+    2,65 en otra (D-A (d) claro `sm` frente a hoy `sm`, CSS idéntico). La
+    tolerancia que el constructor declara (±0,05 en degradados, ±0,1 en el
+    tonal) es honesta. **No hay ninguna cifra equivocada.**
+  - **El hover aclara también la letra**, comprobado en píxel: con
+    `brightness(1.08)` Chrome multiplica en sRGB, y el granate `#690005` sale
+    `(113, 0, 5)` = `#710005`; la letra tonal `#ffb4ab` sale `#ffc2b9`; el
+    rojo de «claro a juego (c)» `#ba1a1a` sale `#c91c1c`. La hoja lo mide
+    bien porque su bloque de `currentColor` vive dentro del botón filtrado.
+    Por eso el hover **mejora** D-B (b) (7,72 → 8,02) y **empeora** «claro a
+    juego (c)» (5,05 → 4,61, a 0,11 del umbral).
+  - **Matiz, no defecto:** los orbes son tres degradados radiales con los
+    colores reales, no los `div` desenfocados de `AuroraCanvas` (declarado en
+    la sección 3; mismo criterio que FEAT-017). Solo pesa en el tonal D-B (c),
+    que queda a más de 2 puntos del umbral. Y la hoja no carga las fuentes
+    (`Plus Jakarta Sans`/`Inter`): cae a `system-ui`. No mueve ninguna cifra,
+    pero la forma de la letra no es exactamente la de la app.
+- **641 — cumple.** Sección D-C con el botón «hecho» y una semana de chips
+  (cuatro cumplidos), en «no siguen (= hoy)» y siguiendo a (a), (b) y (c), en
+  los dos temas, con tabla y cifra por muestra. Correcto que el umbral sea 3:1:
+  los dos pintan la palomita (`HabitDayMarker.tsx:131`, `AppIcon` con el
+  glifo de `STATUS_GLYPH`), no el número.
+- **642 — cumple.** 0 `<script>`, 0 URL `http(s)`, 0 `url(`, sin `@font-face`.
+  La abrí como `file://` en Chrome headless.
+- **643 — cumple.** `git show --numstat 0a3a549`: solo
+  `docs/features/BOARD.md`, este expediente y la hoja. El último commit que
+  toca `src/shared/ui/Button` o `_theme-variables.scss` es `d9225b2`,
+  anterior.
+
+**La hipótesis de D-C, comprobada.** Cierta tal como la corrige el
+constructor. `--button-primary-bg: var(--aura-cta-bg)` se declara en
+`[data-ds='aura']` (`_theme-variables.scss:223`), y una custom property
+resuelve su `var()` **en el elemento donde se declara** y hereda ya resuelta.
+Lo probé en Chrome: con `--aura-cta-bg` cambiado en un **descendiente** del
+ámbito, el `background-image` del botón sigue siendo `#10b981 → #059669`; con
+`--aura-cta-bg` cambiado en el **propio** elemento `[data-ds='aura']`, pasa a
+`#047857 → #065f46`. Para las tajadas 3 y 4: si D-C dice «sí», basta con
+cambiar `--aura-cta-bg` en `[data-ds='aura']` (y en
+`[data-theme='dark'] [data-ds='aura']` para (c) o (d), que es el mismo
+elemento y gana por especificidad); si dice «no», el cambio va en
+`--button-primary-bg` y `--button-primary-hover-bg`, que hoy son dos
+enganches separados y los dos hacen falta. Y la letra: `color: #fff` está
+escrito a mano en `.primary` y `.danger` (`Button.module.scss:56` y `:88`),
+así que las opciones de letra oscura (D-A b/c/d, D-B b) obligan a tocar el
+componente o a añadirle un enganche; no basta un token.
+
+**Lo que rompió cerca:** nada que pueda romper. Busqué así: el commit no toca
+`src/` (numstat de arriba); `BOARD.md` solo gana 57 líneas y no pierde
+ninguna (`57 0`), así que no pisó filas ajenas; la hoja es un HTML suelto que
+nadie importa. El árbol estaba limpio al empezar (`git status` vacío). El
+grafo no aplica: no hay código nuevo.
+
+**Estados sin construir:** aplican dos.
+- *Móvil*: dentro de un `iframe` de **375 px** exactos (la ventana headless no
+  baja de 500 y daba una cifra falsa), `scrollWidth 375 === clientWidth 375`,
+  ningún elemento sale del ancho fuera de un contenedor con scroll y ninguna
+  muestra recorta su etiqueta. La tabla resumen hace scroll dentro de su
+  panel. Captura mirada: las fichas se apilan y las cifras se leen en los dos
+  vidrios. *Escritorio* (1280): `1280 === 1280`, las dos láminas lado a lado.
+- *Texto largo*: las etiquetas de muestra son cortas («Sí, archivarlo»); el
+  texto tres veces más largo es el criterio 652, de las tajadas 2-3, no de
+  esta.
+- Vacío, cargando, error y permisos no aplican a un HTML estático.
+
+**¿Duplica algo que existía?** No hubo arquitecto. El precedente es
+`docs/features/assets/FEAT-017-hoja-de-muestras.html` y la hoja sigue su
+forma (fichas, panel, tabla, pie, sin scripts); en lo que se aparta —tokens
+compilados en vez de copiados a mano— mejora la fidelidad. No crea nada en
+`src/`.
+
+**Hallazgos que no devuelven la tajada:**
+- La sección 1 tenía tres cifras mal calculadas (2,22; 8,04; 1,52). Añadida
+  una nota fechada debajo de su tabla, sin tocar el texto del analista.
+- «Claro a juego (c)» queda en 4,61 en hover: pasa, pero a 0,11 del umbral y
+  con la tolerancia del método en ±0,1. Si el usuario lo elige, la tajada 2
+  debería remedirlo en la app antes de darlo por bueno.
+- Las decisiones del final siguen la formulación de la sección 1, con la
+  cifra de cada opción, y añaden una recomendación del constructor en cada una
+  (a en D-A, a en D-B, «sí» en D-C, expediente propio en D-D). Van marcadas
+  como recomendación, no como decisión.
+- Vocabulario: sin «cancelar», «eliminar», «borrar», «fallaste» ni
+  «deberías»; las muestras en rojo dicen «Archivar». Todo en español.
+- Mi arnés reescribió dos ficheros del constructor en el scratchpad de la
+  sesión (`button.css`, `theme.css`), con la misma salida de `sass`. Fuera del
+  repositorio; sin efecto.
+
+**Veredicto:** accepted — porque el CSS de la hoja es el real, copiado del
+compilador y no a mano; las 136 cifras aguantan un arnés independiente y la
+fórmula dentro de la tolerancia declarada, sin que ninguna cambie de lado de
+un umbral; y los cuatro criterios de la tajada se cumplen con evidencia.
+
+**Para el usuario:** *(no es la última tajada: la feature sigue abierta; la
+nota de cierre llegará con la última)*. Ya puedes abrir la hoja de muestras y
+elegir: ves el botón verde y el rojo de hoy junto a cada propuesta, en claro y
+en oscuro, parados y con el ratón encima, con la cifra de contraste debajo de
+cada uno. Para probarlo: abre `FEAT-025-hoja-de-muestras.html` de la carpeta
+de expedientes con doble clic en el navegador; mira D-A, D-B y D-C; y responde
+las cuatro preguntas del final.

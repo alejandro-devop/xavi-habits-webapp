@@ -33,8 +33,19 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-022 | delivered | 1/1 | API | Reabrir una sesión cerrada — que el API sepa decir «esto vuelve a estar en marcha» | 2026-09-23 |
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
-| FEAT-025 | in-review | 1/4 (la hoja de muestras, construida; 2-4 esperan D-A, D-B, D-C del usuario) | shared/ui, app/styles | Los botones se leen — el verde y el rojo de Aura con texto que se distingue, sobre todo en oscuro | 2026-09-28 |
+| FEAT-025 | building | 2/4 (1 aceptada; 2-4 esperan que el usuario elija D-A, D-B, D-C sobre la hoja) | shared/ui, app/styles | Los botones se leen — el verde y el rojo de Aura con texto que se distingue, sobre todo en oscuro | 2026-09-28 |
 | FEAT-026 | building | 2/2 (1 aceptada; D-A y D-B construidas con la recomendada, pendientes de confirmar) | features/habits | Las categorías de hábitos eligen color en la paleta, como todo lo demás | 2026-09-28 |
+
+**FEAT-025 `building`, tajada 1 de 4 aceptada** (2026-09-28, revisor). La
+hoja de muestras es fiel al CSS real y sus 136 cifras aguantan un arnés
+independiente (±0,1). Hoy: verde 2,59 en los dos temas, rojo en oscuro 1,70 /
+1,54. Corregidas en nota tres cifras de la sección 1 (2,22→2,54, 8,04→7,04,
+1,52→1,54); ninguna cambia una decisión. Para las tajadas siguientes:
+`--button-primary-bg` resuelve su `var()` en `[data-ds='aura']`, así que si
+D-C dice «sí» basta cambiar `--aura-cta-bg` en ese ámbito (y en su versión
+oscura); si dice «no», hay que cambiar `--button-primary-bg` y su hover. Las
+opciones con letra oscura exigen tocar `Button.module.scss`, que fija
+`color: #fff`. Tajadas 2-4 esperan que el usuario elija D-A, D-B y D-C.
 
 **FEAT-026 `building`, tajada 1 de 2 aceptada** (2026-09-28, revisor). La
 pantalla Categorías crea y edita el color con la paleta compartida; crear nace

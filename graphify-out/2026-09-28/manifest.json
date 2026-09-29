@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitCategoryForm/HabitCategoryForm.tsx": {
-    "mtime": 1789696614.9605408,
-    "ast_hash": "1cb898b3cbcdb9f9c9e881a0d35392c1",
+    "mtime": 1790648240.655388,
+    "ast_hash": "f6fa6e4fa9fb5f9195dff75fe8f74338",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitCategoryForm/index.ts": {
@@ -550,8 +550,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitCategoriesPage.tsx": {
-    "mtime": 1789696614.9655406,
-    "ast_hash": "4bde07e43511333e27ff31025ca0ac38",
+    "mtime": 1790648250.8654137,
+    "ast_hash": "89c3f73c612a2e9ce78fbd817e4fedcc",
     "semantic_hash": ""
   },
   "src/features/habits/pages/HabitDetailPage.tsx": {
@@ -625,8 +625,8 @@
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-category-form.utils.ts": {
-    "mtime": 1789696614.9665406,
-    "ast_hash": "e91a73fd6ec65c4bc068658f70b8769f",
+    "mtime": 1790648229.8153613,
+    "ast_hash": "a522a46ed6b2e00af5f9dd782159c851",
     "semantic_hash": ""
   },
   "src/features/habits/utils/habit-difficulty.utils.ts": {
@@ -2310,13 +2310,13 @@
     "semantic_hash": ""
   },
   "src/features/habits/data/habit-colors.test.ts": {
-    "mtime": 1790487591.8622842,
-    "ast_hash": "3b3bf2356eb2853bd520ed13be1c9cfb",
+    "mtime": 1790648304.34583,
+    "ast_hash": "01595dbcff0a777d8719e6d801fbc1bd",
     "semantic_hash": ""
   },
   "src/features/habits/data/habit-colors.ts": {
-    "mtime": 1790487591.8622842,
-    "ast_hash": "bd65adeca2b1c36c29af50d8ab3c50ec",
+    "mtime": 1790648205.6233013,
+    "ast_hash": "ab5ececdd0034e3d5a492e55e061676e",
     "semantic_hash": ""
   },
   "src/features/habits/components/HabitPanel/ChartPanel.tsx": {
@@ -2480,13 +2480,13 @@
     "semantic_hash": ""
   },
   "docs/features/BOARD.md": {
-    "mtime": 1790487350.314331,
-    "ast_hash": "a0b1030c3f3e1813cb0ef03d12e429ad",
+    "mtime": 1790648104.776053,
+    "ast_hash": "ab1ba13951b421394f187b6f13e68144",
     "semantic_hash": ""
   },
   "docs/features/ENVIRONMENT.md": {
-    "mtime": 1790487402.7903209,
-    "ast_hash": "69d82f67645bf2c06b0e6ab6f4106a2b",
+    "mtime": 1790488865.2150369,
+    "ast_hash": "f7aecbd83388ab9f55f30c2ba43e9671",
     "semantic_hash": ""
   },
   "docs/features/FEAT-001-vida-cimientos.md": {
@@ -3860,8 +3860,8 @@
     "semantic_hash": ""
   },
   "docs/features/FEAT-017-vida-mas-iconos-y-colores.md": {
-    "mtime": 1790487492.5773034,
-    "ast_hash": "a7a0136919e9188eceaa411a0e071008",
+    "mtime": 1790488785.4490523,
+    "ast_hash": "6c2f3ce608ce23351b61572040662946",
     "semantic_hash": ""
   },
   "src/features/vida/components/VidaGoalArc/VidaGoalArc.tsx": {
@@ -4227,6 +4227,36 @@
   "docs/features/assets/FEAT-017-hoja-de-muestras.html": {
     "mtime": 1790442338.2276516,
     "ast_hash": "2b35aab6db6c450b673dc6ac9e3f58d0",
+    "semantic_hash": ""
+  },
+  "src/features/habits/components/HabitCategoryForm/HabitCategoryForm.test.tsx": {
+    "mtime": 1790648326.2844856,
+    "ast_hash": "c0e1d2736d97a6019a190c87ad6f8263",
+    "semantic_hash": ""
+  },
+  "src/features/habits/pages/HabitCategoriesPage.test.tsx": {
+    "mtime": 1790648372.448809,
+    "ast_hash": "eb07312e54293fb4abbb327d8f1437b3",
+    "semantic_hash": ""
+  },
+  "src/features/habits/utils/habit-category-form.utils.test.ts": {
+    "mtime": 1790648304.3548298,
+    "ast_hash": "4962ed3576af7ca0ef3c58cc17a34b89",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-025-botones-que-se-leen.md": {
+    "mtime": 1790647888.9975348,
+    "ast_hash": "fd0dedf4c62133adcfcb103c6fd77c09",
+    "semantic_hash": ""
+  },
+  "docs/features/FEAT-026-categorias-de-habitos-con-paleta.md": {
+    "mtime": 1790648159.313187,
+    "ast_hash": "ae876d2d5bfe3d83f55fb19fca95a19e",
+    "semantic_hash": ""
+  },
+  "docs/features/assets/FEAT-025-hoja-de-muestras.html": {
+    "mtime": 1790648725.128284,
+    "ast_hash": "2f2a2ffe17e0bf60aeb14858afc8276a",
     "semantic_hash": ""
   }
 }

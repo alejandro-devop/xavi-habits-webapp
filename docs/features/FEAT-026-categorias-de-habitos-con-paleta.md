@@ -1,7 +1,7 @@
 ---
 id: FEAT-026
 title: Las categorías de hábitos eligen color en la paleta, como todo lo demás
-status: building
+status: delivered
 architect: no    # tercera vez del mismo patrón resuelto: ColorPicker compartido + sorteo; ver sección 1
 area: features/habits
 requested: 2026-09-28
@@ -183,7 +183,7 @@ añade el encargo, no el usuario**: ver D-A.
 | # | What it does | State |
 |---|---|---|
 | 1 | Pantalla Categorías: crear y editar con el `ColorPicker`; crear nace con un color del núcleo que no repite; editar enseña el que hay (de la paleta, de fuera o ninguno) y no lo cambia | accepted |
-| 2 | Asistente de crear hábito, paso «+ nueva categoría»: mismo `ColorPicker`, color ya marcado que es el que se guarda, y a prueba de montaje en frío | pending |
+| 2 | Asistente de crear hábito, paso «+ nueva categoría»: mismo `ColorPicker`, color ya marcado que es el que se guarda, y a prueba de montaje en frío | accepted |
 
 La tajada 1 va primero porque es la que más gente toca para ajustar colores y
 porque estrena el sorteo en el sitio sin trampa de montaje (se puede decidir al
@@ -499,6 +499,219 @@ muestras por fila, no 9 como en la medición de FEAT-017, que no llevaba modal.
 página de medida vive en el scratchpad, fuera del repo.
 
 
+### Tajada 2
+
+**Resumen para el revisor:** el paso «+ nueva categoría» del asistente de crear
+hábito (`CreateHabitCategoryStep`) cambia la rueda y el campo de hex por el
+`ColorPicker` compartido. Nace con un color del núcleo sorteado por
+`pickInitialHabitCategoryColor` sobre las categorías de hábitos, con el pestillo
+`{ decided, value }` de `CreateVidaCategoryStep` copiado tal cual.
+**Lo que más probablemente rompí:** el paso **estrena `useHabitCategoriesQuery`**.
+Toda suite que monte el asistente y mockee `useHabitCategories` sin ese hook
+revienta al abrir el paso (completé `HabitFormModal.test.tsx`, que era la única).
+Y en frío, **si se pulsa «Crear categoría» antes de que llegue la lista y sin
+elegir muestra, se crea sin color**: se envía lo que se ve, que es nada marcado.
+
+**D-A y D-B, igual que en la tajada 1:** construidas con la recomendada (sortear;
+desde el paso no se puede dejar una categoría sin color a propósito), pendientes
+de que las confirme el usuario. Si D-A pasa a (b), en el paso sobra el bloque del
+pestillo (el estado arranca en `null` y no se sortea), y caen los tests de 14, 17
+y el sorteo del 15 en `CreateHabitCategoryStep.test.tsx`.
+
+**Lo que se hizo:**
+- `src/features/habits/components/CreateHabitCategoryStep/CreateHabitCategoryStep.tsx`:
+  - `const { data: categories } = useHabitCategoriesQuery()`, **sin `= []`**.
+    Viene del mismo módulo del que el paso ya importaba la mutación, que lo
+    reexporta.
+  - El estado `color` pasa a `colorChoice: { decided, value }`, y el
+    `if (!colorChoice.decided && categories) setColorChoice(...)` va en el
+    render. Es el mismo bloque que `CreateVidaCategoryStep.tsx:68-83`, con
+    `pickInitialHabitCategoryColor(categories.map((category) => category.color))`.
+  - `handleColorChange` echa el pestillo al elegir a mano.
+  - La fila de color: `<span className={styles.colorLabel}>Color</span>` +
+    `<ColorPicker label="Color de la categoría" disabled={isMutating}>`, igual que
+    en Vida. Salen el `input type="color"`, el `#6366f1` y el `Input` del hex.
+  - Comentario de cabecera con el porqué.
+- `CreateHabitCategoryStep.module.scss`: fuera `.colorInputs`, `.colorSwatch` y
+  `.colorSwatch:disabled`. `min-width: 0` en `.step` y `.colorRow`, como
+  `CreateVidaCategoryStep.module.scss`.
+- `CreateHabitCategoryStep.test.tsx` (nuevo, 13 tests). El mock de
+  `useHabitCategories` lista los dos hooks que usa el paso y **relee
+  `categoriesData` en cada render**, así que el caso frío es una lista que llega
+  con `rerender` después del montaje. `useModalStep` va mockeado solo para
+  comprobar `pop`.
+- `HabitFormModal.test.tsx`:
+  - El `vi.mock` de `useHabitCategories` gana `useHabitCategoriesQuery`. Esa era
+    la trampa: estaba verde solo porque ningún test abría el paso.
+  - La mutación de crear categoría pasa a ser un `vi.fn` estable
+    (`createCategoryMutate`).
+  - `categories` pasa a `let` con color, reiniciada en `beforeEach`.
+  - Test nuevo del recorrido entero dentro del asistente: «+ Nueva categoría» →
+    paleta con una marcada → crear → el hex marcado va en el payload → `onSuccess`
+    deja la categoría nueva elegida en el `Select` «Categoría».
+
+**Por qué así:**
+- *El pestillo en el estado y no `useState(() => sorteo)`:* el paso se apila y en
+  frío el primer render llega con `data: undefined`. El inicializador sortearía
+  sobre cero. `useRef` en el render y `setState` en un efecto suben el lint (ver
+  `ENVIRONMENT.md`).
+- *No me desvié de la referencia.* El único cambio de forma es que
+  `handleColorChange` recibe `string` y no `string | null`, porque es lo que
+  emite `ColorPicker` (`onChange: (hex: string) => void`).
+- *Crear en frío sin color, en vez de deshabilitar «Crear categoría» hasta que
+  llegue la lista:* la referencia de Vida hace lo mismo, y el criterio 17 pide
+  «ninguna marcada hasta que llega», no bloquear el botón. Lo que se envía es lo
+  que se ve. En la práctica la lista es la misma que ya pinta el `Select` de
+  debajo, así que casi siempre viene de la caché. Si el revisor prefiere
+  bloquear, es una línea (`disabled={!categories}` en el botón). No lo decidí yo
+  por mi cuenta: lo dejo escrito.
+- *La prueba de «elegir icono no la mueve» (criterio 16) es de lectura, no de
+  test:* `setIcon` no toca `colorChoice`. Abrir el `IconPicker` diferido en jsdom
+  es justo el camino del flaky conocido de `IconPicker.test.tsx` (~10 s). Lo que
+  sí está probado: escribir el nombre, refrescar la lista y elegir a mano.
+
+**Verificación:**
+- `pnpm typecheck` → exit 0.
+- `pnpm lint` → `✖ 14 problems (14 errors, 0 warnings)`, los mismos ficheros de
+  la línea base. Un primer intento dio 15 por un
+  `importOriginal<typeof import(...)>` en el test nuevo
+  (`consistent-type-imports`); corregido con `import type * as SteppedModalModule`.
+- `pnpm test` → `Test Files 1 failed | 138 passed (139)`,
+  `Tests 2 failed | 2405 passed (2407)`. Los 2 fallos son `SearchSelect.test.tsx`
+  (línea base). 2407 = 2393 + 13 del paso + 1 del asistente.
+- `pnpm build` → limpio.
+  - Chunk inicial `index-*.js` **1.157,57 kB** (antes 1.157,80).
+  - `app-icons` 652,57 kB, `IconPicker` 4,64 kB.
+  - **CSS 281,26 kB (antes 281,51).**
+- La bajada del CSS, con listas de selectores. `CreateHabitCategoryStep.module.scss`
+  es el único `.scss` del `git diff`. Lo compilé de `HEAD` (`git show`) y del
+  árbol con `sass --load-path=src --style=compressed`: 545 → 322 bytes. `diff`
+  de las listas: **salen `.colorInputs`, `.colorSwatch` y
+  `.colorSwatch:disabled`**, y siguen `.step`, `.colorRow`, `.colorLabel` y
+  `.actions`. No hay comentario abierto.
+- Criterio 19: `git grep -n 'type="color"' -- src/features/habits/ ':!*.test.*'`
+  → 0 resultados (exit 1). Con los tests incluidos solo salen las aserciones
+  `querySelector('input[type="color"]')).toBeNull()`. `#6366f1` fuera de tests:
+  solo `habit-templates.ts:104` (color de hábito, fuera de alcance) y los dos
+  comentarios de `habit-category-form.utils.ts` de la tajada 1.
+- `graphify update .` hecho.
+
+**Medición de ancho.** El 5173 estaba apagado (sonda: «APAGADO (nadie escucha)» en
+5173 y 5174) y no levanto servidores. El arnés está en el scratchpad, con
+`node_modules` enlazado y nada escrito en el repo:
+- Vite (config propia, `lib` IIFE) monta el `SteppedModal` **real** con los
+  props del asistente (`size="xl"`, `ds="aura"`, `mobileSheet`).
+- Un hijo hace `push` del `CreateHabitCategoryStep` **real** con el mismo
+  `title` y `description` que `NewCategoryButton` y un `initialName` largo a
+  propósito.
+- Lleva `global.scss` y los CSS Modules compilados por Vite. Solo el módulo
+  `useHabitCategories` va sustituido por alias: lista con Menta y Oliva, y
+  mutación inerte.
+- Chrome headless, cada caso en un `iframe` del ancho exacto, en bloque y **sin
+  contenedor flex**, con `--force-prefers-reduced-motion`. Medido con
+  `contentDocument`:
+
+| `iframe` | `innerWidth` | doc `scrollWidth` | diálogo c/s | paso c/s | grupo c/s | muestras | filas | marcada | `type="color"` | «Crear categoría» visible | elementos que se salen |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 375×812 | 375 | 375 | 373/373 | 309/309 | 309/309 | 22 (30 px) | 8+8+6 | Azul | 0 | sí | 0 |
+| 760×812 | 760 | 760 | 758/758 | 694/694 | 694/694 | 22 (32 px) | 17+5 | Ámbar | 0 | sí | 0 |
+| 375×568 | 375 | 375 | 373/373 | 309/309 | 309/309 | 22 (30 px) | 8+8+6 | Violeta | 0 | sí | 0 |
+
+- **Sin scroll horizontal:** `scrollWidth === clientWidth` en todo.
+- **Nada se sale:** ningún elemento con `right > innerWidth`, recorriendo todos.
+- **El sorteo no repite:** la marcada nunca es Menta ni Oliva, las dos usadas.
+  Cada `iframe` sortea por su cuenta, por eso cambia de uno a otro.
+- **La media query sí se evaluó dentro del `iframe`:** la muestra de 30 px a 375
+  lo confirma.
+- **Límite honesto:** en headless la cabecera del `SteppedModal` seguía diciendo
+  «Nuevo hábito». El contenido del paso ya estaba montado y el de la raíz ya no.
+  Es el fundido de la cabecera, que no termina con tiempo virtual. En jsdom el
+  test sí encuentra el título «Nueva categoría». No afecta a los anchos.
+
+**Criterios que cierra, uno a uno:**
+- **14** ✔ `CreateHabitCategoryStep.test.tsx` y el test del asistente:
+  - Sin `input[type="color"]`, sin placeholder `#6366f1`, sin «Selector de color».
+  - `radiogroup` «Color de la categoría» con 22 radios, cuyos `aria-label` son
+    los de `PALETTE_COLORS`.
+  - Con lista cargada, una marcada que cumple 2 (con Menta, `#6366f1` y Carmín
+    en mayúsculas usados: `0` → Oliva, `0.999` → Azul) y 3 (seis usados y Ámbar
+    una vez menos → Ámbar; lista vacía llegada → Azul con `0.99`).
+  - 4 se cumple por construcción: el paso solo recibe la lista de categorías de
+    hábitos, y el mock del módulo lista exactamente los dos hooks que usa.
+- **15** ✔ Crear sin tocar el color → `mutate` con
+  `{ name: 'Lectura', icon: null, color: <la marcada> }`, no `null`. También
+  dentro del asistente real.
+- **16** ✔ Elegir Petróleo la sustituye y se envía `#186068`. Escribir el nombre
+  antes y después no la mueve, con un solo sorteo en todo el recorrido. El
+  icono, por lectura (ver «Por qué así»).
+- **17** ✔ Con `data: undefined` al montar: ninguna marcada y `Math.random` sin
+  llamar. Llega la lista (`rerender`, el mock la relee) → Ámbar marcada y un
+  sorteo. Después:
+  - Un refresco que añade una categoría **con ese mismo Ámbar**, con el generador
+    cambiado y escribiendo el nombre, no la mueve ni vuelve a sortear.
+  - Crear envía Ámbar.
+  - Test aparte: una muestra elegida a mano antes de que llegue la lista no la
+    pisa el sorteo.
+- **18** ✔ `initialName="Descanso"` llega relleno. Al crear, el `onSuccess` que el
+  paso pasa a `mutate` llama a `onCreated('c-descanso')` y a `pop`. En el
+  asistente real, la categoría creada queda elegida en el `Select` «Categoría»
+  (`toHaveValue('c-lectura')`).
+- **19** ✔ 0 resultados fuera de tests (arriba). Cierra la feature.
+- **20** ✔ Componentes para 15 y 17 (y 14, 16, 18). El sorteo ya tenía sus tests
+  con generador fijo desde la tajada 1: no nace función nueva.
+- **21** ✔ typecheck limpio, lint 14/0, tests 2 fallos de 2407 (los de la línea
+  base), build limpio y la bajada del CSS demostrada con listas de selectores.
+- **Pendiente de prueba manual**, detrás del login: el recorrido real (abajo) y el
+  ancho en un móvil de verdad.
+
+**Recorrido que le queda al usuario** (con el 5173 arriba y sesión iniciada):
+1. Mis hábitos → «Nuevo hábito» → en el paso 1, «+ Nueva categoría». Debe salir
+   la fila de 22 colores (sin rueda ni campo de hex) con uno ya marcado que no
+   sea el de ninguna de tus categorías.
+2. Escribe un nombre y pulsa «Crear categoría» sin tocar el color. Vuelves al
+   asistente con la categoría elegida. En Ajustes → Categorías, esa categoría
+   lleva el color que viste marcado, y en Mis hábitos, su ficha del filtro
+   también.
+3. Repite eligiendo otra muestra antes de crear: se guarda esa.
+4. Aplica una plantilla que sugiera una categoría que no tienes («+ Crear
+   «…»»): el paso abre con el nombre ya escrito y con un color marcado.
+5. En el móvil: el paso no se sale por los lados y «Crear categoría» se alcanza.
+
+**Riesgos:**
+- Las suites que monten el asistente con un mock de `useHabitCategories` que no
+  liste `useHabitCategoriesQuery`. Busqué con `git grep`:
+  - Solo `HabitFormModal.test.tsx` lo mockea y monta el asistente (completada).
+  - `HabitCategoriesPage.test.tsx` lo mockea pero no monta el asistente.
+  - `HabitsListPage.test.tsx` mockea `HabitFormModal` entero.
+  - Las que mockean `useHabits` sin `useHabitCategories` reciben la reexportación
+    del mock de `useHabits`, y todas las que montan el asistente ya lo listaban.
+- Crear en frío sin elegir y antes de la lista → categoría sin color (arriba).
+- El paso ahora se suscribe a la consulta de categorías. Es la misma clave que ya
+  usa `HabitCreateWizard` debajo, así que no hay viaje nuevo, solo otra
+  suscripción.
+
+**Lo que descubrí y no toqué:**
+- El paso sigue diciendo **«Cancelar»** en el botón de volver
+  (`CreateHabitCategoryStep.tsx`, el `Button variant="ghost"`), igual que
+  `CreateVidaCategoryStep` y `HabitCategoryForm`. Choca con la regla de
+  vocabulario. Es texto preexistente y fuera del alcance de esta tajada; si le
+  toca a alguien es a FEAT-025 o a una pasada de vocabulario.
+- El mensaje de error del nombre vacío es «El nombre es obligatorio.». En Vida
+  es «Ponle un nombre a la categoría.». Mismo caso: fuera de alcance.
+- El hallazgo 1 del revisor de la tajada 1 (crear justo después de crear puede
+  repetir color, porque la lista se invalida sin esperar al refresco) se da aquí
+  igual. El pestillo ya ha decidido con la lista vieja si el paso se abre dentro
+  de ese viaje.
+
+**Estado del árbol:** sin commitear. Ficheros de la tajada:
+- En `src/features/habits`: `CreateHabitCategoryStep.tsx` y
+  `CreateHabitCategoryStep.module.scss` (modificados),
+  `CreateHabitCategoryStep.test.tsx` (nuevo) y `HabitFormModal.test.tsx`
+  (ampliado).
+- `graphify-out/` por `graphify update .`.
+- El arnés de medida vive en el scratchpad, fuera del repo.
+
+
 ## 4. Review — feature-reviewer
 
 ### Tajada 1 — la pantalla Categorías, crear y editar con la paleta
@@ -708,3 +921,249 @@ puede probar):
    cambiando solo el nombre: sigue sin color.
 4. En el móvil: el formulario no se sale por los lados y «Guardar» se alcanza
    bajando dentro de la ventana.
+
+### Tajada 2 — el paso «+ nueva categoría» del asistente con la paleta
+
+**Veredicto: `accepted`.** Los criterios 14-19 se cumplen con evidencia propia
+(tests corridos por mí y un arnés de navegador propio que además repite el caso
+frío fuera de jsdom), y el 20 y el 21 quedan cerrados para la feature entera.
+**Quedan en prueba manual**, detrás del login: el recorrido real con sesión y la
+segunda mitad del 6 heredada de la tajada 1 (el color en la lista de Categorías y
+en la ficha del filtro). No encontré regresiones. D-A y D-B van construidas con
+la recomendada y siguen pendientes de que las confirme el usuario; no son
+hallazgo. Con las dos tajadas aceptadas, el expediente pasa a `delivered`.
+
+**Criterios, uno a uno** (contra la sección 1, no contra el resumen del
+constructor). Leí entera la suite nueva `CreateHabitCategoryStep.test.tsx` y el
+test nuevo de `HabitFormModal.test.tsx`, para comprobar que prueban lo que dicen:
+
+- **14** ✅ Suite del paso: sin `input[type="color"]`, sin el placeholder
+  `#6366f1` ni «Selector de color»; `radiogroup` «Color de la categoría» con 22
+  radios cuyos `aria-label` son los de `PALETTE_COLORS`. Con la lista cargada,
+  una sola marcada que cumple 2 (Menta, `#6366f1` y Carmín **en mayúsculas**
+  usados → `0` da Oliva, `0.999` con Menta y Carmín da Azul) y 3 (los seis usados
+  y Ámbar una vez menos → Ámbar; lista llegada y vacía → Azul con `0.99`). 4 por
+  construcción: el paso solo llama a `pickInitialHabitCategoryColor` con
+  `categories.map((category) => category.color)` de `useHabitCategoriesQuery`, y
+  el mock del módulo lista exactamente esos dos hooks: si el paso leyera otra
+  cosa, la suite reventaría. Lo repite el test del asistente real (una del
+  núcleo marcada, nunca el Menta de «Salud») y mi arnés en Chrome (nunca Menta,
+  Oliva ni el índigo de las tres categorías sintéticas).
+- **15** ✅ Crear sin tocar el color → `mutate` con
+  `{ name: 'Lectura', icon: null, color: <la marcada> }` y `color` no `null`, en
+  el paso y en el asistente real. En el arnés, pulsar «Crear categoría» de
+  verdad deja en el payload el hex de la muestra marcada en los cuatro anchos.
+- **16** ✅ Elegir Petróleo la sustituye y se envía `#186068`; escribir el nombre
+  antes y después no la mueve, con un solo sorteo en todo el recorrido. **Lo del
+  icono se comprueba leyendo, y lo juzgo suficiente:** el criterio 20 no pide
+  test del 16, y la lectura es cerrada, no «parece que no»: `colorChoice` solo lo
+  escriben dos sitios —el `if (!colorChoice.decided && categories)` del render y
+  `handleColorChange`— y `IconPicker` recibe `onChange={setIcon}`, que no toca
+  ninguno. Lo único que podría mover el color sin pasar por ahí sería que abrir el
+  selector diferido **remontara** el paso y volviera a sortear; no puede, porque
+  el `Suspense` del diferido es local al propio selector
+  (`IconPickerLazy.tsx:32`), no un límite por encima del paso.
+- **17** ✅ Suite del paso, con la lista que el mock **relee** en cada render (no
+  datos síncronos): `data: undefined` al montar → ninguna marcada y `Math.random`
+  sin llamar; llega la lista con `rerender` → Ámbar y un sorteo; un refresco que
+  añade una categoría **con ese mismo Ámbar**, con el generador cambiado y
+  escribiendo el nombre, no la mueve ni vuelve a sortear; crear envía Ámbar. Y
+  una muestra elegida a mano antes de que llegue la lista no la pisa el sorteo.
+  **Repetido fuera de jsdom:** en mi arnés la consulta es un almacén externo
+  (`useSyncExternalStore`) que empieza en `undefined`, recibe la lista 500 ms
+  después de abrir el paso y 400 ms más tarde se refresca con una categoría que
+  usa justo el color marcado. En los cuatro `iframe`: 0 marcadas en frío, una al
+  llegar, la misma tras el refresco, y esa es la que se envía.
+- **18** ✅ `initialName="Descanso"` llega relleno; el `onSuccess` que el paso
+  pasa a `mutate` llama a `onCreated('c-descanso')` y a `pop`. En el asistente
+  real la categoría creada queda elegida en «Categoría» (`c-lectura`). En el
+  arnés abrí el paso con el **`NewCategoryButton` real** y un nombre de plantilla
+  de 90 caracteres: llega relleno y entero al payload.
+- **19** ✅ `git grep -n 'type="color"' -- src/features/habits/ ':!*.test.*'` → 0
+  resultados (exit 1), y lo mismo con `grep -rn` sobre el árbol, que incluye el
+  fichero sin seguimiento. Solo lo nombran las aserciones `toBeNull()` de los
+  tests.
+- **20** ✅ Del sorteo, con generador fijo, desde la tajada 1 (no nace función
+  nueva); de componentes para 2, 7 y 8 (tajada 1) y para 15 y 17 (esta), más 14,
+  16 y 18.
+- **21** ✅ Corrido por mí (lunes: la línea base es 2): `pnpm typecheck` exit 0;
+  `pnpm lint` `✖ 14 problems (14 errors, 0 warnings)`, todos en los ficheros de
+  la línea base, ninguno tocado; `pnpm test` `Test Files 1 failed | 138 passed
+  (139)`, `Tests 2 failed | 2405 passed (2407)`, los dos de `SearchSelect`;
+  `pnpm build` limpio, chunk inicial **1.157,57 kB**, `app-icons` 652,57 kB,
+  `IconPicker` 4,64 kB, **CSS 281,26 kB**. La bajada (281,51 → 281,26) con listas
+  de selectores: `git show HEAD:` y el árbol de
+  `CreateHabitCategoryStep.module.scss` (el único `.scss` del `git diff`)
+  compilados con `sass --load-path=src --style=compressed`, 509 → 286 bytes en mi
+  `sass` (el constructor midió 545 → 322 con otro binario: la misma diferencia de
+  223 bytes). `diff` de las listas ordenadas: **salen `.colorInputs`,
+  `.colorSwatch` y `.colorSwatch:disabled`**; siguen `.step`, `.colorRow`,
+  `.colorLabel` y `.actions`, y las dos primeras ganan `min-width:0`. Compila
+  sin error: no hay comentario abierto. Corrida aislada de las tres suites que
+  tocan esto (paso, `HabitFormModal`, `query-cache-guards.coverage`): 55/55.
+
+**El ancho a 375 y 760 px, con arnés propio.** El del constructor empujaba el
+paso con un `push` en un efecto; el mío monta el `SteppedModal` real con los
+props del asistente (`size="xl"`, `ds="aura"`, `mobileSheet`) y **pulsa el
+`NewCategoryButton` real**, con la lista llegando tarde (arriba). Vite con config
+propia en el scratchpad (`node_modules` enlazado, nada escrito en el repo), solo
+`useHabitCategories` sustituido por alias, `global.scss` y los CSS Modules reales;
+Chrome headless, cada caso en un `iframe` del ancho exacto, en bloque y sin
+contenedor flex, con `document.getAnimations().forEach((a) => a.finish())` antes
+de medir. Dos corridas, mismas cifras:
+
+| `iframe` | doc scroll/client | hoja c/s | grupo c/s | muestras | filas | título | scroll vertical de la hoja | «Crear categoría» tras bajar | elementos que se salen |
+|---|---|---|---|---|---|---|---|---|---|
+| 375×812 | 375/375 | 373/373 | 309/309 | 22 (30 px) | 8+8+6 | «Nueva categoría» | no (527/527) | visible | 0 |
+| 760×812 | 760/760 | 758/758 | 694/694 | 22 (32 px) | 17+5 | «Nueva categoría» | no | visible | 0 |
+| 375×568 | 375/375 | 358/358 | 294/294 | 22 (30 px) | 7+7+7+1 | «Nueva categoría» | sí (522 de 565) | a ras del borde inferior | 0 |
+| 760×568 | 760/760 | 758/758 | 694/694 | 22 (32 px) | 17+5 | «Nueva categoría» | no | visible | 0 |
+
+Sin scroll horizontal en ninguno y sin `input[type="color"]`. A 375×812 y 760×812
+coincide con el constructor al píxel. A 375×568 la hoja hace scroll vertical y su
+barra (clásica en headless) se come 15 px, por eso bajan 7 por fila; tras
+`scrollIntoView` el botón queda entero dentro de la hoja, con el borde inferior a
+una fracción de píxel del final (mi comprobación estricta dio `false` por eso). Con
+el `fundido` terminado la cabecera ya dice «Nueva categoría», así que el límite
+que anotó el constructor era del tiempo virtual, no del paso. El campo del nombre
+con 90 caracteres no ensancha nada (307 px de caja, el texto se desplaza dentro).
+
+**Lo que se rompió cerca** (cómo lo busqué):
+
+- *Quién monta el paso.* `graphify explain "CreateHabitCategoryStep"` da el paso
+  con sus cuatro llamadas y el barril; para quién lo apila, `git grep` (el grafo
+  es posterior al cambio): solo `NewCategoryButton`
+  (`HabitFormStepButtons.tsx:35`), y a `NewCategoryButton` lo usan **dos**
+  sitios: `HabitWizardStep1.tsx:145` (el asistente) **y `HabitEditForm.tsx:323`
+  (editar un hábito)**. La sección 3 no nombra el segundo. No es regresión: el
+  paso es el mismo, así que editar un hábito y crear ahí una categoría también
+  gana la paleta y el sorteo, que es lo coherente; y el mock de
+  `HabitFormModal.test.tsx`, que cubre también el modo editar, ya lista la
+  consulta.
+- *Mocks verdes por casualidad* (lo que más probablemente rompió). Suites que
+  mockean `hooks/useHabitCategories`: `HabitFormModal.test.tsx` (completada:
+  ahora lista `useHabitCategoriesQuery`) y `HabitCategoriesPage.test.tsx` (no
+  monta el asistente: no importa `HabitFormModal` ni `HabitFormStepButtons`).
+  Suites que mockean `hooks/useHabits` (de donde `useHabitCategories` reexporta la
+  consulta): `HabitDayRow`, `HabitListCard`, `HabitPanel`, `HabitsListPage` y
+  `HabitFormModal`. De ellas solo `HabitsListPage.test.tsx` nombra el asistente, y
+  mockea `@/features/habits/components/HabitFormModal` entero (`:73`). Las tres
+  páginas de producción que montan el modal (`HabitMyDayPage`,
+  `HabitDetailPage`, `HabitFormPage`) no tienen suite propia; solo aparecen como
+  texto en `query-cache-guards.coverage.test.ts`. Conclusión: ninguna suite sigue
+  verde por casualidad. Con el mock viejo, abrir el paso haría que vitest
+  lanzara «no export defined on the mock»; el test nuevo del asistente es el que
+  lo habría cazado.
+- *El `categories` del test del asistente pasó a `let` con color.* Todos los
+  tests previos de `HabitFormModal.test.tsx` siguen en verde con el color
+  añadido.
+- *La consulta nueva en el paso.* Misma clave `habitKeys.categories.list()` y
+  mismo guardia (`useHabits.ts:80-87`) que ya usan el asistente y el formulario
+  de editar debajo: una suscripción más, ningún viaje nuevo. No toca `api/`,
+  `graphql/` ni `setQueryData`: no se tira la caché de nadie.
+- *El resto del paso* (nombre, icono, error de nombre vacío, `pop`, `onCreated`)
+  sin cambios en el diff; el error de nombre vacío tiene test.
+
+**La decisión abierta del constructor —crear en frío sin elegir envía sin
+color—: la comparto.** Es literal con los criterios: el 17 pide «ninguna marcada
+hasta que llega» y el 15 pide enviar lo que se ve, y en frío no se ve ninguna.
+Bloquear «Crear categoría» hasta que llegue la lista (la alternativa de una
+línea) sería peor en el único caso en que la ventana no es de milisegundos: si la
+consulta de categorías **falla** sin caché, `data` se queda `undefined` para
+siempre y el botón no volvería a activarse nunca, dejando a la persona sin poder
+crear la categoría a mitad del asistente, que es justo el camino que no puede
+costar. Hoy, en ese caso, puede elegir una muestra a mano o crear sin color, y
+editarla después. En el caso normal la lista es la misma que ya pinta el
+selector «Categoría» del paso de abajo, así que llega de la caché antes que el
+paso.
+
+**Estados:**
+
+- *Vacío* ✅ lista llegada y vacía → una de los seis, sin esperar (test).
+- *Carga* ✅ con la lista en camino no hay ninguna marcada ni se sortea, y al
+  llegar se marca una sola vez (test y arnés). No hay indicador de «cargando» en
+  la fila, y no hace falta: el criterio pide exactamente eso.
+- *Error* — no probado en test; leído: sin caché, la fila queda sin marcar para
+  siempre y crear envía `color: null` salvo que se elija una. Es el caso de la
+  decisión de arriba; el `toast` de error de la consulta, si lo hay, no es de esta
+  tajada.
+- *Sin permisos* — no aplica: el paso solo crea categorías del propio usuario.
+- *Texto largo* ✅ nombre de plantilla de 90 caracteres en el arnés, sin
+  ensanchar nada a 375.
+- *Móvil* ✅ 375 sin scroll horizontal y «Crear categoría» alcanzable (tabla).
+- *Plantilla que sugiere una categoría que no existe* ✅ el paso abre con el
+  nombre escrito (`initialName`, test y arnés con el botón real) y con un color
+  marcado en cuanto hay lista.
+
+**¿Duplica algo que existía?** No hubo arquitecto; lo miro contra la sección 1.
+El control es el `ColorPicker` compartido sin tocar. El sorteo es el
+`pickInitialHabitCategoryColor` de la tajada 1, que delega en el de hábitos: no
+nace una tercera copia. El pestillo `{ decided, value }` **sí** es la tercera
+aparición del mismo bloque de diez líneas (Vida, y ahora este paso); la sección 1
+lo pedía así expresamente como hipótesis y el linter no deja otra salida
+(`ENVIRONMENT.md`, fila «Linter»), así que lo anoto, no lo devuelvo. `.colorLabel`
+ya existía en este `.scss`; el `min-width: 0` copia a
+`CreateVidaCategoryStep.module.scss`. Nada nuevo en `shared/`.
+
+**Hallazgos (ninguno bloquea):**
+
+1. *El paso también se abre desde editar un hábito* (`HabitEditForm.tsx:323`) y
+   allí gana lo mismo. Bien, pero no estaba escrito en ninguna sección: queda
+   dicho aquí para el recorrido del usuario.
+2. *Crear justo después de crear puede repetir color* (el hallazgo 1 de la
+   tajada 1): aquí igual, y el constructor ya lo anotó. Si el paso se abre dentro
+   del viaje de refresco tras crear otra categoría, el pestillo decide con la
+   lista vieja.
+3. *El pestillo es ya la tercera copia del mismo bloque.* Si aparece una cuarta,
+   merece un hook propio del dominio (no de `shared/`, por el precedente de
+   `color-palette.ts`).
+4. *Vocabulario preexistente, fuera de esta tajada:* el paso dice «Cancelar» en
+   el botón de volver (igual que `CreateVidaCategoryStep` y `HabitCategoryForm`).
+   Si le toca a alguien es a FEAT-025 o a una pasada de vocabulario. El diff no
+   añade ninguna palabra de la lista.
+5. *Sin test del estado de error* (consulta fallida sin caché): la conducta es
+   la descrita arriba, leída en el código.
+
+**Lo que no revisé:** la pantalla real con sesión (los agentes no entran con
+credenciales). No probé en jsdom abrir el selector de iconos (el flaky conocido
+de `IconPicker.test.tsx`); el 16 en su parte del icono queda por lectura, con el
+argumento de arriba.
+
+**Arnés:** en el scratchpad de la sesión (`r2/`, con un enlace a
+`node_modules`), fuera del repositorio. No arranqué ni paré ningún servidor, no
+toqué el 5173 ni su `localStorage`, y no quedó ningún fichero en el árbol.
+
+**Para el usuario:**
+
+Ahora cualquier categoría de hábitos nace y se retoca con la misma fila de
+colores que ya usan los hábitos y las categorías de Vida: se acabó la rueda de
+color del sistema y el campo para escribir el código del color. Al crear una
+categoría, tanto en Ajustes → Categorías como desde «+ Nueva categoría» dentro
+del asistente de crear hábito (o al editar un hábito), ya viene marcado un color
+de los seis principales que no usa ninguna otra de tus categorías, y lo que ves
+marcado es exactamente lo que se guarda: antes el asistente enseñaba un índigo y
+guardaba la categoría sin color.
+
+Editar una categoría ya no le inventa un color: si tenía uno de fuera de la
+paleta (como el índigo que se ponía por defecto), aparece el primero como «Color
+actual» y se queda tal cual si no lo cambias; si no tenía ninguno, sigue sin él.
+Dos cosas quedan pendientes de tu confirmación: que una categoría nueva nazca con
+un color ya elegido (en vez de sin color), y que ya no haya forma de quitarle el
+color a una categoría que lo tiene.
+
+Para probarlo (con la web en marcha y tu sesión abierta):
+
+1. Mis hábitos → «Nuevo hábito» → en el primer paso, «+ Nueva categoría». Sale
+   la fila de colores, sin rueda, con uno ya marcado que no es el de ninguna de
+   tus categorías.
+2. Escribe un nombre y pulsa «Crear categoría» sin tocar el color. Vuelves al
+   asistente con la categoría ya elegida. En Ajustes → Categorías lleva el color
+   que viste marcado, y en Mis hábitos su ficha del filtro también.
+3. Repite eligiendo otro color antes de crear: se guarda ese.
+4. Elige una plantilla que sugiera una categoría que no tienes y pulsa su botón
+   de crearla: el paso abre con el nombre ya escrito y un color marcado.
+5. En Ajustes → Categorías, «Nueva categoría» también llega con un color marcado;
+   «Editar» en una categoría antigua con el índigo de antes la enseña como «Color
+   actual» y, cambiando solo el nombre, el color no se mueve.
+6. En el móvil: ni el paso ni el formulario se salen por los lados, y «Crear
+   categoría» o «Guardar» se alcanzan bajando dentro de la ventana.

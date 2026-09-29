@@ -1,16 +1,18 @@
-import { screen } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HabitFormModal } from '@/features/habits/components/HabitFormModal'
-import { HABIT_COLORS } from '@/features/habits/data/habit-colors'
+import { HABIT_COLORS, HABIT_CORE_COLORS } from '@/features/habits/data/habit-colors'
 import type { Habit, HabitInput } from '@/features/habits/types/habit.types'
 import { renderWithProviders } from '@/test/render'
 
 const createMutate = vi.fn()
 const updateMutate = vi.fn()
+const createCategoryMutate = vi.fn()
 
 const measures = [{ id: 'm-vasos', name: 'Vasos', abbreviation: 'vasos' }]
-const categories = [{ id: 'c-salud', name: 'Salud' }]
+/** Se relee en cada render: un test puede añadir la categoría recién creada. */
+let categories: Array<{ id: string; name: string; color: string | null }>
 /** Colores ya en uso, con el caso mixto que llega de verdad de la API. */
 const activeHabits = [{ color: '#10B981' }, { color: null }]
 
@@ -44,8 +46,12 @@ vi.mock('@/features/habits/hooks/useHabitMeasures', () => ({
   useCreateHabitMeasureMutation: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
+// Lista **los dos** hooks que usa el paso «+ nueva categoría» (FEAT-026
+// tajada 2 estrenó la consulta): sin ella, abrir el paso reventaría aquí y no
+// en producción, y las suites que no lo abren seguirían verdes por casualidad.
 vi.mock('@/features/habits/hooks/useHabitCategories', () => ({
-  useCreateHabitCategoryMutation: () => ({ mutate: vi.fn(), isPending: false }),
+  useHabitCategoriesQuery: () => ({ data: categories }),
+  useCreateHabitCategoryMutation: () => ({ mutate: createCategoryMutate, isPending: false }),
 }))
 
 function buildHabit(overrides: Partial<Habit> = {}): Habit {
@@ -93,6 +99,8 @@ async function goToStep3(user: ReturnType<typeof userEvent.setup>, name = 'Medit
 beforeEach(() => {
   createMutate.mockReset()
   updateMutate.mockReset()
+  createCategoryMutate.mockReset()
+  categories = [{ id: 'c-salud', name: 'Salud', color: '#10b981' }]
 })
 
 describe('HabitFormModal — crear', () => {
@@ -293,6 +301,43 @@ describe('HabitFormModal — crear', () => {
       <HabitFormModal mode="create" open onClose={vi.fn()} />,
     )
     expect(container.querySelector('input[type="color"]')).toBeNull()
+  })
+
+  it('«+ Nueva categoría» abre la paleta con un color ya marcado, crea con él y deja la categoría elegida (FEAT-026, criterios 14, 15 y 18)', async () => {
+    const user = userEvent.setup()
+    renderWithProviders(<HabitFormModal mode="create" open onClose={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: '+ Nueva categoría' }))
+    expect(await screen.findByRole('heading', { name: 'Nueva categoría' })).toBeInTheDocument()
+
+    // La fila de colores tarda un tic más que el título (como en Vida): se espera.
+    const group = await screen.findByRole('radiogroup', { name: 'Color de la categoría' })
+    // El paso apilado tampoco trae la rueda: ni en el paso ni en todo el modal.
+    expect(document.querySelector('input[type="color"]')).toBeNull()
+    const swatches = within(group).getAllByRole('radio')
+    expect(swatches).toHaveLength(22)
+    const checked = swatches.filter((radio) => radio.getAttribute('aria-checked') === 'true')
+    expect(checked).toHaveLength(1)
+    const picked = checked[0].getAttribute('data-color-swatch')
+    // Uno de los seis del núcleo y no el Menta de «Salud».
+    expect(HABIT_CORE_COLORS.map((color) => color.hex)).toContain(picked)
+    expect(picked).not.toBe('#10b981')
+
+    await user.type(screen.getByLabelText('Nombre'), 'Lectura')
+    await user.click(screen.getByRole('button', { name: 'Crear categoría' }))
+
+    expect(createCategoryMutate).toHaveBeenCalledTimes(1)
+    const [payload, options] = createCategoryMutate.mock.calls[0] as [
+      { name: string; color: string | null },
+      { onSuccess: (category: { id: string }) => void },
+    ]
+    expect(payload).toMatchObject({ name: 'Lectura', color: picked })
+
+    // La API responde: la lista ya la trae y el paso vuelve con su id.
+    categories = [...categories, { id: 'c-lectura', name: 'Lectura', color: picked }]
+    act(() => options.onSuccess({ id: 'c-lectura' }))
+
+    expect(await screen.findByLabelText('Categoría')).toHaveValue('c-lectura')
   })
 })
 

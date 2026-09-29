@@ -34,7 +34,20 @@ The user decides the order, not an agent. The state and slice rules are in
 | FEAT-023 | delivered | 2/2 | features/vida | Empezar algo — que abrir la hoja no sea remar contra una pared de fichas duplicadas | 2026-09-24 |
 | FEAT-024 | delivered | 1/1 | API | Las suites que no compilan — que la red del API vuelva a avisar antes de tocar los seguimientos | 2026-09-24 |
 | FEAT-025 | building | 2/4 (1 aceptada; 2-4 esperan que el usuario elija D-A, D-B, D-C sobre la hoja) | shared/ui, app/styles | Los botones se leen — el verde y el rojo de Aura con texto que se distingue, sobre todo en oscuro | 2026-09-28 |
-| FEAT-026 | building | 2/2 (1 aceptada; D-A y D-B construidas con la recomendada, pendientes de confirmar) | features/habits | Las categorías de hábitos eligen color en la paleta, como todo lo demás | 2026-09-28 |
+| FEAT-026 | delivered | 2/2 | features/habits | Las categorías de hábitos eligen color en la paleta, como todo lo demás | 2026-09-28 |
+
+**FEAT-026 `delivered` 2/2** (2026-09-28, revisor). Las categorías de hábitos
+eligen color en la paleta compartida en Ajustes → Categorías y en el paso
+«+ nueva categoría» del asistente (que también se abre al editar un hábito,
+`HabitEditForm.tsx:323`), con un color del núcleo que no repite ya marcado, que
+es el que se guarda; editar ya no inventa color. El paso sortea una sola vez
+cuando llega la lista, con el pestillo `{ decided, value }` de Vida: ya van
+tres copias del mismo bloque, y si aparece una cuarta merece su propio hook.
+Pulsar «Crear categoría» antes de que llegue la lista y sin elegir crea sin
+color, igual que Vida; el revisor lo prefiere a deshabilitar el botón, que se
+quedaría bloqueado si la lista falla. Ningún `type="color"` queda en hábitos.
+Pendiente del usuario: recorrido real con sesión, y confirmar D-A (nace con
+color sorteado) y D-B (sin forma de quitar el color).
 
 **FEAT-025 `building`, tajada 1 de 4 aceptada** (2026-09-28, revisor). La
 hoja de muestras es fiel al CSS real y sus 136 cifras aguantan un arnés
